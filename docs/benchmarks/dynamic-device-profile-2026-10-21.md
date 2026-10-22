@@ -518,3 +518,53 @@ The [evidence index](checkpoints/controller-refresh-screens-2026-10-22.json)
 retains the prototypes, tests, audit counts, raw paired timings, affinity,
 failure prefixes and full-recording hashes. Large generated recordings remain
 in the dedicated external artifact store; supplied references are unchanged.
+
+## Endpoint derivative audit, October 22
+
+An isolated audit checks whether the evaluation at the start of a step repeats
+the stored values from the previous network endpoint. It uses the same
+deferred-publication network prototype, extended parameter validation, 1e-5
+tolerance, quarter-cycle interval and ten ST1 substeps as the preceding screens.
+No evaluation is skipped. The instrumentation reads stored states, derivatives,
+block inputs, machine power and field voltage; it avoids output getters that
+could refresh algebraic values. Renewable internal states are not covered.
+
+| Audit | Case 1 | Case 2 |
+| --- | ---: | ---: |
+| Reusable-endpoint evaluations checked | 2,400 | 2,400 |
+| Scalar probes per evaluation | 42,844 | 13,420 |
+| Evaluations with every probe unchanged | 0 | 0 |
+| Machines with recurring PSS2A input/rate changes | 208 | 64 |
+| Stored state-value changes during evaluation | 0 | 0 |
+
+The recurring changes are in the second PSS2A input path. The inspected
+bus-1050 example selects electrical power (input code 3), not bus frequency.
+Machine electrical evaluation follows stabilizer evaluation, so the next
+initial evaluation can refresh the stabilizer from the newer machine power.
+These nonzero differences rule out removing the complete evaluation as
+redundant. A proposed explanation based on bus-frequency updates was corrected
+after checking the selector and sampled values.
+
+Other observed field changes occur only during startup, except six Case 2
+changes in bus 5263's ST1 washout derivative. A targeted second audit shows all
+six are changes between positive and negative zero. They do not explain the
+full-system trajectory error. This observation is not permission to discard
+signed-zero behavior in a bitwise regression.
+
+Both initial audit runs and the completed targeted Case 2 run reproduce the
+retained full-network recordings, selected-channel CSVs and channel metadata
+byte for byte. The first targeted attempt completed numerical work but failed
+when serializing an unavailable initial-frequency marker as numeric NaN. The
+corrected attempt represents that marker as text; the failed attempt is retained
+as an instrumentation failure, not a dynamic convergence failure.
+
+These runs are numerical audits, not warmed timing measurements. Production
+code and integration order are unchanged. Selective reuse would need explicit
+dependency and lifecycle guards, including startup, events, input or parameter
+changes, activation and observers; unchanged values in these two cases alone
+do not prove a general cache is safe. Independent reference accuracy and the
+eight-second objective remain open.
+
+The [audit evidence index](checkpoints/endpoint-derivative-audit-2026-10-22.json)
+retains the source overlays, commands, raw probe counts, sampled values,
+attempt classifications and complete-recording hashes.
