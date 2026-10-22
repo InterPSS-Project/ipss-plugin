@@ -449,3 +449,72 @@ supplied trajectories. The eight-second objective and accuracy remain open.
 The [evidence index](checkpoints/bounded-voltage-norm-2026-10-21.json) retains
 sources/classes, counts, tests, the numerical counterexample, raw timings,
 affinity and full-recording dependencies without copying the large recordings.
+
+## Controller dispatch and output-refresh screens, October 22
+
+Two isolated experiments use the deferred-publication network-acceleration
+prototype as their common baseline. Both retain one logical CPU, a 1/240-second
+network step, 1e-5 voltage-correction tolerance, ten ST1 substeps and complete
+recording. Both arms include the extended pre-initialization parameter checks.
+They are performance screens on a prototype whose full-system reference
+accuracy remains unresolved, not production or reference-acceptance results.
+
+The PSS2A experiment gives each standard block input a typed call site, avoiding
+the shared polymorphic setter. It keeps the ordered arithmetic, live reads,
+binding checks, compound-filter propagation and custom-block fallback. All 31
+focused tests pass, including bitwise state, derivative and output comparisons.
+
+Each case uses twelve alternating warmups and five measured pairs, alternating
+pair order. Timings include fresh parsing, preparation, initialization, all
+recording and writer closure; compilation and garbage collection are included.
+All 44 complete recordings match the retained baseline byte for byte.
+
+| PSS2A typed-input screen | Control median, s | Candidate median, s | Median paired reduction, s | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| Case 1 | 10.060274 | 9.990163 | 0.074512 | 4/5 |
+| Case 2 | 6.668631 | 6.823393 | -0.164355 | 2/5 |
+
+The Case 1 improvement is small and Case 2 has no demonstrated gain. This
+experiment is not promoted.
+
+A separate ST1 audit tested whether upstream derivatives and saved history
+were exactly zero at local-step entry. None of 273,828 Case 1 calls or 86,472
+Case 2 calls met the complete guarded eligibility condition. Skipping upstream
+state updates on an assumed equilibrium would therefore be unjustified.
+
+A second audit instead checked the final repeated algebraic preparation pass.
+Under the existing standard-graph, positive-Ta, zero-feedback conditions, none
+of the eight block inputs changed in 2,404,402 Case 1 evaluations or 766,238
+Case 2 evaluations. Both audits retained identical full recordings. These are
+input-refresh observations, not evidence that the upstream states are constant.
+
+The ST1 prototype skips only that final preparation pass while the guarded
+local integration scope is active. It preserves every substep, state update,
+history update and output publication. Active feedback, nonzero feedback state
+or history, changed selectors and observed/custom objects retain the ordinary
+path. All 43 focused tests pass, including counts 1, 4, 10 and 128, changing
+limits and inputs, reactivation and discontinuities.
+
+The same timing protocol produces the following results. Candidate runs skip
+the audited number of refresh passes; controls skip zero. All 44 recordings
+are identical, including network iteration counts and event-side samples.
+
+| ST1 output-refresh screen | Control median, s | Candidate median, s | Median paired reduction, s | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| Case 1 | 10.186788 | 10.136256 | 0.214022 | 3/5 |
+| Case 2 | 6.692323 | 6.842452 | -0.150130 | 2/5 |
+
+Ranges overlap substantially and compilation continues during measurement.
+These results do not establish a consistent improvement; the prototype remains
+unpromoted. A longer warmup is needed before interpreting differences this small.
+Cross-screen absolute times do not isolate the effect of either optimization.
+
+Cases 3 and 4 with the ST1 prototype still fail at 0.045833333 seconds, with
+identical partial recordings. They are not completed ten-second benchmarks.
+The eight-second target for Case 1 and independent trajectory accuracy remain
+open. Production defaults and the unrelated pending performance work are unchanged.
+
+The [evidence index](checkpoints/controller-refresh-screens-2026-10-22.json)
+retains the prototypes, tests, audit counts, raw paired timings, affinity,
+failure prefixes and full-recording hashes. Large generated recordings remain
+in the dedicated external artifact store; supplied references are unchanged.
