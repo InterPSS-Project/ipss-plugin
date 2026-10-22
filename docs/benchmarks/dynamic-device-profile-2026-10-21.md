@@ -1163,3 +1163,46 @@ across both cases. This prototype remains disabled in production. The
 [warmed timing index](checkpoints/pss-unchanged-state-refresh-screen-2026-10-22.json)
 retains all pairs, runtime identities, source, counters and recording hashes.
 These results do not qualify independent-reference accuracy or six-case completion.
+
+## Empty auxiliary monitor preparation
+
+The benchmark runner records selected channels and full-network channels through
+dedicated recorders. Its additional empty `StateMonitor` previously remained
+unprepared, so the engine still built renewable-device state maps that the empty
+monitor discarded. The runner now calls `prepareMonitoring()` before attaching
+that monitor. Channel selection, sampling, event-side duplicates, model updates
+and network calculations are unchanged. This uses the existing output-request
+API; script and custom-handler behavior in the engine is unchanged.
+
+| Case | Unprepared median | Prepared median | Median paired saving | Prepared faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.069 s | 8.846 s | 0.206 s | 5/7 |
+| 2 | 6.179 s | 6.135 s | 0.142 s | 5/7 |
+
+Both arms use the same experimental Anderson/deferred network runtime, one
+logical CPU, 1e-5 voltage-correction tolerance, a quarter-cycle network step and
+one ST1 local step. Each case has 32 alternating warmups and seven measured pairs.
+The interval includes fresh parsing, preparation, initialization, complete
+recording and writer closure. Compilation and GC remain included. Ranges overlap;
+these results suggest a modest saving rather than a universal speedup guarantee.
+Median process CPU times are 8.906/8.594 seconds for Case 1 and 6.016/5.984 seconds
+for Case 2, respectively.
+
+All 92 timing recordings and four preliminary complete recordings match the
+retained one-step binary, selected CSV and channel metadata byte for byte. Network
+iteration counts are unchanged. The modified runner compiles against the timing
+runtime, and all ten existing prepared-monitor tests pass, including unselected
+device suppression, script delivery, legacy behavior and selected-channel values.
+An initial test-script attempt stopped before compilation because its output
+directory had already been created by the bounded logger; the corrected attempt
+and both logs are retained.
+
+Fresh ten-second attempts for Cases 3 and 4 with one ST1 step still fail at
+0.045833333 seconds, the same reached time as the prior ten-step attempts. These
+checks retain the unprepared monitor and therefore isolate the current one-step
+runtime's cross-case behavior; they are failed prefixes, not completed timing or
+accuracy measurements. Case 1 still exceeds eight seconds, and independent
+reference accuracy remains unresolved. The
+[evidence index](checkpoints/prepared-empty-monitor-screen-2026-10-22.json)
+retains timings, test reports, sources, runtime identities, recording hashes and
+the Cases 3–4 failure diagnostics.

@@ -132,7 +132,11 @@ public final class Texas2kReferenceRunner {
             algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
             algo.setSimuStepSec(step);
             algo.setTotalSimuTimeSec(stop);
-            algo.setSimuOutputHandler(new StateMonitor());
+            // The recorders below own all selected and full-network channels.
+            // Freeze this empty selection to avoid producing unused device state maps.
+            var monitor = new StateMonitor();
+            monitor.prepareMonitoring();
+            algo.setSimuOutputHandler(monitor);
             algo.setOutPutPerSteps(1);
             String renewableScheme = plan.has("renewable_integration_scheme")
                     ? plan.get("renewable_integration_scheme").getAsString() : "MODIFIED_EULER";
