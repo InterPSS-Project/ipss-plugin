@@ -192,6 +192,13 @@
       "bytes": 31013319,
       "sha256": "b9d023663504826eff1db06a0dc29f2392506d64244453a41e8b610cb157b1b1",
       "outcome": "diagnostic-only"
+    },
+    {
+      "name": "static-current-compensation-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-static-current-compensation/evidence.zip",
+      "bytes": 5086431,
+      "sha256": "42c65eea627d3ffac7f4ac1f1cad5fe742018ca8249edfbcfc5b5be8ecdeb4dc",
+      "outcome": "screened-not-promoted"
     }
   ],
   "row_solve": {

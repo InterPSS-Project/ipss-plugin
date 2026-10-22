@@ -435,3 +435,7 @@ The [conditional terminal-voltage replay](case3-renewable-boundary-replay-2026-1
 ## Local-update input and limiter history
 
 The [Case 3 stage audit](case3-replay-step-boundary-2026-10-22.md) separates held-input and interpolated-input substeps. Both alter limiter-command timing and retained two-step history; held voltage reduces but does not remove the mismatch. Stored rate equations match exactly at the two observed devices, and the control recording is unchanged. Four new full-fleet conditional replays and a comparison figure are retained. No production fix or performance acceptance follows from this diagnostic.
+
+## Scalar static-load compensation
+
+The [static-load current screen](static-current-compensation-2026-10-22.md) removes one temporary object while retaining live load evaluation and arithmetic order. It includes 50,973 focused comparisons and 52 complete recording comparisons. The experiment is retained without production promotion; independent-reference accuracy and the full eight-second objective remain open.
