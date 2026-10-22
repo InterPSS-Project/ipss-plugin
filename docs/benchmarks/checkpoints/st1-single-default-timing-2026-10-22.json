@@ -1,0 +1,1368 @@
+{
+  "schema": 1,
+  "description": "Paired single-core timing of user-approved one-step ST1 default versus explicit ten steps.",
+  "base_plugin_commit": "3a5e050e0fe6a1fccb43070bf84ad3569d8560c7",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st1-single-default-timing/evidence.zip",
+  "archive_bytes": 3027517,
+  "archive_sha256": "c2626c3450b6baa486f33ffe5da988bc03fae68e7a52091aea93dcf983afa1a9",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "ten": [
+          9.8218302,
+          9.8482497,
+          9.7835553,
+          9.656465,
+          9.3680942,
+          9.6878141,
+          9.4919123
+        ],
+        "one_default": [
+          8.9668373,
+          9.0274162,
+          9.0871236,
+          8.9140478,
+          8.942575,
+          8.8953956,
+          8.8763077
+        ]
+      },
+      "medians_s": {
+        "ten": 9.6878141,
+        "one_default": 8.942575
+      },
+      "paired_savings_s": [
+        0.8549929000000009,
+        0.8208335000000009,
+        0.6964316999999998,
+        0.7424172000000002,
+        0.4255192000000001,
+        0.7924185000000001,
+        0.6156045999999993
+      ],
+      "median_paired_saving_s": 0.7424172000000002,
+      "one_step_wins": 7,
+      "recordings_repeat_identically_per_arm": true,
+      "ten_step_recording_matches_previous": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "ten": [
+          6.3534864,
+          6.555173,
+          6.2964907,
+          6.5047185,
+          6.4645244,
+          6.5485725,
+          6.4369924
+        ],
+        "one_default": [
+          6.3660426,
+          6.0726361,
+          6.1680401,
+          6.3688611,
+          6.252161,
+          6.2509052,
+          6.3679329
+        ]
+      },
+      "medians_s": {
+        "ten": 6.4645244,
+        "one_default": 6.252161
+      },
+      "paired_savings_s": [
+        -0.012556199999999684,
+        0.4825368999999995,
+        0.12845059999999986,
+        0.1358573999999999,
+        0.2123634000000001,
+        0.29766729999999963,
+        0.06905950000000072
+      ],
+      "median_paired_saving_s": 0.1358573999999999,
+      "one_step_wins": 6,
+      "recordings_repeat_identically_per_arm": true,
+      "ten_step_recording_matches_previous": true
+    }
+  ],
+  "timing_context": [
+    {
+      "case": 1,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 9.8218302,
+          "process_cpu_s": 9.6875,
+          "compilation_time_ms": 45,
+          "gc_time_ms": 136
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 8.9668373,
+          "process_cpu_s": 8.8125,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 134
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 9.0274162,
+          "process_cpu_s": 8.78125,
+          "compilation_time_ms": 55,
+          "gc_time_ms": 134
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 9.8482497,
+          "process_cpu_s": 9.390625,
+          "compilation_time_ms": 47,
+          "gc_time_ms": 237
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 9.7835553,
+          "process_cpu_s": 9.53125,
+          "compilation_time_ms": 34,
+          "gc_time_ms": 128
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 9.0871236,
+          "process_cpu_s": 8.84375,
+          "compilation_time_ms": 7,
+          "gc_time_ms": 122
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 8.9140478,
+          "process_cpu_s": 8.625,
+          "compilation_time_ms": 81,
+          "gc_time_ms": 116
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 9.656465,
+          "process_cpu_s": 9.484375,
+          "compilation_time_ms": 31,
+          "gc_time_ms": 107
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 9.3680942,
+          "process_cpu_s": 9.171875,
+          "compilation_time_ms": 13,
+          "gc_time_ms": 96
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 8.942575,
+          "process_cpu_s": 8.671875,
+          "compilation_time_ms": 205,
+          "gc_time_ms": 90
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 8.8953956,
+          "process_cpu_s": 8.5625,
+          "compilation_time_ms": 65,
+          "gc_time_ms": 76
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 9.6878141,
+          "process_cpu_s": 9.4375,
+          "compilation_time_ms": 274,
+          "gc_time_ms": 62
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 9.4919123,
+          "process_cpu_s": 9.1875,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 66
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 8.8763077,
+          "process_cpu_s": 8.671875,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 64
+        }
+      ]
+    },
+    {
+      "case": 2,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 6.3534864,
+          "process_cpu_s": 6.0625,
+          "compilation_time_ms": 25,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 6.3660426,
+          "process_cpu_s": 6.296875,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 97
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 6.0726361,
+          "process_cpu_s": 5.90625,
+          "compilation_time_ms": 11,
+          "gc_time_ms": 90
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 6.555173,
+          "process_cpu_s": 6.34375,
+          "compilation_time_ms": 52,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 6.2964907,
+          "process_cpu_s": 6.21875,
+          "compilation_time_ms": 8,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 6.1680401,
+          "process_cpu_s": 6.15625,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 6.3688611,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 84,
+          "gc_time_ms": 98
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 6.5047185,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 171,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 6.4645244,
+          "process_cpu_s": 6.265625,
+          "compilation_time_ms": 55,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 6.252161,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 11,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 6.2509052,
+          "process_cpu_s": 6.15625,
+          "compilation_time_ms": 49,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 6.5485725,
+          "process_cpu_s": 6.5,
+          "compilation_time_ms": 267,
+          "gc_time_ms": 95
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 6.4369924,
+          "process_cpu_s": 6.296875,
+          "compilation_time_ms": 13,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 6.3679329,
+          "process_cpu_s": 6.203125,
+          "compilation_time_ms": 34,
+          "gc_time_ms": 93
+        }
+      ]
+    }
+  ],
+  "verified_complete_recordings": 92,
+  "additional_qr_smokes": 2,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 32,
+  "measured_pairs_per_case": 7,
+  "qr_prefix_probe": {
+    "calls_compared_bitwise": 64000,
+    "reused_columns": 43640,
+    "production_changed": false,
+    "smoke": [
+      {
+        "case": 1,
+        "network_iterations": 18340,
+        "anderson_mixes": 13532,
+        "recording_matches": {
+          "full-network.bin": true,
+          "interpss.csv": true,
+          "full-network-channels.json": true
+        },
+        "timing_qualification": false
+      },
+      {
+        "case": 2,
+        "network_iterations": 20202,
+        "anderson_mixes": 15394,
+        "recording_matches": {
+          "full-network.bin": true,
+          "interpss.csv": true,
+          "full-network-channels.json": true
+        },
+        "timing_qualification": false
+      }
+    ]
+  },
+  "accuracy": [
+    {
+      "case": 1,
+      "compared_channels": 5191,
+      "last_times": {
+        "10": 9.999999999999753,
+        "1": 9.999999999999753
+      },
+      "reference_files": [
+        "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case1_bus6307_fault_fullsystem_1ms_part01.parquet",
+        "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case1_bus6307_fault_fullsystem_1ms_part02.parquet"
+      ],
+      "reference_comparison": {
+        "10": {
+          "active_power": {
+            "channels": 429,
+            "periods": {
+              "full": {
+                "worst_rmse": 63.51192101853509,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 185.12663779624023,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.7104824173370677,
+                "worst_nrmse_channel": "generator_p_mw__bus_3120__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 8.587238673381785,
+                "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+                "worst_max_abs": 17.07584658666792,
+                "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+                "worst_nrmse": 0.03595012106922303,
+                "worst_nrmse_channel": "generator_p_mw__bus_7032__id_1",
+                "failed_channels": 260
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 66.95811514905779,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 185.12663779624023,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.749034818294265,
+                "worst_nrmse_channel": "generator_p_mw__bus_3120__id_1",
+                "failed_channels": 375
+              }
+            }
+          },
+          "bus_angle": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 548.9601367913915,
+                "worst_rmse_channel": "bus_angle_deg__bus_5139",
+                "worst_max_abs": 1106.9793979584092,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3120",
+                "worst_nrmse": 0.4965796068394718,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 0.20072200422795544,
+                "worst_rmse_channel": "bus_angle_deg__bus_3034",
+                "worst_max_abs": 0.8409929851325231,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3034",
+                "worst_nrmse": 0.00017316191388125026,
+                "worst_nrmse_channel": "bus_angle_deg__bus_3034",
+                "failed_channels": 0
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 578.7484614349604,
+                "worst_rmse_channel": "bus_angle_deg__bus_5139",
+                "worst_max_abs": 1106.9793979584092,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3120",
+                "worst_nrmse": 0.52352559718077,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0
+              }
+            }
+          },
+          "reactive_power": {
+            "channels": 429,
+            "periods": {
+              "full": {
+                "worst_rmse": 47.05111139800044,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 168.25538300020554,
+                "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+                "worst_nrmse": 6831.105962903381,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 4.220686956741057,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 9.739883581849625,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 133.72079550740756,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7288__id_1",
+                "failed_channels": 241
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 49.58423438924094,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 168.25538300020554,
+                "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+                "worst_nrmse": 7201.694594857204,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 404
+              }
+            }
+          },
+          "rotor_angle": {
+            "channels": 333,
+            "periods": {
+              "full": {
+                "worst_rmse": 12.511335007175417,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_max_abs": 45.104820855147295,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_nrmse": 0.009089926021804928,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "failed_channels": 333
+              },
+              "prefault": {
+                "worst_rmse": 0.543595086620105,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "worst_max_abs": 1.1301456643306302,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "worst_nrmse": 0.0004958462592866776,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "failed_channels": 333
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 13.190236537512018,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_max_abs": 45.104820855147295,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_nrmse": 0.009583171921088306,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "failed_channels": 0
+              }
+            }
+          },
+          "voltage": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 0.01919248882737569,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.05125133799620463,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3074",
+                "worst_nrmse": 0.39331046409967657,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_8024",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 0.0032948530287401027,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.008223208119933156,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3120",
+                "worst_nrmse": 0.04242664011893191,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7032",
+                "failed_channels": 1651
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 0.020204008667506573,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.05125133799620463,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3074",
+                "worst_nrmse": 0.41460402712725974,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_8024",
+                "failed_channels": 1837
+              }
+            }
+          }
+        },
+        "1": {
+          "active_power": {
+            "channels": 429,
+            "periods": {
+              "full": {
+                "worst_rmse": 56.877770735562784,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 184.90828605574777,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.7104837963462836,
+                "worst_nrmse_channel": "generator_p_mw__bus_3120__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 8.59206035842756,
+                "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+                "worst_max_abs": 17.06887885963397,
+                "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+                "worst_nrmse": 0.03595415840174298,
+                "worst_nrmse_channel": "generator_p_mw__bus_7032__id_1",
+                "failed_channels": 265
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 59.963955472203146,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 184.90828605574777,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.7490362721127501,
+                "worst_nrmse_channel": "generator_p_mw__bus_3120__id_1",
+                "failed_channels": 375
+              }
+            }
+          },
+          "bus_angle": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 548.6410339260615,
+                "worst_rmse_channel": "bus_angle_deg__bus_5344",
+                "worst_max_abs": 1105.8936230443353,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3120",
+                "worst_nrmse": 0.4965405697871417,
+                "worst_nrmse_channel": "bus_angle_deg__bus_5062",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 0.20083127490727468,
+                "worst_rmse_channel": "bus_angle_deg__bus_3034",
+                "worst_max_abs": 0.8409927971660718,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3034",
+                "worst_nrmse": 0.00017325618117414025,
+                "worst_nrmse_channel": "bus_angle_deg__bus_3034",
+                "failed_channels": 0
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 578.4120430322547,
+                "worst_rmse_channel": "bus_angle_deg__bus_5344",
+                "worst_max_abs": 1105.8936230443353,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3120",
+                "worst_nrmse": 0.5234844418522548,
+                "worst_nrmse_channel": "bus_angle_deg__bus_5062",
+                "failed_channels": 0
+              }
+            }
+          },
+          "reactive_power": {
+            "channels": 429,
+            "periods": {
+              "full": {
+                "worst_rmse": 45.08951396201423,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 146.5091807108439,
+                "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+                "worst_nrmse": 6831.367623348086,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 4.219404814735589,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 9.751392853521864,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 133.72038921346885,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7288__id_1",
+                "failed_channels": 242
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 47.51533578496564,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 146.5091807108439,
+                "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+                "worst_nrmse": 7201.970461027074,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 406
+              }
+            }
+          },
+          "rotor_angle": {
+            "channels": 333,
+            "periods": {
+              "full": {
+                "worst_rmse": 9.921306468064362,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_max_abs": 35.77305421982635,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_nrmse": 0.007208178965924747,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "failed_channels": 333
+              },
+              "prefault": {
+                "worst_rmse": 0.5435285773001587,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "worst_max_abs": 1.1300869372477944,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "worst_nrmse": 0.0004957855920762579,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "failed_channels": 333
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 10.459664127911738,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_max_abs": 35.77305421982635,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_nrmse": 0.0075993147878396835,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "failed_channels": 0
+              }
+            }
+          },
+          "voltage": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 0.019194505259100443,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.05129372058278103,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3074",
+                "worst_nrmse": 0.3934917720515314,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_8024",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 0.0032954392445117254,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.008223667060734074,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3120",
+                "worst_nrmse": 0.04243108840625216,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7032",
+                "failed_channels": 1664
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 0.020206127009267924,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.05129372058278103,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3074",
+                "worst_nrmse": 0.41479512595482815,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_8024",
+                "failed_channels": 1834
+              }
+            }
+          }
+        }
+      },
+      "single_minus_ten": {
+        "active_power": {
+          "channels": 429,
+          "periods": {
+            "full": {
+              "worst_rmse": 23.349976449151093,
+              "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+              "worst_max_abs": 174.27727973879257,
+              "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.35267155184565896,
+              "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_max_abs": 0.7933123555669681,
+              "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 24.617020503915953,
+              "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+              "worst_max_abs": 174.27727973879257,
+              "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "bus_angle": {
+          "channels": 2000,
+          "periods": {
+            "full": {
+              "worst_rmse": 16.353412829752028,
+              "worst_rmse_channel": "bus_angle_deg__bus_3081",
+              "worst_max_abs": 359.9718810188763,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1016",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.0030748106323177996,
+              "worst_rmse_channel": "bus_angle_deg__bus_1078",
+              "worst_max_abs": 0.006227354246249206,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1078",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 17.240801070841734,
+              "worst_rmse_channel": "bus_angle_deg__bus_3081",
+              "worst_max_abs": 359.9718810188763,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1016",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "reactive_power": {
+          "channels": 429,
+          "periods": {
+            "full": {
+              "worst_rmse": 28.328310309938548,
+              "worst_rmse_channel": "generator_q_mvar__bus_8155__id_2",
+              "worst_max_abs": 49.01130872787557,
+              "worst_max_abs_channel": "generator_q_mvar__bus_8155__id_2",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.23335007173930805,
+              "worst_rmse_channel": "generator_q_mvar__bus_5302__id_1",
+              "worst_max_abs": 0.46459137526375116,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5302__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 29.86548792505412,
+              "worst_rmse_channel": "generator_q_mvar__bus_8155__id_2",
+              "worst_max_abs": 49.01130872787557,
+              "worst_max_abs_channel": "generator_q_mvar__bus_8155__id_2",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "rotor_angle": {
+          "channels": 333,
+          "periods": {
+            "full": {
+              "worst_rmse": 6.184450152751077,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_8155__id_2",
+              "worst_max_abs": 10.648514486621252,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_8155__id_2",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.0060170462938819985,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "worst_max_abs": 0.011268725549513192,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 6.520038105028176,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_8155__id_2",
+              "worst_max_abs": 10.648514486621252,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_8155__id_2",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "voltage": {
+          "channels": 2000,
+          "periods": {
+            "full": {
+              "worst_rmse": 0.0010793764473788186,
+              "worst_rmse_channel": "bus_voltage_pu__bus_8155",
+              "worst_max_abs": 0.006899827969170991,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_2078",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 4.6651555944056915e-05,
+              "worst_rmse_channel": "bus_voltage_pu__bus_5302",
+              "worst_max_abs": 9.895273546423056e-05,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_7032",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.0011379459410254574,
+              "worst_rmse_channel": "bus_voltage_pu__bus_8155",
+              "worst_max_abs": 0.006899827969170991,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_2078",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "case": 2,
+      "compared_channels": 4501,
+      "last_times": {
+        "10": 9.999999999999753,
+        "1": 9.999999999999753
+      },
+      "reference_files": [
+        "ipss.test.plugin.core/testData/private/reference-imports/case2-full-system-20261018/case2_bus6307_fault_fullsystem_1ms.parquet"
+      ],
+      "reference_comparison": {
+        "10": {
+          "active_power": {
+            "channels": 199,
+            "periods": {
+              "full": {
+                "worst_rmse": 112.7119143926506,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 190.7520858117037,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.7799841006569841,
+                "worst_nrmse_channel": "generator_p_mw__bus_1023__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 36.25182823226949,
+                "worst_rmse_channel": "generator_p_mw__bus_3113__id_1",
+                "worst_max_abs": 123.72048674280406,
+                "worst_max_abs_channel": "generator_p_mw__bus_1033__id_1",
+                "worst_nrmse": 0.6443698834842608,
+                "worst_nrmse_channel": "generator_p_mw__bus_3113__id_1",
+                "failed_channels": 197
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 118.82680369824703,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 190.7520858117037,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.8223054688559671,
+                "worst_nrmse_channel": "generator_p_mw__bus_1023__id_1",
+                "failed_channels": 189
+              }
+            }
+          },
+          "bus_angle": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 1441.9702789296407,
+                "worst_rmse_channel": "bus_angle_deg__bus_8026",
+                "worst_max_abs": 3156.3561413137145,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+                "worst_nrmse": 0.4750603080000634,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 11.953522727890546,
+                "worst_rmse_channel": "bus_angle_deg__bus_3113",
+                "worst_max_abs": 25.16156214403446,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1026",
+                "worst_nrmse": 0.003870256873396575,
+                "worst_nrmse_channel": "bus_angle_deg__bus_3113",
+                "failed_channels": 0
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 1520.216009506224,
+                "worst_rmse_channel": "bus_angle_deg__bus_8026",
+                "worst_max_abs": 3156.3561413137145,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+                "worst_nrmse": 0.500838538974839,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0
+              }
+            }
+          },
+          "reactive_power": {
+            "channels": 199,
+            "periods": {
+              "full": {
+                "worst_rmse": 128.7432967734741,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 288.44354545854617,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 289.1108091082673,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 62.37147895974318,
+                "worst_rmse_channel": "generator_q_mvar__bus_5262__id_1",
+                "worst_max_abs": 142.4744036136964,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5262__id_1",
+                "worst_nrmse": 75.27069328948335,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7032__id_1",
+                "failed_channels": 199
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 134.61908309500024,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 288.44354545854617,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 304.7799837982857,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 199
+              }
+            }
+          },
+          "rotor_angle": {
+            "channels": 103,
+            "periods": {
+              "full": {
+                "worst_rmse": 92.39361547913899,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "worst_max_abs": 142.48917813552316,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5416__id_1",
+                "worst_nrmse": 0.030498547337929557,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "failed_channels": 103
+              },
+              "prefault": {
+                "worst_rmse": 5.669587559647624,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "worst_max_abs": 17.73577733914923,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "worst_nrmse": 0.0018548894643613304,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "failed_channels": 103
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 97.40605848164073,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "worst_max_abs": 142.48917813552316,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5416__id_1",
+                "worst_nrmse": 0.032153123029092866,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "failed_channels": 0
+              }
+            }
+          },
+          "voltage": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 0.04517909203698255,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+                "worst_max_abs": 0.1354550878943559,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+                "worst_nrmse": 0.3010205626970707,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 0.06266183916278485,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3095",
+                "worst_max_abs": 0.1354550878943559,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+                "worst_nrmse": 0.2752575630590162,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_3095",
+                "failed_channels": 2000
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 0.0452948257668213,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+                "worst_max_abs": 0.12448282828348833,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3034",
+                "worst_nrmse": 0.31637912062185086,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+                "failed_channels": 2000
+              }
+            }
+          }
+        },
+        "1": {
+          "active_power": {
+            "channels": 199,
+            "periods": {
+              "full": {
+                "worst_rmse": 112.78126313436353,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 190.7520858117037,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.778619351999151,
+                "worst_nrmse_channel": "generator_p_mw__bus_1023__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 36.250558670050765,
+                "worst_rmse_channel": "generator_p_mw__bus_3113__id_1",
+                "worst_max_abs": 124.82434536929365,
+                "worst_max_abs_channel": "generator_p_mw__bus_1033__id_1",
+                "worst_nrmse": 0.6443473172386714,
+                "worst_nrmse_channel": "generator_p_mw__bus_3113__id_1",
+                "failed_channels": 197
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 118.89990909071102,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 190.7520858117037,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.8208666425158266,
+                "worst_nrmse_channel": "generator_p_mw__bus_1023__id_1",
+                "failed_channels": 189
+              }
+            }
+          },
+          "bus_angle": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 1441.9130455629722,
+                "worst_rmse_channel": "bus_angle_deg__bus_8026",
+                "worst_max_abs": 3158.63191727862,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1023",
+                "worst_nrmse": 0.4749970054401727,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8026",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 11.941603456542872,
+                "worst_rmse_channel": "bus_angle_deg__bus_3113",
+                "worst_max_abs": 25.14567825848269,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1026",
+                "worst_nrmse": 0.0038663977062782843,
+                "worst_nrmse_channel": "bus_angle_deg__bus_3113",
+                "failed_channels": 0
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 1520.1556712957672,
+                "worst_rmse_channel": "bus_angle_deg__bus_8026",
+                "worst_max_abs": 3158.63191727862,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1023",
+                "worst_nrmse": 0.5007718002762533,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8026",
+                "failed_channels": 0
+              }
+            }
+          },
+          "reactive_power": {
+            "channels": 199,
+            "periods": {
+              "full": {
+                "worst_rmse": 127.82825917311658,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 281.46098657994094,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 289.02990847058766,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 62.460984397674494,
+                "worst_rmse_channel": "generator_q_mvar__bus_5262__id_1",
+                "worst_max_abs": 142.7551188893454,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5262__id_1",
+                "worst_nrmse": 75.26814541844436,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7032__id_1",
+                "failed_channels": 199
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 133.65946904378345,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 281.46098657994094,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 304.69473372969725,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 199
+              }
+            }
+          },
+          "rotor_angle": {
+            "channels": 103,
+            "periods": {
+              "full": {
+                "worst_rmse": 91.97052256177119,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "worst_max_abs": 142.27415643244012,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5416__id_1",
+                "worst_nrmse": 0.03035888704536748,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "failed_channels": 103
+              },
+              "prefault": {
+                "worst_rmse": 5.661932798387399,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "worst_max_abs": 17.73909784913004,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "worst_nrmse": 0.0018523850959457425,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "failed_channels": 103
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 96.95998186628528,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "worst_max_abs": 142.27415643244012,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5416__id_1",
+                "worst_nrmse": 0.03200587596338156,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "failed_channels": 0
+              }
+            }
+          },
+          "voltage": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 0.04522698642995318,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+                "worst_max_abs": 0.13578191159793107,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+                "worst_nrmse": 0.30146826205295,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+                "failed_channels": 0
+              },
+              "prefault": {
+                "worst_rmse": 0.06276032365802638,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3095",
+                "worst_max_abs": 0.13578191159793107,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+                "worst_nrmse": 0.2756901804625504,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_3095",
+                "failed_channels": 2000
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 0.045344214839937565,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+                "worst_max_abs": 0.12448356499871227,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3034",
+                "worst_nrmse": 0.31684862973911854,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+                "failed_channels": 2000
+              }
+            }
+          }
+        }
+      },
+      "single_minus_ten": {
+        "active_power": {
+          "channels": 199,
+          "periods": {
+            "full": {
+              "worst_rmse": 7.523888383817822,
+              "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_max_abs": 68.8067684290053,
+              "worst_max_abs_channel": "generator_p_mw__bus_3028__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.6329713016993714,
+              "worst_rmse_channel": "generator_p_mw__bus_1033__id_1",
+              "worst_max_abs": 6.090095757609806,
+              "worst_max_abs_channel": "generator_p_mw__bus_1039__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 7.930469707804932,
+              "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_max_abs": 68.8067684290053,
+              "worst_max_abs_channel": "generator_p_mw__bus_3028__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "bus_angle": {
+          "channels": 2000,
+          "periods": {
+            "full": {
+              "worst_rmse": 17.971787957570957,
+              "worst_rmse_channel": "bus_angle_deg__bus_4057",
+              "worst_max_abs": 359.98052279072556,
+              "worst_max_abs_channel": "bus_angle_deg__bus_2066",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.063222909871138,
+              "worst_rmse_channel": "bus_angle_deg__bus_1039",
+              "worst_max_abs": 0.5740502503321814,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1039",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 18.94699435345314,
+              "worst_rmse_channel": "bus_angle_deg__bus_4057",
+              "worst_max_abs": 359.98052279072556,
+              "worst_max_abs_channel": "bus_angle_deg__bus_2066",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "reactive_power": {
+          "channels": 199,
+          "periods": {
+            "full": {
+              "worst_rmse": 14.941373071853981,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 32.0882567619021,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.5204083364097457,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 1.2268612103534622,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 15.75118125984128,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 32.0882567619021,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "rotor_angle": {
+          "channels": 103,
+          "periods": {
+            "full": {
+              "worst_rmse": 0.9059014654813954,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_max_abs": 2.0311844147745433,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.061044871900222536,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+              "worst_max_abs": 0.20000686837902037,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.9550461442118396,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_max_abs": 2.0311844147745433,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        },
+        "voltage": {
+          "channels": 2000,
+          "periods": {
+            "full": {
+              "worst_rmse": 0.002724859292440861,
+              "worst_rmse_channel": "bus_voltage_pu__bus_7032",
+              "worst_max_abs": 0.012515334148060164,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3110",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.00022139101817159512,
+              "worst_rmse_channel": "bus_voltage_pu__bus_1070",
+              "worst_max_abs": 0.0012559049323361826,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_1012",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.0028727126193267166,
+              "worst_rmse_channel": "bus_voltage_pu__bus_7032",
+              "worst_max_abs": 0.012515334148060164,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3110",
+              "worst_nrmse": null,
+              "worst_nrmse_channel": null,
+              "failed_channels": 0
+            }
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Experimental Anderson/deferred network path retained in both timing arms.",
+    "One and ten steps intentionally have different trajectories; repeats match within each arm.",
+    "Historical checkpoints remain unchanged.",
+    "No six-case completion or independent full-system accuracy acceptance is claimed.",
+    "QR-prefix reuse has bitwise and coupled correctness evidence, but no warmed timing qualification."
+  ]
+}

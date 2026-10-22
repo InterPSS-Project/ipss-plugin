@@ -987,3 +987,57 @@ retains the candidate, tests, runtime identities, all completed timings,
 recording hashes and the storage-guard termination. The preceding committed
 local ST1 improvement remains the qualified performance change; the eight-second
 objective and independent full-system accuracy remain open.
+
+## One-step default timing, October 22
+
+Following the user-approved default change in `3a5e050e0`, a paired screen
+compares the implicit one-step default with an explicit ten-step override.
+Both use one logical CPU (affinity mask 1), a quarter-cycle network interval,
+1e-5 voltage-correction tolerance, the same experimental Anderson/deferred
+network path, and complete recording. Whole-case wall time includes fresh
+parsing, preparation, initialization and writer closure. Each case has 32
+alternating warmups followed by seven measured pairs with alternating order.
+
+| Case | Ten-step median | One-step default median | Median paired saving | One-step faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.688 s | 8.943 s | 0.742 s | 7/7 |
+| 2 | 6.465 s | 6.252 s | 0.136 s | 6/7 |
+
+Every run checks the effective local count and numerical settings. All 92
+complete recordings repeat byte for byte within their respective arms;
+ten-step recordings also match the preceding retained baseline. One-step and
+ten-step trajectories intentionally differ. Case 1 remains 0.943 seconds
+above the eight-second target. Its preparation takes approximately 0.2–0.3
+seconds, so dynamic calculation and recording account for most of the remainder.
+
+The accompanying full-reference comparison covers 5,191 Case 1 channels and
+4,501 Case 2 channels. It retains every nonnegative observation and both sides
+of each event, interpolates within event segments, and fits no angle offset.
+The full ten-second reference range remains the normalization denominator.
+
+| Case / ST1 count | Worst rotor-angle RMSE, degrees | Worst voltage RMSE, pu |
+| --- | ---: | ---: |
+| 1 / ten | 12.5113 | 0.0191925 |
+| 1 / one | 9.9213 | 0.0191945 |
+| 2 / ten | 92.3936 | 0.0451791 |
+| 2 / one | 91.9705 | 0.0452270 |
+
+These independent-reference errors remain unresolved. The one-step policy
+accepts the implementation tradeoff; it does not qualify reference accuracy.
+The [timing and comparison index](checkpoints/st1-single-default-timing-2026-10-22.json)
+retains all timings, runtime identities, complete-recording hashes and
+per-channel comparison evidence. Earlier attempts are retained: a harness
+compile error, an obsolete substep-reuse assertion after a completed one-step
+integration, and a Case 2 pre-step check that rejected harmless decimal
+rounding of 1/240 second. The corrected check does not alter the retained
+network interval. Case 1 measurements were not repeated after that correction.
+
+A separate network prototype reuses unchanged QR history columns while
+appending a new column, rebuilding after a history rotation or reset. It
+still recalculates the right-hand side from each current residual. Across
+64,000 calls, candidate outputs, decisions, history arrays, QR storage and
+coefficients match the original implementation bitwise; 43,640 columns are
+reused. Coverage includes rank deficiency, signed zeros, nonfinite inputs,
+history rotation and resets. Two complete one-step Case 1/2 smokes also match
+all recordings, metadata and iteration counts. This prototype has no warmed
+timing qualification and has not changed production code.
