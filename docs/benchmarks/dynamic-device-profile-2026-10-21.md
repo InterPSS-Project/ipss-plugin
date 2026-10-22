@@ -802,3 +802,34 @@ retains all 94 complete-recording hashes, the warmed timings, audit counters,
 prototype sources/classes, focused tests and reproduction commands. The
 six-case failures, registered-test compilation gap, independent accuracy and
 overall eight-second goal remain unresolved.
+
+## Completed PSS2A endpoint-output screen, October 22
+
+The isolated PSS2A prototype completed the same 32 alternating warmups and
+seven measured pairs per case. Both arms enable the committed ST4B reuse;
+only the experimental PSS2A endpoint-output reuse differs. The network path,
+single-CPU constraint, integration settings and complete recording remain
+those of the preceding qualification.
+
+| Case | Control median | PSS2A prototype median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.667 s | 9.543 s | 0.151 s | 4/7 |
+| 2 | 6.495 s | 6.517 s | -0.085 s | 3/7 |
+
+Case 1 control/candidate ranges are 9.429–10.111 / 9.271–9.836 seconds;
+Case 2 ranges are 6.370–6.716 / 6.388–6.743 seconds. All observations,
+including in-run compilation and garbage collection, are retained. Candidate
+runs reuse 2,512,825 endpoint outputs in Case 1 and 778,351 in Case 2;
+controls reuse none. Every full recording and channel-metadata file across
+all 92 runs matches the retained baseline byte for byte.
+
+The gain is small and inconsistent across these cases. The prototype is
+therefore retained for investigation and is not promoted to production.
+The previously reported 53 focused tests remain its test evidence; this
+timing screen does not extend lifecycle coverage or establish independent
+full-system accuracy. Cases 3–6 have not been rerun with this prototype.
+
+The [PSS2A screen index](checkpoints/pss-endpoint-scope-screen-2026-10-22.json)
+retains the timings, complete recording hashes, source snapshots and commands.
+It links to the preceding checkpoint for the prototype tests and compiled
+classes. The eight-second goal and outstanding reference errors remain open.
