@@ -568,3 +568,70 @@ eight-second objective remain open.
 The [audit evidence index](checkpoints/endpoint-derivative-audit-2026-10-22.json)
 retains the source overlays, commands, raw probe counts, sampled values,
 attempt classifications and complete-recording hashes.
+
+## Current-path phase profile, October 22
+
+A new Case 1 profile uses the deferred-publication network prototype, extended
+parameter validation, one logical CPU, 1e-5 voltage-correction tolerance,
+quarter-cycle steps, ten ST1 substeps and complete recording. Twelve fresh-case
+warmups precede four sampled runs. The requested sample period is 2 ms; the
+2,173 captured main-thread samples must not be interpreted as exact phase times.
+Compiler inlining and sampling bias can put substantial apparent cost on a
+method that does little work.
+
+Two separate timing audits therefore measure network phases and device phases
+with wall-clock counters. Each uses eight warmups and two observed runs. These
+instrumented totals include counter overhead and are not a new performance
+qualification. The device audit's median phase times are:
+
+| Measured region | Seconds |
+| --- | ---: |
+| Current assembly | 1.228 |
+| Sparse solve using retained factors | 0.758 |
+| Network voltage publication | 0.455 |
+| Custom-current handling | 0.000635 |
+| Ordinary exciter evaluation | 1.965 |
+| Stabilizer evaluation | 1.151 |
+| Local ST1 advancement, including its evaluations | 0.800 |
+| Governor evaluation | 0.547 |
+| Renewable boundary evaluation | 0.194 |
+| Machine derivative evaluation | 0.160 |
+| Electrical-only endpoint preparation | 0.136 |
+
+These regions do not cover the entire run. In particular, current assembly,
+solve and publication omit the outer convergence/mixing work; the device
+regions omit global state advancement, renewable advancement, bus-frequency
+updates and recording. They must not be added up and called total simulation
+time. The fully instrumented runs take 10.641 and 10.541 seconds including
+preparation and recording. The custom-current hook, despite its prominent
+sample count, takes under a millisecond across the complete run. It is not a
+meaningful optimization target here.
+
+ST4B receives a further non-mutating audit. Its 1,508,664 output calls all use
+exactly two algebraic refresh passes. Together with 1,509,080 step calls, this
+produces 7,544,568 preparation passes and voltage reads. A second audit reads
+the raw bits of all six stored block inputs around each relevant pass:
+
+- The final step-preparation pass changes no input in any of 1,509,080 calls.
+- The first output-preparation pass changes no input in any of 1,508,664 calls.
+- The second output-preparation pass changes no input in any of 1,508,664 calls.
+
+This identifies a larger candidate than reducing ST1's substep count: explicit
+reuse of a prepared ST4B output within a single solver evaluation. The audit
+does not yet authorize skipping passes in general. An implementation must
+establish a standard, side-effect-free graph and unchanged machine inputs,
+limits and parameters within that scope, preserve all state/derivative work,
+and retain the existing path for unsettled feedback or custom behavior. No
+cross-step or cross-network-iteration cache follows from this evidence.
+
+All 38 completed runs across the sampling profile, phase timers and two ST4B
+audits reproduce the retained complete recordings and metadata byte for byte.
+The first network-timer harness attempt failed compilation because of a local
+variable-name error; it ran no simulation and is separately classified in the
+evidence archive. No production code changed. These Case 1 audits do not extend
+accuracy or performance acceptance to other cases, and the eight-second target
+and independent trajectory acceptance remain open.
+
+The [phase-profile evidence index](checkpoints/phase-profiles-2026-10-22.json)
+retains the sampling recording, instrumented sources, commands, timings, input
+change masks, affinity checks and hashes of all 38 complete recordings.
