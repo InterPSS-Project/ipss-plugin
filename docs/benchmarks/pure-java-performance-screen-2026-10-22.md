@@ -427,3 +427,7 @@ The [execution-sampling profile](java-current-execution-profile-2026-10-22.md) p
 ## Renewable startup localization
 
 The [stored-state and local-stability diagnostic](renewable-startup-local-stability-2026-10-22.md) reproduces Case 3/4 early failures without changing recorded prefixes and identifies unstable isolated discrete feedback modes at the quarter-cycle step. Eight/sixteen local renewable updates complete the fault-window probes but retain large supplied-reference errors. No production default or performance qualification follows; the full eight-second objective remains open.
+
+## Case 3 renewable boundary replay
+
+The [conditional terminal-voltage replay](case3-renewable-boundary-replay-2026-10-22.md) isolates a strong initial recovery-selector sensitivity across all 290 converters. A selector-only coupled quarter-cycle probe avoids the early failure but retains large reference errors. Finer local replay steps also worsen some outputs, so extra substeps are not promoted as an accuracy fix. Six replay runs, one coupled short run and their complete observations are retained; no production change or new timing claim follows.

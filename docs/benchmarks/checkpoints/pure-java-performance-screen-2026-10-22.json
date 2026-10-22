@@ -178,6 +178,13 @@
       "bytes": 12251859,
       "sha256": "e65b6852260a88c12ed3bb51baee0c8a03a70d29a90858d9d7260a8db77e9bf4",
       "outcome": "diagnostic-only"
+    },
+    {
+      "name": "case3-renewable-boundary-replay-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-case3-renewable-boundary-replay/evidence.zip",
+      "bytes": 46923037,
+      "sha256": "f09536f6caef98cd40e3ddf383f022f1a9704f0eede22c7d799d5f7c1357ef37",
+      "outcome": "diagnostic-only"
     }
   ],
   "row_solve": {
