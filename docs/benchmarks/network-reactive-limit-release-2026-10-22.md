@@ -363,3 +363,29 @@ The [reference/startup evidence index](checkpoints/reference-startup-transition-
 retains both independent cold probes, numerical alternatives, the regression
 test, prototype sources, commands, runtime hashes, recordings and all-channel
 comparisons. Exact reference-runtime provenance stays in the private archive.
+
+### Conditional power-recovery arithmetic audit
+
+The earlier five global-phase probes already locate the first small reactive
+power signs in the converted-network solution. A further calculation holds
+their observed pre/post conversion voltages fixed and compares ten arithmetic
+variants: source-voltage difference, Norton-source difference and current
+increment, with explicitly placed binary32 or double intermediates. This
+separates candidate power-recovery arithmetic from another sparse-solver sweep;
+it does not independently calculate the initial operating point.
+
+No candidate reproduces all five reactive-power signs. The scalar binary32
+Norton-source difference reproduces two exact P/Q pairs and four signs, but its
+maximum Q error is 0.000190735 Mvar. That partial agreement is insufficient to
+adopt its rounding policy or infer the remaining recovery selector. Source
+construction, arithmetic order and the relationship between exported and
+internal phasors remain unverified. Physical parameters and production
+initialization are unchanged.
+
+The calculation was replayed with byte-identical results. Its compact
+[evidence index](checkpoints/conversion-power-arithmetic-2026-10-22.json)
+retains the script, five input observations, provenance and all ten variants.
+This adds no full-system simulation or timing result. Separately, inspection
+of the retained warm Case 1 plan and harness confirms that initial Norton
+compensation is removed before stepping; that configuration does not explain
+the remaining performance gap.

@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "description": "Conditional arithmetic localization using observed pre/post conversion phasors; no standalone initialization rule or production change.",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-conversion-power-arithmetic/evidence.zip",
+  "archive_bytes": 13745,
+  "archive_sha256": "f124e26b005a28042e7aee3f1b5d8021174530d60d86d529058438ab79ee8cc8",
+  "source_cases": 5,
+  "arithmetic_variants": 10,
+  "replay_byte_identical": true,
+  "results": {
+    "source-voltage-difference/scalar-binary32": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 2,
+      "maximum_q_error_mvar": 0.0001430511474609375
+    },
+    "source-voltage-difference/rounded-complex64": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 2,
+      "maximum_q_error_mvar": 0.0001440759442630224
+    },
+    "norton-source-difference/scalar-binary32": {
+      "exact_pq": 2,
+      "exact_q": 2,
+      "q_sign_matches": 4,
+      "maximum_q_error_mvar": 0.00019073483781539835
+    },
+    "norton-source-difference/rounded-complex64": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 3,
+      "maximum_q_error_mvar": 0.00019073483781539835
+    },
+    "current-increment/scalar-binary32": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 1,
+      "maximum_q_error_mvar": 0.0001430511474609375
+    },
+    "current-increment/rounded-complex64": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 2,
+      "maximum_q_error_mvar": 0.00014923354319762439
+    },
+    "double-source-voltage-difference/scalar-binary32": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 1,
+      "maximum_q_error_mvar": 0.00016689300537109375
+    },
+    "double-source-voltage-difference/rounded-complex64": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 2,
+      "maximum_q_error_mvar": 0.00015439113485626876
+    },
+    "double-current-increment/scalar-binary32": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 1,
+      "maximum_q_error_mvar": 0.00016689300537109375
+    },
+    "double-current-increment/rounded-complex64": {
+      "exact_pq": 0,
+      "exact_q": 0,
+      "q_sign_matches": 2,
+      "maximum_q_error_mvar": 0.00015439113485626876
+    }
+  },
+  "limitations": [
+    "Uses measured pre/post conversion voltages; not an independent network solution.",
+    "Source admittance and rounding placements are explicit hypotheses, not established runtime internals.",
+    "No candidate reproduces all five reactive-power signs; none is adopted.",
+    "No new simulation, performance result, production change or full-system accuracy claim."
+  ]
+}
