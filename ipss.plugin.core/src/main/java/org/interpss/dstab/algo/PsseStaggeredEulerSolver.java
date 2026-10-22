@@ -109,6 +109,10 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
 
     public int getSt1Substeps() { return st1Substeps; }
 
+    @Override protected int parameterValidationSubsteps(Machine machine) {
+        return getSt1Substeps(machine.getId());
+    }
+
     /** Configured override or default; target attachments are checked at initialization. */
     public int getSt1Substeps(String machineId) {
         return st1SubstepsByMachine.getOrDefault(java.util.Objects.requireNonNull(machineId), st1Substeps);

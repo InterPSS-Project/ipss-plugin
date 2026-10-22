@@ -15,6 +15,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.validation.DynamicParameterValidator;
 
 /**
  * PSS/E dynamic solver adapter that preserves a solved RAW initial condition
@@ -29,6 +30,31 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
  * integration step.</p>
  */
 public class PsseDStabSolver extends DStabSolverImpl {
+    private double parameterTimeStepMultiple = 2.0;
+    private DynamicParameterValidator.Report parameterValidationReport;
+
+    /** Advisory pole-resolution margin; this does not alter any model parameter. */
+    public void setParameterTimeStepMultiple(double multiple) {
+        if(!Double.isFinite(multiple)||multiple<=0)
+            throw new IllegalArgumentException("Parameter time-step multiple must be finite and positive");
+        parameterTimeStepMultiple=multiple;
+    }
+
+    public double getParameterTimeStepMultiple() { return parameterTimeStepMultiple; }
+
+    /** Last explicit or initialization validation; null before the first check. */
+    public DynamicParameterValidator.Report getParameterValidationReport() { return parameterValidationReport; }
+
+    /** Inspect imported data without solving, initializing states or modifying parameters. */
+    public DynamicParameterValidator.Report validateModelParameters() {
+        parameterValidationReport=DynamicParameterValidator.validate(dstabAlgo.getNetwork(),
+                dstabAlgo.getSimuStepSec(),parameterTimeStepMultiple,this::parameterValidationSubsteps);
+        return parameterValidationReport;
+    }
+
+    /** Local steps are model-specific; the ordinary solver uses the network step. */
+    protected int parameterValidationSubsteps(Machine machine) { return 1; }
+
     private static final String COMPENSATION_KEY =
             PsseDStabSolver.class.getName() + ".compensation";
     public PsseDStabSolver(DynamicSimuAlgorithm algorithm) {
@@ -75,6 +101,12 @@ public class PsseDStabSolver extends DStabSolverImpl {
     @Override
     public boolean initialization() {
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
+        var validation=validateModelParameters();
+        validation.requireNoErrors();
+        if(validation.count(DynamicParameterValidator.Severity.WARNING)>0||!validation.uncoveredModels().isEmpty())
+            org.slf4j.LoggerFactory.getLogger(PsseDStabSolver.class).warn(
+                    "Dynamic parameter validation: {} warnings; {} model families need additional rules. Inspect getParameterValidationReport().",
+                    validation.count(DynamicParameterValidator.Severity.WARNING),validation.uncoveredModels().size());
         // Native constant-current loads retain I down to 0.5 pu, then use an
         // elliptic reduction. The generic core's sine curve remains available
         // to other solvers. Apply this before load-current initialization.
