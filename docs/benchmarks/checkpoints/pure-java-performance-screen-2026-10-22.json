@@ -53,6 +53,13 @@
       "bytes": 5065381,
       "sha256": "17019997696721d34d748487d043e87947fad5a36b2a4b18328d055497074818",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-prepared-endpoint-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-prepared-endpoint-v2/evidence.zip",
+      "bytes": 5130448,
+      "sha256": "7504960d8aff8b34b30b34f22694f1d0adabcefa49f00889145f3d38841949aa",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -428,5 +435,79 @@
       "candidate_wins": 1,
       "recordings_identical": true
     }
+  ],
+  "pss_prepared_endpoint": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.0087818,
+          8.9512109,
+          8.6540666,
+          9.1527471,
+          8.8211315
+        ],
+        "candidate": [
+          9.0195325,
+          9.1694055,
+          8.7476477,
+          8.9059266,
+          8.9045246
+        ]
+      },
+      "medians_s": {
+        "control": 8.9512109,
+        "candidate": 8.9059266
+      },
+      "paired_savings_s": [
+        -0.01075070000000089,
+        -0.21819460000000035,
+        -0.09358109999999975,
+        0.24682049999999833,
+        -0.08339310000000033
+      ],
+      "median_paired_saving_s": -0.08339310000000033,
+      "candidate_wins": 1,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.3650149,
+          6.5058723,
+          6.3442266,
+          6.6651101,
+          6.5755647
+        ],
+        "candidate": [
+          6.789633,
+          6.5577508,
+          6.4177844,
+          6.3522323,
+          6.6370302
+        ]
+      },
+      "medians_s": {
+        "control": 6.5058723,
+        "candidate": 6.5577508
+      },
+      "paired_savings_s": [
+        -0.4246181,
+        -0.05187849999999994,
+        -0.07355780000000056,
+        0.3128777999999999,
+        -0.06146549999999973
+      ],
+      "median_paired_saving_s": -0.06146549999999973,
+      "candidate_wins": 1,
+      "recordings_identical": true
+    }
+  ],
+  "related_prior_screens": [
+    "docs/benchmarks/checkpoints/pss-endpoint-scope-screen-2026-10-22.json",
+    "docs/benchmarks/checkpoints/controller-binding-screen-2026-10-21.json",
+    "docs/benchmarks/checkpoints/pss-zero-step-screen-2026-10-21.json",
+    "docs/benchmarks/checkpoints/imported-norton-source-screen-2026-10-21.json"
   ]
 }

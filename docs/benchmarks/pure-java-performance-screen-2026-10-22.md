@@ -211,10 +211,51 @@ that standard model plans selected the requested mode. Two compile-only harness
 failures are retained separately and contribute no timing observations.
 
 The small, variable differences do not establish a reliable improvement, so
-this candidate is not promoted. The next investigation targets the immediate
-PSS-to-exciter observation boundary: a new explicit endpoint scope may reuse
-freshly prepared output without the state-comparison overhead of the earlier
-reuse experiment. That is an unimplemented hypothesis, not a measured saving.
+this candidate is not promoted. The immediate PSS-to-exciter observation boundary
+was also investigated in an [earlier endpoint-scope screen](checkpoints/pss-endpoint-scope-screen-2026-10-22.json).
+The previously stated plan overlooked that retained experiment. Any further
+endpoint-scope work must identify its substantive difference from that prototype
+and measure the full result; removing state-comparison overhead alone is not
+evidence of a speedup.
 The [evidence index](checkpoints/pure-java-performance-screen-2026-10-22.json)
 retains this screen. Production sources and supplied references are unchanged;
 Case 1 and the full goal remain unqualified.
+
+## Prepared endpoint observation follow-up
+
+This follow-up combines a zero-time PSS evaluation and immediately held output
+in one explicit call, then releases the scope before governor or machine updates.
+It retains every derivative/state calculation and signal sample. It differs
+from the earlier endpoint prototype in API and eligibility checks and uses one
+ST1 step instead of ten. It is not the first investigation of this opportunity.
+
+Seven focused tests pass, including stored values before output observation,
+compound internal states, subsequent correctors, live inputs, nonfinite values,
+custom callbacks, observer fallback, nested scopes, binding failure and
+reinitialization. The earlier prototype's 53 tests are not claimed as coverage
+of this revised implementation.
+
+| Case | Control median, s | Candidate median, s | Median paired saving, s | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.951211 | 8.905927 | -0.083393 | 1/5 |
+| 2 | 6.505872 | 6.557751 | -0.061465 | 1/5 |
+
+Sixteen alternating warmups precede five measured pairs per case on one pinned
+CPU, with Java sparse solving, quarter-cycle steps, 1e-5 tolerance and complete
+recording/writer closure included. All 52 recordings match the baseline, and
+network iteration counts remain unchanged. Counters confirm positive prepared
+output reuse in every candidate and none in controls.
+
+The candidate loses four of five pairs in both cases and is not promoted.
+Eligibility-check overhead is a possible explanation, not a measured attribution.
+Custom machine/controller-lookup overrides at the changed scope boundary also
+need broader lifecycle qualification before production use; supplied-case parity
+does not prove that behavior. Production sources and supplied references remain
+unchanged. The eight-second goal and independent-reference accuracy remain open.
+
+The [evidence index](checkpoints/pure-java-performance-screen-2026-10-22.json)
+retains this follow-up and links earlier screens. Before selecting another
+experiment, consult the [device-performance history](dynamic-device-profile-2026-10-21.md):
+controller-reference binding, zero-time PSS kernels, imported-machine Norton
+source caching, typed PSS inputs and endpoint-output reuse have all been tried.
+A changed name or current baseline alone does not justify repeating a screen.
