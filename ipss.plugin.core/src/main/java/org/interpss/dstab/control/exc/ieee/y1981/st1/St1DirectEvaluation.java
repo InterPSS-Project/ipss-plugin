@@ -21,6 +21,7 @@ final class St1DirectEvaluation {
     final IEEE1981ST1Exciter model;
     final Node[] nodes = new Node[8];
     private final FixedExpression[] inputs = new FixedExpression[8];
+    private final boolean[] scalarInputs = new boolean[8];
     private final int[] inputDependencies=new int[8];
     private final int[] dependentInputs=new int[8];
     private int dirtyInputs;
@@ -47,6 +48,10 @@ final class St1DirectEvaluation {
         "kaDelayBlock", "washoutBlock", "rateFeedbackInputBlock", "gainCustomBlock"};
 
     St1DirectEvaluation(IEEE1981ST1Exciter model) {
+        this(model, true);
+    }
+
+    St1DirectEvaluation(IEEE1981ST1Exciter model, boolean useScalarInputs) {
         this.model = model;
         BaseFieldAnWrapper<?> foundGate = null;
         var sorted = new ArrayList<Node>();
@@ -83,6 +88,8 @@ final class St1DirectEvaluation {
         try {
             for(Node node:nodes) {
                 inputs[node.id]=new FixedExpression(node.wrapper.getInputExp(),model,this::bindSignal);
+                scalarInputs[node.id]=useScalarInputs && model.getClass()==IEEE1981ST1Exciter.class
+                    && St1InputEquations.matches(node.id,node.wrapper.getInputExp());
                 int dependencies=0;
                 for(var record:node.wrapper.getInputExp().getRecList())dependencies|=dependency(record);
                 inputDependencies[node.id]=dependencies;
@@ -138,7 +145,7 @@ final class St1DirectEvaluation {
         }
         return null;
     }
-    private double voltage() {
+    double voltage() {
         if(fixedInputs && voltageRead)return fixedVoltageValue;
         var machine=model.getMachine();
         double value=machine instanceof ICMLMachineVoltageProvider p ? p.getCmlMachineVoltage()
@@ -163,10 +170,13 @@ final class St1DirectEvaluation {
         };
     }
     double input(int id) {
-        if(!primitiveLocal || inputDependencies[id]<0)return evaluateExpression(inputs[id]);
+        if(!primitiveLocal || inputDependencies[id]<0)return evaluateInput(id);
         if((dirtyInputs&(1<<id))==0){reusedInputs++;return cachedInput[id];}
-        evaluatedInputs++;double value=evaluateExpression(inputs[id]);
+        evaluatedInputs++;double value=evaluateInput(id);
         cachedInput[id]=value;dirtyInputs&=~(1<<id);return value;
+    }
+    private double evaluateInput(int id) {
+        return scalarInputs[id] ? St1InputEquations.evaluate(this,id) : evaluateExpression(inputs[id]);
     }
     private void outputChanged(int id) {
         dirtyInputs|=dependentInputs[id];
