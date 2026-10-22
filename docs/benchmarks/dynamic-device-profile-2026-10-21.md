@@ -718,9 +718,9 @@ A shorter confirmation screen uses twelve warmups and five measured pairs.
 It retains all observations, including substantial compilation during some
 measured runs. Median paired savings are 0.037 seconds in Case 1 and 0.044
 seconds in Case 2, with three of five pairs faster in each case. These results
-are too noisy to confirm the prior compact prototype's gain. A separate
-32-warmup/seven-pair qualification was started; it is not included in this
-completed evidence checkpoint and no new warmed speed claim is made here.
+are too noisy to confirm the prior compact prototype's gain. The separate
+32-warmup/seven-pair qualification is reported below and retained in its own
+evidence checkpoint; these shorter-screen numbers are not its result.
 All 44 complete recordings in the shorter screen match the retained baseline.
 Four further full ten-second recordings with Anderson disabled also match
 between the control and optimized variants.
@@ -751,3 +751,54 @@ preparation failures before recording, the focused tests, the red/green
 reinitialization evidence and the Maven diagnostics. The matching core jar is
 retained privately. The eight-second goal and independent full-system accuracy
 remain open.
+
+## Completed endpoint qualification and PSS2A audit, October 22
+
+The committed ST4B implementation completes 32 alternating warmups and seven
+measured pairs for each case. Both arms retain the current experimental
+Anderson/deferred-publication network path, 1e-5 voltage-correction tolerance,
+a 1/240-second step and ten ST1 substeps. One logical CPU is enforced. Total
+wall time includes loading, preparation, initialization, every recorded channel,
+writer closure, compilation and garbage collection within each measured run.
+
+| Case | Control median | ST4B reuse median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.999 s | 9.686 s | 0.315 s | 7/7 |
+| 2 | 6.501 s | 6.412 s | 0.117 s | 5/7 |
+
+Case 1 control/candidate ranges are 9.739–10.192 / 9.295–9.869 seconds;
+Case 2 ranges are 6.386–6.841 / 6.351–6.620 seconds. All observations are
+retained. Every full recording and channel-metadata file across the 92 runs
+matches the retained baseline. This qualifies the controller's timing effect
+in this benchmark configuration, not independent trajectory accuracy or the
+unpromoted network algorithm. Case 1 remains 1.686 seconds above the target.
+
+A further read-only audit measures PSS2A output preparation. At the global
+exciter boundary, none of the ten block inputs changes during any of 2,512,825
+output calls in Case 1 or 778,351 calls in Case 2. The local ST1-entry scopes
+also show unchanged inputs in 273,828 and 86,472 calls respectively. No
+measured top-level state or derivative changes during these observations.
+The counters do not separately audit compound-filter internal states. Both
+complete audit recordings reproduce the baseline exactly.
+
+An isolated PSS2A prototype combines the zero-time state evaluation and fixed
+output observation at the global exciter boundary. It retains signal sampling
+and every derivative/state calculation. Its guards admit only the standard
+unobserved graph, distinct blocks, fixed limit definitions, supported exact
+machine/exciter classes and speed/electrical-power selectors. Other selectors,
+custom blocks and observed objects retain the existing path. The local ST1
+entry behavior is unchanged. This is not a cache across state or network steps.
+
+All 53 focused prototype tests pass, including complete state/derivative bits,
+faults, live controls and inputs, activation changes, custom-block reads,
+observer/selector fallback, scope closure and nonfinite behavior. The tests
+also include the existing independent small-system trajectory checks. The
+prototype's own 32-warmup timing screen is still running and is excluded from
+this completed checkpoint. No PSS2A production change or speed claim follows
+yet. The earlier inspection of stale test APIs made no source changes.
+
+The [qualification and audit index](checkpoints/controller-endpoint-qualification-2026-10-22.json)
+retains all 94 complete-recording hashes, the warmed timings, audit counters,
+prototype sources/classes, focused tests and reproduction commands. The
+six-case failures, registered-test compilation gap, independent accuracy and
+overall eight-second goal remain unresolved.
