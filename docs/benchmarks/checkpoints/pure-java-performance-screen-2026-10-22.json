@@ -171,6 +171,13 @@
       "bytes": 5053118,
       "sha256": "67dbca8cbc41c80cece5791c90f1489b91418882adcf26f00e632c4d60ef08bb",
       "outcome": "screened-not-promoted"
+    },
+    {
+      "name": "case3-stored-renewable-trace-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-case3-stored-renewable-trace/evidence.zip",
+      "bytes": 12251859,
+      "sha256": "e65b6852260a88c12ed3bb51baee0c8a03a70d29a90858d9d7260a8db77e9bf4",
+      "outcome": "diagnostic-only"
     }
   ],
   "row_solve": {

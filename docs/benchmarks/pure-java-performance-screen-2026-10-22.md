@@ -423,3 +423,7 @@ A [sampled per-bus timer audit](current-assembly-components-2026-10-22.md) prese
 ## Execution sampling and immutable voltage sensing
 
 The [execution-sampling profile](java-current-execution-profile-2026-10-22.md) preserves all 30 recordings and retains the raw flight recordings. Sampled leaf locations are not exclusive method costs. A separate [immutable-voltage magnitude screen](cml-voltage-magnitude-2026-10-22.md) checks a smaller controller-input opportunity with four focused tests and 52 complete recording comparisons. Neither evidence package itself promotes a production change or establishes independent-reference accuracy; the eight-second goal remains open.
+
+## Renewable startup localization
+
+The [stored-state and local-stability diagnostic](renewable-startup-local-stability-2026-10-22.md) reproduces Case 3/4 early failures without changing recorded prefixes and identifies unstable isolated discrete feedback modes at the quarter-cycle step. Eight/sixteen local renewable updates complete the fault-window probes but retain large supplied-reference errors. No production default or performance qualification follows; the full eight-second objective remains open.
