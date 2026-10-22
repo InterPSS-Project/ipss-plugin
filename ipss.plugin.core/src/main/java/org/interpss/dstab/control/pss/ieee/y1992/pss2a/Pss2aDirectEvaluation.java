@@ -21,9 +21,13 @@ final class Pss2aDirectEvaluation {
     boolean refreshing;
     boolean forwardOutput;
     final boolean singleRefresh;
+    final boolean scalarPreparation;
     long singleRefreshCount;
 
     Pss2aDirectEvaluation(Ieee1992PSS2AStabilizer model) {
+        this(model,!Boolean.getBoolean("ipss.experiment.disablePssScalarPreparation"));
+    }
+    Pss2aDirectEvaluation(Ieee1992PSS2AStabilizer model,boolean allowScalarPreparation) {
         this.model=model;
         first=new Child(model.customBlock1,0);second=new Child(model.customBlock2,3);
         var order=new ArrayList<Entry>();var parentNodes=new ArrayList<Node>();
@@ -57,6 +61,7 @@ final class Pss2aDirectEvaluation {
             && second.model.getClass()==Ieee1992PSS2AStabilizer.CustomExciter.class;
         for(int i=0;i<types.length;i++)standard &= nodes[i].block.getClass()==types[i];
         singleRefresh=forwardOutput && standard && !Boolean.getBoolean("ipss.experiment.disablePssSingleRefresh");
+        scalarPreparation=forwardOutput && standard && allowScalarPreparation;
         System.err.println("PSS output forward traversal eligible: "+forwardOutput);
 
         model.customBlock1.directOutput=first::output;
@@ -105,6 +110,7 @@ final class Pss2aDirectEvaluation {
         return true;
     }
     void prepare(boolean capture) {
+        if(scalarPreparation) {prepareScalar(capture);return;}
         for(Entry entry:entries) {
             if(entry.child!=null) {
                 Child child=entry.child;
@@ -114,6 +120,38 @@ final class Pss2aDirectEvaluation {
                 child.model.setRuntimeOutputValue(child.preparedOutput());
             } else entry.node.prepare(capture);
         }
+    }
+    /** Same ordered equations and operand reads as input(), without per-node dispatch. */
+    private void prepareScalar(boolean capture) {
+        prepareChild(entries[0],capture);
+        prepareChild(entries[1],capture);
+        nodes[6].checkBinding();
+        double a=first.model.getRuntimeOutputValue(),b=model.ks3,c=second.model.getRuntimeOutputValue();
+        double sum=0.;sum+=a;sum+=0.;sum+=b*c;
+        nodes[6].accept(sum,capture);
+        nodes[7].checkBinding();
+        a=model.getRefPoint();b=((FilterNthOrderBlock)nodes[6].block).getY();
+        c=model.ks4;double d=second.model.getRuntimeOutputValue();
+        sum=0.;sum+=a;sum+=b;sum+=0.;sum+=(-c)*d;
+        nodes[7].accept(sum,capture);
+        nodes[8].checkBinding();
+        nodes[8].accept(0.+((FilterControlBlock)nodes[7].block).getY(),capture);
+        nodes[9].checkBinding();
+        nodes[9].accept(0.+((FilterControlBlock)nodes[8].block).getY(),capture);
+    }
+    private void prepareChild(Entry entry,boolean capture) {
+        Child child=entry.child;
+        if(entry.wrapper.getField()!=child.model)throw new IllegalStateException("PSS2A child replaced");
+        child.model.setRuntimeInputValue(0.+(child==first?model.input1Signal:model.input2Signal));
+        Node n0=child.ordered[0],n1=child.ordered[1],n2=child.ordered[2];
+        n0.checkBinding();
+        double a=child.model.getRuntimeInputValue(),b=child.model.getRefPoint();
+        n0.accept((0.+a)+(-b),capture);
+        n1.checkBinding();
+        n1.accept(0.+((WashoutControlBlock)n0.block).getY(),capture);
+        n2.checkBinding();
+        n2.accept(0.+((Pss2aWashoutBlock)n1.block).getY(),capture);
+        child.model.setRuntimeOutputValue(child.preparedOutput());
     }
     boolean algebraic() {
         for(Node node:nodes)if(node.algebraic())return true;
@@ -205,8 +243,14 @@ final class Pss2aDirectEvaluation {
                 throw new IllegalStateException("Variable limit requires general evaluator");
         }
         void prepare(boolean capture) {
+            checkBinding();
+            accept(input(id),capture);
+        }
+        void checkBinding() {
             if(wrapper.getField()!=block)throw new IllegalStateException("PSS2A field replaced");
-            double value=input(id);block.setStageInput(value);
+        }
+        void accept(double value,boolean capture) {
+            block.setStageInput(value);
             if(capture) {captured[capturedCount]=this;inputs[capturedCount++]=value;}
         }
         boolean algebraic() {

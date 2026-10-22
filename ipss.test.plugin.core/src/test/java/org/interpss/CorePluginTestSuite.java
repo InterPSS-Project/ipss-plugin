@@ -328,6 +328,7 @@ import org.interpss.core.dstab.Ieeeg1dPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss2aIndependentSmibConformanceTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aScalarPreparationTest;
 import org.interpss.core.dstab.Pss1aPowerWorldPlaybackConformanceTest;
 import org.interpss.core.dstab.Pss1aPowerWorldActiveConformanceTest;
 import org.interpss.core.dstab.Wtdtb1PowerWorldPlaybackConformanceTest;
@@ -799,6 +800,7 @@ import org.junit.platform.suite.api.Suite;
 	H6eIndependentSmibConformanceTest.class,
 	Hyg3IndependentSmibConformanceTest.class,
 	Pss2aIndependentSmibConformanceTest.class,
+    Pss2aScalarPreparationTest.class,
 	Pss1aPowerWorldPlaybackConformanceTest.class,
 	Pss1aPowerWorldActiveConformanceTest.class,
 	Wtdtb1PowerWorldPlaybackConformanceTest.class,
