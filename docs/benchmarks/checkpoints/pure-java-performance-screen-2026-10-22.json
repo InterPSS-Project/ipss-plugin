@@ -213,6 +213,13 @@
       "bytes": 275933,
       "sha256": "dd1945cfff2f59d9f8edb8f6592312ee6ee3a740cf43fc3520326a44904258c6",
       "outcome": "component-screen-not-promoted"
+    },
+    {
+      "name": "scoped-filter-coefficients-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-scoped-filter-coefficients/evidence.zip",
+      "bytes": 566834,
+      "sha256": "4639a56563963ebd5b8f95000dc0907af648d48e5f7f705f6c79ad51b48f9cd8",
+      "outcome": "component-and-compatibility-screen-not-promoted"
     }
   ],
   "row_solve": {

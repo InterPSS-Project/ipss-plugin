@@ -447,3 +447,7 @@ The [vector-loop screen](anderson-vector-loops-2026-10-22.md) tests fused ordere
 ## Live filter coefficients
 
 The [filter-coefficient component screen](filter-coefficients-2026-10-22.md) preserves 387,044 scalar comparisons but finds no benefit from checking parameter bits on every coefficient read. No full simulation sweep or production change follows; complete-case performance and the full objective remain open.
+
+## Stage-scoped filter coefficients
+
+The [stage-scoped coefficient screen](scoped-filter-coefficients-2026-10-22.md) moves coefficient refresh to an explicitly guarded controller stage. Thirteen focused tests and two complete recording checks pass, but the controller-only component saving is small. No full-runtime improvement or production promotion is claimed; the complete objective remains open.
