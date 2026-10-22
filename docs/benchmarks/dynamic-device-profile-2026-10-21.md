@@ -399,3 +399,53 @@ The [evidence index](checkpoints/imported-norton-source-screen-2026-10-21.json)
 preserves sources/classes, tests, commands, raw timings, feature counters,
 affinity and full-recording dependencies. Independent-reference accuracy and
 the full eight-second objective remain open.
+
+## Static-load work counts and bounded voltage-norm screen
+
+A full Case 1 instrumented audit counted 33,269,630 static-load eligibility
+checks, 1,126 cache rebuilds, zero eligibility fallbacks and 33,269,922 static
+current-injection calls. Its complete recordings match the baseline. Thus the
+existing classification cache is working; repeated reclassification does not
+explain the sampled eligibility-method presence. These are work counts, not
+exclusive time attribution or an uninstrumented timing result.
+
+A separate convergence prototype skips a complex magnitude when both absolute
+components are at most half the largest correction already observed. It retains
+voltage-history publication and calculates potentially leading corrections
+normally. The component norm is unchanged. It reports 50,700,905 skipped
+magnitudes per complete candidate Case 1 run; controls report zero.
+
+The initial prototype passed 43 focused tests and all 44 full recording checks
+in the paired screen. Both cases used twelve alternating warmups and five
+measured pairs, alternating pair order, one logical CPU, a quarter-cycle network
+interval, 1e-5 tolerance, ten ST1 substeps and the committed ST1 boundary reuse.
+Fresh parsing, preparation, initialization and complete recording are included.
+Compilation and garbage collection remain included in every measurement.
+
+| Case | Disabled control median | Candidate median | Median paired reduction | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.487917 s | 10.405829 s | 0.121926 s | 4/5 |
+| 2 | 7.505778 s | 7.521618 s | -0.022328 s | 1/5 |
+
+An additional regression exposes a subnormal counterexample: rounding half of
+three minimum-subnormal units upward to two units permits skipping a tied
+magnitude, which can retain the wrong leading bus when visits are reversed.
+The guard now requires the half-maximum to be normal and finite. This preserves
+the strict geometric separation from the existing maximum. Forty-four tests
+then pass, including the retained failing-before/passing-after regression,
+200,000 randomized bounds, exhaustive small subnormal combinations, tolerance
+boundaries, minimum iteration counts, both norms, custom complex magnitudes,
+non-finite values and reversed visitation. Complete guarded Cases 1 and 2 have
+unchanged recordings and the same skip counts as the timed prototype.
+
+The optimization remains unpromoted. The initial screen's Case 1 reduction is
+small and Case 2 has no gain; ranges overlap and compilation persists. The
+guarded source has compatibility audits, not a new warmed timing qualification.
+Production convergence behavior, tolerance, integration and recording remain
+unchanged. A larger reduction must come from device-update cost or fewer
+network iterations, with any changed iteration strategy checked against the
+supplied trajectories. The eight-second objective and accuracy remain open.
+
+The [evidence index](checkpoints/bounded-voltage-norm-2026-10-21.json) retains
+sources/classes, counts, tests, the numerical counterexample, raw timings,
+affinity and full-recording dependencies without copying the large recordings.
