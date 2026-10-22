@@ -14,6 +14,10 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
 import org.interpss.dstab.validation.DynamicParameterValidator.Severity;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseDStabSolver;
+import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.RenewableElectricalController;
+import org.interpss.dstab.renewable.Repca1Model;
 
 /** Imported-parameter checks must not mutate the model or mistake local and network steps. */
 public class DynamicParameterValidationTest {
@@ -158,6 +162,81 @@ public class DynamicParameterValidationTest {
                 values.put(getter.getName(),(double)getter.invoke(data));
         return values;
     }
+
+    @Test void converterNonfiniteParametersAreRejectedBeforeInitialization() throws Exception {
+        var components=Regca1Data.class.getRecordComponents();
+        var types=java.util.Arrays.stream(components).map(java.lang.reflect.RecordComponent::getType).toArray(Class<?>[]::new);
+        var constructor=Regca1Data.class.getConstructor(types);
+        var good=converterData(.02,.02);
+        for(int index=1;index<components.length;index++) {
+            var values=new Object[components.length];
+            for(int i=0;i<values.length;i++)values[i]=components[i].getAccessor().invoke(good);
+            values[index]=Double.NaN; // Range comparisons alone do not reject NaN.
+            var fixture=converterFixture(constructor.newInstance(values));
+            var report=DynamicParameterValidator.validate(fixture.network,1./240,2,m->10);
+            String name=components[index].getName();
+            assertTrue(report.issues().stream().anyMatch(i->i.parameter().equals(name)&&i.severity()==Severity.ERROR),name);
+            assertThrows(IllegalArgumentException.class,report::requireNoErrors);
+        }
+        var infinity=new Regca1Data(0,.02,Double.POSITIVE_INFINITY,.9,.4,1.2,1.2,.8,.4,-1.3,.02,.7,999,-999,.4);
+        assertThrows(IllegalArgumentException.class,()->DynamicParameterValidator.validate(
+                converterFixture(infinity).network,1./240,2,m->10).requireNoErrors());
+    }
+
+    @Test void converterStepIsNotReducedByUnrelatedControllerSubsteps() {
+        var data=converterData(.001,.001);var fixture=converterFixture(data);
+        var before=fixture.converter.getNamedStates();
+        var report=DynamicParameterValidator.validate(fixture.network,1./240,2,m->128);
+        for(String name:new String[]{"Tg","Tfltr"}) {
+            var issue=report.issues().stream().filter(i->i.parameter().equals(name)).findFirst().orElseThrow();
+            assertEquals(Severity.WARNING,issue.severity());assertEquals(1./240,issue.effectiveStepSeconds());
+        }
+        assertSame(data,fixture.converter.getData());assertEquals(before,fixture.converter.getNamedStates());
+        assertEquals(1,report.checkedModels().get("Regca1Model.converter"));
+        assertEquals(1,report.uncoveredModels().get("Regca1Model.bundleControllers"));
+        assertEquals(0,DynamicParameterValidator.validate(fixture.network,1./4800,2,m->1).count(Severity.WARNING));
+    }
+
+    @Test void converterAlgebraicLagsAreAllowedAndInactiveDevicesRemainChecked() {
+        var fixture=converterFixture(converterData(0,0));fixture.converter.setStatus(false);
+        assertEquals(0,DynamicParameterValidator.validate(fixture.network,1./240,2,m->1).count(Severity.ERROR));
+        fixture.converter.setActiveElectricalController(null);
+        var report=DynamicParameterValidator.validate(fixture.network,1./240,2,m->1);
+        var issue=report.issues().stream().filter(i->i.parameter().equals("electrical controller")).findFirst().orElseThrow();
+        assertEquals(Severity.ERROR,issue.severity());assertFalse(issue.initiallyActive());
+    }
+
+    @Test void converterBusAttachmentIsCheckedOnceWithOrWithoutGeneratorAttachment() {
+        var fixture=converterFixture(converterData(.02,.02));
+        fixture.converter.getDStabBus().getDynamicBusDeviceList().add(fixture.converter);
+        assertEquals(1,DynamicParameterValidator.validate(fixture.network,1./240,2,m->1)
+                .checkedModels().get("Regca1Model.converter"));
+        fixture.converter.getParentGen().setDynamicGenDevice(null);
+        assertEquals(1,DynamicParameterValidator.validate(fixture.network,1./240,2,m->1)
+                .checkedModels().get("Regca1Model.converter"));
+    }
+
+    private static Regca1Data converterData(double tg,double filter) {
+        return new Regca1Data(0,tg,10,.9,.4,1.2,1.2,.8,.4,-1.3,filter,.7,999,-999,.4);
+    }
+    private static ConverterFixture converterFixture(Regca1Data data) {
+        IpssCorePlugin.init();
+        var net=com.interpss.dstab.DStabObjectFactory.createDStabilityNetwork();net.setBaseKva(100000);
+        var bus=(com.interpss.dstab.DStabBus)com.interpss.dstab.DStabObjectFactory.createDStabBus("B",net).orElseThrow();
+        var gen=com.interpss.dstab.DStabObjectFactory.createDStabGen("1");
+        gen.setStatus(true);bus.getContributeGenList().add(gen);
+        var converter=new Regca1Model(gen,bus,"1",data);converter.setStatus(true);
+        converter.setActiveElectricalController(new RenewableElectricalController() {
+            public void initialize(double p,double q,double v) { }
+            public void step(double dt,double p,double q,double v,double f) { }
+            public double getIpcmd() {return 0;}
+            public double getIqcmd() {return 0;}
+            public Repca1Model getPlantController() {return null;}
+            public void setPlantController(Repca1Model c) { }
+        });
+        return new ConverterFixture(net,converter);
+    }
+    private record ConverterFixture(com.interpss.dstab.DStabilityNetwork network,Regca1Model converter) { }
 
     private static Fixture load() throws Exception {
         IpssCorePlugin.init();String base="testData/adpter/psse/v33/SMIB/";

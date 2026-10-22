@@ -174,3 +174,61 @@ and supplied trajectories before adjusting physical time constants.
 
 The [extension evidence index](checkpoints/dynamic-parameter-validation-extension-2026-10-22.json)
 retains the reports, test result, source snapshots and reproduction commands.
+
+## Converter checks and stability policy, October 22
+
+The follow-up review covered the overview's ten linked categories, the numerical
+integration/subinterval pages and selected machine, exciter, stabilizer, governor
+and renewable model pages. These sources justify model-specific validation;
+they do not define one correction rule that can safely be applied to every
+implementation. The [REGC_A page](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm)
+also documents a distinct network-boundary treatment and unused parameters.
+Its correction rules must not silently replace the imported converter contract.
+
+The validator now checks all fourteen floating-point REGCA1 converter inputs for
+finite values. Constructor comparisons alone admitted NaN. It also checks the
+Tg/Tfltr time constants against the converter's network interval, reports an
+unexpected low-voltage selector, and rejects missing parent-generator or
+electrical-controller attachments. Zero Tg/Tfltr remain valid algebraic paths.
+The same checks cover inactive devices and devices encountered through either
+generator or bus attachment; dual attachment does not duplicate the report.
+
+Coverage is explicit: `Regca1Model.converter` identifies these selected checks;
+`Regca1Model.bundleControllers` remains uncovered. This does not certify the
+electrical, plant or wind-control components of the bundle. ST1 substeps and
+internal electrical-controller subdivisions do not reduce the converter's own
+integration interval. No source parameter, state, timestep or limit is changed.
+
+All 55 focused tests passed, including 18 validator tests. The four added tests
+fail against the prior validator and pass with the new checks. They cover every
+floating-point field with NaN, infinity, attachment failures, zero-time bypass,
+inactive devices, duplicate discovery, non-mutation and effective-step selection.
+Existing small-system trajectory checks are included. This was an isolated
+focused build against the retained compatible runtime, not a full reactor gate
+or a new full-system dynamic acceptance run.
+
+The six-case import audit was repeated at ST1 substep counts 10, 4 and 1: all 18
+reports have zero errors. Converter counts are 107 in Cases 1–2 and 301 in
+Cases 3–6, including inactive units. No converter timestep warnings were added;
+the existing PSS2A warning counts above remain unchanged. Thus this audit does
+not identify invalid converter parameters as the cause of instability.
+
+For further stability work, use the following order:
+
+1. Reject non-finite inputs, unsupported configurations, singular equations and
+   invalid model-specific relationships before state initialization.
+2. Report source and effective parameters separately, including existing
+   initialization corrections, affected device, rule and integration interval.
+   This before/after audit is still incomplete.
+3. For fast but valid dynamics, test local substeps with fixed physical
+   parameters. A screening estimate is `ceil(k * networkStep / T)` for a single
+   active pole with time constant T and chosen resolution margin k. It is not
+   a coupled stability bound; feedback gain, limiter switching and the actual
+   integration scheme must be evaluated. Do not apply the estimate to bypassed
+   zero-time states or automatically accept it as an accuracy guarantee.
+4. Make any physical parameter correction an explicit, separately identified
+   case variant with old/new values and a reason. Re-run initialization residuals,
+   prefault motion and complete reference comparisons for that variant.
+
+The [converter evidence index](checkpoints/converter-parameter-validation-2026-10-22.json)
+retains the reports, source hashes and regression result.

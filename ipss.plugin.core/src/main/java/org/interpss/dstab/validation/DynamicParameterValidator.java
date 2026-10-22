@@ -19,6 +19,7 @@ import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
+import org.interpss.dstab.renewable.Regca1Model;
 
 /**
  * Non-mutating, pre-initialization checks for selected machine/controller families.
@@ -65,6 +66,11 @@ public final class DynamicParameterValidator {
                 if(device==null)continue; // Static/netted generation is handled by network preprocessing.
                 seen.add(device);
                 if(!(device instanceof Machine m)) {
+                    if(device instanceof Regca1Model converter) {
+                        checkConverter(converter, bus.isActive()&&gen.isActive()&&converter.isActive(),
+                                networkStep, minimumTimeStepMultiple, issues, checked, uncovered);
+                        continue;
+                    }
                     uncovered.merge(device.getClass().getSimpleName(),1,Integer::sum);continue;
                 }
                 boolean active=bus.isActive()&&gen.isActive()&&m.isActive();
@@ -82,12 +88,42 @@ public final class DynamicParameterValidator {
                 }
             }
             for(var device:bus.getDynamicBusDeviceList())
-                if(seen.add(device))uncovered.merge(device.getClass().getSimpleName(),1,Integer::sum);
+                if(seen.add(device)) {
+                    if(device instanceof Regca1Model converter)
+                        checkConverter(converter, bus.isActive()&&converter.isActive()
+                                &&converter.getParentGen()!=null&&converter.getParentGen().isActive(),
+                                networkStep, minimumTimeStepMultiple, issues, checked, uncovered);
+                    else uncovered.merge(device.getClass().getSimpleName(),1,Integer::sum);
+                }
         }
         for(var branch:network.getBranchList())
             for(var device:branch.getDynamicBranchDeviceList())
                 if(seen.add(device))uncovered.merge(device.getClass().getSimpleName(),1,Integer::sum);
         return new Report(issues,checked,uncovered);
+    }
+
+    private static void checkConverter(Regca1Model converter, boolean active, double step,
+            double multiple, List<Issue> issues, Map<String,Integer> checked, Map<String,Integer> uncovered) {
+        var check=new Check(issues,converter.getExtendedDeviceId(),"Regca1Model",step,multiple,active);
+        var data=converter.getData();
+        // The converter advances at the network step. Its electrical controller's
+        // internal subdivisions and ST1 subdivisions do not reduce this interval.
+        for(var component:data.getClass().getRecordComponents()) {
+            if(component.getType()!=double.class)continue;
+            try {check.finite(component.getName(),(double)component.getAccessor().invoke(data));}
+            catch(ReflectiveOperationException e) {throw new IllegalStateException("Cannot inspect converter data",e);}
+        }
+        check.time("Tg",data.tg(),true);
+        check.time("Tfltr",data.tfltr(),true);
+        if(data.lvplsw()!=0&&data.lvplsw()!=1)
+            check.add(Severity.WARNING,"Lvplsw",data.lvplsw(),"Expected selector 0 or 1; review the imported low-voltage control setting");
+        if(converter.getParentGen()==null)
+            check.add(Severity.ERROR,"parent generator",0,"Converter initialization requires a parent generator");
+        if(converter.getActiveElectricalController()==null)
+            check.add(Severity.ERROR,"electrical controller",0,"Converter initialization requires an electrical controller");
+        checked.merge("Regca1Model.converter",1,Integer::sum);
+        // Do not claim that checking the converter validates its composed controls.
+        uncovered.merge("Regca1Model.bundleControllers",1,Integer::sum);
     }
 
     private static final class Check {
