@@ -143,3 +143,49 @@ model evaluation, with explicit dependency and lifecycle checks. State-array
 copying, code-cache capacity and this small dispatch change do not explain or
 resolve the remaining gap. Production source, numerical settings and the full
 goal remain unchanged.
+
+## Tagged first-order kernel screen
+
+An isolated Java candidate combines the exact Delay, Filter, Washout and PI
+kernel implementations into one final class, selecting the derivative equation
+by a fixed block-kind integer. It preserves live parameter reads, arithmetic
+order, predictor/corrector stages, scratch-array writes and state restoration.
+Non-windup blocks retain their original update methods; custom subclasses and
+other block families retain their existing kernels.
+
+Five focused tests pass in each mode, including comparison against a separately
+named copy of the original implementation. They cover limits, zero/negative/
+positive time constants, zero/nonzero steps, state restoration, trial/commit,
+scratch buffers, residuals, custom callbacks and special values. Finite and
+signed-zero paths compare raw bits; special-value checks canonicalize NaNs.
+
+The component test suggests a substantial dispatch improvement: 1.6 million
+mixed advances take median 0.0060192 seconds in the control and 0.0029939 seconds
+in the candidate. A follow-up that observes an output after every advance also
+favors the candidate, 0.0084695 versus 0.0051590 seconds. Both use 32 warmup
+batches and seven measured pairs on one pinned CPU. These synthetic workloads
+do **not** predict the complete simulation result.
+
+| Case | Control median, s | Tagged median, s | Median paired saving, s | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.865224 | 9.101596 | -0.236373 | 1/5 |
+| 2 | 6.197149 | 6.328946 | -0.176821 | 1/5 |
+
+Each case has sixteen alternating full-run warmups and five order-alternating
+measurement pairs in one JVM. Timing includes fresh setup, initialization,
+ten-second simulation, full recording and writer closure, including compilation
+and GC. The Java solver, one-CPU affinity, quarter-cycle steps, 1e-5 network
+tolerance, one ST1 step and existing experimental network acceleration remain
+unchanged. All 52 recordings match the retained baseline byte for byte, with
+18,340 network iterations in Case 1 and 20,202 in Case 2.
+
+The candidate is **not promoted**: it loses four of five pairs in both cases.
+The output-observation component test does not reproduce the slowdown, so output
+dispatch alone is not an established explanation. Further work must measure
+the integrated model-evaluation path rather than infer whole-simulation savings
+from the kernel fixture. Case 1 remains above eight seconds; Cases 3–6 and
+independent-reference accuracy remain unqualified. Production sources and
+supplied references are unchanged by this experiment.
+
+The [evidence index](checkpoints/pure-java-performance-screen-2026-10-22.json)
+retains the compact archive, raw paired timings, tests and recording audit.

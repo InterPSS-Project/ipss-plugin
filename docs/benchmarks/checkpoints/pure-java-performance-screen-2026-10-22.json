@@ -39,6 +39,13 @@
       "bytes": 5053889,
       "sha256": "e5ecc10ab238bd3ea93e18f35bc99d2d193b21ed063fd16bdd29f59979518406",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "tagged-cml-kernel-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-tagged-cml-kernel/evidence.zip",
+      "bytes": 5084131,
+      "sha256": "1ea110a30c68393cc6aae21afa4b6306f42c86769fb6b2bdade7d664a7477380",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -239,5 +246,112 @@
       "candidate_wins": 3,
       "recordings_identical": true
     }
-  ]
+  ],
+  "tagged_cml_kernel": {
+    "full_runs": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            9.0185725,
+            8.9242813,
+            8.8271149,
+            8.8652235,
+            8.5116993
+          ],
+          "candidate": [
+            8.9242992,
+            9.5237449,
+            8.9643138,
+            9.1015964,
+            9.1136978
+          ]
+        },
+        "medians_s": {
+          "control": 8.8652235,
+          "candidate": 9.1015964
+        },
+        "paired_savings_s": [
+          0.09427329999999934,
+          -0.5994636,
+          -0.13719889999999957,
+          -0.23637289999999922,
+          -0.6019985000000005
+        ],
+        "median_paired_saving_s": -0.23637289999999922,
+        "candidate_wins": 1,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.1321759,
+            6.5951148,
+            6.0872125,
+            6.3304824,
+            6.1971487
+          ],
+          "candidate": [
+            6.3289456,
+            6.1436761,
+            6.2640331,
+            6.3348394,
+            6.8734004
+          ]
+        },
+        "medians_s": {
+          "control": 6.1971487,
+          "candidate": 6.3289456
+        },
+        "paired_savings_s": [
+          -0.19676969999999994,
+          0.45143869999999975,
+          -0.1768206000000001,
+          -0.004356999999999722,
+          -0.6762517000000008
+        ],
+        "median_paired_saving_s": -0.1768206000000001,
+        "candidate_wins": 1,
+        "recordings_identical": true
+      }
+    ],
+    "advance_micro": {
+      "scope": "Synthetic mixed first-order kernel component benchmark only; not whole simulation timing.",
+      "medians_s": {
+        "False": 0.0060192,
+        "True": 0.0029939
+      },
+      "paired_savings_s": [
+        0.0030253,
+        0.002912,
+        0.0030237,
+        0.0029476999999999997,
+        0.0031561000000000002,
+        0.0029915999999999996,
+        0.0031138999999999997
+      ],
+      "median_paired_saving_s": 0.0030237,
+      "wins": 7,
+      "kernel_calls_per_batch": 1600000
+    },
+    "advance_output_micro": {
+      "scope": "Synthetic advance-plus-output component test; one getAsDouble per advance, accumulated output observed after timing. Not whole simulation timing.",
+      "medians_s": {
+        "False": 0.0084695,
+        "True": 0.005159
+      },
+      "paired_savings_s": [
+        0.0031157,
+        0.0033260999999999994,
+        0.0031883999999999992,
+        0.0032598,
+        0.003288899999999999,
+        0.0032404,
+        0.0039257
+      ],
+      "median_paired_saving_s": 0.0032598,
+      "wins": 7
+    }
+  }
 }
