@@ -95,6 +95,13 @@
       "bytes": 2924227,
       "sha256": "55d462bf46765573b3eaf01b21514027040ed63dbb6125e6daa8906e00c9623d",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-live-algebraic-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-live-algebraic/evidence.zip",
+      "bytes": 5072197,
+      "sha256": "6a613b130fcc4deaf34630975a5e3e300ee695d0499371ff633cc6527b45669d",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -964,5 +971,85 @@
     "diagnostic_only": true,
     "focused_tests": 7,
     "complete_recordings": 28
+  },
+  "pss_live_algebraic": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            9.2139503,
+            9.0003972,
+            9.6365395,
+            8.9685729,
+            8.7519322
+          ],
+          "candidate": [
+            8.7697914,
+            8.8899057,
+            8.7889243,
+            9.026238,
+            8.9956936
+          ]
+        },
+        "medians_s": {
+          "control": 9.0003972,
+          "candidate": 8.8899057
+        },
+        "paired_savings_s": [
+          0.4441588999999997,
+          0.11049150000000019,
+          0.8476151999999999,
+          -0.05766509999999947,
+          -0.24376139999999857
+        ],
+        "median_paired_saving_s": 0.11049150000000019,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.1730856,
+            6.3778168,
+            6.2403531,
+            6.1528111,
+            6.6242949
+          ],
+          "candidate": [
+            6.658092,
+            6.2953614,
+            6.331145,
+            6.245095,
+            6.4361413
+          ]
+        },
+        "medians_s": {
+          "control": 6.2403531,
+          "candidate": 6.331145
+        },
+        "paired_savings_s": [
+          -0.4850063999999996,
+          0.08245539999999973,
+          -0.09079190000000015,
+          -0.09228389999999997,
+          0.1881535999999997
+        ],
+        "median_paired_saving_s": -0.09079190000000015,
+        "candidate_wins": 2,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": [
+        333
+      ],
+      "2": [
+        103
+      ]
+    },
+    "focused_tests": 7,
+    "complete_recordings": 52
   }
 }
