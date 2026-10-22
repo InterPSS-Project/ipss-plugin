@@ -833,3 +833,16 @@ The [PSS2A screen index](checkpoints/pss-endpoint-scope-screen-2026-10-22.json)
 retains the timings, complete recording hashes, source snapshots and commands.
 It links to the preceding checkpoint for the prototype tests and compiled
 classes. The eight-second goal and outstanding reference errors remain open.
+
+## Cross-case stability follow-up, October 22
+
+The next qualification step investigates the early Case 3/4 failures rather
+than promoting another small controller timing change. Two and four local
+renewable substeps complete 1.2-second fault probes at the quarter-cycle network
+step, but large reference errors remain. A separate Case 3 cold-point check
+identifies a rejected reactive-limit release at bus 5170. Allowing the existing
+transactional trial restores its voltage and reactive injection, reducing the
+worst cold voltage error across 2,000 buses from 0.015545 to 0.0000113 pu in
+14 preparation iterations. Neither experiment changes production defaults.
+The [stability and limit-recovery report](renewable-stability-and-limit-recovery-2026-10-22.md)
+retains the numerical controls, failed alternatives and remaining accuracy gaps.
