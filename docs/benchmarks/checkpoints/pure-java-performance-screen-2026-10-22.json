@@ -102,6 +102,13 @@
       "bytes": 5072197,
       "sha256": "6a613b130fcc4deaf34630975a5e3e300ee695d0499371ff633cc6527b45669d",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "network-secant-carry-v5-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-network-secant-carry-v5/evidence.zip",
+      "bytes": 3843950,
+      "sha256": "63ab37072af0bad9a7021e1042ef32f12a11deb85e2598f13d0afa32384f00f9",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -1051,5 +1058,293 @@
     },
     "focused_tests": 7,
     "complete_recordings": 52
+  },
+  "network_secant_carry": {
+    "variants": [
+      {
+        "version": "v2",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 18318,
+            "carry_counts": [
+              2400,
+              2400,
+              18
+            ],
+            "maximum_accepted": 9.966555563801199e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 20199,
+            "carry_counts": [
+              2400,
+              2400,
+              2
+            ],
+            "maximum_accepted": 9.987997067838125e-06
+          }
+        ]
+      },
+      {
+        "version": "v3",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 18209,
+            "carry_counts": [
+              2400,
+              2400,
+              242,
+              2353,
+              2158,
+              0
+            ],
+            "maximum_accepted": 9.958271969701793e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 20180,
+            "carry_counts": [
+              2400,
+              2400,
+              42,
+              2397,
+              2358,
+              0
+            ],
+            "maximum_accepted": 9.993843812138275e-06
+          }
+        ]
+      },
+      {
+        "version": "v4",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 17876,
+            "carry_counts": [
+              2400,
+              2400,
+              2395,
+              2337,
+              5,
+              0
+            ],
+            "maximum_accepted": 9.999221736827537e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 20100,
+            "carry_counts": [
+              2400,
+              2400,
+              2373,
+              2395,
+              27,
+              0
+            ],
+            "maximum_accepted": 9.99906764867433e-06
+          }
+        ]
+      },
+      {
+        "version": "v5",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 17598,
+            "carry_counts": [
+              2400,
+              2400,
+              2400,
+              2325,
+              0,
+              0
+            ],
+            "maximum_accepted": 9.989289954121482e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 19882,
+            "carry_counts": [
+              2400,
+              2400,
+              2397,
+              2395,
+              3,
+              0
+            ],
+            "maximum_accepted": 9.999168925463402e-06
+          }
+        ]
+      }
+    ],
+    "final_focused_tests": 13,
+    "complete_recordings": 16,
+    "warmed_timing": false,
+    "reference_summary": [
+      {
+        "case": 2,
+        "compared_channels": 4501,
+        "worst_full_rmse": {
+          "0": {
+            "active_power": 112.78126313436353,
+            "bus_angle": 1441.9130455629722,
+            "reactive_power": 127.82825917311658,
+            "rotor_angle": 91.97052256177119,
+            "voltage": 0.04522698642995318
+          },
+          "1": {
+            "active_power": 112.79970207274025,
+            "bus_angle": 1442.1280902088793,
+            "reactive_power": 128.73967835360827,
+            "rotor_angle": 92.07548405896115,
+            "voltage": 0.045270923314788394
+          }
+        },
+        "failed_channels": {
+          "0": {
+            "active_power": {
+              "full": 0,
+              "prefault": 197,
+              "fault_and_postfault": 189
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 199,
+              "fault_and_postfault": 199
+            },
+            "rotor_angle": {
+              "full": 103,
+              "prefault": 103,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 2000,
+              "fault_and_postfault": 2000
+            }
+          },
+          "1": {
+            "active_power": {
+              "full": 0,
+              "prefault": 197,
+              "fault_and_postfault": 189
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 199,
+              "fault_and_postfault": 199
+            },
+            "rotor_angle": {
+              "full": 103,
+              "prefault": 103,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 2000,
+              "fault_and_postfault": 2000
+            }
+          }
+        }
+      },
+      {
+        "case": 1,
+        "compared_channels": 5191,
+        "worst_full_rmse": {
+          "0": {
+            "active_power": 56.877770735562784,
+            "bus_angle": 548.6410339260615,
+            "reactive_power": 45.08951396201423,
+            "rotor_angle": 9.921306468064362,
+            "voltage": 0.019194505259100443
+          },
+          "1": {
+            "active_power": 59.0576660888613,
+            "bus_angle": 548.7083230796599,
+            "reactive_power": 45.236902797237086,
+            "rotor_angle": 10.036526613235297,
+            "voltage": 0.019193153648029006
+          }
+        },
+        "failed_channels": {
+          "0": {
+            "active_power": {
+              "full": 0,
+              "prefault": 265,
+              "fault_and_postfault": 375
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 242,
+              "fault_and_postfault": 406
+            },
+            "rotor_angle": {
+              "full": 333,
+              "prefault": 333,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 1664,
+              "fault_and_postfault": 1834
+            }
+          },
+          "1": {
+            "active_power": {
+              "full": 0,
+              "prefault": 265,
+              "fault_and_postfault": 374
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 242,
+              "fault_and_postfault": 407
+            },
+            "rotor_angle": {
+              "full": 333,
+              "prefault": 333,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 1665,
+              "fault_and_postfault": 1836
+            }
+          }
+        }
+      }
+    ],
+    "full_reference_details": "all-channel-accuracy-summary.json and case*-all-channel-errors.json in the private evidence archive"
   }
 }
