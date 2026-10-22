@@ -443,3 +443,7 @@ The [static-load current screen](static-current-compensation-2026-10-22.md) remo
 ## Network acceleration vector loops
 
 The [vector-loop screen](anderson-vector-loops-2026-10-22.md) tests fused ordered reductions and direct short-rank corrections without changing history or convergence. It retains 64,000 full-state comparisons and 52 complete recording comparisons. The component timing is separate from full-case performance; the complete objective remains open.
+
+## Live filter coefficients
+
+The [filter-coefficient component screen](filter-coefficients-2026-10-22.md) preserves 387,044 scalar comparisons but finds no benefit from checking parameter bits on every coefficient read. No full simulation sweep or production change follows; complete-case performance and the full objective remain open.

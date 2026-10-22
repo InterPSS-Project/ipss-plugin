@@ -206,6 +206,13 @@
       "bytes": 5048792,
       "sha256": "65943c9513332fd171a9bcaa72e2ce7826f47683625fa4fffcc9bbb20bffc147",
       "outcome": "screened-not-promoted"
+    },
+    {
+      "name": "filter-coefficients-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-filter-coefficients/evidence.zip",
+      "bytes": 275933,
+      "sha256": "dd1945cfff2f59d9f8edb8f6592312ee6ee3a740cf43fc3520326a44904258c6",
+      "outcome": "component-screen-not-promoted"
     }
   ],
   "row_solve": {
