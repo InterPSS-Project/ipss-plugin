@@ -494,11 +494,28 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
         directEvaluation=new St1DirectEvaluation(this);
     }
-    /** Advance the bound local states while the caller holds physical inputs fixed. */
+    /** Existing local integration policy, retained for callers of the original overload. */
+    public static final int DEFAULT_LOCAL_SUBSTEPS = 10;
+    /** Upper bound on explicitly requested local integration work. */
+    public static final int MAX_LOCAL_SUBSTEPS = 128;
+
+    /** Advance using the default local count while the caller holds physical inputs fixed. */
     public double advanceDirectLocalStore(double dt,boolean discontinuity,boolean wasActive,
             boolean cachePss,double[] history,double[] start,double[] rates) {
+        return advanceDirectLocalStore(dt,DEFAULT_LOCAL_SUBSTEPS,discontinuity,wasActive,
+                cachePss,history,start,rates);
+    }
+
+    /**
+     * Advance the bound local states with an explicit count. The caller owns
+     * derivative history and must keep the count fixed for that history's lifetime.
+     */
+    public double advanceDirectLocalStore(double dt,int substeps,boolean discontinuity,boolean wasActive,
+            boolean cachePss,double[] history,double[] start,double[] rates) {
+        if (substeps < 1 || substeps > MAX_LOCAL_SUBSTEPS)
+            throw new IllegalArgumentException("ST1 substeps must be between 1 and 128");
         beginFixedMachineObservation();
-        try {return directEvaluation.advanceLocalStore(dt,discontinuity,wasActive,cachePss,history,start,rates);}
+        try {return directEvaluation.advanceLocalStore(dt,substeps,discontinuity,wasActive,cachePss,history,start,rates);}
         finally {endFixedMachineObservation();}
     }
     public long getPrimitiveLocalAdvanceCount() {

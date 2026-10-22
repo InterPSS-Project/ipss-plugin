@@ -191,7 +191,7 @@ final class St1DirectEvaluation {
         if(Double.doubleToRawLongBits(localX[id])!=Double.doubleToRawLongBits(value))outputChanged(id);
         localX[id]=value;
     }
-    double advanceLocalStore(double dt,boolean discontinuity,boolean wasActive,
+    double advanceLocalStore(double dt,int substeps,boolean discontinuity,boolean wasActive,
             boolean cachePss,double[] history,double[] start,double[] rates) {
         if(history.length!=localBlocks.length || start.length!=localBlocks.length || rates.length!=localBlocks.length)
             throw new IllegalArgumentException("ST1 state layout differs from its bound blocks");
@@ -202,8 +202,8 @@ final class St1DirectEvaluation {
                     && (cachePss || model.getMachine().getStabilizer()==null)) {
                 capturePrimitiveLocal();primitiveLocal=true;primitiveLocalAdvanceCount++;
             }
-            double h=dt/10,field=model.getMachine().getEfd();
-            for(int sub=0;sub<10;sub++) {
+            double h=dt/substeps,field=model.getMachine().getEfd();
+            for(int sub=0;sub<substeps;sub++) {
                 evaluate();
                 for(int i=0;i<localBlocks.length;i++) {
                     var block=localBlocks[i];

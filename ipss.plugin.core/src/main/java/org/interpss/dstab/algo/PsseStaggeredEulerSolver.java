@@ -60,7 +60,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
  * Renewable event-history parity and full-fleet accuracy remain unverified.
- * ST1 controllers use ten local STORE steps per network step with physical
+ * ST1 controllers default to ten configurable local STORE steps per network step with physical
  * and stabilizer inputs held at the old endpoint. Their field outputs are
  * published before the final local algebraic refresh; machine and other
  * controller states retain the common network-step rule.
@@ -85,6 +85,50 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
      */
     public enum MachineMeasurementStage { LAST_NETWORK_INJECTION, ACCEPTED_VOLTAGE }
     private MachineMeasurementStage machineMeasurementStage = MachineMeasurementStage.LAST_NETWORK_INJECTION;
+
+    private int st1Substeps = IEEE1981ST1Exciter.DEFAULT_LOCAL_SUBSTEPS;
+    private final java.util.Map<String, Integer> st1SubstepsByMachine = new java.util.HashMap<>();
+
+    /**
+     * Set the default ST1 local STORE steps per network step before initialization.
+     * One selects a single local step. Other controller families and the network
+     * step are unchanged. Counts from 1 through 128 are accepted without rounding.
+     */
+    public void setSt1Substeps(int count) {
+        requireSubstepConfiguration(count);
+        st1Substeps = count;
+    }
+
+    /** Override the ST1 count for a machine ID, for example {@code Bus1-mach1}. */
+    public void setSt1Substeps(String machineId, int count) {
+        requireSubstepConfiguration(count);
+        if (machineId == null || machineId.isBlank())
+            throw new IllegalArgumentException("A machine ID is required for an ST1 substep override");
+        st1SubstepsByMachine.put(machineId, count);
+    }
+
+    public int getSt1Substeps() { return st1Substeps; }
+
+    /** Configured override or default; target attachments are checked at initialization. */
+    public int getSt1Substeps(String machineId) {
+        return st1SubstepsByMachine.getOrDefault(java.util.Objects.requireNonNull(machineId), st1Substeps);
+    }
+
+    private void requireSubstepConfiguration(int count) {
+        if (previous != null)
+            throw new IllegalStateException("Configure ST1 substeps before initialization; create a new solver to change them");
+        if (count < 1 || count > IEEE1981ST1Exciter.MAX_LOCAL_SUBSTEPS)
+            throw new IllegalArgumentException("ST1 substeps must be between 1 and 128");
+    }
+
+    private void validateSubstepTargets() {
+        for (String id : st1SubstepsByMachine.keySet()) {
+            Machine machine = dstabAlgo.getNetwork().getMachine(id);
+            if (machine == null || machine.getExciter() == null
+                    || machine.getExciter().getClass() != IEEE1981ST1Exciter.class)
+                throw new IllegalArgumentException("ST1 substep override requires an ST1 exciter at machine " + id);
+        }
+    }
 
     private final List<Machine> machines = new ArrayList<>();
     private final List<BooleanSupplier> machineActive = new ArrayList<>();
@@ -118,9 +162,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             DoubleSupplier derivative, DoubleUnaryOperator project, BooleanSupplier active,
             BooleanSupplier frozen) {}
     private record Renewable(Regca1Model model, BooleanSupplier active) {}
-    /** ST1's local STORE recurrence uses ten steps per network step. */
+    /** ST1's local STORE recurrence uses the count resolved at initialization. */
     private static final class LocalSt1Controller {
-        private static final int SUBSTEPS = 10;
+        final int substeps;
         final IEEE1981ST1Exciter model;
         final BooleanSupplier active;
         final List<State> states;
@@ -130,7 +174,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         boolean wasActive;
 
         LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states,
-                boolean reuseFixedPssOutput) {
+                boolean reuseFixedPssOutput, int substeps) {
+            this.substeps = substeps;
             this.reuseFixedPssOutput = reuseFixedPssOutput;
             this.model=model; this.active=active; this.states=List.copyOf(states);
             model.enableDirectEvaluationExperiment();
@@ -147,16 +192,16 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             if (!active.getAsBoolean()) {
                 java.util.Arrays.fill(previous,0.); wasActive=false; return;
             }
-            double localStep=dt/SUBSTEPS, field=model.getMachine().getEfd();
+            double localStep=dt/substeps, field=model.getMachine().getEfd();
             Ieee1992PSS2AStabilizer held = reuseFixedPssOutput
                     && model.getMachine().getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
             if (held != null) held.beginFixedInputObservation();
             model.beginFixedMachineObservation();
             try {
                 if(!Boolean.getBoolean("ipss.experiment.disableSt1LocalStore")) {
-                    field=model.advanceDirectLocalStore(dt,discontinuity,wasActive,held!=null,previous,start,rates);
+                    field=model.advanceDirectLocalStore(dt,substeps,discontinuity,wasActive,held!=null,previous,start,rates);
                     wasActive=true;
-                } else for (int sub=0;sub<SUBSTEPS;sub++) {
+                } else for (int sub=0;sub<substeps;sub++) {
                     evaluate();
                     for (int i=0;i<states.size();i++) {
                         State state=states.get(i);
@@ -262,6 +307,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
         requireStep(fixedStep);
+        validateSubstepTargets();
         validateModels();
         if (!super.initialization()) return false;
         dstabAlgo.getNetwork().setPolarCoordinate(false);
@@ -395,7 +441,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
-                    states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled));
+                    states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled,
+                    getSt1Substeps(st1.getMachine().getId())));
             states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;

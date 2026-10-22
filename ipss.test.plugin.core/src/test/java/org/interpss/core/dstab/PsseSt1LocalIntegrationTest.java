@@ -14,6 +14,82 @@ import com.interpss.dstab.cache.StateMonitor;
 /** Native reference-step discriminators for ST1's local integration and publication. */
 public class PsseSt1LocalIntegrationTest {
     @Test
+    void explicitDefaultAndMachineOverridePreserveTheDefaultTrajectory() throws Exception {
+        double[] expected=trajectory(load(false,.0005));
+        assertArrayEquals(expected,trajectory(load(false,.0005,s->s.setSt1Substeps(10))),0.);
+        var overridden=load(false,.0005,s->{s.setSt1Substeps(4);s.setSt1Substeps("Bus1-mach1",10);});
+        assertEquals(4,overridden.solver().getSt1Substeps());
+        assertEquals(10,overridden.solver().getSt1Substeps("Bus1-mach1"));
+        assertArrayEquals(expected,trajectory(overridden),0.);
+    }
+
+    @Test
+    void configuredCountsReachBothLocalIntegrationPaths() throws Exception {
+        String key="ipss.experiment.disableSt1LocalStore";
+        String previous=System.getProperty(key);
+        try {
+            for (boolean zeroTa : new boolean[] {false,true}) {
+                double[] ten=null;
+                for (int count : new int[] {10,1,4,128}) {
+                    System.clearProperty(key);
+                    var fixture=load(zeroTa,.0005,s->s.setSt1Substeps(count));
+                    assertEquals(.0005,fixture.algorithm().getSimuStepSec(),0.);
+                    double[] direct=trajectory(fixture);
+                    System.setProperty(key,"true");
+                    double[] fallback=trajectory(load(zeroTa,.0005,s->s.setSt1Substeps(count)));
+                    assertArrayEquals(direct,fallback,1e-12,"local count "+count);
+                    if(count==10)ten=direct;
+                    else assertNotEquals(ten[0],direct[0],"count must change the local integration");
+                }
+            }
+        } finally {
+            if(previous==null)System.clearProperty(key);else System.setProperty(key,previous);
+        }
+    }
+
+    @Test
+    void invalidCountsTargetsAndLateChangesAreRejected() throws Exception {
+        var fixture=load(false,.0005);
+        var fresh=new PsseStaggeredEulerSolver(fixture.algorithm());
+        for(int count:new int[]{Integer.MIN_VALUE,-1,0,129,Integer.MAX_VALUE}) {
+            assertThrows(IllegalArgumentException.class,()->fresh.setSt1Substeps(count));
+            assertThrows(IllegalArgumentException.class,()->fresh.setSt1Substeps("Bus1-mach1",count));
+        }
+        assertThrows(IllegalArgumentException.class,()->fresh.setSt1Substeps(null,4));
+        assertThrows(IllegalArgumentException.class,()->fresh.setSt1Substeps(" ",4));
+        assertThrows(IllegalStateException.class,()->fixture.solver().setSt1Substeps(4));
+        assertThrows(IllegalStateException.class,()->fixture.solver().setSt1Substeps("Bus1-mach1",4));
+        assertThrows(IllegalArgumentException.class,()->load(false,.0005,s->s.setSt1Substeps("missing",4)));
+        fresh.setSt1Substeps("Bus1-mach1",4);
+        fixture.machine().getControllerList().remove(fixture.exciter());
+        assertThrows(IllegalArgumentException.class,fresh::initialization);
+    }
+
+    @Test
+    void configuredCountSurvivesReinitializationWithFreshHistory() throws Exception {
+        var fixture=load(false,.0005,s->s.setSt1Substeps("Bus1-mach1",4));
+        int states=fixture.solver().getBoundDifferentialStateCount();
+        fixture.algorithm().getNetwork().setDStabNetInitialized(false);
+        assertTrue(fixture.algorithm().getAclfAlgorithm().loadflow());
+        assertTrue(fixture.algorithm().initialization());
+        assertEquals(4,fixture.solver().getSt1Substeps("Bus1-mach1"));
+        assertEquals(states,fixture.solver().getBoundDifferentialStateCount());
+        assertArrayEquals(trajectory(load(false,.0005,s->s.setSt1Substeps(4))),trajectory(fixture),1e-10);
+    }
+
+    private static double[] trajectory(Fixture fixture) throws Exception {
+        double[] samples=new double[40];
+        jump(fixture,.001);
+        for(int i=0;i<20;i++) {
+            if(i==8)jump(fixture,-.0005);
+            assertTrue(fixture.algorithm().solveDEqnStep(true));
+            samples[2*i]=fixture.machine().getEfd();
+            samples[2*i+1]=fixture.machine().getSpeed();
+        }
+        return samples;
+    }
+
+    @Test
     void exst1ReferenceJumpUsesTheObservedLocalStepAtTwoNetworkSteps() throws Exception {
         // Fresh commercial two-bus experiments, Ka=261, Ta=.08, Tc=1,
         // Tb=8.55, Tr=Kf=0, +.001 VREF. These first increments discriminate
@@ -72,6 +148,11 @@ public class PsseSt1LocalIntegrationTest {
     }
 
     private static Fixture load(boolean esst1a,double step) throws Exception {
+        return load(esst1a,step,s->{});
+    }
+
+    private static Fixture load(boolean esst1a,double step,
+            java.util.function.Consumer<PsseStaggeredEulerSolver> configure) throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/SMIB/";
         var context=new PSSEMultiFileLoader().loadDStab(base+"SMIB_v33.raw",
@@ -89,6 +170,7 @@ public class PsseSt1LocalIntegrationTest {
         algorithm.getAclfAlgorithm().setTolerance(1e-10);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         var solver=new PsseStaggeredEulerSolver(algorithm);algorithm.setSolver(solver);
+        configure.accept(solver);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(step);
         algorithm.setTotalSimuTimeSec(.1);algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization());
