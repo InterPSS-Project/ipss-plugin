@@ -194,3 +194,59 @@ response near bus 1007 and machine 1050/1, independently of the corrected
 remain; this slice used an isolated compatible runtime. The
 [evidence index](checkpoints/preparation-reactive-limit-tolerance-2026-10-22.json)
 records the tests, cold comparisons, short trajectories and reproduction inputs.
+
+## Case 5 selector and integration diagnostics
+
+With the corrected preparation above, a separate diagnostic varied the global
+step and the reactive-current recovery selector of converters initialized at
+exactly zero Q. The supplied cold measurements have tiny nonzero Q values for
+many of these units. Their signs were used only in explicitly marked
+counterfactual runs; solved P/Q, continuous states, and physical parameters
+were not replaced with measurements. Of 117 inspected units, 72 selected the
+negative branch, 39 the positive branch, and six remained zero. The existing
+independent exact-zero probe still establishes that exact zero selects neither
+recovery bound. This experiment does not justify adding an epsilon or choosing
+a default sign in production.
+
+All 4,919 comparable channels were scored against the supplied reference,
+without fitted offsets. Maximum absolute errors over the available nonnegative
+prefix are:
+
+| Variant | Network step | Renewable local steps | Last time, s | Maximum voltage error, pu | Maximum rotor error, degrees |
+|---|---:|---:|---:|---:|---:|
+| Original selectors | 1/240 s | 1 | 0.0333333, failed | 0.329660 | 0.129103 |
+| Original selectors | 1/240 s | 4 | 0.1 | 0.0401340 | 0.295411 |
+| Original selectors | 1/960 s | 1 | 0.1 | 0.0327734 | 0.121325 |
+| Measured-sign selectors | 1/240 s | 1 | 0.1 | 0.0321156 | 0.816907 |
+| Measured-sign selectors | 1/240 s | 4 | 0.1 | 0.0217093 | 0.411995 |
+| Measured-sign selectors | 1/960 s | 1 | 0.1 | 0.00200178 | 0.0225923 |
+
+Changing selectors alone prevents the early failure but increases rotor error.
+Combining measured signs with the finer network step improves agreement much
+more than either alone. The combined arm still fails the prefault limits: worst
+voltage NRMSE is 0.00153639 using the full ten-second reference range, and
+maximum rotor error is 0.0225923 degrees. Its worst rotor RMSE over this short
+prefix is 0.0118854 degrees. These are not ten-second acceptance results.
+
+Cold binary records are identical between selector variants and their controls
+at the same global step, including timestamps and all recorded physical values.
+Across global steps, the startup duration differs: two history steps span
+8.333333 ms at 1/240 second and 2.083333 ms at 1/960 second. The reference has
+two milliseconds of negative-time records. Consequently the global-step test
+also changes startup duration; it does not isolate truncation error alone.
+The reference itself moves before fault application, so a flat response is not
+the comparison target. No time shift was fitted to remove this difference.
+
+The retained comparison includes a common 0.0333333-second window as well as
+each available prefix. Samples remain on each run's actual grid, so RMSE
+weighting differs between fine and quarter-cycle grids. No full-network
+channels or startup samples were removed from the raw recordings.
+
+These findings localize sensitivity to startup, recovery selection and network
+coupling. They do not establish invalid physical parameters or authorize
+automatic parameter corrections. No production code or default changed, and
+no new warmed performance result is claimed. The next discriminator must
+separate startup duration from step size while retaining independently solved
+initial conditions. The [evidence index](checkpoints/case5-selector-step-localization-2026-10-22.json)
+retains the commands, diagnostic harness, runtime hashes, complete short traces,
+cold invariance checks and channel errors.

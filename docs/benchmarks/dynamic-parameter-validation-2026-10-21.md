@@ -232,3 +232,11 @@ For further stability work, use the following order:
 
 The [converter evidence index](checkpoints/converter-parameter-validation-2026-10-22.json)
 retains the reports, source hashes and regression result.
+
+The subsequent [Case 5 startup and selector diagnostic](network-reactive-limit-release-2026-10-22.md#case-5-selector-and-integration-diagnostics)
+demonstrates why parameter validation must remain distinct from trajectory
+acceptance. Finer integration and measured recovery-selector signs together
+improve a short prefix substantially, but neither a finite run nor this
+counterfactual establishes correct initialization. Physical parameters were
+left unchanged. Automatic time-constant correction would not resolve the
+unexplained selector and startup differences identified by that experiment.
