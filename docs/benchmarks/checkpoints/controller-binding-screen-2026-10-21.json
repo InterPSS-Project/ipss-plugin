@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "description": "Controller-reference binding and compact-state screening; isolated prototypes, not selected production performance baselines.",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-controller-binding-screen/evidence.zip",
+  "archive_bytes": 438316,
+  "archive_sha256": "f07a42fa4aa5cf82ec807c19c2f19bcffd1833e43617eaafa58062c530beb20a",
+  "baseline_checkpoint": "docs/benchmarks/checkpoints/st1-generated-inputs-2026-10-21.json",
+  "controller_overlay": "docs/benchmarks/checkpoints/pss-scalar-preparation-2026-10-21.json",
+  "core_fix_commit": "e2ec1a5fd",
+  "core_source_sha256": "8c0706cae6b3c080fd182badc0fd6825d828fe54f8224db38032dcf587da3bf3",
+  "bound_controller_protocol": {
+    "baseline_commit": "9c3a16dfd9ff0cc27b7ac1210bf6cc67f86b8919",
+    "source_sha256": "26db4d8da65b666561af2342604c5a7b6a3a2106e04ceb2c814c0751a8d7b5a7",
+    "change": "Bind controller and participant references once for endpoint evaluations; retain attachment validation before every integration step.",
+    "excluded": [
+      "compact state update prototype",
+      "ST1 observation-cache prototype"
+    ],
+    "step_s": 0.004166666666666667,
+    "tolerance_pu": 1e-05
+  },
+  "bound_controller_timing": [
+    {
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        10.9508343,
+        10.6415412,
+        10.4446232,
+        10.0610356,
+        10.6476306
+      ],
+      "median_s": 10.6415412,
+      "min_s": 10.0610356,
+      "max_s": 10.9508343,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        595,
+        210,
+        99,
+        82,
+        157
+      ]
+    },
+    {
+      "case": 1,
+      "variant": "baseline",
+      "seconds": [
+        11.254495,
+        10.8978664,
+        10.6397602,
+        10.286929,
+        10.8452958
+      ],
+      "median_s": 10.8452958,
+      "min_s": 10.286929,
+      "max_s": 11.254495,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        613,
+        209,
+        103,
+        83,
+        159
+      ]
+    },
+    {
+      "case": 2,
+      "variant": "candidate",
+      "seconds": [
+        8.1409013,
+        7.9993168,
+        7.7252104,
+        7.5256218,
+        7.4331314
+      ],
+      "median_s": 7.7252104,
+      "min_s": 7.4331314,
+      "max_s": 8.1409013,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      },
+      "compilation_ms": [
+        584,
+        128,
+        267,
+        79,
+        50
+      ]
+    }
+  ],
+  "compact_state_timing": [
+    {
+      "case": 1,
+      "variant": "candidate",
+      "median_s": 10.7917575,
+      "min_s": 10.583439,
+      "max_s": 11.2153154,
+      "seconds": [
+        11.2153154,
+        10.6677354,
+        10.583439,
+        10.8580511,
+        10.7917575
+      ],
+      "compilation_ms": [
+        603,
+        208,
+        96,
+        86,
+        161
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      },
+      "all_runs_match": true
+    },
+    {
+      "case": 1,
+      "variant": "baseline",
+      "median_s": 10.834646,
+      "min_s": 10.3384058,
+      "max_s": 11.3026033,
+      "seconds": [
+        11.3026033,
+        10.9492573,
+        10.7562627,
+        10.3384058,
+        10.834646
+      ],
+      "compilation_ms": [
+        604,
+        208,
+        99,
+        84,
+        160
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      },
+      "all_runs_match": true
+    },
+    {
+      "case": 2,
+      "variant": "candidate",
+      "median_s": 7.5623602,
+      "min_s": 7.4704514,
+      "max_s": 8.0460258,
+      "seconds": [
+        8.0460258,
+        7.5623602,
+        7.9485153,
+        7.5250448,
+        7.4704514
+      ],
+      "compilation_ms": [
+        584,
+        132,
+        281,
+        81,
+        40
+      ],
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+      },
+      "all_runs_match": true
+    }
+  ],
+  "validation": {
+    "baseline_with_core_fix": "19/19 pass",
+    "bound_controller_with_core_fix": "19/19 pass",
+    "compact_states_with_core_fix": "17/17 pass"
+  },
+  "limitations": [
+    "Twelve warmups and five measured runs per screening process; JIT remains active.",
+    "Timing ranges overlap; no fully warmed qualification.",
+    "Bound-controller prototype needs a live-lookup fallback for custom machine accessors before production use.",
+    "Timings use the retained runtime without the later reinitialization fix; fix validated separately.",
+    "Separate validation ran during the first three baseline warmups, before measured runs.",
+    "Independent-reference accuracy and Cases 3/4 early failures remain unresolved."
+  ]
+}

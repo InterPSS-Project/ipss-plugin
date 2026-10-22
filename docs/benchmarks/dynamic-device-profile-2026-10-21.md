@@ -143,3 +143,51 @@ requirements in the one- and four-step experiments. The
 [sampling evidence index](checkpoints/case1-sampling-profile-2026-10-21.json)
 retains the flight recording, source, commands, all statuses, affinity verification
 and detailed stack summary.
+
+## Controller binding and state-storage screening
+
+Two isolated prototypes preserve the ten ST1 substeps and the existing numerical
+equations. The compact-state prototype uses a bound state array, direct block
+storage access, one activation read per contiguous owner, and skips known no-op
+projection callbacks. The controller-reference prototype instead starts from the
+committed solver and binds controller and participant references for endpoint
+evaluation, retaining the pre-step attachment checks and live activity flags.
+Neither experiment includes the pending ST1 observation-cache changes.
+
+Each process runs twelve full warmups and five measurements, with fresh setup,
+all observations and writer closure included. These are screening results; JIT
+compilation remains active and the timing ranges overlap.
+
+| Experiment | Case | Median total | Range |
+| --- | ---: | ---: | ---: |
+| Compact-state control | 1 | 10.8346 s | 10.3384–11.3026 s |
+| Compact-state candidate | 1 | 10.7918 s | 10.5834–11.2153 s |
+| Compact-state candidate | 2 | 7.5624 s | 7.4705–8.0460 s |
+| Controller-reference control | 1 | 10.8453 s | 10.2869–11.2545 s |
+| Controller-reference candidate | 1 | 10.6415 s | 10.0610–10.9508 s |
+| Controller-reference candidate | 2 | 7.7252 s | 7.4331–8.1409 s |
+
+The controller-reference Case 1 difference is 0.2038 s (1.88%); compact-state
+storage differs by only 0.0429 s (0.40%). There is no adjacent Case 2 control in
+either screen. All 51 runs per experiment reproduce their retained observations
+byte for byte. Neither prototype replaces the selected performance checkpoint.
+Before production use, controller-reference binding needs an unchanged live
+lookup fallback for custom machine accessor overrides. The eight-second target
+and independent-reference accuracy requirements remain unfulfilled across cases.
+
+The lifecycle checks exposed a separate core defect: rectangular-voltage
+postprocessing attempted to cast a dynamic network to a narrower load-flow
+network type. Core commit `e2ec1a5fd` uses the existing network's bus list instead;
+voltage-conversion equations are unchanged. With that fix, all 19 existing solver
+and ST1 response/lifecycle tests pass for both the baseline and the bound-reference
+prototype. The compact-state configuration passes its 17 tests as well. This
+repairs the previously reported reinitialization exceptions, not the outstanding
+full-system reference mismatch. Timing runs use the frozen runtime without this
+later repair. Separate validation ran during the first three control warmups,
+before the measured runs.
+
+The [screening evidence index](checkpoints/controller-binding-screen-2026-10-21.json)
+retains prototype sources, commands, run statuses, timings and before/after test
+reports. Verified identical generated recordings share storage with the retained
+baseline; all paths and file contents remain available. Supplied reference files
+are untouched.
