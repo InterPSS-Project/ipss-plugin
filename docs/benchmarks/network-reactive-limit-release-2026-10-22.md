@@ -250,3 +250,46 @@ separate startup duration from step size while retaining independently solved
 initial conditions. The [evidence index](checkpoints/case5-selector-step-localization-2026-10-22.json)
 retains the commands, diagnostic harness, runtime hashes, complete short traces,
 cold invariance checks and channel errors.
+
+### Equal startup duration discriminator
+
+A follow-up harness allows eight diagnostic startup steps, with the production
+solver unchanged. Three fresh single-core runs at 1/960 second complete the
+0.1-second prefix: a two-step measured-selector control and eight-step arms
+with original or measured selectors. The two-step control reproduces both
+the full binary recording and selected-channel CSV byte for byte.
+
+Eight fine startup steps span 8.333333 ms, equal to two quarter-cycle steps.
+For each selector policy, the eight-step and earlier two-step fine runs have
+bit-identical physical values for all 99 shared sample ordinals, including
+the cold sample and negative-time history. Their clock labels differ by
+6.25 ms. No time shift was applied to the supplied-reference scoring.
+
+| Fine-step variant | Startup duration, ms | Maximum voltage error, pu | Maximum rotor error, degrees | Worst rotor RMSE, degrees |
+|---|---:|---:|---:|---:|
+| Original selectors, two steps | 2.083333 | 0.0327734 | 0.121325 | 0.0402607 |
+| Original selectors, eight steps | 8.333333 | 0.0403084 | 0.326378 | 0.222578 |
+| Measured selectors, two steps | 2.083333 | 0.00200178 | 0.0225923 | 0.0118854 |
+| Measured selectors, eight steps | 8.333333 | 0.0282004 | 0.445024 | 0.279314 |
+
+Errors cover each full available 0.1-second nonnegative prefix. The eight-step
+original-selector rotor maximum is at 1050/1 at 0.0802083 seconds; the
+measured-selector maximum is at the same unit at 0.096875 seconds. All 4,919
+comparable channels and their maximum-error times are retained. At equal
+startup duration the fine measured-selector rotor maximum is still lower than
+the quarter-cycle arm's 0.816907 degrees, so integration resolution also matters.
+The earlier fine-step improvement cannot be attributed to integration
+resolution alone: advancing further before time zero changes the comparison
+substantially even with an identical underlying fine-step trajectory.
+
+This result does not justify retiming a completed output. A distinct startup
+interval would require an explicit integration lifecycle and independently
+validated transition to the quarter-cycle runtime interval. The current solver
+rejects a changed global step; global and local-ST1 histories use fixed-step
+coefficients, while the single-precision renewable path retains a separate
+STORE recurrence. Simply removing the fixed-step guard would be incorrect.
+No production step policy, selector, physical parameter or acceptance criterion
+changed. The eight-second full-run goal remains open, and these cold short
+runs are not new performance measurements. The
+[equal-startup evidence index](checkpoints/case5-equal-startup-duration-2026-10-22.json)
+retains the harness, commands, runtime inventory, raw recordings and comparisons.
