@@ -696,3 +696,58 @@ The [endpoint-screen evidence index](checkpoints/st4-endpoint-screens-2026-10-22
 retains both prototypes, tests, raw timings, reproduction scripts and recording
 hashes. Full recordings remain on the designated artifact drive; the retained
 archive contains compact evidence and dependency references.
+
+## Production ST4B endpoint implementation, October 22
+
+The compact guarded endpoint implementation now lives in the controller and
+staggered solver. It defaults on when runtime controller optimization is
+enabled. `setSt4EndpointReuseEnabled(false)`, called before initialization,
+selects the existing separate step/output path for regression comparisons.
+The method rejects changes after initialization. Exact machine ownership is
+also checked before entering the fixed-input scope.
+
+Reinitialization now clears the direct graph before annotation initialization
+and rebuilds it after successful initialization. A test changes the measurement
+lag and compares the reinitialized controller against an explicitly rebuilt
+control. Without the repair, the retained graph updates obsolete block storage
+and the derivative/state comparison fails. With the repair all 42 focused tests
+pass, including the independent small-system trajectory suite. The new test
+class is registered in the core plugin suite.
+
+A shorter confirmation screen uses twelve warmups and five measured pairs.
+It retains all observations, including substantial compilation during some
+measured runs. Median paired savings are 0.037 seconds in Case 1 and 0.044
+seconds in Case 2, with three of five pairs faster in each case. These results
+are too noisy to confirm the prior compact prototype's gain. A separate
+32-warmup/seven-pair qualification was started; it is not included in this
+completed evidence checkpoint and no new warmed speed claim is made here.
+All 44 complete recordings in the shorter screen match the retained baseline.
+Four further full ten-second recordings with Anderson disabled also match
+between the control and optimized variants.
+
+Paired 0.1-second flat and fault checks use all six original case inputs, with
+all full-network channels retained. Cases 1 and 2 complete both profiles with
+identical recordings. Cases 3 and 4 fail at 0.04583333333333333 seconds, and
+Case 6 at 0.049999999999999996 seconds, with identical partial recordings.
+Case 5 fails during power-flow preparation in both variants before recording,
+with the same voltage-dependent group-limit error; there are no trajectories
+to compare for that case. Separate accelerated Case 3/4 checks also reproduce
+the retained failure prefixes. These are regression results, not six-case
+acceptance or evidence that the existing failures are resolved.
+
+An isolated Maven build first exposed an installed-core API mismatch. Building
+the clean core revision `e2ec1a5fd` under a unique local validation version
+resolves production compilation without replacing the benchmark dependency.
+The registered gate still cannot reach test execution: nine existing test or
+runner source files refer to controller APIs removed by the earlier rollback.
+That compile failure is retained; the registered suite is not claimed to pass.
+The isolated build excludes unrelated pending performance prototypes. The
+same 42 focused tests also pass against its freshly compiled production classes
+and matching core jar, without any frozen benchmark class overlays.
+
+The [production evidence index](checkpoints/st4-endpoint-production-2026-10-22.json)
+retains 56 completed runs, fourteen matching partial-recording failures, four
+preparation failures before recording, the focused tests, the red/green
+reinitialization evidence and the Maven diagnostics. The matching core jar is
+retained privately. The eight-second goal and independent full-system accuracy
+remain open.

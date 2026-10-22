@@ -16,6 +16,57 @@ final class St4DirectEvaluation {
     final Node[] ordered;
     final double[] inputs=new double[6],states=new double[6],rates=new double[6];
     boolean refreshing;
+    boolean scopedEndpoint,preparedStable;
+    long endpointOutputReuses;
+    // Exact block classes have no public setters for limit objects or expressions.
+    // Numeric bounds remain live; every prepare pass checks bound block identity.
+    private final boolean standardEndpointGraph;
+    private boolean checkPreparedInputs;
+    private static final Class<?> BRIDGE_TYPE=new IEEE2005ST4BExciter().customBlock.getClass();
+    boolean endpointEligible(com.interpss.dstab.mach.Machine machine,boolean fixedPss) {
+        if(machine!=model.getMachine() || !standardEndpointGraph || model.getClass()!=IEEE2005ST4BExciter.class || model.eNotificationRequired())return false;
+        Class<?> type=machine.getClass();
+        if(type!=com.interpss.dstab.mach.impl.RoundRotorMachineImpl.class
+                && type!=com.interpss.dstab.mach.impl.SalientPoleMachineImpl.class
+                && type!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
+                && type!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class)return false;
+        var bus=machine.getDStabBus();
+        if(((org.eclipse.emf.ecore.impl.BasicEObjectImpl)machine).eNotificationRequired()
+                || bus.getClass()!=com.interpss.dstab.impl.DStabBusImpl.class
+                || ((org.eclipse.emf.ecore.impl.BasicEObjectImpl)bus).eNotificationRequired()
+                || bus.getVoltage().getClass()!=org.apache.commons.math3.complex.Complex.class)return false;
+        if(machine.getStabilizer()!=null && (!fixedPss || machine.getStabilizer().getClass()!=
+                org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer.class))return false;
+        return true;
+    }
+    private boolean standardGraph() {
+        for(int i=0;i<6;i++) {
+            var b=nodes[i].block;Class<?> expected=switch(i) {
+                case 0,2->DelayControlBlock.class;
+                case 1,4->Esst4bPIControlBlock.class;
+                case 3->com.interpss.dstab.controller.cml.field.block.GainBlock.class;
+                default->BRIDGE_TYPE;
+            };
+            if(b.getClass()!=expected || nodes[i].wrapper.getField()!=b)return false;
+            if(b instanceof ICMLLimitBlock limited && limited.getLimit()!=null) {
+                var limit=limited.getLimit();Class<?> limitType=limit.getClass();
+                if(limitType!=org.interpss.numeric.datatype.LimitType.class
+                        && limitType!=com.interpss.dstab.datatype.LimitExpression.class)return false;
+                if(limitType==com.interpss.dstab.datatype.LimitExpression.class
+                        && (((com.interpss.dstab.datatype.LimitExpression)limit).getMaxExp()!=null
+                        || ((com.interpss.dstab.datatype.LimitExpression)limit).getMinExp()!=null))return false;
+            }
+        }
+        return true;
+    }
+    double preparedEndpointOutput() {
+        if(scopedEndpoint && preparedStable && algebraic()) {
+            double value=0.+y(5);
+            if(Double.isFinite(value)) {endpointOutputReuses++;return value;}
+        }
+        return output();
+    }
+
     St4DirectEvaluation(IEEE2005ST4BExciter model) {
         this.model=model;var order=new ArrayList<Node>();boolean gateFound=false;
         for(var wrapper:model.getFieldWrapperList()) {
@@ -33,6 +84,7 @@ final class St4DirectEvaluation {
         if(!gateFound)throw new IllegalStateException("Missing gate");
         for(Node node:nodes)Objects.requireNonNull(node);
         order.sort(Comparator.comparingInt(n->n.wrapper.getInitOrder()));ordered=order.toArray(Node[]::new);
+        standardEndpointGraph=standardGraph();
     }
     double y(int id) {return nodes[id].block.getY();}
     double input(int id) {
@@ -62,7 +114,11 @@ final class St4DirectEvaluation {
     boolean step(boolean predictor,double dt) {
         prepare(predictor,true);
         for(Node node:ordered)if(node.control)node.kernel.advance(predictor,inputs[node.id],dt,null,null,states,rates,node.id);
-        prepare(predictor,false);prepare(predictor,false);return true;
+        prepare(predictor,false);
+        preparedStable=scopedEndpoint && predictor && dt==0.;
+        checkPreparedInputs=preparedStable;
+        try {prepare(predictor,false);}finally{checkPreparedInputs=false;}
+        return true;
     }
     void prepare(boolean predictor,boolean capture) {
         for(Node node:ordered)node.prepare(predictor,capture);
@@ -100,6 +156,9 @@ final class St4DirectEvaluation {
         void prepare(boolean predictor,boolean capture) {
             if(wrapper.getField()!=block)throw new IllegalStateException("ST4 field replaced");
             double value=input(id);
+            if(checkPreparedInputs)preparedStable &= Double.isFinite(value)
+                && Double.doubleToRawLongBits(block.getU())==Double.doubleToRawLongBits(value);
+
             if(control) {((CMLControlBlockAdapter)block).setStageInput(value);if(capture)inputs[id]=value;}
             else if(predictor)block.eulerStep1(value,0.);else block.eulerStep2(value,0.);
         }

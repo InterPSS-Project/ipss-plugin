@@ -148,6 +148,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private BooleanSupplier ownerActive;
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
+    private boolean st4EndpointReuseEnabled = true;
     private double[] start;
     private double[] derivative;
     private final List<Participant> participants = new ArrayList<>();
@@ -264,6 +265,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public boolean isRuntimeControllerOptimizationEnabled() {
         return runtimeControllerOptimizationEnabled;
     }
+
+    /** Configure settled ST4B endpoint reuse before initialization. Enabled by default. */
+    public void setSt4EndpointReuseEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure ST4B endpoint reuse before initialization");
+        st4EndpointReuseEnabled = enabled;
+    }
+
+    public boolean isSt4EndpointReuseEnabled() { return st4EndpointReuseEnabled; }
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
     /** Configure before initialization; changing the boundary requires new derivative history. */
@@ -647,10 +656,15 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                         && m.getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
                 if (held != null) held.beginFixedInputObservation();
                 try {
-                    if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
-                        throw new DStabSimuException("Exciter derivative failed: "+m.getId());
-                    if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
-                        m.setEfd(m.getExciter().getOutput(m));
+                    if (runtimeControllerOptimizationEnabled && st4EndpointReuseEnabled
+                            && m.getExciter() instanceof IEEE2005ST4BExciter st4) {
+                        m.setEfd(st4.evaluateFixedInputEndpoint(m, held != null));
+                    } else {
+                        if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
+                            throw new DStabSimuException("Exciter derivative failed: "+m.getId());
+                        if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
+                            m.setEfd(m.getExciter().getOutput(m));
+                    }
                 } finally {
                     if (held != null) held.endFixedInputObservation();
                 }

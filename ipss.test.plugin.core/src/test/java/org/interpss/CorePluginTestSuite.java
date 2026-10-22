@@ -713,6 +713,7 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.NativeFloatCsvCodecTest.class,
 	Esst4bAndesSmibConformanceTest.class,
 	Esst4bIndependentSmibConformanceTest.class,
+	org.interpss.core.dstab.St4EndpointReuseTest.class,
 	Esac5aAndesSmibConformanceTest.class,
 	Esac5aIndependentSmibConformanceTest.class,
 	Esac6aIndependentSmibConformanceTest.class,

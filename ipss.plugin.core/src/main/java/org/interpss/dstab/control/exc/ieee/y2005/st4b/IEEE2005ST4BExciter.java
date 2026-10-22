@@ -225,6 +225,30 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
         if(getClass()!=IEEE2005ST4BExciter.class)throw new IllegalStateException("Exact ST4 required");
         directEvaluation=new St4DirectEvaluation(this);
     }
+    /**
+     * Evaluate a zero-time predictor and its output in one fixed-input scope.
+     * The caller must hold any attached standard stabilizer output fixed until
+     * this method returns. All state and derivative work is retained. Custom
+     * or observed devices and unsettled feedback use the ordinary output path.
+     */
+    public double evaluateFixedInputEndpoint(Machine machine,boolean fixedPss) {
+        if(directEvaluation==null || !directEvaluation.endpointEligible(machine,fixedPss)) {
+            if(!nextStep(0.,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,machine,0))
+                throw new IllegalStateException("Exciter endpoint evaluation failed");
+            return getOutput(machine);
+        }
+        if(directEvaluation.scopedEndpoint)throw new IllegalStateException("Nested fixed endpoint");
+        beginBridgeScope();directEvaluation.scopedEndpoint=true;directEvaluation.preparedStable=false;
+        try {
+            if(!nextStep(0.,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,machine,0))
+                throw new IllegalStateException("Exciter endpoint evaluation failed");
+            return directEvaluation.preparedEndpointOutput();
+        } finally {
+            directEvaluation.scopedEndpoint=false;directEvaluation.preparedStable=false;endBridgeScope();
+        }
+    }
+    /** Number of settled endpoint outputs reused since this graph was built. */
+    public long getEndpointOutputReuseCount(){return directEvaluation==null?0:directEvaluation.endpointOutputReuses;}
     private void beginBridgeScope() {if(bridgeScopeDepth++==0)bridgeCached=false;}
     private void endBridgeScope() {if(--bridgeScopeDepth==0)bridgeCached=false;}
     @Override public boolean eulerStep(boolean predictor,double dt,Machine machine) {
@@ -273,6 +297,10 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	     */
 	    @Override
 	    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+            boolean rebuildDirectEvaluation = directEvaluation != null;
+            directEvaluation = null;
+            bridgeScopeDepth = 0;
+            bridgeCached = false;
 	        // pass the plugin data object values to the controller
         this.tr = correctedBypassTimeConstant(getData().getTr());
 
@@ -329,7 +357,9 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 
 	        this.k1 =1.0;
 	        // always add the following statement
-	        return super.initStates(bus, mach);
+	        boolean initialized = super.initStates(bus, mach);
+            if (initialized && rebuildDirectEvaluation) enableDirectEvaluationExperiment();
+            return initialized;
 	    }
 
     private double correctedBypassTimeConstant(double value) {
