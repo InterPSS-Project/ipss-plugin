@@ -199,6 +199,13 @@
       "bytes": 5086431,
       "sha256": "42c65eea627d3ffac7f4ac1f1cad5fe742018ca8249edfbcfc5b5be8ecdeb4dc",
       "outcome": "screened-not-promoted"
+    },
+    {
+      "name": "anderson-vector-loops-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-anderson-vector-loops/evidence.zip",
+      "bytes": 5048792,
+      "sha256": "65943c9513332fd171a9bcaa72e2ce7826f47683625fa4fffcc9bbb20bffc147",
+      "outcome": "screened-not-promoted"
     }
   ],
   "row_solve": {

@@ -439,3 +439,7 @@ The [Case 3 stage audit](case3-replay-step-boundary-2026-10-22.md) separates hel
 ## Scalar static-load compensation
 
 The [static-load current screen](static-current-compensation-2026-10-22.md) removes one temporary object while retaining live load evaluation and arithmetic order. It includes 50,973 focused comparisons and 52 complete recording comparisons. The experiment is retained without production promotion; independent-reference accuracy and the full eight-second objective remain open.
+
+## Network acceleration vector loops
+
+The [vector-loop screen](anderson-vector-loops-2026-10-22.md) tests fused ordered reductions and direct short-rank corrections without changing history or convergence. It retains 64,000 full-state comparisons and 52 complete recording comparisons. The component timing is separate from full-case performance; the complete objective remains open.
