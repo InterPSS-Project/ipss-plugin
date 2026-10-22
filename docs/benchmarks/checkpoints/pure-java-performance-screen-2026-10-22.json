@@ -157,6 +157,20 @@
           "equation_calls": 20204
         }
       }
+    },
+    {
+      "name": "java-current-execution-profile-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-current-execution-profile/evidence.zip",
+      "bytes": 3228695,
+      "sha256": "094528b99a2e1a1f42072b70549bfde878ef993729b03cdae33af6fc538ffd26",
+      "outcome": "diagnostic-only"
+    },
+    {
+      "name": "cml-voltage-magnitude-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-cml-voltage-magnitude/evidence.zip",
+      "bytes": 5053118,
+      "sha256": "67dbca8cbc41c80cece5791c90f1489b91418882adcf26f00e632c4d60ef08bb",
+      "outcome": "screened-not-promoted"
     }
   ],
   "row_solve": {
@@ -1467,5 +1481,73 @@
     "complete_recordings": 26,
     "simultaneous_logical_processors": 1,
     "production_source_changed": false
-  }
+  },
+  "voltage_magnitude_screen": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.3716342,
+          9.1875273,
+          8.9395273,
+          8.8604556,
+          8.8411392
+        ],
+        "candidate": [
+          8.9718347,
+          8.9821789,
+          8.8536074,
+          9.0007401,
+          9.0631077
+        ]
+      },
+      "medians_s": {
+        "control": 8.9395273,
+        "candidate": 8.9821789
+      },
+      "paired_savings_s": [
+        0.3997995000000003,
+        0.2053484000000001,
+        0.08591990000000038,
+        -0.14028449999999992,
+        -0.22196849999999912
+      ],
+      "median_paired_saving_s": 0.08591990000000038,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.0914921,
+          6.3135151,
+          6.0940934,
+          6.2820189,
+          6.4680917
+        ],
+        "candidate": [
+          6.4756113,
+          6.4325453,
+          6.2493243,
+          6.1686756,
+          6.4248808
+        ]
+      },
+      "medians_s": {
+        "control": 6.2820189,
+        "candidate": 6.4248808
+      },
+      "paired_savings_s": [
+        -0.38411919999999977,
+        -0.11903020000000009,
+        -0.1552308999999994,
+        0.11334329999999948,
+        0.04321090000000005
+      ],
+      "median_paired_saving_s": -0.11903020000000009,
+      "candidate_wins": 2,
+      "recordings_identical": true
+    }
+  ]
 }

@@ -419,3 +419,7 @@ This screening candidate is not promoted by the evidence package. Production sou
 ## Current-assembly measurement resolution
 
 A [sampled per-bus timer audit](current-assembly-components-2026-10-22.md) preserves all 30 complete Case 1/2 recordings and original iteration counts, but exposes significant timer overhead. Its fine-grained intervals are not reliable exclusive uninstrumented costs and must not be extrapolated into a speedup claim. No production change is promoted. The next attribution step should use lower-perturbation execution sampling; the broader accuracy and eight-second objective remain open.
+
+## Execution sampling and immutable voltage sensing
+
+The [execution-sampling profile](java-current-execution-profile-2026-10-22.md) preserves all 30 recordings and retains the raw flight recordings. Sampled leaf locations are not exclusive method costs. A separate [immutable-voltage magnitude screen](cml-voltage-magnitude-2026-10-22.md) checks a smaller controller-input opportunity with four focused tests and 52 complete recording comparisons. Neither evidence package itself promotes a production change or establishes independent-reference accuracy; the eight-second goal remains open.
