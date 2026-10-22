@@ -259,3 +259,28 @@ experiment, consult the [device-performance history](dynamic-device-profile-2026
 controller-reference binding, zero-time PSS kernels, imported-machine Norton
 source caching, typed PSS inputs and endpoint-output reuse have all been tried.
 A changed name or current baseline alone does not justify repeating a screen.
+
+## Network component attribution
+
+Twelve fresh-case warmups precede three measurements per case on one pinned logical CPU. The existing Java baseline uses 1/240-second network steps, 1e-5 voltage-correction tolerance, one ST1 step and experimental network acceleration. Full recording and writer closure remain timed. No production source changes.
+
+| Region, seconds | Case 1 | Case 2 |
+| --- | ---: | ---: |
+| Complete case (instrumented) | 9.026617 | 6.505862 |
+| Current assembly | 1.213837 | 1.146658 |
+| Custom-current hook | 0.000374 | 0.000445 |
+| Sparse solve with retained factors | 0.722714 | 0.781695 |
+| Solved voltage publication and convergence observation | 0.459390 | 0.485539 |
+| Acceleration eligibility and calculation | 0.541306 | 0.610407 |
+| Accelerated voltage publication | 0.321248 | 0.360403 |
+| Refactorization after initialization | 0.001970 | 0.001662 |
+
+The network equation counters are 18,341 and 20,203. Outer solver iteration counters are 18,340 and 20,202. The direct event-processing network solve explains the additional call. Both cases factor twice after initialization; ordinary iterations reuse the factorization. The timing of those refactorizations is too small to explain the remaining performance gap.
+
+All 30 recordings match the complete retained baseline byte for byte. No channels, samples or event duplicates are removed. These timer-instrumented measurements identify work; they are not new uninstrumented performance results or independent-reference accuracy acceptance. Existing six-case and accuracy limitations remain.
+
+The first summary calculated network_other_s by subtracting all component timers from the outer networkSolutionStep timer. That remainder is invalid: the component timers include a direct event-processing solve that the outer wrapper excludes. The raw value is retained with this correction and is not used in conclusions. Similarly, the earlier integration-excluding-network region still contains that direct event solve. Component regions in the table are disjoint, but the outer network/integration fields must not be combined with them as exclusive categories. Initialization is outside the component counters and inside the complete-case time. Independent medians need not sum.
+
+Current assembly is the largest measured network component. Solved-voltage publication and accelerated-voltage publication together are also material. The next distinct candidate should investigate whether the intermediate solved voltage must be written to every bus before a successful acceleration step immediately replaces it. This differs from the existing deferred-angle setter, which still writes both voltages. Any staged publication requires exact standard classes, observer/callback compatibility, live injection refresh at the next iteration, original convergence checks, correct publication on acceptance/failure, and comparison of full trajectories. This audit does not authorize skipping either publication in production.
+
+Compact source/classes, commands, raw runs, scope correction, affinity, input/runtime/output hashes are retained. Complete recordings remain explicit external dependencies. Supplied references are preserved. The eight-second goal remains open.

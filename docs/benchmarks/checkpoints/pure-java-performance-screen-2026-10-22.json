@@ -60,6 +60,13 @@
       "bytes": 5130448,
       "sha256": "7504960d8aff8b34b30b34f22694f1d0adabcefa49f00889145f3d38841949aa",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "java-network-breakdown-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-network-breakdown/evidence.zip",
+      "bytes": 3114448,
+      "sha256": "bfd32c897cef14c6572c7faebc7e72f2c23c124d8759fd23b2a6c23a9a366346",
+      "outcome": "diagnostic-only"
     }
   ],
   "row_solve": {
@@ -509,5 +516,48 @@
     "docs/benchmarks/checkpoints/controller-binding-screen-2026-10-21.json",
     "docs/benchmarks/checkpoints/pss-zero-step-screen-2026-10-21.json",
     "docs/benchmarks/checkpoints/imported-norton-source-screen-2026-10-21.json"
-  ]
+  ],
+  "network_breakdown": {
+    "medians": {
+      "1": {
+        "complete_case_wall_s": 9.0266168,
+        "network_s": 3.3360883,
+        "current_assembly_s": 1.2138367,
+        "custom_current_s": 0.000374,
+        "sparse_solve_s": 0.722714,
+        "solved_voltage_publication_and_convergence_s": 0.4593904,
+        "factorization_s": 0.0019702,
+        "factorizations": 2,
+        "network_equation_calls": 18341,
+        "acceleration_compute_s": 0.5413064,
+        "mixed_voltage_publication_s": 0.3212485,
+        "integration_excluding_network_and_event_recording_s": 4.883229,
+        "recording_write_s": 0.2556805
+      },
+      "2": {
+        "complete_case_wall_s": 6.5058623,
+        "network_s": 3.4708841,
+        "current_assembly_s": 1.1466577,
+        "custom_current_s": 0.0004446,
+        "sparse_solve_s": 0.7816949,
+        "solved_voltage_publication_and_convergence_s": 0.4855386,
+        "factorization_s": 0.0016616,
+        "factorizations": 2,
+        "network_equation_calls": 20203,
+        "acceleration_compute_s": 0.6104068,
+        "mixed_voltage_publication_s": 0.3604027,
+        "integration_excluding_network_and_event_recording_s": 2.1209868,
+        "recording_write_s": 0.2074101
+      }
+    },
+    "scope_correction": {
+      "network_s": "Outer networkSolutionStep wrapper, excluding the direct event-processor solve.",
+      "component_timers": "Every network equation call after initialization, including the direct event solve, plus acceleration compute/publication.",
+      "network_other_s": "INVALID as an exclusive remainder: numerator and subtracted timers cover different scopes. Retained raw for audit only; do not use.",
+      "integration_excluding_network_and_event_recording_s": "Excludes outer network wrapper and recording only; still contains direct event network work.",
+      "factorizations": "Two counted factorizations after initialization; initialization factorization is outside these counters."
+    },
+    "complete_recordings": 30,
+    "recordings_identical": true
+  }
 }
