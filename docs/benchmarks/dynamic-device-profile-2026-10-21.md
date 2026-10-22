@@ -191,3 +191,33 @@ retains prototype sources, commands, run statuses, timings and before/after test
 reports. Verified identical generated recordings share storage with the retained
 baseline; all paths and file contents remain available. Supplied reference files
 are untouched.
+
+
+## PSS2A zero-time stage screening
+
+An isolated prototype specializes zero-time predictor evaluations of the exact
+delay, filter and washout block classes. It preserves the existing arithmetic,
+captured-input order, state/derivative storage and subsequent refresh passes.
+Custom, compound and non-windup blocks retain their existing kernels. Physical
+parameters, ST1 substeps, network interval and convergence tolerance are unchanged.
+
+Thirty-six focused tests pass, including bitwise block-storage comparisons
+through zero-time and nonzero predictor/corrector stages, zero-time blocks,
+custom-block fallback and binding replacement. All 34 complete Case 1 recordings
+match the retained baseline byte for byte. Both processes use one logical CPU,
+twelve full warmups and five measurements including recording and writer closure.
+
+| Variant | Median total | Range |
+| --- | ---: | ---: |
+| Control | 10.843971 s | 10.770075–11.376105 s |
+| Zero-time prototype | 10.695996 s | 10.548275–11.156199 s |
+
+The median reduction is 0.147974 seconds (1.36%). Timing ranges
+overlap and compilation remains active during measurement. This screen does not
+establish a reliable performance improvement; the prototype stays outside
+production and does not replace the selected checkpoint. Case 2 was not timed in
+this screen. The eight-second target and independent-reference accuracy remain
+open. The [screening evidence index](checkpoints/pss-zero-step-screen-2026-10-21.json)
+retains the source, tests, exact commands, timings and verified affinity records.
+Identical generated recordings share retained storage; supplied references are
+unchanged.

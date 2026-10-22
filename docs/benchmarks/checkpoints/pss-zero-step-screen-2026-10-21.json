@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "description": "Isolated zero-time PSS2A stage specialization screening; no production promotion or target completion.",
+  "base_commit": "2ea7a25aa0339bf47b0250b003230e76f0da8ea1",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-pss-zero-step-screen/evidence.zip",
+  "archive_sha256": "79f30a444bde412239a954ca36055e474cef062104481f8fb6aa7850fb3325a6",
+  "archive_bytes": 3422632,
+  "focused_tests_passed": 36,
+  "protocol": {
+    "case": 1,
+    "warmups": 12,
+    "measurements": 5,
+    "logical_processors": 1,
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "st1_substeps": 10,
+    "scope": "Fresh parse, preparation, initialization, all observations and writer closure",
+    "excluded": [
+      "Pending observation-cache prototype",
+      "Pending compact-state prototype"
+    ]
+  },
+  "results": [
+    {
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        11.1561994,
+        10.6959965,
+        10.5482753,
+        10.6870783,
+        11.0008192
+      ],
+      "median_s": 10.6959965,
+      "min_s": 10.5482753,
+      "max_s": 11.1561994,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        615,
+        211,
+        311,
+        98,
+        146
+      ]
+    },
+    {
+      "case": 1,
+      "variant": "baseline",
+      "seconds": [
+        11.376105,
+        10.7700749,
+        10.8439708,
+        10.8079251,
+        10.8829826
+      ],
+      "median_s": 10.8439708,
+      "min_s": 10.7700749,
+      "max_s": 11.376105,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        621,
+        207,
+        317,
+        100,
+        143
+      ]
+    }
+  ],
+  "median_reduction_s": 0.14797429999999956,
+  "median_reduction_percent": 1.3645767102213109
+}
