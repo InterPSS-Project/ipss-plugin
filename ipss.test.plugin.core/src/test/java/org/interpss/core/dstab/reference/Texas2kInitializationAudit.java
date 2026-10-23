@@ -15,6 +15,8 @@ import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
 /**
  * Read-only benchmark initialization audit using the core state accessors.
  * Cached derivatives must be evaluated by the solver before this is called.
+ * Second-order stabilizer blocks expose pure slopes at their retained inputs
+ * and current states; observing those slopes does not advance the model.
  * Missing rate access is reported explicitly; finite initial outputs alone do
  * not establish equilibrium or agreement with a reference trajectory.
  */
@@ -61,6 +63,14 @@ public final class Texas2kInitializationAudit {
         }
       } else if(entry.getValue() instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock block) {
         rates.put(prefix+entry.getKey(),block.getStateDerivative());
+      } else if(entry.getValue() instanceof org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock b) {
+        states.put(prefix+entry.getKey()+".rate", b.getRate());
+        rates.put(prefix+entry.getKey()+".output", b.getOutputSlope());
+        rates.put(prefix+entry.getKey()+".rate", b.getRateSlope());
+      } else if(entry.getValue() instanceof org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock b) {
+        states.put(prefix+entry.getKey()+".second", b.getSecondState());
+        rates.put(prefix+entry.getKey()+".first", b.getFirstStateSlope());
+        rates.put(prefix+entry.getKey()+".second", b.getSecondStateSlope());
       } else if(entry.getValue() instanceof CMLControlBlock1stOrderAdapter b)rates.put(prefix+entry.getKey(),b.getDX_dt());
       else missing.add(prefix+entry.getKey()+": retained derivative accessor unavailable");
     }
