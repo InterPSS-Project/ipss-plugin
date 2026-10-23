@@ -227,6 +227,20 @@
       "bytes": 11059893,
       "sha256": "7dc3a7b5bd2b3156c4fe5fb1381bf913246c6c4f7cbd4cf7b55b287eb5416fcf",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-numeric-frame-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-numeric-frame/evidence.zip",
+      "bytes": 5333763,
+      "sha256": "c2301b4d87e86fc97c84089244249c50a331b9210a61fc04fac7953c362d6b93",
+      "outcome": "numerical-frame-prototype-full-timing-screen"
+    },
+    {
+      "name": "pss-numeric-frame-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-numeric-frame-v2/evidence-v2.zip",
+      "bytes": 5460558,
+      "sha256": "b1bcd92e35059f77f34f01bd8f492632234f5412aaa30f2539aee05a7ecdf54d",
+      "outcome": "opt-in-numerical-frame-integrated-default-disabled"
     }
   ],
   "row_solve": {

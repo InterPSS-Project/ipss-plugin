@@ -94,7 +94,7 @@ public class Pss2aScalarPreparationTest {
     private static Ieee1992PSS2AStabilizer model() throws Exception {
         return model(false);
     }
-    private static Ieee1992PSS2AStabilizer model(boolean zeroTime) throws Exception {
+    static Ieee1992PSS2AStabilizer model(boolean zeroTime) throws Exception {
         IpssCorePlugin.init();String base="testData/adpter/psse/v33/SMIB/";
         var context=new PSSEMultiFileLoader().loadDStab(base+"SMIB_v33.raw",base+"SMIB_v33_genrou_esst1a_pss2a.dyr");
         var algorithm=context.getDynSimuAlgorithm();

@@ -23,6 +23,8 @@ final class Pss2aDirectEvaluation {
     final boolean singleRefresh;
     final boolean scalarPreparation;
     long singleRefreshCount;
+    final Pss2aNumericFrame numericFrame;
+    long numericStages;
 
     Pss2aDirectEvaluation(Ieee1992PSS2AStabilizer model) {
         this(model,!Boolean.getBoolean("ipss.experiment.disablePssScalarPreparation"));
@@ -62,6 +64,8 @@ final class Pss2aDirectEvaluation {
         for(int i=0;i<types.length;i++)standard &= nodes[i].block.getClass()==types[i];
         singleRefresh=forwardOutput && standard && !Boolean.getBoolean("ipss.experiment.disablePssSingleRefresh");
         scalarPreparation=forwardOutput && standard && allowScalarPreparation;
+        numericFrame=Boolean.getBoolean("ipss.experiment.pssNumericFrame")
+            ?Pss2aNumericFrame.create(this):null;
         System.err.println("PSS output forward traversal eligible: "+forwardOutput);
 
         model.customBlock1.directOutput=first::output;
@@ -101,6 +105,9 @@ final class Pss2aDirectEvaluation {
         }
     }
     boolean step(boolean predictor,double dt) {
+        if(numericFrame!=null && numericFrame.eligible()) {
+            numericFrame.step(predictor,dt);numericStages++;return true;
+        }
         capturedCount=0;
         prepare(true);
         for(int i=0;i<capturedCount;i++)
