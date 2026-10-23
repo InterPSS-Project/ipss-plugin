@@ -20,6 +20,10 @@ def main(argv=None):
     parser.add_argument("--case", type=int, choices=[1, 2], required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--verify-only", action="store_true")
+    parser.add_argument("--cpu", type=int, choices=range(64), default=0,
+                        metavar="0..63", help="Logical CPU in the current affinity group; historical default 0")
+    parser.add_argument("--compiler-debug", choices=["historical", "none"], default="historical",
+                        help="Match the historical -g build; none retains the earlier diagnostic rebuild")
     args = parser.parse_args(argv)
     repo = Path(__file__).resolve().parents[1]
     index_path = repo / "docs/benchmarks/checkpoints/best-source-point-rollback-2026-10-23.json"
@@ -30,9 +34,13 @@ def main(argv=None):
     old_path = verified(repo / dependency["manifest"], dependency["digest"])
     old = json.loads(old_path.read_text())
     root = (repo / args.output).resolve()
-    if root.exists() or not root.is_relative_to((repo / "target").resolve()):
-        parser.error("Output must be a new directory under target")
-    if shutil.disk_usage((repo / "target").resolve()).free < 3 * 1024**3:
+    allowed_roots = [(repo / "target").resolve(),
+                     (repo / "ipss.test.plugin.core/target").resolve()]
+    output_parent = next((path for path in allowed_roots
+                          if root != path and root.is_relative_to(path)), None)
+    if root.exists() or output_parent is None:
+        parser.error("Output must be a new directory under target or ipss.test.plugin.core/target")
+    if shutil.disk_usage(output_parent).free < 3 * 1024**3:
         raise RuntimeError("Need 3 GiB free before the bounded source replay")
     core = repo.parent / "core"
     for checkout, commit, path in [
@@ -58,7 +66,10 @@ def main(argv=None):
             raise RuntimeError("Main source count changed")
         output = root / (name + "-classes")
         output.mkdir()
-        arguments = ["-proc:none", "-g:none", "-encoding", "UTF-8", "-cp",
+        # In this JDK, debug information also disables javac lambda deduplication.
+        # Preserve the measured compiler mode, not just equivalent source text.
+        debug_option = "-g" if args.compiler_debug == "historical" else "-g:none"
+        arguments = ["-proc:none", debug_option, "-encoding", "UTF-8", "-cp",
                      ";".join([*map(str, reversed(outputs)), *libraries]), "-d", str(output), *map(str, files)]
         argfile = root / (name + "-javac.args")
         argfile.write_text("\n".join('"' + value.replace("\\", "/") + '"' for value in arguments), encoding="utf-8")
@@ -115,10 +126,11 @@ def main(argv=None):
                "-cp", str(harness) + ";" + cp, "org.interpss.core.dstab.reference.NumericFrameTimingRun",
                str(root / "plan.json"), case["event_key"]]
     (root / "command.json").write_text(json.dumps(command, indent=2))
-    run_single_cpu(command, repo, root)
+    run_single_cpu(command, repo, root, args.cpu)
     affinity = json.loads((root / "affinity.json").read_text())
-    if affinity["observed_mask_before"] != 1 or affinity["observed_mask_after"] != 1:
-        raise RuntimeError("Historical CPU 0 affinity was not preserved")
+    if (affinity["observed_mask_before"] != 1 << args.cpu
+            or affinity["observed_mask_after"] != 1 << args.cpu):
+        raise RuntimeError("Requested CPU affinity was not preserved")
     rows = json.loads((root / "warm-statuses.json").read_text())
     count = 2 if args.verify_only else 26
     if len(rows) != count or len({row["pid"] for row in rows}) != 1:
@@ -143,8 +155,15 @@ def main(argv=None):
     measured = [row for row in rows if not row["warmup"] and row["candidate"]]
     summary = dict(case=args.case, status="completed", complete_recordings_identical=count,
                    verify_only=args.verify_only, performance_benchmark=not args.verify_only,
+                   compiler_debug=args.compiler_debug,
+                   cpu=args.cpu, affinity_verified=True,
                    times_s=[row["complete_case_wall_s"] for row in measured],
                    median_s=None if args.verify_only else statistics.median(row["complete_case_wall_s"] for row in measured),
+                   median_cpu_s=statistics.median(row["process_cpu_s"] for row in measured),
+                   median_setup_s=statistics.median(row["status"]["setup_initialization_wall_s"] for row in measured),
+                   median_simulation_output_s=statistics.median(row["status"]["simulation_output_wall_s"] for row in measured),
+                   measured_compilation_ms=[row["compilation_time_ms"] for row in measured],
+                   measured_gc_ms=[row["gc_time_ms"] for row in measured],
                    compiled_main_sources=index["main_source_counts"], archived_main_classes_on_classpath=False,
                    pinned_benchmark_support_classes=fixture_count,
                    independent_reference_accuracy_qualified=False, checkpoint_digest=digest(index_path))

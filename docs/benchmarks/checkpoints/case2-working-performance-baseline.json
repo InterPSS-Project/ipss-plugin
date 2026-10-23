@@ -8,7 +8,9 @@
   "replay_tool": "tools/replay_best_source_checkpoint.py",
   "replay_args": [
     "--case",
-    "2"
+    "2",
+    "--cpu",
+    "6"
   ],
   "source_checkout": true,
   "production_source_replaced": true,
@@ -16,6 +18,14 @@
     "1": 8.5965081,
     "2": 6.5199838
   },
-  "new_warmed_timing_claim": false,
-  "independent_reference_accuracy_qualified": false
+  "new_warmed_timing_claim": true,
+  "independent_reference_accuracy_qualified": false,
+  "latest_measurement_record": "docs/benchmarks/checkpoints/best-timing-reproduction-2026-10-23.json",
+  "latest_quiet_cpu": 6,
+  "latest_quiet_cpu_medians_s": {
+    "1": 8.909746,
+    "2": 6.429334
+  },
+  "exact_historical_median_pair_reproduced": false,
+  "compiler_debug": "historical (-g)"
 }

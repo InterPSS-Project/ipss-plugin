@@ -1,5 +1,10 @@
 # Best two-case source checkpoint restored
 
+The [subsequent timing investigation](best-timing-reproduction-2026-10-23.md)
+corrects the compiler mode in the replay recipe and records warmed medians of
+8.909746 s / 6.429334 s on quiet CPU 6. The selected working replay now passes
+that CPU explicitly; direct commands without `--cpu` retain historical CPU 0.
+
 The working core and plugin repositories now use branch
 `restore/best-two-case-20261023`. Plugin numerical sources are restored to
 `a60d30e80e8a806d23587ce633722dc92eb44bae`, whose retained measurements report
