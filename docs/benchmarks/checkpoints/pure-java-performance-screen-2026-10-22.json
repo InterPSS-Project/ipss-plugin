@@ -220,6 +220,13 @@
       "bytes": 566834,
       "sha256": "4639a56563963ebd5b8f95000dc0907af648d48e5f7f705f6c79ad51b48f9cd8",
       "outcome": "component-and-compatibility-screen-not-promoted"
+    },
+    {
+      "name": "anderson-depth-screen-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-anderson-depth/evidence.zip",
+      "bytes": 11059893,
+      "sha256": "7dc3a7b5bd2b3156c4fe5fb1381bf913246c6c4f7cbd4cf7b55b287eb5416fcf",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
