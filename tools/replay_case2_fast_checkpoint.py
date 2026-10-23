@@ -133,6 +133,10 @@ def main() -> None:
             parser.error("--selected cannot be combined with explicit version flags")
         selected_path = repo / "docs/benchmarks/checkpoints/case2-working-performance-baseline.json"
         selected = json.loads(selected_path.read_text())["selected_checkpoint"]
+        if selected == "docs/benchmarks/checkpoints/best-source-point-rollback-2026-10-23.json":
+            from replay_best_source_checkpoint import main as replay_source
+            replay_source(["--case", "2", "--output", str(args.output)])
+            return
         known = {
             "docs/benchmarks/checkpoints/case2-recovered-fast-2026-10-21.json": (False, False),
             "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json": (True, False),
