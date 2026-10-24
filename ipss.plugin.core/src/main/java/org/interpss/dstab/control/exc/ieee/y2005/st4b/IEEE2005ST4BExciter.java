@@ -31,52 +31,18 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   display= {})
 public class IEEE2005ST4BExciter extends AnnotateExciter
         implements IntegrationStepAware, UnderExcitationLimiterTarget {
-    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
-            throws com.interpss.common.exp.InterpssException {
-        return getClass() == IEEE2005ST4BExciter.class
-                ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
-    }
-    private final St4bBridgeInputCache bridgeInputCache = new St4bBridgeInputCache();
-    private boolean bridgeInputReuseEnabled = true;
-    /** Change at an idle boundary; every reuse still checks the live numeric inputs. */
-    public void setBridgeInputReuseEnabled(boolean enabled) {
-        if (getRuntimePhase() != RuntimePhase.IDLE)
-            throw new IllegalStateException("Change bridge input reuse at an idle boundary");
-        bridgeInputReuseEnabled = enabled;
-        bridgeInputCache.invalidate();
-    }
-    public boolean isBridgeInputReuseEnabled() { return bridgeInputReuseEnabled; }
-    public long getBridgeInputReuseCount() { return bridgeInputCache.voltageReuses(); }
-    public long getBridgePhasorReuseCount() { return bridgeInputCache.phasorReuses(); }
-    private boolean compiledStageEnabled = true;
-    private transient St4bCompiledStage endpointStage;
-    @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
-        endpointStage = compiledStageEnabled ? St4bCompiledStage.tryCreate(this) : null;
-        return endpointStage;
-    }
-    /** Whether a machine electrical prepass may replace an otherwise redundant controller refresh. */
-    public boolean supportsElectricalEndpointPreparation() {
-        return hasCompiledStageEvaluator() && endpointStage != null
-                && getRuntimePhase() == RuntimePhase.IDLE && !eNotificationRequired()
-                && endpointStage.supportsElectricalEndpointPreparation();
-    }
-    public void setCompiledStageEnabled(boolean enabled) {
-        if (isRuntimePlanCompiled() || getRuntimePhase() != RuntimePhase.IDLE)
-            throw new IllegalStateException("Invalidate the controller plan before changing its stage policy");
-        compiledStageEnabled = enabled;
-    }
     private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
 	/** External UEL contribution; zero is the nonbinding/absent value. */
 	public double vuel = 0.0;
 	/** External OEL ceiling; positive infinity is the nonbinding/absent value. */
 	public double voel = Double.POSITIVE_INFINITY;
-	
+
 	/*
 	 * Part-1: Define the blocks
 	 * ==============================
 	 */
-	
+
 	// transducer block
 	 public double tr = 0.04;
      @AnControllerField(
@@ -84,10 +50,10 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
           input="mach.vt",
           parameter={"type.NoLimit", "this.k1", "this.tr"},
           y0="mach.vt",//debug = true,
-         initOrderNumber=-1 
+         initOrderNumber=-1
           )
        DelayControlBlock trDelayBlock;
-	
+
 	   //kpr kir-- PI  block
 	   public double Kpr =1, Kir=1, vrmax =99, vrmin =-99;
 	   public double integralStateLimits = 0.0;
@@ -109,10 +75,10 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 		   //debug = true
 		   )//initOrderNumber = 3
 	   DelayControlBlock taDelayBlock;
-	
-	
+
+
      //KG feedback, gain with upper limit
-	   
+
 	   public double kg = 1.0, vgmax = Double.POSITIVE_INFINITY, vgmin = -9999.0;
 	   @AnControllerField(
 		   type= CMLFieldEnum.StaticBlock,
@@ -122,7 +88,7 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 		   //debug=true
 		   )
 	   GainBlock kgGainBlock;
-	   
+
 	  //KPM KIM---PI CONTROL NON-Windup limits
 	  public double Kpm = 10.0, Kim = 0.01,vmmax = 9,vmmin = -9.0;
 	  @AnControllerField(
@@ -139,8 +105,8 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 		   input={"this.vmPIBlock.y", "this.voel"},
 		   y0="this.customBlock.u0")
 	   LowValueFunction voelGate;
-	   
-	   
+
+
 	   public double kc = 1.0, kp = 2.0, ki = 1.0, vbmax = 10.0, angKp_deg =0.0, xl =1.0;
 	   @AnControllerField(
 	      type= CMLFieldEnum.StaticBlock,
@@ -151,24 +117,24 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	      )
 	   public ICMLStaticBlock customBlock = new CMLStaticBlockAdapter() {
 	      private double VB = 0.0;
-	     
+
 	      @Override
 	      public boolean initStateY0(double y0) {
-	    	  VB = calcVB(calcVe());
-	    	  if(VB ==0.0){
-	    		  log.error("Error: VB of IEEE 2005 ST4B exciter is 0 for initialization, @ "+getMachine().getId());
-	    	      return false;
-	    	  }
+              VB = calcVB(calcVe());
+              if(VB ==0.0){
+                  log.error("Error: VB of IEEE 2005 ST4B exciter is 0 for initialization, @ "+getMachine().getId());
+                  return false;
+              }
 	          this.u = y0/VB;
 	          //System.out.println("Y0, VB, u ="+y0+","+VB+","+u);
 	          return true;
 	      }
 	      @Override
 	      public double getU0(){
-	    	  return this.u;
+              return this.u;
 	      }
-	      
-	     
+
+
 	      @Override
 	      public void eulerStep1(double u, double dt) {
 	         this.u = u;
@@ -179,55 +145,48 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	      }
 	      @Override
 	      public double getY() {
-	         VB = calcVB(calcVe());
-	         return this.u * VB;
+             if(bridgeScopeDepth>0) {
+                 if(!bridgeCached) {fixedBridge=calcVB(calcVe());bridgeCached=true;}
+                 VB=fixedBridge;
+             } else VB=calcVB(calcVe());
+             return this.u*VB;
 	      }
 	      private double calcVe(){
-             boolean reuse = bridgeInputReuseEnabled && IEEE2005ST4BExciter.this.getClass() == IEEE2005ST4BExciter.class;
-             double gain = kp, degrees = angKp_deg;
-             Complex kpCplx;
-             if (reuse) kpCplx = bridgeInputCache.phasor(gain, degrees);
-             else {
-                 double angleKp = Math.toRadians(degrees);
-                 kpCplx = new Complex(gain * Math.cos(angleKp), gain * Math.sin(angleKp));
-             }
-             Machine mach = (Machine) eInternalContainer();
-             Complex vt = mach.getParentGen().getParentBus().getVoltage();
-             Complex it = mach.getIxy();
-             if (reuse && vt.getClass() == Complex.class && it.getClass() == Complex.class)
-                 return bridgeInputCache.voltage(kpCplx, vt, it, xl, ki);
-             // Custom arithmetic retains fresh operand identity and its original evaluation order.
-             if (reuse) kpCplx = new Complex(kpCplx.getReal(), kpCplx.getImaginary());
-             return vt.multiply(kpCplx).add(new Complex(0, 1)
-                   .multiply((kpCplx.multiply(xl).add(ki)).multiply(it))).abs();
-          }
+	         double angleKp = Math.toRadians(angKp_deg);
+	         Complex kpCplx = new Complex(kp * Math.cos(angleKp),
+	               kp * Math.sin(angleKp));
+	         Machine mach = (Machine) eInternalContainer();
+
+	         Complex vt = mach.getParentGen().getParentBus().getVoltage();
+	         Complex it = mach.getIxy();
+	         // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
+	         return vt.multiply(kpCplx).add(new Complex(0, 1)
+	               .multiply((kpCplx.multiply(xl).add(ki)).multiply(it))).abs();
+	      }
 
 	      private double calcVB(double ve){
-	    	 // if(getMachine()!=null)
-	    	  VB = ve*fexFunc(ve, getMachine().calculateIfd(MachineIfdBase.EXCITER));
+             // if(getMachine()!=null)
+              VB = ve*fexFunc(ve, getMachine().calculateIfd(MachineIfdBase.EXCITER));
 	         return Math.max(0.0, Math.min(vbmax, VB));
-	    	  
+
 	      }
 	      private double fexFunc (double ve, double ifd){
-	    	  double In = kc *ifd/ve;
-	  		if (In <= 0.0)
-	  			return 1.0;
-	  		else if (In > 0.0 && In <= 0.433)
+              double In = kc *ifd/ve;
+            if (In <= 0.0)
+                return 1.0;
+            else if (In > 0.0 && In <= 0.433)
 				return 1.0 - 0.577 * In;
-	  		else if (In > 0.433 && In < 0.75)
-	  			return Math.sqrt(0.75 - In * In);
-	  		else if (In >= 0.75 && In <= 1.0)
-	  			return 1.732 * (1.0 - In);
-	  		else
-	  			return 0.0; // In > 1.0
+            else if (In > 0.433 && In < 0.75)
+                return Math.sqrt(0.75 - In * In);
+            else if (In >= 0.75 && In <= 1.0)
+                return 1.732 * (1.0 - In);
+            else
+                return 0.0; // In > 1.0
 	      }
 	   };
-    private final ICMLStaticBlock standardRectifier = customBlock;
-    boolean hasStandardRectifier() { return customBlock == standardRectifier; }
 
-	   
 
-	 
+
 
 	/*
 	 * Part-2: Define the contructors
@@ -258,6 +217,50 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	        _data = new IEEE2005ST4BExciterData();
 	    }
 
+    private St4DirectEvaluation directEvaluation;
+    private int bridgeScopeDepth;
+    private boolean bridgeCached;
+    private double fixedBridge;
+    public void enableDirectEvaluationExperiment() {
+        if(getClass()!=IEEE2005ST4BExciter.class)throw new IllegalStateException("Exact ST4 required");
+        directEvaluation=new St4DirectEvaluation(this);
+    }
+    /**
+     * Evaluate a zero-time predictor and its output in one fixed-input scope.
+     * The caller must hold any attached standard stabilizer output fixed until
+     * this method returns. All state and derivative work is retained. Custom
+     * or observed devices and unsettled feedback use the ordinary output path.
+     */
+    public double evaluateFixedInputEndpoint(Machine machine,boolean fixedPss) {
+        if(directEvaluation==null || !directEvaluation.endpointEligible(machine,fixedPss)) {
+            if(!nextStep(0.,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,machine,0))
+                throw new IllegalStateException("Exciter endpoint evaluation failed");
+            return getOutput(machine);
+        }
+        if(directEvaluation.scopedEndpoint)throw new IllegalStateException("Nested fixed endpoint");
+        beginBridgeScope();directEvaluation.scopedEndpoint=true;directEvaluation.preparedStable=false;
+        try {
+            if(!nextStep(0.,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,machine,0))
+                throw new IllegalStateException("Exciter endpoint evaluation failed");
+            return directEvaluation.preparedEndpointOutput();
+        } finally {
+            directEvaluation.scopedEndpoint=false;directEvaluation.preparedStable=false;endBridgeScope();
+        }
+    }
+    /** Number of settled endpoint outputs reused since this graph was built. */
+    public long getEndpointOutputReuseCount(){return directEvaluation==null?0:directEvaluation.endpointOutputReuses;}
+    private void beginBridgeScope() {if(bridgeScopeDepth++==0)bridgeCached=false;}
+    private void endBridgeScope() {if(--bridgeScopeDepth==0)bridgeCached=false;}
+    @Override public boolean eulerStep(boolean predictor,double dt,Machine machine) {
+        if(directEvaluation==null)return super.eulerStep(predictor,dt,machine);
+        beginBridgeScope();
+        try{return directEvaluation.step(predictor,dt);}finally{endBridgeScope();}
+    }
+    @Override public double getOutput(Machine machine) {
+        if(directEvaluation==null)return super.getOutput(machine);
+        beginBridgeScope();
+        try{return directEvaluation.output();}finally{endBridgeScope();}
+    }
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
 
@@ -294,9 +297,13 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	     */
 	    @Override
 	    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+            boolean rebuildDirectEvaluation = directEvaluation != null;
+            directEvaluation = null;
+            bridgeScopeDepth = 0;
+            bridgeCached = false;
 	        // pass the plugin data object values to the controller
         this.tr = correctedBypassTimeConstant(getData().getTr());
-	    	
+
 	        this.Kpr = getData().getKpr();
 	        this.Kir = getData().getKir();
 	        this.integralStateLimits = getData().isIntegralStateLimits() ? 1.0 : 0.0;
@@ -310,7 +317,7 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	        this.ta  = correctedBypassTimeConstant(getData().getTa());
 	        this.vrmax = getData().getVrmax();
 	        this.vrmin = getData().getVrmin();
-	        
+
 	        this.Kpm  = getData().getKpm();
 	        this.Kim  = getData().getKim();
 	        if (Math.abs(this.Kpm) <= 1.0e-9 && Math.abs(this.Kim) <= 1.0e-9) {
@@ -318,16 +325,16 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	        }
 	        this.vmmax = getData().getVmmax();
 	        this.vmmin = getData().getVmmin();
-	        
+
 	        this.kg   = getData().getKg();
 	        this.vgmax = getData().getVgmax();
 	        this.kp = getData().getKp();
 	        this.ki = getData().getKi();
 	        this.angKp_deg = getData().getAngKp();
 	        this.xl    =getData().getXl();
-	        
+
 	        this.kc = getData().getKc();
-	        
+
 	        this.vbmax = getData().getVbmax();
 
 	        if (this.vrmax < this.vrmin) {
@@ -347,10 +354,12 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	           this.vrmax = Math.max(this.vrmax, vr0);
 	           this.vrmin = Math.min(this.vrmin, vr0);
 	        }
-	        
+
 	        this.k1 =1.0;
 	        // always add the following statement
-	        return super.initStates(bus, mach);
+	        boolean initialized = super.initStates(bus, mach);
+            if (initialized && rebuildDirectEvaluation) enableDirectEvaluationExperiment();
+            return initialized;
 	    }
 
     private double correctedBypassTimeConstant(double value) {
@@ -476,16 +485,16 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	 */
 	    @Override
 		public AnController getAnController() {
-	    	return getClass().getAnnotation(AnController.class);  }
+            return getClass().getAnnotation(AnController.class);  }
 	    @Override
 		public Field getField(String fieldName) throws Exception {
-	    	return getClass().getField(fieldName);   }
+            return getClass().getField(fieldName);   }
 	    @Override
 		public Object getFieldObject(Field field) throws Exception {
-	    	return field.get(this);    }
-	
-	
-	
-	
+            return field.get(this);    }
+
+
+
+
 
 }

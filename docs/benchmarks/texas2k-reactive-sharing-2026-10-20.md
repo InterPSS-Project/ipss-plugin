@@ -97,6 +97,69 @@ after correcting the proven initial reactive allocation.
   retains source snapshots, reports, focused-test evidence, plots and hashed
   dependencies for the paired runs and original compressed references.
 
-The new option is a benchmark fixture capability. Production integration,
+At the October 20 checkpoint, the new option was a benchmark fixture capability. Default integration,
 the remaining dynamic discrepancy, the full original event matrix, direct
 frequency acceptance and the runtime target remain open.
+
+## Default preparation and capability tracking, October 22
+
+The shared `Texas2kPowerflowPreparation` path now explicitly selects participation
+allocation. The earlier capability was present but the default still retained the
+initial shunt. This reproduced bus voltage while giving several renewable units
+the wrong initial Q. The generator continues to determine the voltage target;
+allocation uses the imported participation factors and physical device bounds.
+The explicit initial-shunt-retention option remains available for diagnostics.
+Status output now records `reactive_allocation=PARTICIPATION_FACTORS`.
+
+All six cases were checked with the current preparation, 0.001 pu load-flow
+tolerance, quarter-cycle network steps and 1e-5 dynamic voltage tolerance. The
+table compares the first cold physical row with the supplied references. It is
+not a ten-second trajectory comparison.
+
+| Case | Previous maximum generator-Q error (Mvar) | Current maximum generator-Q error (Mvar) | Current maximum bus-voltage error (pu) |
+| --- | ---: | ---: | ---: |
+| 1 | 0.00116043 | 0.00116043 | 1.57356e-7 |
+| 2 | 0.00367427 | 0.00367427 | 1.42145e-5 |
+| 3 | 94.04488 | 0.00936052 | 1.13015e-5 |
+| 4 | 98.25800 | 0.00351694 | 4.95852e-6 |
+| 5 | Preparation failed | 0.147939 | 1.59421e-4 |
+| 6 | 98.29774 | 6.42137 | 5.40583e-6 |
+
+Cases 1 and 2 retain byte-identical short-run recordings. Case 6's remaining
+largest P/Q errors are on unit-99 channels: 10 MW at bus 1016 and 6.42137 Mvar
+at bus 1078. These are separate unresolved discrepancies, not evidence against
+the removed generator/shunt allocation error. Case 5's initial rotor error is
+0.00504456 degrees, above the prefault maximum-error target.
+
+Case 5 also exposed a repeated-solve defect. Bus 1033 was held at an aggregate
+Q limit of 1.0921 pu. After voltage changed, the physical generator-plus-shunt
+maximum became 1.08375779 pu, but the fixed-Q injection stayed at 1.0921 pu.
+Updating the limit alone let each previous-solution solve return to the same
+zero-mismatch electrical point. Preparation repeated 50 times and failed.
+
+The temporary aggregate injection now follows its binding voltage-dependent
+limit, including the contributing-machine value used to rebuild bus injections.
+Settlement also checks an expanding capability: an old bound cannot become an
+accepted interior allocation while its voltage target remains unmet. A residual
+within the requested load-flow tolerance may be projected onto the final physical
+bound; the device limits themselves remain exact. Independent capacitor and
+reactor tests verify both directions at 1e-3 and 1e-9 pu tolerances.
+
+Case 5 now completes preparation in two solves, followed by a zero-update
+post-netting solve. The existing `loadflow_before_netting_iterations` status field
+reports only the last solve's two iterations; it is not a total across the two
+solves. No aggregate iteration-count claim is made here.
+
+All 40 focused preparation tests pass. The two default-allocation regressions
+fail with the previous default, and both new bound-tracking regressions fail
+without the capability fix. The final six-case probes retain the earlier
+integration settings, including the isolated four-renewable-substep diagnostic
+for Case 3. Cases 1–3 complete the 0.1-second prefix; Cases 4, 5 and 6 fail at
+0.0458333, 0.0333333 and 0.05 seconds respectively. Full dynamic acceptance and
+the eight-second warmed runtime goal remain open. The existing full-reactor
+compilation limitations were not rechecked in this focused run.
+
+These changes are in the shared benchmark preparation helper, not a new default
+for every core load-flow caller. The
+[evidence index](checkpoints/default-reactive-sharing-preparation-2026-10-22.json)
+retains the source, tests, manual provenance, six-case reports and output hashes.

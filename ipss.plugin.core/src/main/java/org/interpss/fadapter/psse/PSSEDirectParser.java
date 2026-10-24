@@ -224,9 +224,17 @@ public class PSSEDirectParser {
         String line2 = reader.readLine();
         String line3 = reader.readLine();
 
+        // Some legacy headers separate IC/SBASE/REV by spaces before later commas.
+        int firstComma=line1.indexOf(',');
+        if(firstComma>0) {
+            String[] prefix=line1.substring(0,firstComma).trim().split("\\s+");
+            if(prefix.length==3)line1=String.join(",",prefix)+line1.substring(firstComma);
+        }
         PSSEDataRec rec = new PSSEDataRec(line1);
         // IC, SBASE, REV, XFRRAT, NXFRAT, BASFRQ
         baseMva = rec.getDouble(1, 100.0);
+        if(!Double.isFinite(baseMva) || baseMva<=0.)
+            throw new InterpssException("Case base MVA must be finite and positive");
         this.version = versionOverride != null
                 ? versionOverride
                 : PsseRev.fromHeaderLine(line1);

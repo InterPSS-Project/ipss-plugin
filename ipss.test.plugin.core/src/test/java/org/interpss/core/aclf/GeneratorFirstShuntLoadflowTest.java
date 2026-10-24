@@ -194,6 +194,38 @@ Q
         assertFalse(status.containsKey("loadflow_after_netting_solves"));
     }
 
+    @Test void defaultPreparationSharesReactivePowerUsingDeclaredFactors() throws Exception {
+        double voltage = 1.03, total = voltage * (voltage - 1.) / .1;
+        var lf = network(1., 1.06, .5,
+                new Machine(0., -.4, .6, voltage), new Machine(0., 0., 0., voltage));
+        var bus = lf.getNetwork().getBus("Bus1");
+        var shunt = bus.getSwitchedShuntList().get(0);
+        shunt.setRemoteControlPercentage(300.);
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        assertEquals(total / 4., bus.getContributeGen("1").getGen().getImaginary(), 2.e-8);
+        assertEquals(0., bus.getContributeGen("2").getGen().getImaginary(), 0.);
+        assertEquals(3. * total / 4. / (voltage * voltage), shunt.getBActual(), 2.e-8);
+        assertEquals(voltage, bus.getVoltageMag(), 2.e-8);
+        assertEquals(1.06, shunt.getDesiredControlRange().getMiddle(), 0.);
+        assertEquals("PARTICIPATION_FACTORS", status.get("reactive_allocation"));
+        // A subsequent preparation must retain the same physical allocation.
+        lf.setInitBusVoltage(false);
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        assertEquals(total / 4., bus.getContributeGen("1").getGen().getImaginary(), 2.e-8);
+        assertEquals(3. * total / 4. / (voltage * voltage), shunt.getBActual(), 2.e-8);
+    }
+
+    @Test void defaultPreparationTurnsOffCapacitorForNegativeReactiveRequirement() throws Exception {
+        var lf = network(1.02, 1.03, .5, new Machine(0., -.4, .6, 1.));
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        var bus = lf.getNetwork().getBus("Bus1");
+        assertEquals(1., bus.getVoltageMag(), 2.e-8);
+        assertEquals(-.2, bus.getContributeGen("1").getGen().getImaginary(), 2.e-8);
+        assertEquals(0., bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+    }
+
     @Test void relaxedFinalToleranceRetainsEarlierControlTransitionsAndPhysicalLimits() throws Exception {
         var lf = network(1.05, 1.03, .5, new Machine(0., -.1, .2, 1.));
         lf.setTolerance(1.e-3);
@@ -213,6 +245,42 @@ Q
 
     @Test void defaultNettingUsesSolvedPowerBeforeLoadConversion() throws Exception {
         checkSolvedNetting(true);
+    }
+
+    @Test void relaxedToleranceDoesNotAcceptAnUnbalancedClippedGenerator() throws Exception {
+        for (double direction : new double[] {-1., 1.}) {
+            double bound = direction * .2;
+            double required = bound + direction * .005;
+            double slack = 1. - .1 * required;
+            var lf = network(slack, 1.03, 0., new Machine(0., -.2, .2, 1.));
+            var bus = lf.getNetwork().getBus("Bus1");
+            bus.getSwitchedShuntList().clear();
+            lf.setTolerance(1.e-3);
+            var config = lf.getLfAdjAlgo().getLimitCtrlConfig();
+            config.setToleranceFactor(10.);
+            var status = new java.util.LinkedHashMap<String, Object>();
+            Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+            assertTrue(bus.isGenPQ(), "A Q violation above the electrical tolerance must enforce the limit");
+            double q = bus.getContributeGen("1").getGen().getImaginary();
+            double v = bus.getVoltageMag();
+            // Independent lossless branch balance, after physical allocation.
+            assertEquals(bound, q, 1.e-10);
+            assertTrue(Math.abs(v * (v - slack) / .1 - q) < lf.getTolerance());
+            assertEquals(1.e-3, status.get("reactive_limit_tolerance_pu"));
+            assertEquals(10., config.getToleranceFactor(), 0.);
+            assertEquals(1.e-3, lf.getTolerance(), 0.);
+        }
+    }
+
+    @Test void preparationPreservesAStricterReactiveLimitTolerance() throws Exception {
+        var lf = network(1., 1.03, 0., new Machine(0., -.2, .2, 1.));
+        lf.setTolerance(1.e-3);
+        var config = lf.getLfAdjAlgo().getLimitCtrlConfig();
+        config.setToleranceFactor(.1);
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        assertEquals(1.e-4, status.get("reactive_limit_tolerance_pu"));
+        assertEquals(.1, config.getToleranceFactor(), 0.);
     }
 
     @Test void coldControlDiagnosticKeepsSolvedNettingAndRestoresInitializationMode() throws Exception {
@@ -273,6 +341,7 @@ Q
                     if (method.getName().equals("loadflow") && ++calls[0] == 2) {
                         assertEquals(ControlInitializationMode.PREVIOUS_SOLUTION,
                                 lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+                        assertEquals(1., lf.getLfAdjAlgo().getLimitCtrlConfig().getToleranceFactor());
                         throw new IllegalStateException("Injected post-netting failure");
                     }
                     try { return method.invoke(lf, args); }
@@ -283,6 +352,7 @@ Q
         assertEquals("Injected post-netting failure", error.getMessage());
         assertEquals(ControlInitializationMode.COLD_START,
                 lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+        assertEquals(10., lf.getLfAdjAlgo().getLimitCtrlConfig().getToleranceFactor());
     }
 
     @Test void nettingPreservesOriginalLoadsAndDisambiguatesHyphenatedIds() throws Exception {
@@ -436,6 +506,67 @@ Q
     @Test void bothUpperLimitsLeaveUnmetVoltageTarget() throws Exception {
         double v = (10 + Math.sqrt(101.9))/19;
         check(network(1., 1.03, 0., new Machine(0, -.4, .05, 1.1)), v, .05, .5);
+    }
+
+    @Test void relaxedPowerToleranceKeepsVoltageDependentPhysicalBounds() throws Exception {
+        for (double tolerance : new double[]{1.e-3, 1.e-5, 1.e-9}) {
+            var lf = network(1., 1.03, 0., new Machine(0., -.4, .05, 1.1));
+            lf.setTolerance(tolerance);
+            var result = GeneratorFirstShuntLoadflow.solve(lf);
+            assertTrue(result.converged());
+            assertTrue(result.solves() < 10, "A feasible boundary allocation must not repeat unchanged solves");
+            var bus = lf.getNetwork().getBus("Bus1");
+            assertEquals(.05, bus.getGenQ(), 1.e-10);
+            assertEquals(.5, bus.getFirstSwitchedShunt(true).getBActual(), 1.e-10);
+            assertEquals(.05, bus.getContributeGenList().get(0).getGen().getImaginary(), 1.e-10);
+            assertTrue(Math.abs(bus.mismatch(com.interpss.core.algo.AclfMethodType.NR).getImaginary()) <= tolerance + 1.e-10);
+            assertEquals(tolerance, lf.getTolerance());
+        }
+    }
+
+    @Test void previousSolutionUpdatesHeldAggregateInjectionWithVoltageDependentBound() throws Exception {
+        for (double tolerance : new double[]{1.e-3, 1.e-9}) {
+            var lf = network(1., 1.03, 0.,
+                    new Machine(0., -.4, .05, 1.1), new Machine(0., 0., 0., 1.1));
+            lf.setTolerance(tolerance);lf.setInitBusVoltage(false);
+            lf.getLfAdjAlgo().getLimitCtrlConfig()
+                    .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
+            var result = GeneratorFirstShuntLoadflow.solve(lf,
+                    GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS);
+            assertTrue(result.converged());
+            assertTrue(result.solves() < 10, "A changing capability must update the held Q injection");
+            var bus = lf.getNetwork().getBus("Bus1");
+            // Qgen + Bmax*V^2 = V*(V-1)/X, where Qgen=.05 and X=.1.
+            double exact = (10. + Math.sqrt(101.9)) / 19.;
+            assertEquals(exact, bus.getVoltageMag(), tolerance);
+            assertEquals(.05, bus.getContributeGen("1").getGen().getImaginary(), 1.e-10);
+            assertEquals(0., bus.getContributeGen("2").getGen().getImaginary(), 0.);
+            assertEquals(.5, bus.getFirstSwitchedShunt(true).getBActual(), 1.e-10);
+            assertTrue(Math.abs(bus.mismatch(com.interpss.core.algo.AclfMethodType.NR).getImaginary())
+                    <= tolerance + 1.e-10);
+            assertEquals(tolerance, lf.getTolerance(), 0.);
+        }
+    }
+
+    @Test void previousSolutionUpdatesHeldLowerBoundForInductiveShunt() throws Exception {
+        for (double tolerance : new double[]{1.e-3, 1.e-9}) {
+            var lf = network(1., .95, 0., new Machine(0., -.05, .4, .9));
+            var bus = lf.getNetwork().getBus("Bus1");
+            bus.getFirstSwitchedShunt(true).getShuntCompensatorList().get(0).setUnitQMvar(-50.);
+            lf.setTolerance(tolerance);lf.setInitBusVoltage(false);
+            lf.getLfAdjAlgo().getLimitCtrlConfig()
+                    .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
+            var result = GeneratorFirstShuntLoadflow.solve(lf,
+                    GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS);
+            assertTrue(result.converged());assertTrue(result.solves() < 10);
+            // -.05 - .5*V^2 = V*(V-1)/.1 at the two lower limits.
+            assertEquals((10. + Math.sqrt(97.9)) / 21., bus.getVoltageMag(), tolerance);
+            assertEquals(-.05, bus.getContributeGen("1").getGen().getImaginary(), 1.e-10);
+            assertEquals(-.5, bus.getFirstSwitchedShunt(true).getBActual(), 1.e-10);
+            assertTrue(Math.abs(bus.mismatch(com.interpss.core.algo.AclfMethodType.NR).getImaginary())
+                    <= tolerance + 1.e-10);
+            assertEquals(tolerance, lf.getTolerance(), 0.);
+        }
     }
 
     @Test void plantUsesBothMachinesBeforeMovingShunt() throws Exception {

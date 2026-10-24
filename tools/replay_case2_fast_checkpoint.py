@@ -76,7 +76,10 @@ def install_overlay(repo: Path, root: Path, relative_index: str, base_archive: d
     return index, record, count
 
 
-def run_single_cpu(command: list[str], repo: Path, root: Path) -> None:
+def run_single_cpu(command: list[str], repo: Path, root: Path,
+                   cpu_index: int | None = None) -> None:
+    if cpu_index is not None and not 0 <= cpu_index < ctypes.sizeof(ctypes.c_size_t) * 8:
+        raise ValueError("CPU index must fit the current affinity group")
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel.SetProcessAffinityMask.argtypes = [wintypes.HANDLE, ctypes.c_size_t]
     kernel.SetProcessAffinityMask.restype = wintypes.BOOL
@@ -94,13 +97,16 @@ def run_single_cpu(command: list[str], repo: Path, root: Path) -> None:
     handle = wintypes.HANDLE(int(process._handle))
     try:
         allowed, system = affinity(handle)
-        selected = allowed & -allowed
+        selected = (allowed & -allowed) if cpu_index is None else 1 << cpu_index
+        if not selected & allowed:
+            raise RuntimeError("Requested CPU is outside the allowed process affinity")
         if not kernel.SetProcessAffinityMask(handle, selected):
             raise ctypes.WinError(ctypes.get_last_error())
         observed, _ = affinity(handle)
         if observed != selected or observed.bit_count() != 1:
             raise RuntimeError("Single-CPU affinity not established")
         record = dict(pid=process.pid, requested_mask=selected,
+                      cpu_index=selected.bit_length() - 1,
                       observed_mask_before=observed, system_mask=system)
         (root / "affinity.json").write_text(json.dumps(record, indent=2))
         (root / "affinity-ready").write_text("Single logical processor verified.\n")
@@ -124,11 +130,32 @@ def main() -> None:
                         help="Replay the retained machine-frame variant with 24 warmups and 7 measurements")
     parser.add_argument("--electrical-endpoint", action="store_true",
                         help="Include machine-frame reuse and endpoint preparation, with 32 warmups and 7 measurements")
+    parser.add_argument("--selected", action="store_true",
+                        help="Replay the version selected in the working performance baseline index")
     args = parser.parse_args()
+    repo = Path(__file__).resolve().parents[1]
+    if args.selected:
+        if args.machine_frame_reuse or args.electrical_endpoint:
+            parser.error("--selected cannot be combined with explicit version flags")
+        selected_path = repo / "docs/benchmarks/checkpoints/case2-working-performance-baseline.json"
+        selection = json.loads(selected_path.read_text())
+        selected = selection["selected_checkpoint"]
+        if selected == "docs/benchmarks/checkpoints/best-source-point-rollback-2026-10-23.json":
+            from replay_best_source_checkpoint import main as replay_source
+            replay_source([*selection.get("replay_args", ["--case", "2"]),
+                           "--output", str(args.output)])
+            return
+        known = {
+            "docs/benchmarks/checkpoints/case2-recovered-fast-2026-10-21.json": (False, False),
+            "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json": (True, False),
+            "docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json": (True, True),
+        }
+        if selected not in known:
+            parser.error("Selected checkpoint is not supported by this replay tool")
+        args.machine_frame_reuse, args.electrical_endpoint = known[selected]
     use_machine_frame = args.machine_frame_reuse or args.electrical_endpoint
     if os.name != "nt":
         parser.error("This checkpoint runner requires Windows CPU-affinity verification")
-    repo = Path(__file__).resolve().parents[1]
     root = (repo / args.output).resolve()
     if not root.is_relative_to((repo / "target").resolve()) or root.exists():
         parser.error("Output must be a new directory below target")

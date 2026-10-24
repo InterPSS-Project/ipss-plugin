@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "status": "review-completed",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-voltage-history-test-relevance/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 965917,
+    "sha256": "5e114c09b0c9275cf7f614e0cb37fa4967f7a5f46021f3f3b5a050941c9e6973"
+  },
+  "evidence": {
+    "bytes": 3279465,
+    "sha256": "afa74612f5e3a9be5663f264b4f4a1e97429eb43a5b0f6bbfb4311f256105680"
+  },
+  "historical_comparisons": [
+    {
+      "comparison": "indexed batch",
+      "control_median_s": 19.0334549,
+      "candidate_median_s": 17.8656581,
+      "reduction_percent": 6.135495663480405
+    },
+    {
+      "comparison": "revision validation",
+      "control_median_s": 14.5434607,
+      "candidate_median_s": 13.8284217,
+      "reduction_percent": 4.916567072650057
+    },
+    {
+      "comparison": "scalar scan",
+      "control_median_s": 9.7196383,
+      "candidate_median_s": 9.6082251,
+      "reduction_percent": 1.1462689923348202
+    }
+  ],
+  "contract_tests": {
+    "baseline": {
+      "found": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    "restored": {
+      "found": 24,
+      "passed": 7,
+      "failed": 17,
+      "skipped": 0
+    }
+  },
+  "baseline_commit": "9e479a4f56f7a7a6655c52b8c3260ed4bef11057",
+  "restored_core_commit": "46c8576e617fc0427dc42d3de7f9cafe64e38ff6",
+  "production_sources_changed": false,
+  "new_full_simulation_timing": false,
+  "merge_gate_passed": false,
+  "documentation": "docs/benchmarks/voltage-history-test-relevance-2026-10-23.md"
+}

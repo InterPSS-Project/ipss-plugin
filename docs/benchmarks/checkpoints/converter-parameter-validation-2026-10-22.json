@@ -1,0 +1,187 @@
+{
+  "schema": 1,
+  "description": "Selected converter validation; finite values, attachments and effective step. No claim of resolved full-system instability.",
+  "base_commit": "de24baebb69c9c3b933764bcf467774d381a517c",
+  "prior_evidence": "dynamic-parameter-validation-2026-10-21.json",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-converter-parameter-validation/evidence.zip",
+  "archive_sha256": "9e7f73a44a8eaf08b98d8cabe6c030f5b72cb47653413878f61ce86ecc8087e6",
+  "archive_bytes": 778442,
+  "focused_tests": {
+    "passed": 55,
+    "failed": 0,
+    "validator_tests": 18
+  },
+  "audit": [
+    {
+      "case": "Texas2k_series24_case1_2016summerpeak",
+      "errors": 0,
+      "active_warnings": 44,
+      "inactive_warnings": 0,
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeSteamTCDRGovernor": 43,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25,
+        "Regca1Model.converter": 107
+      },
+      "uncovered": {
+        "Regca1Model.bundleControllers": 107
+      }
+    },
+    {
+      "case": "Texas2k_series24_case2_2016lowload",
+      "errors": 0,
+      "active_warnings": 10,
+      "inactive_warnings": 34,
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeSteamTCDRGovernor": 43,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25,
+        "Regca1Model.converter": 107
+      },
+      "uncovered": {
+        "Regca1Model.bundleControllers": 107
+      }
+    },
+    {
+      "case": "Texas2k_series24_case3_2024summerpeak",
+      "errors": 0,
+      "active_warnings": 44,
+      "inactive_warnings": 0,
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeSteamTCDRGovernor": 43,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25,
+        "Regca1Model.converter": 301
+      },
+      "uncovered": {
+        "Regca1Model.bundleControllers": 301
+      }
+    },
+    {
+      "case": "Texas2k_series24_case4_2024lowload",
+      "errors": 0,
+      "active_warnings": 6,
+      "inactive_warnings": 38,
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeSteamTCDRGovernor": 43,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25,
+        "Regca1Model.converter": 301
+      },
+      "uncovered": {
+        "Regca1Model.bundleControllers": 301
+      }
+    },
+    {
+      "case": "Texas2k_series24_case5_2024highrenewables",
+      "errors": 0,
+      "active_warnings": 10,
+      "inactive_warnings": 34,
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeSteamTCDRGovernor": 43,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25,
+        "Regca1Model.converter": 301
+      },
+      "uncovered": {
+        "Regca1Model.bundleControllers": 301
+      }
+    },
+    {
+      "case": "Texas2k_series24_case6_2024lowloadwithgfm",
+      "errors": 0,
+      "active_warnings": 6,
+      "inactive_warnings": 38,
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeSteamTCDRGovernor": 43,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25,
+        "Regca1Model.converter": 301
+      },
+      "uncovered": {
+        "Regca1Model.bundleControllers": 301,
+        "Regfma1Model": 5
+      }
+    }
+  ],
+  "integration_step_seconds": 0.004166666666666667,
+  "st1_substeps_audited": [
+    10,
+    4,
+    1
+  ],
+  "source_changes": [
+    {
+      "path": "ipss.plugin.core/src/main/java/org/interpss/dstab/validation/DynamicParameterValidator.java",
+      "sha256": "6ab5d93a27d297bd2759468edfc6e1d2a470f9ccf820b7f2634613f812aec01a"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/DynamicParameterValidationTest.java",
+      "sha256": "85d1fd1c9e49c8b4fa6b034aaa1fb904a1509e4efb7b3bcff2b3189c55ab025e"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/builder/dstab/PsseEsst4bExciterTest.java",
+      "sha256": "88c48b119a6ad21abcea3f4a163ddb94f8b4203b68e829cf02d831fdedbd599a"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/Ieeeg1IndependentSmibConformanceTest.java",
+      "sha256": "1b5a97f070ce8c65309df4bb3772ff83dc58055a90e422bd21e06819175c0b9f"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/Ieeet1IndependentSmibConformanceTest.java",
+      "sha256": "09f21e985da95abee8650be6aa386f7c3948dcc6ed9a811456c9c0700a88ce52"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/Esst4bIndependentSmibConformanceTest.java",
+      "sha256": "ec818f1e2e62cda228f4634c874655bea754b370007e368b8a1ddb7ba013d90e"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/builder/dstab/DStabBuilderTestFixture.java",
+      "sha256": "9731c7f78cc6780df55688cc287abaff65b98bb9869b39631cc33e6051df679d"
+    },
+    {
+      "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/reference/EmbeddedTrajectoryReference.java",
+      "sha256": "49d464bbc4ff840abbfeb3942aaa6ae91ce0eb531eea687054c87744e09e7e61"
+    }
+  ],
+  "limitations": [
+    "Selected checks only; renewable, load, relay and dynamic shunt rules remain incomplete.",
+    "No new full-system trajectory run; existing small-system trajectory tests passed."
+  ]
+}

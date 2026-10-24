@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "description": "PSS2A zero-duration predictor skips subsequent preparation only after verifying unchanged finite stored states.",
+  "base_plugin_commit": "207d3e04b5bd4e6948906a2a54d83ca7f0cecc64",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-unchanged-state-refresh-probe/evidence.zip",
+  "archive_bytes": 305173,
+  "archive_sha256": "f405f2e09ab493cea20e68dedbfbebc346e1beec28f65d54960da95344265129",
+  "results": [
+    {
+      "case": 1,
+      "recordings_identical": true,
+      "refresh_reuses": 2513158,
+      "network_iterations": 18340
+    },
+    {
+      "case": 2,
+      "recordings_identical": true,
+      "refresh_reuses": 778454,
+      "network_iterations": 20202
+    }
+  ],
+  "tests_per_arm": 5,
+  "production_changed": false,
+  "warmed_timing_qualified": false,
+  "limitations": [
+    "Two complete coupled recordings match the retained one-step baseline.",
+    "All state advancement and derivative/history updates still execute.",
+    "Nonzero-duration, corrector, changed-state, custom-graph and nonfinite-input cases retain the ordinary path.",
+    "No six-case completion or independent-reference accuracy acceptance is claimed."
+  ]
+}

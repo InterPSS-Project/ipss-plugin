@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "description": "Fixed ST1 local preparation call sites, paired performance qualification and final-source regression.",
+  "base_plugin_commit": "bf26e33e7dc20a5399f5c530571b88d995243fcf",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st1-fixed-schedule/evidence.zip",
+  "archive_bytes": 412051,
+  "archive_sha256": "cba6af1a520f60f325830a7c092051b992219e0ba2e05d2faf27a99833c60c2a",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.6855795,
+          9.8574871,
+          9.9212955,
+          9.923752,
+          9.6460116,
+          9.6723208,
+          9.483932
+        ],
+        "candidate": [
+          9.4697536,
+          9.3677158,
+          9.4631437,
+          9.6846014,
+          9.6305484,
+          9.6604613,
+          9.3214425
+        ]
+      },
+      "medians_s": {
+        "control": 9.6855795,
+        "candidate": 9.4697536
+      },
+      "paired_savings_s": [
+        0.21582589999999868,
+        0.489771300000001,
+        0.45815179999999955,
+        0.23915060000000032,
+        0.015463199999999233,
+        0.011859499999999912,
+        0.1624894999999995
+      ],
+      "median_paired_saving_s": 0.21582589999999868,
+      "candidate_wins": 7,
+      "recordings_identical": true,
+      "candidate_pass_counts": [
+        10527966,
+        10527966,
+        10527966,
+        10527966,
+        10527966,
+        10527966,
+        10527966
+      ]
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.4940061,
+          6.4437648,
+          6.5135907,
+          6.6317269,
+          6.4602139,
+          6.6569818,
+          6.3827592
+        ],
+        "candidate": [
+          6.3406239,
+          6.4949382,
+          6.3114041,
+          6.4583706,
+          6.4515653,
+          6.5103835,
+          6.4776744
+        ]
+      },
+      "medians_s": {
+        "control": 6.4940061,
+        "candidate": 6.4583706
+      },
+      "paired_savings_s": [
+        0.15338220000000025,
+        -0.0511733999999997,
+        0.2021866000000001,
+        0.17335630000000002,
+        0.008648599999999895,
+        0.14659829999999996,
+        -0.09491519999999998
+      ],
+      "median_paired_saving_s": 0.14659829999999996,
+      "candidate_wins": 5,
+      "recordings_identical": true,
+      "candidate_pass_counts": [
+        3307554,
+        3307554,
+        3307554,
+        3307554,
+        3307554,
+        3307554,
+        3307554
+      ]
+    }
+  ],
+  "production_smoke": [
+    {
+      "case": 1,
+      "status": "completed",
+      "reached_s": 9.999999999999753,
+      "recording_matches": {
+        "full-network.bin": true,
+        "interpss.csv": true,
+        "full-network-channels.json": true
+      },
+      "independent_accuracy_qualification": false
+    },
+    {
+      "case": 2,
+      "status": "completed",
+      "reached_s": 9.999999999999753,
+      "recording_matches": {
+        "full-network.bin": true,
+        "interpss.csv": true,
+        "full-network-channels.json": true
+      },
+      "independent_accuracy_qualification": false
+    },
+    {
+      "case": 3,
+      "status": "completed",
+      "reached_s": 0.09999999999999999,
+      "recording_matches": {
+        "full-network.bin": true,
+        "interpss.csv": true,
+        "full-network-channels.json": true
+      },
+      "independent_accuracy_qualification": false
+    },
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "recording_matches": {
+        "full-network.bin": true,
+        "interpss.csv": true,
+        "full-network-channels.json": true
+      },
+      "independent_accuracy_qualification": false
+    },
+    {
+      "case": 5,
+      "status": "failed",
+      "reached_s": 0.03333333333333333,
+      "recording_matches": {
+        "full-network.bin": true,
+        "interpss.csv": true,
+        "full-network-channels.json": true
+      },
+      "independent_accuracy_qualification": false
+    },
+    {
+      "case": 6,
+      "status": "failed",
+      "reached_s": 0.049999999999999996,
+      "recording_matches": {
+        "full-network.bin": true,
+        "interpss.csv": true,
+        "full-network-channels.json": true
+      },
+      "independent_accuracy_qualification": false
+    }
+  ],
+  "verified_complete_recordings": 94,
+  "verified_prefix_recordings": 4,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 32,
+  "measured_pairs_per_case": 7,
+  "focused_tests": {
+    "prototype": 6,
+    "production": 8
+  },
+  "production_source_sha256": "bdf7401f2d8dfee0ee50dbb00fa9f355b50e793f559681bf66835c371aa8dde1",
+  "limitations": [
+    "Timing configuration includes the experimental Anderson/deferred network path; independent full-system accuracy remains unresolved.",
+    "No substep count, equation, preparation pass or arithmetic order changed.",
+    "Case 3 prefix completes 0.1 seconds; Cases 4\u20136 retain their earlier failures. These are not complete acceptance runs.",
+    "Final production source excludes unrelated pending getter-read reordering.",
+    "Existing registered/full-reactor test compilation limitations remain; focused compatible dependencies used."
+  ]
+}

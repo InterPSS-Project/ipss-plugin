@@ -1,0 +1,373 @@
+{
+  "schema": 1,
+  "base_commit": "b58a589588b8b40c5aa5c12eb5242f2fc72f2e7f",
+  "description": "Non-mutating audit of initial evaluation after a reusable network endpoint. No integration evaluations were skipped; no performance claim.",
+  "prior_evidence": [
+    "network-deferred-screen-2026-10-22.json",
+    "dynamic-parameter-validation-extension-2026-10-22.json"
+  ],
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-endpoint-derivative-audit/evidence.zip",
+  "archive_sha256": "7040d7a822691536785016a0ba5c96a11788a0a843841a1548fe84ab943b030d",
+  "archive_bytes": 783355,
+  "completed_runs": 3,
+  "summaries": [
+    {
+      "case": 1,
+      "calls": 2400,
+      "probe_count": 42844,
+      "fully_unchanged_calls": 0,
+      "machine_change_count_histogram": {
+        "2400": 208,
+        "1": 125
+      },
+      "participant_change_count_histogram": {
+        "1": 248
+      },
+      "repeated_change_field_counts": {
+        "stabilizer.customBlock2.delayBlock.dx": 208,
+        "stabilizer.customBlock2.delayBlock.u": 208,
+        "stabilizer.customBlock2.washoutBlock1.dx": 208,
+        "stabilizer.customBlock2.washoutBlock1.u": 208,
+        "stabilizer.customBlock2.washoutBlock2.u": 208,
+        "state[13].dx": 204,
+        "state[15].dx": 204,
+        "state[19].dx": 4,
+        "state[21].dx": 4
+      },
+      "first_change_time_histogram": {
+        "-0.008333333333333333": 5077,
+        "-0.004166666666666667": 21
+      },
+      "state_value_changes": 0,
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "calls": 2400,
+      "probe_count": 13420,
+      "fully_unchanged_calls": 0,
+      "machine_change_count_histogram": {
+        "2400": 64,
+        "1": 38,
+        "7": 1
+      },
+      "participant_change_count_histogram": {
+        "1": 70
+      },
+      "repeated_change_field_counts": {
+        "stabilizer.customBlock2.delayBlock.dx": 64,
+        "stabilizer.customBlock2.delayBlock.u": 64,
+        "stabilizer.customBlock2.washoutBlock1.dx": 64,
+        "stabilizer.customBlock2.washoutBlock1.u": 64,
+        "stabilizer.customBlock2.washoutBlock2.u": 64,
+        "state[13].dx": 61,
+        "state[15].dx": 61,
+        "state[19].dx": 3,
+        "state[21].dx": 3,
+        "exciter.washoutBlock.dx": 1
+      },
+      "first_change_time_histogram": {
+        "-0.00833333333333334": 1595,
+        "0.02500000000000002": 1
+      },
+      "state_value_changes": 0,
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+        "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "detail_samples": [
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "NaN",
+      "bus_frequency": 1.0,
+      "before_bits": "0",
+      "before": 0.0,
+      "after_bits": "3cc8000000000000",
+      "input2_selector": 3,
+      "after": 6.661338147750939e-16,
+      "time": -0.00833333333333334,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "1.0",
+      "bus_frequency": 0.9999999968661635,
+      "before_bits": "bcb0000000000000",
+      "before": -2.220446049250313e-16,
+      "after_bits": "3e8e4948f5c00000",
+      "input2_selector": 3,
+      "after": 2.2565029211829568e-07,
+      "time": -0.00416666666666667,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9999999968661635",
+      "bus_frequency": 0.9998691614846479,
+      "before_bits": "3f92a372f4d8aae0",
+      "before": 0.018201633638606718,
+      "after_bits": "3f92a3292afb6a60",
+      "input2_selector": 3,
+      "after": 0.018200534103792854,
+      "time": 0.0,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9998691614846479",
+      "bus_frequency": 0.9997848983590529,
+      "before_bits": "3f9d0838b0cb1f40",
+      "before": 0.028351674833884788,
+      "after_bits": "3f9d080fa1365f40",
+      "input2_selector": 3,
+      "after": 0.028351062979339092,
+      "time": 0.00416666666666667,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9997848983590529",
+      "bus_frequency": 0.9996723959591077,
+      "before_bits": "3fa5dab837903320",
+      "before": 0.04268432310354897,
+      "after_bits": "3fa5da953e81ebe0",
+      "input2_selector": 3,
+      "after": 0.042683280830679626,
+      "time": 0.00833333333333334,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9996723959591077",
+      "bus_frequency": 0.9995568090094079,
+      "before_bits": "3fabae04c62f10f0",
+      "before": 0.054062031929363985,
+      "after_bits": "3fabadfb98b5c8e0",
+      "input2_selector": 3,
+      "after": 0.054061758414620575,
+      "time": 0.012500000000000011,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9995568090094079",
+      "bus_frequency": 0.9994515415452233,
+      "before_bits": "3fb1231893fccd70",
+      "before": 0.06694177258468925,
+      "after_bits": "3fb12319114577e0",
+      "input2_selector": 3,
+      "after": 0.06694180175460884,
+      "time": 0.01666666666666668,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9994515415452233",
+      "bus_frequency": 0.9993362445119727,
+      "before_bits": "3fb39fb97597fbe8",
+      "before": 0.0766559516996349,
+      "after_bits": "3fb39fbff8c7e850",
+      "input2_selector": 3,
+      "after": 0.07665633987190401,
+      "time": 0.02083333333333335,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9993362445119727",
+      "bus_frequency": 0.9992415588658726,
+      "before_bits": "3fb64ed4a89a6ce0",
+      "before": 0.0871403609875645,
+      "after_bits": "3fb64ede9d9718b8",
+      "input2_selector": 3,
+      "after": 0.08714095446984771,
+      "time": 0.02500000000000002,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus5263-mach1/exciter.washoutBlock.dx",
+      "previous_endpoint_frequency": "0.9993362445119727",
+      "bus_frequency": 0.9997788756285505,
+      "before_bits": "0",
+      "before": 0.0,
+      "after_bits": "8000000000000000",
+      "input2_selector": 3,
+      "after": -0.0,
+      "time": 0.02500000000000002,
+      "exciter": "IEEE1981ST1Exciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9992415588658726",
+      "bus_frequency": 0.9991385427455659,
+      "before_bits": "3fb81abdd6331760",
+      "before": 0.09415804366571257,
+      "after_bits": "3fb81ac940a2dd70",
+      "input2_selector": 3,
+      "after": 0.0941587240985109,
+      "time": 0.029166666666666688,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus1050-mach1/stabilizer.customBlock2.delayBlock.u",
+      "previous_endpoint_frequency": "0.9991385427455659",
+      "bus_frequency": 0.9990602707160566,
+      "before_bits": "3fba03c7404f6138",
+      "before": 0.10162015266485447,
+      "after_bits": "3fba03d3724907b0",
+      "input2_selector": 3,
+      "after": 0.10162087955634891,
+      "time": 0.03333333333333336,
+      "exciter": "IEEE2005ST4BExciter"
+    },
+    {
+      "field": "Bus5263-mach1/exciter.washoutBlock.dx",
+      "previous_endpoint_frequency": "1.0007955954453178",
+      "bus_frequency": 1.0002058184735307,
+      "before_bits": "0",
+      "before": 0.0,
+      "after_bits": "8000000000000000",
+      "input2_selector": 3,
+      "after": -0.0,
+      "time": 0.279166666666667,
+      "exciter": "IEEE1981ST1Exciter"
+    },
+    {
+      "field": "Bus5263-mach1/exciter.washoutBlock.dx",
+      "previous_endpoint_frequency": "0.9944905846442055",
+      "bus_frequency": 0.9950704794172898,
+      "before_bits": "0",
+      "before": 0.0,
+      "after_bits": "8000000000000000",
+      "input2_selector": 3,
+      "after": -0.0,
+      "time": 1.9583333333333277,
+      "exciter": "IEEE1981ST1Exciter"
+    },
+    {
+      "field": "Bus5263-mach1/exciter.washoutBlock.dx",
+      "previous_endpoint_frequency": "0.993597192423046",
+      "bus_frequency": 0.9939886064546485,
+      "before_bits": "8000000000000000",
+      "before": -0.0,
+      "after_bits": "0",
+      "input2_selector": 3,
+      "after": 0.0,
+      "time": 2.175000000000003,
+      "exciter": "IEEE1981ST1Exciter"
+    },
+    {
+      "field": "Bus5263-mach1/exciter.washoutBlock.dx",
+      "previous_endpoint_frequency": "0.9936112233255178",
+      "bus_frequency": 0.9939697844661285,
+      "before_bits": "8000000000000000",
+      "before": -0.0,
+      "after_bits": "0",
+      "input2_selector": 3,
+      "after": 0.0,
+      "time": 2.17916666666667,
+      "exciter": "IEEE1981ST1Exciter"
+    },
+    {
+      "field": "Bus5263-mach1/exciter.washoutBlock.dx",
+      "previous_endpoint_frequency": "0.9773795476872672",
+      "bus_frequency": 0.9772995921241014,
+      "before_bits": "8000000000000000",
+      "before": -0.0,
+      "after_bits": "0",
+      "input2_selector": 3,
+      "after": 0.0,
+      "time": 9.27916666666646,
+      "exciter": "IEEE1981ST1Exciter"
+    }
+  ],
+  "coverage_limitations": [
+    "Renewable internal states are not audited.",
+    "Read-only stored state and derivative access; output getters intentionally excluded.",
+    "No general proof for arbitrary callbacks, parameter edits, activation changes or observers."
+  ],
+  "production_changed": false,
+  "retained_dependencies": [
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-derivative-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-derivative-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-derivative-audit-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-derivative-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-derivative-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-derivative-audit-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-boundary-details-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-boundary-details-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-boundary-details-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-boundary-details-v2-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-boundary-details-v2-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "endpoint-boundary-details-v2-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    }
+  ]
+}

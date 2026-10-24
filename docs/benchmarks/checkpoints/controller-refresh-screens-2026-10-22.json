@@ -1,0 +1,2044 @@
+{
+  "schema": 1,
+  "base_commit": "7a47c48e2124f411815ddd7ef83122e8f1f2dd9f",
+  "description": "Controller dispatch screen, ST1 refresh audit and guarded single-refresh screen. Full-system trajectory acceptance remains unresolved.",
+  "prior_evidence": [
+    "network-deferred-screen-2026-10-22.json",
+    "dynamic-parameter-validation-extension-2026-10-22.json"
+  ],
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-controller-refresh-screens/evidence.zip",
+  "archive_sha256": "1f1b3a73bbe56d4839896fd1e8f2d208d24c4dd4f7b65c74d2cd0b3a515d8a69",
+  "archive_bytes": 8927725,
+  "focused_tests": {
+    "typed_input_writes": 31,
+    "st1_output_refresh": 43
+  },
+  "summaries": {
+    "pss-typed-inputs-screen-20261022": [
+      {
+        "case": 1,
+        "arms": {
+          "control": {
+            "seconds": [
+              10.6232987,
+              10.1482401,
+              10.0193804,
+              10.0022181,
+              10.0602738
+            ],
+            "median_s": 10.0602738,
+            "min_s": 10.0022181,
+            "max_s": 10.6232987,
+            "compilation_ms": [
+              642,
+              92,
+              239,
+              160,
+              78
+            ]
+          },
+          "candidate": {
+            "seconds": [
+              10.5319391,
+              10.399241,
+              9.990163,
+              9.7275872,
+              9.9857614
+            ],
+            "median_s": 9.990163,
+            "min_s": 9.7275872,
+            "max_s": 10.5319391,
+            "compilation_ms": [
+              208,
+              315,
+              223,
+              130,
+              106
+            ]
+          }
+        },
+        "paired_reductions_s": [
+          0.09135959999999876,
+          -0.2510008999999993,
+          0.029217399999998506,
+          0.2746309,
+          0.0745123999999997
+        ],
+        "median_paired_reduction_s": 0.0745123999999997,
+        "candidate_wins": 4,
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+          "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      },
+      {
+        "case": 2,
+        "arms": {
+          "control": {
+            "seconds": [
+              7.1420189,
+              6.5948216,
+              6.4977779,
+              6.9095337,
+              6.6686312
+            ],
+            "median_s": 6.6686312,
+            "min_s": 6.4977779,
+            "max_s": 7.1420189,
+            "compilation_ms": [
+              661,
+              87,
+              49,
+              180,
+              93
+            ]
+          },
+          "candidate": {
+            "seconds": [
+              6.5373231,
+              7.3369666,
+              6.8233927,
+              6.6206562,
+              6.8329866
+            ],
+            "median_s": 6.8233927,
+            "min_s": 6.5373231,
+            "max_s": 7.3369666,
+            "compilation_ms": [
+              125,
+              522,
+              285,
+              18,
+              205
+            ]
+          }
+        },
+        "paired_reductions_s": [
+          0.6046958,
+          -0.7421449999999998,
+          -0.3256148000000003,
+          0.2888774999999999,
+          -0.16435539999999982
+        ],
+        "median_paired_reduction_s": -0.16435539999999982,
+        "candidate_wins": 2,
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+          "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    ],
+    "st1-constant-upstream-audit-20261022": [
+      {
+        "case": 1,
+        "counts": {
+          "localMacroCalls": 273828,
+          "constantUpstreamCandidates": 0,
+          "upstreamNonzeroRate": 218582,
+          "upstreamNonzeroHistory": 218491
+        },
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+          "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      },
+      {
+        "case": 2,
+        "counts": {
+          "localMacroCalls": 86472,
+          "constantUpstreamCandidates": 0,
+          "upstreamNonzeroRate": 69658,
+          "upstreamNonzeroHistory": 69629
+        },
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+          "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    ],
+    "st1-refresh-pass-audit-20261022": [
+      {
+        "case": 1,
+        "counts": {
+          "localMacroCalls": 273828,
+          "constantUpstreamCandidates": 0,
+          "upstreamNonzeroRate": 218582,
+          "upstreamNonzeroHistory": 218491
+        },
+        "refresh_masks": {
+          "0": 2404402
+        },
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+          "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      },
+      {
+        "case": 2,
+        "counts": {
+          "localMacroCalls": 86472,
+          "constantUpstreamCandidates": 0,
+          "upstreamNonzeroRate": 69658,
+          "upstreamNonzeroHistory": 69629
+        },
+        "refresh_masks": {
+          "0": 766238
+        },
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+          "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    ],
+    "st1-single-refresh-screen-20261022": [
+      {
+        "case": 1,
+        "arms": {
+          "control": {
+            "seconds": [
+              10.6346084,
+              10.0520158,
+              9.970512,
+              10.350278,
+              10.186788
+            ],
+            "median_s": 10.186788,
+            "min_s": 9.970512,
+            "max_s": 10.6346084,
+            "compilation_ms": [
+              671,
+              93,
+              131,
+              162,
+              77
+            ]
+          },
+          "candidate": {
+            "seconds": [
+              10.042747,
+              10.2114238,
+              10.7844962,
+              10.1362558,
+              9.8277832
+            ],
+            "median_s": 10.1362558,
+            "min_s": 9.8277832,
+            "max_s": 10.7844962,
+            "compilation_ms": [
+              211,
+              310,
+              338,
+              131,
+              102
+            ]
+          }
+        },
+        "paired_reductions_s": [
+          0.5918613999999991,
+          -0.15940800000000088,
+          -0.8139842000000002,
+          0.21402219999999872,
+          0.35900479999999924
+        ],
+        "median_paired_reduction_s": 0.21402219999999872,
+        "candidate_wins": 3,
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+          "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      },
+      {
+        "case": 2,
+        "arms": {
+          "control": {
+            "seconds": [
+              7.1353506,
+              6.6176723,
+              6.5109776,
+              6.9572324,
+              6.6923227
+            ],
+            "median_s": 6.6923227,
+            "min_s": 6.5109776,
+            "max_s": 7.1353506,
+            "compilation_ms": [
+              661,
+              83,
+              49,
+              179,
+              98
+            ]
+          },
+          "candidate": {
+            "seconds": [
+              6.5245008,
+              7.3369433,
+              7.0569226,
+              6.6041949,
+              6.8424522
+            ],
+            "median_s": 6.8424522,
+            "min_s": 6.5245008,
+            "max_s": 7.3369433,
+            "compilation_ms": [
+              125,
+              518,
+              292,
+              17,
+              209
+            ]
+          }
+        },
+        "paired_reductions_s": [
+          0.6108497999999996,
+          -0.719271,
+          -0.5459449999999997,
+          0.3530374999999992,
+          -0.15012950000000025
+        ],
+        "median_paired_reduction_s": -0.15012950000000025,
+        "candidate_wins": 2,
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+          "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    ],
+    "st1-single-refresh-case34-20261022": [
+      {
+        "case": 3,
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "partial_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "8ede9746cf1b722ddf32b64367ff29878ccf60c33eb338e00e4815199b5bc408",
+          "interpss.csv": "259072519f47d36951bebd275fca31da3bc94ca9d093e54224fbde6845ac8157",
+          "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c"
+        }
+      },
+      {
+        "case": 4,
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "partial_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "700229a70d132339aa304c83ae5c3e5e481a56d8579cc41e2e3e630654019f10",
+          "interpss.csv": "ae03097e2aabf8302e5cfa51999efa4d62ab43aab9b09b078926afb34fbedc29",
+          "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63"
+        }
+      }
+    ]
+  },
+  "retained_dependencies": [
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-10/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-11/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-12/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-13/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-14/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-15/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-16/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-17/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-18/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-19/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-20/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-21/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case1/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-1/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-10/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-11/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-12/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-13/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-14/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-15/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-16/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-17/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-18/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-19/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-2/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-20/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-21/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-3/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-4/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-5/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-6/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-7/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-8/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-typed-inputs-screen-20261022/case2/actual/case2_bus_fault_01/run-9/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-constant-upstream-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-constant-upstream-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-constant-upstream-audit-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-constant-upstream-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-constant-upstream-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-constant-upstream-audit-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-refresh-pass-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-refresh-pass-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-refresh-pass-audit-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-refresh-pass-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-refresh-pass-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-refresh-pass-audit-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-10/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-11/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-12/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-13/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-14/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-15/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-16/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-17/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-18/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-19/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-20/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-21/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case1/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-1/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-10/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-11/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-12/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-13/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-14/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-15/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-16/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-17/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-18/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-19/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-2/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-20/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-21/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-3/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-4/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-5/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-6/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-7/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-8/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-screen-20261022/case2/actual/case2_bus_fault_01/run-9/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-case34-20261022/case3/actual/case3_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+      "bytes": 1058877
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-case34-20261022/case3/actual/case3_bus_fault_01/run-0/full-network.bin",
+      "sha256": "8ede9746cf1b722ddf32b64367ff29878ccf60c33eb338e00e4815199b5bc408",
+      "bytes": 737025
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-case34-20261022/case3/actual/case3_bus_fault_01/run-0/interpss.csv",
+      "sha256": "259072519f47d36951bebd275fca31da3bc94ca9d093e54224fbde6845ac8157",
+      "bytes": 15434
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-case34-20261022/case4/actual/case4_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+      "bytes": 835077
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-case34-20261022/case4/actual/case4_bus_fault_01/run-0/full-network.bin",
+      "sha256": "700229a70d132339aa304c83ae5c3e5e481a56d8579cc41e2e3e630654019f10",
+      "bytes": 589185
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st1-single-refresh-case34-20261022/case4/actual/case4_bus_fault_01/run-0/interpss.csv",
+      "sha256": "ae03097e2aabf8302e5cfa51999efa4d62ab43aab9b09b078926afb34fbedc29",
+      "bytes": 15417
+    }
+  ]
+}

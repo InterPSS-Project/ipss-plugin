@@ -1,5 +1,5 @@
  /*
-  * @(#)Ieee1992PSS2AStabilizer.java   
+  * @(#)Ieee1992PSS2AStabilizer.java
   *
   * Copyright (C) 2006 www.interpss.org
   *
@@ -16,7 +16,7 @@
   * @Author Mike Zhou
   * @Version 1.0
   * @Date 09/15/2006
-  * 
+  *
   *   Revision History
   *   ================
   *
@@ -56,32 +56,6 @@ import com.interpss.dstab.mach.Machine;
  */
 public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		implements IntegrationStepAware {
-    @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
-        return compiledStageEnabled ? Pss2aCompiledStage.tryCreate(this) : null;
-    }
-    private boolean compiledStageEnabled=true;
-    private boolean compiledObservationPreparationEnabled=true;
-    /** Select before graph compilation; observations retain the engine's phase and ordering checks. */
-    public void setCompiledObservationPreparationEnabled(boolean enabled) {
-        if(isRuntimePlanCompiled() || getRuntimePhase()!=RuntimePhase.IDLE)
-            throw new IllegalStateException("Configure PSS observations before graph compilation");
-        compiledObservationPreparationEnabled=enabled;
-    }
-    public boolean isCompiledObservationPreparationEnabled() {return compiledObservationPreparationEnabled;}
-    /** Select before graph compilation; invalidate an existing plan before changing this choice. */
-    public void setCompiledStageEnabled(boolean enabled) {
-        if(isRuntimePlanCompiled() || getRuntimePhase()!=RuntimePhase.IDLE)
-            throw new IllegalStateException("Configure PSS stage evaluation before graph compilation");
-        compiledStageEnabled=enabled;
-    }
-    @Override public boolean supportsCompiledOutputScheduling() {
-        return getClass() == Ieee1992PSS2AStabilizer.class;
-    }
-    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
-            throws com.interpss.common.exp.InterpssException {
-        return getClass() == Ieee1992PSS2AStabilizer.class
-                ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
-    }
 	    public double tw1 = 0.1, tw2 = 0.05, t6 = 0.05;
 	    @AnControllerField(
 	            type= CMLFieldEnum.Controller,
@@ -114,7 +88,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	            parameter={"type.NoLimit", "this.ks1", "this.t1", "this.t2"},
 	            y0="this.filterBlock2.u0"	)
 	    FilterControlBlock filterBlock1;
-		
+
 	    public double one = 1.0, t3 = 0.05, t4 = 0.25, vstmax = 0.2, vstmin = -0.2;
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
@@ -136,7 +110,11 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 			refPoint="0.0"
 	)
 	class CustomExciter extends AbstractChildAnnotateController {
-        @Override public boolean supportsCompiledOutputScheduling() { return getClass() == CustomExciter.class; }
+        java.util.function.DoubleSupplier directOutput;
+        @Override public double getOutput(Machine machine) {
+            return directOutput==null?super.getOutput(machine):directOutput.getAsDouble();
+        }
+
 	    public CustomExciter(double tw1, double tw2, double k, double t) {
 	        super();
 	        this.tw1 = tw1;
@@ -168,41 +146,41 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	            parameter={"type.NoLimit", "this.k", "this.t1"},
 	            y0="this.output"	)
 	    DelayControlBlock delayBlock;
-	 	
+
 	    @Override
 		public AnController getAnController() {
-	    	return getClass().getAnnotation(AnController.class);  }
+            return getClass().getAnnotation(AnController.class);  }
 	    @Override
 		public Field getField(String fieldName) throws Exception {
-	    	return getClass().getField(fieldName);   }
+            return getClass().getField(fieldName);   }
 	    @Override
 		public Object getFieldObject(Field field) throws Exception {
-	    	return field.get(this);    }
+            return field.get(this);    }
 	}
-	
+
 	// UI Editor panel
 //	private static final NBIeee1992PSS2AEditPanel _editPanel = new NBIeee1992PSS2AEditPanel();
-	
+
 	public Ieee1992PSS2AStabilizer() {
         this.setName("ieee1992PSS2AStabilizer");
         this.setCategory("IEEE-1992");
 	}
-	
+
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param id pss id
 	 * @param name pss name
-	 */	
+	 */
 	public Ieee1992PSS2AStabilizer(final String id, final String name, final String caty) {
 		super(id, name, caty);
 		// _data is defined in the parent class. However init it here is a MUST
 		_data = new Ieee1992PSS2AStabilizerData();
 	}
-	
+
 	/**
-	 * Get the PSS data 
-	 * 
+	 * Get the PSS data
+	 *
 	 * @return the data object
 	 */
 	public Ieee1992PSS2AStabilizerData getData() {
@@ -284,6 +262,14 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		this.input2Bus = input2Bus;
 	}
 
+    private Pss2aDirectEvaluation directEvaluation;
+    public void enableDirectEvaluationExperiment() {
+        if(getClass()!=Ieee1992PSS2AStabilizer.class)throw new IllegalStateException("Exact PSS2A required");
+        directEvaluation=new Pss2aDirectEvaluation(this);
+    }
+    @Override public boolean eulerStep(boolean predictor,double dt,Machine machine) {
+        return directEvaluation==null?super.eulerStep(predictor,dt,machine):directEvaluation.step(predictor,dt);
+    }
     private boolean fixedInputObservation;
     private double fixedInputOutput;
 
@@ -294,14 +280,14 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
      */
     public void beginFixedInputObservation() {
         if (fixedInputObservation) throw new IllegalStateException("Nested fixed-input observation");
-        fixedInputOutput=super.getOutput(getMachine());
+        fixedInputOutput=directEvaluation==null?super.getOutput(getMachine()):directEvaluation.output();
         fixedInputObservation=true;
     }
 
     public void endFixedInputObservation() { fixedInputObservation=false; }
 
     @Override public double getOutput(Machine machine) {
-        return fixedInputObservation ? fixedInputOutput : super.getOutput(machine);
+        return fixedInputObservation ? fixedInputOutput : directEvaluation==null?super.getOutput(machine):directEvaluation.output();
     }
 
 	private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
@@ -315,10 +301,10 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 			default -> throw new IllegalArgumentException("Unsupported PSS2A input code: " + code);
 		};
 	}
-	
+
 	/**
 	 *  Init the controller states
-	 *  
+	 *
 	 *  @param msg the SessionMsg object
 	 */
 	@Override
@@ -432,23 +418,23 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 
 	/**
 	 * Get the editor panel for controller data editing
-	 * 
+	 *
 	 * @return the editor panel object
-	 */	
+	 */
 //	@Override
 //	public Object getEditPanel() {
 //		_editPanel.init(this);
 //		return _editPanel;
 //	}
-	
+
     @Override
 	public AnController getAnController() {
-    	return getClass().getAnnotation(AnController.class);  }
+        return getClass().getAnnotation(AnController.class);  }
     @Override
 	public Field getField(String fieldName) throws Exception {
-    	return getClass().getField(fieldName);   }
+        return getClass().getField(fieldName);   }
     @Override
 	public Object getFieldObject(Field field) throws Exception {
-    	return field.get(this);    }
+        return field.get(this);    }
 
 } // SimpleStabilizer

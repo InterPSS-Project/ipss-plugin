@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "description": "Guarded ST1 substep-boundary reuse screen, with feature-use assertions and a retained active-feedback counterexample. Not yet a production replacement.",
+  "base_commit": "b8a4bd090d1caf9a6e141e34e7065f92c41d92e6",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st1-boundary-screen/evidence.zip",
+  "archive_sha256": "b09e4e5bd6c85d7db7621fe8f21209babb5ea4665608ac34b1c68e1a9a0de0b3",
+  "archive_bytes": 3802332,
+  "focused_tests_passed": 34,
+  "protocol": {
+    "case": 1,
+    "warmups": 12,
+    "measurements": 5,
+    "logical_processors": 1,
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "st1_substeps": 10,
+    "scope": "Fresh parse, preparation, initialization, all observations and writer closure",
+    "excluded": [
+      "Pending observation-cache prototype",
+      "Pending compact-state prototype",
+      "Zero-time PSS2A prototype",
+      "Norton-source cache prototype"
+    ]
+  },
+  "results": [
+    {
+      "boundary_reuses": [
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238,
+        1967238
+      ],
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        11.2890802,
+        10.6739798,
+        10.483388,
+        10.4615544,
+        10.4188726
+      ],
+      "median_s": 10.483388,
+      "min_s": 10.4188726,
+      "max_s": 11.2890802,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        619,
+        212,
+        322,
+        100,
+        140
+      ]
+    },
+    {
+      "boundary_reuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "case": 1,
+      "variant": "baseline",
+      "seconds": [
+        11.2169235,
+        10.695661,
+        10.6175016,
+        10.8014914,
+        10.7882605
+      ],
+      "median_s": 10.7882605,
+      "min_s": 10.6175016,
+      "max_s": 11.2169235,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        613,
+        209,
+        317,
+        103,
+        132
+      ]
+    }
+  ],
+  "median_reduction_s": 0.3048725000000001,
+  "median_reduction_percent": 2.825965316651374,
+  "norton_coverage_audit": {
+    "norton_source_reuses": 0,
+    "norton_source_eligible_machines": 0,
+    "norton_machine_classes": {
+      "org.interpss.dstab.mach.IeeeVcRoundRotorMachine": 410,
+      "org.interpss.dstab.mach.IeeeVcSalientPoleMachine": 25
+    },
+    "all_recordings_match": true,
+    "hashes": {
+      "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+      "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+      "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    }
+  }
+}

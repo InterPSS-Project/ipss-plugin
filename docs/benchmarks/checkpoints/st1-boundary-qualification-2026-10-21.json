@@ -1,0 +1,259 @@
+{
+  "schema": 1,
+  "description": "Paired ST1 boundary-reuse timing qualification and guarded production compatibility checks. Independent accuracy and the complete performance objective remain unresolved.",
+  "base_commit": "d18682c31686f7fdfacc24af562231cdb61dbbea",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st1-boundary-qualification/evidence.zip",
+  "archive_sha256": "b5cfb808f69fee79128bbfbb9ffef716471c0a750b8892e4de989207de7c3d5d",
+  "archive_bytes": 9005448,
+  "protocol": {
+    "cases": [
+      1,
+      2
+    ],
+    "warmups_per_case": 32,
+    "measured_pairs_per_case": 7,
+    "pair_order": "Alternating control-first and candidate-first",
+    "logical_processors": 1,
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "st1_substeps": 10,
+    "scope": "Fresh parsing, preparation, initialization, all recording and writer closure; JIT and GC included"
+  },
+  "timed_source": "Initial guarded prototype; production adds selector-expression and saved-feedback-history guards. No claim that timings measure these final guards.",
+  "focused_tests": {
+    "isolated": 39,
+    "combined_worktree": 41
+  },
+  "results": [
+    {
+      "case": 1,
+      "arms": {
+        "control": {
+          "seconds": [
+            10.6589192,
+            10.6743812,
+            10.3973967,
+            11.1368983,
+            10.687032,
+            10.920521,
+            10.7091556
+          ],
+          "median_s": 10.687032,
+          "min_s": 10.3973967,
+          "max_s": 11.1368983,
+          "compilation_ms": [
+            46,
+            65,
+            34,
+            31,
+            14,
+            282,
+            2
+          ],
+          "boundary_reuses": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            10.6906006,
+            10.3923736,
+            10.2960873,
+            10.4593996,
+            10.6021294,
+            10.4942589,
+            10.3235885
+          ],
+          "median_s": 10.4593996,
+          "min_s": 10.2960873,
+          "max_s": 10.6906006,
+          "compilation_ms": [
+            1,
+            39,
+            5,
+            83,
+            206,
+            64,
+            3
+          ],
+          "boundary_reuses": [
+            1967238,
+            1967238,
+            1967238,
+            1967238,
+            1967238,
+            1967238,
+            1967238
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        -0.03168140000000008,
+        0.28200759999999825,
+        0.10130939999999988,
+        0.677498700000001,
+        0.0849025999999995,
+        0.42626210000000064,
+        0.38556710000000116
+      ],
+      "median_paired_reduction_s": 0.28200759999999825,
+      "candidate_wins": 6,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "arms": {
+        "control": {
+          "seconds": [
+            7.5010542,
+            7.4805719,
+            7.4760462,
+            7.6277147,
+            7.7875353,
+            7.7240334,
+            7.5262299
+          ],
+          "median_s": 7.5262299,
+          "min_s": 7.4760462,
+          "max_s": 7.7875353,
+          "compilation_ms": [
+            25,
+            55,
+            9,
+            174,
+            55,
+            270,
+            13
+          ],
+          "boundary_reuses": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            7.8308134,
+            7.4039274,
+            7.3340119,
+            7.4666934,
+            7.3169348,
+            7.4336396,
+            7.518775
+          ],
+          "median_s": 7.4336396,
+          "min_s": 7.3169348,
+          "max_s": 7.8308134,
+          "compilation_ms": [
+            1,
+            11,
+            2,
+            81,
+            11,
+            49,
+            36
+          ],
+          "boundary_reuses": [
+            626922,
+            626922,
+            626922,
+            626922,
+            626922,
+            626922,
+            626922
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        -0.3297592000000007,
+        0.07664450000000045,
+        0.14203429999999972,
+        0.1610213000000007,
+        0.47060049999999976,
+        0.2903937999999995,
+        0.007454899999999931
+      ],
+      "median_paired_reduction_s": 0.14203429999999972,
+      "candidate_wins": 6,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "production_audit": [
+    {
+      "case": 1,
+      "status": "completed",
+      "reached_s": 9.999999999999753,
+      "boundary_reuses": 1967238,
+      "process_error": null,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "all_recordings_match": true
+    },
+    {
+      "case": 2,
+      "status": "completed",
+      "reached_s": 9.999999999999753,
+      "boundary_reuses": 626922,
+      "process_error": null,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      },
+      "all_recordings_match": true
+    },
+    {
+      "case": 3,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "boundary_reuses": null,
+      "process_error": "Benchmark failed or CPU affinity changed",
+      "hashes": {
+        "full-network.bin": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+        "interpss.csv": "4ae9e78e69094faf72733ba0653b6f8c21f34af41f33101c6ee1a945e0d1446a",
+        "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c"
+      },
+      "all_recordings_match": true
+    },
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "boundary_reuses": null,
+      "process_error": "Benchmark failed or CPU affinity changed",
+      "hashes": {
+        "full-network.bin": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+        "interpss.csv": "64fc2ebb51cdfda9209f4f80b2bc434e25de814ea0edb0625c86105dcb07383b",
+        "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63"
+      },
+      "all_recordings_match": true
+    }
+  ],
+  "dependencies": [
+    "st1-boundary-screen-2026-10-21.json",
+    "dynamic-parameter-validation-2026-10-21.json"
+  ]
+}

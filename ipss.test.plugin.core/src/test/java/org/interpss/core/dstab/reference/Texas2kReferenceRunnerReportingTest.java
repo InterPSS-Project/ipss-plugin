@@ -35,17 +35,19 @@ class Texas2kReferenceRunnerReportingTest {
                 com.interpss.dstab.DStabObjectFactory.createDStabilityNetwork());
         var solver = new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm);
         options.configure(solver);
-        assertTrue(solver.isUseRectangularNetworkVoltage());
         assertTrue(options.reuseEndpoint() && options.loadZInMatrix() && options.converterVoltageMemory());
         var defaults = Texas2kNumericalOptions.read(new JsonObject());
         assertEquals(1.e-8, defaults.networkTolerance());
         assertEquals(2, defaults.minimumIterations());
         assertEquals(org.interpss.dstab.algo.PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION, defaults.machineStage());
         assertFalse(defaults.reuseEndpoint() || defaults.loadZInMatrix() || defaults.converterVoltageMemory());
-        assertFalse(defaults.rectangularNetworkVoltage());
+        assertTrue(defaults.rectangularNetworkVoltage());
     }
 
     @Test void invalidNumericalPoliciesFailBeforeAReferenceRun() {
+        var retiredCoordinateToggle = new JsonObject();
+        retiredCoordinateToggle.addProperty("rectangular_network_voltage", false);
+        assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(retiredCoordinateToggle));
         for (double tolerance : new double[]{0., -1., Double.NaN, Double.POSITIVE_INFINITY}) {
             var plan = new JsonObject(); plan.addProperty("network_voltage_tolerance", tolerance);
             assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(plan));

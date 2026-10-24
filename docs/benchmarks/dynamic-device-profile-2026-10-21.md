@@ -1,0 +1,1208 @@
+# Dynamic device update profile
+
+PSS2A is the largest individual controller model by aggregate update cost in
+Cases 1 and 2. The combined EXST1/ESST1A family is larger still. IEEET1 is the
+most expensive controller per instance, but its small population makes its
+aggregate contribution much smaller.
+
+## Measured attribution
+
+The following numbers are mean exclusive update times from three profiled
+ten-second runs after 32 full warmups. Nested stabilizer preparation is charged
+to PSS2A, not counted again in its calling exciter. These diagnostic times are
+**not uninstrumented production timings**: per-device timers perturb execution.
+
+| Model | Case 1 devices | Case 1 attributed time | Case 2 devices | Case 2 attributed time | Case 1 mean per device |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| PSS2A | 333 | 1.610 s | 103 | 0.477 s | 4.83 ms |
+| EXST1 | 91 | 1.383 s | 29 | 0.445 s | 15.20 ms |
+| ESST4B | 208 | 1.028 s | 64 | 0.312 s | 4.94 ms |
+| ESST1A | 23 | 0.425 s | 7 | 0.124 s | 18.47 ms |
+| REGCA1 bundle | 96 | 0.405 s | 96 | 0.352 s | 4.22 ms |
+| GGOV1 | 287 | 0.404 s | 88 | 0.116 s | 1.41 ms |
+| IEEEG1 | 26 | 0.331 s | 15 | 0.175 s | 12.75 ms |
+| IEEET1 | 11 | 0.277 s | 3 | 0.072 s | 25.20 ms |
+| HYGOV | 20 | 0.029 s | 0 | — | 1.44 ms |
+
+The renewable bundle includes its electrical, plant and wind controls; it is
+not a measurement of the converter alone. Its exported unit ID is not unique
+across buses, so aggregate timings and object counts are valid, but its individual
+device ranking is unavailable from this export.
+
+Shared state-array capture/advance adds 1.109 s in Case 1 and 0.331 s in Case 2.
+Synchronous-machine update regions account for 0.212 s and 0.068 s respectively.
+Network current assembly, network solves, recording and initialization lie
+outside these device timers and must not be inferred from this table.
+
+The highest individual controller observations are IEEET1 at bus 2057/unit 1
+in Case 1 (38.35 ms per run) and IEEET1 at bus 4026/unit 1 in Case 2 (31.52 ms).
+These short regions are susceptible to sampling and interruption noise; the
+model-level aggregates are the basis for prioritizing work.
+
+## Hot paths and optimization target
+
+Case 1 PSS2A spends 1.316 s in boundary updates and 0.294 s preparing its held
+output for exciters. Case 2 spends 0.393 s and 0.084 s respectively. Main-thread
+flight-recorder stacks identify repeated `input`, `y`, `prepare` and block-output
+calls in this path. The first candidate replaces block-ID dispatch and generic
+preparation traversal with straight-line Java equations for the exact standard
+forward graph. Operand order, arithmetic order, capture order, all preparation
+passes, block kernels and integration stages remain unchanged. Nonstandard
+graphs retain the existing evaluator.
+
+An additional experiment cached the algebraic-block classification at plan
+construction. Its Case 1 screening median was 11.112 s, so it was rejected and
+removed from the retained candidate. Live classification remains in place.
+
+The five focused scalar-preparation and lead-lag tests pass. They cover
+predictor/corrector states and derivatives, live parameters, zero-time blocks,
+nonfinite recovery, custom-block fallback and stale-binding rejection.
+
+## Uninstrumented screening
+
+Each screening process uses twelve complete warmups and five measurements,
+with fresh preparation and full recording on every repetition. The retained
+scalar candidate is compared to the same baseline used for the profile.
+
+| Case / variant | Median total | Range |
+| --- | ---: | ---: |
+| 1 / retained baseline | 10.9813 s | 10.8582–11.7377 s |
+| 1 / scalar preparation | 10.8834 s | 10.4567–11.1692 s |
+| 2 / scalar preparation | 7.8250 s | 7.4636–8.3292 s |
+
+The Case 1 median difference is 0.0979 s (0.89%). Ranges overlap and JIT remains
+active, so this is a provisional small improvement, not a demonstrated large
+speedup. There is no adjacent Case 2 control in this screening; its number is
+not a Case 2 speedup claim. All 51 repetitions complete and all recorded channels
+match the retained baseline byte for byte. The prior fully warmed performance
+checkpoint remains selected; these screenings do not replace it.
+
+The scalar implementation and its focused tests are retained. The rejected
+classification variant and its timing evidence are preserved separately.
+The [scalar-preparation evidence index](checkpoints/pss-scalar-preparation-2026-10-21.json)
+records both experiments, source hashes and test results. Recompiling the final
+retained controller source produces the same four class files as the screened
+scalar candidate. Its Case 3/4 checks retain the original failure at 0.045833 s
+and byte-identical partial recordings.
+
+## Reproduction and limits
+
+The profiled baseline is plugin commit `3e1bf2d3c`, with its retained core and
+classpath in `checkpoints/st1-generated-inputs-2026-10-21.json`. The provisional
+ST1 observation-cache changes are excluded. Settings are one logical CPU,
+1/240-second steps, 1e-5 pu dynamic voltage-correction tolerance, 1e-3 pu load-flow
+tolerance, and full recording through writer closure. All 70 profile repetitions
+complete. Their full observations match the retained baseline byte for byte.
+
+Instrumented whole-case ranges are 15.592–15.798 s for Case 1 and 8.921–9.252 s
+for Case 2. They cannot be compared as a speed regression against ordinary runs.
+Flight-recorder samples also identify profiler overhead explicitly.
+
+The existing independent-reference accuracy gap and the early dynamic failures
+in Cases 3 and 4 remain unresolved. Equality to the retained executable is a
+nonregression check, not independent-reference verification.
+
+Local evidence is in `target/device-model-profile-20261021`: the source overlays,
+protocol and hashes, commands, affinity records, all warm-run statuses,
+per-instance counters, aggregate `device-summary.json`, and both flight recordings
+and their stack summaries. The profiler is an isolated diagnostic overlay;
+production device updates do not contain its timers.
+The [profile evidence index](checkpoints/dynamic-device-profile-2026-10-21.json)
+retains a compact private archive of those sources, counters, flight recordings
+and run metadata, with hashes. It references the existing baseline archive
+instead of copying the complete source or simulation-output trees.
+
+## Follow-up execution sampling without per-device timers
+
+A second Case 1 profile uses the committed scalar-preparation controller overlay,
+32 complete warmups and three sampled runs, without any per-device timing calls.
+It excludes both pending observation-cache and compact-state-update prototypes.
+The network step, tolerance, single logical CPU and full recording are unchanged.
+All 35 runs reproduce the retained binary observations byte for byte. The sampled
+whole-case durations are 11.1457, 11.0184 and 10.7185 seconds; these include flight
+recording overhead and are not a replacement performance checkpoint.
+
+Of 1,763 main-thread execution samples, 711 (40.3%) are in network solution work,
+208 (11.8%) in PSS2A, 205 (11.6%) in the ST1 family, 221 (12.5%) in machine-package
+paths, 72 (4.1%) in ESST4B and 66 (3.7%) in renewable-model paths. These categories
+are stack classifications, not exclusive stopwatch measurements. Machine-package
+samples include controller ownership accessors and voltage-compensation helpers;
+they must not all be attributed to machine differential equations. Network
+classification takes precedence over model classes deeper in that stack.
+
+Network leaf samples are concentrated in the factored row solve, current-injection
+assembly and static-load evaluation. Controller-related leaf samples also include
+machine ownership and controller lookup methods. Line-level samples can be
+affected by JIT inlining and safepoints, so a method's sample count alone does not
+establish its removable cost. Output recording remains included; the small count
+classified directly as recording is not a complete wall-time I/O measurement.
+
+This supports investigating both the network and controller paths. Reducing ST1
+substep count addresses only one portion of the work and has not met the accuracy
+requirements in the one- and four-step experiments. The
+[sampling evidence index](checkpoints/case1-sampling-profile-2026-10-21.json)
+retains the flight recording, source, commands, all statuses, affinity verification
+and detailed stack summary.
+
+## Controller binding and state-storage screening
+
+Two isolated prototypes preserve the ten ST1 substeps and the existing numerical
+equations. The compact-state prototype uses a bound state array, direct block
+storage access, one activation read per contiguous owner, and skips known no-op
+projection callbacks. The controller-reference prototype instead starts from the
+committed solver and binds controller and participant references for endpoint
+evaluation, retaining the pre-step attachment checks and live activity flags.
+Neither experiment includes the pending ST1 observation-cache changes.
+
+Each process runs twelve full warmups and five measurements, with fresh setup,
+all observations and writer closure included. These are screening results; JIT
+compilation remains active and the timing ranges overlap.
+
+| Experiment | Case | Median total | Range |
+| --- | ---: | ---: | ---: |
+| Compact-state control | 1 | 10.8346 s | 10.3384–11.3026 s |
+| Compact-state candidate | 1 | 10.7918 s | 10.5834–11.2153 s |
+| Compact-state candidate | 2 | 7.5624 s | 7.4705–8.0460 s |
+| Controller-reference control | 1 | 10.8453 s | 10.2869–11.2545 s |
+| Controller-reference candidate | 1 | 10.6415 s | 10.0610–10.9508 s |
+| Controller-reference candidate | 2 | 7.7252 s | 7.4331–8.1409 s |
+
+The controller-reference Case 1 difference is 0.2038 s (1.88%); compact-state
+storage differs by only 0.0429 s (0.40%). There is no adjacent Case 2 control in
+either screen. All 51 runs per experiment reproduce their retained observations
+byte for byte. Neither prototype replaces the selected performance checkpoint.
+Before production use, controller-reference binding needs an unchanged live
+lookup fallback for custom machine accessor overrides. The eight-second target
+and independent-reference accuracy requirements remain unfulfilled across cases.
+
+The lifecycle checks exposed a separate core defect: rectangular-voltage
+postprocessing attempted to cast a dynamic network to a narrower load-flow
+network type. Core commit `e2ec1a5fd` uses the existing network's bus list instead;
+voltage-conversion equations are unchanged. With that fix, all 19 existing solver
+and ST1 response/lifecycle tests pass for both the baseline and the bound-reference
+prototype. The compact-state configuration passes its 17 tests as well. This
+repairs the previously reported reinitialization exceptions, not the outstanding
+full-system reference mismatch. Timing runs use the frozen runtime without this
+later repair. Separate validation ran during the first three control warmups,
+before the measured runs.
+
+The [screening evidence index](checkpoints/controller-binding-screen-2026-10-21.json)
+retains prototype sources, commands, run statuses, timings and before/after test
+reports. Verified identical generated recordings share storage with the retained
+baseline; all paths and file contents remain available. Supplied reference files
+are untouched.
+
+
+## PSS2A zero-time stage screening
+
+An isolated prototype specializes zero-time predictor evaluations of the exact
+delay, filter and washout block classes. It preserves the existing arithmetic,
+captured-input order, state/derivative storage and subsequent refresh passes.
+Custom, compound and non-windup blocks retain their existing kernels. Physical
+parameters, ST1 substeps, network interval and convergence tolerance are unchanged.
+
+Thirty-six focused tests pass, including bitwise block-storage comparisons
+through zero-time and nonzero predictor/corrector stages, zero-time blocks,
+custom-block fallback and binding replacement. All 34 complete Case 1 recordings
+match the retained baseline byte for byte. Both processes use one logical CPU,
+twelve full warmups and five measurements including recording and writer closure.
+
+| Variant | Median total | Range |
+| --- | ---: | ---: |
+| Control | 10.843971 s | 10.770075–11.376105 s |
+| Zero-time prototype | 10.695996 s | 10.548275–11.156199 s |
+
+The median reduction is 0.147974 seconds (1.36%). Timing ranges
+overlap and compilation remains active during measurement. This screen does not
+establish a reliable performance improvement; the prototype stays outside
+production and does not replace the selected checkpoint. Case 2 was not timed in
+this screen. The eight-second target and independent-reference accuracy remain
+open. The [screening evidence index](checkpoints/pss-zero-step-screen-2026-10-21.json)
+retains the source, tests, exact commands, timings and verified affinity records.
+Identical generated recordings share retained storage; supplied references are
+unchanged.
+
+## Synchronous-machine Norton-source cache screening
+
+An isolated prototype reuses the final Norton source for exact standard round-rotor
+and salient-pole machines when internal voltage, conductance, susceptance, rotor
+angle and current-base scaling retain identical bits. Terminal current, electrical
+power and field-current inputs still refresh with live voltage. Custom machine
+subclasses retain the ordinary dispatcher. Physical parameters, integration stages,
+substeps and convergence tolerance are unchanged.
+
+Thirty-four focused tests pass. Added tests compare cached and uncached machine
+outputs, power, field current and integrated states through changing voltage,
+base scaling, angle and reinitialization. A separate source-cache test exercises
+every scalar key, signed zeros, nonfinite values and explicit invalidation.
+All 34 complete Case 1 recordings match the retained baseline byte for byte.
+
+| Variant | Median total | Range |
+| --- | ---: | ---: |
+| Control | 10.709744 s | 10.642337–11.222181 s |
+| Norton-source cache | 10.802068 s | 10.716232–11.235897 s |
+
+The candidate median is 0.092324 seconds (0.86%) slower, with overlapping ranges.
+However, a subsequent eligibility review found that the prototype's exact-class
+guard excludes the imported `IeeeVcRoundRotorMachine` and
+`IeeeVcSalientPoleMachine` subclasses. The unit test exercises core machine
+classes; it does not prove execution in the large imported case. This screen
+therefore does **not** establish the cache's performance on the intended machines.
+Its recordings and timings remain valid observations, but the earlier conclusion
+that the intended cache showed no benefit is withdrawn. A corrected screen must
+assert nonzero cache use in the candidate and zero use in its disabled control.
+
+Both processes use one logical CPU, twelve complete warmups and five measurements,
+including recording and writer closure. Compilation remains active during
+measurement. The cache is not promoted into production. Case 2 was not timed in
+this screen. Independent-reference accuracy and the eight-second target remain
+unresolved.
+
+The [screening evidence index](checkpoints/norton-source-screen-2026-10-21.json)
+retains sources, commands, tests, timings, affinity records and recording hashes.
+Identical generated recordings share retained storage; supplied references are
+unchanged.
+
+## Guarded ST1 substep-boundary reuse screening
+
+The standard local ST1 path evaluates the graph at the end of one substep and
+again at the start of the next. An initial prototype skipped the latter pass
+whenever regulator time constant Ta was positive. Complete Cases 1 and 2 still
+matched, but a stronger test with active rate feedback found a field-output
+difference. The repeated pass can refresh derivative history; positive Ta alone
+does not justify removing it. The failed test and initial source are retained.
+
+The revised prototype additionally requires zero rate-feedback gain and zero
+feedback state, standard scalar input equations, supported exact machine and
+block types, ordinary limit objects and no machine/bus observers. Zero-Ta and
+active-feedback models keep the original sequence. It retains all ten physical
+substeps, field-publication order, convergence tolerance and network interval.
+
+Thirty-four focused tests pass. They include bitwise block state, derivative,
+input, output, local history and field comparisons over changing setpoints,
+limit selectors, voltage, status history, three Ta values, two feedback gains,
+and counts 1, 4, 10 and 128. Nonzero feedback state and late observer attachment
+disable reuse. The new test exercises the optimization and its fallback, rather
+than relying only on unchanged large-case output.
+
+All 34 complete Case 1 recordings match the retained baseline. Every candidate
+run reports 1,967,238 skipped redundant graph evaluations; every control reports
+zero. Both arms use the same class overlay with the feature disabled for control,
+one logical CPU, twelve warmups and five measurements including writer closure.
+
+| Variant | Median total | Range |
+| --- | ---: | ---: |
+| Disabled control | 10.788260 s | 10.617502–11.216924 s |
+| Guarded boundary reuse | 10.483388 s | 10.418873–11.289080 s |
+
+The median reduction is 0.304873 seconds (2.83%). This is a promising
+screen, with overlapping ranges and compilation still active during measurement.
+Longer timing qualification and Case 2 timing remain outstanding before promotion.
+The guarded final prototype has full-case recording evidence for Case 1; the
+earlier broader prototype's two-case regression is retained separately and must
+not be represented as final-prototype Case 2 verification. Independent-reference
+accuracy, early Case 3/4 failures and the eight-second objective remain unresolved.
+
+A separate full Case 1 audit confirms the preceding Norton-source screen had
+zero eligible machines and zero cache reuses. Its attached machine inventory
+contains 410 `IeeeVcRoundRotorMachine` and 25 `IeeeVcSalientPoleMachine` instances,
+including inactive machines. Its complete recording still matches the baseline.
+This confirms the eligibility defect and withdraws that screen's cache-performance
+conclusion. Future cache qualification must exercise the imported subclasses and
+assert nonzero reuse.
+
+The [evidence index](checkpoints/st1-boundary-screen-2026-10-21.json) retains both
+experiments, sources/classes, the counterexample, tests, commands, feature counters,
+affinity records and full-recording hashes. Supplied references are unchanged.
+
+## ST1 boundary reuse qualification and integration
+
+The longer paired campaign used 32 alternating warmups followed by seven
+control/candidate pairs per case. Pair order alternated. Both arms used the same
+class overlay with reuse disabled for control, one logical CPU, a 1/240-second
+network step, 1e-5 voltage-correction tolerance and ten ST1 substeps. Timings
+include fresh parsing, preparation, initialization, all recording and writer
+closure. Compilation and garbage collection were not subtracted.
+
+| Case | Control median | Candidate median | Median paired reduction | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.687032 s | 10.459400 s | 0.282008 s | 6/7 pairs |
+| 2 | 7.526230 s | 7.433640 s | 0.142034 s | 6/7 pairs |
+
+The ranges overlap and occasional compilation continues during measurement.
+All 92 complete recordings match their baseline hashes, including event-side
+samples. Every candidate Case 1 run skips 1,967,238 redundant graph evaluations;
+every candidate Case 2 run skips 626,922. Controls report zero skips.
+
+The integrated source adds two eligibility guards beyond the timed prototype:
+the selector must retain its standard input expressions, and active saved
+washout history must be zero. These guards preserve the fallback for customized
+graphs and externally restored history. Thirty-nine isolated focused tests and
+41 tests with the existing worktree prototypes pass. They compare all local
+state/history and block inputs, outputs and derivatives, including nonzero
+feedback, zero regulator time, observer changes, altered selectors and counts
+1, 4, 10 and 128.
+
+Final-source complete Cases 1 and 2 match every baseline recording byte and
+retain the same skip counts. The paired timing numbers above belong to the
+earlier guarded prototype; final-source audits establish compatibility and
+feature use, not another warmed timing measurement. Cases 3 and 4 retain their
+existing failure at 0.04583333333333333 seconds, with identical partial records
+and failure messages. Those failed runs are not performance successes.
+
+The feature is integrated only into the supported direct ST1 local path. It
+preserves all physical substeps, equations, state advances and publication
+boundaries. Other pending observation-cache and compact-state prototypes remain
+unpromoted. The Case 1 eight-second target, early Case 3/4 failures and supplied
+reference trajectory accuracy remain unresolved.
+
+The [qualification index](checkpoints/st1-boundary-qualification-2026-10-21.json)
+retains scripts, sources/classes, tests, commands, affinity, counters and hashes.
+Full generated recordings remain identified dependencies rather than extra copies.
+
+## Imported-machine Norton-source cache screen
+
+The corrected prototype adds an explicit eligibility hook to the core machine
+and opts in the two final imported synchronous-machine classes. It does not
+introduce a core-to-plugin dependency or opt arbitrary subclasses in. The
+voltage-dependent terminal-current and electrical-power updates still execute
+on every call. Only the final internal-source conversion can reuse its result,
+keyed by exact internal voltage, conductance, susceptance, angle and current
+base multiplier.
+
+Forty-two focused tests pass, including imported round-rotor and salient-pole
+models, changing terminal voltages, state advances, base multipliers, cache
+disable/re-enable and reinitialization. Core scalar tests cover signed zeros,
+extreme values and non-finite inputs. Controls assert zero reuse; candidates
+assert positive reuse. Case 1 exercises 333 active synchronous machines and
+12,860,500 reuses per completed candidate run. The previous inactive screen's
+performance conclusion remains withdrawn.
+
+Both cases use twelve alternating warmups and five measured pairs, alternating
+which arm runs first in each pair. Both arms include the integrated guarded ST1
+optimization, identical class overlays, one logical CPU, the quarter-cycle
+network step, 1e-5 tolerance and full recording. No measurements or compilation
+time are removed. All 44 complete recordings match their retained baseline.
+
+| Case | Disabled control median | Cache median | Median paired reduction | Cache faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.490026 s | 10.678659 s | -0.091580 s | 1/5 |
+| 2 | 7.569275 s | 7.695792 s | -0.201854 s | 2/5 |
+
+The cache is not promoted: Case 1 is slower in four of five measured pairs and
+has a higher median. This screen does not isolate which part of the extra cache
+key/dispatch machinery accounts for the cost. Positive reuse counts alone are
+insufficient evidence of a speedup. The implementation remains an isolated
+prototype; the committed ST1 improvement is retained.
+
+The [evidence index](checkpoints/imported-norton-source-screen-2026-10-21.json)
+preserves sources/classes, tests, commands, raw timings, feature counters,
+affinity and full-recording dependencies. Independent-reference accuracy and
+the full eight-second objective remain open.
+
+## Static-load work counts and bounded voltage-norm screen
+
+A full Case 1 instrumented audit counted 33,269,630 static-load eligibility
+checks, 1,126 cache rebuilds, zero eligibility fallbacks and 33,269,922 static
+current-injection calls. Its complete recordings match the baseline. Thus the
+existing classification cache is working; repeated reclassification does not
+explain the sampled eligibility-method presence. These are work counts, not
+exclusive time attribution or an uninstrumented timing result.
+
+A separate convergence prototype skips a complex magnitude when both absolute
+components are at most half the largest correction already observed. It retains
+voltage-history publication and calculates potentially leading corrections
+normally. The component norm is unchanged. It reports 50,700,905 skipped
+magnitudes per complete candidate Case 1 run; controls report zero.
+
+The initial prototype passed 43 focused tests and all 44 full recording checks
+in the paired screen. Both cases used twelve alternating warmups and five
+measured pairs, alternating pair order, one logical CPU, a quarter-cycle network
+interval, 1e-5 tolerance, ten ST1 substeps and the committed ST1 boundary reuse.
+Fresh parsing, preparation, initialization and complete recording are included.
+Compilation and garbage collection remain included in every measurement.
+
+| Case | Disabled control median | Candidate median | Median paired reduction | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.487917 s | 10.405829 s | 0.121926 s | 4/5 |
+| 2 | 7.505778 s | 7.521618 s | -0.022328 s | 1/5 |
+
+An additional regression exposes a subnormal counterexample: rounding half of
+three minimum-subnormal units upward to two units permits skipping a tied
+magnitude, which can retain the wrong leading bus when visits are reversed.
+The guard now requires the half-maximum to be normal and finite. This preserves
+the strict geometric separation from the existing maximum. Forty-four tests
+then pass, including the retained failing-before/passing-after regression,
+200,000 randomized bounds, exhaustive small subnormal combinations, tolerance
+boundaries, minimum iteration counts, both norms, custom complex magnitudes,
+non-finite values and reversed visitation. Complete guarded Cases 1 and 2 have
+unchanged recordings and the same skip counts as the timed prototype.
+
+The optimization remains unpromoted. The initial screen's Case 1 reduction is
+small and Case 2 has no gain; ranges overlap and compilation persists. The
+guarded source has compatibility audits, not a new warmed timing qualification.
+Production convergence behavior, tolerance, integration and recording remain
+unchanged. A larger reduction must come from device-update cost or fewer
+network iterations, with any changed iteration strategy checked against the
+supplied trajectories. The eight-second objective and accuracy remain open.
+
+The [evidence index](checkpoints/bounded-voltage-norm-2026-10-21.json) retains
+sources/classes, counts, tests, the numerical counterexample, raw timings,
+affinity and full-recording dependencies without copying the large recordings.
+
+## Controller dispatch and output-refresh screens, October 22
+
+Two isolated experiments use the deferred-publication network-acceleration
+prototype as their common baseline. Both retain one logical CPU, a 1/240-second
+network step, 1e-5 voltage-correction tolerance, ten ST1 substeps and complete
+recording. Both arms include the extended pre-initialization parameter checks.
+They are performance screens on a prototype whose full-system reference
+accuracy remains unresolved, not production or reference-acceptance results.
+
+The PSS2A experiment gives each standard block input a typed call site, avoiding
+the shared polymorphic setter. It keeps the ordered arithmetic, live reads,
+binding checks, compound-filter propagation and custom-block fallback. All 31
+focused tests pass, including bitwise state, derivative and output comparisons.
+
+Each case uses twelve alternating warmups and five measured pairs, alternating
+pair order. Timings include fresh parsing, preparation, initialization, all
+recording and writer closure; compilation and garbage collection are included.
+All 44 complete recordings match the retained baseline byte for byte.
+
+| PSS2A typed-input screen | Control median, s | Candidate median, s | Median paired reduction, s | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| Case 1 | 10.060274 | 9.990163 | 0.074512 | 4/5 |
+| Case 2 | 6.668631 | 6.823393 | -0.164355 | 2/5 |
+
+The Case 1 improvement is small and Case 2 has no demonstrated gain. This
+experiment is not promoted.
+
+A separate ST1 audit tested whether upstream derivatives and saved history
+were exactly zero at local-step entry. None of 273,828 Case 1 calls or 86,472
+Case 2 calls met the complete guarded eligibility condition. Skipping upstream
+state updates on an assumed equilibrium would therefore be unjustified.
+
+A second audit instead checked the final repeated algebraic preparation pass.
+Under the existing standard-graph, positive-Ta, zero-feedback conditions, none
+of the eight block inputs changed in 2,404,402 Case 1 evaluations or 766,238
+Case 2 evaluations. Both audits retained identical full recordings. These are
+input-refresh observations, not evidence that the upstream states are constant.
+
+The ST1 prototype skips only that final preparation pass while the guarded
+local integration scope is active. It preserves every substep, state update,
+history update and output publication. Active feedback, nonzero feedback state
+or history, changed selectors and observed/custom objects retain the ordinary
+path. All 43 focused tests pass, including counts 1, 4, 10 and 128, changing
+limits and inputs, reactivation and discontinuities.
+
+The same timing protocol produces the following results. Candidate runs skip
+the audited number of refresh passes; controls skip zero. All 44 recordings
+are identical, including network iteration counts and event-side samples.
+
+| ST1 output-refresh screen | Control median, s | Candidate median, s | Median paired reduction, s | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| Case 1 | 10.186788 | 10.136256 | 0.214022 | 3/5 |
+| Case 2 | 6.692323 | 6.842452 | -0.150130 | 2/5 |
+
+Ranges overlap substantially and compilation continues during measurement.
+These results do not establish a consistent improvement; the prototype remains
+unpromoted. A longer warmup is needed before interpreting differences this small.
+Cross-screen absolute times do not isolate the effect of either optimization.
+
+Cases 3 and 4 with the ST1 prototype still fail at 0.045833333 seconds, with
+identical partial recordings. They are not completed ten-second benchmarks.
+The eight-second target for Case 1 and independent trajectory accuracy remain
+open. Production defaults and the unrelated pending performance work are unchanged.
+
+The [evidence index](checkpoints/controller-refresh-screens-2026-10-22.json)
+retains the prototypes, tests, audit counts, raw paired timings, affinity,
+failure prefixes and full-recording hashes. Large generated recordings remain
+in the dedicated external artifact store; supplied references are unchanged.
+
+## Endpoint derivative audit, October 22
+
+An isolated audit checks whether the evaluation at the start of a step repeats
+the stored values from the previous network endpoint. It uses the same
+deferred-publication network prototype, extended parameter validation, 1e-5
+tolerance, quarter-cycle interval and ten ST1 substeps as the preceding screens.
+No evaluation is skipped. The instrumentation reads stored states, derivatives,
+block inputs, machine power and field voltage; it avoids output getters that
+could refresh algebraic values. Renewable internal states are not covered.
+
+| Audit | Case 1 | Case 2 |
+| --- | ---: | ---: |
+| Reusable-endpoint evaluations checked | 2,400 | 2,400 |
+| Scalar probes per evaluation | 42,844 | 13,420 |
+| Evaluations with every probe unchanged | 0 | 0 |
+| Machines with recurring PSS2A input/rate changes | 208 | 64 |
+| Stored state-value changes during evaluation | 0 | 0 |
+
+The recurring changes are in the second PSS2A input path. The inspected
+bus-1050 example selects electrical power (input code 3), not bus frequency.
+Machine electrical evaluation follows stabilizer evaluation, so the next
+initial evaluation can refresh the stabilizer from the newer machine power.
+These nonzero differences rule out removing the complete evaluation as
+redundant. A proposed explanation based on bus-frequency updates was corrected
+after checking the selector and sampled values.
+
+Other observed field changes occur only during startup, except six Case 2
+changes in bus 5263's ST1 washout derivative. A targeted second audit shows all
+six are changes between positive and negative zero. They do not explain the
+full-system trajectory error. This observation is not permission to discard
+signed-zero behavior in a bitwise regression.
+
+Both initial audit runs and the completed targeted Case 2 run reproduce the
+retained full-network recordings, selected-channel CSVs and channel metadata
+byte for byte. The first targeted attempt completed numerical work but failed
+when serializing an unavailable initial-frequency marker as numeric NaN. The
+corrected attempt represents that marker as text; the failed attempt is retained
+as an instrumentation failure, not a dynamic convergence failure.
+
+These runs are numerical audits, not warmed timing measurements. Production
+code and integration order are unchanged. Selective reuse would need explicit
+dependency and lifecycle guards, including startup, events, input or parameter
+changes, activation and observers; unchanged values in these two cases alone
+do not prove a general cache is safe. Independent reference accuracy and the
+eight-second objective remain open.
+
+The [audit evidence index](checkpoints/endpoint-derivative-audit-2026-10-22.json)
+retains the source overlays, commands, raw probe counts, sampled values,
+attempt classifications and complete-recording hashes.
+
+## Current-path phase profile, October 22
+
+A new Case 1 profile uses the deferred-publication network prototype, extended
+parameter validation, one logical CPU, 1e-5 voltage-correction tolerance,
+quarter-cycle steps, ten ST1 substeps and complete recording. Twelve fresh-case
+warmups precede four sampled runs. The requested sample period is 2 ms; the
+2,173 captured main-thread samples must not be interpreted as exact phase times.
+Compiler inlining and sampling bias can put substantial apparent cost on a
+method that does little work.
+
+Two separate timing audits therefore measure network phases and device phases
+with wall-clock counters. Each uses eight warmups and two observed runs. These
+instrumented totals include counter overhead and are not a new performance
+qualification. The device audit's median phase times are:
+
+| Measured region | Seconds |
+| --- | ---: |
+| Current assembly | 1.228 |
+| Sparse solve using retained factors | 0.758 |
+| Network voltage publication | 0.455 |
+| Custom-current handling | 0.000635 |
+| Ordinary exciter evaluation | 1.965 |
+| Stabilizer evaluation | 1.151 |
+| Local ST1 advancement, including its evaluations | 0.800 |
+| Governor evaluation | 0.547 |
+| Renewable boundary evaluation | 0.194 |
+| Machine derivative evaluation | 0.160 |
+| Electrical-only endpoint preparation | 0.136 |
+
+These regions do not cover the entire run. In particular, current assembly,
+solve and publication omit the outer convergence/mixing work; the device
+regions omit global state advancement, renewable advancement, bus-frequency
+updates and recording. They must not be added up and called total simulation
+time. The fully instrumented runs take 10.641 and 10.541 seconds including
+preparation and recording. The custom-current hook, despite its prominent
+sample count, takes under a millisecond across the complete run. It is not a
+meaningful optimization target here.
+
+ST4B receives a further non-mutating audit. Its 1,508,664 output calls all use
+exactly two algebraic refresh passes. Together with 1,509,080 step calls, this
+produces 7,544,568 preparation passes and voltage reads. A second audit reads
+the raw bits of all six stored block inputs around each relevant pass:
+
+- The final step-preparation pass changes no input in any of 1,509,080 calls.
+- The first output-preparation pass changes no input in any of 1,508,664 calls.
+- The second output-preparation pass changes no input in any of 1,508,664 calls.
+
+This identifies a larger candidate than reducing ST1's substep count: explicit
+reuse of a prepared ST4B output within a single solver evaluation. The audit
+does not yet authorize skipping passes in general. An implementation must
+establish a standard, side-effect-free graph and unchanged machine inputs,
+limits and parameters within that scope, preserve all state/derivative work,
+and retain the existing path for unsettled feedback or custom behavior. No
+cross-step or cross-network-iteration cache follows from this evidence.
+
+All 38 completed runs across the sampling profile, phase timers and two ST4B
+audits reproduce the retained complete recordings and metadata byte for byte.
+The first network-timer harness attempt failed compilation because of a local
+variable-name error; it ran no simulation and is separately classified in the
+evidence archive. No production code changed. These Case 1 audits do not extend
+accuracy or performance acceptance to other cases, and the eight-second target
+and independent trajectory acceptance remain open.
+
+The [phase-profile evidence index](checkpoints/phase-profiles-2026-10-22.json)
+retains the sampling recording, instrumented sources, commands, timings, input
+change masks, affinity checks and hashes of all 38 complete recordings.
+
+## Guarded ST4B endpoint reuse screens, October 22
+
+Two isolated prototypes combine ST4B's zero-time step and output evaluation.
+They retain all three step-preparation passes and all state/derivative work.
+A prepared output can be reused only within that call, with a standard graph,
+side-effect-free machine/bus inputs, a held standard stabilizer output, finite
+values, and unchanged block inputs during the final preparation pass. Unsettled
+feedback, observers and custom blocks retain the existing evaluation path.
+Voltage, parameters and numeric limits remain live between calls.
+
+The first guard checks graph shape on every call and snapshots all six inputs.
+After 20 alternating warmups and seven measured pairs per case, it shows no
+consistent advantage: the candidate wins three pairs in Case 1 and one in
+Case 2. Case 1 includes two candidate wall-clock delays of roughly two seconds
+relative to process CPU time; these observations are retained, not excluded.
+The compact guard checks immutable graph shape when binding, retains the
+existing per-preparation replacement checks, and compares input bits while
+preparing each block. It also removes an unnecessary admittance computation
+that had been used only to check a known return type.
+
+The compact screen uses 32 alternating warmups followed by seven measured
+pairs per case. Each run includes fresh loading, preparation, initialization,
+all channels, output writing and closure. One logical CPU, 1e-5 network tolerance,
+quarter-cycle steps and ten ST1 substeps remain fixed. Compilation and garbage
+collection within measured runs are included. Both arms use the experimental
+Anderson/deferred-publication network path; these are not production timings.
+
+| Case | Control median | Compact candidate median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.898 s | 9.578 s | 0.256 s | 7/7 |
+| 2 | 6.590 s | 6.468 s | 0.100 s | 5/7 |
+
+Case 1 control/candidate ranges are 9.752–10.136 / 9.205–9.708 seconds.
+Case 2 ranges are 6.373–6.842 / 6.387–6.642 seconds. The second case still
+has overlapping ranges. Candidate runs reuse 1,508,664 outputs in Case 1 and
+468,454 in Case 2. All 160 complete recordings across both timing screens
+match the retained baseline byte for byte, including channel metadata.
+
+The original guard passes 39 focused tests; the compact guard passes 41,
+including coupled faults, controller activation, live inputs/limits, custom
+blocks, observers, unsettled feedback and nonfinite fallback. An independent
+small-system trajectory suite is included in these counts. An initial
+benchmark harness compilation error and a test-only API compilation error
+are retained separately from simulation outcomes.
+
+With Anderson acceleration disabled, two additional control/candidate runs
+per case also produce identical complete recordings (four runs total). Cases
+3 and 4 still fail at 0.04583333333333333 seconds with byte-identical partial
+recordings. These checks preserve the existing failures; they do not qualify
+those cases for timing or accuracy.
+
+These results establish a promising isolated optimization, not independent
+full-system accuracy. No production default changes in this checkpoint.
+The eight-second target remains unmet for Case 1, and supplied-reference
+trajectory acceptance remains open.
+
+The [endpoint-screen evidence index](checkpoints/st4-endpoint-screens-2026-10-22.json)
+retains both prototypes, tests, raw timings, reproduction scripts and recording
+hashes. Full recordings remain on the designated artifact drive; the retained
+archive contains compact evidence and dependency references.
+
+## Production ST4B endpoint implementation, October 22
+
+The compact guarded endpoint implementation now lives in the controller and
+staggered solver. It defaults on when runtime controller optimization is
+enabled. `setSt4EndpointReuseEnabled(false)`, called before initialization,
+selects the existing separate step/output path for regression comparisons.
+The method rejects changes after initialization. Exact machine ownership is
+also checked before entering the fixed-input scope.
+
+Reinitialization now clears the direct graph before annotation initialization
+and rebuilds it after successful initialization. A test changes the measurement
+lag and compares the reinitialized controller against an explicitly rebuilt
+control. Without the repair, the retained graph updates obsolete block storage
+and the derivative/state comparison fails. With the repair all 42 focused tests
+pass, including the independent small-system trajectory suite. The new test
+class is registered in the core plugin suite.
+
+A shorter confirmation screen uses twelve warmups and five measured pairs.
+It retains all observations, including substantial compilation during some
+measured runs. Median paired savings are 0.037 seconds in Case 1 and 0.044
+seconds in Case 2, with three of five pairs faster in each case. These results
+are too noisy to confirm the prior compact prototype's gain. The separate
+32-warmup/seven-pair qualification is reported below and retained in its own
+evidence checkpoint; these shorter-screen numbers are not its result.
+All 44 complete recordings in the shorter screen match the retained baseline.
+Four further full ten-second recordings with Anderson disabled also match
+between the control and optimized variants.
+
+Paired 0.1-second flat and fault checks use all six original case inputs, with
+all full-network channels retained. Cases 1 and 2 complete both profiles with
+identical recordings. Cases 3 and 4 fail at 0.04583333333333333 seconds, and
+Case 6 at 0.049999999999999996 seconds, with identical partial recordings.
+Case 5 fails during power-flow preparation in both variants before recording,
+with the same voltage-dependent group-limit error; there are no trajectories
+to compare for that case. Separate accelerated Case 3/4 checks also reproduce
+the retained failure prefixes. These are regression results, not six-case
+acceptance or evidence that the existing failures are resolved.
+
+An isolated Maven build first exposed an installed-core API mismatch. Building
+the clean core revision `e2ec1a5fd` under a unique local validation version
+resolves production compilation without replacing the benchmark dependency.
+The registered gate still cannot reach test execution: nine existing test or
+runner source files refer to controller APIs removed by the earlier rollback.
+That compile failure is retained; the registered suite is not claimed to pass.
+The isolated build excludes unrelated pending performance prototypes. The
+same 42 focused tests also pass against its freshly compiled production classes
+and matching core jar, without any frozen benchmark class overlays.
+
+The [production evidence index](checkpoints/st4-endpoint-production-2026-10-22.json)
+retains 56 completed runs, fourteen matching partial-recording failures, four
+preparation failures before recording, the focused tests, the red/green
+reinitialization evidence and the Maven diagnostics. The matching core jar is
+retained privately. The eight-second goal and independent full-system accuracy
+remain open.
+
+## Completed endpoint qualification and PSS2A audit, October 22
+
+The committed ST4B implementation completes 32 alternating warmups and seven
+measured pairs for each case. Both arms retain the current experimental
+Anderson/deferred-publication network path, 1e-5 voltage-correction tolerance,
+a 1/240-second step and ten ST1 substeps. One logical CPU is enforced. Total
+wall time includes loading, preparation, initialization, every recorded channel,
+writer closure, compilation and garbage collection within each measured run.
+
+| Case | Control median | ST4B reuse median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.999 s | 9.686 s | 0.315 s | 7/7 |
+| 2 | 6.501 s | 6.412 s | 0.117 s | 5/7 |
+
+Case 1 control/candidate ranges are 9.739–10.192 / 9.295–9.869 seconds;
+Case 2 ranges are 6.386–6.841 / 6.351–6.620 seconds. All observations are
+retained. Every full recording and channel-metadata file across the 92 runs
+matches the retained baseline. This qualifies the controller's timing effect
+in this benchmark configuration, not independent trajectory accuracy or the
+unpromoted network algorithm. Case 1 remains 1.686 seconds above the target.
+
+A further read-only audit measures PSS2A output preparation. At the global
+exciter boundary, none of the ten block inputs changes during any of 2,512,825
+output calls in Case 1 or 778,351 calls in Case 2. The local ST1-entry scopes
+also show unchanged inputs in 273,828 and 86,472 calls respectively. No
+measured top-level state or derivative changes during these observations.
+The counters do not separately audit compound-filter internal states. Both
+complete audit recordings reproduce the baseline exactly.
+
+An isolated PSS2A prototype combines the zero-time state evaluation and fixed
+output observation at the global exciter boundary. It retains signal sampling
+and every derivative/state calculation. Its guards admit only the standard
+unobserved graph, distinct blocks, fixed limit definitions, supported exact
+machine/exciter classes and speed/electrical-power selectors. Other selectors,
+custom blocks and observed objects retain the existing path. The local ST1
+entry behavior is unchanged. This is not a cache across state or network steps.
+
+All 53 focused prototype tests pass, including complete state/derivative bits,
+faults, live controls and inputs, activation changes, custom-block reads,
+observer/selector fallback, scope closure and nonfinite behavior. The tests
+also include the existing independent small-system trajectory checks. The
+prototype's own 32-warmup timing screen is still running and is excluded from
+this completed checkpoint. No PSS2A production change or speed claim follows
+yet. The earlier inspection of stale test APIs made no source changes.
+
+The [qualification and audit index](checkpoints/controller-endpoint-qualification-2026-10-22.json)
+retains all 94 complete-recording hashes, the warmed timings, audit counters,
+prototype sources/classes, focused tests and reproduction commands. The
+six-case failures, registered-test compilation gap, independent accuracy and
+overall eight-second goal remain unresolved.
+
+## Completed PSS2A endpoint-output screen, October 22
+
+The isolated PSS2A prototype completed the same 32 alternating warmups and
+seven measured pairs per case. Both arms enable the committed ST4B reuse;
+only the experimental PSS2A endpoint-output reuse differs. The network path,
+single-CPU constraint, integration settings and complete recording remain
+those of the preceding qualification.
+
+| Case | Control median | PSS2A prototype median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.667 s | 9.543 s | 0.151 s | 4/7 |
+| 2 | 6.495 s | 6.517 s | -0.085 s | 3/7 |
+
+Case 1 control/candidate ranges are 9.429–10.111 / 9.271–9.836 seconds;
+Case 2 ranges are 6.370–6.716 / 6.388–6.743 seconds. All observations,
+including in-run compilation and garbage collection, are retained. Candidate
+runs reuse 2,512,825 endpoint outputs in Case 1 and 778,351 in Case 2;
+controls reuse none. Every full recording and channel-metadata file across
+all 92 runs matches the retained baseline byte for byte.
+
+The gain is small and inconsistent across these cases. The prototype is
+therefore retained for investigation and is not promoted to production.
+The previously reported 53 focused tests remain its test evidence; this
+timing screen does not extend lifecycle coverage or establish independent
+full-system accuracy. Cases 3–6 have not been rerun with this prototype.
+
+The [PSS2A screen index](checkpoints/pss-endpoint-scope-screen-2026-10-22.json)
+retains the timings, complete recording hashes, source snapshots and commands.
+It links to the preceding checkpoint for the prototype tests and compiled
+classes. The eight-second goal and outstanding reference errors remain open.
+
+## Cross-case stability follow-up, October 22
+
+The next qualification step investigates the early Case 3/4 failures rather
+than promoting another small controller timing change. Two and four local
+renewable substeps complete 1.2-second fault probes at the quarter-cycle network
+step, but large reference errors remain. A separate Case 3 cold-point check
+identifies a rejected reactive-limit release at bus 5170. Allowing the existing
+transactional trial restores its voltage and reactive injection, reducing the
+worst cold voltage error across 2,000 buses from 0.015545 to 0.0000113 pu in
+14 preparation iterations. Neither experiment changes production defaults.
+The [stability and limit-recovery report](renewable-stability-and-limit-recovery-2026-10-22.md)
+retains the numerical controls, failed alternatives and remaining accuracy gaps.
+
+## Atomic first-order kernel screen, October 22
+
+The retained sampling profile puts custom-current handling near the top, but
+the separate phase timers measure only 0.00057–0.00065 seconds in that operation
+per run. Sampling attribution alone is insufficient to identify this as a
+useful optimization target. The same instrumented runs spend approximately
+1.96 seconds in exciter evaluation, 1.15 seconds in stabilizers and 0.80 seconds
+in local ST1 advancement. These timers include instrumentation overhead.
+
+An isolated first-order CML kernel prototype combines the existing atomic
+calculation and commit into one method. It removes repeated eligibility checks
+and dispatch while preserving arithmetic order, scratch-array writes and block
+state restoration. Non-windup and custom blocks keep their existing fallback;
+the separate trial and commit API is unchanged. No production source changed.
+
+Each case ran twelve alternating warmups and four alternating measured pairs
+on one logical CPU. Both arms use the prior ST4B reuse and experimental
+Anderson/deferred network configuration, a 1/240-second step and 1e-5 voltage
+correction tolerance. Whole-case timing includes loading, preparation,
+initialization, complete recording and writer closure.
+
+| Case | Control median | Candidate median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.059 s | 9.938 s | 0.182 s | 2/4 |
+| 2 | 6.683 s | 6.647 s | 0.069 s | 2/4 |
+
+The ranges overlap substantially: Case 1 control/candidate are 9.608–10.843 /
+9.717–10.036 seconds; Case 2 are 6.485–7.128 / 6.391–7.270 seconds. Compilation
+and garbage collection remain included. Case 1 measured compilation alone
+ranges from 78 to 628 ms, so this short screen does not establish a steady
+performance gain. The candidate is not promoted.
+
+All forty complete recordings and channel metadata files match the retained
+baseline byte for byte. Seven focused tests pass with the candidate both on
+and off: three block kernel tests, three PSS2A scalar evaluation tests and one
+independent small-system trajectory test. An initial broader test compilation
+failed because the existing `Pss2aCompiledStageTest` refers to APIs removed in
+the earlier rollback. That class remains excluded and unresolved; it was not
+modified to make this screen pass.
+
+The [screen evidence index](checkpoints/atomic-cml-screen-2026-10-22.json)
+retains sources, runtime hashes, test results, commands and every timing,
+with hashes and locations for the complete recordings. This verifies a
+behavior-preserving candidate on the benchmark baseline, not six-case
+reference accuracy. The eight-second objective remains open.
+
+## Fixed ST1 local traversal, October 22
+
+The standard ST1 variants share the ordered slots `[0, 5, 1, 2, 3, 4, 7, 6]`
+and no additional static feedback pass. The evaluator now checks that layout
+when binding the graph and uses explicit call sites for the eight preparations
+inside its existing primitive local-integration scope. Every preparation pass,
+operand read, state update, limiter operation and substep remains. Alternate
+ordering and ordinary evaluations retain the node loop; replaced bindings
+still fail the existing structural check. Ten ST1 substeps remain the default.
+
+The isolated candidate and control use one logical CPU, a quarter-cycle
+network step, 1e-5 voltage-correction tolerance, the preceding ST4B optimization
+and the same experimental Anderson/deferred network path. Thirty-two alternating
+warmups precede seven measured pairs per case, with pair order alternated.
+Whole-case timing includes parsing, preparation, initialization, complete
+recording and writer closure; compilation and garbage collection remain included.
+
+| Case | Control median | Candidate median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.686 s | 9.470 s | 0.216 s | 7/7 |
+| 2 | 6.494 s | 6.458 s | 0.147 s | 5/7 |
+
+Control/candidate ranges are 9.484–9.924 / 9.321–9.685 seconds for Case 1
+and 6.383–6.657 / 6.311–6.510 seconds for Case 2. Candidate runs execute
+10,527,966 fixed-order passes in Case 1 and 3,307,554 in Case 2; controls
+execute zero. All 92 complete recordings and metadata files are identical.
+These paired results support enabling the traversal optimization, while the
+smaller Case 2 benefit remains more sensitive to run variability.
+
+The final source enables the path by default, with
+`ipss.experiment.disableSt1FixedSchedule=true` retaining the diagnostic control.
+Eight focused tests pass, including bitwise local state/derivative/history and
+field-output checks across counts 1, 4, 10 and 128, active feedback, zero-time
+regulators, changing inputs/limits, discontinuities and reactivation. Additional
+tests cover alternate-order fallback, ordinary evaluation and binding replacement.
+The existing independent small-system trajectory test also passes. The new
+test class is registered in `CorePluginTestSuite`; existing full-reactor test
+compilation limitations remain, so this is a focused gate on compatible dependencies.
+
+Two complete final-source runs reproduce Cases 1–2 byte for byte. Four further
+final-source prefix checks preserve their previous observations: Case 3 reaches
+0.1 seconds, while Cases 4, 5 and 6 retain failures at 0.0458333, 0.0333333 and
+0.05 seconds. They are not complete ten-second acceptance runs. The first
+timing harness failed compilation because of duplicate local names; the first
+expanded test compile failed on a wildcard field type. Both were corrected
+before their respective simulations/tests, and the failed attempts are retained.
+
+The [fixed-traversal evidence index](checkpoints/st1-fixed-schedule-2026-10-22.json)
+retains sources, test results, runtime identities, all timings and hashes for
+94 complete recordings plus four prefixes. Unrelated pending performance edits
+were excluded from the source used for verification. Case 1 remains about
+1.47 seconds above the target, and independent full-system accuracy is unresolved.
+
+## Ordinary ST1 traversal screen, October 22
+
+An isolated follow-up extends the fixed preparation call sites to ordinary
+ST1 evaluations. It preserves each input read, stage-input write, static-block
+update, preparation pass and control-block advancement. The committed local
+traversal remains enabled in both arms. Eleven focused tests pass, including
+bitwise ordinary and local state/derivative comparisons, changing parameters
+and limiters, alternate-order fallback, and replaced-binding rejection.
+
+Case 1 completes 32 alternating warmups and seven measured pairs on one
+logical CPU, with the same quarter-cycle step, 1e-5 tolerance, full recording
+and experimental network path as the preceding screen. The candidate executes
+2,696,070 ordinary fixed-order passes per run; controls execute zero.
+
+| Case 1 measurement | Control | Candidate |
+| --- | ---: | ---: |
+| Median whole-case wall time | 15.997 s | 16.132 s |
+| Wall-time range | 13.146–17.614 s | 13.736–17.484 s |
+| Median process CPU time | 10.891 s | 10.844 s |
+
+Only four of seven pairs favor the candidate. The last eight warmups took
+9.412–9.697 seconds, followed by a large increase in both arms during measurement.
+One candidate run took 17.484 seconds wall time but 10.844 seconds of process
+CPU time, with zero compilation and 122 ms of garbage collection. These gaps
+and the observed activity of other applications prevent qualifying a small
+performance gain. All measurements remain retained; none was removed as an outlier.
+
+The bounded runner stopped during Case 2's nineteenth warmup when free space
+on the log volume fell below its 2 GiB reserve. A subsequent identity-checked
+manual stop request found that the process had already exited and stopped no
+process. Case 2 has 18 completed warmups and no measured pairs. All 64 completed
+recordings across both cases match the retained baseline byte for byte; the
+interrupted Case 2 recording is retained separately and excluded from completed
+run claims. There is no new six-case acceptance result.
+
+The ordinary-evaluation extension is not enabled in production. The
+[screen evidence index](checkpoints/st1-ordinary-schedule-2026-10-22.json)
+retains the candidate, tests, runtime identities, all completed timings,
+recording hashes and the storage-guard termination. The preceding committed
+local ST1 improvement remains the qualified performance change; the eight-second
+objective and independent full-system accuracy remain open.
+
+## One-step default timing, October 22
+
+Following the user-approved default change in `3a5e050e0`, a paired screen
+compares the implicit one-step default with an explicit ten-step override.
+Both use one logical CPU (affinity mask 1), a quarter-cycle network interval,
+1e-5 voltage-correction tolerance, the same experimental Anderson/deferred
+network path, and complete recording. Whole-case wall time includes fresh
+parsing, preparation, initialization and writer closure. Each case has 32
+alternating warmups followed by seven measured pairs with alternating order.
+
+| Case | Ten-step median | One-step default median | Median paired saving | One-step faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.688 s | 8.943 s | 0.742 s | 7/7 |
+| 2 | 6.465 s | 6.252 s | 0.136 s | 6/7 |
+
+Every run checks the effective local count and numerical settings. All 92
+complete recordings repeat byte for byte within their respective arms;
+ten-step recordings also match the preceding retained baseline. One-step and
+ten-step trajectories intentionally differ. Case 1 remains 0.943 seconds
+above the eight-second target. Its preparation takes approximately 0.2–0.3
+seconds, so dynamic calculation and recording account for most of the remainder.
+
+The accompanying full-reference comparison covers 5,191 Case 1 channels and
+4,501 Case 2 channels. It retains every nonnegative observation and both sides
+of each event, interpolates within event segments, and fits no angle offset.
+The full ten-second reference range remains the normalization denominator.
+
+| Case / ST1 count | Worst rotor-angle RMSE, degrees | Worst voltage RMSE, pu |
+| --- | ---: | ---: |
+| 1 / ten | 12.5113 | 0.0191925 |
+| 1 / one | 9.9213 | 0.0191945 |
+| 2 / ten | 92.3936 | 0.0451791 |
+| 2 / one | 91.9705 | 0.0452270 |
+
+These independent-reference errors remain unresolved. The one-step policy
+accepts the implementation tradeoff; it does not qualify reference accuracy.
+The [timing and comparison index](checkpoints/st1-single-default-timing-2026-10-22.json)
+retains all timings, runtime identities, complete-recording hashes and
+per-channel comparison evidence. Earlier attempts are retained: a harness
+compile error, an obsolete substep-reuse assertion after a completed one-step
+integration, and a Case 2 pre-step check that rejected harmless decimal
+rounding of 1/240 second. The corrected check does not alter the retained
+network interval. Case 1 measurements were not repeated after that correction.
+
+A separate network prototype reuses unchanged QR history columns while
+appending a new column, rebuilding after a history rotation or reset. It
+still recalculates the right-hand side from each current residual. Across
+64,000 calls, candidate outputs, decisions, history arrays, QR storage and
+coefficients match the original implementation bitwise; 43,640 columns are
+reused. Coverage includes rank deficiency, signed zeros, nonfinite inputs,
+history rotation and resets. Two complete one-step Case 1/2 smokes also match
+all recordings, metadata and iteration counts. This prototype has no warmed
+timing qualification in that checkpoint and has not changed production code.
+
+## QR-history reuse timing, October 22
+
+A subsequent paired screen measures QR-prefix reuse with the implicit one-step
+ST1 default in both arms. It retains the same experimental network path,
+quarter-cycle interval, 1e-5 tolerance, complete recording and single-CPU
+affinity. Each case has 32 alternating warmups and seven measured pairs.
+
+| Case | Full QR median | Prefix-reuse median | Median paired saving | Reuse faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.338 s | 9.362 s | -0.007 s | 3/7 |
+| 2 | 6.222 s | 6.195 s | 0.082 s | 5/7 |
+
+Median process CPU time also does not improve: Case 1 changes from 9.094 to
+9.156 seconds, and Case 2 from 6.063 to 6.078 seconds. Compilation and garbage
+collection times are retained for every measured run; all pairs remain in
+the report. These results do not establish a consistent performance benefit,
+so QR-prefix reuse is not promoted. The user-approved one-step default remains.
+
+All 92 complete recordings match the retained one-step baseline byte for byte,
+including every full-network sample, selected-channel sample and channel
+metadata. Network iteration and mixing counts are unchanged. Each candidate
+run reuses 7,209 QR columns; the control reuses none. The standalone comparison
+also passes 64,000 calls with the feature disabled and another 64,000 enabled.
+The [screen evidence index](checkpoints/anderson-qr-prefix-screen-2026-10-22.json)
+retains the sources, runtime identities, complete-output hashes and timings.
+The eight-second Case 1 objective and independent-reference accuracy remain open.
+
+## One-step controller profile and ST4 input reuse, October 22
+
+The refreshed Case 1 profile uses the one-step ST1 default, one logical CPU,
+1/240-second network steps, 1e-5 voltage-correction tolerance and complete
+recording. Twelve warmups precede four instrumented runs. The median measured
+regions are:
+
+| Region | Seconds |
+| --- | ---: |
+| Stabilizer evaluation | 1.074 |
+| Ordinary ST1 evaluation | 0.737 |
+| Ordinary ST4B evaluation | 0.696 |
+| Governor evaluation | 0.522 |
+| Other exciter evaluation | 0.251 |
+| Local ST1 advancement | 0.258 |
+| Recorded-channel writing | 0.265 |
+
+The writing timer includes selected-channel serialization and full-network
+recording, but excludes selected-channel sampling and final writer closure.
+These regions omit other work and include timer overhead; they are not a sum
+of complete simulation time. The 2 ms execution sampling collected 2,005
+main-thread samples. PSS2A preparation and kernel advancement remain prominent;
+sampling attribution alone does not establish removable cost. All sixteen
+profile recordings match the retained one-step baseline byte for byte.
+
+An isolated ST4B prototype reads compensated voltage and the held stabilizer
+output once within the existing fixed-input endpoint scope. It keeps fresh
+reads at the next endpoint, the existing eligibility guards and all equation,
+state, limiter and preparation work. Nine focused tests pass in each feature
+setting, including changing compensation data, voltage and speed, events,
+activation, live limits, custom/observed devices, nonfinite input and reinitialization.
+
+| Case | Control median | Input-reuse median | Median paired saving | Reuse faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.972 s | 8.925 s | -0.028 s | 3/7 |
+| 2 | 6.333 s | 6.217 s | 0.110 s | 5/7 |
+
+Each case has 32 alternating warmups and seven measured pairs, including fresh
+parsing, preparation, initialization, all recording and writer closure. Median
+process CPU time changes from 8.703 to 8.781 seconds for Case 1 and remains
+6.078 seconds for Case 2. The candidate avoids 3,017,328 repeated reads of each
+input in Case 1 and 936,908 of each in Case 2. Controls reuse none. All 92
+complete timing recordings match the baseline, with unchanged network counts.
+The improvement is inconsistent, so this cache is not promoted.
+
+The [profile and screen index](checkpoints/single-step-profile-st4-input-screen-2026-10-22.json)
+retains 108 complete-recording hashes, source/runtime identities, focused tests,
+the flight recording and all timing pairs. Earlier failed attempts are retained:
+an extra legacy bridge test targeted absent APIs, the first harness referenced
+an absent machine-list API, and the next harness reached ten seconds before
+its counter dereferenced an inactive model with no compiled plan. The latter
+is classified as a failed diagnostic run, not a completed benchmark. Production
+code, the eight-second objective and independent-reference accuracy status are unchanged.
+
+A subsequent PSS2A prototype targets a complete repeated preparation pass.
+After the initial ordered preparation, it captures finite stored states,
+including the compound filter's internal states. It then executes every
+existing kernel and history update. For an eligible standard graph, a zero-time
+predictor whose states remain bitwise unchanged can retain the already prepared
+inputs and child outputs. Changed states, nonfinite inputs, custom graphs,
+corrector stages and nonzero intervals retain the original refresh path.
+
+Five focused tests pass in each feature setting. They compare stored inputs,
+states, rates and child values before output observation can refresh them,
+then compare outputs and subsequent correctors. Coverage includes signed-zero
+state changes, live parameters, nonfinite values and custom/replaced bindings.
+Two complete coupled Case 1/2 runs match every baseline recording byte and
+retain network counts of 18,340 and 20,202 respectively. The candidate skips
+2,513,158 repeated passes in Case 1 and 778,454 in Case 2.
+
+The [PSS2A correctness checkpoint](checkpoints/pss-unchanged-state-refresh-probe-2026-10-22.json)
+retains the prototype, tests, input/runtime identities and full-output hashes.
+It has no warmed timing qualification and is not enabled in production. Its
+first build failed on a Java class-type comparison before tests or simulation;
+the corrected build and that failed attempt are both retained. These checks
+preserve the existing trajectories and do not establish independent-reference accuracy.
+
+The subsequent warmed screen completed 32 alternating warmups and seven
+measured pairs per case, with one logical CPU and complete recording included.
+All 92 recordings match the retained one-step baseline byte for byte and keep
+the same network iteration counts.
+
+| Case | Control median | Preparation-reuse median | Median paired saving | Reuse faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.933 s | 8.931 s | -0.029 s | 3/7 |
+| 2 | 6.361 s | 6.224 s | 0.142 s | 5/7 |
+
+Median process CPU time changes from 8.781 to 8.656 seconds for Case 1 and
+6.219 to 6.063 seconds for Case 2. The state comparisons add work to avoid
+preparation passes; the wall-time results do not demonstrate a consistent gain
+across both cases. This prototype remains disabled in production. The
+[warmed timing index](checkpoints/pss-unchanged-state-refresh-screen-2026-10-22.json)
+retains all pairs, runtime identities, source, counters and recording hashes.
+These results do not qualify independent-reference accuracy or six-case completion.
+
+## Empty auxiliary monitor preparation
+
+The benchmark runner records selected channels and full-network channels through
+dedicated recorders. Its additional empty `StateMonitor` previously remained
+unprepared, so the engine still built renewable-device state maps that the empty
+monitor discarded. The runner now calls `prepareMonitoring()` before attaching
+that monitor. Channel selection, sampling, event-side duplicates, model updates
+and network calculations are unchanged. This uses the existing output-request
+API; script and custom-handler behavior in the engine is unchanged.
+
+| Case | Unprepared median | Prepared median | Median paired saving | Prepared faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.069 s | 8.846 s | 0.206 s | 5/7 |
+| 2 | 6.179 s | 6.135 s | 0.142 s | 5/7 |
+
+Both arms use the same experimental Anderson/deferred network runtime, one
+logical CPU, 1e-5 voltage-correction tolerance, a quarter-cycle network step and
+one ST1 local step. Each case has 32 alternating warmups and seven measured pairs.
+The interval includes fresh parsing, preparation, initialization, complete
+recording and writer closure. Compilation and GC remain included. Ranges overlap;
+these results suggest a modest saving rather than a universal speedup guarantee.
+Median process CPU times are 8.906/8.594 seconds for Case 1 and 6.016/5.984 seconds
+for Case 2, respectively.
+
+All 92 timing recordings and four preliminary complete recordings match the
+retained one-step binary, selected CSV and channel metadata byte for byte. Network
+iteration counts are unchanged. The modified runner compiles against the timing
+runtime, and all ten existing prepared-monitor tests pass, including unselected
+device suppression, script delivery, legacy behavior and selected-channel values.
+An initial test-script attempt stopped before compilation because its output
+directory had already been created by the bounded logger; the corrected attempt
+and both logs are retained.
+
+Fresh ten-second attempts for Cases 3 and 4 with one ST1 step still fail at
+0.045833333 seconds, the same reached time as the prior ten-step attempts. These
+checks retain the unprepared monitor and therefore isolate the current one-step
+runtime's cross-case behavior; they are failed prefixes, not completed timing or
+accuracy measurements. Case 1 still exceeds eight seconds, and independent
+reference accuracy remains unresolved. The
+[evidence index](checkpoints/prepared-empty-monitor-screen-2026-10-22.json)
+retains timings, test reports, sources, runtime identities, recording hashes and
+the Cases 3–4 failure diagnostics.

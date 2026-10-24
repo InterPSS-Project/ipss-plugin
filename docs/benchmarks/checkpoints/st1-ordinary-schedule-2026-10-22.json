@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "description": "Ordinary ST1 fixed traversal screen; unqualified isolated candidate, stopped by disk reserve guard.",
+  "base_plugin_commit": "aa3446b16abf7e46c44d6f4c3aff9705a0bbee94",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st1-ordinary-schedule/evidence.zip",
+  "archive_bytes": 336381,
+  "archive_sha256": "91511e312c930cf604186d2a05b6572c1007871e5af254db6d9ade61230cdf3c",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          13.1463131,
+          15.9308809,
+          15.9966106,
+          17.6135423,
+          17.4893659,
+          16.5284568,
+          13.6335058
+        ],
+        "candidate": [
+          17.4839931,
+          13.7363599,
+          16.959136,
+          16.1324696,
+          16.565975,
+          14.4635881,
+          14.6885342
+        ]
+      },
+      "medians_s": {
+        "control": 15.9966106,
+        "candidate": 16.1324696
+      },
+      "paired_savings_s": [
+        -4.337679999999999,
+        2.194521,
+        -0.9625254000000005,
+        1.4810726999999986,
+        0.9233908999999976,
+        2.0648687,
+        -1.0550283999999994
+      ],
+      "median_paired_saving_s": 0.9233908999999976,
+      "candidate_wins": 4,
+      "recordings_identical": true,
+      "candidate_pass_counts": [
+        2696070,
+        2696070,
+        2696070,
+        2696070,
+        2696070,
+        2696070,
+        2696070
+      ]
+    }
+  ],
+  "timing_context": [
+    {
+      "case": 1,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 13.1463131,
+          "process_cpu_s": 11.046875,
+          "compilation_time_ms": 46,
+          "gc_time_ms": 85
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 17.4839931,
+          "process_cpu_s": 10.84375,
+          "compilation_time_ms": 0,
+          "gc_time_ms": 122
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 13.7363599,
+          "process_cpu_s": 10.484375,
+          "compilation_time_ms": 79,
+          "gc_time_ms": 97
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 15.9308809,
+          "process_cpu_s": 10.53125,
+          "compilation_time_ms": 63,
+          "gc_time_ms": 102
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 15.9966106,
+          "process_cpu_s": 10.625,
+          "compilation_time_ms": 101,
+          "gc_time_ms": 243
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 16.959136,
+          "process_cpu_s": 11.109375,
+          "compilation_time_ms": 4,
+          "gc_time_ms": 102
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 16.1324696,
+          "process_cpu_s": 11.03125,
+          "compilation_time_ms": 126,
+          "gc_time_ms": 99
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 17.6135423,
+          "process_cpu_s": 13.046875,
+          "compilation_time_ms": 62,
+          "gc_time_ms": 216
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 17.4893659,
+          "process_cpu_s": 12.421875,
+          "compilation_time_ms": 22,
+          "gc_time_ms": 207
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 16.565975,
+          "process_cpu_s": 12.046875,
+          "compilation_time_ms": 344,
+          "gc_time_ms": 223
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 14.4635881,
+          "process_cpu_s": 10.3125,
+          "compilation_time_ms": 107,
+          "gc_time_ms": 165
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 16.5284568,
+          "process_cpu_s": 10.890625,
+          "compilation_time_ms": 585,
+          "gc_time_ms": 206
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 13.6335058,
+          "process_cpu_s": 10.625,
+          "compilation_time_ms": 5,
+          "gc_time_ms": 170
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 14.6885342,
+          "process_cpu_s": 10.09375,
+          "compilation_time_ms": 4,
+          "gc_time_ms": 163
+        }
+      ],
+      "last_eight_warmup_wall_s": [
+        9.5135402,
+        9.6904509,
+        9.5464034,
+        9.6970618,
+        9.4124454,
+        9.4320714,
+        9.4474129,
+        9.4954234
+      ]
+    },
+    {
+      "case": 2,
+      "measured": [],
+      "last_eight_warmup_wall_s": [
+        10.0234806,
+        9.9464837,
+        11.3741277,
+        10.3829556,
+        11.0029325,
+        8.6139439,
+        10.3576509,
+        10.196463
+      ]
+    }
+  ],
+  "termination": {
+    "state": "stopped",
+    "min_free_bytes": 2147483648,
+    "max_log_bytes": 16777216,
+    "captured_bytes": 784099,
+    "exit_code": 75,
+    "reason": "Free space fell below the reserved minimum"
+  },
+  "verified_complete_recordings": 64,
+  "interrupted_recordings": 1,
+  "logical_cpu_mask": 1,
+  "completed_protocol": {
+    "case1": {
+      "warmups": 32,
+      "measured_pairs": 7
+    },
+    "case2": {
+      "warmups": 18,
+      "measured_pairs": 0
+    }
+  },
+  "focused_tests": 11,
+  "candidate_source_sha256": "511ce1f3b9787969697a67cc4512b685b6368920ba9c0c464de62a59493562c4",
+  "production_changed": false,
+  "limitations": [
+    "Timing configuration includes the experimental Anderson/deferred network path; independent full-system accuracy remains unresolved.",
+    "Case 1 measured wall time rose sharply after warmup, with large wall-time/process-CPU-time gaps; no small performance gain can be qualified from this batch.",
+    "Case 2 stopped during warmup because the free-space reserve was crossed; no measured Case 2 result.",
+    "No substep count, equation, preparation pass or arithmetic order changed.",
+    "No new six-case acceptance claim.",
+    "Existing full-reactor compilation limitations remain; focused compatible dependencies used."
+  ]
+}

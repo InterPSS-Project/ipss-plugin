@@ -46,7 +46,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	private boolean exst1FieldVoltageLimits;
     private boolean initializingFeedbackTap;
 	public double k1 = 1.0;/*constant*/
-	
+
 	/*
 	 * Part-1: Define the blocks
 	 * ==============================
@@ -58,11 +58,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
           input="mach.vt",
           parameter={"type.NoLimit", "this.k1", "this.tr"},
           y0="mach.vt",//debug = true,
-          initOrderNumber=-1 
+          initOrderNumber=-1
           )
      DelayControlBlock trDelayBlock;
-	
-	
+
+
 	   //gainBlock----kg1 = 1.0 uses for set the limits
 	   public double vimax = 5.30, vimin = -5.11;
 	   @AnControllerField(
@@ -105,8 +105,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		   parameter={"type.NonWindup", "this.ka", "this.ta", "this.vamax", "this.vamin"},
 		   y0="this.gainCustomBlock.u0 - pss.vs * this.vosOutput"  )
 	   DelayControlBlock kaDelayBlock;
-	   
-	   
+
+
 	   //washoutBlock----sKf/(1+sTf)
 	   public double kf = 1, tf = 0.01, k = kf/tf;
 	   @AnControllerField(
@@ -139,7 +139,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		   debug = true)
 	   GainBlock gainCustomBlock;
 	   */
-   
+
 	public double kg = 1.0, kc = 0.0, vrmax = 5.30, vrmin = -5.11;
 	public double klr = 0.0, ilr = 0.0;
 	/** External UEL signal; zero is the absent value for error summation. */
@@ -199,14 +199,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 			  return Math.max(0.0, klr * (ifd - ilr));
 		  }
 	   };
-	   
-	   
+
+
 
 
     // UI Editor panel
-    final ICMLStaticBlock originalFeedbackBlock=rateFeedbackInputBlock;
-    final ICMLStaticBlock originalOutputBlock=gainCustomBlock;
-
   //  private static NBIEEE1981ST1ExciterEditPanel _editPanel = new NBIEEE1981ST1ExciterEditPanel();
 
 /*
@@ -261,7 +258,6 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
      */
     @Override
     public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
-        localPlan=null; localPlanGeneration=Long.MIN_VALUE; compiledLocalAdvanceCount=0;
         // pass the plugin data object values to the controller
 		this.uel = getData().getUel();
 		this.vos = getData().getVos();
@@ -313,7 +309,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 			this.vrmin = Math.min(this.vrmin,
 					(mach.getEfd() + (exst1FieldVoltageLimits ? this.kc * ifd0 : 0.0)) / vt0);
 		}
-        
+
 		this.k = this.tf == 0.0 ? 0.0 : this.kf / this.tf;
         // always add the following statement
         // The regulator is solved backwards from EFD. During this pass use
@@ -467,69 +463,75 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		return Math.max(0.0, this.klr * (ifd - this.ilr));
 	}
 
-    private transient St1CompiledLocalPlan localPlan, activeLocalPlan;
-    private transient long localPlanGeneration=Long.MIN_VALUE;
-    private transient long compiledLocalAdvanceCount;
+    private int machineObservationDepth;
     private boolean fieldCurrentObserved;
     private double observedCurrent;
-
-    /** Number of local advances executed by the compiled numerical plan. */
-    public long getCompiledLocalAdvanceCount() { return compiledLocalAdvanceCount; }
-
-    /**
-     * Try the compiled ten-substep recurrence while physical inputs are held by
-     * the staggered solver. False leaves all state/history untouched for ordinary
-     * dispatch. Structural edits follow invalidateRuntimePlan() and solver
-     * reinitialization; numerical parameter and setpoint writes remain live.
-     */
-    public boolean tryCompiledLocalAdvance(double dt, boolean discontinuity, boolean wasActive,
-            boolean fixedPss, double[] history, double[] start, double[] rates, double[] output) {
-        if(activeLocalPlan!=null)throw new IllegalStateException("Nested ST1 local integration");
-        if(getClass()!=IEEE1981ST1Exciter.class || !hasInitializedBlocks()
-                || !standardLocalMeasurements(fixedPss))return false;
-        if(localPlanGeneration!=getRuntimeGeneration()) {
-            localPlanGeneration=getRuntimeGeneration();
-            localPlan=St1CompiledLocalPlan.tryCreate(this);
-        }
-        if(localPlan==null || !localPlan.supportsCurrentBlocks())return false;
-        if(output==null || output.length!=1)
-            throw new IllegalArgumentException("Expected one field-voltage output slot");
-        activeLocalPlan=localPlan;fieldCurrentObserved=false;
-        try {
-            output[0]=localPlan.advanceLocalStore(dt,discontinuity,wasActive,fixedPss,history,start,rates);
-            compiledLocalAdvanceCount++;
-            return true;
-        } finally { activeLocalPlan=null;fieldCurrentObserved=false; }
+    public void beginFixedMachineObservation() {
+        if(machineObservationDepth++==0)fieldCurrentObserved=false;
     }
-
-    private boolean standardLocalMeasurements(boolean fixedPss) {
-        var machine=getMachine();
-        if(machine==null)return false;
-        Class<?> type=machine.getClass();
-        if(type!=com.interpss.dstab.mach.impl.RoundRotorMachineImpl.class
-                && type!=com.interpss.dstab.mach.impl.SalientPoleMachineImpl.class
-                && type!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
-                && type!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class)return false;
-        if(((org.eclipse.emf.ecore.impl.BasicEObjectImpl)machine).eNotificationRequired()
-                || machine.getDStabBus()==null
-                || machine.getDStabBus().getClass()!=com.interpss.dstab.impl.DStabBusImpl.class
-                || ((com.interpss.dstab.impl.DStabBusImpl)machine.getDStabBus()).eNotificationRequired())return false;
-        var pss=machine.getStabilizer();
-        return pss==null || fixedPss && pss.getClass()==
-                org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer.class;
+    public void endFixedMachineObservation() {
+        if(machineObservationDepth<=0)throw new IllegalStateException("Unbalanced machine observation");
+        if(--machineObservationDepth==0)fieldCurrentObserved=false;
     }
-
     private double observedFieldCurrent() {
-        if(activeLocalPlan==null)return getMachine().calculateIfd(MachineIfdBase.EXCITER);
+        if(machineObservationDepth==0)return getMachine().calculateIfd(MachineIfdBase.EXCITER);
         if(!fieldCurrentObserved) {
-            observedCurrent=getMachine().calculateIfd(MachineIfdBase.EXCITER);
-            fieldCurrentObserved=true;
+            observedCurrent=getMachine().calculateIfd(MachineIfdBase.EXCITER);fieldCurrentObserved=true;
         }
         return observedCurrent;
     }
+    @Override public boolean eulerStep(boolean predictor,double dt,Machine machine) {
+        if(directEvaluation==null)return super.eulerStep(predictor,dt,machine);
+        beginFixedMachineObservation();
+        try {
+            if(predictor&&dt==0.) {directEvaluation.evaluate();return true;}
+            return super.eulerStep(predictor,dt,machine);
+        }
+        finally {endFixedMachineObservation();}
+    }
+    private St1DirectEvaluation directEvaluation;
+    public void enableDirectEvaluationExperiment() {
+        if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        directEvaluation=new St1DirectEvaluation(this);
+    }
+    /** Select local evaluation optimizations explicitly for this controller instance. */
+    public void enableDirectEvaluationExperiment(boolean boundaryReuse,boolean fixedSchedule) {
+        if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        directEvaluation=new St1DirectEvaluation(this,true,boundaryReuse,fixedSchedule);
+    }
+    /** Default local integration count; higher counts remain explicitly configurable. */
+    public static final int DEFAULT_LOCAL_SUBSTEPS = 1;
+    /** Upper bound on explicitly requested local integration work. */
+    public static final int MAX_LOCAL_SUBSTEPS = 128;
 
+    /** Advance using the default local count while the caller holds physical inputs fixed. */
+    public double advanceDirectLocalStore(double dt,boolean discontinuity,boolean wasActive,
+            boolean cachePss,double[] history,double[] start,double[] rates) {
+        return advanceDirectLocalStore(dt,DEFAULT_LOCAL_SUBSTEPS,discontinuity,wasActive,
+                cachePss,history,start,rates);
+    }
+
+    /**
+     * Advance the bound local states with an explicit count. The caller owns
+     * derivative history and must keep the count fixed for that history's lifetime.
+     */
+    public double advanceDirectLocalStore(double dt,int substeps,boolean discontinuity,boolean wasActive,
+            boolean cachePss,double[] history,double[] start,double[] rates) {
+        if (substeps < 1 || substeps > MAX_LOCAL_SUBSTEPS)
+            throw new IllegalArgumentException("ST1 substeps must be between 1 and 128");
+        beginFixedMachineObservation();
+        try {return directEvaluation.advanceLocalStore(dt,substeps,discontinuity,wasActive,cachePss,history,start,rates);}
+        finally {endFixedMachineObservation();}
+    }
+    public long getPrimitiveLocalAdvanceCount() {
+        return directEvaluation==null?0:directEvaluation.primitiveLocalAdvanceCount;
+    }
+    public void evaluateDirectExperiment() {
+        beginFixedMachineObservation();
+        try {directEvaluation.evaluate();}finally {endFixedMachineObservation();}
+    }
 	private double signal(String fieldName) {
-        if(activeLocalPlan!=null)return activeLocalPlan.signal(fieldName);
+        if (directEvaluation!=null) return directEvaluation.signal(fieldName);
 		try {
 			return getFieldVaule(fieldName);
 		} catch (Exception ex) {

@@ -18,6 +18,8 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
             throw new IllegalArgumentException("Minimum network iterations must be between 1 and 500");
         java.util.Objects.requireNonNull(norm);
         java.util.Objects.requireNonNull(machineStage);
+        if (!rectangularNetworkVoltage)
+            throw new IllegalArgumentException("The retained solver uses rectangular network voltage; the coordinate toggle was retired");
     }
 
     static Texas2kNumericalOptions read(JsonObject plan) {
@@ -28,7 +30,7 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
                 enabled(plan, "reuse_network_endpoint"), enabled(plan, "static_load_z_part_in_y_matrix"),
                 enabled(plan, "converter_network_voltage_memory"),
                 plan.has("machine_measurement_stage") ? MachineMeasurementStage.valueOf(plan.get("machine_measurement_stage").getAsString()) : MachineMeasurementStage.LAST_NETWORK_INJECTION,
-                enabled(plan, "rectangular_network_voltage"));
+                !plan.has("rectangular_network_voltage") || plan.get("rectangular_network_voltage").getAsBoolean());
     }
 
     private static boolean enabled(JsonObject plan, String key) {
@@ -41,7 +43,6 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
         solver.setMinimumNetworkIterations(minimumIterations);
         solver.setReuseNetworkEndpoint(reuseEndpoint);
         solver.setMachineMeasurementStage(machineStage);
-        solver.setUseRectangularNetworkVoltage(rectangularNetworkVoltage);
     }
 
     void report(Map<String, Object> status) {

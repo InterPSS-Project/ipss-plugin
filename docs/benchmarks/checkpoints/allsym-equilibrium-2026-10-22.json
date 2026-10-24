@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "case": "allsym-equilibrium",
+  "input_directory": "ipss.test.plugin.core/testData/private/allsym-equilibrium-20261022",
+  "inputs": [
+    {
+      "name": "GEN_ESST4B_IEEEG1_IEEEST.dyr",
+      "bytes": 158729,
+      "sha256": "7553531bd9adc3173da8049db9e253c44230474065bb579c58c772ab5171401d",
+      "attachment_name": "1-GEN_ESST4B_IEEEG1_IEEEST.dyr"
+    },
+    {
+      "name": "ALLSYM.raw",
+      "bytes": 1075879,
+      "sha256": "4aa4e8099579c87fda26d190413bbfb0c29304b103a3cea090a2cef46ac3203e",
+      "attachment_name": "2-ALLSYM.raw"
+    }
+  ],
+  "models": {
+    "ESST4B": 276,
+    "GENROU": 410,
+    "GENSAL": 123,
+    "IEEEG1": 18,
+    "IEEEST": 432
+  },
+  "active_buses": 2000,
+  "active_machines": 432,
+  "active_genrou": 314,
+  "active_gensal": 118,
+  "active_exciters": 210,
+  "active_connected_stabilizers": 210,
+  "active_governors": 1,
+  "unused_stabilizer_records": 156,
+  "active_machines_with_unused_stabilizers": 121,
+  "preparation_assumption": "Fixed excitation when no exciter is supplied; 156 unconnected stabilizer records explicitly unused; confirmation pending.",
+  "step_seconds": 0.004166666666666667,
+  "duration_seconds": 10,
+  "samples": 2401,
+  "checked_channels": 5728,
+  "backend": "JAVA_KLU",
+  "startup_history_steps": 0,
+  "peak_drift": {
+    "voltage": {
+      "channel": "voltage:Bus4072",
+      "time": 0.9125,
+      "error": 2.9976021664879227e-15
+    },
+    "bus_angle": {
+      "channel": "bus_angle:Bus4065",
+      "time": 1.775,
+      "error": 1.2789769243681803e-13
+    },
+    "speed": {
+      "channel": "speed:Bus1004-mach1",
+      "time": 0.004166666666666667,
+      "error": 0.0
+    },
+    "rotor_angle": {
+      "channel": "rotor_angle:Bus1004-mach1",
+      "time": 0.004166666666666667,
+      "error": 0.0
+    },
+    "p": {
+      "channel": "p:Bus6147-mach1",
+      "time": 0.07916666666666666,
+      "error": 3.064215547965432e-14
+    },
+    "q": {
+      "channel": "q:Bus5360-mach1",
+      "time": 0.10833333333333334,
+      "error": 3.197442310920451e-14
+    }
+  },
+  "derivative_audits": {
+    "initial": {
+      "rate_count": 4790,
+      "largest_rate": [
+        7.438494264988549e-14,
+        "Bus6266/1",
+        "electrical",
+        "dx5Psiq11"
+      ],
+      "coverage_gaps": 0,
+      "active_controller_counts": {
+        "IEEE2005ST4BExciter": 210,
+        "IeeestStabilizer": 210,
+        "IeeeSteamTCDRGovernor": 1
+      }
+    },
+    "first-step": {
+      "rate_count": 4790,
+      "largest_rate": [
+        5.773159728050814e-14,
+        "Bus4105/1",
+        "electrical",
+        "dx4Psid1"
+      ],
+      "coverage_gaps": 0,
+      "active_controller_counts": {
+        "IEEE2005ST4BExciter": 210,
+        "IeeestStabilizer": 210,
+        "IeeeSteamTCDRGovernor": 1
+      }
+    },
+    "final": {
+      "rate_count": 4790,
+      "largest_rate": [
+        2.220446049250313e-14,
+        "Bus6083/1",
+        "electrical",
+        "dx4Psid1"
+      ],
+      "coverage_gaps": 0,
+      "active_controller_counts": {
+        "IEEE2005ST4BExciter": 210,
+        "IeeestStabilizer": 210,
+        "IeeeSteamTCDRGovernor": 1
+      }
+    }
+  },
+  "loadflow_iterations": 10,
+  "loadflow_maximum_mismatch_pu": 4.3560268947473446e-08,
+  "tests": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "evidence": {
+    "path": "ipss.test.plugin.core/testData/private/allsym-equilibrium-20261022/evidence/equilibrium-evidence-v2.zip",
+    "bytes": 14114075,
+    "sha256": "2fe755e0bbc30f550708be2e932662b0acce2c676143aed33801b64ee31429f9"
+  },
+  "equilibrium_passed": true,
+  "independent_trajectory_accuracy_verified": false,
+  "warmed_performance_qualified": false,
+  "archive_replay_verified": true,
+  "replay_drift_sha256": "8ff42d39e21602af7a31bc893a5bcdc48159979136d3370e7bd8496f05a74613"
+}

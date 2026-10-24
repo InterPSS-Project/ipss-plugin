@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "description": "Isolated atomic first-order CML kernel timing screen. No production change or trajectory acceptance.",
+  "base_plugin_commit": "b7969054ec460b007d155441db51e622abe80f05",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-atomic-cml-screen/evidence.zip",
+  "archive_bytes": 305267,
+  "archive_sha256": "efce76fb6feb6f863b973deba291e53dbf702ac3d6a1324df0efc0309aed0d94",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          10.2325991,
+          9.6075542,
+          10.8432963,
+          9.8853866
+        ],
+        "candidate": [
+          9.7173076,
+          10.0188752,
+          9.8565634,
+          10.0359326
+        ]
+      },
+      "medians_s": {
+        "control": 10.05899285,
+        "candidate": 9.937719300000001
+      },
+      "paired_savings_s": [
+        0.5152915,
+        -0.41132100000000094,
+        0.9867328999999998,
+        -0.1505460000000003
+      ],
+      "median_paired_saving_s": 0.18237274999999986,
+      "candidate_wins": 2,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          7.1278268,
+          6.494475,
+          6.4848913,
+          6.8706883
+        ],
+        "candidate": [
+          6.4682482,
+          7.2701838,
+          6.8251329,
+          6.3914784
+        ]
+      },
+      "medians_s": {
+        "control": 6.68258165,
+        "candidate": 6.64669055
+      },
+      "paired_savings_s": [
+        0.6595786000000006,
+        -0.7757087999999994,
+        -0.3402415999999997,
+        0.47920990000000074
+      ],
+      "median_paired_saving_s": 0.06948415000000052,
+      "candidate_wins": 2,
+      "recordings_identical": true
+    }
+  ],
+  "verified_complete_recordings": 40,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 12,
+  "measured_pairs_per_case": 4,
+  "limitations": [
+    "Experimental Anderson/deferred network baseline remains independently unqualified.",
+    "Short screen retains in-run compilation and garbage collection; no stable speedup established.",
+    "Comparison preserves existing recordings, not proof of supplied-reference accuracy.",
+    "No production source change; pending performance edits excluded."
+  ],
+  "focused_tests": {
+    "unique": 7,
+    "control_passed": 7,
+    "candidate_passed": 7,
+    "excluded_compile_failure": "Pss2aCompiledStageTest references APIs removed in the earlier rollback; initial controller-test compile failed, then the two applicable classes passed."
+  }
+}

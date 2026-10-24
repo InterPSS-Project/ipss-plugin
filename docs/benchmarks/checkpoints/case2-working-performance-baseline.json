@@ -1,51 +1,31 @@
 {
   "schema": 1,
-  "status": "selected-working-performance-baseline",
+  "status": "selected-working-source-checkpoint",
   "goal_achieved": false,
-  "selected_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json",
-  "base_executable_evidence_commit": "e2e0a892f",
-  "replay_tool": "tools/replay_case2_fast_checkpoint.py",
+  "selected_checkpoint": "docs/benchmarks/checkpoints/best-source-point-rollback-2026-10-23.json",
+  "previous_selected_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json",
+  "previous_selection_record": "a60d30e80e8a806d23587ce633722dc92eb44bae:docs/benchmarks/checkpoints/case2-working-performance-baseline.json",
+  "replay_tool": "tools/replay_best_source_checkpoint.py",
   "replay_args": [
-    "--machine-frame-reuse"
+    "--case",
+    "2",
+    "--cpu",
+    "6"
   ],
-  "source_checkout": false,
-  "production_source_replaced": false,
-  "summary": {
-    "status": "completed",
-    "working_performance_baseline": true,
-    "warmup_runs": 24,
-    "measured_runs": 7,
-    "case_wall_s": [
-      8.101799,
-      8.5699651,
-      7.9954821,
-      7.8189051,
-      7.9112594,
-      7.8808672,
-      7.8166163
-    ],
-    "median_case_wall_s": 7.9112594,
-    "single_cpu_verified": true,
-    "full_recording_included": true,
-    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
-    "frozen_directory_classes": 5288,
-    "mutable_build_directories_on_classpath": false,
-    "exact_historical_checkout": false,
-    "independent_accuracy_qualified": false,
-    "machine_frame_reuse": true
+  "source_checkout": true,
+  "production_source_replaced": true,
+  "historical_medians_s": {
+    "1": 8.5965081,
+    "2": 6.5199838
   },
-  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-machine-frame/replay-manifest.json",
-  "private_manifest_digest": {
-    "bytes": 24989,
-    "sha256": "89b9247b3bc62c365f1425b69d1e0d80a9fe00591fdf10c50a6035b283bf0411"
+  "new_warmed_timing_claim": true,
+  "independent_reference_accuracy_qualified": false,
+  "latest_measurement_record": "docs/benchmarks/checkpoints/best-timing-reproduction-2026-10-23.json",
+  "latest_quiet_cpu": 6,
+  "latest_quiet_cpu_medians_s": {
+    "1": 8.909746,
+    "2": 6.429334
   },
-  "archive": {
-    "bytes": 2680860,
-    "sha256": "64494b3e05048b2c5dd2fd16a05a9f90fea8d359adf4033189a92a5ebfd3ccb3"
-  },
-  "limitations": [
-    "Two of seven independent replay measurements exceed eight seconds.",
-    "Independent-reference accuracy remains unresolved.",
-    "The production source path has not been replaced by the frozen executable."
-  ]
+  "exact_historical_median_pair_reproduced": false,
+  "compiler_debug": "historical (-g)"
 }

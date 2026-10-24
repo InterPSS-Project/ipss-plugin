@@ -1,0 +1,361 @@
+{
+  "schema": 1,
+  "description": "Paired single-core timing of PSS2A unchanged-state preparation reuse with the one-step ST1 default.",
+  "base_plugin_commit": "0c356df0faebde77c80a412aa4a9b4e752a8541d",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-unchanged-state-refresh-screen/evidence.zip",
+  "archive_bytes": 270714,
+  "archive_sha256": "01ba54c40c65b3eedc56b6e1d830d529a4ff8da4f68befa7cac72c06c91a03d3",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          8.9950138,
+          8.9021708,
+          8.8179593,
+          8.9008997,
+          8.9332873,
+          9.1650479,
+          9.0748026
+        ],
+        "candidate": [
+          8.794935,
+          8.9307155,
+          8.7913367,
+          9.0421058,
+          9.1497557,
+          8.8003041,
+          9.1537988
+        ]
+      },
+      "medians_s": {
+        "control": 8.9332873,
+        "candidate": 8.9307155
+      },
+      "paired_savings_s": [
+        0.2000788,
+        -0.028544699999999423,
+        0.026622599999999608,
+        -0.14120609999999978,
+        -0.21646840000000012,
+        0.3647437999999994,
+        -0.07899620000000063
+      ],
+      "median_paired_saving_s": -0.028544699999999423,
+      "candidate_wins": 3,
+      "recordings_identical": true,
+      "candidate_refresh_reuses": [
+        2513158,
+        2513158,
+        2513158,
+        2513158,
+        2513158,
+        2513158,
+        2513158
+      ]
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.4243496,
+          6.1444539,
+          6.3610116,
+          6.4506723,
+          6.1567426,
+          6.5514719,
+          6.2656943
+        ],
+        "candidate": [
+          6.2240799,
+          6.2167752,
+          6.1878979,
+          6.3318827,
+          6.2606757,
+          6.3414654,
+          6.1240594
+        ]
+      },
+      "medians_s": {
+        "control": 6.3610116,
+        "candidate": 6.2240799
+      },
+      "paired_savings_s": [
+        0.20026969999999977,
+        -0.07232129999999959,
+        0.17311370000000004,
+        0.1187895999999995,
+        -0.10393309999999989,
+        0.21000650000000043,
+        0.14163489999999967
+      ],
+      "median_paired_saving_s": 0.14163489999999967,
+      "candidate_wins": 5,
+      "recordings_identical": true,
+      "candidate_refresh_reuses": [
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454
+      ]
+    }
+  ],
+  "timing_context": [
+    {
+      "case": 1,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 8.9950138,
+          "process_cpu_s": 8.671875,
+          "compilation_time_ms": 44,
+          "gc_time_ms": 68
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 8.794935,
+          "process_cpu_s": 8.546875,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 69
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 8.9307155,
+          "process_cpu_s": 8.65625,
+          "compilation_time_ms": 55,
+          "gc_time_ms": 163
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 8.9021708,
+          "process_cpu_s": 8.78125,
+          "compilation_time_ms": 46,
+          "gc_time_ms": 61
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 8.8179593,
+          "process_cpu_s": 8.78125,
+          "compilation_time_ms": 35,
+          "gc_time_ms": 63
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 8.7913367,
+          "process_cpu_s": 8.5625,
+          "compilation_time_ms": 7,
+          "gc_time_ms": 130
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 9.0421058,
+          "process_cpu_s": 8.625,
+          "compilation_time_ms": 92,
+          "gc_time_ms": 131
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 8.9008997,
+          "process_cpu_s": 8.75,
+          "compilation_time_ms": 32,
+          "gc_time_ms": 129
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 8.9332873,
+          "process_cpu_s": 8.703125,
+          "compilation_time_ms": 14,
+          "gc_time_ms": 132
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 9.1497557,
+          "process_cpu_s": 9.03125,
+          "compilation_time_ms": 206,
+          "gc_time_ms": 125
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 8.8003041,
+          "process_cpu_s": 8.734375,
+          "compilation_time_ms": 66,
+          "gc_time_ms": 121
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 9.1650479,
+          "process_cpu_s": 8.9375,
+          "compilation_time_ms": 275,
+          "gc_time_ms": 121
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 9.0748026,
+          "process_cpu_s": 8.859375,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 113
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 9.1537988,
+          "process_cpu_s": 8.859375,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 106
+        }
+      ],
+      "median_cpu_s": {
+        "False": 8.78125,
+        "True": 8.65625
+      }
+    },
+    {
+      "case": 2,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 6.4243496,
+          "process_cpu_s": 6.234375,
+          "compilation_time_ms": 25,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 6.2240799,
+          "process_cpu_s": 6.0625,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 99
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 6.2167752,
+          "process_cpu_s": 5.9375,
+          "compilation_time_ms": 15,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 6.1444539,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 55,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 6.3610116,
+          "process_cpu_s": 6.21875,
+          "compilation_time_ms": 9,
+          "gc_time_ms": 94
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 6.1878979,
+          "process_cpu_s": 6.0625,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 6.3318827,
+          "process_cpu_s": 6.203125,
+          "compilation_time_ms": 84,
+          "gc_time_ms": 97
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 6.4506723,
+          "process_cpu_s": 6.328125,
+          "compilation_time_ms": 202,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 6.1567426,
+          "process_cpu_s": 6.03125,
+          "compilation_time_ms": 54,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 6.2606757,
+          "process_cpu_s": 6.03125,
+          "compilation_time_ms": 10,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 6.3414654,
+          "process_cpu_s": 6.046875,
+          "compilation_time_ms": 50,
+          "gc_time_ms": 96
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 6.5514719,
+          "process_cpu_s": 6.375,
+          "compilation_time_ms": 271,
+          "gc_time_ms": 102
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 6.2656943,
+          "process_cpu_s": 6.1875,
+          "compilation_time_ms": 13,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 6.1240594,
+          "process_cpu_s": 6.0625,
+          "compilation_time_ms": 35,
+          "gc_time_ms": 95
+        }
+      ],
+      "median_cpu_s": {
+        "False": 6.21875,
+        "True": 6.0625
+      }
+    }
+  ],
+  "verified_complete_recordings": 92,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 32,
+  "measured_pairs_per_case": 7,
+  "correctness_checkpoint": "pss-unchanged-state-refresh-probe-2026-10-22.json",
+  "production_changed": false,
+  "limitations": [
+    "Both arms use the same experimental Anderson/deferred network path.",
+    "All complete recordings match the retained one-step baseline byte for byte.",
+    "No six-case completion or independent full-system accuracy acceptance is claimed."
+  ]
+}

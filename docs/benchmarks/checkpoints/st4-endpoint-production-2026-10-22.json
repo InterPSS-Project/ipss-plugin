@@ -1,0 +1,1690 @@
+{
+  "schema": 1,
+  "base_commit": "c6862a77fbf042c972e7f718028471073f853e5f",
+  "description": "Production guarded ST4B endpoint reuse and reinitialization binding repair. Full-system accuracy and warmed timing qualification remain open.",
+  "prior_evidence": [
+    "st4-endpoint-screens-2026-10-22.json"
+  ],
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st4-endpoint-production/evidence.zip",
+  "archive_sha256": "112b65f76ed3e398e4b47086c3b80ebf346c88e9c359f95ad7c4977634ef1603",
+  "archive_bytes": 12969452,
+  "focused_tests": {
+    "passed": 42,
+    "failed": 0,
+    "reinitialization_control_expected_failure": 1,
+    "matching_core_passed": 42
+  },
+  "registered_gate": {
+    "core_commit": "e2ec1a5fd",
+    "plugin_base": "c6862a77f",
+    "isolated_core_version": "1.4.3-st4-validation-20261022",
+    "production_compilation": "passed with matching core dependency",
+    "registered_tests": "not run: test compilation failed",
+    "files_with_test_compilation_errors": [
+      "CmlSolverRuntimePlanTest.java",
+      "Pss2aCompiledStageTest.java",
+      "St1CompiledLocalPlanTest.java",
+      "St4bBridgeInputReuseTest.java",
+      "St4bCompiledBindingsTest.java",
+      "St4bCompiledStageTest.java",
+      "StaggeredVoltageCoordinatesTest.java",
+      "Texas2kNumericalOptions.java",
+      "Texas2kReferenceRunnerReportingTest.java"
+    ],
+    "scope": "Clean production slice; unrelated pending prototypes excluded. Existing benchmark dependency and compiled directories untouched."
+  },
+  "recording_counts": {
+    "st4-endpoint-production-screen-20261022": 44,
+    "st4-endpoint-production-ordinary-20261022": 4,
+    "st4-endpoint-production-case34-20261022": 2,
+    "st4-endpoint-production-six-case-smokes-20261022": 24
+  },
+  "completed_runs": 56,
+  "summaries": {
+    "st4-endpoint-production-screen-20261022": [
+      {
+        "case": 1,
+        "arms": {
+          "control": {
+            "seconds": [
+              10.6118607,
+              9.9068446,
+              9.980569,
+              10.0831971,
+              10.0362864
+            ],
+            "median_s": 10.0362864,
+            "min_s": 9.9068446,
+            "max_s": 10.6118607,
+            "compilation_ms": [
+              640,
+              94,
+              133,
+              161,
+              71
+            ],
+            "reuse_counts": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "candidate": {
+            "seconds": [
+              9.9493988,
+              10.1460583,
+              10.1613727,
+              10.0461452,
+              9.5963822
+            ],
+            "median_s": 10.0461452,
+            "min_s": 9.5963822,
+            "max_s": 10.1613727,
+            "compilation_ms": [
+              207,
+              314,
+              331,
+              134,
+              104
+            ],
+            "reuse_counts": [
+              1508664,
+              1508664,
+              1508664,
+              1508664,
+              1508664
+            ]
+          }
+        },
+        "paired_reductions_s": [
+          0.6624618999999985,
+          -0.23921370000000053,
+          -0.18080370000000023,
+          0.037051899999999804,
+          0.4399041999999991
+        ],
+        "median_paired_reduction_s": 0.037051899999999804,
+        "candidate_wins": 3,
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+          "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      },
+      {
+        "case": 2,
+        "arms": {
+          "control": {
+            "seconds": [
+              7.1745272,
+              6.6608588,
+              6.4937808,
+              7.0489793,
+              6.8072406
+            ],
+            "median_s": 6.8072406,
+            "min_s": 6.4937808,
+            "max_s": 7.1745272,
+            "compilation_ms": [
+              667,
+              84,
+              50,
+              181,
+              91
+            ],
+            "reuse_counts": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "candidate": {
+            "seconds": [
+              6.6047825,
+              7.4109254,
+              6.8554049,
+              6.4622052,
+              6.7630739
+            ],
+            "median_s": 6.7630739,
+            "min_s": 6.4622052,
+            "max_s": 7.4109254,
+            "compilation_ms": [
+              133,
+              529,
+              289,
+              18,
+              210
+            ],
+            "reuse_counts": [
+              468454,
+              468454,
+              468454,
+              468454,
+              468454
+            ]
+          }
+        },
+        "paired_reductions_s": [
+          0.5697447000000002,
+          -0.7500666000000002,
+          -0.3616241000000002,
+          0.5867741000000004,
+          0.04416669999999989
+        ],
+        "median_paired_reduction_s": 0.04416669999999989,
+        "candidate_wins": 3,
+        "all_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+          "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    ],
+    "st4-endpoint-production-ordinary-20261022": [
+      {
+        "case": 1,
+        "network_anderson": false,
+        "complete_recordings_identical": true,
+        "reuse_count": 1508664,
+        "hashes": {
+          "full-network.bin": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078",
+          "interpss.csv": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      },
+      {
+        "case": 2,
+        "network_anderson": false,
+        "complete_recordings_identical": true,
+        "reuse_count": 468454,
+        "hashes": {
+          "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+          "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    ],
+    "st4-endpoint-production-case34-20261022": [
+      {
+        "case": 3,
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "partial_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "8ede9746cf1b722ddf32b64367ff29878ccf60c33eb338e00e4815199b5bc408",
+          "interpss.csv": "259072519f47d36951bebd275fca31da3bc94ca9d093e54224fbde6845ac8157",
+          "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c"
+        }
+      },
+      {
+        "case": 4,
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "partial_recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "700229a70d132339aa304c83ae5c3e5e481a56d8579cc41e2e3e630654019f10",
+          "interpss.csv": "ae03097e2aabf8302e5cfa51999efa4d62ab43aab9b09b078926afb34fbedc29",
+          "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63"
+        }
+      }
+    ],
+    "st4-endpoint-production-six-case-smokes-20261022": [
+      {
+        "case": 1,
+        "profile": "flat",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "candidate_reuses": 16536,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "a4423d9834eed6df58c04631992ad9850ef435cb6bd9ee96b0e2a9949ab32a80",
+          "interpss.csv": "f81ef93830f985529916b3a22c9d95f61857fab2a9ffd41a1db8489e4a5ba4d1",
+          "full-network-channels.json": "712cb6b031eb603822c710cffc45c9a1754d3622bd95123b552fe50ad85b4df4"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 1,
+        "profile": "fault",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "candidate_reuses": 16536,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "5171fefd58064712ac7b7ea28a8bda4008e72f191de801baa76df0216c8f15a5",
+          "interpss.csv": "1d3f0b696226f4e66e3f9acd53aa6b70bea371d4cc16128315331c96a8348d16",
+          "full-network-channels.json": "7ed8c28115f65f293c064f21edaa2fa2060dcc9974553da8b56f64714893c447"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 2,
+        "profile": "flat",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "candidate_reuses": 5134,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "c1308e05b265a398b2be232c5c2679296a3c07a6098b21c7370997ae5c44d479",
+          "interpss.csv": "f4f446f3bc2c9764be5a7b4ca832973b5248c9109c222dc00e8270c7d0b482a4",
+          "full-network-channels.json": "782012cb154aa96e4799b07a12ee71be20d8d8c2af0b368a806100ee56724369"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 2,
+        "profile": "fault",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "candidate_reuses": 5134,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "408b39ea36aa2b0f1b1580e008f1a7187d624fb8a4374b64a846217acf28f551",
+          "interpss.csv": "48cb6e5b4521456e2af63c0dd93dc76d37a8d7f278f16f6986ad8218161a35a2",
+          "full-network-channels.json": "6b62784be12a418f883608b8a633176550bfa1198f992e3d70bb0c661ba040fa"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 3,
+        "profile": "flat",
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "candidate_reuses": null,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+          "interpss.csv": "2f81bfda0492f5d4ba603e66ed09c82d99c46f6e4b809f7af96c547be6e3f8b1",
+          "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 3,
+        "profile": "fault",
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "candidate_reuses": null,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+          "interpss.csv": "2f81bfda0492f5d4ba603e66ed09c82d99c46f6e4b809f7af96c547be6e3f8b1",
+          "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 4,
+        "profile": "flat",
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "candidate_reuses": null,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+          "interpss.csv": "f873261ab89a3482b53d69832710d22f894f116bbd99732d482d6bc1ca4caae5",
+          "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 4,
+        "profile": "fault",
+        "status": "failed",
+        "reached_s": 0.04583333333333333,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+        "candidate_reuses": null,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+          "interpss.csv": "f873261ab89a3482b53d69832710d22f894f116bbd99732d482d6bc1ca4caae5",
+          "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 5,
+        "profile": "flat",
+        "status": "failed",
+        "reached_s": 0.0,
+        "error": "java.lang.IllegalStateException: Voltage-dependent group limits did not settle",
+        "candidate_reuses": null,
+        "recordings_identical": null,
+        "hashes": {},
+        "same_status_and_error": true,
+        "failure_before_recording": true
+      },
+      {
+        "case": 5,
+        "profile": "fault",
+        "status": "failed",
+        "reached_s": 0.0,
+        "error": "java.lang.IllegalStateException: Voltage-dependent group limits did not settle",
+        "candidate_reuses": null,
+        "recordings_identical": null,
+        "hashes": {},
+        "same_status_and_error": true,
+        "failure_before_recording": true
+      },
+      {
+        "case": 6,
+        "profile": "flat",
+        "status": "failed",
+        "reached_s": 0.049999999999999996,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.049999999999999996",
+        "candidate_reuses": null,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "f2065ff2f31b136afc7772d04123907ab90e4f1d30e366bb1cd798bb60c4dcda",
+          "interpss.csv": "e4e1e9b05fb040caf24f72cf7eb300d7fca03652c107de916398c61c01f6bb6e",
+          "full-network-channels.json": "c1abded6682188b07d816887d06a1d9f0121c0f8bebf2af7b4c5e9c3ac94a569"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      },
+      {
+        "case": 6,
+        "profile": "fault",
+        "status": "failed",
+        "reached_s": 0.049999999999999996,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.049999999999999996",
+        "candidate_reuses": null,
+        "recordings_identical": true,
+        "hashes": {
+          "full-network.bin": "b756008aa8a2ca6a2e584069ed8d7f9811bf2de843d453bcdf9a5f026c598a3b",
+          "interpss.csv": "afcb1d22cf49dda1d11afb37063ed03055617e1d88fc5328f6f88c4e18a332b7",
+          "full-network-channels.json": "e24aff7572be1e8d13768f7333d99e102948cdbcde30e77298e3da28f07f38fc"
+        },
+        "same_status_and_error": true,
+        "failure_before_recording": false
+      }
+    ]
+  },
+  "retained_dependencies": [
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-10/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-11/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-12/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-13/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-14/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-15/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-16/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-17/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-18/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-19/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-20/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-21/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case1/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-1/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-10/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-11/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-12/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-13/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-14/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-15/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-16/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-17/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-18/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-19/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-2/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-20/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-21/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-3/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-4/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-5/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-6/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-7/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-8/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network.bin",
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-screen-20261022/case2/actual/case2_bus_fault_01/run-9/interpss.csv",
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+      "bytes": 10200397
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72",
+      "bytes": 2405146
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case1/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case1/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case1/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72",
+      "bytes": 2405146
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+      "bytes": 10197164
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case2/actual/case2_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case2/actual/case2_bus_fault_01/run-1/full-network.bin",
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "bytes": 92592513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-ordinary-20261022/case2/actual/case2_bus_fault_01/run-1/interpss.csv",
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+      "bytes": 10197164
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-case34-20261022/case3/actual/case3_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+      "bytes": 1058877
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-case34-20261022/case3/actual/case3_bus_fault_01/run-0/full-network.bin",
+      "sha256": "8ede9746cf1b722ddf32b64367ff29878ccf60c33eb338e00e4815199b5bc408",
+      "bytes": 737025
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-case34-20261022/case3/actual/case3_bus_fault_01/run-0/interpss.csv",
+      "sha256": "259072519f47d36951bebd275fca31da3bc94ca9d093e54224fbde6845ac8157",
+      "bytes": 15434
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-case34-20261022/case4/actual/case4_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+      "bytes": 835077
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-case34-20261022/case4/actual/case4_bus_fault_01/run-0/full-network.bin",
+      "sha256": "700229a70d132339aa304c83ae5c3e5e481a56d8579cc41e2e3e630654019f10",
+      "bytes": 589185
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-case34-20261022/case4/actual/case4_bus_fault_01/run-0/interpss.csv",
+      "sha256": "ae03097e2aabf8302e5cfa51999efa4d62ab43aab9b09b078926afb34fbedc29",
+      "bytes": 15417
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-fault/candidate/actual/case1_fault/run-0/full-network-channels.json",
+      "sha256": "7ed8c28115f65f293c064f21edaa2fa2060dcc9974553da8b56f64714893c447",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-fault/candidate/actual/case1_fault/run-0/full-network.bin",
+      "sha256": "5171fefd58064712ac7b7ea28a8bda4008e72f191de801baa76df0216c8f15a5",
+      "bytes": 1436673
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-fault/candidate/actual/case1_fault/run-0/interpss.csv",
+      "sha256": "1d3f0b696226f4e66e3f9acd53aa6b70bea371d4cc16128315331c96a8348d16",
+      "bytes": 1987
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-fault/control/actual/case1_fault/run-0/full-network-channels.json",
+      "sha256": "7ed8c28115f65f293c064f21edaa2fa2060dcc9974553da8b56f64714893c447",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-fault/control/actual/case1_fault/run-0/full-network.bin",
+      "sha256": "5171fefd58064712ac7b7ea28a8bda4008e72f191de801baa76df0216c8f15a5",
+      "bytes": 1436673
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-fault/control/actual/case1_fault/run-0/interpss.csv",
+      "sha256": "1d3f0b696226f4e66e3f9acd53aa6b70bea371d4cc16128315331c96a8348d16",
+      "bytes": 1987
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-flat/candidate/actual/case1_flat/run-0/full-network-channels.json",
+      "sha256": "712cb6b031eb603822c710cffc45c9a1754d3622bd95123b552fe50ad85b4df4",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-flat/candidate/actual/case1_flat/run-0/full-network.bin",
+      "sha256": "a4423d9834eed6df58c04631992ad9850ef435cb6bd9ee96b0e2a9949ab32a80",
+      "bytes": 1337589
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-flat/candidate/actual/case1_flat/run-0/interpss.csv",
+      "sha256": "f81ef93830f985529916b3a22c9d95f61857fab2a9ffd41a1db8489e4a5ba4d1",
+      "bytes": 1845
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-flat/control/actual/case1_flat/run-0/full-network-channels.json",
+      "sha256": "712cb6b031eb603822c710cffc45c9a1754d3622bd95123b552fe50ad85b4df4",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-flat/control/actual/case1_flat/run-0/full-network.bin",
+      "sha256": "a4423d9834eed6df58c04631992ad9850ef435cb6bd9ee96b0e2a9949ab32a80",
+      "bytes": 1337589
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case1-flat/control/actual/case1_flat/run-0/interpss.csv",
+      "sha256": "f81ef93830f985529916b3a22c9d95f61857fab2a9ffd41a1db8489e4a5ba4d1",
+      "bytes": 1845
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-fault/candidate/actual/case2_fault/run-0/full-network-channels.json",
+      "sha256": "6b62784be12a418f883608b8a633176550bfa1198f992e3d70bb0c661ba040fa",
+      "bytes": 758546
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-fault/candidate/actual/case2_fault/run-0/full-network.bin",
+      "sha256": "408b39ea36aa2b0f1b1580e008f1a7187d624fb8a4374b64a846217acf28f551",
+      "bytes": 1116513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-fault/candidate/actual/case2_fault/run-0/interpss.csv",
+      "sha256": "48cb6e5b4521456e2af63c0dd93dc76d37a8d7f278f16f6986ad8218161a35a2",
+      "bytes": 1985
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-fault/control/actual/case2_fault/run-0/full-network-channels.json",
+      "sha256": "6b62784be12a418f883608b8a633176550bfa1198f992e3d70bb0c661ba040fa",
+      "bytes": 758546
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-fault/control/actual/case2_fault/run-0/full-network.bin",
+      "sha256": "408b39ea36aa2b0f1b1580e008f1a7187d624fb8a4374b64a846217acf28f551",
+      "bytes": 1116513
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-fault/control/actual/case2_fault/run-0/interpss.csv",
+      "sha256": "48cb6e5b4521456e2af63c0dd93dc76d37a8d7f278f16f6986ad8218161a35a2",
+      "bytes": 1985
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-flat/candidate/actual/case2_flat/run-0/full-network-channels.json",
+      "sha256": "782012cb154aa96e4799b07a12ee71be20d8d8c2af0b368a806100ee56724369",
+      "bytes": 758546
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-flat/candidate/actual/case2_flat/run-0/full-network.bin",
+      "sha256": "c1308e05b265a398b2be232c5c2679296a3c07a6098b21c7370997ae5c44d479",
+      "bytes": 1039509
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-flat/candidate/actual/case2_flat/run-0/interpss.csv",
+      "sha256": "f4f446f3bc2c9764be5a7b4ca832973b5248c9109c222dc00e8270c7d0b482a4",
+      "bytes": 1841
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-flat/control/actual/case2_flat/run-0/full-network-channels.json",
+      "sha256": "782012cb154aa96e4799b07a12ee71be20d8d8c2af0b368a806100ee56724369",
+      "bytes": 758546
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-flat/control/actual/case2_flat/run-0/full-network.bin",
+      "sha256": "c1308e05b265a398b2be232c5c2679296a3c07a6098b21c7370997ae5c44d479",
+      "bytes": 1039509
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case2-flat/control/actual/case2_flat/run-0/interpss.csv",
+      "sha256": "f4f446f3bc2c9764be5a7b4ca832973b5248c9109c222dc00e8270c7d0b482a4",
+      "bytes": 1841
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-fault/candidate/actual/case3_fault/run-0/full-network-channels.json",
+      "sha256": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+      "bytes": 1058877
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-fault/candidate/actual/case3_fault/run-0/full-network.bin",
+      "sha256": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+      "bytes": 737025
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-fault/candidate/actual/case3_fault/run-0/interpss.csv",
+      "sha256": "2f81bfda0492f5d4ba603e66ed09c82d99c46f6e4b809f7af96c547be6e3f8b1",
+      "bytes": 991
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-fault/control/actual/case3_fault/run-0/full-network-channels.json",
+      "sha256": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+      "bytes": 1058877
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-fault/control/actual/case3_fault/run-0/full-network.bin",
+      "sha256": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+      "bytes": 737025
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-fault/control/actual/case3_fault/run-0/interpss.csv",
+      "sha256": "2f81bfda0492f5d4ba603e66ed09c82d99c46f6e4b809f7af96c547be6e3f8b1",
+      "bytes": 991
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-flat/candidate/actual/case3_flat/run-0/full-network-channels.json",
+      "sha256": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+      "bytes": 1058877
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-flat/candidate/actual/case3_flat/run-0/full-network.bin",
+      "sha256": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+      "bytes": 737025
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-flat/candidate/actual/case3_flat/run-0/interpss.csv",
+      "sha256": "2f81bfda0492f5d4ba603e66ed09c82d99c46f6e4b809f7af96c547be6e3f8b1",
+      "bytes": 991
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-flat/control/actual/case3_flat/run-0/full-network-channels.json",
+      "sha256": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+      "bytes": 1058877
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-flat/control/actual/case3_flat/run-0/full-network.bin",
+      "sha256": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+      "bytes": 737025
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case3-flat/control/actual/case3_flat/run-0/interpss.csv",
+      "sha256": "2f81bfda0492f5d4ba603e66ed09c82d99c46f6e4b809f7af96c547be6e3f8b1",
+      "bytes": 991
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-fault/candidate/actual/case4_fault/run-0/full-network-channels.json",
+      "sha256": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+      "bytes": 835077
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-fault/candidate/actual/case4_fault/run-0/full-network.bin",
+      "sha256": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+      "bytes": 589185
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-fault/candidate/actual/case4_fault/run-0/interpss.csv",
+      "sha256": "f873261ab89a3482b53d69832710d22f894f116bbd99732d482d6bc1ca4caae5",
+      "bytes": 988
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-fault/control/actual/case4_fault/run-0/full-network-channels.json",
+      "sha256": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+      "bytes": 835077
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-fault/control/actual/case4_fault/run-0/full-network.bin",
+      "sha256": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+      "bytes": 589185
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-fault/control/actual/case4_fault/run-0/interpss.csv",
+      "sha256": "f873261ab89a3482b53d69832710d22f894f116bbd99732d482d6bc1ca4caae5",
+      "bytes": 988
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-flat/candidate/actual/case4_flat/run-0/full-network-channels.json",
+      "sha256": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+      "bytes": 835077
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-flat/candidate/actual/case4_flat/run-0/full-network.bin",
+      "sha256": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+      "bytes": 589185
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-flat/candidate/actual/case4_flat/run-0/interpss.csv",
+      "sha256": "f873261ab89a3482b53d69832710d22f894f116bbd99732d482d6bc1ca4caae5",
+      "bytes": 988
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-flat/control/actual/case4_flat/run-0/full-network-channels.json",
+      "sha256": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+      "bytes": 835077
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-flat/control/actual/case4_flat/run-0/full-network.bin",
+      "sha256": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+      "bytes": 589185
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case4-flat/control/actual/case4_flat/run-0/interpss.csv",
+      "sha256": "f873261ab89a3482b53d69832710d22f894f116bbd99732d482d6bc1ca4caae5",
+      "bytes": 988
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-fault/candidate/actual/case6_fault/run-0/full-network-channels.json",
+      "sha256": "e24aff7572be1e8d13768f7333d99e102948cdbcde30e77298e3da28f07f38fc",
+      "bytes": 836808
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-fault/candidate/actual/case6_fault/run-0/full-network.bin",
+      "sha256": "b756008aa8a2ca6a2e584069ed8d7f9811bf2de843d453bcdf9a5f026c598a3b",
+      "bytes": 674635
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-fault/candidate/actual/case6_fault/run-0/interpss.csv",
+      "sha256": "afcb1d22cf49dda1d11afb37063ed03055617e1d88fc5328f6f88c4e18a332b7",
+      "bytes": 1123
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-fault/control/actual/case6_fault/run-0/full-network-channels.json",
+      "sha256": "e24aff7572be1e8d13768f7333d99e102948cdbcde30e77298e3da28f07f38fc",
+      "bytes": 836808
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-fault/control/actual/case6_fault/run-0/full-network.bin",
+      "sha256": "b756008aa8a2ca6a2e584069ed8d7f9811bf2de843d453bcdf9a5f026c598a3b",
+      "bytes": 674635
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-fault/control/actual/case6_fault/run-0/interpss.csv",
+      "sha256": "afcb1d22cf49dda1d11afb37063ed03055617e1d88fc5328f6f88c4e18a332b7",
+      "bytes": 1123
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-flat/candidate/actual/case6_flat/run-0/full-network-channels.json",
+      "sha256": "c1abded6682188b07d816887d06a1d9f0121c0f8bebf2af7b4c5e9c3ac94a569",
+      "bytes": 836808
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-flat/candidate/actual/case6_flat/run-0/full-network.bin",
+      "sha256": "f2065ff2f31b136afc7772d04123907ab90e4f1d30e366bb1cd798bb60c4dcda",
+      "bytes": 632469
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-flat/candidate/actual/case6_flat/run-0/interpss.csv",
+      "sha256": "e4e1e9b05fb040caf24f72cf7eb300d7fca03652c107de916398c61c01f6bb6e",
+      "bytes": 1049
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-flat/control/actual/case6_flat/run-0/full-network-channels.json",
+      "sha256": "c1abded6682188b07d816887d06a1d9f0121c0f8bebf2af7b4c5e9c3ac94a569",
+      "bytes": 836808
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-flat/control/actual/case6_flat/run-0/full-network.bin",
+      "sha256": "f2065ff2f31b136afc7772d04123907ab90e4f1d30e366bb1cd798bb60c4dcda",
+      "bytes": 632469
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-six-case-smokes-20261022/case6-flat/control/actual/case6_flat/run-0/interpss.csv",
+      "sha256": "e4e1e9b05fb040caf24f72cf7eb300d7fca03652c107de916398c61c01f6bb6e",
+      "bytes": 1049
+    }
+  ],
+  "long_warmup_qualification": "pending; live process evidence excluded from this completed checkpoint"
+}

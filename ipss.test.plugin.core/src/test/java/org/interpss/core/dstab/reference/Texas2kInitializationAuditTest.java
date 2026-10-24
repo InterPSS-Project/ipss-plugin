@@ -13,6 +13,29 @@ import com.interpss.dstab.controller.cml.wrapper.ControllerFieldAnWrapper;
 
 /** Checks that audit observations detect a bad rate without changing the state. */
 class Texas2kInitializationAuditTest {
+    @Test void secondOrderStabilizerSlopesAreCompleteAndReadOnly() throws Exception {
+        var controller = new Ieee1992PSS2AStabilizer();
+        var lag = new org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock(1., .1, .02);
+        lag.initStateU0(.2); lag.setStateX(.1); lag.setRate(.3);
+        var lagField = new BlockFieldAnWrapper<org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock>("lag");
+        lagField.setField(lag); installFixtureField(controller, lagField);
+        var first = Texas2kInitializationAudit.controller(controller);
+        assertEquals(.3, ((Map<?, ?>)first.get("rates")).get("lag.output"));
+        assertEquals(3.5, (double)((Map<?, ?>)first.get("rates")).get("lag.rate"), 1.e-12);
+        assertTrue(((java.util.List<?>)first.get("rate_coverage_gaps")).isEmpty());
+        assertEquals(first, Texas2kInitializationAudit.controller(controller));
+        assertEquals(.1, lag.getStateX()); assertEquals(.3, lag.getRate());
+        var lead = new org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock(.1, .02, .3, .04);
+        lead.initStateU0(.2); lead.setStateX(.1); lead.setSecondState(.15);
+        var leadField = new BlockFieldAnWrapper<org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock>("lead");
+        leadField.setField(lead); installFixtureField(controller, leadField);
+        var second = Texas2kInitializationAudit.controller(controller);
+        assertEquals(2., (double)((Map<?, ?>)second.get("rates")).get("lead.first"), 1.e-12);
+        assertEquals(.1, ((Map<?, ?>)second.get("rates")).get("lead.second"));
+        assertEquals(second, Texas2kInitializationAudit.controller(controller));
+        assertEquals(.1, lead.getFirstState()); assertEquals(.15, lead.getSecondState());
+    }
+
     @Test void gridFormingStatesAndRatesAreIncludedWithoutAdvancingTheDevice(
         @org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) throws Exception {
         org.interpss.IpssCorePlugin.init();

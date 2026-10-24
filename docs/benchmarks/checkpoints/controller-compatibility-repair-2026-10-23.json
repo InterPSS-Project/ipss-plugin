@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "status": "compatibility-repaired-full-gate-failed",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-controller-compatibility-repair/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 196227,
+    "sha256": "9b9ba1bfac38f78d418ae22db19db71b147000e89a8814e2f9d062637466b74f"
+  },
+  "evidence": {
+    "bytes": 14042894,
+    "sha256": "3dbd81419e037fe5d35c0f899d8c26cf3ecb989141c869e7834a49a86aba0c4a"
+  },
+  "runtime": {
+    "bytes": 8778035,
+    "sha256": "6da4f9cbc05cde47064143f5a169fc2b6f86fa7ea9555412ec55c231addfa9e7"
+  },
+  "base_revisions": {
+    "core": "46c8576e617fc0427dc42d3de7f9cafe64e38ff6",
+    "plugin": "f18fd5ee8aaf28ce3ce6f0d6ebb219d58ad34be6"
+  },
+  "main_branch_heads": {
+    "core": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+    "plugin": "74985520add5240245f79e77e40f2fbd527cdd79"
+  },
+  "source_changes_committed": false,
+  "merge_gate_passed": false,
+  "milestone_commits_created": false,
+  "merged": false,
+  "full_core": {
+    "tests": 3096,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "plugin_modules": {
+    "ipss.plugin.core": {
+      "tests": 435,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.plugin.3phase": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    "ipss.test.plugin.core": {
+      "tests": 3259,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 54
+    }
+  },
+  "focused_core_tests": 43,
+  "focused_plugin_tests": 48,
+  "concurrency_regression": {
+    "before_failed": 6,
+    "after_passed": 6
+  },
+  "complete_recordings_identical": 56,
+  "warmed_medians_s": {
+    "1": 9.0372353,
+    "2": 6.6413337
+  },
+  "final_source_verification_runs": 4,
+  "independent_reference_accuracy_qualified": false,
+  "original_performance_checkpoint_preserved": true,
+  "documentation": "docs/benchmarks/controller-compatibility-repair-2026-10-23.md"
+}

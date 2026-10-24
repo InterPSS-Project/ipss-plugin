@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "fixed",
+  "tests": {
+    "core": {
+      "tests": 3097,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "plugin_core": {
+      "tests": 439,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "integration": {
+      "tests": 70,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    }
+  },
+  "observations": {
+    "before": {
+      "iterations": 50,
+      "converged": false,
+      "max_p_pu": 0.00229578057062603,
+      "max_q_pu": 1.5218967052144095e-05,
+      "unsettled_controls": 1
+    },
+    "after": {
+      "iterations": 20,
+      "converged": true,
+      "max_p_pu": 1.7501838503464207e-06,
+      "max_q_pu": 7.831375772915372e-05,
+      "unsettled_controls": 0
+    }
+  },
+  "tolerance_pu": 0.001,
+  "max_iterations": 50,
+  "method": "PQ",
+  "remaining_merge_gate": "Case 1 no-event complex-voltage drift",
+  "full_plugin_reactor_rerun": false,
+  "merged": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-pegase8387-fixed-q/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 210206,
+    "sha256": "9b6c0fcc1289ba2b8863fe9a5db0ac92f1cfd22caa124346fb1033df75b9e64e"
+  },
+  "evidence": {
+    "bytes": 11553657,
+    "sha256": "eb755b14393ff1bcd3b8ba6faa8d77aaec8b9c9a1b1f8aa10f9ea022f6ccd8fc"
+  },
+  "documentation": "docs/benchmarks/pegase8387-fixed-reactive-limit-2026-10-23.md"
+}

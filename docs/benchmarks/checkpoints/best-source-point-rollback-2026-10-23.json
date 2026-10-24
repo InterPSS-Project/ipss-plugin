@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "status": "source-checkpoint-restored",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-best-source-point-rollback/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 19267,
+    "sha256": "af6b881868b48980e918f8f90a0dc363ea0ef01a180b77601f58fc5dd18b9795"
+  },
+  "evidence": {
+    "bytes": 185808,
+    "sha256": "b8f59cad46349dd214dbac710699705ec7b3efdf8038b15598047dc5167aa9ac"
+  },
+  "plugin_source_commit": "a60d30e80e8a806d23587ce633722dc92eb44bae",
+  "core_base_commit": "dd6a03d6e567863db93d8eec4abbcb8b1dfdf095",
+  "core_recovery_commit": "46c8576e617fc0427dc42d3de7f9cafe64e38ff6",
+  "branch": "restore/best-two-case-20261023",
+  "backup_branch": "backup/before-source-point-rollback-20261023",
+  "preserved_heads": {
+    "plugin": "38075576c3a7f7abf80b887429e0e7e069ce27d3",
+    "core": "a342f04ea365d28ab7cfb24454de98f5da51a4bc"
+  },
+  "preserved_plugin_stash": "6b3355d459e05cb4ef417fcf7f03629208d1723b",
+  "historical_medians_s": {
+    "1": 8.5965081,
+    "2": 6.5199838
+  },
+  "new_warmed_timing_claim": false,
+  "main_source_counts": {
+    "core": 1836,
+    "plugin": 885
+  },
+  "focused_tests": {
+    "per_option": 15,
+    "options": [
+      "false",
+      "true"
+    ],
+    "all_passed": true
+  },
+  "complete_recordings_identical": 8,
+  "independent_reference_accuracy_qualified": false,
+  "documentation": "docs/benchmarks/best-source-point-rollback-2026-10-23.md",
+  "source_replay_cases_verified": [
+    1,
+    2
+  ],
+  "archived_main_classes_on_replay_classpath": false,
+  "pinned_benchmark_support_classes": 20,
+  "checkpoint_tag": "checkpoint/best-two-case-source-20261023"
+}

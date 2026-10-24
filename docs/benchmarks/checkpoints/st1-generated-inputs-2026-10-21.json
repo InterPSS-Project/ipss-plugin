@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "status": "generated-controller-inputs-reference-accuracy-unqualified",
+  "goal_achieved": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st1-generated-inputs/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 565988,
+    "sha256": "a5668113c36fddb35b5f42a33e89f4e424b286b7da08bffc472eade7662f56bf"
+  },
+  "archive": {
+    "bytes": 5465712,
+    "sha256": "018b7e9bed7704f421971b5f27040e2f233c871656a9e4b6d9890908ca9a1628"
+  },
+  "source_counts": {
+    "core": 1835,
+    "plugin": 883,
+    "harness": 9
+  },
+  "core_commit": "e7489688b121d47cc4eccdf4e3b24d46bc8efaf6",
+  "tests": {
+    "found": 6,
+    "passed": 5,
+    "failed": 1,
+    "unchanged_baseline_failure": "Existing disabled-controller reinitialization test fails in LoadflowAlgorithmImpl.getAclfNet with ClassCastException."
+  },
+  "timing": [
+    {
+      "case": 1,
+      "variant": "baseline",
+      "seconds": [
+        11.3417506,
+        11.3823479,
+        11.4362458,
+        10.9615704,
+        11.3712885,
+        11.4297683,
+        11.3617375
+      ],
+      "median_s": 11.3712885,
+      "min_s": 10.9615704,
+      "max_s": 11.4362458,
+      "compilation_ms": [
+        44,
+        6,
+        38,
+        37,
+        33,
+        8,
+        83
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      }
+    },
+    {
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        11.0688054,
+        10.7619121,
+        10.9316961,
+        10.5569719,
+        10.7135797,
+        10.8258722,
+        10.9123231
+      ],
+      "median_s": 10.8258722,
+      "min_s": 10.5569719,
+      "max_s": 11.0688054,
+      "compilation_ms": [
+        45,
+        6,
+        37,
+        38,
+        33,
+        8,
+        81
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      }
+    },
+    {
+      "case": 2,
+      "variant": "candidate",
+      "seconds": [
+        7.5385406,
+        7.6800023,
+        7.9861336,
+        7.5854228,
+        7.6397082,
+        7.4988478,
+        7.6067625
+      ],
+      "median_s": 7.6067625,
+      "min_s": 7.4988478,
+      "max_s": 7.9861336,
+      "compilation_ms": [
+        26,
+        1,
+        12,
+        45,
+        14,
+        16,
+        88
+      ],
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+      }
+    }
+  ],
+  "screening": [
+    {
+      "variant": "candidate",
+      "seconds": [
+        11.6039362,
+        10.8558825,
+        11.0037068,
+        10.6796705,
+        10.9594208
+      ],
+      "median_s": 10.9594208,
+      "full_recording_sha256": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83"
+    },
+    {
+      "variant": "baseline",
+      "seconds": [
+        12.4896193,
+        11.5787148,
+        11.5905246,
+        11.4849189,
+        11.4826597
+      ],
+      "median_s": 11.5787148,
+      "full_recording_sha256": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83"
+    }
+  ],
+  "case34_audit": [
+    {
+      "case": 3,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "unchanged_partial_recordings": {
+        "full-network.bin": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+        "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+        "interpss.csv": "4ae9e78e69094faf72733ba0653b6f8c21f34af41f33101c6ee1a945e0d1446a"
+      }
+    },
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "unchanged_partial_recordings": {
+        "full-network.bin": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+        "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+        "interpss.csv": "64fc2ebb51cdfda9209f4f80b2bc434e25de814ea0edb0625c86105dcb07383b"
+      }
+    }
+  ],
+  "clean_build_verification": {
+    "path": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st1-generated-inputs/clean-build-verification.json",
+    "sha256": "edb8de4dc231fc0a0115eba9f71c06dd6dbe1643c478770f1a0a2502a95e576c",
+    "result": {
+      "classes": {
+        "core": 2373,
+        "plugin": 1474,
+        "harness": 23
+      },
+      "total": 3870,
+      "differences": [],
+      "missing": [],
+      "all_identical": true
+    }
+  }
+}

@@ -1,0 +1,371 @@
+{
+  "schema": 1,
+  "description": "Paired single-core timing of preparing the empty auxiliary monitor; all comparison channels remain recorded.",
+  "base_plugin_commit": "28518011dcd89bed35e8a9b23a4f9e82291bf51b",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-prepared-empty-monitor-screen/evidence.zip",
+  "archive_bytes": 967173,
+  "archive_sha256": "deea41b62e858d55fdf396d87aa51e7c99d0d72576d208249038ad47497bf4c3",
+  "results": [
+    {
+      "case": 1,
+      "smoke": false,
+      "times_s": {
+        "control": [
+          8.8721756,
+          9.7098756,
+          9.1336167,
+          8.7612163,
+          8.7256867,
+          9.1925756,
+          9.0689396
+        ],
+        "candidate": [
+          8.8129896,
+          8.7099155,
+          8.7433133,
+          8.9121026,
+          9.0155584,
+          8.8459467,
+          8.8631098
+        ]
+      },
+      "medians_s": {
+        "control": 9.0689396,
+        "candidate": 8.8459467
+      },
+      "paired_savings_s": [
+        0.059186000000000405,
+        0.9999601000000009,
+        0.39030339999999875,
+        -0.15088630000000158,
+        -0.28987169999999907,
+        0.3466288999999989,
+        0.20582980000000006
+      ],
+      "median_paired_saving_s": 0.20582980000000006,
+      "candidate_wins": 5,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "smoke": false,
+      "times_s": {
+        "control": [
+          6.1786857,
+          6.2106869,
+          6.0863948,
+          6.6384748,
+          6.1453997,
+          6.599086,
+          6.1240621
+        ],
+        "candidate": [
+          6.0207165,
+          6.0681995,
+          6.1466147,
+          6.2116225,
+          6.1348293,
+          6.1108616,
+          6.1366662
+        ]
+      },
+      "medians_s": {
+        "control": 6.1786857,
+        "candidate": 6.1348293
+      },
+      "paired_savings_s": [
+        0.15796920000000014,
+        0.14248739999999938,
+        -0.06021989999999988,
+        0.4268523000000002,
+        0.010570399999999758,
+        0.4882244,
+        -0.012604099999999896
+      ],
+      "median_paired_saving_s": 0.14248739999999938,
+      "candidate_wins": 5,
+      "recordings_identical": true
+    }
+  ],
+  "single_step_cases_3_and_4": [
+    {
+      "case": 3,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "hashes": {
+        "full-network.bin": "e303b63c722823af6abf0d86f08dc9ffe1959614e7d7c2b5c694fcab563787fc",
+        "interpss.csv": "e0f920330ba55572ff535f67ef503b6d5b21012cacc2f11298b13ca33f47e9ce",
+        "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c"
+      },
+      "network_iterations": null
+    },
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "hashes": {
+        "full-network.bin": "3ad3a66cc89b030fde346d4a28513c4edb97ae8130133e9bc8d66f6abcdf45bf",
+        "interpss.csv": "85d07be6e4414ed29dcf4d926b4f11fa002465098b09f5e608a6e462a667ae05",
+        "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63"
+      },
+      "network_iterations": null
+    }
+  ],
+  "timing_context": [
+    {
+      "case": 1,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 8.8721756,
+          "process_cpu_s": 8.8125,
+          "compilation_time_ms": 43,
+          "gc_time_ms": 133
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 8.8129896,
+          "process_cpu_s": 8.5625,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 132
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 8.7099155,
+          "process_cpu_s": 8.46875,
+          "compilation_time_ms": 53,
+          "gc_time_ms": 99
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 9.7098756,
+          "process_cpu_s": 9.09375,
+          "compilation_time_ms": 46,
+          "gc_time_ms": 67
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 9.1336167,
+          "process_cpu_s": 8.90625,
+          "compilation_time_ms": 35,
+          "gc_time_ms": 187
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 8.7433133,
+          "process_cpu_s": 8.625,
+          "compilation_time_ms": 5,
+          "gc_time_ms": 60
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 8.9121026,
+          "process_cpu_s": 8.796875,
+          "compilation_time_ms": 89,
+          "gc_time_ms": 128
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 8.7612163,
+          "process_cpu_s": 8.546875,
+          "compilation_time_ms": 31,
+          "gc_time_ms": 95
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 8.7256867,
+          "process_cpu_s": 8.5625,
+          "compilation_time_ms": 13,
+          "gc_time_ms": 88
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 9.0155584,
+          "process_cpu_s": 8.59375,
+          "compilation_time_ms": 206,
+          "gc_time_ms": 65
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 8.8459467,
+          "process_cpu_s": 8.625,
+          "compilation_time_ms": 64,
+          "gc_time_ms": 61
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 9.1925756,
+          "process_cpu_s": 8.921875,
+          "compilation_time_ms": 275,
+          "gc_time_ms": 130
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 9.0689396,
+          "process_cpu_s": 8.953125,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 132
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 8.8631098,
+          "process_cpu_s": 8.5625,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 133
+        }
+      ],
+      "median_cpu_s": {
+        "False": 8.90625,
+        "True": 8.59375
+      }
+    },
+    {
+      "case": 2,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 6.1786857,
+          "process_cpu_s": 6.046875,
+          "compilation_time_ms": 24,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 6.0207165,
+          "process_cpu_s": 5.875,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 6.0681995,
+          "process_cpu_s": 5.953125,
+          "compilation_time_ms": 12,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 6.2106869,
+          "process_cpu_s": 6.015625,
+          "compilation_time_ms": 52,
+          "gc_time_ms": 96
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 6.0863948,
+          "process_cpu_s": 5.953125,
+          "compilation_time_ms": 19,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 6.1466147,
+          "process_cpu_s": 6.09375,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 98
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 6.2116225,
+          "process_cpu_s": 6.125,
+          "compilation_time_ms": 92,
+          "gc_time_ms": 98
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 6.6384748,
+          "process_cpu_s": 6.546875,
+          "compilation_time_ms": 168,
+          "gc_time_ms": 101
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 6.1453997,
+          "process_cpu_s": 6.015625,
+          "compilation_time_ms": 55,
+          "gc_time_ms": 107
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 6.1348293,
+          "process_cpu_s": 5.984375,
+          "compilation_time_ms": 11,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 6.1108616,
+          "process_cpu_s": 5.96875,
+          "compilation_time_ms": 49,
+          "gc_time_ms": 94
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 6.599086,
+          "process_cpu_s": 6.4375,
+          "compilation_time_ms": 267,
+          "gc_time_ms": 94
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 6.1240621,
+          "process_cpu_s": 5.9375,
+          "compilation_time_ms": 14,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 6.1366662,
+          "process_cpu_s": 6.03125,
+          "compilation_time_ms": 35,
+          "gc_time_ms": 91
+        }
+      ],
+      "median_cpu_s": {
+        "False": 6.015625,
+        "True": 5.984375
+      }
+    }
+  ],
+  "verified_complete_recordings": 92,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 32,
+  "measured_pairs_per_case": 7,
+  "focused_tests": 10,
+  "runner_uses_prepared_empty_monitor": true,
+  "limitations": [
+    "Both arms use the same experimental Anderson/deferred network path.",
+    "All complete recordings match the retained one-step baseline byte for byte.",
+    "No six-case completion or independent full-system accuracy acceptance is claimed."
+  ]
+}

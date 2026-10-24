@@ -60,7 +60,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
  * Renewable event-history parity and full-fleet accuracy remain unverified.
- * ST1 controllers use ten local STORE steps per network step with physical
+ * ST1 controllers default to one configurable local STORE step per network step with physical
  * and stabilizer inputs held at the old endpoint. Their field outputs are
  * published before the final local algebraic refresh; machine and other
  * controller states retain the common network-step rule.
@@ -85,6 +85,64 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
      */
     public enum MachineMeasurementStage { LAST_NETWORK_INJECTION, ACCEPTED_VOLTAGE }
     private MachineMeasurementStage machineMeasurementStage = MachineMeasurementStage.LAST_NETWORK_INJECTION;
+
+    private Boolean st1LocalStoreOverride;
+    /** Configure the local storage implementation before state initialization. */
+    public void setSt1LocalStoreEnabled(boolean enabled) {
+        if (!states.isEmpty()) throw new IllegalStateException("Configure before initialization");
+        st1LocalStoreOverride=enabled;
+    }
+    private boolean localStoreEnabled() {
+        return st1LocalStoreOverride!=null?st1LocalStoreOverride:!Boolean.getBoolean("ipss.experiment.disableSt1LocalStore");
+    }
+    private int st1Substeps = IEEE1981ST1Exciter.DEFAULT_LOCAL_SUBSTEPS;
+    private final java.util.Map<String, Integer> st1SubstepsByMachine = new java.util.HashMap<>();
+
+    /**
+     * Set the default ST1 local STORE steps per network step before initialization.
+     * One selects a single local step. Other controller families and the network
+     * step are unchanged. Counts from 1 through 128 are accepted without rounding.
+     */
+    public void setSt1Substeps(int count) {
+        requireSubstepConfiguration(count);
+        st1Substeps = count;
+    }
+
+    /** Override the ST1 count for a machine ID, for example {@code Bus1-mach1}. */
+    public void setSt1Substeps(String machineId, int count) {
+        requireSubstepConfiguration(count);
+        if (machineId == null || machineId.isBlank())
+            throw new IllegalArgumentException("A machine ID is required for an ST1 substep override");
+        st1SubstepsByMachine.put(machineId, count);
+    }
+
+    public int getSt1Substeps() { return st1Substeps; }
+
+    @Override protected int parameterValidationSubsteps(Machine machine) {
+        return getSt1Substeps(machine.getId());
+    }
+
+    /** Configured override or default; target attachments are checked at initialization. */
+    public int getSt1Substeps(String machineId) {
+        return st1SubstepsByMachine.getOrDefault(java.util.Objects.requireNonNull(machineId), st1Substeps);
+    }
+
+    private void requireSubstepConfiguration(int count) {
+        if (previous != null)
+            throw new IllegalStateException("Configure ST1 substeps before initialization; create a new solver to change them");
+        if (count < 1 || count > IEEE1981ST1Exciter.MAX_LOCAL_SUBSTEPS)
+            throw new IllegalArgumentException("ST1 substeps must be between 1 and 128");
+    }
+
+    private void validateSubstepTargets() {
+        for (String id : st1SubstepsByMachine.keySet()) {
+            Machine machine = dstabAlgo.getNetwork().getMachine(id);
+            if (machine == null || machine.getExciter() == null
+                    || machine.getExciter().getClass() != IEEE1981ST1Exciter.class)
+                throw new IllegalArgumentException("ST1 substep override requires an ST1 exciter at machine " + id);
+        }
+    }
+
     private final List<Machine> machines = new ArrayList<>();
     private final List<BooleanSupplier> machineActive = new ArrayList<>();
     private final List<BooleanSupplier> attachmentsUnchanged = new ArrayList<>();
@@ -99,72 +157,67 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private BooleanSupplier ownerActive;
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
-    private boolean compiledControllerGraphsEnabled;
-    private boolean compiledSt4bBindingsEnabled = true;
-    private boolean preparedControllerOutputReuseEnabled = true;
-    private boolean nestedControllerOutputSchedulingEnabled = true;
-    private boolean compiledLocalSt1Enabled=true;
-    private boolean electricalEndpointPreparationEnabled = true;
-    private final List<BooleanSupplier> electricalEndpointEligible = new ArrayList<>();
-    private long electricalEndpointPreparationCount;
-    private boolean useRectangularNetworkVoltage;
+    private boolean st4EndpointReuseEnabled = true;
     private double[] start;
     private double[] derivative;
     private final List<Participant> participants = new ArrayList<>();
     private final java.util.IdentityHashMap<Object, Participant> participantByController = new java.util.IdentityHashMap<>();
     private final List<Renewable> renewables = new ArrayList<>();
     private final List<Participant> gridForming = new ArrayList<>();
+    private boolean electricalEndpointPreparationEnabled;
+    private final List<BooleanSupplier> electricalEndpointEligible = new ArrayList<>();
+    private long electricalEndpointPreparationCount;
+    public void setElectricalEndpointPreparationEnabled(boolean enabled) {
+        electricalEndpointPreparationEnabled=enabled;
+    }
+    public long getElectricalEndpointPreparationCount() { return electricalEndpointPreparationCount; }
+
     private record State(DoubleSupplier value, DoubleConsumer set,
             DoubleSupplier derivative, DoubleUnaryOperator project, BooleanSupplier active,
             BooleanSupplier frozen) {}
     private record Renewable(Regca1Model model, BooleanSupplier active) {}
-    /** ST1's local STORE recurrence uses ten steps per network step. */
+    /** ST1's local STORE recurrence uses the count resolved at initialization. */
     private static final class LocalSt1Controller {
-        private static final int SUBSTEPS = 10;
+        final int substeps;
         final IEEE1981ST1Exciter model;
         final BooleanSupplier active;
         final List<State> states;
         final double[] previous, start, rates;
         final boolean[] frozen;
         final boolean reuseFixedPssOutput;
-        final boolean compiledLocal;
-        final long runtimeGeneration;
-        final double[] compiledOutput=new double[1];
+        final BooleanSupplier useLocalStore;
         boolean wasActive;
-        boolean lastAdvanceCompiled;
 
         LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states,
-                boolean reuseFixedPssOutput, boolean compiledLocal) {
+                boolean reuseFixedPssOutput, int substeps,BooleanSupplier useLocalStore) {
+            this.substeps = substeps;
+            this.useLocalStore=useLocalStore;
             this.reuseFixedPssOutput = reuseFixedPssOutput;
-            this.compiledLocal=compiledLocal;
-            this.runtimeGeneration=model.getRuntimeGeneration();
             this.model=model; this.active=active; this.states=List.copyOf(states);
+            model.enableDirectEvaluationExperiment();
             previous=new double[states.size()]; start=new double[states.size()];
             rates=new double[states.size()]; frozen=new boolean[states.size()];
             wasActive=active.getAsBoolean();
         }
 
         private void evaluate() throws DStabSimuException {
-            if (!model.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,model.getMachine(),0))
-                throw new DStabSimuException("ST1 local evaluation failed: "+model.getId());
+            model.evaluateDirectExperiment();
         }
 
         void advance(double dt, boolean discontinuity) throws DStabSimuException {
-            lastAdvanceCompiled=false;
-            if(compiledLocal && runtimeGeneration!=model.getRuntimeGeneration())
-                throw new IllegalStateException("Reinitialize after changing ST1 runtime structure");
             if (!active.getAsBoolean()) {
                 java.util.Arrays.fill(previous,0.); wasActive=false; return;
             }
-            double localStep=dt/SUBSTEPS, field=model.getMachine().getEfd();
+            double localStep=dt/substeps, field=model.getMachine().getEfd();
             Ieee1992PSS2AStabilizer held = reuseFixedPssOutput
                     && model.getMachine().getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
             if (held != null) held.beginFixedInputObservation();
+            model.beginFixedMachineObservation();
             try {
-                if(compiledLocal && model.tryCompiledLocalAdvance(dt,discontinuity,wasActive,held!=null,
-                        previous,start,rates,compiledOutput)) {
-                    field=compiledOutput[0];wasActive=true;lastAdvanceCompiled=true;
-                } else for (int sub=0;sub<SUBSTEPS;sub++) {
+                if(useLocalStore.getAsBoolean()) {
+                    field=model.advanceDirectLocalStore(dt,substeps,discontinuity,wasActive,held!=null,previous,start,rates);
+                    wasActive=true;
+                } else for (int sub=0;sub<substeps;sub++) {
                     evaluate();
                     for (int i=0;i<states.size();i++) {
                         State state=states.get(i);
@@ -188,6 +241,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     evaluate();
                 }
             } finally {
+                model.endFixedMachineObservation();
                 if (held != null) held.endFixedInputObservation();
             }
             if (!Double.isFinite(field))
@@ -223,59 +277,15 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         return runtimeControllerOptimizationEnabled;
     }
 
-    /** Opt in before initialization. Model structure must then remain fixed until reinitialization. */
-    public void setCompiledControllerGraphsEnabled(boolean enabled) {
-        if (previous != null) throw new IllegalStateException("Configure compiled graphs before initialization");
-        compiledControllerGraphsEnabled = enabled;
+    /** Configure settled ST4B endpoint reuse before initialization. Enabled by default. */
+    public void setSt4EndpointReuseEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure ST4B endpoint reuse before initialization");
+        st4EndpointReuseEnabled = enabled;
     }
 
-    public boolean isCompiledControllerGraphsEnabled() { return compiledControllerGraphsEnabled; }
-
-    /** Configure before initialization; unsupported or observed stacks retain both full refreshes. */
-    public void setElectricalEndpointPreparationEnabled(boolean enabled) {
-        if (previous != null) throw new IllegalStateException("Configure endpoint preparation before initialization");
-        electricalEndpointPreparationEnabled = enabled;
-    }
-
-    public long getElectricalEndpointPreparationCount() { return electricalEndpointPreparationCount; }
-
-    /** Select before initialization; false retains ST4B's live expression binding. */
-    public void setCompiledSt4bBindingsEnabled(boolean enabled) {
-        if (previous != null) throw new IllegalStateException("Configure ST4B bindings before initialization");
-        compiledSt4bBindingsEnabled = enabled;
-    }
-
-    public boolean isCompiledSt4bBindingsEnabled() { return compiledSt4bBindingsEnabled; }
-
-    /** Select before initialization; false retains the ordinary local controller evaluator. */
-    public void setCompiledLocalSt1Enabled(boolean enabled) {
-        if(previous!=null)throw new IllegalStateException("Select the local evaluator before initialization");
-        compiledLocalSt1Enabled=enabled;
-    }
-
+    public boolean isSt4EndpointReuseEnabled() { return st4EndpointReuseEnabled; }
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
-
-    /** Select before initialization; false preserves the network's configured coordinates. */
-    public void setUseRectangularNetworkVoltage(boolean enabled) {
-        if (previous != null) throw new IllegalStateException("Select network coordinates before initialization");
-        useRectangularNetworkVoltage = enabled;
-    }
-
-    public boolean isUseRectangularNetworkVoltage() { return useRectangularNetworkVoltage; }
-
-    /** Configure compiled child-output reuse before the controller plans are bound. */
-    public void setPreparedControllerOutputReuseEnabled(boolean enabled) {
-        if (previous != null) throw new IllegalStateException("Configure controller output reuse before initialization");
-        preparedControllerOutputReuseEnabled = enabled;
-    }
-
-    /** Configure dependency scheduling for pure child graphs before initialization. */
-    public void setNestedControllerOutputSchedulingEnabled(boolean enabled) {
-        if (previous != null) throw new IllegalStateException("Configure nested output scheduling before initialization");
-        nestedControllerOutputSchedulingEnabled = enabled;
-    }
-
     /** Configure before initialization; changing the boundary requires new derivative history. */
     public void setMachineMeasurementStage(MachineMeasurementStage stage) {
         if (previous != null) throw new IllegalStateException("Configure machine measurement stage before initialization");
@@ -283,6 +293,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     public MachineMeasurementStage getMachineMeasurementStage() { return machineMeasurementStage; }
+
+
 
     /**
      * Opt in to using the preceding solved endpoint for ordinary-step derivatives.
@@ -311,17 +323,18 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public void notifyDiscontinuity() { inputDiscontinuity = true; }
 
     @Override public boolean initialization() {
-        machines.clear(); machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
-        electricalEndpointEligible.clear(); electricalEndpointPreparationCount=0;
+        machines.clear();
+        electricalEndpointEligible.clear(); electricalEndpointPreparationCount=0; machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
         localSt1Controllers.clear();
         participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); extendedStack=false;
         previous = null; wasActive = null; inputDiscontinuity = false;
         networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
         requireStep(fixedStep);
+        validateSubstepTargets();
         validateModels();
         if (!super.initialization()) return false;
-        if (useRectangularNetworkVoltage) dstabAlgo.getNetwork().setPolarCoordinate(false);
+        dstabAlgo.getNetwork().setPolarCoordinate(false);
         bind();
         try {
             networkSolutionStep();
@@ -371,7 +384,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     private void validateModels() {
-        for (var bus : dstabAlgo.getNetwork().getBusList()) {
+        for (int runtimeIndex0=0; runtimeIndex0<dstabAlgo.getNetwork().getBusList().size(); runtimeIndex0++) {
+            var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex0);
             for (var device : bus.getDynamicBusDeviceList())
                 if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR)
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
@@ -428,8 +442,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if (!(controller instanceof AbstractAnnotateController c))
             throw new IllegalArgumentException("Unsupported controller " + controller.getClass());
         c.setRuntimeExpressionBindingsEnabled(runtimeControllerOptimizationEnabled);
-        c.setPreparedOutputReuseEnabled(preparedControllerOutputReuseEnabled);
-        c.setNestedOutputSchedulingEnabled(nestedControllerOutputSchedulingEnabled);
+        if(c instanceof IEEE2005ST4BExciter st4)st4.enableDirectEvaluationExperiment();
+        if(c instanceof Ieee1992PSS2AStabilizer pss)pss.enableDirectEvaluationExperiment();
         if (controller instanceof IEEE2005ST4BExciter || controller instanceof IEEE1981ST1Exciter
                 || controller instanceof Ieee1992PSS2AStabilizer) extendedStack=true;
         BooleanSupplier owner=ownerActive;
@@ -449,23 +463,10 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 block(b,wrapper.getFieldName());
             } else throw new IllegalArgumentException("Unsupported block " + wrapper.getFieldName());
         }
-        if (compiledControllerGraphsEnabled && runtimeControllerOptimizationEnabled
-                && (controller.getClass() == IEEE1981ST1Exciter.class
-                    || (compiledSt4bBindingsEnabled && controller.getClass() == IEEE2005ST4BExciter.class)
-                    || controller.getClass() == Ieee1992PSS2AStabilizer.class)) {
-            try { c.compileRuntimePlan(); }
-            catch (com.interpss.common.exp.InterpssException failure) {
-                throw new IllegalStateException("Cannot compile controller graph " + c.getId(), failure);
-            }
-            if (controller.getClass() == IEEE2005ST4BExciter.class) {
-                long generation=c.getRuntimeGeneration();
-                attachmentsUnchanged.add(()->c.getRuntimeGeneration()==generation);
-            }
-        }
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
                     states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled,
-                    runtimeControllerOptimizationEnabled && compiledLocalSt1Enabled));
+                    getSt1Substeps(st1.getMachine().getId()),this::localStoreEnabled));
             states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;
@@ -496,7 +497,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     private void bind() {
-        for (var bus:dstabAlgo.getNetwork().getBusList()) {
+        for (int runtimeIndex1=0; runtimeIndex1<dstabAlgo.getNetwork().getBusList().size(); runtimeIndex1++) {
+            var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex1);
 
             for (var gen:bus.getContributeGenList()) {
                 if (!bus.isActive() || !gen.isActive()) {
@@ -550,7 +552,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     state(s::getPsiq11,s::setPsiq11,()->s.captureSalientElectricalState().dx5Psiq11());
                 }
                 controller(m.getExciter()); controller(m.getGovernor()); controller(m.getStabilizer());
-                electricalEndpointEligible.add(endpointEligibility(m, exciter, governor, stabilizer));
+                electricalEndpointEligible.add(endpointEligibility(m,exciter,governor,stabilizer));
             }
         }
         previous=new double[states.size()];
@@ -572,7 +574,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private void evaluate() throws DStabSimuException { evaluate(false); }
 
     private void evaluate(boolean initialEndpoint) throws DStabSimuException {
-        evaluate(initialEndpoint, false);
+        evaluate(initialEndpoint,false);
     }
 
     private BooleanSupplier endpointEligibility(MachineImpl machine, Object exciter, Object governor, Object stabilizer) {
@@ -585,11 +587,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             return ()->false;
         BooleanSupplier exciterReady;
         if (exciter instanceof IEEE2005ST4BExciter st4)
-            exciterReady=st4::supportsElectricalEndpointPreparation;
+            exciterReady=frozenControllerReady(st4, true);
         else if (exciter instanceof IEEE1981ST1Exciter st1) {
             var local=localSt1Controllers.stream().filter(c->c.model==st1).findFirst().orElse(null);
             if(local==null)return ()->false;
-            exciterReady=()->local.lastAdvanceCompiled && !st1.eNotificationRequired();
+            BooleanSupplier ready=frozenControllerReady(st1,false);
+            exciterReady=()->local.wasActive && localStoreEnabled()
+                    && ready.getAsBoolean();
         } else return ()->false;
         return ()->{
             if (!exciterReady.getAsBoolean() || machine.eNotificationRequired()
@@ -598,11 +602,29 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             if (governor instanceof PsseGgov1Governor g && (g.eNotificationRequired()
                     || g.getData().getClass()!=org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData.class))return false;
             if (stabilizer instanceof Ieee1992PSS2AStabilizer pss) {
-                if (!pss.hasCompiledStageEvaluator() || !pss.isCompiledOutputSchedulingEnabled()
-                        || pss.eNotificationRequired()
+                if (pss.eNotificationRequired()
                         || pss.getData().getClass()!=org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizerData.class)return false;
                 int first=pss.getData().getIcs1(), second=pss.getData().getIcs2();
                 if (first==4 || second==4 || first==6 || second==6)return false;
+            }
+            return true;
+        };
+    }
+
+    /** Experimental guard for the pinned direct-controller implementations. */
+    private BooleanSupplier frozenControllerReady(AbstractAnnotateController controller, boolean fixedLimits) {
+        Class<?> expected=fixedLimits?IEEE2005ST4BExciter.class:IEEE1981ST1Exciter.class;
+        if(controller.getClass()!=expected || controller.getFieldWrapperList()==null)return ()->false;
+        var wrappers=java.util.List.copyOf(controller.getFieldWrapperList());
+        Object[] fields=new Object[wrappers.size()];
+        for(int i=0;i<fields.length;i++)fields[i]=wrappers.get(i).getField();
+        return ()->{
+            if(controller.eNotificationRequired() || controller.getFieldWrapperList().size()!=wrappers.size())return false;
+            for(int i=0;i<fields.length;i++) {
+                if(controller.getFieldWrapperList().get(i)!=wrappers.get(i) || wrappers.get(i).getField()!=fields[i])return false;
+                if(fixedLimits && fields[i] instanceof com.interpss.dstab.controller.cml.field.ICMLLimitBlock block
+                        && block.getLimit()!=null && (block.getLimit().getClass()!=com.interpss.dstab.datatype.LimitExpression.class
+                        || block.getLimit().getMaxExp()!=null || block.getLimit().getMinExp()!=null))return false;
             }
             return true;
         };
@@ -617,14 +639,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         for (int i=0;i<machines.size();i++) {
             Machine m=machines.get(i);
             if (!machineActive.get(i).getAsBoolean()) continue;
-            if (prepareElectrical && extendedStack && electricalEndpointPreparationEnabled
+            if(prepareElectrical && extendedStack && electricalEndpointPreparationEnabled
                     && electricalEndpointEligible.get(i).getAsBoolean()) {
-                if (!((DynamicMachineImpl)m).nextStepElectrical(0.,DynamicSimuMethod.MODIFIED_EULER,
-                        dstabAlgo.getNetwork(),0))
+                if(!((DynamicMachineImpl)m).nextStepElectrical(0.,DynamicSimuMethod.MODIFIED_EULER,dstabAlgo.getNetwork(),0))
                     throw new DStabSimuException("Electrical endpoint preparation failed: "+m.getId());
                 electricalEndpointPreparationCount++;
                 continue;
             }
+
             if (!extendedStack) {
                 if (!m.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0))
                     throw new DStabSimuException("Derivative evaluation failed: " + m.getId());
@@ -645,10 +667,15 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                         && m.getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
                 if (held != null) held.beginFixedInputObservation();
                 try {
-                    if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
-                        throw new DStabSimuException("Exciter derivative failed: "+m.getId());
-                    if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
-                        m.setEfd(m.getExciter().getOutput(m));
+                    if (runtimeControllerOptimizationEnabled && st4EndpointReuseEnabled
+                            && m.getExciter() instanceof IEEE2005ST4BExciter st4) {
+                        m.setEfd(st4.evaluateFixedInputEndpoint(m, held != null));
+                    } else {
+                        if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
+                            throw new DStabSimuException("Exciter derivative failed: "+m.getId());
+                        if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
+                            m.setEfd(m.getExciter().getOutput(m));
+                    }
                 } finally {
                     if (held != null) held.endFixedInputObservation();
                 }
@@ -746,11 +773,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         for (var p:participants)
             if (p.wasActive) p.model.completeStaggeredStep(dt);
-        // The first pass settles the machine's electrical caches after state
-        // advancement. Fixed standard stacks can defer their controller work
-        // to the second pass; other stacks retain both complete evaluations.
-        // Renewable and grid-forming preparation remains in both passes.
-        evaluate(false, true); evaluate();
+        // Refresh model algebraic outputs/caches without advancing any state.
+        evaluate(false,true); evaluate();
         networkSolutionStep();
         networkEndpointAvailable = false;
         // Zero-time algebraic blocks (for example IEEET1 with TR=0) must report

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "description": "User-approved one-step ST1 default; explicit ten-step and per-machine options retained.",
+  "base_plugin_commit": "003d03f98203aeed8f14f9a0c9a101f5286e71cc",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st1-single-default/evidence.zip",
+  "archive_bytes": 119814,
+  "archive_sha256": "684b702f04ab17f95bdd93e9cd2c31efd7f00d11fea146526eff8c09312cb599",
+  "previous_default": 10,
+  "new_default": 1,
+  "focused_tests": {
+    "isolated": 26,
+    "worktree": 26
+  },
+  "sources": {
+    "IEEE1981ST1Exciter.java": "0ceede5046aa6906e3f0b44475082ecd62e6c7e545e9bd7ab654e883782c0734",
+    "PsseStaggeredEulerSolver.java": "31daa3a9a26047fead47ea62c4c4f70c62fb24f8b74eadf006837352ee29a605"
+  },
+  "limitations": [
+    "Accepted numerical tradeoff; no claim that one and ten steps have identical full-system trajectories.",
+    "Historical ten-step reference-response tests keep explicit ten-step settings and unchanged expected values.",
+    "No new full-system reference accuracy or warmed timing measurement.",
+    "Focused compatible dependency set used; existing full-reactor compilation limitations remain."
+  ]
+}

@@ -1,0 +1,1028 @@
+{
+  "schema": 1,
+  "reference_comparison_validity": {
+    "date": "2026-10-22",
+    "case1_reference_comparison_valid": false,
+    "reason": "Actual fault bus 7249 differs from supplied full-system reference fault bus 6307. Retained Case 1 reference errors are historical invalid calculations, not accuracy evidence.",
+    "case2_event_identity_unchanged": true,
+    "implementation_differences_still_valid": true,
+    "correction_index": "docs/benchmarks/checkpoints/network-iteration-audit-2026-10-22.json"
+  },
+  "description": "Four local ST1 steps tested; ten-step default retained. Neither count qualifies independent-reference accuracy.",
+  "baseline_evidence_index": "docs/benchmarks/checkpoints/st1-single-step-experiment-2026-10-21.json",
+  "baseline_evidence_index_sha256": "6aff67e0d52508067fd5f90c37af1c609eb05230b064e73502c92fe60fcd6a9c",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st1-four-step/evidence.zip",
+  "archive_bytes": 2861402,
+  "archive_sha256": "c477095d32c5dcfbc6b9d0de0af765116560768147908e45321d49c4ee2ef60c",
+  "protocol": {
+    "baseline_commit": "8b9c61728b26b5b5d67f556bf25255459ade4adb",
+    "changed": "Only ST1 local integration count, four instead of ten",
+    "step_s": 0.004166666666666667,
+    "network_voltage_tolerance_pu": 1e-05,
+    "logical_processors": 1,
+    "timing": "One cold correctness run per variant; not a warmed timing qualification",
+    "excluded": [
+      "uncommitted ST1 observation caches",
+      "uncommitted compact state updates"
+    ],
+    "sources": {
+      "PsseStaggeredEulerSolver.java": "3988ce23423582d9877e4c73aaf08d0b11fa1e5cb23a75731606c335ef1e8d10",
+      "St1DirectEvaluation.java": "06b8fd276d93525840409f33ca477cb4fc7e8b5743cc52070a378507a11e4cd0",
+      "SubstepExperimentRun.java": "39dc6a95570340a41f645de6191127002404e9812c880181f2cd72045c338002"
+    },
+    "overlay_source": "target/st1-substep-experiment-20261021"
+  },
+  "comparison_protocol": {
+    "samples": "All nonnegative actual samples, including both sides of each event; no angle offset fit.",
+    "reference_interpolation": "Linear within each event segment at actual physical times. At duplicated event boundaries, match ordered pre/post samples by event identity; never interpolate across jumps.",
+    "normalization": "Full ten-second reference-channel range at stored samples with 0<=time<=10; constant ranges are undefined unless error is exactly zero.",
+    "acceptance": "Voltage/P/Q prefault NRMSE<0.001; fault and postfault<0.005. Rotor full RMSE<0.01 degree, prefault maximum<0.002 degree. Failed simulation prefixes cannot qualify.",
+    "time_grid": "Reference 1 ms stored times include float accumulation. Actual network step remains 1/240 second."
+  },
+  "test_source": {
+    "path": "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/PsseSt1LocalIntegrationTest.java",
+    "sha256": "04d84417efcc447bceddd60ea95cf3b1d7fef496ffec8bbded866a513ea2a22a"
+  },
+  "focused_tests": {
+    "ten_steps": "two reference-response tests pass; lifecycle test has existing load-flow cast failure",
+    "four_steps": "two reference-response tests fail; same lifecycle failure"
+  },
+  "results": [
+    {
+      "case": 2,
+      "channels": 4501,
+      "last_times": {
+        "10": 9.999999999999753,
+        "4": 9.999999999999753
+      },
+      "reference": {
+        "10": {
+          "active_power": {
+            "full": {
+              "worst_rmse": 130.7476760884309,
+              "worst_rmse_channel": "generator_p_mw__bus_3055__id_1",
+              "worst_max_abs": 207.34170448128978,
+              "worst_max_abs_channel": "generator_p_mw__bus_3057__id_1",
+              "worst_nrmse": 0.7114457543335057,
+              "worst_nrmse_channel": "generator_p_mw__bus_3055__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 36.250241940770216,
+              "worst_rmse_channel": "generator_p_mw__bus_3113__id_1",
+              "worst_max_abs": 136.75351846512086,
+              "worst_max_abs_channel": "generator_p_mw__bus_1033__id_1",
+              "worst_nrmse": 0.6443416874313057,
+              "worst_nrmse_channel": "generator_p_mw__bus_3113__id_1",
+              "failed_channels": 196
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 137.8415743580626,
+              "worst_rmse_channel": "generator_p_mw__bus_3055__id_1",
+              "worst_max_abs": 207.34170448128978,
+              "worst_max_abs_channel": "generator_p_mw__bus_3057__id_1",
+              "worst_nrmse": 0.7500462400674914,
+              "worst_nrmse_channel": "generator_p_mw__bus_3055__id_1",
+              "failed_channels": 190
+            }
+          },
+          "bus_angle": {
+            "full": {
+              "worst_rmse": 1441.1604288892277,
+              "worst_rmse_channel": "bus_angle_deg__bus_8026",
+              "worst_max_abs": 3183.071264639669,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+              "worst_nrmse": 0.47474907740638933,
+              "worst_nrmse_channel": "bus_angle_deg__bus_8026",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 10.238391843524045,
+              "worst_rmse_channel": "bus_angle_deg__bus_3113",
+              "worst_max_abs": 20.55535752343413,
+              "worst_max_abs_channel": "bus_angle_deg__bus_3113",
+              "worst_nrmse": 0.003314939646408242,
+              "worst_nrmse_channel": "bus_angle_deg__bus_3113",
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 1519.362310095401,
+              "worst_rmse_channel": "bus_angle_deg__bus_8026",
+              "worst_max_abs": 3183.071264639669,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+              "worst_nrmse": 0.500510450123714,
+              "worst_nrmse_channel": "bus_angle_deg__bus_8026",
+              "failed_channels": 0
+            }
+          },
+          "reactive_power": {
+            "full": {
+              "worst_rmse": 158.52317972672265,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 369.7155893019667,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 280.2944190785289,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 48.2434809981629,
+              "worst_rmse_channel": "generator_q_mvar__bus_5262__id_1",
+              "worst_max_abs": 122.34190736279191,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 75.05375469975702,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7032__id_1",
+              "failed_channels": 199
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 166.54660668026042,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 369.7155893019667,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 295.4855444155346,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 199
+            }
+          },
+          "rotor_angle": {
+            "full": {
+              "worst_rmse": 102.74698007865334,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_max_abs": 159.31627328411787,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_nrmse": 0.03391612742403872,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "failed_channels": 103
+            },
+            "prefault": {
+              "worst_rmse": 4.103568315107776,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "worst_max_abs": 13.806254660114583,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "worst_nrmse": 0.001342543095754477,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "failed_channels": 103
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 108.32188988651679,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_max_abs": 159.31627328411787,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_nrmse": 0.03575636984553158,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "failed_channels": 0
+            }
+          },
+          "voltage": {
+            "full": {
+              "worst_rmse": 0.04627668805708937,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+              "worst_max_abs": 0.12671717960089623,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+              "worst_nrmse": 0.33178391276207403,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.052384588181803846,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3095",
+              "worst_max_abs": 0.12671717960089623,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+              "worst_nrmse": 0.23011220668634838,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_3095",
+              "failed_channels": 2000
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.0472786681753883,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+              "worst_max_abs": 0.09692506988312544,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3034",
+              "worst_nrmse": 0.34931233075636475,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+              "failed_channels": 2000
+            }
+          }
+        },
+        "4": {
+          "active_power": {
+            "full": {
+              "worst_rmse": 130.75901905352595,
+              "worst_rmse_channel": "generator_p_mw__bus_3055__id_1",
+              "worst_max_abs": 207.00729736877963,
+              "worst_max_abs_channel": "generator_p_mw__bus_3057__id_1",
+              "worst_nrmse": 0.7115074755403359,
+              "worst_nrmse_channel": "generator_p_mw__bus_3055__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 36.24999413684106,
+              "worst_rmse_channel": "generator_p_mw__bus_3113__id_1",
+              "worst_max_abs": 136.93272555588726,
+              "worst_max_abs_channel": "generator_p_mw__bus_1033__id_1",
+              "worst_nrmse": 0.6443372827599624,
+              "worst_nrmse_channel": "generator_p_mw__bus_3113__id_1",
+              "failed_channels": 196
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 137.85353272981735,
+              "worst_rmse_channel": "generator_p_mw__bus_3055__id_1",
+              "worst_max_abs": 207.00729736877963,
+              "worst_max_abs_channel": "generator_p_mw__bus_3057__id_1",
+              "worst_nrmse": 0.7501113099262315,
+              "worst_nrmse_channel": "generator_p_mw__bus_3055__id_1",
+              "failed_channels": 190
+            }
+          },
+          "bus_angle": {
+            "full": {
+              "worst_rmse": 1441.1777884405274,
+              "worst_rmse_channel": "bus_angle_deg__bus_8013",
+              "worst_max_abs": 3183.688303109627,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+              "worst_nrmse": 0.47470089301160606,
+              "worst_nrmse_channel": "bus_angle_deg__bus_8013",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 10.234137413879456,
+              "worst_rmse_channel": "bus_angle_deg__bus_3113",
+              "worst_max_abs": 20.54855241106637,
+              "worst_max_abs_channel": "bus_angle_deg__bus_3113",
+              "worst_nrmse": 0.003313562166651924,
+              "worst_nrmse_channel": "bus_angle_deg__bus_3113",
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 1519.3806103790234,
+              "worst_rmse_channel": "bus_angle_deg__bus_8013",
+              "worst_max_abs": 3183.688303109627,
+              "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+              "worst_nrmse": 0.5004596506804997,
+              "worst_nrmse_channel": "bus_angle_deg__bus_8013",
+              "failed_channels": 0
+            }
+          },
+          "reactive_power": {
+            "full": {
+              "worst_rmse": 158.07263542694938,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 372.47778777543647,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 280.19745599788274,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 48.24440595651643,
+              "worst_rmse_channel": "generator_q_mvar__bus_5262__id_1",
+              "worst_max_abs": 122.25309434522481,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 75.05288583367383,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7032__id_1",
+              "failed_channels": 199
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 166.07170675484602,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 372.47778777543647,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 295.3833216858083,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 199
+            }
+          },
+          "rotor_angle": {
+            "full": {
+              "worst_rmse": 102.39227979719969,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_max_abs": 158.50248416666318,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_nrmse": 0.03379904310745915,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "failed_channels": 103
+            },
+            "prefault": {
+              "worst_rmse": 4.097734552483828,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "worst_max_abs": 13.801477957172771,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "worst_nrmse": 0.0013406344939884923,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+              "failed_channels": 103
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 107.94793952112776,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_max_abs": 158.50248416666318,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "worst_nrmse": 0.03563293119815634,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+              "failed_channels": 0
+            }
+          },
+          "voltage": {
+            "full": {
+              "worst_rmse": 0.04633114346711833,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+              "worst_max_abs": 0.1267441969937667,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+              "worst_nrmse": 0.331195859274642,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.05238375444667335,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3095",
+              "worst_max_abs": 0.1267441969937667,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+              "worst_nrmse": 0.2301085442994264,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_3095",
+              "failed_channels": 2000
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.0473386346437273,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+              "worst_max_abs": 0.09689323199251254,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3034",
+              "worst_nrmse": 0.34869172714694585,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+              "failed_channels": 2000
+            }
+          }
+        }
+      },
+      "four_minus_ten": {
+        "active_power": {
+          "full": {
+            "worst_rmse": 13.31412697969073,
+            "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+            "worst_max_abs": 91.70945530409809,
+            "worst_max_abs_channel": "generator_p_mw__bus_3057__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.19054525477198628,
+            "worst_rmse_channel": "generator_p_mw__bus_1050__id_1",
+            "worst_max_abs": 1.438972914461928,
+            "worst_max_abs_channel": "generator_p_mw__bus_1033__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 14.036577067450855,
+            "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+            "worst_max_abs": 91.70945530409809,
+            "worst_max_abs_channel": "generator_p_mw__bus_3057__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "bus_angle": {
+          "full": {
+            "worst_rmse": 19.402950787242286,
+            "worst_rmse_channel": "bus_angle_deg__bus_4030",
+            "worst_max_abs": 359.99499424328604,
+            "worst_max_abs_channel": "bus_angle_deg__bus_3104",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.020241157108263387,
+            "worst_rmse_channel": "bus_angle_deg__bus_1009",
+            "worst_max_abs": 0.13811633934927414,
+            "worst_max_abs_channel": "bus_angle_deg__bus_1009",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 20.45581666413098,
+            "worst_rmse_channel": "bus_angle_deg__bus_4030",
+            "worst_max_abs": 359.99499424328604,
+            "worst_max_abs_channel": "bus_angle_deg__bus_3104",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "reactive_power": {
+          "full": {
+            "worst_rmse": 7.863100177108809,
+            "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+            "worst_max_abs": 25.380385323682447,
+            "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.09949884924009428,
+            "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+            "worst_max_abs": 0.3097589374500558,
+            "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 8.289710463758766,
+            "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+            "worst_max_abs": 25.380385323682447,
+            "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "rotor_angle": {
+          "full": {
+            "worst_rmse": 1.1963263493800211,
+            "worst_rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+            "worst_max_abs": 2.315671437480887,
+            "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.048447860231679796,
+            "worst_rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+            "worst_max_abs": 0.1585702593889522,
+            "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 1.2611390968485379,
+            "worst_rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+            "worst_max_abs": 2.315671437480887,
+            "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "voltage": {
+          "full": {
+            "worst_rmse": 0.002995880568341639,
+            "worst_rmse_channel": "bus_voltage_pu__bus_1050",
+            "worst_max_abs": 0.011901428150289162,
+            "worst_max_abs_channel": "bus_voltage_pu__bus_1070",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.00013227356695540835,
+            "worst_rmse_channel": "bus_voltage_pu__bus_1050",
+            "worst_max_abs": 0.00038550300530859616,
+            "worst_max_abs_channel": "bus_voltage_pu__bus_1050",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 0.0031581378227455606,
+            "worst_rmse_channel": "bus_voltage_pu__bus_1050",
+            "worst_max_abs": 0.011901428150289162,
+            "worst_max_abs_channel": "bus_voltage_pu__bus_1070",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        }
+      }
+    },
+    {
+      "case": 1,
+      "channels": 5191,
+      "last_times": {
+        "10": 9.999999999999753,
+        "4": 9.999999999999753
+      },
+      "reference": {
+        "10": {
+          "active_power": {
+            "full": {
+              "worst_rmse": 84.41089664614661,
+              "worst_rmse_channel": "generator_p_mw__bus_4177__id_1",
+              "worst_max_abs": 268.3855203752291,
+              "worst_max_abs_channel": "generator_p_mw__bus_1079__id_1",
+              "worst_nrmse": 0.8343499415033255,
+              "worst_nrmse_channel": "generator_p_mw__bus_7285__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 8.580993763737153,
+              "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_max_abs": 17.06908186194687,
+              "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_nrmse": 0.03595386630922884,
+              "worst_nrmse_channel": "generator_p_mw__bus_7032__id_1",
+              "failed_channels": 259
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 88.99124144058494,
+              "worst_rmse_channel": "generator_p_mw__bus_4177__id_1",
+              "worst_max_abs": 268.3855203752291,
+              "worst_max_abs_channel": "generator_p_mw__bus_1079__id_1",
+              "worst_nrmse": 0.8796242615479156,
+              "worst_nrmse_channel": "generator_p_mw__bus_7285__id_1",
+              "failed_channels": 422
+            }
+          },
+          "bus_angle": {
+            "full": {
+              "worst_rmse": 551.0556674105488,
+              "worst_rmse_channel": "bus_angle_deg__bus_5139",
+              "worst_max_abs": 1146.0609947743844,
+              "worst_max_abs_channel": "bus_angle_deg__bus_4166",
+              "worst_nrmse": 0.49859803559092675,
+              "worst_nrmse_channel": "bus_angle_deg__bus_5062",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.19997040069140107,
+              "worst_rmse_channel": "bus_angle_deg__bus_3034",
+              "worst_max_abs": 0.8402186199195807,
+              "worst_max_abs_channel": "bus_angle_deg__bus_3034",
+              "worst_nrmse": 0.00017251350910186262,
+              "worst_nrmse_channel": "bus_angle_deg__bus_3034",
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 580.9577022170935,
+              "worst_rmse_channel": "bus_angle_deg__bus_5139",
+              "worst_max_abs": 1146.0609947743844,
+              "worst_max_abs_channel": "bus_angle_deg__bus_4166",
+              "worst_nrmse": 0.5256535523009668,
+              "worst_nrmse_channel": "bus_angle_deg__bus_5062",
+              "failed_channels": 0
+            }
+          },
+          "reactive_power": {
+            "full": {
+              "worst_rmse": 48.8001538201433,
+              "worst_rmse_channel": "generator_q_mvar__bus_6149__id_1",
+              "worst_max_abs": 402.2463655358161,
+              "worst_max_abs_channel": "generator_q_mvar__bus_7400__id_6",
+              "worst_nrmse": 7007.20757731725,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 4.2179617378434395,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 9.737039306290725,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 133.71358816292565,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7288__id_1",
+              "failed_channels": 241
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 51.44799595117198,
+              "worst_rmse_channel": "generator_q_mvar__bus_6149__id_1",
+              "worst_max_abs": 402.2463655358161,
+              "worst_max_abs_channel": "generator_q_mvar__bus_7400__id_6",
+              "worst_nrmse": 7387.354285357294,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 427
+            }
+          },
+          "rotor_angle": {
+            "full": {
+              "worst_rmse": 42.345699184913414,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_max_abs": 151.4322955260776,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_nrmse": 0.03076564353138269,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "failed_channels": 333
+            },
+            "prefault": {
+              "worst_rmse": 0.5434434110591742,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+              "worst_max_abs": 1.1298755418699606,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+              "worst_nrmse": 0.0004957079067493498,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+              "failed_channels": 333
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 44.64351064483739,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_max_abs": 151.4322955260776,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_nrmse": 0.03243508457590637,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "failed_channels": 0
+            }
+          },
+          "voltage": {
+            "full": {
+              "worst_rmse": 0.09158537191536276,
+              "worst_rmse_channel": "bus_voltage_pu__bus_7249",
+              "worst_max_abs": 0.9829565313989738,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_7249",
+              "worst_nrmse": 4.018473072132496,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7249",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.0032949541145898815,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+              "worst_max_abs": 0.008202033842986234,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3120",
+              "worst_nrmse": 0.042431444534082166,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7032",
+              "failed_channels": 1649
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.09655508495844713,
+              "worst_rmse_channel": "bus_voltage_pu__bus_7249",
+              "worst_max_abs": 0.9829565313989738,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_7249",
+              "worst_nrmse": 4.23652817877459,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7249",
+              "failed_channels": 2000
+            }
+          }
+        },
+        "4": {
+          "active_power": {
+            "full": {
+              "worst_rmse": 84.50442089270943,
+              "worst_rmse_channel": "generator_p_mw__bus_4177__id_1",
+              "worst_max_abs": 274.1824272344824,
+              "worst_max_abs_channel": "generator_p_mw__bus_1079__id_1",
+              "worst_nrmse": 0.8343410125855939,
+              "worst_nrmse_channel": "generator_p_mw__bus_7285__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 8.576490978887138,
+              "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_max_abs": 17.057960977728726,
+              "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+              "worst_nrmse": 0.035954544228249695,
+              "worst_nrmse_channel": "generator_p_mw__bus_7032__id_1",
+              "failed_channels": 259
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 89.08984067599945,
+              "worst_rmse_channel": "generator_p_mw__bus_4177__id_1",
+              "worst_max_abs": 274.1824272344824,
+              "worst_max_abs_channel": "generator_p_mw__bus_1079__id_1",
+              "worst_nrmse": 0.879614847328319,
+              "worst_nrmse_channel": "generator_p_mw__bus_7285__id_1",
+              "failed_channels": 423
+            }
+          },
+          "bus_angle": {
+            "full": {
+              "worst_rmse": 551.1504761768892,
+              "worst_rmse_channel": "bus_angle_deg__bus_5139",
+              "worst_max_abs": 1144.9029123877585,
+              "worst_max_abs_channel": "bus_angle_deg__bus_4166",
+              "worst_nrmse": 0.49850185811249786,
+              "worst_nrmse_channel": "bus_angle_deg__bus_5062",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.19998621569628613,
+              "worst_rmse_channel": "bus_angle_deg__bus_3034",
+              "worst_max_abs": 0.8402186295632408,
+              "worst_max_abs_channel": "bus_angle_deg__bus_3034",
+              "worst_nrmse": 0.0001725271526310037,
+              "worst_nrmse_channel": "bus_angle_deg__bus_3034",
+              "failed_channels": 0
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 581.0576556089059,
+              "worst_rmse_channel": "bus_angle_deg__bus_5139",
+              "worst_max_abs": 1144.9029123877585,
+              "worst_max_abs_channel": "bus_angle_deg__bus_4166",
+              "worst_nrmse": 0.5255521559263381,
+              "worst_nrmse_channel": "bus_angle_deg__bus_5062",
+              "failed_channels": 0
+            }
+          },
+          "reactive_power": {
+            "full": {
+              "worst_rmse": 48.78867744883272,
+              "worst_rmse_channel": "generator_q_mvar__bus_6149__id_1",
+              "worst_max_abs": 402.24642289158925,
+              "worst_max_abs_channel": "generator_q_mvar__bus_7400__id_6",
+              "worst_nrmse": 7018.659392316397,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 4.215031574856403,
+              "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_max_abs": 9.727652645810366,
+              "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+              "worst_nrmse": 133.7165252469711,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7288__id_1",
+              "failed_channels": 241
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 51.43589720129495,
+              "worst_rmse_channel": "generator_q_mvar__bus_6149__id_1",
+              "worst_max_abs": 402.24642289158925,
+              "worst_max_abs_channel": "generator_q_mvar__bus_7400__id_6",
+              "worst_nrmse": 7399.427655086252,
+              "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+              "failed_channels": 427
+            }
+          },
+          "rotor_angle": {
+            "full": {
+              "worst_rmse": 44.185919440328426,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_max_abs": 158.14584617788103,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_nrmse": 0.0321026284315517,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "failed_channels": 333
+            },
+            "prefault": {
+              "worst_rmse": 0.5434422250329245,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+              "worst_max_abs": 1.1298779400754437,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+              "worst_nrmse": 0.0004957068249024131,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+              "failed_channels": 333
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 46.583587158289475,
+              "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_max_abs": 158.14584617788103,
+              "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "worst_nrmse": 0.03384461856838652,
+              "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "failed_channels": 0
+            }
+          },
+          "voltage": {
+            "full": {
+              "worst_rmse": 0.09158519303865752,
+              "worst_rmse_channel": "bus_voltage_pu__bus_7249",
+              "worst_max_abs": 0.9829565313986578,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_7249",
+              "worst_nrmse": 4.018465223595025,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7249",
+              "failed_channels": 0
+            },
+            "prefault": {
+              "worst_rmse": 0.003294801494879992,
+              "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+              "worst_max_abs": 0.008208448646334299,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_3120",
+              "worst_nrmse": 0.04243223547759773,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7032",
+              "failed_channels": 1651
+            },
+            "fault_and_postfault": {
+              "worst_rmse": 0.09655489637281317,
+              "worst_rmse_channel": "bus_voltage_pu__bus_7249",
+              "worst_max_abs": 0.9829565313986578,
+              "worst_max_abs_channel": "bus_voltage_pu__bus_7249",
+              "worst_nrmse": 4.236519904240392,
+              "worst_nrmse_channel": "bus_voltage_pu__bus_7249",
+              "failed_channels": 2000
+            }
+          }
+        }
+      },
+      "four_minus_ten": {
+        "active_power": {
+          "full": {
+            "worst_rmse": 9.896162960052092,
+            "worst_rmse_channel": "generator_p_mw__bus_5020__id_1",
+            "worst_max_abs": 94.48688634322494,
+            "worst_max_abs_channel": "generator_p_mw__bus_1082__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.035716241203518156,
+            "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+            "worst_max_abs": 0.07266264966665403,
+            "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 10.433160267760854,
+            "worst_rmse_channel": "generator_p_mw__bus_5020__id_1",
+            "worst_max_abs": 94.48688634322494,
+            "worst_max_abs_channel": "generator_p_mw__bus_1082__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "bus_angle": {
+          "full": {
+            "worst_rmse": 12.71580292415434,
+            "worst_rmse_channel": "bus_angle_deg__bus_5099",
+            "worst_max_abs": 359.9963047150674,
+            "worst_max_abs_channel": "bus_angle_deg__bus_3113",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.0004997898327426918,
+            "worst_rmse_channel": "bus_angle_deg__bus_1078",
+            "worst_max_abs": 0.0010206513451649357,
+            "worst_max_abs_channel": "bus_angle_deg__bus_1078",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 13.405802872958034,
+            "worst_rmse_channel": "bus_angle_deg__bus_5099",
+            "worst_max_abs": 359.9963047150674,
+            "worst_max_abs_channel": "bus_angle_deg__bus_3113",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "reactive_power": {
+          "full": {
+            "worst_rmse": 2.4167066380014957,
+            "worst_rmse_channel": "generator_q_mvar__bus_1079__id_1",
+            "worst_max_abs": 17.116518562473942,
+            "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.039002731710810846,
+            "worst_rmse_channel": "generator_q_mvar__bus_5302__id_1",
+            "worst_max_abs": 0.0786893732624776,
+            "worst_max_abs_channel": "generator_q_mvar__bus_5302__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 2.547844831965909,
+            "worst_rmse_channel": "generator_q_mvar__bus_1079__id_1",
+            "worst_max_abs": 17.116518562473942,
+            "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "rotor_angle": {
+          "full": {
+            "worst_rmse": 1.982326059630663,
+            "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+            "worst_max_abs": 6.713550651803416,
+            "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 0.000967690998000008,
+            "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+            "worst_max_abs": 0.001814610765009661,
+            "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 2.0898933809261537,
+            "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+            "worst_max_abs": 6.713550651803416,
+            "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        },
+        "voltage": {
+          "full": {
+            "worst_rmse": 0.0020236029450290023,
+            "worst_rmse_channel": "bus_voltage_pu__bus_1082",
+            "worst_max_abs": 0.01668731963800063,
+            "worst_max_abs_channel": "bus_voltage_pu__bus_1082",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "prefault": {
+            "worst_rmse": 7.794469139261698e-06,
+            "worst_rmse_channel": "bus_voltage_pu__bus_5302",
+            "worst_max_abs": 1.6920498423278474e-05,
+            "worst_max_abs_channel": "bus_voltage_pu__bus_5243",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          },
+          "fault_and_postfault": {
+            "worst_rmse": 0.0021334095967259947,
+            "worst_rmse_channel": "bus_voltage_pu__bus_1082",
+            "worst_max_abs": 0.01668731963800063,
+            "worst_max_abs_channel": "bus_voltage_pu__bus_1082",
+            "worst_nrmse": null,
+            "worst_nrmse_channel": null,
+            "failed_channels": 0
+          }
+        }
+      },
+      "reference_comparison_validity": "WITHDRAWN_WRONG_FAULT_BUS"
+    }
+  ],
+  "retained_dependencies": [
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "4343ca1f57c7a5618cb8ddeba789916e39d90972abb0c319827b6bf8ef131feb"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405002,
+      "sha256": "1da9f8426f7c77041d32e4c461231de3f6490606f84f6e3a3535ab70af241c07"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
+      "bytes": 221533,
+      "sha256": "b363f633eafd06b48949ebbdae6e55d3b501fcf265d43ea0b5f4e3f912433bfe"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case1-substeps4/inputs/Texas2k_series24_case1_2016summerpeak/Texas2k_series24_case1_2016summerPeak.RAW",
+      "bytes": 2830920,
+      "sha256": "ccb5daa9391618c0546e910a4e5eade43446b37b29b1bd3ecb1e69a4e02ecb8b"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "72215fb94324b25885b85f9819ba297b8f43231af2bb8fb41f319008e119eba7"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "bytes": 10197449,
+      "sha256": "6ea78a63dc9de2ae0aa320d8611fd3427f29907eebcf772446afdc592bac5e0a"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
+      "bytes": 221411,
+      "sha256": "4e37dadd5e5eb76eaeb3dc1399851a83d909cf90eca066ab985c71bfd2e7aeb8"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "path": "target/st1-four-step-experiment-20261021/case2-substeps4/inputs/Texas2k_series24_case2_2016lowload/Texas2k_series24_case2_2016lowload.RAW",
+      "bytes": 2830917,
+      "sha256": "0ccfe235aae428ab47a1a92f4901a2517008db3f6745422b0131535f38d5a89d"
+    }
+  ],
+  "baseline_evidence_index_sha256_at_capture": "d7fb2e05d0168bc51edbf1f6734ba6f176797e7b82e9899de3d8badd4d4312fb"
+}

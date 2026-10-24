@@ -281,6 +281,8 @@ import org.interpss.core.dstab.Esac1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.PsseSt1LocalIntegrationTest;
+import org.interpss.core.dstab.DynamicParameterValidationTest;
+import org.interpss.dstab.control.exc.ieee.y1981.st1.St1InputEquationsTest;
 import org.interpss.core.dstab.PsseStaticCurrentLoadVoltageCurveTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
@@ -327,6 +329,7 @@ import org.interpss.core.dstab.Ieeeg1dPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss2aIndependentSmibConformanceTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aScalarPreparationTest;
 import org.interpss.core.dstab.Pss1aPowerWorldPlaybackConformanceTest;
 import org.interpss.core.dstab.Pss1aPowerWorldActiveConformanceTest;
 import org.interpss.core.dstab.Wtdtb1PowerWorldPlaybackConformanceTest;
@@ -710,6 +713,7 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.NativeFloatCsvCodecTest.class,
 	Esst4bAndesSmibConformanceTest.class,
 	Esst4bIndependentSmibConformanceTest.class,
+	org.interpss.core.dstab.St4EndpointReuseTest.class,
 	Esac5aAndesSmibConformanceTest.class,
 	Esac5aIndependentSmibConformanceTest.class,
 	Esac6aIndependentSmibConformanceTest.class,
@@ -749,6 +753,10 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.Esst1aEventSideSmibTest.class,
 	org.interpss.core.dstab.EventSideTrajectorySmibTest.class,
 	PsseSt1LocalIntegrationTest.class,
+	DynamicParameterValidationTest.class,
+    St1InputEquationsTest.class,
+    org.interpss.dstab.control.exc.ieee.y1981.st1.St1BoundaryReuseTest.class,
+    org.interpss.dstab.control.exc.ieee.y1981.st1.St1FixedScheduleTest.class,
 	PsseStaticCurrentLoadVoltageCurveTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,
@@ -797,6 +805,7 @@ import org.junit.platform.suite.api.Suite;
 	H6eIndependentSmibConformanceTest.class,
 	Hyg3IndependentSmibConformanceTest.class,
 	Pss2aIndependentSmibConformanceTest.class,
+    Pss2aScalarPreparationTest.class,
 	Pss1aPowerWorldPlaybackConformanceTest.class,
 	Pss1aPowerWorldActiveConformanceTest.class,
 	Wtdtb1PowerWorldPlaybackConformanceTest.class,

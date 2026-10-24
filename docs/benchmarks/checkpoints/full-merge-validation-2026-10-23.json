@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "run_id": "merge-gate-20261023-f",
+  "validation_gate_passed": false,
+  "merged": false,
+  "commits_created": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-full-merge-validation-f/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 133985,
+    "sha256": "75532245a379de6cd0698a858287ff4b7244071f4a61b7b5870167b0b02aaaf0"
+  },
+  "evidence": {
+    "bytes": 20605917,
+    "sha256": "47b9d0e31cc08c48d81997846c6e7ace736acf8bb6f698bef0b98030df200c7b"
+  },
+  "tests": {
+    "core": {
+      "tests": 3096,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ipss.plugin.core": {
+      "tests": 435,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.plugin.3phase": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    "ipss.test.plugin.core": {
+      "tests": 3262,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 54
+    }
+  },
+  "offline_tools": {
+    "tests": 394,
+    "exit_code": 0
+  },
+  "tested_sources_unchanged": true,
+  "base_revisions": {
+    "core": "46c8576e617fc0427dc42d3de7f9cafe64e38ff6",
+    "plugin": "f18fd5ee8aaf28ce3ce6f0d6ebb219d58ad34be6"
+  },
+  "main_branch_heads": {
+    "core": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+    "plugin": "74985520add5240245f79e77e40f2fbd527cdd79"
+  },
+  "remaining_failures": [
+    {
+      "classname": "org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest",
+      "name": "testP4_ReliCapSvedala_AclfVsSv",
+      "type": "failure"
+    },
+    {
+      "classname": "org.interpss.core.adapter.matpower.MatpowerCase8387PegaseTest",
+      "name": "testCase8387PegasePqNonDivergentNormalControlPowerFlow",
+      "type": "failure"
+    },
+    {
+      "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+      "name": "allSixCaseStacksInitializeAndHold",
+      "type": "failure"
+    }
+  ],
+  "documentation": "docs/benchmarks/full-merge-validation-2026-10-23.md"
+}
