@@ -14,8 +14,8 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
     Texas2kNumericalOptions {
         if (!Double.isFinite(networkTolerance) || networkTolerance <= 0.)
             throw new IllegalArgumentException("Network tolerance must be finite and positive");
-        if (minimumIterations < 1 || minimumIterations > 500)
-            throw new IllegalArgumentException("Minimum network iterations must be between 1 and 500");
+        if (minimumIterations < 1 || minimumIterations > org.interpss.fadapter.psse.PsseDStabSolver.DEFAULT_MAXIMUM_NETWORK_ITERATIONS)
+            throw new IllegalArgumentException("Minimum network iterations must be between 1 and 50");
         java.util.Objects.requireNonNull(norm);
         java.util.Objects.requireNonNull(machineStage);
         if (!rectangularNetworkVoltage)

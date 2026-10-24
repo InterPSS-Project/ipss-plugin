@@ -50,7 +50,7 @@ public final class Texas2kReferenceRunner {
         status.put("event_key", args[1]);
         status.put("integration_method", "modified-euler");
         numericalOptions.report(status);
-        status.put("network_max_iterations", 500);
+        status.put("network_max_iterations", PsseDStabSolver.DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
         double reached = 0.;
         long started = System.nanoTime();
         try {
@@ -186,7 +186,7 @@ public final class Texas2kReferenceRunner {
                 status.put("solver_integration_scheme", globalScheme);
                 if (globalScheme.equals("STAGGERED_EULER")) {
                     algo.setSolver(new PsseStaggeredEulerSolver(algo) {
-                        { numericalOptions.configure(this); setMaxIterationTimes(500); }
+                        { numericalOptions.configure(this); setMaxIterationTimes(DEFAULT_MAXIMUM_NETWORK_ITERATIONS); }
                         @Override public boolean hasDynEvent(double t) {
                             for (var e : algo.getNetwork().getDynamicEventList()) {
                                 double boundary = e.isActive() ? e.getStartTimeSec()+e.getDurationSec()
@@ -208,7 +208,7 @@ public final class Texas2kReferenceRunner {
                         if (numericalOptions.reuseEndpoint() || plan.has("machine_measurement_stage"))
                             throw new IllegalArgumentException("Endpoint reuse and machine measurement stage require the staggered solver");
                         status.put("machine_measurement_stage", "MODIFIED_EULER_STAGES");
-                        converge_tol = numericalOptions.networkTolerance(); setMaxIterationTimes(500);
+                        converge_tol = numericalOptions.networkTolerance(); setMaxIterationTimes(DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
                         setVoltageConvergenceNorm(numericalOptions.norm());
                         setMinimumNetworkIterations(numericalOptions.minimumIterations());
                     }

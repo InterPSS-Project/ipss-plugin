@@ -86,7 +86,7 @@ public class Ieee39PsseBenchmarkTest {
         Files.writeString(out.resolve("interpss-powerflow.csv"),pf);
         final java.io.Writer[] output = new java.io.Writer[1];
         algo.setSolver(staggered ? new PsseStaggeredEulerSolver(algo) {
-            { setNetworkSolutionTolerance(NETWORK_TOLERANCE); setMaxIterationTimes(100); }
+            { setNetworkSolutionTolerance(NETWORK_TOLERANCE); setMaxIterationTimes(50); }
 
             @Override public boolean networkSolutionStep() throws DStabSimuException {
                 if (!super.networkSolutionStep())
@@ -104,7 +104,7 @@ public class Ieee39PsseBenchmarkTest {
                 catch (Exception e) { throw new DStabSimuException(e.toString()); }
             }
         } : new DStabSolverImpl(algo) {
-            { converge_tol = NETWORK_TOLERANCE; setMaxIterationTimes(100); }
+            { converge_tol = NETWORK_TOLERANCE; setMaxIterationTimes(50); }
 
             @Override public boolean networkSolutionStep() throws DStabSimuException {
                 if (!super.networkSolutionStep())
@@ -146,7 +146,7 @@ public class Ieee39PsseBenchmarkTest {
         Files.writeString(out.resolve("interpss-settings.json"), new com.google.gson.GsonBuilder()
                 .setPrettyPrinting().create().toJson(Map.of(
                         "step_s", step, "network_tolerance", NETWORK_TOLERANCE,
-                        "network_max_iterations", 100, "frequency_filter_s", .05,
+                        "network_max_iterations", 50, "frequency_filter_s", .05,
                         "stop_s", stop, "scenario", scenario,
                         "fault_start_s", faultStart, "fault_clear_s", faultClear,
                         "integration_method", staggered ? "psse-staggered-euler" : "modified-euler")) + "\n");

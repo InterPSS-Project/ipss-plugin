@@ -35,6 +35,11 @@ public class PsseNetworkConvergenceTest {
     }
 
     @Test void realIterationExhaustionStopsBeforeIntegrationAndClockAdvance() {
+        assertIterationExhaustionStops(false);
+        assertIterationExhaustionStops(true);
+    }
+
+    private void assertIterationExhaustionStops(boolean importedSolver) {
         var physical=DStabObjectFactory.createDStabilityNetwork();
         var bus=DStabObjectFactory.createDStabBus("UnsettledBus",physical).orElseThrow();
         AtomicInteger calls=new AtomicInteger();
@@ -50,21 +55,28 @@ public class PsseNetworkConvergenceTest {
         algorithm.setDisableDynamicEvent(true);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(.01);
-        var solver=new DStabSolverImpl(algorithm);
-        solver.setMaxIterationTimes(3);
+        var solver=importedSolver?new PsseDStabSolver(algorithm):new DStabSolverImpl(algorithm);
+        if(!importedSolver)solver.setMaxIterationTimes(3);
         algorithm.setSolver(solver);
         assertFalse(algorithm.solveDEqnStep(true));
-        assertEquals(3,calls.get(),"Exhaustion must stop at the first network stage");
+        assertEquals(importedSolver?50:3,calls.get(),"Exhaustion must stop at the first network stage");
         assertEquals(0,algorithm.getSimuTime(),0);
         assertFalse(network.isDStabNetInitialized());
     }
 
-    @Test void psseIterationCeilingHasHeadroomAndRemainsCallerConfigurable() {
+    @Test void importedSolverDefaultsUseFiftyIterations() {
         var algorithm=DStabObjectFactory.createDynamicSimuAlgorithm(
                 DStabObjectFactory.createDStabilityNetwork());
         var solver=new PsseDStabSolver(algorithm);
-        assertEquals(500,solver.getMaxIterationTimes());
+        assertEquals(50,solver.getMaxIterationTimes());
+        assertEquals(50,new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm).getMaxIterationTimes());
         solver.setMaxIterationTimes(37);
         assertEquals(37,solver.getMaxIterationTimes());
+        for(var bounded:new PsseDStabSolver[]{solver,new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm)}) {
+            for(int invalid:new int[]{0,-1,51,100,500})
+                assertThrows(IllegalArgumentException.class,()->bounded.setMaxIterationTimes(invalid));
+            bounded.setMaxIterationTimes(50);
+            assertEquals(50,bounded.getMaxIterationTimes());
+        }
     }
 }

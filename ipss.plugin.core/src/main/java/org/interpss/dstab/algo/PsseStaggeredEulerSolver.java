@@ -264,7 +264,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public PsseStaggeredEulerSolver(DynamicSimuAlgorithm algo) {
         super(algo);
         setNetworkSolutionTolerance(1.e-6);
-        setMaxIterationTimes(100);
+        setMaxIterationTimes(DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
     }
 
     /** Select before initialization; the interpreter remains available for numerical controls. */

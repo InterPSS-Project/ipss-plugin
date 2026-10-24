@@ -105,7 +105,7 @@ public class AllsymEquilibriumTest {
             Texas2kPowerflowPreparation.solve(lf, raw, status);
             var solver = new PsseStaggeredEulerSolver(algo);
             solver.setNetworkSolutionTolerance(1.e-5);
-            solver.setMaxIterationTimes(500);
+            solver.setMaxIterationTimes(org.interpss.fadapter.psse.PsseDStabSolver.DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
             solver.setMinimumNetworkIterations(2);
             solver.setSt1Substeps(1);
             algo.setSolver(solver);

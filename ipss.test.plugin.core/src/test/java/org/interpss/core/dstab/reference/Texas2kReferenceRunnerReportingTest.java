@@ -52,7 +52,10 @@ class Texas2kReferenceRunnerReportingTest {
             var plan = new JsonObject(); plan.addProperty("network_voltage_tolerance", tolerance);
             assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(plan));
         }
-        for (int iterations : new int[]{0, -1, 501}) {
+        var maximumIterations = new JsonObject();
+        maximumIterations.addProperty("minimum_network_iterations", 50);
+        assertEquals(50, Texas2kNumericalOptions.read(maximumIterations).minimumIterations());
+        for (int iterations : new int[]{0, -1, 51, 501}) {
             var plan = new JsonObject(); plan.addProperty("minimum_network_iterations", iterations);
             assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(plan));
         }

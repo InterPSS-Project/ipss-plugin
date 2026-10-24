@@ -30,6 +30,7 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
  * integration step.</p>
  */
 public class PsseDStabSolver extends DStabSolverImpl {
+    public static final int DEFAULT_MAXIMUM_NETWORK_ITERATIONS = 50;
     private double parameterTimeStepMultiple = 2.0;
     private DynamicParameterValidator.Report parameterValidationReport;
 
@@ -59,12 +60,16 @@ public class PsseDStabSolver extends DStabSolverImpl {
             PsseDStabSolver.class.getName() + ".compensation";
     public PsseDStabSolver(DynamicSimuAlgorithm algorithm) {
         super(algorithm);
-        // Current-source networks can require substantially more than the
-        // legacy 20 iterations at a fault boundary (280 observed on Texas2k).
-        // This is only an iteration ceiling: retain the core voltage tolerance
-        // and stop as soon as convergence is established. Callers may override
-        // it through their configured solver before initialization.
-        setMaxIterationTimes(500);
+        // Bound network work while retaining the configured convergence test.
+        // Exhaustion is a failed solve, never acceptance of the last iterate.
+        setMaxIterationTimes(DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
+    }
+
+    /** Imported-case network solves have a bounded iteration budget. */
+    @Override public void setMaxIterationTimes(int maximum) {
+        if (maximum < 1 || maximum > DEFAULT_MAXIMUM_NETWORK_ITERATIONS)
+            throw new IllegalArgumentException("Maximum network iterations must be between 1 and 50");
+        super.setMaxIterationTimes(maximum);
     }
 
     @Override public boolean networkSolutionStep() throws DStabSimuException {

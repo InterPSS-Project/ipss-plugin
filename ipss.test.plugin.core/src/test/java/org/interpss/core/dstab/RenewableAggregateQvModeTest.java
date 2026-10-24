@@ -465,7 +465,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         var network = buildNetwork(count, .20, profile, data);
         var algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
         var solver = new DStabSolverImpl(algorithm);
-        solver.setMaxIterationTimes(500);
+        solver.setMaxIterationTimes(50);
         algorithm.setSolver(solver);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(step);
@@ -762,7 +762,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
             double simulationStep, PlantProfile profile, double endTime,
             Regca1Data converterData) throws Exception {
         return run(plantCount, withFault, gridReactance, simulationStep, profile,
-                endTime, converterData, 500);
+                endTime, converterData, 50);
     }
 
     private static RunResult run(int plantCount, boolean withFault, double gridReactance,
