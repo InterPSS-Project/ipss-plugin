@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "status": "closed-case-bitwise-equivalent-experiments",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-row-kernel-study/manifest.json",
+  "manifest_sha256": "5e9afb20f20eb6e6e149b5c10702ae1952b8955f5582d6e1ba1b3f892b603895",
+  "production_promoted": false,
+  "goal_complete": false,
+  "whole_run_target_seconds": 20,
+  "maximum_recorded_difference": 0,
+  "reference_trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7",
+  "network": {
+    "step_seconds": 0.004166666666666667,
+    "tolerance_pu": 0.0001,
+    "maximum_allowed_iterations": 50,
+    "calls": 7200,
+    "iterations": 130955,
+    "observed_maximum": 27
+  },
+  "numerical_row_checks": 64416,
+  "results": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-parallel-rows-full-20261024-1",
+      "whole_seconds": 108.0107861,
+      "dynamic_seconds": 95.1175543,
+      "network_seconds": 75.4958759,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-parallel-spin-full-20261024-1",
+      "whole_seconds": 98.5831485,
+      "dynamic_seconds": 85.7606185,
+      "network_seconds": 66.5270325,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-st4-20261024-1/measured-direct",
+      "whole_seconds": 79.8556347,
+      "dynamic_seconds": 72.4107574,
+      "network_seconds": 58.8528287,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-st4-20261024-1/measured-indexed",
+      "whole_seconds": 83.1862143,
+      "dynamic_seconds": 79.1863042,
+      "network_seconds": 62.1798985,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-st4-20261024-1/warmup-direct",
+      "whole_seconds": 90.7791168,
+      "dynamic_seconds": 77.8726348,
+      "network_seconds": 61.7541876,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-static-row-paired-20261024-1/measured-indexed",
+      "whole_seconds": 99.8178722,
+      "dynamic_seconds": 97.6710291,
+      "network_seconds": 76.1841987,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-static-row-paired-20261024-1/measured-snapshot",
+      "whole_seconds": 77.7374439,
+      "dynamic_seconds": 72.9911552,
+      "network_seconds": 56.0377352,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-static-row-paired-20261024-1/warmup-indexed",
+      "whole_seconds": 94.1049329,
+      "dynamic_seconds": 81.3001653,
+      "network_seconds": 62.1623552,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-static-row-paired-20261024-1/warmup-snapshot",
+      "whole_seconds": 81.2028718,
+      "dynamic_seconds": 75.6474762,
+      "network_seconds": 58.471846,
+      "samples": 2403,
+      "bus_channels": 6717,
+      "selected_machine_channels": 15,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    }
+  ]
+}

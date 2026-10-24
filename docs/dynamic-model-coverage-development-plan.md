@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+Additional row-kernel experiments retain every ordinary full-case measurement.
+Four-worker dispatch is slower than the scalar prototype, and a direct ST4
+timing pair does not establish a stable speedup. A static-row snapshot probe
+passes 64,416 raw-bit comparisons; full runs and timing evidence are retained
+in the [row-kernel checkpoint](benchmarks/texas7k-row-kernel-study-2026-10-24.md).
+No experimental runtime path is promoted, and the 20-second objective remains open.
+
 A separate indexed-current experiment preserves all recorded full-case values
 and reduces one warmed in-process measurement from 106.459 to 77.337 seconds.
 It remains an isolated prototype; the 20-second objective is still open.
