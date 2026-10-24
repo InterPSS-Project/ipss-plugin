@@ -14,8 +14,14 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  * Seven-state PLNTBU1 plant controller shared by the associated REAXB devices.
  * Outputs are incremental commands on the system MVA base.
  */
-public final class Plntbu1Model implements ICMLStateProvider {
+public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess {
     private static final double EPS = 1.0e-12;
+    private static final String[] STATE_NAMES={"Voltage measurement filter","Reactive power measurement filter",
+            "Reactive power PI integrator","Reactive power lead-lag state","Real power measurement filter",
+            "Real power PI integrator","Power controller output lag"};
+    private final org.interpss.dstab.control.util.IntegrationStateMonitor monitor=
+            new org.interpss.dstab.control.util.IntegrationStateMonitor(STATE_NAMES);
+    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.NOT_EVALUATED;
 
     private final Plntbu1Data data;
     private final BaseDStabBus<?, ?> attachmentBus;
@@ -112,8 +118,12 @@ public final class Plntbu1Model implements ICMLStateProvider {
         predictorStart = null;
         predictorRates = null;
         initialized = true;
+        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.INITIALIZATION;
+        rates(state(),input);
         return finiteState();
     }
+    /** Start a new simulation operating point, including shared attached units. */
+    public boolean reinitialize(){initialized=false;return initialize();}
 
     /** Modified-Euler stage; repeated calls from other turbines are idempotent. */
     public boolean step(double dt, int flag) {
@@ -123,6 +133,8 @@ public final class Plntbu1Model implements ICMLStateProvider {
         if (flag == 1 && predictorStart == null) return true;
         if (!refreshBoundary()) return false;
         Measurement endpoint = measurement();
+        stage=flag==0?org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR:
+                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
         if (flag == 0) {
             predictorStart = state();
             predictorRates = rates(predictorStart, endpoint);
@@ -200,8 +212,12 @@ public final class Plntbu1Model implements ICMLStateProvider {
         double pPi = clamp(data.activeProportionalGain() * pError + state.activeIntegral(),
                 data.activeOutputMinimum(), data.activeOutputMaximum());
         double pLagRate = lagRate(pPi, state.activeLagState(), data.activeOutputLagTime());
-        return new Rates(voltageRate, reactiveRate, qIntegralRate, qLeadLagRate,
-                activeRate, pIntegralRate, pLagRate);
+        monitor.begin(stage);
+        monitor.record(0,state.voltageMeasurement(),voltageRate);monitor.record(1,state.reactiveMeasurement(),reactiveRate);
+        monitor.record(2,state.reactiveIntegral(),qIntegralRate);monitor.record(3,state.reactiveLeadLagState(),qLeadLagRate);
+        monitor.record(4,state.activeMeasurement(),activeRate);monitor.record(5,state.activeIntegral(),pIntegralRate);
+        monitor.record(6,state.activeLagState(),pLagRate);
+        return new Rates(voltageRate, reactiveRate, qIntegralRate, qLeadLagRate,activeRate, pIntegralRate, pLagRate);
     }
 
     private State withBypasses(State state, Measurement input) {
@@ -235,7 +251,7 @@ public final class Plntbu1Model implements ICMLStateProvider {
                     - state.reactiveMeasurement() + reactiveAuxiliary;
             default -> throw new IllegalStateException("invalid PLNTBU1 RefFlag");
         };
-        return clamp(deadband(raw, data.reactiveDeadbandLower(),
+        return clamp(deadband(roundoffZero(raw), data.reactiveDeadbandLower(),
                 data.reactiveDeadbandUpper()), data.reactiveErrorMinimum(),
                 data.reactiveErrorMaximum());
     }
@@ -243,15 +259,19 @@ public final class Plntbu1Model implements ICMLStateProvider {
     private double activeError(double measuredPower, double frequency) {
         double frequencyContribution = 0.0;
         if (data.frequencyFlag() == 1) {
-            double deviation = deadband(frequency - frequencyReference,
+            double deviation = deadband(roundoffZero(frequency - frequencyReference),
                     data.frequencyDeadbandLower(), data.frequencyDeadbandUpper());
             frequencyContribution = -(deviation >= 0.0
                     ? data.overFrequencyDroop() : data.underFrequencyDroop()) * deviation;
         }
-        return clamp(activeReference - measuredPower + activeAuxiliary
-                        + frequencyContribution,
+        return clamp(roundoffZero(activeReference - measuredPower + activeAuxiliary
+                        + frequencyContribution),
                 data.activeErrorMinimum(), data.activeErrorMaximum());
     }
+    // Network reconstruction can leave identity residuals at double roundoff.
+    // Clear them before high-gain control; physical perturbations above the
+    // model's existing numerical-zero threshold remain fully effective.
+    private static double roundoffZero(double value){return Math.abs(value)<=EPS?0:value;}
 
     private void updateOutputs() {
         Measurement input = measurement();
@@ -361,6 +381,8 @@ public final class Plntbu1Model implements ICMLStateProvider {
     }
 
     public Plntbu1Data getData() { return data; }
+    @Override public Map<String,Double> getIntegrationStates(){return getNamedStates();}
+    @Override public org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){return monitor.snapshot();}
     public double getReactiveOutput() { return reactiveOutput; }
     public double getActiveOutput() { return activeOutput; }
     public double getVoltageMeasurement() { return voltageMeasurement; }

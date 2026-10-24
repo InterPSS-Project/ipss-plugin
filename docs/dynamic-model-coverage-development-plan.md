@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+All 2,705 supplied Texas7k dynamic records now attach. Power flow converges,
+the complete stack holds a ten-second all-bus/controller-state equilibrium at
+production network tolerance, and a five-cycle three-phase fault completes.
+Native operating-point and fault discriminators establish the torque-record
+compatibility and generic auxiliary-controller interface, including machine-base
+conversion. See the [complete case scope and evidence](benchmarks/texas7k-complete-preparation-2026-10-24.md).
+
+- [x] Resolve the 18 torque records without sorting or changing source curves.
+- [x] Attach all 15 auxiliary records to their actual converter/electrical hosts.
+- [x] Verify full import, sidecar processing, 9,496 state coordinates and a five-cycle fault.
+- [ ] Independently qualify full-network disturbance trajectories and resolve the previously recorded EXPIC1 event phases.
+
+The following startup checkpoint records the earlier partial state:
+
 Texas7k's attached stack now holds a ten-second all-bus equilibrium after
 correcting native-record REPCA1 lower-deadband interpretation and EXAC2
 field-current base consistency. EXPIC1 is loadable through its exact record

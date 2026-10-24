@@ -5,22 +5,43 @@ import java.util.Map;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Two-axis lag translating plant-level auxiliary commands to a wind controller. */
-public final class Reaxbu1Model implements ICMLStateProvider {
+public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess {
     private static final double EPS = 1.0e-10;
     private final Reaxbu1Data data;
     private final String modelName;
     private double reactiveState, activeState, reactiveReference, activeReference;
     private double reactiveExternal, activeExternal;
+    private double externalScale=1;
     private Plntbu1Model plantController;
     private State oldState;
     private Derivative predictor;
     private boolean initialized;
+    private final org.interpss.dstab.control.util.IntegrationStateMonitor monitor=new org.interpss.dstab.control.util.IntegrationStateMonitor(
+            "Measurement lag (reactive part)","Measurement lag (real part)");
+    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.NOT_EVALUATED;
 
     public Reaxbu1Model(String modelName, Reaxbu1Data data) {
         this.modelName = modelName;
         this.data = data;
     }
     public void initialize(double reactiveExternal, double activeExternal) {
+        initialize(reactiveExternal,activeExternal,1);
+    }
+    public void initialize(double reactiveExternal,double activeExternal,double systemToMachineBase) {
+        initializeOperatingPoint(reactiveExternal,activeExternal,0,0,systemToMachineBase);
+    }
+    /** Initialize absolute references for a generic electrical-controller host. */
+    public void initializeOutputs(double reactiveOutput,double activeOutput) {
+        initializeOutputs(reactiveOutput,activeOutput,1);
+    }
+    public void initializeOutputs(double reactiveOutput,double activeOutput,double systemToMachineBase) {
+        if(plantController!=null&&!plantController.reinitialize())throw new IllegalStateException("PLNTBU1 could not reinitialize");
+        initializeOperatingPoint(0,0,reactiveOutput,activeOutput,systemToMachineBase);
+    }
+    private void initializeOperatingPoint(double reactiveExternal,double activeExternal,double reactiveOutput,double activeOutput,double scale) {
+        if(!Double.isFinite(reactiveOutput)||!Double.isFinite(activeOutput))throw new IllegalArgumentException("Finite auxiliary operating point required");
+        if(!Double.isFinite(scale)||scale<=0)throw new IllegalArgumentException("Positive auxiliary base conversion required");
+        externalScale=scale;
         if (plantController != null) {
             if (!plantController.initialize()) {
                 throw new IllegalStateException("PLNTBU1 could not initialize");
@@ -29,10 +50,12 @@ public final class Reaxbu1Model implements ICMLStateProvider {
             activeExternal = plantController.getActiveOutput();
         }
         setExternalSignals(reactiveExternal, activeExternal);
-        reactiveReference = -reactiveExternal;
-        activeReference = -activeExternal;
-        reactiveState = activeState = 0.0;
+        reactiveReference = reactiveOutput/data.reactiveGain()-externalScale*reactiveExternal;
+        activeReference = activeOutput/data.activeGain()-externalScale*activeExternal;
+        reactiveState=reactiveOutput;activeState=activeOutput;
+        oldState=null;predictor=null;
         initialized = true;
+        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.INITIALIZATION;derivatives(state());
     }
     public void step(double dt, int flag) {
         if (!initialized || !Double.isFinite(dt) || dt <= 0.0 || (flag != 0 && flag != 1))
@@ -45,9 +68,11 @@ public final class Reaxbu1Model implements ICMLStateProvider {
                     plantController.getActiveOutput());
         }
         if (flag == 0) {
+            stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR;
             oldState = state(); predictor = derivatives(oldState);
             apply(advance(oldState, predictor, dt));
         } else {
+            stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
             if (oldState == null || predictor == null)
                 throw new IllegalStateException("corrector without predictor");
             apply(advance(oldState, predictor.add(derivatives(state())), .5*dt));
@@ -55,18 +80,18 @@ public final class Reaxbu1Model implements ICMLStateProvider {
         }
     }
     private Derivative derivatives(State state) {
-        double reactiveTarget = data.reactiveGain()*(reactiveReference+reactiveExternal);
-        double activeTarget = data.activeGain()*(activeReference+activeExternal);
-        if (data.measurementTime() <= EPS) return new Derivative(0,0);
-        return new Derivative((reactiveTarget-state.reactive)/data.measurementTime(),
+        double reactiveTarget = data.reactiveGain()*(reactiveReference+externalScale*reactiveExternal);
+        double activeTarget = data.activeGain()*(activeReference+externalScale*activeExternal);
+        Derivative d=data.measurementTime()<=EPS?new Derivative(0,0):new Derivative((reactiveTarget-state.reactive)/data.measurementTime(),
                 (activeTarget-state.active)/data.measurementTime());
+        monitor.begin(stage);monitor.record(0,state.reactive,d.reactive);monitor.record(1,state.active,d.active);return d;
     }
     private void apply(State state) {
         reactiveState = clamp(data.measurementTime()<=EPS
-                        ? data.reactiveGain()*(reactiveReference+reactiveExternal):state.reactive,
+                        ? data.reactiveGain()*(reactiveReference+externalScale*reactiveExternal):state.reactive,
                 data.reactiveMinimum(),data.reactiveMaximum());
         activeState = clamp(data.measurementTime()<=EPS
-                        ? data.activeGain()*(activeReference+activeExternal):state.active,
+                        ? data.activeGain()*(activeReference+externalScale*activeExternal):state.active,
                 data.activeMinimum(),data.activeMaximum());
     }
     public void setExternalSignals(double reactive, double active) {
@@ -83,8 +108,16 @@ public final class Reaxbu1Model implements ICMLStateProvider {
     public String getModelName(){return modelName;}
     public double getReactiveOutput(){return reactiveState;}
     public double getActiveOutput(){return activeState;}
+    public double getReactiveReference(){return reactiveReference;}
+    public double getActiveReference(){return activeReference;}
     public Plntbu1Model getPlantController(){return plantController;}
     public void setPlantController(Plntbu1Model value){plantController=value;}
+    @Override public Map<String,Double> getIntegrationStates(){return getNamedStates();}
+    @Override public org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){
+        var own=monitor.snapshot();var x=new LinkedHashMap<>(own.evaluationStates());var dx=new LinkedHashMap<>(own.rates());
+        if(plantController!=null){var p=plantController.getStateDerivativeSnapshot();x.putAll(p.evaluationStates());dx.putAll(p.rates());}
+        return new org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot(own.stage(),x,dx);
+    }
     @Override public Map<String,Double> getNamedStates(){
         if (!initialized) return Map.of();
         Map<String,Double> states=new LinkedHashMap<>();

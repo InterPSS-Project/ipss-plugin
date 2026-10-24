@@ -558,29 +558,28 @@ public class DStabNetworkBuilder {
 
     /** Attach a Type-3 REAXB auxiliary controller to its converter host. */
     public Reaxbu1Model addReax3bu1(String busId, String genId, Reaxbu1Data data) {
-        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
-        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
-            log.warn("GEWTGCU1 not found for REAX3BU1: bus={}, gen={}", busId, genId);
-            return null;
-        }
-        Reaxbu1Model model = new Reaxbu1Model("REAX3BU1", data);
-        model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
-        host.setAuxiliaryController(model);
-        return model;
+        return addReaxbu1(busId,genId,data,"REAX3BU1");
     }
 
     /** Attach a Type-4 REAXB auxiliary controller to its converter host. */
     public Reaxbu1Model addReax4bu1(String busId, String genId, Reaxbu1Data data) {
+        return addReaxbu1(busId,genId,data,"REAX4BU1");
+    }
+
+    private Reaxbu1Model addReaxbu1(String busId,String genId,Reaxbu1Data data,String name) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
-            log.warn("GEWTGCU1 not found for REAX4BU1: bus={}, gen={}", busId, genId);
+        Reaxbu1Model model=new Reaxbu1Model(name,data);
+        if(gen!=null&&gen.getDynamicGenDevice() instanceof Gewtgcu1Model host) {
+            host.setAuxiliaryController(model);
+        } else if(gen!=null&&gen.getDynamicGenDevice() instanceof Regca1Model host
+                &&host.getActiveElectricalController() instanceof Reeca1Model electrical) {
+            electrical.setAuxiliaryController(model);
+        } else {
+            log.warn("Supported converter/electrical host not found for {}: bus={}, gen={}",name,busId,genId);
             return null;
         }
-        Reaxbu1Model model = new Reaxbu1Model("REAX4BU1", data);
         model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
-        host.setAuxiliaryController(model);
         return model;
     }
 
@@ -628,6 +627,11 @@ public class DStabNetworkBuilder {
                         && host.getAuxiliaryController() != null
                         && Math.abs(host.getAuxiliaryController().getData().plantBus()) == plantBus) {
                     host.getAuxiliaryController().setPlantController(controller);
+                } else if(gen.getDynamicGenDevice() instanceof Regca1Model converter
+                        &&converter.getActiveElectricalController()!=null) {
+                    var auxiliary=converter.getActiveElectricalController().getAuxiliaryController();
+                    if(auxiliary!=null&&Math.abs(auxiliary.getData().plantBus())==plantBus)
+                        auxiliary.setPlantController(controller);
                 }
             }
         }

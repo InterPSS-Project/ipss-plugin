@@ -27,6 +27,17 @@ import com.interpss.dstab.cache.StateMonitor;
 public class Plntbu1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
+    @Test void doubleRoundoffDoesNotDriveThePlantButRealSmallInputsStillDo() {
+        var model=new Plntbu1Model(new Plntbu1Data(1,1,2,"1",0,1,1,
+                .066667,0,25,0,.02,.7,0,0,-.01,.001,-.001,0,0,1,-1,.01,.06,.25,0,0,999,-999,999,-999,.1,50,0,0));
+        model.setBoundary(Complex.ONE,Complex.ONE,new Complex(.24,.047),1);assertTrue(model.initialize());
+        model.setBoundary(new Complex(Math.nextUp(1.),0),Complex.ONE,new Complex(Math.nextUp(.24),Math.nextUp(.047)),Math.nextUp(1.));
+        for(int i=0;i<1000;i++){assertTrue(model.step(1./240,0));assertTrue(model.step(1./240,1));}
+        assertEquals(0,model.getReactiveOutput(),0);assertEquals(0,model.getActiveOutput(),0);
+        model.setAuxiliaryInputs(1e-9,0,1e-9);model.step(1./240,0);model.step(1./240,1);
+        assertTrue(model.getReactiveOutput()>0);assertTrue(model.getActiveOutput()>0);
+    }
+
     @Test
     void sevenStateModifiedEulerStepMatchesIndependentCalculation() {
         Plntbu1Model model = new Plntbu1Model(data(0, 0, 1, .2, .12, .25, .18));

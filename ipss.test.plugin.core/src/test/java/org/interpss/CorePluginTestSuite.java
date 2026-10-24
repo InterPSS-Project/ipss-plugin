@@ -41,6 +41,8 @@ import org.interpss.core.adapter.builder.dstab.Esac6aExciterTest;
 import org.interpss.core.adapter.builder.dstab.Expic1ExciterTest;
 import org.interpss.core.dstab.Expic1NativeVerificationTest;
 import org.interpss.core.dstab.Exac2FieldBaseVerificationTest;
+import org.interpss.core.dstab.WttqaCompatibilityTest;
+import org.interpss.core.dstab.ReaxbGenericHostTest;
 import org.interpss.core.adapter.builder.dstab.Dc4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.St6bExciterTest;
 import org.interpss.core.adapter.builder.dstab.St6cExciterTest;
@@ -869,6 +871,8 @@ import org.junit.platform.suite.api.Suite;
 	Expic1ExciterTest.class,
 	Expic1NativeVerificationTest.class,
 	Exac2FieldBaseVerificationTest.class,
+	WttqaCompatibilityTest.class,
+	ReaxbGenericHostTest.class,
 	Dc4bExciterTest.class,
 	DStabNetworkBuilderDc4cTest.class,
 	St6bExciterTest.class,

@@ -122,6 +122,19 @@ public final class DynamicParameterValidator {
         if(converter.getActiveElectricalController()==null)
             check.add(Severity.ERROR,"electrical controller",0,"Converter initialization requires an electrical controller");
         checked.merge("Regca1Model.converter",1,Integer::sum);
+        var electrical=converter.getActiveElectricalController();
+        var wind=electrical==null?null:electrical.getWindControlStack();
+        var torque=wind==null?null:wind.getTorqueController();
+        if(torque!=null) {
+            var c=new Check(issues,converter.getExtendedDeviceId(),"Wttqa1Model",step,multiple,active);
+            var d=torque.getData();c.time("Tp",d.tp(),true);c.time("Twref",d.twref(),true);
+            c.limits("Torque",d.teMin(),d.teMax());
+            if(!d.hasIncreasingPowerPoints())c.add(Severity.WARNING,"power-speed points",d.p1(),
+                    "Nonincreasing power points retained in native interval order; review the source curve. Points are not sorted or adjusted.");
+            if(d.tFlag()==2)c.add(Severity.WARNING,"Tflag",2,
+                    "Native-compatible nonzero selector retained: the power-control branch is active.");
+            checked.merge("Wttqa1Model",1,Integer::sum);
+        }
         // Do not claim that checking the converter validates its composed controls.
         uncovered.merge("Regca1Model.bundleControllers",1,Integer::sum);
     }

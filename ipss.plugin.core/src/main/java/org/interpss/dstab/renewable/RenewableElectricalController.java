@@ -35,6 +35,10 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     }
     default RepccModel getRepccController() { return null; }
     default HplntdCoordinator.Port getHybridController(){return null;}
+    default org.interpss.dstab.mach.Reaxbu1Model getAuxiliaryController(){return null;}
+    default void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model controller){
+        throw new UnsupportedOperationException("This electrical controller has no auxiliary reference port");
+    }
     default void setRepccController(RepccModel plantController) {
         throw new UnsupportedOperationException("This electrical controller has no REPCC input port");
     }
@@ -46,6 +50,7 @@ public interface RenewableElectricalController extends IntegrationStepAware {
         throw new UnsupportedOperationException("This electrical controller has no weak-grid reference input");
     }
     default double getPlantPowerReference(double initialPower) {
+        if(getAuxiliaryController()!=null)return getAuxiliaryController().getActiveOutput();
         if(getHybridController()!=null)return initialPower+getHybridController().activeIncrement();
         if (getRepccController() != null) return initialPower + getRepccController().activeIncrement();
         return initialPower + (getPlantController() == null ? 0.0 : getPlantController().getPref());

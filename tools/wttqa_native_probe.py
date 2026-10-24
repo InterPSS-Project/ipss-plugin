@@ -25,9 +25,18 @@ def main():
     settings=configuration(*sys.argv[1:])
     import psse3607
     import psspy,dyntools
-    root=Path.cwd();out=root/'target'/('wttqa-native-'+settings['name']+'-'+settings['repeat']);out.mkdir(exist_ok=False)
+    root=Path.cwd();out=root/settings.get('artifact_root','target')/('wttqa-native-'+settings['name']+'-'+settings['repeat']);out.mkdir(parents=True,exist_ok=False)
     shutil.copy2(__file__,out/'probe.py');shutil.copy2(root/'tools/tgov1_limit_probe.py',out/'tgov1_limit_probe.py')
-    shutil.copy2(root/'ipss.test.plugin.core/testData/adpter/psse/v33/renewable/regca_reeca_repca_bus1062.raw',out/'network.raw')
+    scripts=['probe.py','tgov1_limit_probe.py']+list(settings.get('extra_scripts',[]))
+    for script in settings.get('extra_scripts',[]):shutil.copy2(root/'tools'/script,out/script)
+    raw=(root/'ipss.test.plugin.core/testData/adpter/psse/v33/renewable/regca_reeca_repca_bus1062.raw').read_text()
+    if 'initial_power_pu' in settings:
+        lines=raw.splitlines()
+        for i,line in enumerate(lines):
+            if line.startswith(("1,'1',","3,'1',")):
+                fields=line.split(',');fields[2]=str(100*settings['initial_power_pu']*(1 if fields[0]=='1' else -1));lines[i]=','.join(fields)
+        raw='\n'.join(lines)+'\n'
+    (out/'network.raw').write_text(raw)
     (out/'dynamic.dyr').write_text(dynamic(root,settings));os.chdir(out)
     checked('initialize',psspy.psseinit(50))
     for fn in (psspy.progress_output,psspy.report_output,psspy.alert_output,psspy.prompt_output):checked('log',fn(2,'native.log',[0,0]))
@@ -69,7 +78,7 @@ def main():
         writer=csv.writer(stream,lineterminator='\n');writer.writerow(['time_s']+[labels[k] for k in keys])
         for i,time in enumerate(data['time']):writer.writerow([format(time,'.12g')]+[format(data[k][i],'.12g') for k in keys])
     log=Path('native.log').read_text(errors='replace');quality='Initial conditions check O.K.' in log and 'Network not converged' not in log
-    files=['network.raw','dynamic.dyr','probe.py','tgov1_limit_probe.py','native.log','native.out','native.csv']
+    files=['network.raw','dynamic.dyr','native.log','native.out','native.csv']+scripts
     manifest=dict(status='complete' if quality else 'rejected-quality',model='WTTQA1',settings=settings,layout=layout,
                   entered_constants=before,initialized_constants=after,initialized_selector=selector,events=events,
                   sample_count=len(data['time']),channel_count=len(keys),engine_module=psse3607.__name__,

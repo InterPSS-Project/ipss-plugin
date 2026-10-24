@@ -45,7 +45,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
         predictorStart = null;
         predictorDerivative = null;
         speedReference = speedForPower(power);
-        double initialError = data.tFlag() == 1 ? 0.0
+        double initialError = data.isPowerControl() ? 0.0
                 : generatorSpeed - speedReference;
         torque = power / nonzero(generatorSpeed);
         torqueIntegral = torque - data.kpp() * initialError;
@@ -78,7 +78,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
                 data.twref(), dt);
         // The native block diagram selects (Pref0-filtered Pe)/wg for TFLAG=1 and
         // (wg-wref) for TFLAG=0: an overspeed increases electrical torque.
-        double error = data.tFlag() == 1
+        double error = data.isPowerControl()
                 ? (powerReference - filteredPower) / nonzero(generatorSpeed)
                 : generatorSpeed - speedReference;
         if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
@@ -190,7 +190,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
 
     private double controlError(TorqueState state, double generatorSpeed,
             double powerReference) {
-        double error = data.tFlag() == 1
+        double error = data.isPowerControl()
                 ? (powerReference - state.filteredPower()) / nonzero(generatorSpeed)
                 : generatorSpeed - state.speedReference();
         return Math.abs(error) <= EQUILIBRIUM_RESIDUAL ? 0.0 : error;
@@ -257,16 +257,15 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
 
     public double speedForPower(double power) {
         if(data.hasDefaultSpeedCurve())return 1;
-        double[] p = {data.p1(), data.p2(), data.p3(), data.p4()};
-        double[] s = {data.sp1(), data.sp2(), data.sp3(), data.sp4()};
-        if (power <= p[0]) return s[0];
-        for (int i = 1; i < p.length; i++) {
-            if (power <= p[i]) {
-                return s[i - 1] + (power - p[i - 1]) * (s[i] - s[i - 1])
-                        / (p[i] - p[i - 1]);
-            }
-        }
-        return s[s.length - 1];
+        if (power < data.p1()) return data.sp1();
+        if (power >= data.p4()) return data.sp4();
+        if (power < data.p2()) return interpolate(power,data.p1(),data.sp1(),data.p2(),data.sp2());
+        if (power < data.p3()) return interpolate(power,data.p2(),data.sp2(),data.p3(),data.sp3());
+        return interpolate(power,data.p3(),data.sp3(),data.p4(),data.sp4());
+    }
+
+    private static double interpolate(double power,double p1,double s1,double p2,double s2) {
+        return s1+(power-p1)*(s2-s1)/(p2-p1);
     }
 
     private static double nonzero(double value) {

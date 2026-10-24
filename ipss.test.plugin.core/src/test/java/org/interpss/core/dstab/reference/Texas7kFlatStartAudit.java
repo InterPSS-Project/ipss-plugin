@@ -14,17 +14,21 @@ import org.interpss.fadapter.psse.PsseDStabSolver;
 public final class Texas7kFlatStartAudit {
     private Texas7kFlatStartAudit(){}
     private static final class AuditSolver extends PsseDStabSolver {
-        AuditSolver(DynamicSimuAlgorithm algorithm){super(algorithm);converge_tol=1e-8;}
+        AuditSolver(DynamicSimuAlgorithm algorithm,double tolerance){super(algorithm);converge_tol=tolerance;}
     }
     public static void main(String[] args)throws Exception {
-        if(args.length<2||args.length>3)throw new IllegalArgumentException("Expected case, new output directory, and optional duration");
-        run(Path.of(args[0]),Path.of(args[1]),args.length==3?Double.parseDouble(args[2]):10);
+        if(args.length<2||args.length>4)throw new IllegalArgumentException("Expected case, new output directory, optional duration and network tolerance");
+        run(Path.of(args[0]),Path.of(args[1]),args.length>=3?Double.parseDouble(args[2]):10,args.length==4?Double.parseDouble(args[3]):1e-8);
     }
     public static Map<String,Object> run(Path input,Path output)throws Exception {
         return run(input,output,10);
     }
     public static Map<String,Object> run(Path input,Path output,double duration)throws Exception {
+        return run(input,output,duration,1e-8);
+    }
+    public static Map<String,Object> run(Path input,Path output,double duration,double tolerance)throws Exception {
         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite duration required");
+        if(!Double.isFinite(tolerance)||tolerance<=0)throw new IllegalArgumentException("Positive finite network tolerance required");
         if(Files.exists(output))throw new IllegalArgumentException("Refusing to replace audit evidence");
         Files.createDirectories(output);var result=new LinkedHashMap<String,Object>();
         long started=System.nanoTime();
@@ -44,7 +48,8 @@ public final class Texas7kFlatStartAudit {
             if(!lf.loadflow())throw new IllegalStateException("Power flow failed: "+net.maxMismatch(com.interpss.core.algo.AclfMethodType.NR));
             result.put("power_flow_mismatch",net.maxMismatch(com.interpss.core.algo.AclfMethodType.NR).toString());
             algorithm.setSimuStepSec(1./240);algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-            algorithm.setTotalSimuTimeSec(duration);algorithm.setSolver(new AuditSolver(algorithm));
+            algorithm.setTotalSimuTimeSec(duration);algorithm.setSolver(new AuditSolver(algorithm,tolerance));
+            result.put("network_voltage_correction_tolerance_pu",tolerance);
             algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
             if(!algorithm.initialization())throw new IllegalStateException("Dynamic initialization failed");
             var disabled=new ArrayList<String>();var machines=new ArrayList<Machine>();

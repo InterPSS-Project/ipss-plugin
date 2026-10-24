@@ -104,6 +104,7 @@ public final class Texas2kInitializationAudit {
         row.put("electrical_control",e.getNamedStates());
         row.put("electrical_control_audit",controller(e));
         row.put("control_memory",e.getControlMemory());
+          if(e.getAuxiliaryController()!=null)row.put("auxiliary_control_audit",controller(e.getAuxiliaryController()));
           if(e.getPlantController()!=null) {
             row.put("plant",e.getPlantController().getNamedStates());
             row.put("plant_audit",controller(e.getPlantController()));

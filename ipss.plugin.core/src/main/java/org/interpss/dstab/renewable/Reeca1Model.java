@@ -29,6 +29,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final boolean nativeRecordConvention;
     private double initializedVoltageBias;
     private Repca1Model plantController;
+    private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
     private RepccModel repccController;
     private HplntdCoordinator.Port hybridController;
     private WtgwgoaModel weakGridController;
@@ -168,6 +169,11 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             plantController.initialize(p, q, sensedV);
             plantController.setReactiveStateOffset(qReference);
         }
+        if(auxiliaryController!=null) {
+            double systemBase=converter==null?100:converter.getDStabBus().getNetwork().getBaseMva();
+            double machineBase=converter==null?systemBase:converter.getParentGen().getMvaBase();
+            auxiliaryController.initializeOutputs(qReference,p,systemBase/(machineBase>0?machineBase:systemBase));
+        }
         if (repccController != null) repccController.initialize(p,qReference,!(data.qFlag()==1&&data.vFlag()==0));
         if(hybridController!=null)hybridController.initialize(p,qReference);
         if (weakGridController != null) weakGridController.initialize(v, p);
@@ -178,6 +184,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
+        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
         // The network/controller partition can return residuals at machine
         // precision even when no event or reference change has occurred. PSS/E
         // preserves that initialized equilibrium. Apply the same numerical-zero
@@ -225,6 +232,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (plantController != null) {
             plantController.step(dt, p, q, sensedV, frequency, flag);
         }
+        if(auxiliaryController!=null&&dt>0)auxiliaryController.step(dt,flag);
         if (repccController != null) repccController.step(dt,flag);
         if(hybridController!=null)hybridController.step(dt,flag);
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0), flag);
@@ -281,7 +289,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
         double plantQref = hybridController!=null?hybridController.reactiveIncrement():repccController!=null?repccController.reactiveIncrement():plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
-                ? pMeasured * powerFactorRatio : qReference + plantQref;
+                ? pMeasured * powerFactorRatio : auxiliaryController!=null?auxiliaryController.getReactiveOutput():qReference + plantQref;
         double qTarget = Repca1Model.limit(selectedQ, effectiveQmin, effectiveQmax);
         reactivePowerTarget = qTarget;
 
@@ -396,6 +404,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     /** Refresh upstream algebraic signals without consuming derivative history. */
     void refreshTwoStep(double p, double q, double v, double frequency) {
+        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
         p = snapToInitial(p, p0);
         q = snapToInitial(q, q0);
         v = snapToInitial(v, localVoltage0);
@@ -415,6 +424,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
      * Endpoint output refreshes occur only after all states have advanced.
      */
     public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
         if (dt <= 0.0) {
             refreshTwoStep(p, q, v, frequency);
             return;
@@ -646,13 +656,19 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (windControlStack!=null) windControlStack.setSinglePrecisionStates(enabled);
     }
     @Override public Repca1Model getPlantController() { return plantController; }
+    @Override public org.interpss.dstab.mach.Reaxbu1Model getAuxiliaryController(){return auxiliaryController;}
+    @Override public void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model controller){
+        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null||auxiliaryController!=null))
+            throw new IllegalStateException("Plant reference port is occupied");
+        auxiliaryController=controller;
+    }
     @Override public void setPlantController(Repca1Model controller) {
-        if(controller!=null&&(repccController!=null||hybridController!=null))throw new IllegalStateException("The plant reference port is already occupied");
+        if(controller!=null&&(repccController!=null||hybridController!=null||auxiliaryController!=null))throw new IllegalStateException("The plant reference port is already occupied");
         plantController = controller;
     }
     @Override public RepccModel getRepccController(){return repccController;}
     @Override public void setRepccController(RepccModel controller){
-        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null))throw new IllegalStateException("Plant reference port is occupied");
+        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null||auxiliaryController!=null))throw new IllegalStateException("Plant reference port is occupied");
         if(controller!=null&&controller.getConverter()!=converter)throw new IllegalArgumentException("REPCC converter ownership mismatch");
         repccController=controller;
     }
@@ -660,7 +676,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     boolean isOwnedBy(Regca1Model candidate){return converter==candidate;}
     public void setHybridController(HplntdCoordinator.Port controller){
         if(controller==null&&hybridController!=null)throw new IllegalStateException("Shared hybrid ownership cannot be detached one unit at a time");
-        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null||weakGridController!=null||windControlStack!=null))throw new IllegalStateException("Plant reference port is occupied");
+        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null||weakGridController!=null||windControlStack!=null||auxiliaryController!=null))throw new IllegalStateException("Plant reference port is occupied");
         if(controller!=null&&controller.converter()!=converter)throw new IllegalArgumentException("Hybrid converter ownership mismatch");
         hybridController=controller;
     }
@@ -775,6 +791,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         named.put("Voltage Control Output", voltageControlOutput);
         named.put("Active Current Command", ipcmd);
         named.put("Reactive Current Command", iqcmd);
+        if(auxiliaryController!=null)auxiliaryController.getNamedStates().forEach((name,value)->named.put("Auxiliary "+name,value));
         return Collections.unmodifiableMap(named);
     }
 }

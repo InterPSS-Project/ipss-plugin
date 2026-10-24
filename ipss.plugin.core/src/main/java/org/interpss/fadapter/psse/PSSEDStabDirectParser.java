@@ -996,7 +996,7 @@ public class PSSEDStabDirectParser {
                 return procWtpta1(busId, genId, fields);
             case "WTTQA1":
             case "WTTQAU1":
-                return procWttqa1(busId, genId, fields);
+                return procWttqa1(busId, genId, record);
             case "REPCA1":
             case "REPCAU1":
                 pendingRepca1.add(new PendingRepca1(busId, genId, fields.clone(), record));
@@ -4058,16 +4058,12 @@ public class PSSEDStabDirectParser {
     }
 
     // PSS/E order starts with TFLAG, followed by Kpp, Kip, Tp, and Twref.
-    private boolean procWttqa1(String busId, String genId, String[] f) {
-        if (f.length < 19) return false;
+    private boolean procWttqa1(String busId, String genId, PsseDyrRecord record) {
         Wttqa1Data data = new Wttqa1Data(
-                getInt(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, .1),
-                getDouble(f, 6, .05), getDouble(f, 7, 30),
-                getDouble(f, 8, 1.2), getDouble(f, 9, 0),
-                getDouble(f, 10, .2), getDouble(f, 11, .58),
-                getDouble(f, 12, .4), getDouble(f, 13, .72),
-                getDouble(f, 14, .6), getDouble(f, 15, .86),
-                getDouble(f, 16, .8), getDouble(f, 17, 1), getDouble(f, 18, 0));
+                record.intParameter(0),record.doubleParameter(1),record.doubleParameter(2),
+                record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),record.doubleParameter(6),
+                record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),record.doubleParameter(10),
+                record.doubleParameter(11),record.doubleParameter(12),record.doubleParameter(13),record.doubleParameter(14),record.doubleParameter(15));
         return builder.addWttqa1(busId, genId, data) != null;
     }
 

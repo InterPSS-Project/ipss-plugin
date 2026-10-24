@@ -81,7 +81,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
             if (windModel != null) windModel.initialize(aerodynamicModel.getWindVelocity());
         }
         if (electricalController != null && !electricalController.initialize()) return false;
-        if (auxiliaryController != null) auxiliaryController.initialize(0.0, 0.0);
+        if (auxiliaryController != null) auxiliaryController.initialize(0.0, 0.0, systemBaseMva/deviceBaseMva);
         if (electricalController != null && driveTrain != null) {
             electricalController.setRotorSpeed(driveTrain.getGeneratorSpeed());
         }
