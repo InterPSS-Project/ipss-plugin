@@ -188,6 +188,7 @@ public class PSSEDStabDirectParser {
     private Regfma1RecordFormat regfma1RecordFormat = Regfma1RecordFormat.AUTO_COMPATIBLE;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
+    private final Set<GeneratorKey> declaredElectricalGenerators = new java.util.HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
     public PSSEDStabDirectParser(DStabNetworkBuilder builder) {
@@ -243,6 +244,13 @@ public class PSSEDStabDirectParser {
     }
 
     private void parseDynData(List<PsseDyrRecord> records, String source) throws InterpssException {
+        declaredElectricalGenerators.clear();
+        for (var record : records) {
+            if (record.canonicalModelName().startsWith("REEC")
+                    || DynamicModelCatalog.find(record.canonicalModelName()).map(model -> model.category()
+                    == org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER).orElse(false))
+                declaredElectricalGenerators.add(targetGeneratorKey(record));
+        }
         pendingSt2cut.clear();
         pendingIeeest.clear();
         pendingRepca1.clear();
@@ -3455,7 +3463,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 9, 1.2), getDouble(f, 10, 0.9), getDouble(f, 11, 0.5),
                 getDouble(f, 12, -1.3), getDouble(f, 13, 0.02), getDouble(f, 14, 0.0),
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
-        return builder.addRegca1(busId, genId, data) != null;
+        var converter = builder.addRegca1(busId, genId, data);
+        if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId, genId)))
+            converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+        return converter != null;
     }
 
     // REGCB1 flat form, or REGCBU1 wrapper with two ICONs, seven CONs,

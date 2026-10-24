@@ -94,7 +94,7 @@ public class PsseReeceModelTest {
     }
     @Test void missingBusOrGeneratorIsReportedBeforeDeferredAttachment(@TempDir Path dir) throws Exception {
         for(String text:List.of(record().replaceFirst("1 ","99 "),record().replace("'REECE' 1","'REECE' 2"))) {
-            var b=DStabBuilderTestFixture.createBuilder();var p=parse(b,dir,A+text,false);assertNull(controller(b));assertEquals(1,p.getLastImportReport().count(DynamicModelImportStatus.MISSING_TARGET));
+            var b=DStabBuilderTestFixture.createBuilder();var p=parse(b,dir,A+text,false);assertInstanceOf(ConverterCurrentCommands.class,controller(b));assertEquals(1,p.getLastImportReport().count(DynamicModelImportStatus.MISSING_TARGET));
         }
     }
     @Test void gnetAndModelRemoveSkipTheWholeStackWithoutPendingAttachments(@TempDir Path dir) throws Exception {
@@ -107,7 +107,7 @@ public class PsseReeceModelTest {
     }
     @Test void repeatedParserUseDoesNotRetainRejectedPendingRecords(@TempDir Path dir) throws Exception {
         var b=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(b);Path file=dir.resolve("repeat.dyr");
-        Files.writeString(file,record());p.parseDynFile(file.toString());Files.writeString(file,A);p.parseDynFile(file.toString());assertNull(controller(b));assertEquals(1,p.getLastImportReport().totalRecordCount());
+        Files.writeString(file,record());p.parseDynFile(file.toString());Files.writeString(file,A);p.parseDynFile(file.toString());assertInstanceOf(ConverterCurrentCommands.class,controller(b));assertEquals(1,p.getLastImportReport().totalRecordCount());
     }
     @Test void converterInitializationConvertsSystemPowerToMachineBaseOnce(@TempDir Path dir) throws Exception {
         for(String host:List.of(A,B)) {

@@ -38,6 +38,16 @@ import com.interpss.simu.SimuObjectFactory;
 public class PSSEMultiFileLoader {
     /** Null means auto-detect REV from the LF RAW header. */
     private final Integer versionOverride;
+    private org.interpss.fadapter.psse.dyr.DynamicModelImportReport lastDynamicImportReport =
+            org.interpss.fadapter.psse.dyr.DynamicModelImportReport.empty();
+    private java.util.Map<PsseGnetIdvProcessor.GeneratorKey, PsseBsgProcessor.Entry> lastResponseEntries = java.util.Map.of();
+
+    public org.interpss.fadapter.psse.dyr.DynamicModelImportReport getLastDynamicImportReport() {
+        return lastDynamicImportReport;
+    }
+    public java.util.Map<PsseGnetIdvProcessor.GeneratorKey, PsseBsgProcessor.Entry> getLastResponseEntries() {
+        return lastResponseEntries;
+    }
 
     /** Auto-detect PSS/E REV from the LF file header. */
     public PSSEMultiFileLoader() {
@@ -117,6 +127,8 @@ public class PSSEMultiFileLoader {
             throw new InterpssException("At least one file (LF) is required");
         }
 
+        lastDynamicImportReport = org.interpss.fadapter.psse.dyr.DynamicModelImportReport.empty();
+        lastResponseEntries = java.util.Map.of();
         dsNet.setPositiveSeqDataOnly(true);
         createLfParser(dsNet, objectFactory).parseInto(files[0]);
 
@@ -125,19 +137,25 @@ public class PSSEMultiFileLoader {
 
         List<String> modelFiles = new ArrayList<>();
         Set<Path> preparationFiles = new LinkedHashSet<>();
+        Set<Path> responseFiles = new LinkedHashSet<>();
         for (int i = 1; i < files.length; i++) {
             String lowerCaseFile = files[i].toLowerCase(Locale.ROOT);
             if (lowerCaseFile.endsWith(".dyd")) {
                 throw new InterpssException("GE PSLF .dyd is not a PSS/E input: "
                         + files[i]);
             }
-            if (lowerCaseFile.endsWith(".idv")) {
+            if (lowerCaseFile.endsWith(".bsg")) {
+                responseFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
+            } else if (lowerCaseFile.endsWith(".idv")) {
                 preparationFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
             } else {
                 modelFiles.add(files[i]);
             }
         }
+        boolean discoverResponseFiles = responseFiles.isEmpty();
         for (String modelFile : modelFiles) {
+            if (discoverResponseFiles)
+                discoverSiblingIdv(modelFile, "_basegen.bsg").ifPresent(responseFiles::add);
             discoverSiblingIdv(modelFile, "_gnet.idv").ifPresent(preparationFiles::add);
             discoverSiblingIdv(modelFile, "_MODREMOVE.idv").ifPresent(preparationFiles::add);
         }
@@ -165,6 +183,11 @@ public class PSSEMultiFileLoader {
                     modelRemovedGenerators);
         }
 
+        if (responseFiles.size() > 1)
+            throw new InterpssException("Specify one BASEGEN response file; multiple policies are ambiguous");
+        for (Path responseFile : responseFiles)
+            lastResponseEntries = PsseBsgProcessor.apply(dsNet, responseFile);
+
         // Missing generator models are netted from solved P/Q during default
         // preprocessing, before dynamic states and static loads are initialized.
         // Import/data checking must leave the power-flow generators in service.
@@ -181,10 +204,11 @@ public class PSSEMultiFileLoader {
             Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators)
             throws InterpssException {
         DStabNetworkBuilder builder = new DStabNetworkBuilder(dsNet);
-        new PSSEDStabDirectParser(builder)
+        var parser = new PSSEDStabDirectParser(builder)
                 .setGnetRemovedGenerators(gnetRemovedGenerators)
-                .setModelRemovedGenerators(modelRemovedGenerators)
-                .parseDynFile(modelFile);
+                .setModelRemovedGenerators(modelRemovedGenerators);
+        try { parser.parseDynFile(modelFile); }
+        finally { lastDynamicImportReport = parser.getLastImportReport(); }
     }
 
     private static java.util.Optional<Path> discoverSiblingIdv(String modelFile, String suffix) {

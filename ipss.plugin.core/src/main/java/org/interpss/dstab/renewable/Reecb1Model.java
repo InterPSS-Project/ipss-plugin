@@ -33,6 +33,8 @@ public final class Reecb1Model implements RenewableElectricalController {
     private double effectiveTp;
     private double effectiveTiq;
     private double effectiveTpord;
+    private ActivePowerResponseLimits responseLimits = ActivePowerResponseLimits.NORMAL;
+    private boolean responseLimitsInitialized;
     private double effectivePmax;
     private double effectivePmin;
     private double effectiveQmax;
@@ -68,6 +70,16 @@ public final class Reecb1Model implements RenewableElectricalController {
         minimumTimeConstantMultiplier = multiplier;
     }
 
+    @Override public ActivePowerResponseLimits getActivePowerResponseLimits() { return responseLimits; }
+    @Override public void setActivePowerResponseLimits(ActivePowerResponseLimits limits) {
+        java.util.Objects.requireNonNull(limits);
+        if (responseLimitsInitialized && limits != responseLimits)
+            throw new IllegalStateException("Configure response limits before initialization");
+        responseLimits = limits;
+    }
+    public double getEffectiveActivePowerMaximum() { return effectivePmax; }
+    public double getEffectiveActivePowerMinimum() { return effectivePmin; }
+
     @Override
     public void initialize(double p, double q, double v) {
         resolveSensedBus();
@@ -86,6 +98,8 @@ public final class Reecb1Model implements RenewableElectricalController {
 
         effectivePmax = Math.max(effectivePmax, pOrder);
         effectivePmin = Math.min(effectivePmin, pOrder);
+        effectivePmax = responseLimits.upper(effectivePmax, pOrder);
+        effectivePmin = responseLimits.lower(effectivePmin, pOrder);
         effectiveQmax = Math.max(effectiveQmax, q);
         effectiveQmin = Math.min(effectiveQmin, q);
         effectiveVmax = Math.max(effectiveVmax, 0.0);
@@ -94,6 +108,8 @@ public final class Reecb1Model implements RenewableElectricalController {
         voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         ipcmd = p / nonzero(sensedV);
         iqcmd = -qCurrent;
+        if (plantController != null) plantController.setActivePowerResponseLimits(responseLimits);
+        responseLimitsInitialized = true;
         if (plantController != null) plantController.initialize(p, q, sensedV);
         if (weakGridController != null) weakGridController.initialize(v, p);
     }

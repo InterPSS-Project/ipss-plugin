@@ -3831,7 +3831,7 @@ public class DStabNetworkBuilder {
     }
 
     public Wtara1Model addWtara1(String busId, String genId, Wtara1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTARA1: bus={}, gen={}", busId, genId);
             return null;
@@ -3842,7 +3842,7 @@ public class DStabNetworkBuilder {
     }
 
     public Wtdta1Model addWtdta1(String busId, String genId, Wtdta1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTDTA1: bus={}, gen={}", busId, genId);
             return null;
@@ -3859,7 +3859,7 @@ public class DStabNetworkBuilder {
 
     /** Attach the exact native six-CON WTDTB1/legacy WTDTBU1 convention. */
     public Wtdtb1Model addWtdtb1(String busId, String genId, Wtdtb1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTDTB1: bus={}, gen={}", busId, genId);
             return null;
@@ -3876,7 +3876,7 @@ public class DStabNetworkBuilder {
 
     /** Attach a PowerWorld WTGT_A record without replacing an existing drive train. */
     public Wtdta1Model addWtgtA(String busId, String genId, WtgtAData data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTGT_A: bus={}, gen={}", busId, genId);
             return null;
@@ -3896,7 +3896,7 @@ public class DStabNetworkBuilder {
     }
 
     public Wtpta1Model addWtpta1(String busId, String genId, Wtpta1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTPTA1: bus={}, gen={}", busId, genId);
             return null;
@@ -3910,7 +3910,7 @@ public class DStabNetworkBuilder {
 
     /** Attach native WTPTB1 only to its supported complete mechanical stack. */
     public Wtptb1Model addWtptb1(String busId,String genId,Wtptb1Data data) {
-        Reeca1Model controller=findReeca1(busId,genId);
+        RenewableElectricalController controller=findWindController(busId,genId);
         if(controller==null)return null;
         WindControlStack stack=windStack(controller);
         if(stack.getPitchController()!=null || stack.getPitchControllerB()!=null
@@ -3922,7 +3922,7 @@ public class DStabNetworkBuilder {
     }
 
     public Wttqa1Model addWttqa1(String busId, String genId, Wttqa1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTTQA1: bus={}, gen={}", busId, genId);
             return null;
@@ -3950,12 +3950,14 @@ public class DStabNetworkBuilder {
         return gen != null && gen.getDynamicGenDevice() instanceof Regfma1Model model ? model : null;
     }
 
-    private Reeca1Model findReeca1(String busId, String genId) {
+    private RenewableElectricalController findWindController(String busId, String genId) {
         Regca1Model converter = findRegca1(busId, genId);
-        return converter == null ? null : converter.getReeca1Controller();
+        var controller = converter == null ? null : converter.getActiveElectricalController();
+        return controller instanceof Reeca1Model
+                || controller instanceof org.interpss.dstab.renewable.ConverterCurrentCommands ? controller : null;
     }
 
-    private static WindControlStack windStack(Reeca1Model controller) {
+    private static WindControlStack windStack(RenewableElectricalController controller) {
         WindControlStack stack = controller.getWindControlStack();
         if (stack == null) {
             stack = new WindControlStack();

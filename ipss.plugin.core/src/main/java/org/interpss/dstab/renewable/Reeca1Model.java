@@ -58,6 +58,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private double voltageControlOutput;
     private double preliminaryIqLimit;
     private double reactiveCurrentInjection;
+    private ActivePowerResponseLimits responseLimits = ActivePowerResponseLimits.NORMAL;
+    private boolean responseLimitsInitialized;
     private double effectivePmax;
     private double effectivePmin;
     private double effectiveQmax;
@@ -94,6 +96,16 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
 
     public boolean isNativeRecordConvention() { return nativeRecordConvention; }
+
+    @Override public ActivePowerResponseLimits getActivePowerResponseLimits() { return responseLimits; }
+    @Override public void setActivePowerResponseLimits(ActivePowerResponseLimits limits) {
+        java.util.Objects.requireNonNull(limits);
+        if (responseLimitsInitialized && limits != responseLimits)
+            throw new IllegalStateException("Configure response limits before initialization");
+        responseLimits = limits;
+    }
+    public double getEffectiveActivePowerMaximum() { return effectivePmax; }
+    public double getEffectiveActivePowerMinimum() { return effectivePmin; }
 
     @Override
     public void initialize(double p, double q, double v) {
@@ -132,6 +144,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         voltageControlOutput = qCurrent;
         effectivePmax = Math.max(data.pmax(), pOrder);
         effectivePmin = Math.min(data.pmin(), pOrder);
+        effectivePmax = responseLimits.upper(effectivePmax, pOrder);
+        effectivePmin = responseLimits.lower(effectivePmin, pOrder);
         effectiveQmax = Math.max(data.qmax(), q);
         effectiveQmin = Math.min(data.qmin(), q);
         // Both VFLAG branches carry an absolute voltage reference at VMAX/VMIN.
@@ -148,6 +162,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         previousDip = false;
         ipcmd = p / nonzero(v);
         iqcmd = -qCurrent;
+        if (plantController != null) plantController.setActivePowerResponseLimits(responseLimits);
+        responseLimitsInitialized = true;
         if (plantController != null) {
             plantController.initialize(p, q, sensedV);
             plantController.setReactiveStateOffset(qReference);

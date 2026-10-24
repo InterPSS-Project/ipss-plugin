@@ -181,8 +181,10 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor implements Integrati
         normalizeSingleMachineFractionsIfNeeded();
         double rawMax = Math.max(getData().getPmax(), getData().getPmin());
         double rawMin = Math.min(getData().getPmax(), getData().getPmin());
-        double initialValve = mach.getPm() * invRatingScale
-                / (fvhp + fhp + fip + flp);
+        // Match the CML initialization expression's arithmetic order exactly;
+        // division followed by multiplication can put its state one ulp above the bound.
+        this.factor = 1.0 / (fvhp + fhp + fip + flp);
+        double initialValve = factor * invRatingScale * mach.getPm();
         this.pmax = Math.max(rawMax, initialValve);
         this.pmin = Math.min(rawMin, initialValve);
         double rawOpen = getData().getPup();

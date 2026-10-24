@@ -4,6 +4,15 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 
 /** Common signal contract between a REGC_A converter and REEC_A/REEC_B controls. */
 public interface RenewableElectricalController extends IntegrationStepAware {
+    default ActivePowerResponseLimits getActivePowerResponseLimits() {
+        return ActivePowerResponseLimits.NORMAL;
+    }
+    /** Configure before initialization; unsupported controllers reject constrained response. */
+    default void setActivePowerResponseLimits(ActivePowerResponseLimits limits) {
+        if (java.util.Objects.requireNonNull(limits) != ActivePowerResponseLimits.NORMAL)
+            throw new UnsupportedOperationException("Active-power response limits are unsupported by "
+                    + getClass().getSimpleName());
+    }
     @Override default void configureIntegrationStep(double timeStepSec) { }
     void initialize(double p, double q, double v);
     void step(double dt, double p, double q, double v, double frequency);
@@ -20,6 +29,10 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     default boolean isConverterBlocked() { return false; }
     Repca1Model getPlantController();
     void setPlantController(Repca1Model plantController);
+    default WindControlStack getWindControlStack() { return null; }
+    default void setWindControlStack(WindControlStack stack) {
+        throw new UnsupportedOperationException("This controller has no wind-control input");
+    }
     default RepccModel getRepccController() { return null; }
     default HplntdCoordinator.Port getHybridController(){return null;}
     default void setRepccController(RepccModel plantController) {

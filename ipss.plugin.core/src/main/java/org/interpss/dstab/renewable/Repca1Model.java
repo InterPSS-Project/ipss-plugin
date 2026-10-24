@@ -58,6 +58,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     private double pLagState;
     private double pReference;
     private double qvReference;
+    private ActivePowerResponseLimits responseLimits = ActivePowerResponseLimits.NORMAL;
     private double effectivePmax;
     private double effectivePmin;
     private double effectiveQmax;
@@ -141,6 +142,16 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     }
     public boolean isNativeRecordConvention() { return nativeRecordConvention; }
 
+    public ActivePowerResponseLimits getActivePowerResponseLimits() { return responseLimits; }
+    public void setActivePowerResponseLimits(ActivePowerResponseLimits limits) {
+        java.util.Objects.requireNonNull(limits);
+        if (initialized && limits != responseLimits)
+            throw new IllegalStateException("Configure response limits before initialization");
+        responseLimits = limits;
+    }
+    public double getEffectiveActivePowerMaximum() { return effectivePmax; }
+    public double getEffectiveActivePowerMinimum() { return effectivePmin; }
+
     public void initialize(double p, double q, double v) {
         resolveMeasurements();
         initializeMeasured(p, q, measure(p, q, v, 1.0));
@@ -176,6 +187,8 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
             twoStep.setOffset(5, p);
             setReactiveStateOffset(q);
         }
+        effectivePmax = responseLimits.upper(effectivePmax, 0.0);
+        effectivePmin = responseLimits.lower(effectivePmin, 0.0);
         initialized = true;
     }
 
@@ -600,6 +613,13 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
 
     public Repca1Data getData() { return data; }
     public double getPref() { return pext; }
+    /** Absolute active-power measurement target on the device base. */
+    public double getActivePowerReference() { return pReference; }
+    public void setActivePowerReference(double reference) {
+        if (!initialized) throw new IllegalStateException("Initialize before changing the power reference");
+        if (!Double.isFinite(reference)) throw new IllegalArgumentException("Finite power reference required");
+        pReference = reference;
+    }
     public double getQref() { return qext; }
     public double getMeasuredActivePower() { return pMeasured; }
     public double getMeasuredReactiveOrVoltage() { return qOrVMeasured; }

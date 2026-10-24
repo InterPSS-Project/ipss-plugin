@@ -1127,6 +1127,9 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kOneSecondDriftTest.class,
 	Texas2kIndependentRenewableParameterParityTest.class,
 	Texas2kSixCaseDynamicSmokeTest.class,
+    org.interpss.core.dstab.Texas7kSimulationTest.class,
+    org.interpss.core.dstab.BsgSmibVerificationTest.class,
+    org.interpss.core.adapter.builder.dstab.PsseBsgLoaderTest.class,
 	Texas2kSynchronousMachineCoverageTest.class,
 	Texas2kGenrouFaultBenchmarkTest.class,
 
