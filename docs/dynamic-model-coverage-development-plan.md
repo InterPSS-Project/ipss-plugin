@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+A separate indexed-current experiment preserves all recorded full-case values
+and reduces one warmed in-process measurement from 106.459 to 77.337 seconds.
+It remains an isolated prototype; the 20-second objective is still open.
+Local timestep refinement also identifies the explicit two-step quarter-cycle
+response as numerically unresolved for the bus-150510 equivalent. See the
+[full recording, timing limits and next engine work](benchmarks/texas7k-indexed-current-study-2026-10-24.md).
+
 The opt-in staggered solver now binds all 137 additional active Texas7k
 exciters across eight families. The complete ten-second no-event test passes
 with all models active and 9,541 checked coordinates. An initialized-pole
