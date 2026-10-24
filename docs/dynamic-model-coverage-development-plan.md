@@ -2,6 +2,16 @@
 
 ## Current checkpoint
 
+An event-safe converter compensation prototype reduces the complete run from
+130,955 to 31,599 network iterations. After three full warmups, the cached
+variant records a 26.580-second whole-run median (26.481–33.019 s, three
+measurements); timing variability and the 20-second objective remain open.
+All bus voltages pass the configured period-specific
+NRMSE limits against a tighter internal control. Existing independent small-case
+checkpoints also pass, but complete independent network acceptance and production
+promotion remain open. See the
+[compensation, convergence and whole-run study](benchmarks/texas7k-converter-compensation-study-2026-10-24.md).
+
 A numerical network-iteration workspace preserves the complete ordinary trace
 and measures 57.135 seconds in one warmed matched pair. It passes 14,880
 state/history comparisons and observer-triggered fallback checks. A separate
