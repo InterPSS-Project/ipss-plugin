@@ -15,6 +15,14 @@ import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
+import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
+import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
+import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
+import org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter;
+import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.Esst4bPIControlBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
@@ -56,14 +64,17 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  *
  * <p>Supported machines: GENROU, GENSAL and uncontrolled GENCLS. Supported
  * controllers: IEEET1, EXST1/ESST1A, ESST4B, PSS2A, IEEEST, GAST, TGOV1, IEESGO,
- * IEEEG1, GGOV1 and HYGOV. REGCA1/REECA1 bundles use their two-step path.
+ * IEEEG1, GGOV1, HYGOV, EXAC1, EXAC2, ESAC1A, ESAC6A, ESDC1A, ESDC2A,
+ * EXPIC1 and SCRX. REGCA1/REECA1 bundles use their two-step path.
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
  * Renewable event-history parity and full-fleet accuracy remain unverified.
  * ST1 controllers default to one configurable local STORE step per network step with physical
  * and stabilizer inputs held at the old endpoint. Their field outputs are
- * published before the final local algebraic refresh; machine and other
- * controller states retain the common network-step rule.
+ * published before the final local algebraic refresh. The eight additional
+ * exciter families use initialized-pole local resolution unless explicitly
+ * overridden. Machine and remaining controller states retain the common
+ * network-step rule.
  * Unsupported
  * dynamic models are rejected at initialization rather than silently omitted.
  * This solver does not replace the default predictor/corrector solver. Select
@@ -148,6 +159,22 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private final List<BooleanSupplier> attachmentsUnchanged = new ArrayList<>();
     private final List<State> states = new ArrayList<>();
     private final List<LocalSt1Controller> localSt1Controllers = new ArrayList<>();
+    private final List<LocalExciter> localExciters=new ArrayList<>();
+    private final java.util.Map<String,Integer> exciterSubstepOverrides=new java.util.HashMap<>();
+    private final java.util.Map<String,Integer> resolvedExciterSubsteps=new java.util.LinkedHashMap<>();
+    private boolean automaticExciterSubsteps=true;
+    /** Numerical resolution for the eight explicitly supported additional exciter families. */
+    public void setExciterSubsteps(String model,int count){
+        if(previous!=null)throw new IllegalStateException("Configure local steps before initialization");
+        if(!java.util.Set.of("EXAC1","EXAC2","ESAC1A","ESAC6A","ESDC1A","ESDC2A","EXPIC1","SCRX").contains(model)
+                ||count<1||count>1024)throw new IllegalArgumentException("Known exciter family and 1..1024 steps required");
+        exciterSubstepOverrides.put(model,count);
+    }
+    public void setAutomaticExciterSubsteps(boolean enabled){
+        if(previous!=null)throw new IllegalStateException("Configure local steps before initialization");
+        automaticExciterSubsteps=enabled;
+    }
+    public java.util.Map<String,Integer> getResolvedExciterSubsteps(){return java.util.Map.copyOf(resolvedExciterSubsteps);}
     private double[] previous;
     private boolean[] wasActive;
     private double fixedStep;
@@ -164,6 +191,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private final java.util.IdentityHashMap<Object, Participant> participantByController = new java.util.IdentityHashMap<>();
     private final List<Renewable> renewables = new ArrayList<>();
     private final List<Participant> gridForming = new ArrayList<>();
+    private final List<Participant> upstreamPlants=new ArrayList<>(),upstreamAuxiliaries=new ArrayList<>();
+    private final java.util.IdentityHashMap<StaggeredEulerParticipant,List<BooleanSupplier>> upstreamOwners=new java.util.IdentityHashMap<>();
     private boolean electricalEndpointPreparationEnabled;
     private final List<BooleanSupplier> electricalEndpointEligible = new ArrayList<>();
     private long electricalEndpointPreparationCount;
@@ -310,8 +339,12 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     /** Bound machine/controller/grid-forming states; excludes REGCA bundle-owned states. */
     public int getBoundDifferentialStateCount() {
         return states.size()+participants.stream().mapToInt(p->p.values.length).sum()
-                +localSt1Controllers.stream().mapToInt(c->c.states.size()).sum();
+                +localSt1Controllers.stream().mapToInt(c->c.states.size()).sum()
+                +localExciters.stream().mapToInt(c->c.values.length).sum();
     }
+    /** Shared upstream controls are bound by identity and advance once per step. */
+    public int getBoundSharedPlantCount(){return upstreamPlants.size();}
+    public int getBoundAuxiliaryCount(){return upstreamAuxiliaries.size();}
 
     public void setNetworkSolutionTolerance(double tolerance) {
         if (!Double.isFinite(tolerance) || tolerance <= 0.)
@@ -326,7 +359,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         machines.clear();
         electricalEndpointEligible.clear(); electricalEndpointPreparationCount=0; machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
         localSt1Controllers.clear();
+        localExciters.clear();resolvedExciterSubsteps.clear();
         participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); extendedStack=false;
+        upstreamPlants.clear();upstreamAuxiliaries.clear();upstreamOwners.clear();
         previous = null; wasActive = null; inputDiscontinuity = false;
         networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
@@ -379,7 +414,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 && type != IeeeSteamTCDRGovernor.class && type != PsseGgov1Governor.class
                 && type != PsseHygovGovernor.class && type != IEEE1981ST1Exciter.class
                 && type != IEEE2005ST4BExciter.class && type != Ieee1992PSS2AStabilizer.class
-                && type != IeeestStabilizer.class)
+                && type != IeeestStabilizer.class && type != Exac1Exciter.class
+                && type != Exac2Exciter.class && type != Esac1aExciter.class
+                && type != Esac6aExciter.class && type != Esdc1aExciter.class
+                && type != Esdc2aExciter.class && type != Expic1Exciter.class
+                && type != ScrxExciter.class)
             throw new IllegalArgumentException("Unsupported staggered-Euler controller: " + type.getName());
     }
 
@@ -400,8 +439,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     continue;
                 }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {
-                    if (r.getReeca1Controller()==null)
-                        throw new IllegalArgumentException("Staggered REGCA1 requires REECA1: "+gen.getId());
+                    if (r.getReeca1Controller()==null && !(r.getActiveElectricalController()
+                            instanceof org.interpss.dstab.renewable.ConverterCurrentCommands))
+                        throw new IllegalArgumentException("Unsupported REGCA1 electrical controller: "+bus.getId()+"/"+gen.getId());
                     continue;
                 }
                 if (!(gen.getDynamicGenDevice() instanceof Machine m)
@@ -430,11 +470,10 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             if (controller instanceof AbstractAnnotateController annotated)
                 annotated.setRuntimeExpressionBindingsEnabled(runtimeControllerOptimizationEnabled);
             BooleanSupplier owner=ownerActive;
-            BooleanSupplier active=controller instanceof PsseGgov1Governor g
-                    ? ()->owner.getAsBoolean()&&g.isActive()
-                    : controller instanceof IeeestStabilizer pss
-                    ? ()->owner.getAsBoolean()&&pss.isActive()
-                    : ()->owner.getAsBoolean()&&((PsseHygovGovernor)controller).isActive();
+            BooleanSupplier active=()->owner.getAsBoolean()
+                    &&((com.interpss.dstab.mach.MachineController)controller).isActive();
+            if(controller instanceof AbstractAnnotateController annotated&&localExciterFamily(controller)!=null
+                    &&bindLocalExciter(annotated,model,active))return;
             Participant participant=new Participant(model,active);
             participants.add(participant);participantByController.put(controller,participant);
             return;
@@ -445,7 +484,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if(c instanceof IEEE2005ST4BExciter st4)st4.enableDirectEvaluationExperiment();
         if(c instanceof Ieee1992PSS2AStabilizer pss)pss.enableDirectEvaluationExperiment();
         if (controller instanceof IEEE2005ST4BExciter || controller instanceof IEEE1981ST1Exciter
-                || controller instanceof Ieee1992PSS2AStabilizer) extendedStack=true;
+                || controller instanceof Ieee1992PSS2AStabilizer || controller instanceof Exac1Exciter
+                || controller instanceof Exac2Exciter || controller instanceof Esac1aExciter
+                || controller instanceof ScrxExciter) extendedStack=true;
         BooleanSupplier owner=ownerActive;
         ownerActive=()->owner.getAsBoolean()&&c.isActive();
         int firstState=states.size();
@@ -463,6 +504,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 block(b,wrapper.getFieldName());
             } else throw new IllegalArgumentException("Unsupported block " + wrapper.getFieldName());
         }
+        if(localExciterFamily(controller)!=null){
+            List<State> bindings=List.copyOf(states.subList(firstState,states.size()));
+            if(bindLocalExciter(c,new AnnotatedExciterKernel(c,bindings),ownerActive))
+                states.subList(firstState,states.size()).clear();
+        }
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
                     states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled,
@@ -470,6 +516,77 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;
+    }
+
+    private static String localExciterFamily(Object controller){
+        if(controller instanceof Exac2Exciter)return "EXAC2";
+        if(controller instanceof Exac1Exciter)return "EXAC1";
+        if(controller instanceof Esac1aExciter)return "ESAC1A";
+        if(controller instanceof Esac6aExciter)return "ESAC6A";
+        if(controller instanceof Esdc1aExciter)return "ESDC1A";
+        if(controller instanceof Esdc2aExciter)return "ESDC2A";
+        if(controller instanceof Expic1Exciter)return "EXPIC1";
+        if(controller instanceof ScrxExciter)return "SCRX";
+        return null;
+    }
+    private boolean bindLocalExciter(AbstractAnnotateController model,StaggeredEulerParticipant kernel,BooleanSupplier active){
+        Integer override=exciterSubstepOverrides.get(localExciterFamily(model));
+        int count=override!=null?override:automaticExciterSubsteps?localStepCount(kernel,fixedStep):1;
+        resolvedExciterSubsteps.put(model.getMachine().getId(),count);
+        if(count==1)return false;
+        localExciters.add(new LocalExciter(kernel,active,count));return true;
+    }
+    private static int localStepCount(StaggeredEulerParticipant kernel,double step){
+        int n=kernel.staggeredStateCount();double[] base=new double[n],trial=new double[n],plus=new double[n],minus=new double[n],xp=new double[n],xm=new double[n];
+        double[][] jacobian=new double[n][n];kernel.readStaggeredState(base,0);
+        try{
+            for(int column=0;column<n;column++){
+                double delta=1e-7*(1+Math.abs(base[column]));
+                System.arraycopy(base,0,trial,0,n);trial[column]+=delta;kernel.applyStaggeredState(trial,0,step);
+                kernel.readStaggeredState(xp,0);kernel.evaluateStaggered(step,plus,0);
+                System.arraycopy(base,0,trial,0,n);trial[column]-=delta;kernel.applyStaggeredState(trial,0,step);
+                kernel.readStaggeredState(xm,0);kernel.evaluateStaggered(step,minus,0);
+                // A projected initial bound is not an unconstrained linear mode.
+                if(xp[column]==base[column]||xm[column]==base[column])continue;
+                double span=xp[column]-xm[column];
+                if(span!=0)for(int row=0;row<n;row++)jacobian[row][column]=(plus[row]-minus[row])/span;
+            }
+        }finally{kernel.applyStaggeredState(base,0,step);kernel.evaluateStaggered(step,plus,0);}
+        return ControllerStepStability.substeps(jacobian,step);
+    }
+    private static final class AnnotatedExciterKernel implements StaggeredEulerParticipant {
+        final AbstractAnnotateController model;final List<State> bindings;
+        AnnotatedExciterKernel(AbstractAnnotateController model,List<State> bindings){this.model=model;this.bindings=bindings;}
+        public int staggeredStateCount(){return bindings.size();}
+        public void readStaggeredState(double[] values,int offset){for(int i=0;i<bindings.size();i++)values[offset+i]=bindings.get(i).value.getAsDouble();}
+        public void evaluateStaggered(double step,double[] rates,int offset){
+            if(!model.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,model.getMachine(),0))throw new IllegalStateException("Exciter rate evaluation failed");
+            for(int i=0;i<bindings.size();i++)rates[offset+i]=bindings.get(i).derivative.getAsDouble();
+        }
+        public void applyStaggeredState(double[] values,int offset,double step){
+            for(int i=0;i<bindings.size();i++){State state=bindings.get(i);state.set.accept(state.project.applyAsDouble(values[offset+i]));}
+        }
+    }
+    private static final class LocalExciter {
+        final StaggeredEulerParticipant kernel;final BooleanSupplier active;final int count;
+        final double[] values,rates,history,trial;boolean wasActive;
+        LocalExciter(StaggeredEulerParticipant kernel,BooleanSupplier active,int count){
+            this.kernel=kernel;this.active=active;this.count=count;int n=kernel.staggeredStateCount();
+            values=new double[n];rates=new double[n];history=new double[n];trial=new double[n];wasActive=active.getAsBoolean();
+        }
+        void advance(double step,boolean discontinuity){
+            if(!active.getAsBoolean()){java.util.Arrays.fill(history,0.);wasActive=false;return;}
+            double h=step/count;
+            for(int sub=0;sub<count;sub++){
+                kernel.readStaggeredState(values,0);kernel.evaluateStaggered(h,rates,0);
+                if(!wasActive)System.arraycopy(rates,0,history,0,rates.length);
+                if(sub==0&&discontinuity)for(int i=0;i<rates.length;i++)rates[i]=.5*(rates[i]+history[i]);
+                for(int i=0;i<trial.length;i++)trial[i]=values[i]+h*(1.5*rates[i]-.5*history[i]);
+                kernel.applyStaggeredState(trial,0,h);kernel.readStaggeredState(values,0);
+                for(int i=0;i<history.length;i++)history[i]=values[i]!=trial[i]?0.:rates[i];
+                wasActive=true;
+            }
+        }
     }
 
     private void block(CMLControlBlock1stOrderAdapter b,String name) {
@@ -494,6 +611,20 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 else throw new IllegalArgumentException("Unsupported non-windup block " + name);
             }
             states.add(new State(b::getStateX,b::setStateX,b::getDX_dt,project,ownerActive,frozen));
+    }
+
+    private void bindUpstream(StaggeredEulerParticipant model,BooleanSupplier active,List<Participant> group){
+        List<BooleanSupplier> owners=upstreamOwners.get(model);
+        if(owners==null){
+            owners=new ArrayList<>();upstreamOwners.put(model,owners);
+            List<BooleanSupplier> bindings=owners;
+            Participant participant=new Participant(model,()->{
+                for(var owner:bindings)if(owner.getAsBoolean())return true;
+                return false;
+            });
+            participants.add(participant);group.add(participant);
+        }
+        owners.add(active);
     }
 
     private void bind() {
@@ -521,11 +652,20 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     extendedStack=true;
                     r.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
                     renewables.add(new Renewable(r,()->bus.isActive()&&gen.isActive()&&r.isActive()));
-                    var electrical=r.getReeca1Controller();
+                    var electrical=r.getActiveElectricalController();
                     var plant=electrical.getPlantController();var wind=electrical.getWindControlStack();
+                    var auxiliary=electrical.getAuxiliaryController();
+                    var sharedPlant=auxiliary==null?null:auxiliary.getPlantController();
+                    if(auxiliary!=null){
+                        BooleanSupplier active=()->bus.isActive()&&gen.isActive()&&r.isActive();
+                        if(sharedPlant!=null)bindUpstream(sharedPlant,active,upstreamPlants);
+                        bindUpstream(auxiliary,active,upstreamAuxiliaries);
+                        r.getReeca1Controller().setTwoStepAuxiliaryManaged(true);
+                    }
                     attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==r
-                            &&r.getReeca1Controller()==electrical&&electrical.getPlantController()==plant
-                            &&electrical.getWindControlStack()==wind);
+                            &&r.getActiveElectricalController()==electrical&&electrical.getPlantController()==plant
+                            &&electrical.getWindControlStack()==wind&&electrical.getAuxiliaryController()==auxiliary
+                            &&(auxiliary==null||auxiliary.getPlantController()==sharedPlant));
                     continue;
                 }
                 if (!(gen.getDynamicGenDevice() instanceof MachineImpl m))
@@ -631,6 +771,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     private void evaluate(boolean initialEndpoint, boolean prepareElectrical) throws DStabSimuException {
+        for(var p:upstreamPlants)if(p.active.getAsBoolean())p.model.evaluateStaggered(fixedStep,p.rates,0);
+        for(var p:upstreamAuxiliaries)if(p.active.getAsBoolean())p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var p:gridForming)
             if (p.active.getAsBoolean()) p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var r:renewables)
@@ -667,7 +809,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                         && m.getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
                 if (held != null) held.beginFixedInputObservation();
                 try {
-                    if (runtimeControllerOptimizationEnabled && st4EndpointReuseEnabled
+                    Participant participant=participantByController.get(m.getExciter());
+                    if (participant!=null) {
+                        participant.model.evaluateStaggered(fixedStep,participant.rates,0);
+                        m.setEfd(m.getExciter().getOutput(m));
+                    } else if (runtimeControllerOptimizationEnabled && st4EndpointReuseEnabled
                             && m.getExciter() instanceof IEEE2005ST4BExciter st4) {
                         m.setEfd(st4.evaluateFixedInputEndpoint(m, held != null));
                     } else {
@@ -747,6 +893,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         // Advance ST1 while its physical and upstream controller inputs still
         // belong to the old endpoint. Global machine rates are already captured.
         for (var controller:localSt1Controllers) controller.advance(dt,discontinuity);
+        for(var controller:localExciters)controller.advance(dt,discontinuity);
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,0);
         // Renewable derivatives observe the old synchronous-machine and network

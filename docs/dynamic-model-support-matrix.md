@@ -8,6 +8,11 @@ flat run, disturbance coverage, or independent trajectory comparison.
 Verification status is deliberately kept separate from this generated
 loadability inventory.
 
+The [additional Texas7k exciter integration](benchmarks/texas7k-optimized-exciters-2026-10-24.md)
+extends the opt-in staggered solver to eight more exciter families. Its complete
+no-event gate passes, but full-network fault accuracy remains open; catalog
+verification labels are unchanged.
+
 The [GENQEC-family salient branch](benchmarks/genqec-salient-branch-2026-10-19.md)
 also has a scoped startup-validation rule for T'qo=0 and X'q=Xq. This does not
 qualify other missing-winding configurations or complete coupled trajectories.

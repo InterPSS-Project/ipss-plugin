@@ -29,6 +29,15 @@ public final class ConverterCurrentCommands implements RenewableElectricalContro
         if (plant != null) plant.step(dt, p, q, v, frequency, flag);
         if (wind != null) wind.step(dt, p, initialPower, getPlantPowerReference(initialPower), false, flag);
     }
+    /** Advance attached observers while retaining the initialized fixed-current port. */
+    void stepTwoStep(double dt,double p,double q,double v,double frequency){
+        if(plant!=null)plant.stepTwoStep(dt,p,q,v,frequency);
+        if(wind!=null)wind.stepTwoStep(dt,p,initialPower,getPlantPowerReference(initialPower),false);
+    }
+    void rebaseNextTwoStep(){
+        if(plant!=null)plant.rebaseNextTwoStep();
+        if(wind!=null)wind.rebaseNextTwoStep();
+    }
     @Override public java.util.Map<String, Double> getNamedStates() {
         return java.util.Map.of("Active Current Command", ipcmd, "Reactive Current Command", iqcmd);
     }

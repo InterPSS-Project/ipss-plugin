@@ -4,6 +4,9 @@ import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -23,7 +26,7 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
-public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAware,StaggeredEulerParticipant,IntegrationStateAccess {
     private static final double EPS = 1.0e-12;
     private static final int FIELD = 0;
     private static final int SENSED = 1;
@@ -36,6 +39,9 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
     private final double[] state = new double[5];
     private final double[] trial = new double[5];
     private final double[] oldDerivative = new double[5];
+    private static final String[] STATE_NAMES={"Internal Field Voltage","Sensed Voltage","Regulator State","Washout Lag","Lead-Lag State"};
+    private final IntegrationStateMonitor stateMonitor=new IntegrationStateMonitor(STATE_NAMES);
+    private final double[] staggeredRates=new double[5];
     private double[] active = state;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
@@ -107,6 +113,8 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         reference = vt + input - stabilizerSignal(machine) - summationLimiterInput();
         outputSignal = field * outputSpeedScale;
         initialized = true;
+        derivatives(state,staggeredRates,machine);
+        recordRates(IntegrationStateMonitor.Stage.INITIALIZATION,state,staggeredRates);
         return true;
     }
 
@@ -161,11 +169,13 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         int stage = method == DynamicSimuMethod.MODIFIED_EULER ? flag : 2;
         if (stage == 0) {
             derivatives(state, oldDerivative, machine);
+            recordRates(IntegrationStateMonitor.Stage.PREDICTOR,state,oldDerivative);
             add(state, oldDerivative, dt, trial);
             active = trial;
         } else if (stage == 1) {
             double[] corrected = new double[state.length];
             derivatives(trial, corrected, machine);
+            recordRates(IntegrationStateMonitor.Stage.CORRECTOR,trial,corrected);
             for (int i = 0; i < state.length; i++) {
                 state[i] += 0.5 * (oldDerivative[i] + corrected[i]) * dt;
             }
@@ -173,6 +183,7 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         } else {
             double[] derivative = new double[state.length];
             derivatives(state, derivative, machine);
+            recordRates(IntegrationStateMonitor.Stage.APPLIED_STEP,state,derivative);
             add(state, derivative, dt, state);
             active = state;
         }
@@ -208,6 +219,33 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         derivative[WASHOUT_LAG] = lagDerivative(a.field,
                 values[WASHOUT_LAG], tf);
     }
+
+    @Override public int staggeredStateCount(){return state.length;}
+    @Override public void readStaggeredState(double[] values,int offset){
+        requireInitialized();System.arraycopy(active,0,values,offset,state.length);
+    }
+    @Override public void evaluateStaggered(double stepSec,double[] rates,int offset){
+        requireInitialized();derivatives(state,staggeredRates,getMachine());
+        recordRates(IntegrationStateMonitor.Stage.STAGGERED,state,staggeredRates);
+        System.arraycopy(staggeredRates,0,rates,offset,state.length);
+        outputSignal=algebraics(state,getMachine()).field*outputSpeedScale(getMachine());
+    }
+    @Override public void applyStaggeredState(double[] values,int offset,double stepSec){
+        requireInitialized();System.arraycopy(values,offset,state,0,state.length);
+        constrainRegulator(state,getMachine());constrainField(state);active=state;
+        outputSignal=algebraics(state,getMachine()).field*outputSpeedScale(getMachine());
+    }
+    @Override public java.util.Map<String,Double> getIntegrationStates(){
+        var values=new java.util.LinkedHashMap<String,Double>();
+        if(initialized)for(int i=0;i<state.length;i++)values.put(STATE_NAMES[i],active[i]);
+        return java.util.Collections.unmodifiableMap(values);
+    }
+    @Override public java.util.Map<String,Double> getNamedStates(){return getIntegrationStates();}
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){return stateMonitor.snapshot();}
+    private void recordRates(IntegrationStateMonitor.Stage stage,double[] values,double[] rates){
+        stateMonitor.begin(stage);for(int i=0;i<state.length;i++)stateMonitor.record(i,values[i],rates[i]);
+    }
+    private void requireInitialized(){if(!initialized)throw new IllegalStateException("Initialize DC excitation before evaluating states");}
 
     private Algebraic algebraics(double[] values, Machine machine) {
         double vt = machine.getDStabBus().getVoltageMag();

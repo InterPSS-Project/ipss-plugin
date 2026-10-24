@@ -5,7 +5,8 @@ import java.util.Map;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Two-axis lag translating plant-level auxiliary commands to a wind controller. */
-public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess {
+public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess,
+        org.interpss.dstab.control.util.StaggeredEulerParticipant {
     private static final double EPS = 1.0e-10;
     private final Reaxbu1Data data;
     private final String modelName;
@@ -78,6 +79,22 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
             apply(advance(oldState, predictor.add(derivatives(state())), .5*dt));
             oldState = null; predictor = null;
         }
+    }
+    @Override public int staggeredStateCount(){return 2;}
+    @Override public void readStaggeredState(double[] values,int offset){
+        if(!initialized)throw new IllegalStateException("Initialize auxiliary control first");
+        values[offset]=reactiveState;values[offset+1]=activeState;
+    }
+    @Override public void evaluateStaggered(double stepSec,double[] values,int offset){
+        if(!initialized||oldState!=null)throw new IllegalStateException("Auxiliary state is not an accepted endpoint");
+        if(plantController!=null)setExternalSignals(plantController.getReactiveOutput(),plantController.getActiveOutput());
+        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED;
+        Derivative d=derivatives(state());values[offset]=d.reactive();values[offset+1]=d.active();
+    }
+    @Override public void applyStaggeredState(double[] values,int offset,double stepSec){
+        if(!initialized||oldState!=null)throw new IllegalStateException("Auxiliary state is not an accepted endpoint");
+        if(plantController!=null)setExternalSignals(plantController.getReactiveOutput(),plantController.getActiveOutput());
+        apply(new State(values[offset],values[offset+1]));
     }
     private Derivative derivatives(State state) {
         double reactiveTarget = data.reactiveGain()*(reactiveReference+externalScale*reactiveExternal);

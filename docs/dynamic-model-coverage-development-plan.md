@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The opt-in staggered solver now binds all 137 additional active Texas7k
+exciters across eight families. The complete ten-second no-event test passes
+with all models active and 9,541 checked coordinates. An initialized-pole
+resolution check selects two local steps for one EXAC2 unit; the other 136
+use one. Independent SMIB comparisons pass at a refined step, while a large
+full-network fault-response difference remains open at a renewable bundle.
+See the [integration scope, counterexamples and timing](benchmarks/texas7k-optimized-exciters-2026-10-24.md).
+
 WTTQA1 native-record import now feeds raw electrical power to its speed curve,
 removing the extra 20 ms lag identified by all-row SMIB replay. The power-error
 branch retains its filtered-power input, and typed clients retain the published

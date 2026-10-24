@@ -30,6 +30,12 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private double initializedVoltageBias;
     private Repca1Model plantController;
     private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
+    private boolean twoStepAuxiliaryManaged;
+    /** The enclosing solver must evaluate and integrate the shared upstream group once. */
+    public void setTwoStepAuxiliaryManaged(boolean managed){
+        if(managed&&auxiliaryController==null)throw new IllegalStateException("No auxiliary control to manage");
+        twoStepAuxiliaryManaged=managed;
+    }
     private RepccModel repccController;
     private HplntdCoordinator.Port hybridController;
     private WtgwgoaModel weakGridController;
@@ -110,6 +116,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     @Override
     public void initialize(double p, double q, double v) {
+        twoStepAuxiliaryManaged=false;
         stateMonitor.reset();
         twoStep.reset();
         resolveSensedBus();
@@ -404,7 +411,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     /** Refresh upstream algebraic signals without consuming derivative history. */
     void refreshTwoStep(double p, double q, double v, double frequency) {
-        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
+        if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
         p = snapToInitial(p, p0);
         q = snapToInitial(q, q0);
         v = snapToInitial(v, localVoltage0);
@@ -424,7 +431,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
      * Endpoint output refreshes occur only after all states have advanced.
      */
     public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
-        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
+        if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
         if (dt <= 0.0) {
             refreshTwoStep(p, q, v, frequency);
             return;

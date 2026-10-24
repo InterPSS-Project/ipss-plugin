@@ -7,9 +7,10 @@ import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
 import org.interpss.dstab.control.util.IntegrationStateMonitor;
 import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 /** Seven-coordinate numerical kernel with explicit algebraic bypasses and integration stages. */
-public final class Expic1Kernel implements IntegrationStateAccess {
+public final class Expic1Kernel implements IntegrationStateAccess,StaggeredEulerParticipant {
     private static final double EPS=1e-12;
     private static final String[] NAMES={"Sensed Voltage","Regulator Integral","Lead-Lag State",
             "Regulator Lag","Field Voltage","Feedback Lowpass","Feedback Lag"};
@@ -61,6 +62,22 @@ public final class Expic1Kernel implements IntegrationStateAccess {
         if(!Double.isFinite(dt)||dt<0||predicting)throw new IllegalArgumentException("Invalid EXPIC1 Euler boundary");
         derivatives(state,rate);record(Stage.APPLIED_STEP,state,rate);
         for(int i=0;i<7;i++)state[i]+=dt*rate[i];state[1]=clamp(state[1],piMin,piMax);active=state;refreshBypassObservations();
+    }
+    @Override public int staggeredStateCount(){return state.length;}
+    @Override public void readStaggeredState(double[] values,int offset){
+        requireInitialized();System.arraycopy(active,0,values,offset,state.length);
+    }
+    @Override public void evaluateStaggered(double stepSec,double[] rates,int offset){
+        requireInitialized();
+        if(predicting)throw new IllegalStateException("Unaccepted EXPIC1 predictor");
+        derivatives(state,rate);record(Stage.STAGGERED,state,rate);
+        System.arraycopy(rate,0,rates,offset,state.length);
+    }
+    @Override public void applyStaggeredState(double[] values,int offset,double stepSec){
+        requireInitialized();
+        if(predicting)throw new IllegalStateException("Unaccepted EXPIC1 predictor");
+        System.arraycopy(values,offset,state,0,state.length);
+        state[1]=clamp(state[1],piMin,piMax);active=state;refreshBypassObservations();
     }
     public void observe(double sensedVoltage,double bridgeVoltage,double stabilizer) {
         if(!Double.isFinite(sensedVoltage)||!Double.isFinite(bridgeVoltage)||!Double.isFinite(stabilizer)||bridgeVoltage<0)
