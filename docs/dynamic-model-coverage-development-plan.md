@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+A numerical network-iteration workspace preserves the complete ordinary trace
+and measures 57.135 seconds in one warmed matched pair. It passes 14,880
+state/history comparisons and observer-triggered fallback checks. A separate
+fixed Norton-source cache preserves the result but measures slower and is not
+the preferred experimental baseline. See the
+[whole-run timings, CPU profile and remaining contracts](benchmarks/texas7k-packed-network-study-2026-10-24.md).
+The 20-second objective remains open; production runtime code is unchanged.
+
 Additional row-kernel experiments retain every ordinary full-case measurement.
 Four-worker dispatch is slower than the scalar prototype, and a direct ST4
 timing pair does not establish a stable speedup. A static-row snapshot probe
