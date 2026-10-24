@@ -1,0 +1,25 @@
+{
+  "status": "native-curve-input-junction-and-recorded-input-replay-accepted",
+  "native_curve_input": "raw_electrical_power",
+  "typed_curve_input": "filtered_electrical_power",
+  "power_error_input": "filtered_electrical_power",
+  "record_cardinality": 16,
+  "parameters_changed": false,
+  "state_names_changed": false,
+  "max_curve_error_pu": 4.7684000081815725e-8,
+  "max_speed_reference_error_pu_coarse": 8.89116615654384e-6,
+  "max_speed_reference_error_pu_fine": 4.497732194241877e-6,
+  "max_torque_integrator_error_pu_coarse": 1.3520069402916945e-6,
+  "max_torque_integrator_error_pu_fine": 8.76561875595705e-6,
+  "validation": {
+    "java_tests": 4194,
+    "java_passed": 4108,
+    "java_skipped": 86,
+    "java_failures": 0,
+    "java_errors": 0,
+    "offline_passed": 408,
+    "additional_fault_cases": 15
+  },
+  "whole_wind_stack_trajectory_parity": false,
+  "full_network_trajectory_parity": false
+}

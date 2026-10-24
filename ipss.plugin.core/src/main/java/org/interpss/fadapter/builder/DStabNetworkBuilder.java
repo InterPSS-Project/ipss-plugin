@@ -3932,12 +3932,19 @@ public class DStabNetworkBuilder {
     }
 
     public Wttqa1Model addWttqa1(String busId, String genId, Wttqa1Data data) {
+        return attachWttqa1(busId, genId, new Wttqa1Model(data));
+    }
+
+    public Wttqa1Model addWttqa1FromNativeRecord(String busId, String genId, Wttqa1Data data) {
+        return attachWttqa1(busId, genId, Wttqa1Model.fromNativeRecord(data));
+    }
+
+    private Wttqa1Model attachWttqa1(String busId, String genId, Wttqa1Model model) {
         RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTTQA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wttqa1Model model = new Wttqa1Model(data);
         windStack(controller).setTorqueController(model);
         return model;
     }

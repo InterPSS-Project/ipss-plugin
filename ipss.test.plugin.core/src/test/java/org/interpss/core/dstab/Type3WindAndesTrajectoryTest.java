@@ -48,6 +48,8 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         historicalStack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
         // Keep this older benchmark's declared pitch/torque wiring separate from native-record conformance.
         historicalStack.setPitchController(new org.interpss.dstab.renewable.Wtpta1Model(historicalStack.getPitchController().getData()));
+        // This historical fixture also uses the published filtered-power curve input.
+        historicalStack.setTorqueController(new org.interpss.dstab.renewable.Wttqa1Model(historicalStack.getTorqueController().getData()));
         // This historical oracle declares incremental plant PI bounds, not native absolute power bounds.
         var historicalConverter=(Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         var historicalElectrical=historicalConverter.getReeca1Controller();

@@ -12,6 +12,8 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
             "Filtered Power", "Speed Reference", "Torque Integral");
     private Stage observationStage = Stage.NOT_EVALUATED;
     private final Wttqa1Data data;
+    private final boolean nativeRecordConvention;
+    private double curveOutput;
     private double initialPower;
     private double filteredPower;
     private double speedReference;
@@ -25,7 +27,17 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
     void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
 
     public Wttqa1Model(Wttqa1Data data) {
+        this(data, false);
+    }
+
+    private Wttqa1Model(Wttqa1Data data, boolean nativeRecordConvention) {
         this.data = data;
+        this.nativeRecordConvention = nativeRecordConvention;
+    }
+
+    /** Native executable records feed raw electrical power to the speed curve. */
+    public static Wttqa1Model fromNativeRecord(Wttqa1Data data) {
+        return new Wttqa1Model(data, true);
     }
 
     public void initialize(double power) {
@@ -44,7 +56,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
         twoStep.reset();
         predictorStart = null;
         predictorDerivative = null;
-        speedReference = speedForPower(power);
+        curveOutput = speedReference = speedForPower(power);
         double initialError = data.isPowerControl() ? 0.0
                 : generatorSpeed - speedReference;
         torque = power / nonzero(generatorSpeed);
@@ -74,7 +86,8 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
             throw new IllegalArgumentException("WTTQA1 Pref0 must be finite");
         }
         filteredPower = Repca1Model.lag(filteredPower, electricalPower, data.tp(), dt);
-        speedReference = Repca1Model.lag(speedReference, speedForPower(filteredPower),
+        curveOutput = speedForPower(curveInput(filteredPower, electricalPower));
+        speedReference = Repca1Model.lag(speedReference, curveOutput,
                 data.twref(), dt);
         // The native block diagram selects (Pref0-filtered Pe)/wg for TFLAG=1 and
         // (wg-wref) for TFLAG=0: an overspeed increases electrical torque.
@@ -117,7 +130,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
         }
         if (dt <= 0.0) {
             apply(applyBypasses(state(), electricalPower));
-            updateStageOutputs(generatorSpeed, powerReference);
+            updateStageOutputs(electricalPower, generatorSpeed, powerReference);
             return;
         }
         if (flag == 0) {
@@ -137,14 +150,14 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
             predictorStart = null;
             predictorDerivative = null;
         }
-        updateStageOutputs(generatorSpeed, powerReference);
+        updateStageOutputs(electricalPower, generatorSpeed, powerReference);
     }
 
     private TorqueDerivative derivatives(TorqueState state, double electricalPower,
             double generatorSpeed, double powerReference, boolean voltageDip) {
         double powerRate = lagRate(state.filteredPower(), electricalPower, data.tp());
         double speedReferenceRate = lagRate(state.speedReference(),
-                speedForPower(state.filteredPower()), data.twref());
+                speedForPower(curveInput(state.filteredPower(), electricalPower)), data.twref());
         double error = controlError(state, generatorSpeed, powerReference);
         double integralRate = integralRate(state.torqueIntegral(), data.kip(), error,
                 data.kpp(), data.teMin(), data.teMax(), voltageDip);
@@ -171,17 +184,18 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
             apply(start);
         }
         apply(applyBypasses(state(), electricalPower));
-        updateStageOutputs(generatorSpeed, powerReference);
+        updateStageOutputs(electricalPower, generatorSpeed, powerReference);
     }
 
     private TorqueState applyBypasses(TorqueState state, double electricalPower) {
         double filtered = data.tp() <= 0.0 ? electricalPower : state.filteredPower();
         double speedRef = data.twref() <= 0.0
-                ? speedForPower(filtered) : state.speedReference();
+                ? speedForPower(curveInput(filtered, electricalPower)) : state.speedReference();
         return new TorqueState(filtered, speedRef, state.torqueIntegral());
     }
 
-    private void updateStageOutputs(double generatorSpeed, double powerReference) {
+    private void updateStageOutputs(double electricalPower, double generatorSpeed, double powerReference) {
+        curveOutput = speedForPower(curveInput(filteredPower, electricalPower));
         double error = controlError(state(), generatorSpeed, powerReference);
         torque = Repca1Model.limit(data.kpp() * error + torqueIntegral,
                 data.teMin(), data.teMax());
@@ -264,6 +278,10 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
         return interpolate(power,data.p3(),data.sp3(),data.p4(),data.sp4());
     }
 
+    private double curveInput(double filtered, double electricalPower) {
+        return nativeRecordConvention ? electricalPower : filtered;
+    }
+
     private static double interpolate(double power,double p1,double s1,double p2,double s2) {
         return s1+(power-p1)*(s2-s1)/(p2-p1);
     }
@@ -277,6 +295,8 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
     public double getTorque() { return torque; }
     public double getFilteredPower() { return filteredPower; }
     public double getSpeedReference() { return speedReference; }
+    public double getCurveOutput() { return curveOutput; }
+    public boolean isNativeRecordConvention() { return nativeRecordConvention; }
     public double getTorqueIntegral() { return torqueIntegral; }
     public double getInitialPower() { return initialPower; }
 

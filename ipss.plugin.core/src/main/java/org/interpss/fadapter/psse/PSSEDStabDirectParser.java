@@ -4064,7 +4064,7 @@ public class PSSEDStabDirectParser {
                 record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),record.doubleParameter(6),
                 record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),record.doubleParameter(10),
                 record.doubleParameter(11),record.doubleParameter(12),record.doubleParameter(13),record.doubleParameter(14),record.doubleParameter(15));
-        return builder.addWttqa1(busId, genId, data) != null;
+        return builder.addWttqa1FromNativeRecord(busId, genId, data) != null;
     }
 
     // REPCA1: IBUS MODEL ID IBRANCH JBUS KBus ID VCFlag RefFlag FFlag ...

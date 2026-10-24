@@ -2,6 +2,11 @@
 
 ## Current checkpoint
 
+WTTQA1 native-record import now feeds raw electrical power to its speed curve,
+removing the extra 20 ms lag identified by all-row SMIB replay. The power-error
+branch retains its filtered-power input, and typed clients retain the published
+cascade. See the [input-junction correction and evidence](benchmarks/wttqa-native-curve-input-2026-10-24.md).
+
 All 2,705 supplied Texas7k dynamic records now attach. Power flow converges,
 the complete stack holds a ten-second all-bus/controller-state equilibrium at
 production network tolerance, and a five-cycle three-phase fault completes.
