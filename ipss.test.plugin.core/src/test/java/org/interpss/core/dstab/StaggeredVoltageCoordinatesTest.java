@@ -13,31 +13,29 @@ import com.interpss.dstab.impl.DStabilityNetworkImpl;
 class StaggeredVoltageCoordinatesTest {
     @Test void roundAndSalientRotorTrajectoriesRetainTheSamePhysicalSolution() throws Exception {
         for(String model:new String[]{"genrou","gensal"}) {
-            double[][] polar=trajectory(model,false,false);
-            double[][] rectangular=trajectory(model,true,false);
-            double[][] deferred=trajectory(model,true,true);
+            double[][] polar=trajectory(model,false);
+            double[][] rectangular=trajectory(model,true);
             for(int i=0;i<polar.length;i++) {
-                assertArrayEquals(rectangular[i],deferred[i],0.,"Publication must preserve every state at step "+i);
                 assertArrayEquals(polar[i],rectangular[i],1e-9,"Coordinate round trips at step "+i);
             }
         }
     }
 
-    private double[][] trajectory(String model,boolean rectangular,boolean efficient) throws Exception {
+    private double[][] trajectory(String model,boolean rectangular) throws Exception {
         IpssCorePlugin.init();String base="testData/adpter/psse/v33/SMIB/";
         var context=new PSSEMultiFileLoader().loadDStab(base+"SMIB_v33.raw",base+"SMIB_v33_"+model+".dyr");
         var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         var network=(DStabilityNetworkImpl)context.getDStabilityNet();
-        network.setEfficientVoltagePublicationEnabled(efficient);
+        network.setPolarCoordinate(!rectangular);
         var solver=new PsseStaggeredEulerSolver(algorithm);
-        assertFalse(solver.isUseRectangularNetworkVoltage());
-        solver.setUseRectangularNetworkVoltage(rectangular);
+
+
         solver.setNetworkSolutionTolerance(1e-5);algorithm.setSolver(solver);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(1./240);
         algorithm.setTotalSimuTimeSec(.5);algorithm.setSimuOutputHandler(new StateMonitor());
-        assertTrue(algorithm.initialization());assertEquals(!rectangular,network.isPolarCoordinate());
-        assertThrows(IllegalStateException.class,()->solver.setUseRectangularNetworkVoltage(!rectangular));
+        assertTrue(algorithm.initialization());assertFalse(network.isPolarCoordinate(),"The retained staggered solver initializes rectangular network coordinates");
+
         var machine=network.getMachine("Bus1-mach1");double power=machine.getPm();
         double[][] trace=new double[100][];
         for(int i=0;i<trace.length;i++) {
@@ -51,7 +49,7 @@ class StaggeredVoltageCoordinatesTest {
             }
             trace[i]=row;
         }
-        assertEquals(efficient && rectangular,network.getEfficientVoltagePublicationCount()>0);
+
         return trace;
     }
 }

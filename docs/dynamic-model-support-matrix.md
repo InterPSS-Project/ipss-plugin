@@ -8,6 +8,10 @@ flat run, disturbance coverage, or independent trajectory comparison.
 Verification status is deliberately kept separate from this generated
 loadability inventory.
 
+The [GENQEC-family salient branch](benchmarks/genqec-salient-branch-2026-10-19.md)
+also has a scoped startup-validation rule for T'qo=0 and X'q=Xq. This does not
+qualify other missing-winding configurations or complete coupled trajectories.
+
 This runtime catalog is not the complete approved-model list. The
 [approved native renewable coverage](renewable-model-evidence.md) also lists
 source-approved families that have no implementation or parser descriptor.

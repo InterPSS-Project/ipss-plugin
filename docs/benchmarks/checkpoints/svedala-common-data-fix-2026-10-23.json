@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "status": "svedala-fixed",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-svedala-common-data-fix/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 3717,
+    "sha256": "fb24ac1c412b0c30626473071c10fad7fc5bacbd8f6f68b345113b25ba2011c8"
+  },
+  "evidence": {
+    "bytes": 132951,
+    "sha256": "f8b6b147df62ea452b0d684ba85a1e29a5a72da5d88c6e2fe685a79b88c08daa"
+  },
+  "tests": {
+    "tests": 21,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "production_sources_unchanged": {
+    "plugin": true,
+    "core": true
+  },
+  "original_profiles_unchanged": true,
+  "observations": {
+    "baseline": {
+      "compared": 86,
+      "within_0_02_pu": 68,
+      "worst_error_pu": 0.1440280255324211,
+      "worst_error_kv": 14.402802553242111
+    },
+    "common_only": {
+      "compared": 116,
+      "within_0_02_pu": 116,
+      "worst_error_pu": 0.005757389148876135,
+      "worst_error_kv": 0.33649241128035356
+    },
+    "complete_package": {
+      "compared": 116,
+      "within_0_02_pu": 116,
+      "worst_error_pu": 0.005757389148876135,
+      "worst_error_kv": 0.33649241128035356
+    }
+  },
+  "acceptance_thresholds_changed": false,
+  "full_reactors_rerun": false,
+  "merge_gate_passed": false,
+  "merged": false,
+  "documentation": "docs/benchmarks/svedala-common-data-fix-2026-10-23.md"
+}

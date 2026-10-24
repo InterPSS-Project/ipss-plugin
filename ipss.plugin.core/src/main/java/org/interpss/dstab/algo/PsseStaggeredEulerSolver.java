@@ -86,6 +86,15 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public enum MachineMeasurementStage { LAST_NETWORK_INJECTION, ACCEPTED_VOLTAGE }
     private MachineMeasurementStage machineMeasurementStage = MachineMeasurementStage.LAST_NETWORK_INJECTION;
 
+    private Boolean st1LocalStoreOverride;
+    /** Configure the local storage implementation before state initialization. */
+    public void setSt1LocalStoreEnabled(boolean enabled) {
+        if (!states.isEmpty()) throw new IllegalStateException("Configure before initialization");
+        st1LocalStoreOverride=enabled;
+    }
+    private boolean localStoreEnabled() {
+        return st1LocalStoreOverride!=null?st1LocalStoreOverride:!Boolean.getBoolean("ipss.experiment.disableSt1LocalStore");
+    }
     private int st1Substeps = IEEE1981ST1Exciter.DEFAULT_LOCAL_SUBSTEPS;
     private final java.util.Map<String, Integer> st1SubstepsByMachine = new java.util.HashMap<>();
 
@@ -176,11 +185,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         final double[] previous, start, rates;
         final boolean[] frozen;
         final boolean reuseFixedPssOutput;
+        final BooleanSupplier useLocalStore;
         boolean wasActive;
 
         LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states,
-                boolean reuseFixedPssOutput, int substeps) {
+                boolean reuseFixedPssOutput, int substeps,BooleanSupplier useLocalStore) {
             this.substeps = substeps;
+            this.useLocalStore=useLocalStore;
             this.reuseFixedPssOutput = reuseFixedPssOutput;
             this.model=model; this.active=active; this.states=List.copyOf(states);
             model.enableDirectEvaluationExperiment();
@@ -203,7 +214,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             if (held != null) held.beginFixedInputObservation();
             model.beginFixedMachineObservation();
             try {
-                if(!Boolean.getBoolean("ipss.experiment.disableSt1LocalStore")) {
+                if(useLocalStore.getAsBoolean()) {
                     field=model.advanceDirectLocalStore(dt,substeps,discontinuity,wasActive,held!=null,previous,start,rates);
                     wasActive=true;
                 } else for (int sub=0;sub<substeps;sub++) {
@@ -455,7 +466,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
                     states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled,
-                    getSt1Substeps(st1.getMachine().getId())));
+                    getSt1Substeps(st1.getMachine().getId()),this::localStoreEnabled));
             states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;
@@ -581,7 +592,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             var local=localSt1Controllers.stream().filter(c->c.model==st1).findFirst().orElse(null);
             if(local==null)return ()->false;
             BooleanSupplier ready=frozenControllerReady(st1,false);
-            exciterReady=()->local.wasActive && !Boolean.getBoolean("ipss.experiment.disableSt1LocalStore")
+            exciterReady=()->local.wasActive && localStoreEnabled()
                     && ready.getAsBoolean();
         } else return ()->false;
         return ()->{

@@ -14,6 +14,15 @@ The independent [PowerWorld GENQEC reference](https://www.powerworld.com/WebHelp
 also describes the zero-q-transient interpretation. This is not proof that
 other zero-time or missing-winding configurations have been verified.
 
+Startup-validation repair, 2026-10-23: the parameter validator now permits
+T'qo=0 only for the implemented GENQEC-family branch with X'q=Xq. The existing
+electrical equations and imported values are unchanged. Other round-rotor
+families still require a positive transient time; negative or nonfinite
+transient times and zero subtransient times remain errors. The original three
+conformance tests and separate parameter-boundary regressions cover this rule.
+This restores access to the previously verified branch without expanding its
+trajectory-acceptance claim.
+
 The diagram can suggest a q-axis observation coordinate scaled by
 (X'q−X''q)/(X'q−Xl). Both native and PowerWorld traces instead report the
 existing general coordinate. For the native scaled-quadratic initial point,

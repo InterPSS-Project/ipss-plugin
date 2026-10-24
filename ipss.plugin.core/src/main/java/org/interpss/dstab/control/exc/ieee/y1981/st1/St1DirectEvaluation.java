@@ -19,9 +19,9 @@ import com.interpss.dstab.controller.cml.wrapper.*;
 /** Experimental evaluator for the unmodified ST1 graph. Not a general CML replacement. */
 final class St1DirectEvaluation {
     final IEEE1981ST1Exciter model;
-    final boolean boundaryReuseEnabled=!Boolean.getBoolean("ipss.experiment.disableSt1BoundaryReuse");
+    final boolean boundaryReuseEnabled;
     long boundaryReuseCount;
-    private final boolean fixedScheduleRequested=!Boolean.getBoolean("ipss.experiment.disableSt1FixedSchedule");
+    private final boolean fixedScheduleRequested;
     private boolean fixedSchedule;
     long fixedSchedulePasses;
     private final boolean standardBoundaryGraph;
@@ -59,6 +59,12 @@ final class St1DirectEvaluation {
     }
 
     St1DirectEvaluation(IEEE1981ST1Exciter model, boolean useScalarInputs) {
+        this(model,useScalarInputs,!Boolean.getBoolean("ipss.experiment.disableSt1BoundaryReuse"),
+                !Boolean.getBoolean("ipss.experiment.disableSt1FixedSchedule"));
+    }
+    St1DirectEvaluation(IEEE1981ST1Exciter model, boolean useScalarInputs, boolean boundaryReuse, boolean useFixedSchedule) {
+        this.boundaryReuseEnabled=boundaryReuse;
+        this.fixedScheduleRequested=useFixedSchedule;
         this.model = model;
         BaseFieldAnWrapper<?> foundGate = null;
         var sorted = new ArrayList<Node>();

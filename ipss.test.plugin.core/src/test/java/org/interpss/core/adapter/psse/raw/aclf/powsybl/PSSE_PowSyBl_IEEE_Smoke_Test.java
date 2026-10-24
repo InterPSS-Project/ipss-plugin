@@ -54,7 +54,10 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee14_delimiter() throws Exception {
-		assertSmoke(parse("IEEE_14_bus_delimiter.raw"));
+		var net=parse("IEEE_14_bus_delimiter.raw");
+        assertSmoke(net);
+        org.junit.jupiter.api.Assertions.assertEquals(100000.,net.getBaseKva(),0.);
+        org.junit.jupiter.api.Assertions.assertEquals(60.,net.getFrequency(),0.);
 	}
 
 	@Test

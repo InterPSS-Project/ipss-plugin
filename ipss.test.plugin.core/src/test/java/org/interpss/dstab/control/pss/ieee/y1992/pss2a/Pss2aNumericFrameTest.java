@@ -13,15 +13,8 @@ public class Pss2aNumericFrameTest {
     static ControlBlockFieldAnWrapper field(Ieee1992PSS2AStabilizer p,String name){
         return (ControlBlockFieldAnWrapper)p.getFieldWrapperList().stream().filter(w->w.getFieldName().equals(name)).findFirst().orElseThrow();
     }
-    private static final String OPTION="ipss.experiment.pssNumericFrame";
     static Pss2aDirectEvaluation construct(Ieee1992PSS2AStabilizer model, boolean enabled) {
-        String previous=System.getProperty(OPTION);
-        try {
-            System.setProperty(OPTION,Boolean.toString(enabled));
-            return new Pss2aDirectEvaluation(model,true);
-        } finally {
-            if(previous==null)System.clearProperty(OPTION);else System.setProperty(OPTION,previous);
-        }
+        return new Pss2aDirectEvaluation(model,true,enabled);
     }
     static Pss2aDirectEvaluation plan(boolean enabled,int m,int n,double t) throws Exception {
         var p=Pss2aScalarPreparationTest.model(t==0.);

@@ -196,7 +196,10 @@ public final class DynamicParameterValidator {
                 if(s instanceof RoundRotorMachine q) {
                     positive("Xq'",q.getXq1(),false);order("Xl < Xq'",q.getXl(),q.getXq1(),true);
                     order("Xq'' <= Xq'",q.getXq11(),q.getXq1(),false);order("Xq' <= Xq",q.getXq1(),q.getXq(),false);
-                    time("Tq0'",q.getTq01(),false);
+                    // The documented salient branch removes the q-axis transient state.
+                    boolean removedQTransient=q instanceof org.interpss.dstab.mach.GenqecMachine
+                            && q.getTq01()==0. && q.getXq1()==q.getXq();
+                    time("Tq0'",q.getTq01(),removedQTransient);
                 }
             }
         }

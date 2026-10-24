@@ -53,7 +53,7 @@ public class Ieee39PsseBenchmarkTest {
 
     @ParameterizedTest
     @MethodSource("benchmarkCases")
-    void exportBenchmark(String scenario, double step, String method) throws Exception {
+    void exportBenchmark(String scenario, double step, String method, @org.junit.jupiter.api.io.TempDir Path outputRoot) throws Exception {
         // Keep events and the endpoint on the fixed integration grid in both simulators.
         double faultStart = Math.round(1.0 / step) * step;
         double faultClear = Math.round(1.05 / step) * step;
@@ -76,7 +76,7 @@ public class Ieee39PsseBenchmarkTest {
         boolean staggered = method.equals("psse-staggered-euler");
         directory += staggered ? "-staggered" : "-modified-euler";
         directory += CONFIG.string("ieee39.outputSuffix", "");
-        Path out = Path.of(directory, scenario);
+        Path out = outputRoot.resolve(Path.of(directory).getFileName()).resolve(scenario);
         Files.createDirectories(out);
         StringBuilder pf = new StringBuilder("bus,v_pu,angle_deg\n");
         for (int i=1;i<=39;i++) {

@@ -732,6 +732,11 @@ with only existing skips and zero failures/errors. Source/run/report hashes
 retain the scoped implementation evidence. Complete coupled parity remains open. See the
 [compensation checklist](benchmarks/genqec-field-compensation-2026-10-19.md).
 
+Startup-validation follow-up, 2026-10-23: recognize the implemented GENQEC-family
+T'qo=0/X'q=Xq branch while retaining invalid-time and other-family rejection.
+Imported parameters, electrical equations and the existing acceptance scope are
+unchanged; parameter-boundary tests accompany the validator repair.
+
 GENQEC/GENQEJ bounded salient-pole verification: eight exact T'qo=0/X'q=Xq
 phasor/state profiles were generated twice cold across two models, two saturation
 choices and two steps. Eight additional PowerWorld standard-model diagnostics

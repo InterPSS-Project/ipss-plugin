@@ -46,7 +46,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	private boolean exst1FieldVoltageLimits;
     private boolean initializingFeedbackTap;
 	public double k1 = 1.0;/*constant*/
-	
+
 	/*
 	 * Part-1: Define the blocks
 	 * ==============================
@@ -58,11 +58,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
           input="mach.vt",
           parameter={"type.NoLimit", "this.k1", "this.tr"},
           y0="mach.vt",//debug = true,
-          initOrderNumber=-1 
+          initOrderNumber=-1
           )
      DelayControlBlock trDelayBlock;
-	
-	
+
+
 	   //gainBlock----kg1 = 1.0 uses for set the limits
 	   public double vimax = 5.30, vimin = -5.11;
 	   @AnControllerField(
@@ -105,8 +105,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		   parameter={"type.NonWindup", "this.ka", "this.ta", "this.vamax", "this.vamin"},
 		   y0="this.gainCustomBlock.u0 - pss.vs * this.vosOutput"  )
 	   DelayControlBlock kaDelayBlock;
-	   
-	   
+
+
 	   //washoutBlock----sKf/(1+sTf)
 	   public double kf = 1, tf = 0.01, k = kf/tf;
 	   @AnControllerField(
@@ -139,7 +139,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		   debug = true)
 	   GainBlock gainCustomBlock;
 	   */
-   
+
 	public double kg = 1.0, kc = 0.0, vrmax = 5.30, vrmin = -5.11;
 	public double klr = 0.0, ilr = 0.0;
 	/** External UEL signal; zero is the absent value for error summation. */
@@ -199,8 +199,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 			  return Math.max(0.0, klr * (ifd - ilr));
 		  }
 	   };
-	   
-	   
+
+
 
 
     // UI Editor panel
@@ -309,7 +309,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 			this.vrmin = Math.min(this.vrmin,
 					(mach.getEfd() + (exst1FieldVoltageLimits ? this.kc * ifd0 : 0.0)) / vt0);
 		}
-        
+
 		this.k = this.tf == 0.0 ? 0.0 : this.kf / this.tf;
         // always add the following statement
         // The regulator is solved backwards from EFD. During this pass use
@@ -493,6 +493,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
     public void enableDirectEvaluationExperiment() {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
         directEvaluation=new St1DirectEvaluation(this);
+    }
+    /** Select local evaluation optimizations explicitly for this controller instance. */
+    public void enableDirectEvaluationExperiment(boolean boundaryReuse,boolean fixedSchedule) {
+        if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        directEvaluation=new St1DirectEvaluation(this,true,boundaryReuse,fixedSchedule);
     }
     /** Default local integration count; higher counts remain explicitly configurable. */
     public static final int DEFAULT_LOCAL_SUBSTEPS = 1;

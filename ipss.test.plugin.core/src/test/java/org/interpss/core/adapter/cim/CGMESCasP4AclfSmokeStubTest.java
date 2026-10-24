@@ -2,6 +2,8 @@ package org.interpss.core.adapter.cim;
 
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
@@ -42,7 +44,8 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  * MiniGrid-Merged {@code |V|} 0.02 / 70% + flow 0.35;
  * Svedala-Merged {@code |V|} 0.015 / 90%, angle 1.5° / 85%, flow 0.43;
  * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet);
- * ReliCap Svedala / Britheim / Portheim: hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥70%);
+ * ReliCap Svedala: hard NR + voltage ({@code |V|} 0.006 / 85%, angle ≥70%);
+ * ReliCap Britheim / Portheim: hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥70%);
  * ReliCap Espheim: soft NR + voltage ({@code |V|} 0.02 / 85%, angle ≥50%);
  * Type3 CGM first and mid hour ({@code 1030Z}): hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥50%);
  * MicroGrid T4 BE / RealGrid: hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥50%);
@@ -617,11 +620,29 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path tpXml = mustFile(dir, "20220615T2230Z_2D_Svedala_TP_1.xml");
 		Path sshXml = mustFile(dir, "20220615T2230Z_2D_Svedala_SSH_1.xml");
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
-		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
+		Path common = casDir("ReliCap-commonData-cimxml", "Instance/commonData/Grid/cimxml")
+				.resolve("Grid_CommonData_CGM-CD.xml");
+		assertTrue(Files.isRegularFile(common), "Svedala requires its declared Common Data dependency: " + common);
+		Path borders = casDir("ReliCap-boundary-cimxml", "Instance/boundaryData/Grid/cimxml");
+		Path belgovia = mustFile(borders, "Boundary_Border-Svedala-Belgovia.xml");
+		Path espheim = mustFile(borders, "Boundary_Border-Svedala-Espheim.xml");
+		var parser = new CGMESDirectParser();
+		AclfNetwork net = parser.parse(abs(eqXml, sshXml, tpXml, svXml, common, belgovia, espheim));
 		assertTrue(net.getNoBus() > 0);
+		// Check the declared bases before solving: an absent shared definition must
+		// not silently turn energized 11/400 kV nodes into 100 kV fallback buses.
+		var model = parser.getCimModel();
+		for (var node : model.topologicalNodes()) {
+			var bus = net.getBus(node.getLocalId());
+			if (bus == null) continue;
+			var nominal = model.getBaseVoltageValue(node.getResourceId("TopologicalNode.BaseVoltage"));
+			assertNotNull(nominal, "Unresolved declared base at " + node.getLocalId());
+		}
+		assertEquals(400000., net.getBus("_9833e74e-0d3f-32a7-07b5-8010596b6e3c").getBaseVoltage(), 1e-6);
+		assertEquals(11000., net.getBus("_6648ae85-7c91-cfcb-a258-f9bcd4fd89b9").getBaseVoltage(), 1e-6);
 		runNrSeeded(net, sv);
 		// |V|-primary; angle floor raised after UCTE unify (was 0.0).
-		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.006"));
 		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
         try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
                 "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.70")))) {

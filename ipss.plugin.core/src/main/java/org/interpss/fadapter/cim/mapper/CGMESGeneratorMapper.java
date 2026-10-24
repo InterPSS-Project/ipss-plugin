@@ -7,6 +7,8 @@
 package org.interpss.fadapter.cim.mapper;
 
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -98,6 +100,13 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
 
         double maxQVar = bag.getDouble("SynchronousMachine.maxQ", 0.0);
         double minQVar = bag.getDouble("SynchronousMachine.minQ", 0.0);
+        // A declared capability curve supplies the limits at the SSH active
+        // power; scalar zero bounds can be placeholders in that case.
+        double[] curveLimits = reactiveCurveLimits(bag, pW);
+        if (curveLimits != null) {
+            minQVar = curveLimits[0];
+            maxQVar = curveLimits[1];
+        }
         double ratedSVA = bag.getDouble("RotatingMachine.ratedS", 0.0);
 
         String regControl = bag.getResourceId("RegulatingCondEq.RegulatingControl");
@@ -162,6 +171,66 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
         log.debug(String.format("Created generator: %s on bus %s, type=%s, P=%.2f MW, Q=%.2f MVAr, targetV=%.4f",
             name, busId, isPV ? AclfGenCode.GEN_PV : AclfGenCode.GEN_PQ,
             CGMESUnitConverter.siPowerToMVA(pW), CGMESUnitConverter.siPowerToMVA(qVar), targetVPU));
+    }
+
+    /** Initial capability bounds in MVAr, evaluated at signed SSH active power. */
+    double[] reactiveCurveLimits(CGMESPropertyBag machine, double scheduledP) {
+        String ref = machine.getResourceId("SynchronousMachine.InitialReactiveCapabilityCurve");
+        if (ref == null || cimModel == null) return null;
+        var curve = cimModel.getResource(ref);
+        if (curve == null) throw new IllegalArgumentException("Unresolved reactive capability curve: " + ref);
+        var rdf = cimModel.getJenaModel();
+        String ns = cimModel.getCimNamespace();
+        var points = new ArrayList<double[]>();
+        var resources = rdf.listResourcesWithProperty(rdf.createProperty(ns + "CurveData.Curve"),
+                rdf.createResource(curve.getId()));
+        try {
+            while (resources.hasNext()) {
+                var point = new CGMESPropertyBag(resources.next(), ns, cimModel.getEntsoeNamespace());
+                double p = curveAxisMva(curve, "x", point.getDouble("CurveData.xvalue", Double.NaN));
+                double lo = curveAxisMva(curve, "y1", point.getDouble("CurveData.y1value", Double.NaN));
+                double hi = curveAxisMva(curve, "y2", point.getDouble("CurveData.y2value", Double.NaN));
+                if (!Double.isFinite(p) || !Double.isFinite(lo) || !Double.isFinite(hi) || lo > hi)
+                    throw new IllegalArgumentException("Invalid reactive capability point: " + point.getId());
+                points.add(new double[] {p, lo, hi});
+            }
+        } finally {
+            resources.close();
+        }
+        if (points.isEmpty()) throw new IllegalArgumentException("Empty reactive capability curve: " + ref);
+        points.sort(Comparator.comparingDouble(point -> point[0]));
+        for (int i = 1; i < points.size(); i++)
+            if (points.get(i)[0] == points.get(i - 1)[0])
+                throw new IllegalArgumentException("Duplicate reactive capability abscissa: " + ref);
+        double p = CGMESUnitConverter.siPowerToMVA(scheduledP);
+        String style = curve.getResourceId("Curve.curveStyle");
+        boolean constant = style != null && style.endsWith("CurveStyle.constantYValue");
+        if (style != null && !constant && !style.endsWith("CurveStyle.straightLineYValues"))
+            throw new IllegalArgumentException("Unsupported reactive capability curve style: " + style);
+        double[] left = points.get(0);
+        for (int i = 1; i < points.size(); i++) {
+            double[] right = points.get(i);
+            if (p < right[0]) {
+                double fraction = constant || p <= left[0] ? 0. : (p - left[0]) / (right[0] - left[0]);
+                return new double[] {left[1] + fraction * (right[1] - left[1]),
+                        left[2] + fraction * (right[2] - left[2])};
+            }
+            left = right;
+        }
+        return new double[] {left[1], left[2]};
+    }
+
+    private static double curveAxisMva(CGMESPropertyBag curve, String axis, double value) {
+        String multiplier = curve.getResourceId("Curve." + axis + "Multiplier");
+        if (multiplier == null) return CGMESUnitConverter.siPowerToMVA(value);
+        String suffix = multiplier.substring(multiplier.lastIndexOf('.') + 1);
+        return value * switch (suffix) {
+            case "none" -> 1e-6;
+            case "k" -> 1e-3;
+            case "M" -> 1.;
+            case "G" -> 1e3;
+            default -> throw new IllegalArgumentException("Unsupported capability curve multiplier: " + multiplier);
+        };
     }
 
     /**

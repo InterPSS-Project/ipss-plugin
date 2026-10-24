@@ -31,26 +31,20 @@ public class PsseSt1LocalIntegrationTest {
 
     @Test
     void configuredCountsReachBothLocalIntegrationPaths() throws Exception {
-        String key="ipss.experiment.disableSt1LocalStore";
-        String previous=System.getProperty(key);
-        try {
             for (boolean zeroTa : new boolean[] {false,true}) {
                 double[] ten=null;
                 for (int count : new int[] {10,1,4,128}) {
-                    System.clearProperty(key);
-                    var fixture=load(zeroTa,.0005,s->s.setSt1Substeps(count));
+
+                    var fixture=load(zeroTa,.0005,s->{s.setSt1Substeps(count);s.setSt1LocalStoreEnabled(true);});
                     assertEquals(.0005,fixture.algorithm().getSimuStepSec(),0.);
                     double[] direct=trajectory(fixture);
-                    System.setProperty(key,"true");
-                    double[] fallback=trajectory(load(zeroTa,.0005,s->s.setSt1Substeps(count)));
+
+                    double[] fallback=trajectory(load(zeroTa,.0005,s->{s.setSt1Substeps(count);s.setSt1LocalStoreEnabled(false);}));
                     assertArrayEquals(direct,fallback,1e-12,"local count "+count);
                     if(count==10)ten=direct;
                     else assertNotEquals(ten[0],direct[0],"count must change the local integration");
                 }
             }
-        } finally {
-            if(previous==null)System.clearProperty(key);else System.setProperty(key,previous);
-        }
     }
 
     @Test

@@ -20,3 +20,6 @@
 /ipss.test.plugin.core/src/test/python/psse_wt3e1_probe.py text eol=lf
 /ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt3e1_psse36.dyr text eol=lf
 /ipss.test.plugin.core/testData/reference/psse/smib-wt3e1/* text eol=lf
+# Pinned upstream Common Data and its license retain their original bytes.
+/ipss.test.plugin.core/testData/adpter/cim/cgmes3.0/cas/ReliCap-commonData-cimxml/Grid_CommonData_CGM-CD.xml -text whitespace=-blank-at-eol
+/ipss.test.plugin.core/testData/adpter/cim/cgmes3.0/cas/ReliCap-commonData-cimxml/LICENSE.md -text whitespace=-blank-at-eol
