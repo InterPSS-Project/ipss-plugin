@@ -7,7 +7,7 @@ import java.util.Map;
 /** Reusable observation buffers; maps are allocated only when a client reads. */
 public final class IntegrationStateMonitor {
     public enum Stage {
-        NOT_EVALUATED, PREDICTOR, CORRECTOR, STAGGERED, TWO_STEP,
+        NOT_EVALUATED, INITIALIZATION, PREDICTOR, CORRECTOR, STAGGERED, TWO_STEP,
         /** Two-step rate averaged across an input discontinuity before integration. */
         TWO_STEP_EVENT,
         /** Average applied change per second, rather than an instantaneous RHS. */

@@ -99,6 +99,33 @@ public class PsseModelRemoveIdvProcessorTest {
     }
 
     @Test
+    void slotRemovalsSkipOnlyTheirNamedControllersBeforeAttachment() throws Exception {
+        Path raw = tempDir.resolve("case.raw");
+        Files.copy(Path.of("testData/adpter/psse/v33/SMIB/SMIB_v33.raw"), raw);
+        String machine = "1 'GENROU' 1 6.0 .033 .54 .078 6.4 0 .8958 .8645 .1189 .1969 .089 .0521 0 0 /\n";
+        String exciter = "1 'IEEET1' 1 0 400 .066667 1 -1 0 .9032 .08 .35 0 3.3544 .1599 4.4725 .4275 /\n";
+        String governor = "1 'TGOV1' 1 .05 .4 1.2 0 2 8 0 /\n";
+        // A deliberately incomplete stabilizer is still an intentional skip:
+        // slot processing must precede schema/prerequisite validation.
+        String stabilizer = "1 'IEEEST' 1 1 /\n";
+        Path dyr = tempDir.resolve("model.dyr");
+        Files.writeString(dyr, machine + exciter + governor + stabilizer);
+        for (int slot : new int[]{3,6,7}) {
+            Files.writeString(tempDir.resolve("model_MODREMOVE.idv"), "BAT_PLMOD_REMOVE 1 '1' " + slot + "\n");
+            var loader = new PSSEMultiFileLoader();
+            var context = loader.loadDStab(raw.toString(), dyr.toString());
+            var owner = context.getDStabilityNet().getMachine("Bus1-mach1");
+            assertNotNull(owner);
+            assertEquals(slot == 6, owner.getExciter() == null);
+            assertEquals(slot == 7, owner.getGovernor() == null);
+            assertNull(owner.getStabilizer());
+            assertEquals(1, loader.getLastDynamicImportReport().count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE));
+            assertTrue(loader.getLastDynamicImportReport().entries().stream().anyMatch(entry ->
+                    entry.message().equals("model intentionally removed by BAT_PLMOD_REMOVE type " + slot)));
+        }
+    }
+
+    @Test
     void reportsMissingGeneratorAndMalformedCommand() throws Exception {
         var network = oneGeneratorNetwork();
         Path missing = tempDir.resolve("missing_MODREMOVE.idv");

@@ -23,7 +23,29 @@ public final class PsseModelRemoveIdvProcessor {
     private PsseModelRemoveIdvProcessor() { }
 
     /** One model-removal command, preserving the PSS/E model-type selector. */
-    public record Directive(GeneratorKey generator, int modelType) { }
+    public record Directive(GeneratorKey generator, int modelType) {
+        public Directive {
+            java.util.Objects.requireNonNull(generator);
+            if (modelType < 1 || modelType > 10)
+                throw new IllegalArgumentException("Model-removal selector must be between 1 and 10");
+        }
+    }
+
+    /** Native plant-model slot for a known runtime record; zero denotes a different model family. */
+    public static int modelType(org.interpss.fadapter.psse.dyr.PsseDyrRecord record) {
+        if (record.canonicalModelName().equals("LCFB1")) return 8;
+        return org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find(record.canonicalModelName())
+                .map(model -> switch (model.category()) {
+                    case SYNCHRONOUS_MACHINE, CONVERTER_MACHINE -> 1;
+                    case COMPENSATOR -> 2;
+                    case STABILIZER -> 3;
+                    case UNDER_EXCITATION_LIMITER -> 4;
+                    case OVER_EXCITATION_LIMITER -> 5;
+                    case EXCITER -> 6;
+                    case GOVERNOR -> 7;
+                    default -> 0;
+                }).orElse(0);
+    }
 
     /** Parsed commands and generators whose machine/converter model is removed. */
     public record Result(Set<Directive> directives, Set<GeneratorKey> removedGeneratorKeys) {

@@ -32,6 +32,22 @@ public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
     private static final double TOL=1e-8;
     @TempDir Path tempDir;
 
+    @Test void loadedMachineUsesTheSameFieldCurrentBaseAtInitializationAndRuntime()throws Exception {
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        Path dyr=tempDir.resolve("field-base.dyr");
+        Files.writeString(dyr,"1 'EXAC2' '1' 0 0 0 300 .066667 8 -8 20 105 -85 .3 10 1 .03 1.2 .3 .4 1 4.4 3.3 .01 4.4 .08 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var algorithm=DStabObjectFactory.createDynamicSimuAlgorithm(builder.getDStabNetwork());
+        algorithm.setSimuStepSec(.0005);algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());assertTrue(algorithm.initialization());
+        var machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var exciter=(Exac2Exciter)machine.getExciter();double initial=exciter.getOutput(machine);
+        assertNotEquals(machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.MACHINE),
+                machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.EXCITER),1e-5);
+        for(int i=0;i<100;i++)step(exciter,machine,.0005);
+        assertEquals(initial,exciter.getOutput(machine),1e-10,"Unchanged machine boundary must remain at equilibrium");
+    }
+
     @Test void parsesNativeRecordInitializesAndResponds() throws Exception {
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
         Path dyr=tempDir.resolve("exac2.dyr");

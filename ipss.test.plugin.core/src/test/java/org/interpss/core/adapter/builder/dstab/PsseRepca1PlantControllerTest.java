@@ -28,6 +28,20 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.core.aclf.AclfBranch;
 
 public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
+    @Test void nativePositiveLowerDeadbandIsAMagnitudeAndKeepsTheInitializedEquilibrium() {
+        var data=new Repca1Data(0,0,0,"0",1,1,0,.066667,18,5,0,.05,0,0,0,.02,
+                .1,-.1,.025,0,.493,-.493,.1,.05,.25,0,0,999,-999,999,-999,.1,20,0,1);
+        var model=Repca1Model.fromNativeRecord(data);
+        var boundary=new Repca1Model.Measurement(.24,.047,new Complex(1.01,0),
+                new Complex(.24,-.047).divide(1.01),1);
+        model.initializeMeasured(.24,.047,boundary);var initial=model.getNamedStates();
+        for(int i=0;i<100;i++) {
+            model.stepMeasured(.0005,boundary,0);model.stepMeasured(.0005,boundary,1);
+        }
+        for(var entry:initial.entrySet())assertEquals(entry.getValue(),model.getNamedStates().get(entry.getKey()),1e-12,entry.getKey());
+        assertEquals(.025,model.getData().dbd1(),"Entered data must remain unchanged");
+    }
+
     @Test void nativeFallbackProfilesReplayAllSevenStates() throws Exception {
         org.interpss.core.dstab.reference.RepcaNativeVerification.verifyProfiles(
                 org.interpss.core.dstab.reference.RepcaFallbackReference.profiles(),org.interpss.core.dstab.reference.RepcaFallbackReference::branchFeedback);

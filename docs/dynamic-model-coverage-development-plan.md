@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+Texas7k's attached stack now holds a ten-second all-bus equilibrium after
+correcting native-record REPCA1 lower-deadband interpretation and EXAC2
+field-current base consistency. EXPIC1 is loadable through its exact record
+and seven-coordinate Java runtime; 86 exciters and 31 dependent stabilizers
+now attach. Eighteen torque records and fifteen REAX attachments remain open,
+so full-case acceptance is still pending. See the
+[startup evidence and explicit remaining scope](benchmarks/texas7k-controller-startup-2026-10-24.md).
+
+- [x] Verify both initialization faults independently and preserve red/green regressions.
+- [x] Add exact EXPIC1 import, state access, native reference matrix and integrated-coordinate gates.
+- [x] Preserve scoped model-removal selectors through preparation and attachment.
+- [ ] Finish the torque and REAX import/runtime gaps before full-case acceptance.
+- [ ] Resolve EXPIC1 algebraic event phases and qualify full native trajectories.
+
 OEL4C now has bounded typed AC1C summation attachment, machine-base Q/Qmax
 measurement and accepted-state rollback. Twenty-two typed SMIB scenarios cover
 flat/fault, initially active, controller branches and 50/100/200-MVA owners.

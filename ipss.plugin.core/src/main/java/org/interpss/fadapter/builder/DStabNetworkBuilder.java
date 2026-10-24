@@ -2270,6 +2270,12 @@ public class DStabNetworkBuilder {
     }
 
     /** Attach the PSS/E EXAC1 rotating AC exciter. */
+    public org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter addExcExpic1(String busId,String genId,
+            org.interpss.dstab.control.exc.psse.expic1.Expic1Data data) {
+        Machine machine=findMachine(busId,genId);
+        return machine==null?null:new org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter(machine.getId()+"_Exc",data,machine);
+    }
+
     public Exac1Exciter addExcExac1(String busId, String genId, Exac1Data data) {
         if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0 || data.getTf() <= 0.0
                 || data.getTr() < 0.0 || data.getTb() < 0.0 || data.getTa() < 0.0

@@ -38,6 +38,9 @@ import org.interpss.core.adapter.builder.dstab.Ac7bDynawoEquationConformanceTest
 import org.interpss.core.adapter.builder.dstab.Ac7bImportTest;
 import org.interpss.core.adapter.builder.dstab.RexsysExciterTest;
 import org.interpss.core.adapter.builder.dstab.Esac6aExciterTest;
+import org.interpss.core.adapter.builder.dstab.Expic1ExciterTest;
+import org.interpss.core.dstab.Expic1NativeVerificationTest;
+import org.interpss.core.dstab.Exac2FieldBaseVerificationTest;
 import org.interpss.core.adapter.builder.dstab.Dc4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.St6bExciterTest;
 import org.interpss.core.adapter.builder.dstab.St6cExciterTest;
@@ -863,6 +866,9 @@ import org.junit.platform.suite.api.Suite;
 	Ac7bImportTest.class,
 	RexsysExciterTest.class,
 	Esac6aExciterTest.class,
+	Expic1ExciterTest.class,
+	Expic1NativeVerificationTest.class,
+	Exac2FieldBaseVerificationTest.class,
 	Dc4bExciterTest.class,
 	DStabNetworkBuilderDc4cTest.class,
 	St6bExciterTest.class,

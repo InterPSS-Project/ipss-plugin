@@ -198,8 +198,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
         pMeasured = lag(pMeasured, activeMeasurement(measurement), data.tp(), dt);
         qOrVMeasured = lag(qOrVMeasured, reactiveMeasurement(measurement), data.tfltr(), dt);
 
-        double qError = qvReference - qOrVMeasured;
-        qError = limit(deadband(qError, data.dbd1(), data.dbd2()), data.emin(), data.emax());
+        double qError = reactiveError(qOrVMeasured);
         // WECC/PowerWorld freeze the plant integrator below Vfrz; the proportional
         // path remains live, which is distinct from holding the entire output.
         boolean freezeIntegrator = measurement.vMag() < data.vfrz();
@@ -392,7 +391,11 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
 
     private double reactiveError(double measured) {
         double error = qvReference - measured;
-        return limit(deadband(error, data.dbd1(), data.dbd2()),
+        // Native records specify the lower width as a magnitude; both signs
+        // produce identical cold reference trajectories. Keep typed interval
+        // semantics and the original entered constants unchanged.
+        double lower = nativeRecordConvention ? -Math.abs(data.dbd1()) : data.dbd1();
+        return limit(deadband(error, lower, data.dbd2()),
                 data.emin(), data.emax());
     }
 

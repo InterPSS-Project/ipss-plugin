@@ -204,6 +204,16 @@ public final class DynamicParameterValidator {
             }
         }
         boolean controller(Object controller) {
+            if(controller instanceof org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter c) {
+                var d=c.getData();
+                time("Tr",d.tr(),true);time("Ta2",d.ta2(),true);time("Ta4",d.ta4(),true);
+                time("Tf1",d.tf1(),false);time("Tf2",d.tf2(),true);time("Te",d.te(),true);
+                positive("Ka",d.ka(),true);positive("Ta1",d.ta1(),true);
+                positive("Ta3",d.ta3(),true);positive("Kf",d.kf(),true);positive("Kc",d.kc(),true);
+                limits("PI",d.vr2(),d.vr1());limits("VR",d.vrmin(),d.vrmax());limits("E0",d.efdmin(),d.efdmax());
+                add(Severity.INFO,"initialization policy",h,"Effective limits include the solved initial operating point; imported constants are unchanged");
+                return true;
+            }
             if(controller instanceof IEEE2005ST4BExciter c) {
                 var d=c.getData();finiteData(d,"Vgmax");
                 time("Tr",d.getTr(),true);time("Ta",d.getTa(),true);

@@ -82,10 +82,13 @@ public class Exac2Exciter extends AnnotateExciter implements IntegrationStepAwar
         }
     };
 
-    @AnFunctionField(input={"this.fieldIntegrator.y","mach.ifd"})
+    @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction vfe=new CMLFunctionAdapter() {
         @Override public double eval(double[] value) {
-            double ifd=Double.isFinite(value[1]) ? value[1] : 0;
+            // KD uses the same exciter-base field current as initialization
+            // and rectifier loading. The generic CML machine signal uses a
+            // different field-current base when Xd-Xl differs from one.
+            double ifd=exciterIfd();
             return value[0]*(ke+saturation.eval(new double[]{value[0]}))+kd*ifd;
         }
     };

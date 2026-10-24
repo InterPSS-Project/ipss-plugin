@@ -161,26 +161,28 @@ public class PSSEMultiFileLoader {
         }
         Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators = new LinkedHashSet<>();
         Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators = new LinkedHashSet<>();
+        Set<PsseModelRemoveIdvProcessor.Directive> removalDirectives = new LinkedHashSet<>();
         for (Path preparationFile : preparationFiles) {
             gnetRemovedGenerators.addAll(PsseGnetIdvProcessor.apply(dsNet,
                     preparationFile.toString())
                     .convertedGeneratorKeys());
-            modelRemovedGenerators.addAll(PsseModelRemoveIdvProcessor.apply(dsNet,
-                    preparationFile.toString()).removedGeneratorKeys());
+            var removals = PsseModelRemoveIdvProcessor.apply(dsNet, preparationFile.toString());
+            modelRemovedGenerators.addAll(removals.removedGeneratorKeys());
+            removalDirectives.addAll(removals.directives());
         }
 
         if (modelFiles.size() == 1) {
             String modelFile = modelFiles.get(0);
             if (modelFile.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
                 parseDynamicModels(dsNet, modelFile, gnetRemovedGenerators,
-                        modelRemovedGenerators);
+                        modelRemovedGenerators, removalDirectives);
             } else {
                 new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFile);
             }
         } else if (modelFiles.size() >= 2) {
             new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFiles.get(0));
             parseDynamicModels(dsNet, modelFiles.get(1), gnetRemovedGenerators,
-                    modelRemovedGenerators);
+                    modelRemovedGenerators, removalDirectives);
         }
 
         if (responseFiles.size() > 1)
@@ -201,12 +203,14 @@ public class PSSEMultiFileLoader {
 
     private void parseDynamicModels(BaseDStabNetwork<?, ?> dsNet, String modelFile,
             Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators,
-            Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators)
+            Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators,
+            Set<PsseModelRemoveIdvProcessor.Directive> removalDirectives)
             throws InterpssException {
         DStabNetworkBuilder builder = new DStabNetworkBuilder(dsNet);
         var parser = new PSSEDStabDirectParser(builder)
                 .setGnetRemovedGenerators(gnetRemovedGenerators)
-                .setModelRemovedGenerators(modelRemovedGenerators);
+                .setModelRemovedGenerators(modelRemovedGenerators)
+                .setModelRemovalDirectives(removalDirectives);
         try { parser.parseDynFile(modelFile); }
         finally { lastDynamicImportReport = parser.getLastImportReport(); }
     }

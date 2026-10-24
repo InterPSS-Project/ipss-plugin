@@ -188,6 +188,7 @@ public class PSSEDStabDirectParser {
     private Regfma1RecordFormat regfma1RecordFormat = Regfma1RecordFormat.AUTO_COMPATIBLE;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
+    private final java.util.Map<GeneratorKey, Set<Integer>> modelRemovalTypes = new java.util.HashMap<>();
     private final Set<GeneratorKey> declaredElectricalGenerators = new java.util.HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
@@ -218,6 +219,16 @@ public class PSSEDStabDirectParser {
     public PSSEDStabDirectParser setModelRemovedGenerators(Collection<GeneratorKey> keys) {
         modelRemovedGenerators.clear();
         if (keys != null) modelRemovedGenerators.addAll(keys);
+        return this;
+    }
+
+    /** Apply slot-specific preprocessing without removing the generator or its other controls. */
+    public PSSEDStabDirectParser setModelRemovalDirectives(
+            Collection<PsseModelRemoveIdvProcessor.Directive> directives) {
+        modelRemovalTypes.clear();
+        if (directives != null) for (var directive : directives)
+            modelRemovalTypes.computeIfAbsent(directive.generator(), ignored -> new HashSet<>())
+                    .add(directive.modelType());
         return this;
     }
 
@@ -291,10 +302,17 @@ public class PSSEDStabDirectParser {
                             "generator intentionally removed by GNET preprocessing");
                     continue;
                 }
-                if (generatorTarget && modelRemovedGenerators.contains(key)) {
+                Set<Integer> removedSlots = modelRemovalTypes.getOrDefault(key, Set.of());
+                if (generatorTarget && (modelRemovedGenerators.contains(key) || removedSlots.contains(1))) {
                     if(type.equals("REAXDU"))removedHybrid.put(record,DynamicModelImportStatus.SKIPPED_MODEL_REMOVE);
                     report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
                             "dynamic stack intentionally removed by BAT_PLMOD_REMOVE type 1");
+                    continue;
+                }
+                int removalType = PsseModelRemoveIdvProcessor.modelType(record);
+                if (generatorTarget && removalType != 0 && removedSlots.contains(removalType)) {
+                    report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
+                            "model intentionally removed by BAT_PLMOD_REMOVE type " + removalType);
                     continue;
                 }
                 if(org.interpss.fadapter.psse.dyr.HplntdImporter.recognizes(record)){
@@ -740,6 +758,12 @@ public class PSSEDStabDirectParser {
                 return procExcExst3(busId, genId, fields);
             case "ST5B":
                 return procExcSt5b(record.sourceModelName(), busId, genId, fields);
+            case "EXPIC1": {
+                double[] constants = new double[24];
+                for (int i=0;i<constants.length;i++) constants[i]=record.doubleParameter(i);
+                return builder.addExcExpic1(busId, genId,
+                        org.interpss.dstab.control.exc.psse.expic1.Expic1Data.fromNativeParameters(constants)) != null;
+            }
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
             case "ESURRY":

@@ -33,8 +33,10 @@ public class Texas7kSimulationTest {
         assertFalse(report.isStrictlyComplete(),"This input is a coverage diagnostic until its missing models are resolved");
         var gaps=new java.util.TreeMap<String,Long>();
         for(var entry:report.failures())gaps.merge(entry.canonicalModelName(),1L,Long::sum);
-        assertEquals(java.util.Map.of("EXPIC1",86L,"IEEEST",31L,"WTTQA1",18L,"REAX3BU1",13L,"REAX4BU1",2L),gaps,
+        assertEquals(java.util.Map.of("WTTQA1",18L,"REAX3BU1",13L,"REAX4BU1",2L),gaps,
                 "Review any coverage change before using the case as an accuracy benchmark");
+        assertEquals(86,report.entries().stream().filter(entry->entry.canonicalModelName().equals("EXPIC1")
+                &&entry.status()==org.interpss.fadapter.psse.dyr.DynamicModelImportStatus.ATTACHED).count());
         System.out.println("TEXAS7K_IMPORT "+report.failureSummary()+" gaps="+gaps);
         var algorithm=context.getDynSimuAlgorithm();var lf=algorithm.getAclfAlgorithm();
         lf.getDataCheckConfig().setAutoTurnLine2Xfr(true);lf.getDataCheckConfig().setTurnOffIslandBus(true);
