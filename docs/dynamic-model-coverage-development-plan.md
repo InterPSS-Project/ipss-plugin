@@ -2,6 +2,16 @@
 
 ## Current checkpoint
 
+The active performance objective is now a complete ten-second simulation in
+20 seconds on **one logical CPU**, including recording and export. The verified
+single-CPU baseline uses ordinary serial updates: 24.603-second median,
+24.287–26.038 seconds across three measurements after six complete warmups.
+The one-worker batch plan is slower at a 26.552-second median. Process affinity
+is verified as CPU 6 only before and after the run, and all fourteen complete
+traces remain identical. Earlier four-processor measurements are historical
+evidence and do not qualify this updated objective. See the
+[single-CPU study](benchmarks/texas7k-single-cpu-study-2026-10-25.md).
+
 Fingerprint-checked accepted-endpoint reuse measures 22.744 and 23.610 seconds
 for the complete ten-second run, including recording (23.177-second median in
 a small matched batch). It reduces network iterations to 26,803, and all 6,717
