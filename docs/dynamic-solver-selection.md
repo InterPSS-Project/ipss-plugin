@@ -129,6 +129,10 @@ See [controller preparation and runtime settings](benchmarks/modified-euler-cont
 and [bus-frequency selection](benchmarks/bus-frequency-selection-2026-10-25.md)
 for those specific policies.
 
+The [current-handoff comparison](benchmarks/texas2k-current-handoff-2026-10-25.md)
+separates the primitive interface from its dependent packed and endpoint paths,
+including whole-run timing and numerical differences with the property OFF/ON.
+
 ## Source locations
 
 The core factory and defaults are in `DStabObjectFactory`,

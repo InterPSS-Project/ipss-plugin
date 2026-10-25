@@ -1,0 +1,1649 @@
+{
+  "schema": 1,
+  "source_commits": {
+    "ipss-plugin": "b31cb33ba47882f23421491e7a3fdf382f2c7143",
+    "core": "730d52fa7f414fd051b025436c0f954dad995623"
+  },
+  "logical_cpu": 6,
+  "affinity_mask": 64,
+  "warmups_per_jvm": 4,
+  "measurements_per_jvm": 5,
+  "whole_run_includes_recording_and_export": true,
+  "scenarios": {
+    "profile": {
+      "1": {
+        "modes": {
+          "off": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case1-profile-off-warm-20261025-1",
+            "median_seconds": 11.391481,
+            "range_seconds": [
+              10.6148656,
+              13.3352773
+            ],
+            "measurement_seconds": [
+              11.391481,
+              11.3106138,
+              10.6148656,
+              12.4190871,
+              13.3352773
+            ],
+            "compilation_ms": [
+              803,
+              248,
+              343,
+              237,
+              1688
+            ],
+            "process_cpu_seconds": [
+              11.015625,
+              10.90625,
+              10.3125,
+              11.984375,
+              13.03125
+            ],
+            "median_network_seconds": 6.0333093,
+            "median_device_seconds": 3.9645465,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 45405,
+              "network_maximum_iterations": 18,
+              "packed_calls": 0,
+              "primitive_solves": 0,
+              "accepted_endpoint_reuses": 0,
+              "uncompensated_sources": 0,
+              "uncompensated_factorizations": 0,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 0,
+              "compiled_st1_stages": 547884,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "c522538624e8b6f492f27ca78c88f686a67c38be3d0bcce880a9ebbb78ceab64",
+              "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+              "interpss.csv": "d989864c681828eb3be87a1fbbeed0cbf6906be0aaedcebb37f5de9a7d049362"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "false",
+              "ipss.experiment.packedNetworkIteration": "true",
+              "ipss.experiment.fusedPackedConvergence": "true",
+              "ipss.experiment.removeConverterCompensation": "true",
+              "ipss.experiment.acceptedEndpointReuse": "true",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          },
+          "on": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case1-profile-on-warm-20261025-1",
+            "median_seconds": 8.1985055,
+            "range_seconds": [
+              7.9246629,
+              9.5923065
+            ],
+            "measurement_seconds": [
+              9.0256428,
+              8.1985055,
+              7.9998987,
+              7.9246629,
+              9.5923065
+            ],
+            "compilation_ms": [
+              801,
+              227,
+              339,
+              231,
+              1644
+            ],
+            "process_cpu_seconds": [
+              8.75,
+              7.921875,
+              7.625,
+              7.578125,
+              9.375
+            ],
+            "median_network_seconds": 2.9909115,
+            "median_device_seconds": 3.8052543,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 20559,
+              "network_maximum_iterations": 6,
+              "packed_calls": 4807,
+              "primitive_solves": 20561,
+              "accepted_endpoint_reuses": 2399,
+              "uncompensated_sources": 96,
+              "uncompensated_factorizations": 3,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 1123,
+              "compiled_st1_stages": 547884,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "464c31afa696759b5b0bf2353b2bd0d4f3f0675c4a7e2d9c21fb649b2631bf63",
+              "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+              "interpss.csv": "351030667780a4ea0e82614a4c9208343d576865313d92638467d682657ed9c7"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "true",
+              "ipss.experiment.packedNetworkIteration": "true",
+              "ipss.experiment.fusedPackedConvergence": "true",
+              "ipss.experiment.removeConverterCompensation": "true",
+              "ipss.experiment.acceptedEndpointReuse": "true",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          }
+        },
+        "median_reduction_seconds": 3.192975500000001,
+        "median_reduction_percent": 28.029502924158855,
+        "recording_byte_identical": false,
+        "samples": 2405,
+        "channels": 6190,
+        "differences": {
+          "status": "same-settings-before-after-comparison-not-independent-acceptance",
+          "case": 1,
+          "before": "texas2k-handoff-case1-profile-off-warm-20261025-1",
+          "after": "texas2k-handoff-case1-profile-on-warm-20261025-1",
+          "samples": 2405,
+          "channels": 6190,
+          "timestamps_and_event_sides_identical": true,
+          "all_values_finite": true,
+          "quantities": {
+            "field_voltage": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0011245330508410538,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0016791079703759593,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.03989520102392807,
+                  "rmse_channel": "machine_EFD_pu__bus_5263__id_1",
+                  "maximum_absolute_difference": 0.4315007869516023,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.03785057034749852,
+                  "rmse_channel": "machine_EFD_pu__bus_5263__id_1",
+                  "maximum_absolute_difference": 0.4315007869516023,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                }
+              }
+            },
+            "mechanical_power": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0003842561362100981,
+                  "rmse_channel": "machine_PMECH_MW__bus_8130__id_1",
+                  "maximum_absolute_difference": 0.0009316364760252327,
+                  "peak_channel": "machine_PMECH_MW__bus_8130__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.04489382634501429,
+                  "rmse_channel": "machine_PMECH_MW__bus_8130__id_1",
+                  "maximum_absolute_difference": 0.15469881079661718,
+                  "peak_channel": "machine_PMECH_MW__bus_8130__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.04259315019794416,
+                  "rmse_channel": "machine_PMECH_MW__bus_8130__id_1",
+                  "maximum_absolute_difference": 0.15469881079661718,
+                  "peak_channel": "machine_PMECH_MW__bus_8130__id_1"
+                }
+              }
+            },
+            "rotor_angle": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0030193535615609876,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.006843770750592171,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.8436731377170579,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+                  "maximum_absolute_difference": 2.62324583956854,
+                  "peak_channel": "machine_ANGLE_deg__bus_1079__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.8004341307425957,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+                  "maximum_absolute_difference": 2.62324583956854,
+                  "peak_channel": "machine_ANGLE_deg__bus_1079__id_1"
+                }
+              }
+            },
+            "speed": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 4.4213466294750066e-07,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 7.177947396463935e-07,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 5.921407556846937e-05,
+                  "rmse_channel": "machine_SPEED_pu__bus_1079__id_1",
+                  "maximum_absolute_difference": 0.0003112744697764125,
+                  "peak_channel": "machine_SPEED_pu__bus_7268__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 5.617930320095249e-05,
+                  "rmse_channel": "machine_SPEED_pu__bus_1079__id_1",
+                  "maximum_absolute_difference": 0.0003112744697764125,
+                  "peak_channel": "machine_SPEED_pu__bus_7268__id_1"
+                }
+              }
+            },
+            "terminal_active_power": {
+              "channels": 429,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0021253212480200415,
+                  "rmse_channel": "generator_P_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.00521953470811809,
+                  "peak_channel": "generator_P_MW__bus_1050__id_1",
+                  "maximum_range_nrmse": 0.00011534390181064773,
+                  "nrmse_channel": "generator_P_MW__bus_3071__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 3.812757242382868,
+                  "rmse_channel": "generator_P_MW__bus_1082__id_1",
+                  "maximum_absolute_difference": 27.313524273906282,
+                  "peak_channel": "generator_P_MW__bus_3081__id_1",
+                  "maximum_range_nrmse": 0.03302564865823273,
+                  "nrmse_channel": "generator_P_MW__bus_1082__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 21
+                },
+                "full": {
+                  "maximum_rmse": 3.617349985699087,
+                  "rmse_channel": "generator_P_MW__bus_1082__id_1",
+                  "maximum_absolute_difference": 27.313524273906282,
+                  "peak_channel": "generator_P_MW__bus_3081__id_1",
+                  "maximum_range_nrmse": 0.0313330542982324,
+                  "nrmse_channel": "generator_P_MW__bus_1082__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 18
+                }
+              }
+            },
+            "terminal_reactive_power": {
+              "channels": 429,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.008319201256504106,
+                  "rmse_channel": "generator_Q_Mvar__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.014995340019837933,
+                  "peak_channel": "generator_Q_Mvar__bus_1050__id_1",
+                  "maximum_range_nrmse": 0.0018486576810402857,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1026__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 2
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 1.4198095317699904,
+                  "rmse_channel": "generator_Q_Mvar__bus_1079__id_1",
+                  "maximum_absolute_difference": 8.31595542547987,
+                  "peak_channel": "generator_Q_Mvar__bus_1079__id_1",
+                  "maximum_range_nrmse": 0.06457185353375834,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1026__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 5
+                },
+                "full": {
+                  "maximum_rmse": 1.347043022892162,
+                  "rmse_channel": "generator_Q_Mvar__bus_1079__id_1",
+                  "maximum_absolute_difference": 8.31595542547987,
+                  "peak_channel": "generator_Q_Mvar__bus_1079__id_1",
+                  "maximum_range_nrmse": 0.06126527326821441,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1026__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 5
+                }
+              }
+            },
+            "voltage_angle": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0010607912775916395,
+                  "rmse_channel": "bus_angle_deg__bus_1039",
+                  "maximum_absolute_difference": 0.0016073215347809366,
+                  "peak_channel": "bus_angle_deg__bus_1039"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 13.404257382861386,
+                  "rmse_channel": "bus_angle_deg__bus_1030",
+                  "maximum_absolute_difference": 359.96723185079145,
+                  "peak_channel": "bus_angle_deg__bus_4068"
+                },
+                "full": {
+                  "maximum_rmse": 12.717277054504253,
+                  "rmse_channel": "bus_angle_deg__bus_1030",
+                  "maximum_absolute_difference": 359.96723185079145,
+                  "peak_channel": "bus_angle_deg__bus_4068"
+                }
+              }
+            },
+            "voltage_magnitude": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 1.4922569931291767e-05,
+                  "rmse_channel": "bus_voltage_pu__bus_1026",
+                  "maximum_absolute_difference": 2.3147408321211316e-05,
+                  "peak_channel": "bus_voltage_pu__bus_1026",
+                  "maximum_range_nrmse": 0.00022162319099683917,
+                  "nrmse_channel": "bus_voltage_pu__bus_1050",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0010981035385220416,
+                  "rmse_channel": "bus_voltage_pu__bus_1082",
+                  "maximum_absolute_difference": 0.008881581975459074,
+                  "peak_channel": "bus_voltage_pu__bus_1082",
+                  "maximum_range_nrmse": 0.010063023632011961,
+                  "nrmse_channel": "bus_voltage_pu__bus_1082",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 33
+                },
+                "full": {
+                  "maximum_rmse": 0.0010418328013330617,
+                  "rmse_channel": "bus_voltage_pu__bus_1082",
+                  "maximum_absolute_difference": 0.008881581975459074,
+                  "peak_channel": "bus_voltage_pu__bus_1082",
+                  "maximum_range_nrmse": 0.009547358452674163,
+                  "nrmse_channel": "bus_voltage_pu__bus_1082",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 32
+                }
+              }
+            }
+          }
+        }
+      },
+      "2": {
+        "modes": {
+          "off": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case2-profile-off-warm-20261025-1",
+            "median_seconds": 8.6632146,
+            "range_seconds": [
+              8.5806512,
+              9.9390759
+            ],
+            "measurement_seconds": [
+              9.7335416,
+              8.5991559,
+              8.5806512,
+              8.6632146,
+              9.9390759
+            ],
+            "compilation_ms": [
+              852,
+              200,
+              262,
+              245,
+              1588
+            ],
+            "process_cpu_seconds": [
+              9.40625,
+              8.453125,
+              8.390625,
+              8.390625,
+              9.484375
+            ],
+            "median_network_seconds": 5.998908,
+            "median_device_seconds": 1.5097168,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 52766,
+              "network_maximum_iterations": 21,
+              "packed_calls": 0,
+              "primitive_solves": 0,
+              "accepted_endpoint_reuses": 0,
+              "uncompensated_sources": 0,
+              "uncompensated_factorizations": 0,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 0,
+              "compiled_st1_stages": 173016,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "f5a357ae18e683ea03beff0fa1d0ac09068086f0275aa153b334ec858da878a5",
+              "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+              "interpss.csv": "27ea50b847068b1913fbd0aa1c5d9102461006072c88b945ad485b977bc5a9a0"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "false",
+              "ipss.experiment.packedNetworkIteration": "true",
+              "ipss.experiment.fusedPackedConvergence": "true",
+              "ipss.experiment.removeConverterCompensation": "true",
+              "ipss.experiment.acceptedEndpointReuse": "true",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          },
+          "on": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case2-profile-on-warm-20261025-1",
+            "median_seconds": 5.4860824,
+            "range_seconds": [
+              5.391995,
+              6.799794
+            ],
+            "measurement_seconds": [
+              6.1371852,
+              5.4810119,
+              5.391995,
+              5.4860824,
+              6.799794
+            ],
+            "compilation_ms": [
+              862,
+              190,
+              275,
+              234,
+              1637
+            ],
+            "process_cpu_seconds": [
+              5.921875,
+              5.28125,
+              5.21875,
+              5.328125,
+              6.640625
+            ],
+            "median_network_seconds": 2.8170692,
+            "median_device_seconds": 1.5083564,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 22732,
+              "network_maximum_iterations": 8,
+              "packed_calls": 4807,
+              "primitive_solves": 22734,
+              "accepted_endpoint_reuses": 2399,
+              "uncompensated_sources": 96,
+              "uncompensated_factorizations": 3,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 1123,
+              "compiled_st1_stages": 173016,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "d5cea1575eb7a04e695cfc617a66f75e528a4ae7dfdd8006fef3bd1e5afdf332",
+              "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+              "interpss.csv": "e3f764e2c8a2501d0d035bfdae8688d47f1ff5bf4d6b9a457397c19772f4c72b"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "true",
+              "ipss.experiment.packedNetworkIteration": "true",
+              "ipss.experiment.fusedPackedConvergence": "true",
+              "ipss.experiment.removeConverterCompensation": "true",
+              "ipss.experiment.acceptedEndpointReuse": "true",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          }
+        },
+        "median_reduction_seconds": 3.1771322,
+        "median_reduction_percent": 36.67382544119362,
+        "recording_byte_identical": false,
+        "samples": 2405,
+        "channels": 4810,
+        "differences": {
+          "status": "same-settings-before-after-comparison-not-independent-acceptance",
+          "case": 2,
+          "before": "texas2k-handoff-case2-profile-off-warm-20261025-1",
+          "after": "texas2k-handoff-case2-profile-on-warm-20261025-1",
+          "samples": 2405,
+          "channels": 4810,
+          "timestamps_and_event_sides_identical": true,
+          "all_values_finite": true,
+          "quantities": {
+            "field_voltage": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0034288213546868236,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.011426092438917124,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.29952874689762,
+                  "rmse_channel": "machine_EFD_pu__bus_5303__id_1",
+                  "maximum_absolute_difference": 1.7965785983258622,
+                  "peak_channel": "machine_EFD_pu__bus_5263__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.2841783839409066,
+                  "rmse_channel": "machine_EFD_pu__bus_5303__id_1",
+                  "maximum_absolute_difference": 1.7965785983258622,
+                  "peak_channel": "machine_EFD_pu__bus_5263__id_1"
+                }
+              }
+            },
+            "mechanical_power": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.00468056205940281,
+                  "rmse_channel": "machine_PMECH_MW__bus_7099__id_1",
+                  "maximum_absolute_difference": 0.010511934221312913,
+                  "peak_channel": "machine_PMECH_MW__bus_7099__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.08659586474127909,
+                  "rmse_channel": "machine_PMECH_MW__bus_6078__id_1",
+                  "maximum_absolute_difference": 0.22580313294861298,
+                  "peak_channel": "machine_PMECH_MW__bus_6080__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.08216399080725766,
+                  "rmse_channel": "machine_PMECH_MW__bus_6078__id_1",
+                  "maximum_absolute_difference": 0.22580313294861298,
+                  "peak_channel": "machine_PMECH_MW__bus_6080__id_1"
+                }
+              }
+            },
+            "rotor_angle": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.007924142418368425,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1051__id_1",
+                  "maximum_absolute_difference": 0.016974859501104334,
+                  "peak_channel": "machine_ANGLE_deg__bus_1051__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.3375694193080258,
+                  "rmse_channel": "machine_ANGLE_deg__bus_5263__id_1",
+                  "maximum_absolute_difference": 0.912022256040018,
+                  "peak_channel": "machine_ANGLE_deg__bus_5263__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.32026906648984754,
+                  "rmse_channel": "machine_ANGLE_deg__bus_5263__id_1",
+                  "maximum_absolute_difference": 0.912022256040018,
+                  "peak_channel": "machine_ANGLE_deg__bus_5263__id_1"
+                }
+              }
+            },
+            "speed": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 2.8527367925606937e-06,
+                  "rmse_channel": "machine_SPEED_pu__bus_1051__id_1",
+                  "maximum_absolute_difference": 5.923043198463596e-06,
+                  "peak_channel": "machine_SPEED_pu__bus_1051__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 6.903514265220135e-05,
+                  "rmse_channel": "machine_SPEED_pu__bus_1051__id_1",
+                  "maximum_absolute_difference": 0.0002974828289629139,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 6.550323359397423e-05,
+                  "rmse_channel": "machine_SPEED_pu__bus_1051__id_1",
+                  "maximum_absolute_difference": 0.0002974828289629139,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                }
+              }
+            },
+            "terminal_active_power": {
+              "channels": 199,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.20666981339201593,
+                  "rmse_channel": "generator_P_MW__bus_1026__id_1",
+                  "maximum_absolute_difference": 0.8022496163731603,
+                  "peak_channel": "generator_P_MW__bus_1033__id_1",
+                  "maximum_range_nrmse": 0.002216937654798293,
+                  "nrmse_channel": "generator_P_MW__bus_1026__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 2
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 12.844022181440922,
+                  "rmse_channel": "generator_P_MW__bus_3062__id_1",
+                  "maximum_absolute_difference": 120.99632877936006,
+                  "peak_channel": "generator_P_MW__bus_3062__id_1",
+                  "maximum_range_nrmse": 0.09799268148246994,
+                  "nrmse_channel": "generator_P_MW__bus_3062__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 37
+                },
+                "full": {
+                  "maximum_rmse": 12.18575442231518,
+                  "rmse_channel": "generator_P_MW__bus_3062__id_1",
+                  "maximum_absolute_difference": 120.99632877936006,
+                  "peak_channel": "generator_P_MW__bus_3062__id_1",
+                  "maximum_range_nrmse": 0.09297046788466132,
+                  "nrmse_channel": "generator_P_MW__bus_3062__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 37
+                }
+              }
+            },
+            "terminal_reactive_power": {
+              "channels": 199,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.05724680799625773,
+                  "rmse_channel": "generator_Q_Mvar__bus_5263__id_1",
+                  "maximum_absolute_difference": 0.24977445717076674,
+                  "peak_channel": "generator_Q_Mvar__bus_3056__id_1",
+                  "maximum_range_nrmse": 0.0011253972034736047,
+                  "nrmse_channel": "generator_Q_Mvar__bus_3095__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 2
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 4.4689948527437435,
+                  "rmse_channel": "generator_Q_Mvar__bus_3062__id_1",
+                  "maximum_absolute_difference": 34.80196234697269,
+                  "peak_channel": "generator_Q_Mvar__bus_3062__id_1",
+                  "maximum_range_nrmse": 0.04206666038599425,
+                  "nrmse_channel": "generator_Q_Mvar__bus_3062__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 15
+                },
+                "full": {
+                  "maximum_rmse": 4.239975713922077,
+                  "rmse_channel": "generator_Q_Mvar__bus_3062__id_1",
+                  "maximum_absolute_difference": 34.80196234697269,
+                  "peak_channel": "generator_Q_Mvar__bus_3062__id_1",
+                  "maximum_range_nrmse": 0.039910902625658266,
+                  "nrmse_channel": "generator_Q_Mvar__bus_3062__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 14
+                }
+              }
+            },
+            "voltage_angle": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.03041026466173161,
+                  "rmse_channel": "bus_angle_deg__bus_1026",
+                  "maximum_absolute_difference": 0.12568019753275017,
+                  "peak_channel": "bus_angle_deg__bus_3113"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 17.292530808182704,
+                  "rmse_channel": "bus_angle_deg__bus_4049",
+                  "maximum_absolute_difference": 359.9981189869284,
+                  "peak_channel": "bus_angle_deg__bus_5157"
+                },
+                "full": {
+                  "maximum_rmse": 16.406272952888504,
+                  "rmse_channel": "bus_angle_deg__bus_4049",
+                  "maximum_absolute_difference": 359.9981189869284,
+                  "peak_channel": "bus_angle_deg__bus_5157"
+                }
+              }
+            },
+            "voltage_magnitude": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.00011768538780956945,
+                  "rmse_channel": "bus_voltage_pu__bus_3095",
+                  "maximum_absolute_difference": 0.00021521613104247272,
+                  "peak_channel": "bus_voltage_pu__bus_1026",
+                  "maximum_range_nrmse": 0.000674857194679534,
+                  "nrmse_channel": "bus_voltage_pu__bus_3095",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0029394858124592357,
+                  "rmse_channel": "bus_voltage_pu__bus_3062",
+                  "maximum_absolute_difference": 0.023384898747601968,
+                  "peak_channel": "bus_voltage_pu__bus_3062",
+                  "maximum_range_nrmse": 0.021426108150225397,
+                  "nrmse_channel": "bus_voltage_pu__bus_3062",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 92
+                },
+                "full": {
+                  "maximum_rmse": 0.0027889291091455428,
+                  "rmse_channel": "bus_voltage_pu__bus_3062",
+                  "maximum_absolute_difference": 0.023384898747601968,
+                  "peak_channel": "bus_voltage_pu__bus_3062",
+                  "maximum_range_nrmse": 0.020328690297665063,
+                  "nrmse_channel": "bus_voltage_pu__bus_3062",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 74
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "isolated": {
+      "1": {
+        "modes": {
+          "off": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case1-isolated-off-warm-20261025-1",
+            "median_seconds": 11.3563141,
+            "range_seconds": [
+              10.5161529,
+              12.900238
+            ],
+            "measurement_seconds": [
+              11.3563141,
+              11.9283341,
+              11.3059669,
+              10.5161529,
+              12.900238
+            ],
+            "compilation_ms": [
+              825,
+              239,
+              336,
+              230,
+              1625
+            ],
+            "process_cpu_seconds": [
+              11.0,
+              11.4375,
+              11.0,
+              10.328125,
+              12.390625
+            ],
+            "median_network_seconds": 6.0253777,
+            "median_device_seconds": 3.9086682,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 45405,
+              "network_maximum_iterations": 18,
+              "packed_calls": 0,
+              "primitive_solves": 0,
+              "accepted_endpoint_reuses": 0,
+              "uncompensated_sources": 0,
+              "uncompensated_factorizations": 0,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 0,
+              "compiled_st1_stages": 547884,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "c522538624e8b6f492f27ca78c88f686a67c38be3d0bcce880a9ebbb78ceab64",
+              "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+              "interpss.csv": "d989864c681828eb3be87a1fbbeed0cbf6906be0aaedcebb37f5de9a7d049362"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "false",
+              "ipss.experiment.packedNetworkIteration": "false",
+              "ipss.experiment.fusedPackedConvergence": "false",
+              "ipss.experiment.removeConverterCompensation": "false",
+              "ipss.experiment.acceptedEndpointReuse": "false",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          },
+          "on": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case1-isolated-on-warm-20261025-1",
+            "median_seconds": 12.1408029,
+            "range_seconds": [
+              11.6594519,
+              12.745178
+            ],
+            "measurement_seconds": [
+              12.1408029,
+              12.1069309,
+              11.6594519,
+              12.1786309,
+              12.745178
+            ],
+            "compilation_ms": [
+              801,
+              253,
+              337,
+              230,
+              1641
+            ],
+            "process_cpu_seconds": [
+              11.90625,
+              11.8125,
+              11.390625,
+              11.875,
+              12.359375
+            ],
+            "median_network_seconds": 6.437806,
+            "median_device_seconds": 3.9769098,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 45405,
+              "network_maximum_iterations": 18,
+              "packed_calls": 0,
+              "primitive_solves": 45407,
+              "accepted_endpoint_reuses": 0,
+              "uncompensated_sources": 0,
+              "uncompensated_factorizations": 0,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 0,
+              "compiled_st1_stages": 547884,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "c522538624e8b6f492f27ca78c88f686a67c38be3d0bcce880a9ebbb78ceab64",
+              "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+              "interpss.csv": "d989864c681828eb3be87a1fbbeed0cbf6906be0aaedcebb37f5de9a7d049362"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "true",
+              "ipss.experiment.packedNetworkIteration": "false",
+              "ipss.experiment.fusedPackedConvergence": "false",
+              "ipss.experiment.removeConverterCompensation": "false",
+              "ipss.experiment.acceptedEndpointReuse": "false",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          }
+        },
+        "median_reduction_seconds": -0.7844888000000001,
+        "median_reduction_percent": -6.9079526428385885,
+        "recording_byte_identical": true,
+        "samples": 2405,
+        "channels": 6190,
+        "differences": {
+          "status": "same-settings-before-after-comparison-not-independent-acceptance",
+          "case": 1,
+          "before": "texas2k-handoff-case1-isolated-off-warm-20261025-1",
+          "after": "texas2k-handoff-case1-isolated-on-warm-20261025-1",
+          "samples": 2405,
+          "channels": 6190,
+          "timestamps_and_event_sides_identical": true,
+          "all_values_finite": true,
+          "quantities": {
+            "field_voltage": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                }
+              }
+            },
+            "mechanical_power": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_PMECH_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_PMECH_MW__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_PMECH_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_PMECH_MW__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_PMECH_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_PMECH_MW__bus_1050__id_1"
+                }
+              }
+            },
+            "rotor_angle": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                }
+              }
+            },
+            "speed": {
+              "channels": 333,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                }
+              }
+            },
+            "terminal_active_power": {
+              "channels": 429,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                }
+              }
+            },
+            "terminal_reactive_power": {
+              "channels": 429,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                }
+              }
+            },
+            "voltage_angle": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_angle_deg__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_angle_deg__bus_1001"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_angle_deg__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_angle_deg__bus_1001"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_angle_deg__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_angle_deg__bus_1001"
+                }
+              }
+            },
+            "voltage_magnitude": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "bus_voltage_pu__bus_1001",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "bus_voltage_pu__bus_1001",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "bus_voltage_pu__bus_1001",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "2": {
+        "modes": {
+          "off": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case2-isolated-off-warm-20261025-1",
+            "median_seconds": 8.6780855,
+            "range_seconds": [
+              8.6080491,
+              9.9307191
+            ],
+            "measurement_seconds": [
+              9.9307191,
+              8.6305308,
+              8.6780855,
+              8.6080491,
+              9.7691109
+            ],
+            "compilation_ms": [
+              876,
+              199,
+              264,
+              246,
+              1568
+            ],
+            "process_cpu_seconds": [
+              9.609375,
+              8.328125,
+              8.375,
+              8.421875,
+              9.5
+            ],
+            "median_network_seconds": 6.0220846,
+            "median_device_seconds": 1.495025,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 52766,
+              "network_maximum_iterations": 21,
+              "packed_calls": 0,
+              "primitive_solves": 0,
+              "accepted_endpoint_reuses": 0,
+              "uncompensated_sources": 0,
+              "uncompensated_factorizations": 0,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 0,
+              "compiled_st1_stages": 173016,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "f5a357ae18e683ea03beff0fa1d0ac09068086f0275aa153b334ec858da878a5",
+              "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+              "interpss.csv": "27ea50b847068b1913fbd0aa1c5d9102461006072c88b945ad485b977bc5a9a0"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "false",
+              "ipss.experiment.packedNetworkIteration": "false",
+              "ipss.experiment.fusedPackedConvergence": "false",
+              "ipss.experiment.removeConverterCompensation": "false",
+              "ipss.experiment.acceptedEndpointReuse": "false",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          },
+          "on": {
+            "folder": "ipss.test.plugin.core/testData/private/texas2k-handoff-case2-isolated-on-warm-20261025-1",
+            "median_seconds": 10.1121482,
+            "range_seconds": [
+              9.2518716,
+              10.5188654
+            ],
+            "measurement_seconds": [
+              10.1121482,
+              9.3731946,
+              10.2358843,
+              9.2518716,
+              10.5188654
+            ],
+            "compilation_ms": [
+              842,
+              197,
+              266,
+              242,
+              1627
+            ],
+            "process_cpu_seconds": [
+              9.796875,
+              9.125,
+              9.984375,
+              9.046875,
+              10.234375
+            ],
+            "median_network_seconds": 6.6900351,
+            "median_device_seconds": 1.5485712,
+            "counters": {
+              "network_calls": 7206,
+              "network_iterations": 52766,
+              "network_maximum_iterations": 21,
+              "packed_calls": 0,
+              "primitive_solves": 52768,
+              "accepted_endpoint_reuses": 0,
+              "uncompensated_sources": 0,
+              "uncompensated_factorizations": 0,
+              "uncompensated_fallbacks": 0,
+              "folded_rows": 0,
+              "compiled_st1_stages": 173016,
+              "passive_bus_skips": 7278060,
+              "anderson_mixes": 0,
+              "bounded_mixing_enabled": false,
+              "bounded_mixing_applications": 0
+            },
+            "recording_hashes": {
+              "full-network.bin": "f5a357ae18e683ea03beff0fa1d0ac09068086f0275aa153b334ec858da878a5",
+              "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+              "interpss.csv": "27ea50b847068b1913fbd0aa1c5d9102461006072c88b945ad485b977bc5a9a0"
+            },
+            "flags": {
+              "ipss.experiment.primitiveCurrentHandoff": "true",
+              "ipss.experiment.packedNetworkIteration": "false",
+              "ipss.experiment.fusedPackedConvergence": "false",
+              "ipss.experiment.removeConverterCompensation": "false",
+              "ipss.experiment.acceptedEndpointReuse": "false",
+              "ipss.experiment.serialTraversal": "true",
+              "ipss.experiment.directIeeestStage": "true",
+              "ipss.experiment.preparedRecording": "true",
+              "ipss.experiment.skipPassiveBusUpdates": "true",
+              "ipss.experiment.foldedZip": "true",
+              "ipss.experiment.jdkVoltageAngle": "true",
+              "ipss.experiment.ownedMachineStage": "false",
+              "ipss.experiment.parallelPackedRows": "false",
+              "ipss.experiment.networkAnderson": "false",
+              "ipss.experiment.bindIeeestParameters": "false",
+              "ipss.experiment.scalarShortExpressions": "false",
+              "ipss.experiment.ownedMachineWorkers": "1",
+              "ipss.profile.rectangular": "true",
+              "ipss.profile.compiledControllers": "true",
+              "ipss.profile.frequencyAll": "false",
+              "jklu.complex.factor.columnKernelMinN": "0",
+              "ipss.jklu.rowSolve": "true",
+              "ipss.experiment.preparedEmptyMonitor": "true",
+              "ipss.experiment.pssNumericFrame": "true",
+              "ipss.experiment.st4EndpointReuse": "true",
+              "ipss.benchmark.singleDefault": "true",
+              "ipss.benchmark.frameReuse": "true"
+            }
+          }
+        },
+        "median_reduction_seconds": -1.4340627000000001,
+        "median_reduction_percent": -16.525104529103807,
+        "recording_byte_identical": true,
+        "samples": 2405,
+        "channels": 4810,
+        "differences": {
+          "status": "same-settings-before-after-comparison-not-independent-acceptance",
+          "case": 2,
+          "before": "texas2k-handoff-case2-isolated-off-warm-20261025-1",
+          "after": "texas2k-handoff-case2-isolated-on-warm-20261025-1",
+          "samples": 2405,
+          "channels": 4810,
+          "timestamps_and_event_sides_identical": true,
+          "all_values_finite": true,
+          "quantities": {
+            "field_voltage": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_EFD_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_EFD_pu__bus_1050__id_1"
+                }
+              }
+            },
+            "mechanical_power": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_PMECH_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_PMECH_MW__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_PMECH_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_PMECH_MW__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_PMECH_MW__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_PMECH_MW__bus_1050__id_1"
+                }
+              }
+            },
+            "rotor_angle": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+                }
+              }
+            },
+            "speed": {
+              "channels": 103,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "machine_SPEED_pu__bus_1050__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "machine_SPEED_pu__bus_1050__id_1"
+                }
+              }
+            },
+            "terminal_active_power": {
+              "channels": 199,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_P_MW__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_P_MW__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                }
+              }
+            },
+            "terminal_reactive_power": {
+              "channels": 199,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "generator_Q_Mvar__bus_1004__id_1",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                }
+              }
+            },
+            "voltage_angle": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_angle_deg__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_angle_deg__bus_1001"
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_angle_deg__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_angle_deg__bus_1001"
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_angle_deg__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_angle_deg__bus_1001"
+                }
+              }
+            },
+            "voltage_magnitude": {
+              "channels": 2000,
+              "periods": {
+                "prefault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "bus_voltage_pu__bus_1001",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "fault_and_postfault": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "bus_voltage_pu__bus_1001",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                },
+                "full": {
+                  "maximum_rmse": 0.0,
+                  "rmse_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_absolute_difference": 0.0,
+                  "peak_channel": "bus_voltage_pu__bus_1001",
+                  "maximum_range_nrmse": 0.0,
+                  "nrmse_channel": "bus_voltage_pu__bus_1001",
+                  "zero_range_channels": 0,
+                  "channels_above_period_threshold": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Separate JVM cohorts, not paired timing samples; order counterbalanced across cases. Residual compilation remains timed.",
+    "Profile toggles only primitiveCurrentHandoff but this also gates packed iteration, converter-compensation removal and accepted-endpoint reuse.",
+    "Isolated disables packedNetworkIteration, fusedPackedConvergence, removeConverterCompensation and acceptedEndpointReuse in both arms.",
+    "Comparison between implementations is not independent reference acceptance. No gains, offsets or time shifts are fitted.",
+    "Source and production runtime are unchanged by this measurement study."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas2k-current-handoff/manifest.json",
+  "runtime_capture": "First-party jars and runner classes retained; classpath directory deltas reconstruct over the named frozen base. External jars are hash-indexed.",
+  "validation": "All 75 runs completed with finite full recordings; warmed repeats are byte-identical within each arm. No engine implementation changed and no new full-suite result is claimed.",
+  "manifest_sha256": "782687b16757321b1b7475c0f4da61f65cff44e24cbc7738dbd70cc90b2a0caf"
+}

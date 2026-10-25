@@ -27,6 +27,11 @@ class initialization. Case 1 runs disabled then optimized; Case 2 reverses
 that order. This is a controlled multi-JVM comparison, not an interleaved
 same-JVM trial.
 
+The later [current-handoff on/off study](texas2k-current-handoff-2026-10-25.md)
+isolates this property. In the current implementation it also gates packed
+iteration, converter-compensation removal and endpoint reuse. The combined
+profile improves timing; the isolated handoff shows no measured speed benefit.
+
 ## Numerical and workload settings
 
 The user-selected method is ordinary `MODIFIED_EULER`, using the default
