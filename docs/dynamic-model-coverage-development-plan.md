@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The latest matched single-CPU control measures a 20.796-second whole-run median
+with full recording/export. New affine-network variants reduce outer iterations
+to 17,555 and pass all-channel internal accuracy and independent small-case
+checks, but their matched medians of 21.545 and 21.264 seconds do not establish
+a speedup. Cached publication and passive-bus dispatch checks are retained;
+the 20-second objective and whole-runtime promotion remain open. See the
+[affine network study](benchmarks/texas7k-affine-network-study-2026-10-25.md).
+
 Imported-case simulations now select required bus-frequency measurements by
 default, with conservative all-bus fallback for unclassified/custom consumers.
 The final production gate retains 704 of 6,717 Texas7k buses; the complete
