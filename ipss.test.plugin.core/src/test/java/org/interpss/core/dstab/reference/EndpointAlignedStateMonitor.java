@@ -32,9 +32,22 @@ public final class EndpointAlignedStateMonitor extends StateMonitor {
     private double start;
     private double step;
     private boolean stepping;
+    private java.util.Set<String> additionalFrequencyInputs;
 
     public EndpointAlignedStateMonitor(String referenceBus) {
         this.referenceBus = Objects.requireNonNull(referenceBus);
+    }
+
+    /** Declare all extra frequency reads made by the custom capture, before initialization. */
+    public void declareAdditionalFrequencyInputs(java.util.Set<String> busIds) {
+        if(capture!=null)throw new IllegalStateException("Declare frequency inputs before capture initialization");
+        additionalFrequencyInputs=java.util.Set.copyOf(busIds);
+    }
+
+    @Override public java.util.Set<String> requiredBusFrequencyIds() {
+        if(additionalFrequencyInputs==null)return null;
+        var ids=new java.util.HashSet<>(additionalFrequencyInputs);ids.addAll(getOutputVarIdList());
+        return java.util.Set.copyOf(ids);
     }
 
     /** Call after successful simulation initialization, before the first step. */

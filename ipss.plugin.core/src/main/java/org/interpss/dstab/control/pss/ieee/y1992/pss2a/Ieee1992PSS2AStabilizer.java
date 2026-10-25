@@ -238,6 +238,14 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	private double input2PreviousVoltage;
 	private BaseDStabBus<?, ?> input1Bus;
 	private BaseDStabBus<?, ?> input2Bus;
+
+    /** Keep configured signal buses warm even if an input selector changes to frequency. */
+    public java.util.Set<String> requiredBusFrequencyIds() {
+        var ids=new java.util.HashSet<String>();
+        if(input1Bus!=null)ids.add(input1Bus.getId());
+        if(input2Bus!=null)ids.add(input2Bus.getId());
+        return java.util.Set.copyOf(ids);
+    }
 	private double integrationStep;
 	private double minimumTimeConstantMultiplier = 1.0;
 

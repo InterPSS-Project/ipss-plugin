@@ -30,6 +30,52 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
  * integration step.</p>
  */
 public class PsseDStabSolver extends DStabSolverImpl {
+    public enum BusFrequencyMode { REQUIRED, ALL }
+    public record BusFrequencyReport(int activeBuses,int measuredBuses,String reason) { }
+    private BusFrequencyMode busFrequencyMode=BusFrequencyMode.REQUIRED;
+    private BusFrequencyReport busFrequencyReport;
+    private com.interpss.dstab.common.IDStabSimuOutputHandler frequencyOutputHandler;
+    private java.util.Set<String> frequencyOutputIds;
+    private final java.util.Map<BaseDStabBus<?,?>,com.interpss.dstab.controller.cml.field.ICMLControlBlock>
+            suppressedFrequencyBlocks=new java.util.IdentityHashMap<>();
+
+    /** Applies on the next initialization. Unknown dependencies always retain all buses. */
+    public void setBusFrequencyMode(BusFrequencyMode mode) {busFrequencyMode=java.util.Objects.requireNonNull(mode);}
+    public BusFrequencyMode getBusFrequencyMode(){return busFrequencyMode;}
+    public BusFrequencyReport getBusFrequencyReport(){return busFrequencyReport;}
+
+    private void restoreFrequencyMeasurements() {
+        suppressedFrequencyBlocks.forEach((bus,block)->{if(bus.getBusFreqMeasureBlock()==null)bus.setBusFreqMeasureBlock(block);});
+        suppressedFrequencyBlocks.clear();busFrequencyReport=null;
+        // A restored snapshot can legitimately omit an unused measurement.
+        // Re-establish it before model initialization discovers the next run's needs.
+        for(var bus:dstabAlgo.getNetwork().getBusList())if(bus.getBusFreqMeasureBlock()==null) {
+            bus.setBusFreqMeasureBlock(com.interpss.dstab.DStabObjectFactory.createBusFreqMeasurement());
+            bus.initStates();
+        }
+    }
+    private void selectFrequencyMeasurements() {
+        var selection=busFrequencyMode==BusFrequencyMode.ALL?null:BusFrequencySelection.select(dstabAlgo);
+        var required=selection==null?null:selection.required();int active=0,measured=0;
+        for(var bus:dstabAlgo.getNetwork().getBusList()) {
+            if(bus.isActive())active++;
+            if(required!=null&&!required.contains(bus.getId())&&bus.getBusFreqMeasureBlock()!=null) {
+                suppressedFrequencyBlocks.put(bus,bus.getBusFreqMeasureBlock());bus.setBusFreqMeasureBlock(null);
+            } else if(bus.isActive()&&bus.getBusFreqMeasureBlock()!=null)measured++;
+        }
+        busFrequencyReport=new BusFrequencyReport(active,measured,selection==null?"explicit all-bus measurement":selection.reason());
+        frequencyOutputHandler=dstabAlgo.getSimuOutputHandler();
+        frequencyOutputIds=frequencyOutputHandler==null?null:frequencyOutputHandler.requiredBusFrequencyIds();
+    }
+
+    @Override public void beforeStep(double time) throws DStabSimuException {
+        if(!suppressedFrequencyBlocks.isEmpty()&&(dstabAlgo.getScriptOutputHandler()!=null
+                ||dstabAlgo.getSimuOutputHandler()!=frequencyOutputHandler
+                ||!java.util.Objects.equals(frequencyOutputIds,frequencyOutputHandler==null?null:
+                        frequencyOutputHandler.requiredBusFrequencyIds())))
+            throw new DStabSimuException("Frequency output dependencies changed; reinitialize before continuing");
+        super.beforeStep(time);
+    }
     public static final int DEFAULT_MAXIMUM_NETWORK_ITERATIONS = 50;
     private double parameterTimeStepMultiple = 2.0;
     private DynamicParameterValidator.Report parameterValidationReport;
@@ -142,6 +188,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
+        restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         var validation=validateModelParameters();
         validation.requireNoErrors();
@@ -155,6 +202,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         network.setConstantCurrentLoadVoltageCurve(ConstantCurrentLoadVoltageCurve.ELLIPTIC);
         configureIntegrationStepAwareModels(dstabAlgo.getNetwork(), dstabAlgo.getSimuStepSec());
         if (!super.initialization()) return false;
+        selectFrequencyMeasurements();
 
         // Do not overwrite a hybrid-simulation current source supplied by a caller.
         Hashtable<String, Complex> existing = network.getCustomBusCurrInjHashtable();

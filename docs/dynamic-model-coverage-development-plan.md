@@ -2,6 +2,15 @@
 
 ## Current checkpoint
 
+Imported-case simulations now select required bus-frequency measurements by
+default, with conservative all-bus fallback for unclassified/custom consumers.
+The final production gate retains 704 of 6,717 Texas7k buses; the complete
+recorded trajectory is unchanged. All 3,109 core and 36 focused plugin tests
+pass. Matched experimental timing saves 0.902 seconds in device integration
+and changes the whole-run median from 25.713 to 25.437 seconds, with overlapping
+ranges. The 20-second objective remains open. See the
+[frequency selection and validation](benchmarks/bus-frequency-selection-2026-10-25.md).
+
 The new typed-controller study records a complete single-CPU median of 21.407
 seconds with default JVM inlining (three measurements). A subsequent combined
 load/angle-kernel batch measures 24.302 seconds after six full warmups; it does
