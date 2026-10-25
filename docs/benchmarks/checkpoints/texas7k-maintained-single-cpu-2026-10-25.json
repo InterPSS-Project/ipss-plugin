@@ -1,0 +1,296 @@
+{
+  "schema": 1,
+  "status": "maintained-runtime-warmed-single-cpu-median-verified",
+  "goal_seconds": 20,
+  "goal_complete": true,
+  "core_commit": "730d52fa7f414fd051b025436c0f954dad995623",
+  "core_version": "1.4.6",
+  "plugin_version": "1.4.8",
+  "source_parent_commits": {
+    "parent_core_commit": "f4d43571b72a959f0db4eee4c0a2e5396ce20754",
+    "parent_plugin_commit": "17ed15ea3a2d865bfebe23a3bc915147fae58d9b"
+  },
+  "logical_processors": 1,
+  "affinity_mask": 64,
+  "active_buses": 6717,
+  "measured_frequency_buses": 704,
+  "samples": 2403,
+  "recorded_channels": 6732,
+  "recorded_values": 16176996,
+  "full_trace_sha256": "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8",
+  "warmups": 4,
+  "measurements": 5,
+  "measured_median_outer_seconds": 19.9350328,
+  "measured_outer_range_seconds": [
+    19.4848858,
+    20.7155411
+  ],
+  "loaded_class_sha256": {
+    "com.interpss.dstab.algo.defaultImpl.DStabSolverImpl": "6bb7a5fb8efd574d4435e1646e07bd7ecc1b540fefb017f14269505f0bb81f79",
+    "com.interpss.dstab.impl.BaseDStabBusImpl": "8962b334aaa11305a91a1faa814160f08d68fe14aa43d3409722f1253fbc379b",
+    "com.interpss.dstab.impl.BaseDStabNetworkImpl": "b12186d2191312ce0b53b384fd059512258a08144a989225a8774c33eceeab20",
+    "org.interpss.dstab.control.pss.psse.ieeest.IeeestDirectStage": "40746d754094cff32433df4e00de6a54ecb24646e40c031b47473c9e65e089fb",
+    "org.interpss.dstab.renewable.Regca1Model": "db7081a91eba38c37e797a1206cb562fe7767880c89dc0ef8add1edeca102bf7",
+    "org.interpss.fadapter.psse.PsseDStabSolver": "0220daae2bf09a9612c4af785be48a6aac27a54216bc5acf256a657608f65701"
+  },
+  "measured_runs": [
+    {
+      "phase": "measured-1",
+      "measured": true,
+      "trace_sha256": "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8",
+      "shared_storage": true,
+      "main_thread_cpu_seconds": 18.984375,
+      "outer_wall_seconds": 20.7155411,
+      "process_cpu_seconds": 20.03125,
+      "whole_seconds": 20.7120787,
+      "phase_times": {
+        "import_and_setup_s": 0.1133635,
+        "power_flow_s": 1.198603,
+        "dynamic_configuration_and_initialization_s": 0.1181835,
+        "fixed_current_binding_and_controller_compilation_s": 0.0850836,
+        "recording_setup_s": 0.0015758,
+        "stepping_and_in_memory_recording_s": 19.0355706,
+        "network_s": 11.3443544,
+        "device_and_measurement_integration_s": 6.1341715,
+        "raw_binary_encode_write_s": 0.0580937,
+        "recovery_time_series_compute_write_s": 0.084364,
+        "serialization_and_recovery_tables_s": 0.1596643
+      }
+    },
+    {
+      "phase": "measured-2",
+      "measured": true,
+      "trace_sha256": "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8",
+      "shared_storage": true,
+      "main_thread_cpu_seconds": 18.5,
+      "outer_wall_seconds": 19.6048387,
+      "process_cpu_seconds": 19.03125,
+      "whole_seconds": 19.6029391,
+      "phase_times": {
+        "import_and_setup_s": 0.1610538,
+        "power_flow_s": 0.5388016,
+        "dynamic_configuration_and_initialization_s": 0.2675301,
+        "fixed_current_binding_and_controller_compilation_s": 0.0050162,
+        "recording_setup_s": 0.0012015,
+        "stepping_and_in_memory_recording_s": 18.4717739,
+        "network_s": 11.141359,
+        "device_and_measurement_integration_s": 5.9670928,
+        "raw_binary_encode_write_s": 0.0626448,
+        "recovery_time_series_compute_write_s": 0.084519,
+        "serialization_and_recovery_tables_s": 0.1575075
+      }
+    },
+    {
+      "phase": "measured-3",
+      "measured": true,
+      "trace_sha256": "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8",
+      "shared_storage": true,
+      "main_thread_cpu_seconds": 18.765625,
+      "outer_wall_seconds": 20.0912924,
+      "process_cpu_seconds": 19.671875,
+      "whole_seconds": 20.0888849,
+      "phase_times": {
+        "import_and_setup_s": 0.069535,
+        "power_flow_s": 0.8028706,
+        "dynamic_configuration_and_initialization_s": 0.0957682,
+        "fixed_current_binding_and_controller_compilation_s": 0.0289938,
+        "recording_setup_s": 0.0014204,
+        "stepping_and_in_memory_recording_s": 18.9367543,
+        "network_s": 11.2157558,
+        "device_and_measurement_integration_s": 6.0898839,
+        "raw_binary_encode_write_s": 0.0586074,
+        "recovery_time_series_compute_write_s": 0.0850669,
+        "serialization_and_recovery_tables_s": 0.1535039
+      }
+    },
+    {
+      "phase": "measured-4",
+      "measured": true,
+      "trace_sha256": "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8",
+      "shared_storage": true,
+      "main_thread_cpu_seconds": 18.0625,
+      "outer_wall_seconds": 19.4848858,
+      "process_cpu_seconds": 18.84375,
+      "whole_seconds": 19.4812933,
+      "phase_times": {
+        "import_and_setup_s": 0.2523754,
+        "power_flow_s": 0.7501782,
+        "dynamic_configuration_and_initialization_s": 0.2278778,
+        "fixed_current_binding_and_controller_compilation_s": 0.0295798,
+        "recording_setup_s": 0.0014639,
+        "stepping_and_in_memory_recording_s": 18.0449291,
+        "network_s": 10.9034616,
+        "device_and_measurement_integration_s": 5.7604541,
+        "raw_binary_encode_write_s": 0.0669482,
+        "recovery_time_series_compute_write_s": 0.0855622,
+        "serialization_and_recovery_tables_s": 0.174855
+      }
+    },
+    {
+      "phase": "measured-5",
+      "measured": true,
+      "trace_sha256": "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8",
+      "shared_storage": true,
+      "main_thread_cpu_seconds": 18.921875,
+      "outer_wall_seconds": 19.9350328,
+      "process_cpu_seconds": 19.1875,
+      "whole_seconds": 19.9336672,
+      "phase_times": {
+        "import_and_setup_s": 0.0924044,
+        "power_flow_s": 0.5784232,
+        "dynamic_configuration_and_initialization_s": 0.0657476,
+        "fixed_current_binding_and_controller_compilation_s": 0.0046401,
+        "recording_setup_s": 0.0012672,
+        "stepping_and_in_memory_recording_s": 19.0364871,
+        "network_s": 11.3879238,
+        "device_and_measurement_integration_s": 6.1427403,
+        "raw_binary_encode_write_s": 0.0598762,
+        "recovery_time_series_compute_write_s": 0.0845885,
+        "serialization_and_recovery_tables_s": 0.1544467
+      }
+    }
+  ],
+  "validation": {
+    "core": {
+      "tests": 3109,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report_files": 841,
+      "stale_report_files_excluded": 3
+    },
+    "plugin-core": {
+      "tests": 452,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4,
+      "report_files": 71,
+      "stale_report_files_excluded": 0
+    },
+    "plugin-3phase": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28,
+      "report_files": 91,
+      "stale_report_files_excluded": 5
+    },
+    "plugin-integration": {
+      "tests": 3327,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 54,
+      "report_files": 682,
+      "stale_report_files_excluded": 26
+    }
+  },
+  "optimized_path_checks": [
+    "PreparedRecordingSmibCheck",
+    "FoldedZipCurrentProbe",
+    "FoldedFrequencyHistoryProbe",
+    "EndpointReuseGateProbe",
+    "AngleCacheContractProbe",
+    "org.interpss.core.dstab.IeeestStageProbe",
+    "PassiveBusTraversalProbe",
+    "MatrixRevisionCacheProbe"
+  ],
+  "internal_accuracy": {
+    "control": {
+      "prefault": {
+        "samples": 24,
+        "voltage_channels": 6717,
+        "defined_voltage_nrmse_channels": 6717,
+        "zero_range_voltage_channels": 0,
+        "maximum_voltage_nrmse": 2.1997793890580894e-12,
+        "worst_voltage_nrmse_channel": "V_pu__Bus220219",
+        "voltage_nrmse_threshold": 0.001,
+        "voltage_channels_exceeding_threshold": 0,
+        "maximum_voltage_abs_error_pu": 2.3314683517128287e-14
+      },
+      "fault_and_postfault": {
+        "samples": 2379,
+        "voltage_channels": 6717,
+        "defined_voltage_nrmse_channels": 6717,
+        "zero_range_voltage_channels": 0,
+        "maximum_voltage_nrmse": 0.0006969441915914547,
+        "worst_voltage_nrmse_channel": "V_pu__Bus150510",
+        "voltage_nrmse_threshold": 0.005,
+        "voltage_channels_exceeding_threshold": 0,
+        "maximum_voltage_abs_error_pu": 0.0016015563489477636
+      },
+      "full_ten_seconds": {
+        "samples": 2403,
+        "voltage_channels": 6717,
+        "defined_voltage_nrmse_channels": 6717,
+        "zero_range_voltage_channels": 0,
+        "maximum_voltage_nrmse": 0.0006934550873640903,
+        "worst_voltage_nrmse_channel": "V_pu__Bus150510",
+        "voltage_nrmse_threshold": 0.005,
+        "voltage_channels_exceeding_threshold": 0,
+        "maximum_voltage_abs_error_pu": 0.0016015563489477636
+      },
+      "selected_rotor_angles": {
+        "channels": 3,
+        "maximum_full_rmse_deg": 0.0006161097400521227,
+        "maximum_prefault_abs_error_deg": 0.0
+      }
+    },
+    "uncompensated": {
+      "prefault": {
+        "samples": 24,
+        "voltage_channels": 6717,
+        "defined_voltage_nrmse_channels": 6717,
+        "zero_range_voltage_channels": 0,
+        "maximum_voltage_nrmse": 1.4139894628016289e-13,
+        "worst_voltage_nrmse_channel": "V_pu__Bus250039",
+        "voltage_nrmse_threshold": 0.001,
+        "voltage_channels_exceeding_threshold": 0,
+        "maximum_voltage_abs_error_pu": 1.9984014443252818e-15
+      },
+      "fault_and_postfault": {
+        "samples": 2379,
+        "voltage_channels": 6717,
+        "defined_voltage_nrmse_channels": 6717,
+        "zero_range_voltage_channels": 0,
+        "maximum_voltage_nrmse": 0.0006976054981955151,
+        "worst_voltage_nrmse_channel": "V_pu__Bus150510",
+        "voltage_nrmse_threshold": 0.005,
+        "voltage_channels_exceeding_threshold": 0,
+        "maximum_voltage_abs_error_pu": 0.0016029818436238408
+      },
+      "full_ten_seconds": {
+        "samples": 2403,
+        "voltage_channels": 6717,
+        "defined_voltage_nrmse_channels": 6717,
+        "zero_range_voltage_channels": 0,
+        "maximum_voltage_nrmse": 0.0006941130832759954,
+        "worst_voltage_nrmse_channel": "V_pu__Bus150510",
+        "voltage_nrmse_threshold": 0.005,
+        "voltage_channels_exceeding_threshold": 0,
+        "maximum_voltage_abs_error_pu": 0.0016029818436238408
+      },
+      "selected_rotor_angles": {
+        "channels": 3,
+        "maximum_full_rmse_deg": 0.0006082629951489528,
+        "maximum_prefault_abs_error_deg": 0.0
+      }
+    }
+  },
+  "limitations": [
+    "The 20-second objective is satisfied by the warmed five-run median, not a maximum per-invocation bound.",
+    "Only four complete warmups are excluded. Residual compilation, full recording and binary/recovery/run-summary exports remain in the outer invocation timer; later integrity hashing is benchmark bookkeeping.",
+    "The complete 7K accuracy comparisons are internal convergence/nonregression checks. Independent full-network reference acceptance remains open.",
+    "The profile is explicit and opt-in. Parallel row workers and owned machine integration are disabled; ordinary bounded mixing safeguards and generic fallbacks are retained.",
+    "An invalid infinite-tolerance endpoint-reuse guard was repaired after the first maintained timing. Full core/plugin tests, eight positive-path probes and a fresh timing batch cover the corrected source.",
+    "The maintained invalidation probe removes only a toggle for an absent historical prototype mode; all 180 actual contract checks remain. The original failed probe and source are retained.",
+    "The initial maintained current-publication qualification rejected five zero-lag converters. Final stored-command qualification is covered by unchanged custom-callback exclusions and the new voltage-dependent-current regression."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas7k-maintained-single-cpu-final/manifest.json",
+  "manifest_sha256": "792a829bf3b7d40846a583ecfd05b7097b2e4665baec1cdef30729d6480ba629",
+  "source_finalization": {
+    "manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas7k-maintained-source-finalization/manifest.json",
+    "bytes": 889,
+    "sha256": "2269b43c45ec4cef9ccd693ad3660729312a248a8c5af56c2cd0f980cd8e6307",
+    "reason": "Remove one trailing empty source line; every generated class remains byte-identical to the frozen measured runtime."
+  }
+}

@@ -35,6 +35,47 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void zeroLagStoredCommandsHaveReadOnlyVoltageDependentCurrentOutputs() throws Exception {
+        for (boolean fixed : new boolean[]{false, true}) {
+            var builder = DStabBuilderTestFixture.createBuilder();
+            var model = builder.addRegca1("Bus1", "1", data(0, 0., 10., 0., 0.));
+            RenewableElectricalController controller;
+            if (fixed) {
+                controller = new org.interpss.dstab.renewable.ConverterCurrentCommands();
+                model.setActiveElectricalController(controller);
+            } else {
+                var parameters = new org.interpss.dstab.renewable.Reeca1Data(0, 0, 0, 0, 0, 0,
+                        .8, 1.2, .02, 0, 0, 0, 1, -1, 1, 0, 0, 0,
+                        .02, 2, -2, 2, -2, 2, 1, 1, 2, .8, .02,
+                        99, -99, 2, -2, 10, .02,
+                        0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0);
+                var electrical = new org.interpss.dstab.renewable.Reeca1Model(parameters, model);
+                model.setReeca1Controller(electrical);controller = electrical;
+            }
+            assertTrue(model.initStates(model.getDStabBus()));
+            assertTrue(model.supportsDeferredCurrentPublication());
+            assertTrue(model.supportsUncompensatedNetworkSolve());
+            for (double magnitude : new double[]{0., .02, .4, .8, 1., 1.3}) {
+                model.getDStabBus().setVoltage(new Complex(magnitude * Math.cos(.3), magnitude * Math.sin(.3)));
+                var states = model.getIntegrationStates();
+                var rates = model.getStateDerivativeSnapshot();
+                var commands = ((com.interpss.dstab.controller.cml.ICMLStateProvider)controller).getNamedStates();
+                Complex voltage = model.getDStabBus().getVoltage();
+                Complex original = (Complex)model.getOutputObject();
+                Complex injected = model.uncompensatedNetworkCurrent();
+                Complex reconstructed = injected.add(voltage.multiply(model.networkCompensationAdmittance()));
+                assertEquals(original.getReal(), reconstructed.getReal(), TOL);
+                assertEquals(original.getImaginary(), reconstructed.getImaginary(), TOL);
+                assertEquals(injected, model.uncompensatedNetworkCurrent(), "Repeated current reads are idempotent");
+                assertEquals(states, model.getIntegrationStates());
+                assertEquals(rates, model.getStateDerivativeSnapshot());
+                assertEquals(commands, ((com.interpss.dstab.controller.cml.ICMLStateProvider)controller).getNamedStates());
+            }
+        }
+    }
+
+    @Test
     void directParserRetainsAllFifteenPsseParameters(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("regca1.dyr");

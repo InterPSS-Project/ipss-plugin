@@ -34,6 +34,10 @@ public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEul
         };
     }
 
+    @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
+        if(!Boolean.getBoolean("ipss.experiment.directIeeestStage") || getClass()!=IeeestStabilizer.class)return null;
+        try{return new IeeestDirectStage(this);}catch(IllegalArgumentException unsupported){return null;}
+    }
     private final IeeestData data;
     private double constantInputBias;
     private boolean initializingBias;

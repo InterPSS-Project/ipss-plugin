@@ -27,7 +27,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
         implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
-        NetworkIterationAware {
+        NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
@@ -367,9 +367,22 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return timeConstant <= EPS ? state : state + dt * rate;
     }
 
+    @Override public boolean supportsUncompensatedNetworkSolve() {
+        return !networkHighVoltageEnabled && supportsDeferredCurrentPublication();
+    }
+    @Override public Complex networkCompensationAdmittance() {
+        var z=parentGen.getPosGenZ();
+        if(z==null)return Complex.ZERO;
+        z=z.multiply(parentGen.getZMultiFactor());
+        return z.abs()>EPS?Complex.ONE.divide(z):Complex.ZERO;
+    }
+    @Override public Complex uncompensatedNetworkCurrent(){return injectedCurrent(getDStabBus().getVoltage());}
     @Override public boolean supportsDeferredCurrentPublication() {
-        // Algebraic bypass can call a replaceable controller while assembling current.
-        return getClass() == Regca1Model.class && data.tg() > EPS;
+        // A bypass may read replaceable commands. These two final implementations
+        // expose stored command values; custom callbacks retain ordinary dispatch.
+        var controller = activeController();
+        return getClass() == Regca1Model.class && (data.tg() > EPS
+                || controller instanceof Reeca1Model || controller instanceof ConverterCurrentCommands);
     }
 
     @Override public boolean supportsNetworkIterationAcceleration() {

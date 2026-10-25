@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+The maintained core 1.4.6/plugin 1.4.8 profile completes the full ten-second
+study in a **19.935-second warmed median on one logical CPU**, including
+recording and export. Five measurements span 19.485–20.716 seconds after four
+complete warmups. This meets the 20-second median objective, while individual
+runs can exceed 20 seconds. All nine full recordings match the qualified
+trajectory. Full core/plugin validation executes 7,356 tests with zero failures
+and 86 existing skips; eight additional optimized-path checks pass. Required
+frequency measurement retains 704 of 6,717 buses by default. The exact runtime
+and source are frozen with a maintained benchmark launcher. Independent
+full-network reference acceptance remains open. See the
+[maintained single-CPU milestone](benchmarks/texas7k-maintained-single-cpu-2026-10-25.md).
+
+## Earlier checkpoints
+
 The new three-mode recording/traversal study has a best outer invocation median
 of 20.481 seconds (20.469 seconds on the internal timer), preserving every
 recorded value. Prepared recording alone has essentially unchanged timing;

@@ -9,6 +9,7 @@ public final class IeeeVcEConstMachine extends EConstMachineImpl
         implements IeeeVoltageCompensatedMachine {
     static { IeeeVcMachineState.register(IeeeVcEConstMachine.class,IeeeVcEConstMachine::new); }
     private IeeeVcData ieeeVcData;
+    @Override public boolean supportsDeferredCurrentPublication(){return true;}
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
