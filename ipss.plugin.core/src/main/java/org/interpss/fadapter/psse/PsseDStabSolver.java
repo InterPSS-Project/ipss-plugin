@@ -63,6 +63,41 @@ public class PsseDStabSolver extends DStabSolverImpl {
         // Bound network work while retaining the configured convergence test.
         // Exhaustion is a failed solve, never acceptance of the last iterate.
         setMaxIterationTimes(DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
+        setNetworkAccelerationEnabled(true);
+    }
+
+    /** Only known memory-free current sources qualify for bounded fixed-point mixing. */
+    @Override protected boolean canAccelerateNetworkIterations(java.util.List<DynamicDevice> participants) {
+        for (DynamicDevice device : participants)
+            if (!stationaryCurrentSource(device)) return false;
+        var network = dstabAlgo.getNetwork();
+        var currents = network.getCustomBusCurrInjHashtable();
+        if (currents != null && currents.getClass() != Hashtable.class) return false;
+        var sequenceCurrents = network.getCustom3SeqBusCurrInjHashtable();
+        if (sequenceCurrents != null && !sequenceCurrents.isEmpty()) return false;
+        for (BaseDStabBus<?, ?> bus : network.getBusList()) {
+            if (!bus.isActive()) continue;
+            if (bus.getScriptDynamicBusDevice() != null && bus.getScriptDynamicBusDevice().isActive()) return false;
+            for (DynamicDevice device : bus.getDynamicBusDeviceList())
+                if (device.isActive() && !stationaryCurrentSource(device)) return false;
+            if (bus.getDynLoadModelList() != null)
+                for (DynamicDevice device : bus.getDynLoadModelList())
+                    if (device.isActive()) return false;
+            for (DStabGen generator : bus.getContributeGenList()) {
+                if (!generator.isActive()) continue;
+                var device = generator.getDynamicGenDevice();
+                if (device != null && device.isActive() && !(device instanceof Machine)
+                        && !stationaryCurrentSource(device)) return false;
+            }
+        }
+        for (var branch : network.getBranchList())
+            if (branch.isActive()) for (DynamicDevice device : branch.getDynamicBranchDeviceList())
+                if (device.isActive()) return false;
+        return true;
+    }
+
+    private static boolean stationaryCurrentSource(DynamicDevice device) {
+        return device.supportsNetworkIterationAcceleration();
     }
 
     /** Imported-case network solves have a bounded iteration budget. */
