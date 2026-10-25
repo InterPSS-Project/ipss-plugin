@@ -1,0 +1,403 @@
+{
+  "schema": 1,
+  "status": "experimental-qualified-endpoint-reuse",
+  "goal_complete": false,
+  "goal_seconds": 20,
+  "whole_runtime_production_promoted": false,
+  "production_core_commit": "4b87c8724e3d26d39425f1918fc87a7b1b60f233",
+  "measurements": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/measured-control-1",
+      "whole_seconds": 25.1351063,
+      "phase_times": {
+        "import_and_setup_s": 0.1876765,
+        "power_flow_s": 1.4741664,
+        "dynamic_configuration_and_initialization_s": 0.1087891,
+        "fixed_current_binding_and_controller_compilation_s": 0.0359163,
+        "recording_setup_s": 0.0004421,
+        "stepping_and_in_memory_recording_s": 23.1211986,
+        "network_s": 12.1655366,
+        "device_and_measurement_integration_s": 9.318681,
+        "raw_binary_encode_write_s": 0.0847658,
+        "recovery_time_series_compute_write_s": 0.0893471,
+        "serialization_and_recovery_tables_s": 0.1923899
+      },
+      "endpoint_reuses": 0,
+      "closed_reuses": 0,
+      "network_iterations": 31599,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/measured-control-2",
+      "whole_seconds": 23.3508698,
+      "phase_times": {
+        "import_and_setup_s": 0.2374996,
+        "power_flow_s": 0.6887528,
+        "dynamic_configuration_and_initialization_s": 0.2164498,
+        "fixed_current_binding_and_controller_compilation_s": 0.0116413,
+        "recording_setup_s": 0.0004099,
+        "stepping_and_in_memory_recording_s": 22.0157228,
+        "network_s": 11.9754282,
+        "device_and_measurement_integration_s": 8.3637644,
+        "raw_binary_encode_write_s": 0.0846312,
+        "recovery_time_series_compute_write_s": 0.0834868,
+        "serialization_and_recovery_tables_s": 0.180321
+      },
+      "endpoint_reuses": 0,
+      "closed_reuses": 0,
+      "network_iterations": 31599,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/measured-reuse-1",
+      "whole_seconds": 22.7443526,
+      "phase_times": {
+        "import_and_setup_s": 0.1107753,
+        "power_flow_s": 0.5303426,
+        "dynamic_configuration_and_initialization_s": 0.2027621,
+        "fixed_current_binding_and_controller_compilation_s": 0.0230717,
+        "recording_setup_s": 0.0004075,
+        "stepping_and_in_memory_recording_s": 21.7030085,
+        "network_s": 11.388105,
+        "device_and_measurement_integration_s": 8.6961599,
+        "raw_binary_encode_write_s": 0.0796537,
+        "recovery_time_series_compute_write_s": 0.0832418,
+        "serialization_and_recovery_tables_s": 0.1739579
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/measured-reuse-2",
+      "whole_seconds": 23.6098429,
+      "phase_times": {
+        "import_and_setup_s": 0.0728764,
+        "power_flow_s": 0.7083934,
+        "dynamic_configuration_and_initialization_s": 0.0950849,
+        "fixed_current_binding_and_controller_compilation_s": 0.0280074,
+        "recording_setup_s": 0.0004079,
+        "stepping_and_in_memory_recording_s": 22.5269302,
+        "network_s": 11.9854522,
+        "device_and_measurement_integration_s": 8.6256486,
+        "raw_binary_encode_write_s": 0.0742651,
+        "recovery_time_series_compute_write_s": 0.083346,
+        "serialization_and_recovery_tables_s": 0.1781107
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/warmup-control-1",
+      "whole_seconds": 42.7093551,
+      "phase_times": {
+        "import_and_setup_s": 2.811023,
+        "power_flow_s": 7.5930431,
+        "dynamic_configuration_and_initialization_s": 0.9474448,
+        "fixed_current_binding_and_controller_compilation_s": 0.1129971,
+        "recording_setup_s": 0.0039332,
+        "stepping_and_in_memory_recording_s": 28.7975293,
+        "network_s": 13.8835051,
+        "device_and_measurement_integration_s": 12.7072432,
+        "raw_binary_encode_write_s": 0.0955696,
+        "recovery_time_series_compute_write_s": 2.2257129,
+        "serialization_and_recovery_tables_s": 2.4431212
+      },
+      "endpoint_reuses": 0,
+      "closed_reuses": 0,
+      "network_iterations": 31599,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/warmup-control-2",
+      "whole_seconds": 43.729267,
+      "phase_times": {
+        "import_and_setup_s": 0.328431,
+        "power_flow_s": 1.5588123,
+        "dynamic_configuration_and_initialization_s": 0.1495286,
+        "fixed_current_binding_and_controller_compilation_s": 0.0234805,
+        "recording_setup_s": 0.0007222,
+        "stepping_and_in_memory_recording_s": 26.5642051,
+        "network_s": 13.5718938,
+        "device_and_measurement_integration_s": 11.0008754,
+        "raw_binary_encode_write_s": 0.116852,
+        "recovery_time_series_compute_write_s": 14.9558193,
+        "serialization_and_recovery_tables_s": 15.1033439
+      },
+      "endpoint_reuses": 0,
+      "closed_reuses": 0,
+      "network_iterations": 31599,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/warmup-reuse-1",
+      "whole_seconds": 49.9551366,
+      "phase_times": {
+        "import_and_setup_s": 0.5240063,
+        "power_flow_s": 2.5580381,
+        "dynamic_configuration_and_initialization_s": 0.8117606,
+        "fixed_current_binding_and_controller_compilation_s": 0.4865892,
+        "recording_setup_s": 0.0013178,
+        "stepping_and_in_memory_recording_s": 24.2342631,
+        "network_s": 11.7491963,
+        "device_and_measurement_integration_s": 10.6318004,
+        "raw_binary_encode_write_s": 0.0745698,
+        "recovery_time_series_compute_write_s": 20.5376007,
+        "serialization_and_recovery_tables_s": 21.3390969
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-endpoint-reuse-warmed-20261025-1/warmup-reuse-2",
+      "whole_seconds": 25.3806526,
+      "phase_times": {
+        "import_and_setup_s": 0.130714,
+        "power_flow_s": 0.7534052,
+        "dynamic_configuration_and_initialization_s": 0.0786261,
+        "fixed_current_binding_and_controller_compilation_s": 0.0173116,
+        "recording_setup_s": 0.0004677,
+        "stepping_and_in_memory_recording_s": 24.2232462,
+        "network_s": 11.8920807,
+        "device_and_measurement_integration_s": 10.5645755,
+        "raw_binary_encode_write_s": 0.0779411,
+        "recovery_time_series_compute_write_s": 0.0826028,
+        "serialization_and_recovery_tables_s": 0.1762472
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/measured-closed-1",
+      "whole_seconds": 24.5331627,
+      "phase_times": {
+        "import_and_setup_s": 0.1768862,
+        "power_flow_s": 0.5189373,
+        "dynamic_configuration_and_initialization_s": 0.2118244,
+        "fixed_current_binding_and_controller_compilation_s": 0.004964,
+        "recording_setup_s": 0.0002288,
+        "stepping_and_in_memory_recording_s": 23.43241,
+        "network_s": 10.982616,
+        "device_and_measurement_integration_s": 10.8544898,
+        "raw_binary_encode_write_s": 0.0714132,
+        "recovery_time_series_compute_write_s": 0.089662,
+        "serialization_and_recovery_tables_s": 0.1878616
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 2397,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/measured-closed-2",
+      "whole_seconds": 28.1766133,
+      "phase_times": {
+        "import_and_setup_s": 0.0878973,
+        "power_flow_s": 0.7733448,
+        "dynamic_configuration_and_initialization_s": 0.0843355,
+        "fixed_current_binding_and_controller_compilation_s": 0.0293908,
+        "recording_setup_s": 0.0005579,
+        "stepping_and_in_memory_recording_s": 27.0271217,
+        "network_s": 12.7052589,
+        "device_and_measurement_integration_s": 11.5937701,
+        "raw_binary_encode_write_s": 0.0803718,
+        "recovery_time_series_compute_write_s": 0.0852964,
+        "serialization_and_recovery_tables_s": 0.1739313
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 2397,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/measured-control-1",
+      "whole_seconds": 25.8354315,
+      "phase_times": {
+        "import_and_setup_s": 0.1196872,
+        "power_flow_s": 1.5183514,
+        "dynamic_configuration_and_initialization_s": 0.1139527,
+        "fixed_current_binding_and_controller_compilation_s": 0.0358486,
+        "recording_setup_s": 0.000372,
+        "stepping_and_in_memory_recording_s": 23.8533834,
+        "network_s": 11.8273352,
+        "device_and_measurement_integration_s": 10.3278439,
+        "raw_binary_encode_write_s": 0.0741071,
+        "recovery_time_series_compute_write_s": 0.0839787,
+        "serialization_and_recovery_tables_s": 0.1807493
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/measured-control-2",
+      "whole_seconds": 25.0331603,
+      "phase_times": {
+        "import_and_setup_s": 0.2381728,
+        "power_flow_s": 0.6905604,
+        "dynamic_configuration_and_initialization_s": 0.2289139,
+        "fixed_current_binding_and_controller_compilation_s": 0.010848,
+        "recording_setup_s": 0.000357,
+        "stepping_and_in_memory_recording_s": 23.6969955,
+        "network_s": 11.5226178,
+        "device_and_measurement_integration_s": 10.5206683,
+        "raw_binary_encode_write_s": 0.074465,
+        "recovery_time_series_compute_write_s": 0.0830687,
+        "serialization_and_recovery_tables_s": 0.1672427
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/warmup-closed-1",
+      "whole_seconds": 50.5547219,
+      "phase_times": {
+        "import_and_setup_s": 0.5151264,
+        "power_flow_s": 2.5482681,
+        "dynamic_configuration_and_initialization_s": 0.7998984,
+        "fixed_current_binding_and_controller_compilation_s": 0.4594153,
+        "recording_setup_s": 0.0009908,
+        "stepping_and_in_memory_recording_s": 22.2203178,
+        "network_s": 11.0962665,
+        "device_and_measurement_integration_s": 9.1346686,
+        "raw_binary_encode_write_s": 0.0994332,
+        "recovery_time_series_compute_write_s": 23.1843332,
+        "serialization_and_recovery_tables_s": 24.0106624
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 2397,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/warmup-closed-2",
+      "whole_seconds": 22.7349345,
+      "phase_times": {
+        "import_and_setup_s": 0.1327408,
+        "power_flow_s": 0.6871644,
+        "dynamic_configuration_and_initialization_s": 0.0818551,
+        "fixed_current_binding_and_controller_compilation_s": 0.0195011,
+        "recording_setup_s": 0.0004564,
+        "stepping_and_in_memory_recording_s": 21.6401445,
+        "network_s": 11.3292533,
+        "device_and_measurement_integration_s": 8.5670184,
+        "raw_binary_encode_write_s": 0.0683993,
+        "recovery_time_series_compute_write_s": 0.0828158,
+        "serialization_and_recovery_tables_s": 0.1723784
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 2397,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/warmup-control-1",
+      "whole_seconds": 39.4965136,
+      "phase_times": {
+        "import_and_setup_s": 2.8112302,
+        "power_flow_s": 7.5091008,
+        "dynamic_configuration_and_initialization_s": 0.9649986,
+        "fixed_current_binding_and_controller_compilation_s": 0.1151588,
+        "recording_setup_s": 0.0049709,
+        "stepping_and_in_memory_recording_s": 25.5574092,
+        "network_s": 13.4888831,
+        "device_and_measurement_integration_s": 9.9034045,
+        "raw_binary_encode_write_s": 0.1005614,
+        "recovery_time_series_compute_write_s": 2.3013651,
+        "serialization_and_recovery_tables_s": 2.533333
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-closed-endpoint-warmed-20261025-1/warmup-control-2",
+      "whole_seconds": 41.9295228,
+      "phase_times": {
+        "import_and_setup_s": 0.3008826,
+        "power_flow_s": 1.6302208,
+        "dynamic_configuration_and_initialization_s": 0.1588384,
+        "fixed_current_binding_and_controller_compilation_s": 0.0191331,
+        "recording_setup_s": 0.0004019,
+        "stepping_and_in_memory_recording_s": 23.2374399,
+        "network_s": 12.112458,
+        "device_and_measurement_integration_s": 9.2700879,
+        "raw_binary_encode_write_s": 0.117948,
+        "recovery_time_series_compute_write_s": 16.4428794,
+        "serialization_and_recovery_tables_s": 16.5821141
+      },
+      "endpoint_reuses": 2397,
+      "closed_reuses": 0,
+      "network_iterations": 26803,
+      "samples": 2403
+    }
+  ],
+  "accuracy_summary": {
+    "prefault": {
+      "samples": 24,
+      "voltage_channels": 6717,
+      "defined_voltage_nrmse_channels": 6717,
+      "zero_range_voltage_channels": 0,
+      "maximum_voltage_nrmse": 2.196995167372975e-12,
+      "worst_voltage_nrmse_channel": "V_pu__Bus220194",
+      "voltage_nrmse_threshold": 0.001,
+      "voltage_channels_exceeding_threshold": 0,
+      "maximum_voltage_abs_error_pu": 2.3092638912203256e-14
+    },
+    "fault_and_postfault": {
+      "samples": 2379,
+      "voltage_channels": 6717,
+      "defined_voltage_nrmse_channels": 6717,
+      "zero_range_voltage_channels": 0,
+      "maximum_voltage_nrmse": 0.0006969441915927881,
+      "worst_voltage_nrmse_channel": "V_pu__Bus150510",
+      "voltage_nrmse_threshold": 0.005,
+      "voltage_channels_exceeding_threshold": 0,
+      "maximum_voltage_abs_error_pu": 0.0016015563489509832
+    },
+    "full_ten_seconds": {
+      "samples": 2403,
+      "voltage_channels": 6717,
+      "defined_voltage_nrmse_channels": 6717,
+      "zero_range_voltage_channels": 0,
+      "maximum_voltage_nrmse": 0.000693455087365417,
+      "worst_voltage_nrmse_channel": "V_pu__Bus150510",
+      "voltage_nrmse_threshold": 0.005,
+      "voltage_channels_exceeding_threshold": 0,
+      "maximum_voltage_abs_error_pu": 0.0016015563489509832
+    },
+    "selected_rotor_angles": {
+      "channels": 3,
+      "maximum_full_rmse_deg": 0.0006161097397992033,
+      "maximum_prefault_abs_error_deg": 0.0
+    }
+  },
+  "independent_complete_network_acceptance": false,
+  "recorded_values": 16176996,
+  "voltage_channels": 6717,
+  "selected_machine_channels": 15,
+  "candidate_trace_sha256": "cf74add8e7a177512da3d7296a1460f59dd79b2ad2dda056dea493ff3bae9c09",
+  "previous_trace_sha256": "ee24dbcc84ecc755c0c5675393def9d8af8e31af408464991cd14a58322d3b07",
+  "limitations": [
+    "Only the startup scan change is production code. Endpoint and worker paths remain experimental.",
+    "Fingerprint mode checks all live injection values, voltage bits, matrix identity/revision, membership, observers, time, norm and tolerance.",
+    "Closed mode additionally requires an explicit owner guarantee for every external input, setpoint, fixed-current, load and device state mutation between CORRECTOR and INITIAL.",
+    "Closed mode rejects additional device types, converter two-step history and controllers with accepted-step callbacks. Registered event boundaries always solve afresh.",
+    "Fresh network solves retain minimum two and maximum 50 iterations at 1e-4 pu.",
+    "Full-network accuracy is compared with a tighter internal control; independent evidence is limited to retained small converter profiles.",
+    "Two measured runs per mode establish only a small matched-batch timing range."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas7k-accepted-endpoint-study/manifest.json",
+  "manifest_sha256": "4ceb52f008148caed5269ad0c45c55fc17c80023f256a978b85d29ed7e1a3832"
+}

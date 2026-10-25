@@ -84,7 +84,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if(bus.isActive()&&bus.getBusFreqMeasureBlock() instanceof BusFreqMeasurementImpl frequency)
                     frequency.synchronizeNetworkAngle(bus.getVoltageAng());
         }
-        if (solved && ("INITIAL".equals(networkSolutionStage) || "CORRECTOR".equals(networkSolutionStage))) {
+        if (solved && ("CORRECTOR".equals(networkSolutionStage)
+                || ("INITIAL".equals(networkSolutionStage) && eventBoundaryThisStep
+                        && !dstabAlgo.isDisableDynamicEvent()))) {
             for (BaseDStabBus<?, ?> bus : dstabAlgo.getNetwork().getBusList()) {
                 if (!bus.isActive()) continue;
                 for (DStabGen generator : bus.getContributeGenList()) {

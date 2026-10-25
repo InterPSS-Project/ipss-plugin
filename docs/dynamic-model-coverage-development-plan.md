@@ -2,7 +2,19 @@
 
 ## Current checkpoint
 
-The latest whole-run experimental path measures 23.792 and 24.436 seconds
+Fingerprint-checked accepted-endpoint reuse measures 22.744 and 23.610 seconds
+for the complete ten-second run, including recording (23.177-second median in
+a small matched batch). It reduces network iterations to 26,803, and all 6,717
+voltage channels pass the period-specific limits against the tighter internal
+control. Four independent small-case converter profiles and 182 invalidation
+checks pass. A production change removes a redundant INITIAL stabilizer scan;
+32 focused tests and the unchanged full control traces pass. A further
+closed-case shortcut preserves the reused trajectory but fails to establish a
+timing benefit and is not preferred. Whole-runtime promotion, independent full
+network acceptance and the 20-second target remain open. See the
+[accepted-endpoint study](benchmarks/texas7k-accepted-endpoint-study-2026-10-25.md).
+
+The preceding whole-run experimental path measures 23.792 and 24.436 seconds
 (24.114-second median in a two-measurement batch) while preserving the complete
 numerical control trace. An exact frequency-angle shortcut is committed to
 core as `4b87c8724`; all 3,099 core tests and both independent converter
