@@ -32,6 +32,7 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
 public class PsseDStabSolver extends DStabSolverImpl {
     public enum BusFrequencyMode { REQUIRED, ALL }
     public record BusFrequencyReport(int activeBuses,int measuredBuses,String reason) { }
+    /** Frequency is optional at unused buses by default; ALL is an explicit override. */
     private BusFrequencyMode busFrequencyMode=BusFrequencyMode.REQUIRED;
     private BusFrequencyReport busFrequencyReport;
     private com.interpss.dstab.common.IDStabSimuOutputHandler frequencyOutputHandler;

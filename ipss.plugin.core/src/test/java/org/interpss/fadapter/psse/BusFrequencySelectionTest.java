@@ -76,4 +76,57 @@ class BusFrequencySelectionTest {
         pss.busMeasurement=new com.interpss.dstab.controller.cml.field.block.GainBlock(){};
         assertNull(BusFrequencySelection.select(a).required());
     }
+
+    private org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer
+            attachPss2a(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm) {
+        var machine=algorithm.getNetwork().getMachine("M");
+        var pss=new org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer("S","S","test");
+        pss.setMachine(machine);
+        pss.setInputSignalBuses(algorithm.getNetwork().getDStabBus("Bus2"),algorithm.getNetwork().getDStabBus("Bus2"));
+        machine.getControllerList().add((com.interpss.dstab.mach.MachineController)(Object)pss.customBlock1);
+        machine.getControllerList().add((com.interpss.dstab.mach.MachineController)(Object)pss.customBlock2);
+        return pss;
+    }
+
+    @Test void ownedPss2aChildrenKeepRemoteInputsWithoutRequiringPassiveBuses() throws Exception {
+        var a=fixture();var pss=attachPss2a(a);
+        assertTrue(pss.isBuiltInSignalConditioner(pss.customBlock1));
+        assertEquals(Set.of("Bus1","Bus2"),BusFrequencySelection.select(a).required());
+        ((StateMonitor)a.getSimuOutputHandler()).addBusStdMonitor(new String[]{"Bus3"});
+        assertEquals(Set.of("Bus1","Bus2","Bus3"),BusFrequencySelection.select(a).required());
+    }
+
+    @Test void foreignOrDetachedPss2aChildrenKeepConservativeCoverage() throws Exception {
+        var a=fixture();var pss=attachPss2a(a);
+        Object old=pss.customBlock1;
+        var other=new org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer("X","X","test");
+        Object foreign=other.customBlock1;
+        pss.getClass().getField("customBlock1").set(pss,foreign);
+        assertFalse(pss.isBuiltInSignalConditioner(old));
+        assertFalse(pss.isBuiltInSignalConditioner(foreign));
+        assertNull(BusFrequencySelection.select(a).required());
+    }
+
+    @Test void observedOrCustomizedPss2aChildrenKeepAllMeasurements() throws Exception {
+        var a=fixture();var pss=attachPss2a(a);
+        var child=(com.interpss.dstab.mach.MachineController)(Object)pss.customBlock1;
+        child.eAdapters().add(new org.eclipse.emf.common.notify.impl.AdapterImpl());
+        assertNull(BusFrequencySelection.select(a).required());child.eAdapters().clear();
+        var field=child.getClass().getDeclaredField("washoutBlock1");assertTrue(field.trySetAccessible());
+        field.set(child,new com.interpss.dstab.controller.cml.field.block.WashoutControlBlock(1.,.1){});
+        assertNull(BusFrequencySelection.select(a).required());
+    }
+
+    @Test void standardLocalExciterAndGovernorsDoNotRequirePassiveFrequency() throws Exception {
+        var a=fixture();var machine=a.getNetwork().getMachine("M");
+        new org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter("E","E","test").setMachine(machine);
+        for(var governor:java.util.List.of(
+                new org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor("G1","G1","test"),
+                new org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor("G2","G2","test"),
+                new org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor("G3","G3","test")))
+            governor.setMachine(machine);
+        assertEquals(Set.of("Bus1"),BusFrequencySelection.select(a).required());
+        new org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor("C","C","test"){}.setMachine(machine);
+        assertNull(BusFrequencySelection.select(a).required());
+    }
 }

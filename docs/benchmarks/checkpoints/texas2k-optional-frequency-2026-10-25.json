@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "status": "required-frequency-default-verified",
+  "source_commits": {
+    "ipss-plugin": "850c648da8e466bdefa5b44b147cdd3203d89cea",
+    "core": "730d52fa7f414fd051b025436c0f954dad995623"
+  },
+  "source_state": "Five modified Java files and binary patch retained in source/; measured before final documentation commit.",
+  "logical_cpu": 6,
+  "affinity_mask": 64,
+  "warmup_pairs": 4,
+  "measurement_pairs": 5,
+  "whole_run_includes_recording_and_export": true,
+  "cases": {
+    "1": {
+      "folder": "ipss.test.plugin.core/testData/private/texas2k-frequency-case1-matched-20261025-1",
+      "modes": {
+        "ALL": {
+          "range_seconds": [
+            8.308226,
+            9.5254593
+          ],
+          "median_seconds": 8.5110837,
+          "measurement_seconds": [
+            8.3305402,
+            8.6120131,
+            9.5254593,
+            8.308226,
+            8.5110837
+          ],
+          "compilation_ms": [
+            116,
+            210,
+            531,
+            89,
+            315
+          ],
+          "median_network_seconds": 2.9762942,
+          "median_device_seconds": 4.3995255,
+          "measured_buses": 2000,
+          "passive_bus_skips": 0
+        },
+        "REQUIRED": {
+          "range_seconds": [
+            8.1489632,
+            8.7378742
+          ],
+          "median_seconds": 8.5878437,
+          "measurement_seconds": [
+            8.5411046,
+            8.7192346,
+            8.5878437,
+            8.7378742,
+            8.1489632
+          ],
+          "compilation_ms": [
+            110,
+            49,
+            135,
+            301,
+            283
+          ],
+          "median_network_seconds": 3.1603778,
+          "median_device_seconds": 4.28174,
+          "measured_buses": 485,
+          "passive_bus_skips": 7278060
+        }
+      },
+      "paired_savings_seconds": [
+        -0.21056440000000087,
+        -0.10722149999999964,
+        0.9376155999999991,
+        -0.4296482000000008,
+        0.3621204999999996
+      ],
+      "median_paired_saving_seconds": -0.10722149999999964,
+      "required_faster_pairs": 2,
+      "network_iterations": 20559,
+      "samples": 2405,
+      "channels": 6190,
+      "recording_hashes": {
+        "full-network.bin": "464c31afa696759b5b0bf2353b2bd0d4f3f0675c4a7e2d9c21fb649b2631bf63",
+        "interpss.csv": "351030667780a4ea0e82614a4c9208343d576865313d92638467d682657ed9c7",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    "2": {
+      "folder": "ipss.test.plugin.core/testData/private/texas2k-frequency-case2-matched-20261025-1",
+      "modes": {
+        "ALL": {
+          "measurement_seconds": [
+            5.3560057,
+            5.5402657,
+            5.4381111,
+            5.7680371,
+            5.5194381
+          ],
+          "range_seconds": [
+            5.3560057,
+            5.7680371
+          ],
+          "median_seconds": 5.5194381,
+          "compilation_ms": [
+            66,
+            191,
+            134,
+            439,
+            281
+          ],
+          "median_network_seconds": 2.7597297,
+          "median_device_seconds": 1.7015419,
+          "measured_buses": 2000,
+          "passive_bus_skips": 0
+        },
+        "REQUIRED": {
+          "measurement_seconds": [
+            5.7083326,
+            5.3513956,
+            5.6415,
+            5.2392159,
+            5.3750608
+          ],
+          "range_seconds": [
+            5.2392159,
+            5.7083326
+          ],
+          "median_seconds": 5.3750608,
+          "compilation_ms": [
+            353,
+            33,
+            473,
+            88,
+            149
+          ],
+          "median_network_seconds": 2.8519353,
+          "median_device_seconds": 1.5447753,
+          "measured_buses": 485,
+          "passive_bus_skips": 7278060
+        }
+      },
+      "paired_savings_seconds": [
+        -0.35232690000000044,
+        0.18887009999999993,
+        -0.20338889999999932,
+        0.5288212000000003,
+        0.14437730000000037
+      ],
+      "median_paired_saving_seconds": 0.14437730000000037,
+      "required_faster_pairs": 3,
+      "network_iterations": 22732,
+      "samples": 2405,
+      "channels": 4810,
+      "recording_hashes": {
+        "full-network.bin": "d5cea1575eb7a04e695cfc617a66f75e528a4ae7dfdd8006fef3bd1e5afdf332",
+        "interpss.csv": "e3f764e2c8a2501d0d035bfdae8688d47f1ff5bf4d6b9a457397c19772f4c72b",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  },
+  "validation": {
+    "ipss.plugin.core": {
+      "tests": 456,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.test.plugin.core": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "limitations": [
+    "Required-only frequency applies to the imported-case solver. Generic core factory defaults are unchanged.",
+    "Generator buses, configured remote signals and requested outputs remain covered; unknown consumers keep all buses. Wiring/output membership changes require reinitialization or explicit ALL coverage.",
+    "This changes dependency classification, not model equations, integration stages, network tolerance or requested output.",
+    "Both modes use the same optimized profile and default modified Euler. Each case has one JVM, four alternating warmup pairs and five alternating measurement pairs. Case 2 reverses the starting order.",
+    "Residual compilation remains in measured complete runs. Case 1 shows no whole-run improvement; Case 2 shows a small improvement with overlapping ranges.",
+    "All 36 full recordings are byte-identical to their all-bus controls and the prior optimized recordings, including timestamps and event-side duplicates.",
+    "Previous optimized-profile accuracy limitations are unchanged. This establishes no new independent reference acceptance.",
+    "Earlier separate-JVM timings used a different warmup protocol and are not a causal control for this isolated change.",
+    "Classpath directory deltas reconstruct from the named frozen base by copying its contents, removing deleted entries, then overlaying the delta. Full per-file hashes are retained.",
+    "Only regenerated byte-verified duplicate outputs share storage; supplied references are untouched."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas2k-optional-frequency/manifest.json",
+  "manifest_sha256": "5ebf636314ab4277ece9db1d3a893df929ecf96a94ba09cf3812c046996ef7ef"
+}

@@ -17,6 +17,7 @@ final class BusFrequencySelection {
     // Audited families use local machine/bus inputs except the remote selectors below.
     private static final Set<String> LOCAL_CONTROLLERS = Set.of(
         "org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter",
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter",
         "org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter",
         "org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter",
         "org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter",
@@ -27,6 +28,9 @@ final class BusFrequencySelection {
         "org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter",
         "org.interpss.dstab.control.exc.psse.scrx.ScrxExciter",
         "org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor",
+        "org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor",
+        "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
+        "org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor",
         "org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor",
         "org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor");
     record Result(Set<String> required, String reason) { }
@@ -79,6 +83,14 @@ final class BusFrequencySelection {
                         if(!controller.eAdapters().isEmpty())return all("controller observer");
                         var issue=nonstandardField(controller);
                         if(issue!=null)return all(controller.getClass().getSimpleName()+": "+issue);
+                        if(machine.getStabilizer() instanceof Ieee1992PSS2AStabilizer parent
+                                && parent.isBuiltInSignalConditioner(controller)) {
+                            if(!parent.eAdapters().isEmpty())return all("controller observer");
+                            var parentIssue=nonstandardField(parent);
+                            if(parentIssue!=null)return all("PSS2A: "+parentIssue);
+                            required.addAll(parent.requiredBusFrequencyIds());
+                            continue;
+                        }
                         if(controller.getClass()==IeeestStabilizer.class) {
                             var data=((IeeestStabilizer)controller).getData();
                             if(data.mode()==2&&data.remoteBus()!=0)required.add("Bus"+data.remoteBus());

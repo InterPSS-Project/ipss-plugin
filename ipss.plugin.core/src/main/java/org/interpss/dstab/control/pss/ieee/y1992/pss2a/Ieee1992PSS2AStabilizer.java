@@ -110,6 +110,9 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 			refPoint="0.0"
 	)
 	class CustomExciter extends AbstractChildAnnotateController {
+        private boolean belongsTo(Ieee1992PSS2AStabilizer owner) {
+            return Ieee1992PSS2AStabilizer.this == owner;
+        }
         java.util.function.DoubleSupplier directOutput;
         @Override public double getOutput(Machine machine) {
             return directOutput==null?super.getOutput(machine):directOutput.getAsDouble();
@@ -245,6 +248,14 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
         if(input1Bus!=null)ids.add(input1Bus.getId());
         if(input2Bus!=null)ids.add(input2Bus.getId());
         return java.util.Set.copyOf(ids);
+    }
+
+    /** Built-in child equations consume the parent's scalar input, not bus frequency. */
+    public final boolean isBuiltInSignalConditioner(Object controller) {
+        return getClass() == Ieee1992PSS2AStabilizer.class && controller != null
+                && controller.getClass() == CustomExciter.class
+                && (controller == customBlock1 || controller == customBlock2)
+                && ((CustomExciter) controller).belongsTo(this);
     }
 	private double integrationStep;
 	private double minimumTimeConstantMultiplier = 1.0;

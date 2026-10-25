@@ -67,4 +67,53 @@ class OptionalBusFrequencyIntegrationTest {
         assertEquals(all.size(),required.size());
         for(int i=0;i<all.size();i++)assertArrayEquals(all.get(i),required.get(i),0.,"step "+i);
     }
+
+    private List<double[]> runPss2a(PsseDStabSolver.BusFrequencyMode mode,boolean remote,
+            java.nio.file.Path folder) throws Exception {
+        java.nio.file.Files.createDirectory(folder);
+        IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
+        var base=java.nio.file.Path.of("testData/adpter/psse/v33/SMIB");
+        String raw=java.nio.file.Files.readString(base.resolve("SMIB_v33.raw"));
+        raw=raw.replace("0 / END OF BUS DATA","3,'PASSIVE',100.0000,1,1,1,1,1.0000,0.0000,1.1000,0.9000,1.1000,0.9000\n0 / END OF BUS DATA");
+        raw=raw.replace("0 / END OF LOAD DATA","3,'1',1,1,1,20.000,10.000,0.000,0.000,0.000,0.000,1,1,0\n0 / END OF LOAD DATA");
+        raw=raw.replace("0 / END OF BRANCH DATA","2,3,'1',0.01000,0.10000,0.00000,0.00,0.00,0.00,0.00000,0.00000,0.00000,0.00000,1,1,0.00,1,1.0000\n0 / END OF BRANCH DATA");
+        var file=folder.resolve("three-bus.raw");java.nio.file.Files.writeString(file,raw);
+        var context=new PSSEMultiFileLoader().loadDStab(file.toString(),base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr").toString());
+        var algorithm=context.getDynSimuAlgorithm();var network=context.getDStabilityNet();
+        var solver=assertInstanceOf(PsseDStabSolver.class,algorithm.getSolver());solver.setBusFrequencyMode(mode);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        var machine=network.getMachine("Bus1-mach1");
+        var pss=assertInstanceOf(org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer.class,machine.getStabilizer());
+        pss.setInputSignalBuses(network.getDStabBus(remote?"Bus3":"Bus1"),network.getDStabBus("Bus1"));
+        pss.getData().setIcs1(5);pss.getData().setIcs2(1);
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(1./240);
+        var monitor=new StateMonitor();monitor.addBusStdMonitor(new String[]{"Bus1"});algorithm.setSimuOutputHandler(monitor);
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3",network,
+                com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0,.01),null,.1,.05),"fault");
+        assertTrue(algorithm.initialization());
+        assertEquals(mode==PsseDStabSolver.BusFrequencyMode.ALL||remote?3:2,solver.getBusFrequencyReport().measuredBuses(),solver.getBusFrequencyReport().reason());
+        assertEquals(mode==PsseDStabSolver.BusFrequencyMode.REQUIRED&&!remote,network.getDStabBus("Bus3").getBusFreqMeasureBlock()==null);
+        var result=new ArrayList<double[]>();
+        for(int tick=0;tick<120;tick++) {
+            if(tick==10)pss.getData().setIcs1(2);
+            assertTrue(algorithm.solveDEqnStep(true));
+            var values=new ArrayList<Double>();
+            for(var bus:network.getBusList())values.add(bus.getVoltageMag());
+            values.add(network.getDStabBus("Bus1").getFreq());values.add(network.getDStabBus("Bus2").getFreq());
+            if(remote)values.add(network.getDStabBus("Bus3").getFreq());
+            values.add(machine.getAngle());values.add(machine.getSpeed());values.add(machine.getPe());values.add(machine.getPm());values.add(machine.getEfd());
+            values.addAll(new TreeMap<>(pss.getNamedStates()).values());
+            result.add(values.stream().mapToDouble(Double::doubleValue).toArray());
+        }
+        return result;
+    }
+
+    @Test void pss2aFaultAndLiveFrequencySelectorsRetainExactStatesAndHistories(
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path folder) throws Exception {
+        for(boolean remote:new boolean[]{false,true}) {
+            var all=runPss2a(PsseDStabSolver.BusFrequencyMode.ALL,remote,folder.resolve("all-"+remote));
+            var required=runPss2a(PsseDStabSolver.BusFrequencyMode.REQUIRED,remote,folder.resolve("required-"+remote));
+            for(int tick=0;tick<all.size();tick++)assertArrayEquals(all.get(tick),required.get(tick),0.,"remote="+remote+" step="+tick);
+        }
+    }
 }
