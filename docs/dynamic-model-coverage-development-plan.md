@@ -2,6 +2,17 @@
 
 ## Current checkpoint
 
+The new typed-controller study records a complete single-CPU median of 21.407
+seconds with default JVM inlining (three measurements). A subsequent combined
+load/angle-kernel batch measures 24.302 seconds after six full warmups; it does
+not establish an additional speedup. Full recordings, two tighter internal
+accuracy comparisons and focused state/history/independent small-case checks
+pass. All new kernels remain experimental; whole-runtime promotion, independent
+full-network acceptance and the 20-second goal remain open. The initialized 7K
+inventory contains 630 generating units and 1,759 machine/bundle/controller
+objects, versus 429 and 1,428 in Texas2k Case 1. See the
+[compiled-kernel study](benchmarks/texas7k-compiled-kernel-study-2026-10-25.md).
+
 Direct live IEEEST parameter bindings now avoid repeated named lookups in the
 compiled standard model while preserving parameter writes and custom-provider
 fallback. All 43 focused tests pass; the actual production controller class
