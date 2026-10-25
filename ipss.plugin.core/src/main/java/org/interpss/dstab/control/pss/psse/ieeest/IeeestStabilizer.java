@@ -35,9 +35,13 @@ public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEul
     }
 
     @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
-        if(!Boolean.getBoolean("ipss.experiment.directIeeestStage") || getClass()!=IeeestStabilizer.class)return null;
+        if((!preparedDirectStage&&!Boolean.getBoolean("ipss.experiment.directIeeestStage")) || getClass()!=IeeestStabilizer.class)return null;
         try{return new IeeestDirectStage(this);}catch(IllegalArgumentException unsupported){return null;}
     }
+    private boolean preparedDirectStage;
+    /** Select typed stages for a solver-qualified standard graph before compilation. */
+    public void setPreparedDirectStage(boolean enabled){preparedDirectStage=enabled;}
+    @Override public void invalidateRuntimePlan(){preparedDirectStage=false;super.invalidateRuntimePlan();}
     private final IeeestData data;
     private double constantInputBias;
     private boolean initializingBias;

@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "status": "automatic-modified-euler-controller-preparation-verified",
+  "source_commits": {
+    "ipss-plugin": "f00b8f3d9eea22d21aa27aa4c336a8bf2d484144",
+    "core": "730d52fa7f414fd051b025436c0f954dad995623"
+  },
+  "source_state": "Ten Java source snapshots, including two new files, and a binary patch retained; measured before the final documentation commit.",
+  "logical_cpu": 6,
+  "affinity_mask": 64,
+  "warmup_pairs": 4,
+  "measurement_pairs": 5,
+  "whole_run_includes_recording_and_export": true,
+  "cases": {
+    "1": {
+      "folder": "ipss.test.plugin.core/testData/private/texas2k-controller-default-case1-matched-20261025-1",
+      "modes": {
+        "BEFORE": {
+          "range_seconds": [
+            7.8877798,
+            8.7188074
+          ],
+          "measurement_seconds": [
+            7.8877798,
+            8.0643919,
+            8.7188074,
+            8.4751812,
+            8.357821
+          ],
+          "median_seconds": 8.357821,
+          "compilation_ms": [
+            115,
+            205,
+            654,
+            205,
+            217
+          ],
+          "median_network_seconds": 2.9052828,
+          "median_device_seconds": 4.2074338,
+          "measured_buses": 485,
+          "passive_bus_skips": 7278060,
+          "controller_preparation": null,
+          "compiled_st1_stages": 0
+        },
+        "AFTER": {
+          "range_seconds": [
+            7.5465782,
+            7.9000885
+          ],
+          "measurement_seconds": [
+            7.9000885,
+            7.653308,
+            7.5465782,
+            7.6593063,
+            7.8455353
+          ],
+          "median_seconds": 7.6593063,
+          "compilation_ms": [
+            98,
+            54,
+            138,
+            306,
+            275
+          ],
+          "median_network_seconds": 2.8761308,
+          "median_device_seconds": 3.7351337,
+          "measured_buses": 485,
+          "passive_bus_skips": 7278060,
+          "controller_preparation": {
+            "compiledControllers": 692,
+            "st1Controllers": 114,
+            "st4Controllers": 208,
+            "pss2aControllers": 333,
+            "ieeestControllers": 0,
+            "compatibleControllers": 613
+          },
+          "compiled_st1_stages": 547884
+        }
+      },
+      "paired_savings_seconds": [
+        -0.012308700000000172,
+        0.4110839000000004,
+        1.1722291999999994,
+        0.8158748999999998,
+        0.5122856999999996
+      ],
+      "median_paired_saving_seconds": 0.5122856999999996,
+      "automatic_faster_pairs": 4,
+      "network_iterations": 20559,
+      "samples": 2405,
+      "channels": 6190,
+      "recording_hashes": {
+        "full-network.bin": "464c31afa696759b5b0bf2353b2bd0d4f3f0675c4a7e2d9c21fb649b2631bf63",
+        "interpss.csv": "351030667780a4ea0e82614a4c9208343d576865313d92638467d682657ed9c7",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    "2": {
+      "folder": "ipss.test.plugin.core/testData/private/texas2k-controller-default-case2-matched-20261025-1",
+      "modes": {
+        "BEFORE": {
+          "range_seconds": [
+            5.2789903,
+            5.7814965
+          ],
+          "median_seconds": 5.3771367,
+          "measurement_seconds": [
+            5.2789903,
+            5.3771367,
+            5.3461785,
+            5.7814965,
+            5.4446602
+          ],
+          "compilation_ms": [
+            125,
+            189,
+            245,
+            450,
+            292
+          ],
+          "median_network_seconds": 2.7854804,
+          "median_device_seconds": 1.568272,
+          "measured_buses": 485,
+          "passive_bus_skips": 7278060,
+          "controller_preparation": null,
+          "compiled_st1_stages": 0
+        },
+        "AFTER": {
+          "range_seconds": [
+            5.1457331,
+            5.5443451
+          ],
+          "median_seconds": 5.3046063,
+          "measurement_seconds": [
+            5.4885864,
+            5.1551811,
+            5.5443451,
+            5.1457331,
+            5.3046063
+          ],
+          "compilation_ms": [
+            378,
+            39,
+            451,
+            168,
+            147
+          ],
+          "median_network_seconds": 2.7897054,
+          "median_device_seconds": 1.4656707,
+          "measured_buses": 485,
+          "passive_bus_skips": 7278060,
+          "controller_preparation": {
+            "compiledControllers": 221,
+            "st1Controllers": 36,
+            "st4Controllers": 64,
+            "pss2aControllers": 103,
+            "ieeestControllers": 0,
+            "compatibleControllers": 1084
+          },
+          "compiled_st1_stages": 173016
+        }
+      },
+      "paired_savings_seconds": [
+        -0.20959609999999973,
+        0.22195560000000025,
+        -0.19816660000000041,
+        0.6357634000000001,
+        0.14005390000000073
+      ],
+      "median_paired_saving_seconds": 0.14005390000000073,
+      "automatic_faster_pairs": 3,
+      "network_iterations": 22732,
+      "samples": 2405,
+      "channels": 4810,
+      "recording_hashes": {
+        "full-network.bin": "d5cea1575eb7a04e695cfc617a66f75e528a4ae7dfdd8006fef3bd1e5afdf332",
+        "interpss.csv": "e3f764e2c8a2501d0d035bfdae8688d47f1ff5bf4d6b9a457397c19772f4c72b",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  },
+  "validation": {
+    "ipss.plugin.core": {
+      "tests": 456,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.plugin.3phase": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    "ipss.test.plugin.core": {
+      "tests": 3332,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 54
+    }
+  },
+  "limitations": [
+    "Automatic preparation applies to the imported-case ordinary modified-Euler solver. Unknown/custom structures retain compatible execution.",
+    "Before disables automatic preparation and executes the previous explicit benchmark setup. After leaves default preparation enabled and removes the explicit setup. Network flags, numerical settings and recording are identical.",
+    "ST1 uses ordinary predictor/corrector block kernels and all existing refresh passes. No STORE integration, staggered history, input holds, time-step changes or convergence changes are transferred.",
+    "Both modes retain 485 frequency buses, all 2405 samples, both event sides and all 6190/4810 channels. All 36 warmed-batch recordings match the all-channel pilots and the prior optimized recordings byte for byte.",
+    "Full reactor validation has 4256 tests, 86 existing skips, zero failures/errors. Core source is unchanged; no new core-suite execution is claimed.",
+    "Each case uses one JVM with four alternating warmup pairs and five measurement pairs. Case 2 reverses starting order. Residual compilation is included in every complete-run measurement.",
+    "Previous optimized-profile independent-reference accuracy limitations remain unchanged. Byte identity proves nonregression for this controller preparation change.",
+    "Classpath directory deltas reconstruct from the named frozen base by copying its contents, removing deleted entries and overlaying the delta; complete file hashes are retained.",
+    "Only regenerated byte-verified duplicate outputs share storage; supplied references and prior manifest dependencies are untouched."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-modified-euler-controller-preparation/manifest.json",
+  "manifest_sha256": "114da3323d9681ec359707ad546783bc8a6bd1151d526c16d7bb4a7de8905f23"
+}

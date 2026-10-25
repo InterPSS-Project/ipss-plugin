@@ -282,6 +282,15 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	}
 
     private Pss2aDirectEvaluation directEvaluation;
+    /** Release parent and child bindings before reinitializing or changing the graph. */
+    public void clearDirectEvaluation() {
+        if(directEvaluation!=null) {
+            directEvaluation.first.model.directOutput=null;
+            directEvaluation.second.model.directOutput=null;
+        }
+        directEvaluation=null;
+    }
+    @Override public void invalidateRuntimePlan(){clearDirectEvaluation();super.invalidateRuntimePlan();}
     public void enableDirectEvaluationExperiment() {
         if(getClass()!=Ieee1992PSS2AStabilizer.class)throw new IllegalStateException("Exact PSS2A required");
         directEvaluation=new Pss2aDirectEvaluation(this);

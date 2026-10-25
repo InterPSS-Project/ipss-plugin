@@ -35,6 +35,17 @@ public class PsseDStabSolver extends DStabSolverImpl {
     /** Frequency is optional at unused buses by default; ALL is an explicit override. */
     private BusFrequencyMode busFrequencyMode=BusFrequencyMode.REQUIRED;
     private BusFrequencyReport busFrequencyReport;
+    private boolean controllerRuntimePreparationEnabled=true;
+    public record ControllerPreparationReport(int compiledControllers,int st1Controllers,
+            int st4Controllers,int pss2aControllers,int ieeestControllers,int compatibleControllers) { }
+    private final ModifiedEulerControllerPreparation controllerPreparation=new ModifiedEulerControllerPreparation();
+    private ControllerPreparationReport controllerPreparationReport;
+    /** Configure before initialization; false retains compatible controller dispatch. */
+    public void setControllerRuntimePreparationEnabled(boolean enabled){controllerRuntimePreparationEnabled=enabled;}
+    public boolean isControllerRuntimePreparationEnabled(){return controllerRuntimePreparationEnabled;}
+    /** Actual initialized coverage, including custom or unsupported compatible controllers. */
+    public ControllerPreparationReport getControllerPreparationReport(){return controllerPreparationReport;}
+    protected boolean usesModifiedEulerControllerPreparation(){return true;}
     private com.interpss.dstab.common.IDStabSimuOutputHandler frequencyOutputHandler;
     private java.util.Set<String> frequencyOutputIds;
     private final java.util.Map<BaseDStabBus<?,?>,com.interpss.dstab.controller.cml.field.ICMLControlBlock>
@@ -189,6 +200,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
+        controllerPreparation.clear();controllerPreparationReport=null;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         var validation=validateModelParameters();
@@ -204,6 +216,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
         configureIntegrationStepAwareModels(dstabAlgo.getNetwork(), dstabAlgo.getSimuStepSec());
         if (!super.initialization()) return false;
         selectFrequencyMeasurements();
+        if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
+                &&dstabAlgo.getSimuMethod()==com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)
+            controllerPreparationReport=controllerPreparation.prepare(dstabAlgo);
 
         // Do not overwrite a hybrid-simulation current source supplied by a caller.
         Hashtable<String, Complex> existing = network.getCustomBusCurrInjHashtable();

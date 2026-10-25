@@ -34,6 +34,10 @@ final class BusFrequencySelection {
         "org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor",
         "org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor");
     record Result(Set<String> required, String reason) { }
+    static boolean isAuditedController(Object controller) {
+        return LOCAL_CONTROLLERS.contains(controller.getClass().getName())
+            ||controller.getClass()==IeeestStabilizer.class||controller.getClass()==Ieee1992PSS2AStabilizer.class;
+    }
     static Result select(DynamicSimuAlgorithm algorithm) {
         var network=algorithm.getNetwork();var required=new HashSet<String>();
         if(network.getClass()!=com.interpss.dstab.impl.DStabilityNetworkImpl.class)

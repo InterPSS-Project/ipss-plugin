@@ -88,6 +88,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * limitations are recorded in docs/benchmarks/ieee39-benchmark-2026-10-15.md.</p>
  */
 public class PsseStaggeredEulerSolver extends PsseDStabSolver {
+    @Override protected boolean usesModifiedEulerControllerPreparation(){return false;}
     /**
      * Boundary supplying synchronous-machine stator currents and air-gap power.
      * LAST_NETWORK_INJECTION retains the measurements used to assemble the final
