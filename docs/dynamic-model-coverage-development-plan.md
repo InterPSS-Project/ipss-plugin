@@ -14,6 +14,13 @@ timing benefit and is not preferred. Whole-runtime promotion, independent full
 network acceptance and the 20-second target remain open. See the
 [accepted-endpoint study](benchmarks/texas7k-accepted-endpoint-study-2026-10-25.md).
 
+A guarded direct converter-current frame passes 603,456 component comparisons,
+four independent small-case profiles and all-channel internal accuracy checks.
+It does not establish a whole-run timing gain: after six warmups, three-run
+medians are 25.432 seconds for the candidate and 25.057 seconds for its control,
+with overlapping ranges. It remains experimental and is not preferred. See the
+[converter current-frame study](benchmarks/texas7k-rectangular-converter-study-2026-10-25.md).
+
 The preceding whole-run experimental path measures 23.792 and 24.436 seconds
 (24.114-second median in a two-measurement batch) while preserving the complete
 numerical control trace. An exact frequency-angle shortcut is committed to
