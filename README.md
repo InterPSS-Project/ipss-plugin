@@ -28,6 +28,10 @@ Test run settings belong in JSON resources or Java fixtures. See
 examples, and the required sibling core APIs. A repository-wide test checks that
 test sources do not read or change JVM system properties.
 
+For dynamic simulation, see [solver selection](docs/dynamic-solver-selection.md)
+for the core-factory default, the solver supplied by the import loader, and
+when explicit solver installation is needed.
+
 ##### Maven Release Deployment
 
 GitHub Actions verifies normal `master` branch pushes with:

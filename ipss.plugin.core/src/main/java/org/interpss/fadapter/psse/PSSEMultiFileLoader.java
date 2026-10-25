@@ -112,6 +112,8 @@ public class PSSEMultiFileLoader {
      * @param dsNet network instance to populate
      * @param files array of file paths: [0]=LF, [1]=seq or dyn, [2]=dyn (optional)
      * @return SimuContext with the supplied network and DynamicSimuAlgorithm configured
+     *         with {@link org.interpss.dstab.algo.DefaultDynamicSimulationSolver};
+     *         callers can retrieve that solver without installing another instance
      */
     public SimuContext loadDStab(BaseDStabNetwork<?, ?> dsNet, String... files) throws InterpssException {
         return loadDStab(dsNet, null, files);
