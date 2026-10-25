@@ -2,6 +2,15 @@
 
 ## Current checkpoint
 
+The latest whole-run experimental path measures 23.792 and 24.436 seconds
+(24.114-second median in a two-measurement batch) while preserving the complete
+numerical control trace. An exact frequency-angle shortcut is committed to
+core as `4b87c8724`; all 3,099 core tests and both independent converter
+checkpoint methods pass. The actual production class also preserves the
+complete recorded full-case trajectory through the experimental runtime.
+Whole-runtime promotion and the 20-second goal remain open. See the
+[device, frequency and recording study](benchmarks/texas7k-owned-update-study-2026-10-24.md).
+
 An event-safe converter compensation prototype reduces the complete run from
 130,955 to 31,599 network iterations. After three full warmups, the cached
 variant records a 26.580-second whole-run median (26.481–33.019 s, three
