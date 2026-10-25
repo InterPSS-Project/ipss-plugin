@@ -2,6 +2,17 @@
 
 ## Current checkpoint
 
+Direct live IEEEST parameter bindings now avoid repeated named lookups in the
+compiled standard model while preserving parameter writes and custom-provider
+fallback. All 43 focused tests pass; the actual production controller class
+reproduces the complete retained 7K trajectory. A matched single-CPU batch
+measures 29.089 versus 36.144 seconds, with substantial timing variation and
+unchanged network work also varying. It does not supersede the earlier
+24.603-second baseline or meet the 20-second target. Exact traversal changes
+and accuracy-checked network accelerators remain experimental; chord methods
+do not establish a warmed whole-run gain. See the
+[serial network and controller study](benchmarks/texas7k-serial-network-controller-study-2026-10-25.md).
+
 The active performance objective is now a complete ten-second simulation in
 20 seconds on **one logical CPU**, including recording and export. The verified
 single-CPU baseline uses ordinary serial updates: 24.603-second median,

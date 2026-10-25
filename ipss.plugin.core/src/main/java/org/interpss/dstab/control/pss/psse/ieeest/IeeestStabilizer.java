@@ -18,6 +18,22 @@ import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 /** PSS/E IEEEST stabilizer following the PowerWorld/WECC block ordering. */
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
 public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant {
+    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
+            throws com.interpss.common.exp.InterpssException {
+        if (getClass() != IeeestStabilizer.class) return super.bindCompiledParameter(name);
+        return switch (name) {
+            case "speedGain" -> () -> speedGain;
+            case "speedRef" -> () -> speedRef;
+            case "peGain" -> () -> peGain;
+            case "peRef" -> () -> peRef;
+            case "pmGain" -> () -> pmGain;
+            case "pmRef" -> () -> pmRef;
+            case "ks" -> () -> ks;
+            case "one" -> () -> one;
+            default -> bindPublicDoubleParameter(name);
+        };
+    }
+
     private final IeeestData data;
     private double constantInputBias;
     private boolean initializingBias;
