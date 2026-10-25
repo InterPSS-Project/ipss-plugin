@@ -26,6 +26,8 @@ class PsseNetworkAccelerationTest {
         var converter = new Regca1Model(gen, bus, "1", data(.02));
         gen.setDynamicGenDevice(converter);
         var solver = new ProbeSolver(DStabObjectFactory.createDynamicSimuAlgorithm(network));
+        assertFalse(solver.isNetworkAccelerationEnabled());
+        solver.setNetworkAccelerationEnabled(true);
         assertTrue(solver.isNetworkAccelerationEnabled());
         assertTrue(solver.allowed(converter));
         converter.setNetworkIterationHighVoltageEnabled(true);
@@ -57,6 +59,22 @@ class PsseNetworkAccelerationTest {
         assertFalse(solver.allowed());
         network.setCustomBusCurrInjHashtable(new Hashtable<>());
         assertTrue(solver.allowed());
+    }
+
+    @Test void defaultAndStaggeredSolversRequireExplicitMixingSelection() {
+        var network=DStabObjectFactory.createDStabilityNetwork();
+        var algorithm=DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        for(var solver:List.of(
+                new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm),
+                new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm))) {
+            assertFalse(solver.isNetworkAccelerationEnabled());
+            assertEquals(50,solver.getMaxIterationTimes());
+            assertEquals(0,solver.getNetworkAccelerationApplications());
+            solver.setNetworkAccelerationEnabled(true);
+            assertTrue(solver.isNetworkAccelerationEnabled());
+            solver.setNetworkAccelerationEnabled(false);
+            assertFalse(solver.isNetworkAccelerationEnabled());
+        }
     }
 
     private Regca1Data data(double lag) {

@@ -123,7 +123,8 @@ public class PsseDStabSolver extends DStabSolverImpl {
         // Bound network work while retaining the configured convergence test.
         // Exhaustion is a failed solve, never acceptance of the last iterate.
         setMaxIterationTimes(DEFAULT_MAXIMUM_NETWORK_ITERATIONS);
-        setNetworkAccelerationEnabled(true);
+        // Mixing requires an explicit caller choice; keep ordinary/packed iteration by default.
+        setNetworkAccelerationEnabled(false);
     }
 
     /** Only known memory-free current sources qualify for bounded fixed-point mixing. */

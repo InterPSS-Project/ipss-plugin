@@ -19,6 +19,13 @@ below predates this naming update.
 The [neutral API checkpoint](checkpoints/neutral-solver-api-2026-10-25.json)
 records the compatibility validation and retained naming-update artifacts.
 
+Anderson network mixing is disabled by default in both solver entrypoints.
+`setNetworkAccelerationEnabled(true)` explicitly enables the qualified bounded
+fallback. The separate `ipss.experiment.networkAnderson` property also defaults
+to false and remains an explicit experiment that bypasses packed iteration.
+The maintained packed profile retains ordinary packed convergence with both
+mixers inactive. No whole-run speed benefit is attributed to mixing here.
+
 Matched whole-run medians improve from **8.358 to 7.659 seconds in Case 1**
 and **5.377 to 5.305 seconds in Case 2**, with byte-identical full recordings.
 Case 2's whole-run improvement is small and its timing ranges overlap.

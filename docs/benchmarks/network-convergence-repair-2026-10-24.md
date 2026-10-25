@@ -51,8 +51,8 @@ callbacks must not advance differential coordinates, control history, timers or
 accumulated algebraic corrections. Derived electrical caches may be refreshed.
 Wrappers must preserve this whole-device contract.
 
-The imported solver enables the fallback only for known frozen machine sources
-and explicitly qualified devices. REGCA1 qualifies with a positive regulator
+When explicitly enabled, the imported solver qualifies the fallback only for
+known frozen machine sources and explicitly qualified devices. REGCA1 qualifies with a positive regulator
 lag and its iteration-dependent voltage-memory option disabled. REGFMA1 qualifies
 because its current limit and current map refresh electrical outputs without
 advancing integration coordinates; an excursion regression checks this directly.
