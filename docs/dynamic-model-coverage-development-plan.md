@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The new three-mode recording/traversal study has a best outer invocation median
+of 20.481 seconds (20.469 seconds on the internal timer), preserving every
+recorded value. Prepared recording alone has essentially unchanged timing;
+the exact passive-bus shortcut removes 28.86 million no-op visits. Its combined
+timing ranges overlap the control, and it remains experimental. The 20-second
+objective is still open. See the
+[recording and traversal study](benchmarks/texas7k-prepared-recording-study-2026-10-25.md).
+
 The latest matched single-CPU control measures a 20.796-second whole-run median
 with full recording/export. New affine-network variants reduce outer iterations
 to 17,555 and pass all-channel internal accuracy and independent small-case
