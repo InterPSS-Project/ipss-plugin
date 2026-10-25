@@ -18,7 +18,7 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.dstab.validation.DynamicParameterValidator;
 
 /**
- * PSS/E dynamic solver adapter that preserves a solved RAW initial condition
+ * Compatibility solver that preserves a solved RAW initial condition
  * when the load-flow and dynamic network representations differ slightly.
  *
  * <p>The ordinary dynamic network is a Norton {@code YV=I} system and may not
@@ -28,7 +28,9 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
  * dynamically visible, KCL residual when the representation changes. Capture
  * that residual as a fixed Norton compensation current before the first
  * integration step.</p>
+ * @deprecated Use {@link org.interpss.dstab.algo.DefaultDynamicSimulationSolver}.
  */
+@Deprecated(since="1.4.8",forRemoval=false)
 public class PsseDStabSolver extends DStabSolverImpl {
     public enum BusFrequencyMode { REQUIRED, ALL }
     public record BusFrequencyReport(int activeBuses,int measuredBuses,String reason) { }
@@ -206,7 +208,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         var validation=validateModelParameters();
         validation.requireNoErrors();
         if(validation.count(DynamicParameterValidator.Severity.WARNING)>0||!validation.uncoveredModels().isEmpty())
-            org.slf4j.LoggerFactory.getLogger(PsseDStabSolver.class).warn(
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn(
                     "Dynamic parameter validation: {} warnings; {} model families need additional rules. Inspect getParameterValidationReport().",
                     validation.count(DynamicParameterValidator.Severity.WARNING),validation.uncoveredModels().size());
         // Native constant-current loads retain I down to 0.5 pu, then use an

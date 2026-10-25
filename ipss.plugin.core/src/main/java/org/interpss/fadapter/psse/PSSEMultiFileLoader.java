@@ -196,7 +196,7 @@ public class PSSEMultiFileLoader {
         // Callers can disable this policy with setAllowGenWithoutMach(false).
         dsNet.setAllowGenWithoutMach(true);
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
-        dynAlgo.setSolver(new PsseDStabSolver(dynAlgo));
+        dynAlgo.setSolver(new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(dynAlgo));
         simuCtx.setDynSimuAlgorithm(dynAlgo);
         return simuCtx;
     }

@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
@@ -25,22 +27,22 @@ class OptionalBusFrequencyIntegrationTest {
         network.setStaticLoadIncludedInYMatrix(false);network.setStaticLoadZPartInYMatrix(true);
         algorithm.setSimuStepSec(1./240);algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization());
-        var report=((PsseDStabSolver)algorithm.getSolver()).getBusFrequencyReport();
+        var report=((DefaultDynamicSimulationSolver)algorithm.getSolver()).getBusFrequencyReport();
         assertEquals(6717,report.activeBuses());assertEquals(704,report.measuredBuses(),report.reason());
     }
-    private List<double[]> run(PsseDStabSolver.BusFrequencyMode mode) throws Exception {
+    private List<double[]> run(DefaultDynamicSimulationSolver.BusFrequencyMode mode) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         String root="testData/adpter/psse/v33/renewable/";
         var context=new PSSEMultiFileLoader().loadDStab(root+"regca_zero_q_lossless.raw",root+"regca_iolim_native.dyr");
         var algorithm=context.getDynSimuAlgorithm();var network=context.getDStabilityNet();
-        var solver=assertInstanceOf(PsseDStabSolver.class,algorithm.getSolver());solver.setBusFrequencyMode(mode);
+        var solver=assertInstanceOf(DefaultDynamicSimulationSolver.class,algorithm.getSolver());solver.setBusFrequencyMode(mode);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuStepSec(.00025);algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         var monitor=new StateMonitor();monitor.addBusStdMonitor(new String[]{"Bus1"});algorithm.setSimuOutputHandler(monitor);
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",network,
                 com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0,.01),null,.05,.05),"fault");
         assertTrue(algorithm.initialization());
-        assertEquals(mode==PsseDStabSolver.BusFrequencyMode.ALL?3:2,solver.getBusFrequencyReport().measuredBuses());
+        assertEquals(mode==DefaultDynamicSimulationSolver.BusFrequencyMode.ALL?3:2,solver.getBusFrequencyReport().measuredBuses());
         var converter=(org.interpss.dstab.renewable.Regca1Model)((com.interpss.dstab.DStabGen)
                 network.getDStabBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         var result=new ArrayList<double[]>();
@@ -50,12 +52,12 @@ class OptionalBusFrequencyIntegrationTest {
                     network.getDStabBus("Bus3").getVoltageMag(),network.getDStabBus("Bus1").getFreq(),
                     network.getDStabBus("Bus3").getFreq(),converter.getIp(),converter.getIq()});
         }
-        if(mode==PsseDStabSolver.BusFrequencyMode.REQUIRED) {
+        if(mode==DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED) {
             assertNull(network.getDStabBus("Bus2").getBusFreqMeasureBlock());
             monitor.addBusStdMonitor(new String[]{"Bus2"});
             assertThrows(com.interpss.dstab.common.DStabSimuException.class,
                     ()->solver.beforeStep(algorithm.getSimuTime()));
-            solver.setBusFrequencyMode(PsseDStabSolver.BusFrequencyMode.ALL);
+            solver.setBusFrequencyMode(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL);
             assertTrue(algorithm.initialization());
             assertNotNull(network.getDStabBus("Bus2").getBusFreqMeasureBlock());
             assertEquals(3,solver.getBusFrequencyReport().measuredBuses());
@@ -63,12 +65,12 @@ class OptionalBusFrequencyIntegrationTest {
         return result;
     }
     @Test void converterFaultAndRequiredFrequencyHistoriesMatchEveryStepExactly() throws Exception {
-        var all=run(PsseDStabSolver.BusFrequencyMode.ALL);var required=run(PsseDStabSolver.BusFrequencyMode.REQUIRED);
+        var all=run(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL);var required=run(DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED);
         assertEquals(all.size(),required.size());
         for(int i=0;i<all.size();i++)assertArrayEquals(all.get(i),required.get(i),0.,"step "+i);
     }
 
-    private List<double[]> runPss2a(PsseDStabSolver.BusFrequencyMode mode,boolean remote,
+    private List<double[]> runPss2a(DefaultDynamicSimulationSolver.BusFrequencyMode mode,boolean remote,
             java.nio.file.Path folder) throws Exception {
         java.nio.file.Files.createDirectory(folder);
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
@@ -80,7 +82,7 @@ class OptionalBusFrequencyIntegrationTest {
         var file=folder.resolve("three-bus.raw");java.nio.file.Files.writeString(file,raw);
         var context=new PSSEMultiFileLoader().loadDStab(file.toString(),base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr").toString());
         var algorithm=context.getDynSimuAlgorithm();var network=context.getDStabilityNet();
-        var solver=assertInstanceOf(PsseDStabSolver.class,algorithm.getSolver());solver.setBusFrequencyMode(mode);
+        var solver=assertInstanceOf(DefaultDynamicSimulationSolver.class,algorithm.getSolver());solver.setBusFrequencyMode(mode);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         var machine=network.getMachine("Bus1-mach1");
         var pss=assertInstanceOf(org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer.class,machine.getStabilizer());
@@ -91,8 +93,8 @@ class OptionalBusFrequencyIntegrationTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3",network,
                 com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0,.01),null,.1,.05),"fault");
         assertTrue(algorithm.initialization());
-        assertEquals(mode==PsseDStabSolver.BusFrequencyMode.ALL||remote?3:2,solver.getBusFrequencyReport().measuredBuses(),solver.getBusFrequencyReport().reason());
-        assertEquals(mode==PsseDStabSolver.BusFrequencyMode.REQUIRED&&!remote,network.getDStabBus("Bus3").getBusFreqMeasureBlock()==null);
+        assertEquals(mode==DefaultDynamicSimulationSolver.BusFrequencyMode.ALL||remote?3:2,solver.getBusFrequencyReport().measuredBuses(),solver.getBusFrequencyReport().reason());
+        assertEquals(mode==DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED&&!remote,network.getDStabBus("Bus3").getBusFreqMeasureBlock()==null);
         var result=new ArrayList<double[]>();
         for(int tick=0;tick<120;tick++) {
             if(tick==10)pss.getData().setIcs1(2);
@@ -111,8 +113,8 @@ class OptionalBusFrequencyIntegrationTest {
     @Test void pss2aFaultAndLiveFrequencySelectorsRetainExactStatesAndHistories(
             @org.junit.jupiter.api.io.TempDir java.nio.file.Path folder) throws Exception {
         for(boolean remote:new boolean[]{false,true}) {
-            var all=runPss2a(PsseDStabSolver.BusFrequencyMode.ALL,remote,folder.resolve("all-"+remote));
-            var required=runPss2a(PsseDStabSolver.BusFrequencyMode.REQUIRED,remote,folder.resolve("required-"+remote));
+            var all=runPss2a(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL,remote,folder.resolve("all-"+remote));
+            var required=runPss2a(DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED,remote,folder.resolve("required-"+remote));
             for(int tick=0;tick<all.size();tick++)assertArrayEquals(all.get(tick),required.get(tick),0.,"remote="+remote+" step="+tick);
         }
     }

@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.dstab.algo.StaggeredEulerSolver;
+
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
 
@@ -10,7 +12,7 @@ final class StaggeredExciterFixture {
     static double referenceStep(boolean optimized,double originalStep){return optimized?originalStep/2:originalStep;}
     static void configure(DynamicSimuAlgorithm algorithm,boolean optimized){
         if(optimized){
-            var solver=new PsseStaggeredEulerSolver(algorithm);
+            var solver=new StaggeredEulerSolver(algorithm);
             solver.setReuseNetworkEndpoint(true);
             algorithm.setSolver(solver);
         }

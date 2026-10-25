@@ -11,7 +11,7 @@ import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.fadapter.psse.PsseDStabSolver;
+import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /** Automatic controller preparation preserves ordinary integration histories. */
 class ModifiedEulerControllerPreparationTest {
-    record Fixture(DynamicSimuAlgorithm algorithm,PsseDStabSolver solver,Machine machine) { }
+    record Fixture(DynamicSimuAlgorithm algorithm,DefaultDynamicSimulationSolver solver,Machine machine) { }
     private Fixture load(String family,boolean optimized,Path file,boolean initialize) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         Path base=Path.of("testData/adpter/psse/v33/SMIB");
@@ -34,7 +34,7 @@ class ModifiedEulerControllerPreparationTest {
             .stream().filter(line->line.contains("'PSS2A'")).findFirst().orElseThrow()+"\n";
         Files.writeString(file,dyr);
         var context=new PSSEMultiFileLoader().loadDStab(base.resolve("SMIB_v33.raw").toString(),file.toString());
-        var algorithm=context.getDynSimuAlgorithm();var solver=assertInstanceOf(PsseDStabSolver.class,algorithm.getSolver());
+        var algorithm=context.getDynSimuAlgorithm();var solver=assertInstanceOf(DefaultDynamicSimulationSolver.class,algorithm.getSolver());
         assertTrue(solver.isControllerRuntimePreparationEnabled());
         solver.setControllerRuntimePreparationEnabled(optimized);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(1./240.);

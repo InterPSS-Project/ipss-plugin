@@ -8,7 +8,7 @@ change voltage angles during the subsequent converged `INITIAL` solve. Treating
 that remaining zero-time angle change as motion over the next integration
 interval creates a spurious frequency pulse.
 
-`PsseDStabSolver.networkSolutionStep` now completes the rebase at the converged
+`DefaultDynamicSimulationSolver.networkSolutionStep` now completes the rebase at the converged
 event endpoint, before differential integration. It uses the existing core
 frequency-measurement hook. It does not change the filter state/output, time
 constants, controller equations, integration method or network iteration count.

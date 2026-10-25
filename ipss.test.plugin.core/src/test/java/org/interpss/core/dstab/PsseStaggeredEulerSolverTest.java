@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.dstab.algo.StaggeredEulerSolver;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.interpss.IpssCorePlugin;
@@ -25,7 +27,7 @@ class PsseStaggeredEulerSolverTest {
 
     private void assertLastInjectionBoundary(String dynamicFile) throws Exception {
         var algo = loadSubtransient(dynamicFile);
-        var solver = new PsseStaggeredEulerSolver(algo);
+        var solver = new StaggeredEulerSolver(algo);
         assertEquals(PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION,
                 solver.getMachineMeasurementStage());
         assertThrows(NullPointerException.class, () -> solver.setMachineMeasurementStage(null));
@@ -154,7 +156,7 @@ class PsseStaggeredEulerSolverTest {
                 base + "SMIB_v33.raw", base + dynamicFile);
         var algo = context.getDynSimuAlgorithm();
         assertTrue(algo.getAclfAlgorithm().loadflow());
-        var solver = new PsseStaggeredEulerSolver(algo);
+        var solver = new StaggeredEulerSolver(algo);
         solver.setMachineMeasurementStage(stage);
         algo.setSolver(solver);
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -169,7 +171,7 @@ class PsseStaggeredEulerSolverTest {
         var algo = load();
         var calls = new java.util.concurrent.atomic.AtomicInteger();
         var stages = new java.util.ArrayList<String>();
-        var shared = new PsseStaggeredEulerSolver(algo) {
+        var shared = new StaggeredEulerSolver(algo) {
             @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
                 stages.add(networkSolutionStage);
                 calls.incrementAndGet();return super.networkSolutionStep();
@@ -222,7 +224,7 @@ class PsseStaggeredEulerSolverTest {
         network.setBypassDataCheck(true);network.setAllowGenWithoutMach(true);
         assertTrue(algo.getAclfAlgorithm().loadflow());
         var events = new java.util.concurrent.atomic.AtomicInteger();
-        var shared=new PsseStaggeredEulerSolver(algo) {
+        var shared=new StaggeredEulerSolver(algo) {
             @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                     throws com.interpss.dstab.common.DStabSimuException {
                 super.rebaseDynamicModelInputs(method);
@@ -262,7 +264,7 @@ class PsseStaggeredEulerSolverTest {
         context.getDStabilityNet().setBypassDataCheck(true);
         context.getDStabilityNet().setAllowGenWithoutMach(true);
         assertTrue(algo.getAclfAlgorithm().loadflow());
-        var shared=new PsseStaggeredEulerSolver(algo);
+        var shared=new StaggeredEulerSolver(algo);
         algo.setSolver(shared);
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algo.setSimuStepSec(.00025);
@@ -295,7 +297,7 @@ class PsseStaggeredEulerSolverTest {
         var source=context.getDStabilityNet().getMachine("Bus2-mach1");
         source.setH(2.);
         assertTrue(algo.getAclfAlgorithm().loadflow());
-        var shared=new PsseStaggeredEulerSolver(algo);
+        var shared=new StaggeredEulerSolver(algo);
         algo.setSolver(shared);
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algo.setSimuStepSec(.0005);
@@ -335,7 +337,7 @@ class PsseStaggeredEulerSolverTest {
         algo.getAclfAlgorithm().setTolerance(1.e-10);
         algo.getAclfAlgorithm().setMaxIterations(50);
         assertTrue(algo.getAclfAlgorithm().loadflow());
-        solver=new PsseStaggeredEulerSolver(algo);
+        solver=new StaggeredEulerSolver(algo);
         algo.setSolver(solver);
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algo.setSimuStepSec(.001);

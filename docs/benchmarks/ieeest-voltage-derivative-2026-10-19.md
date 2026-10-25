@@ -23,7 +23,7 @@ settled algebraic event: memory = voltage; derivative is preserved
 
 The coefficient 0.2 is the same at 0.5 and 0.25 ms; it is not converted into a
 fitted physical time constant. The controller holds the accepted derivative
-during predictor/corrector integration. `PsseDStabSolver` updates it only after
+during predictor/corrector integration. `DefaultDynamicSimulationSolver` updates it only after
 the corrector network converges, before endpoint monitoring. INITIAL event
 rebasing occurs after convergence, not after the first linear network iterate.
 Direct network solves, trial predictor solves, duplicate accepted clocks and

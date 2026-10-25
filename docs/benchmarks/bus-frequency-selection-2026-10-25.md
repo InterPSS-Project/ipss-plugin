@@ -31,7 +31,7 @@ needing that signal must declare the bus before initialization or select `ALL`.
 The legacy configuration remains available before initialization:
 
 ```java
-solver.setBusFrequencyMode(PsseDStabSolver.BusFrequencyMode.ALL);
+solver.setBusFrequencyMode(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL);
 ```
 
 `getBusFrequencyReport()` reports active and measured bus counts and the

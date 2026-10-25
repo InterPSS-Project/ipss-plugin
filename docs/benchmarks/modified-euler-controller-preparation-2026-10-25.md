@@ -5,6 +5,20 @@ graphs automatically. It can use the same direct ST4B and PSS2A evaluators
 available to the staggered solver, a direct ordinary ST1 stage, and the typed
 IEEEST stage without benchmark-specific setup calls.
 
+The preferred solver entrypoints are `DefaultDynamicSimulationSolver` and
+`StaggeredEulerSolver`, both in `org.interpss.dstab.algo`. The import loader
+selects the neutral default entrypoint. Earlier entrypoints remain deprecated
+compatibility types, retaining their constructors, nested configuration types
+and existing caller compatibility. This naming update retains the same
+implementation and integration lifecycle; historical evidence keeps its
+original executable identifiers.
+Naming verification passes 452 plugin-core tests (four existing skips) and
+64 focused integration tests. Public member descriptors for the six legacy
+solver/configuration types match the frozen implementation. The timing data
+below predates this naming update.
+The [neutral API checkpoint](checkpoints/neutral-solver-api-2026-10-25.json)
+records the compatibility validation and retained naming-update artifacts.
+
 Matched whole-run medians improve from **8.358 to 7.659 seconds in Case 1**
 and **5.377 to 5.305 seconds in Case 2**, with byte-identical full recordings.
 Case 2's whole-run improvement is small and its timing ranges overlap.
@@ -31,7 +45,7 @@ changed by controller preparation.
 
 ## Default selection and lifecycle
 
-`PsseDStabSolver` enables controller preparation by default when the algorithm
+`DefaultDynamicSimulationSolver` enables controller preparation by default when the algorithm
 uses `MODIFIED_EULER`. Other methods keep their existing dispatch. The staggered
 solver retains its own preparation and histories.
 

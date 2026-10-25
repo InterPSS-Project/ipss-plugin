@@ -1,5 +1,7 @@
 package org.interpss.fadapter.psse;
 
+import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +38,7 @@ final class ModifiedEulerControllerPreparation {
         owned.clear();
     }
 
-    PsseDStabSolver.ControllerPreparationReport prepare(DynamicSimuAlgorithm algorithm) {
+    DefaultDynamicSimulationSolver.ControllerPreparationReport prepare(DynamicSimuAlgorithm algorithm) {
         int compiled=0,st1=0,st4=0,pss=0,ieeest=0,compatible=0;
         var seen=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object,Boolean>());
         var graphs=new java.util.IdentityHashMap<AbstractAnnotateController,Boolean>();
@@ -74,7 +76,7 @@ final class ModifiedEulerControllerPreparation {
                 }
             }
         }
-        return new PsseDStabSolver.ControllerPreparationReport(compiled,st1,st4,pss,ieeest,compatible);
+        return new DefaultDynamicSimulationSolver.ControllerPreparationReport(compiled,st1,st4,pss,ieeest,compatible);
     }
 
     private static boolean audited(AbstractAnnotateController model) {

@@ -32,7 +32,6 @@ import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.fadapter.psse.PsseDStabSolver;
 import com.interpss.dstab.device.DynamicBusDeviceType;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -54,12 +53,12 @@ import com.interpss.dstab.mach.impl.SalientPoleMachineImpl;
 import com.interpss.dstab.mach.impl.DynamicMachineImpl;
 
 /**
- * Opt-in PSS/E-style staggered Euler integration for machine/renewable networks.
+ * Compatibility entrypoint for fixed-step staggered Euler integration.
  *
  * <p>The STORE recurrence (STORE += h*f; STATE = STORE + h*f/2) is the
  * two-step rule x[n+1] = x[n] + h*(1.5*f[n] - 0.5*f[n-1]). At a network
  * discontinuity the first derivative is averaged with its retained history.
- * The latter behavior is verified by native PSS/E 36.7 fault and VREF steps.
+ * The latter behavior is verified by independent reference fault and VREF steps.
  * Non-windup projection clears outward history at a bound.</p>
  *
  * <p>Supported machines: GENROU, GENSAL and uncontrolled GENCLS. Supported
@@ -78,7 +77,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * Unsupported
  * dynamic models are rejected at initialization rather than silently omitted.
  * This solver does not replace the default predictor/corrector solver. Select
- * it with {@code algorithm.setSolver(new PsseStaggeredEulerSolver(algorithm))}.
+ * it with {@code algorithm.setSolver(new StaggeredEulerSolver(algorithm))}.
  * Keep the algorithm method MODIFIED_EULER for the underlying derivative API.
  * Use a constant step; reinitialize after changing model attachments. Call
  * {@link #notifyDiscontinuity()} after an external input/reference jump. Events
@@ -86,8 +85,10 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  *
  * <p>Source: OSTI 604312, section 6.1.3. Native verification and numerical
  * limitations are recorded in docs/benchmarks/ieee39-benchmark-2026-10-15.md.</p>
+ * @deprecated Use {@link StaggeredEulerSolver}.
  */
-public class PsseStaggeredEulerSolver extends PsseDStabSolver {
+@Deprecated(since="1.4.8",forRemoval=false)
+public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     @Override protected boolean usesModifiedEulerControllerPreparation(){return false;}
     /**
      * Boundary supplying synchronous-machine stator currents and air-gap power.

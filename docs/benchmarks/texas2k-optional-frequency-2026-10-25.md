@@ -22,10 +22,10 @@ This changes dependency classification; model equations and integration stages
 are unchanged. Generic core object-factory defaults are unchanged.
 
 For explicit all-bus measurement, call
-`solver.setBusFrequencyMode(PsseDStabSolver.BusFrequencyMode.ALL)` before
+`solver.setBusFrequencyMode(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL)` before
 initialization. `REQUIRED` needs no setter. Inspect
 `solver.getBusFrequencyReport()` after initialization to verify actual coverage
-and any fallback reason. These APIs belong to `PsseDStabSolver`.
+and any fallback reason. These APIs belong to `DefaultDynamicSimulationSolver`.
 
 Declare requested frequency outputs before initialization. Changing model wiring
 or output membership requires reinitialization or explicit all-bus coverage;

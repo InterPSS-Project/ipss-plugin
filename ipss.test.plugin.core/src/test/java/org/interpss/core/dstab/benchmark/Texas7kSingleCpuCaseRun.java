@@ -12,7 +12,7 @@ import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 
 /** Ten-second fault run with all-bus voltage recovery checks and retained endpoint samples. */
 public final class Texas7kSingleCpuCaseRun {
-    static final class TimedSolver extends org.interpss.fadapter.psse.PsseDStabSolver {
+    static final class TimedSolver extends org.interpss.dstab.algo.DefaultDynamicSimulationSolver {
         long calls,iterations,nanos,integrationNanos; int maximum;
         @Override public void diffEqnIntegrationStep(double t,double dt,DynamicSimuMethod method,int flag)throws com.interpss.dstab.common.DStabSimuException {long start=System.nanoTime();try{super.diffEqnIntegrationStep(t,dt,method,flag);}finally{integrationNanos+=System.nanoTime()-start;}}
         final java.util.Map<String,long[]> stages=new java.util.LinkedHashMap<>();
@@ -35,7 +35,7 @@ public final class Texas7kSingleCpuCaseRun {
         if(!loader.getLastDynamicImportReport().isStrictlyComplete())throw new AssertionError(loader.getLastDynamicImportReport().failureSummary());
         phaseTimes.put("import_and_setup_s",(System.nanoTime()-phaseStart)/1e9);phaseStart=System.nanoTime();
         var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
-        var timed=new TimedSolver(algorithm);algorithm.setSolver(timed);if(configuration.get("ipss.profile.frequencyAll").getAsBoolean())timed.setBusFrequencyMode(org.interpss.fadapter.psse.PsseDStabSolver.BusFrequencyMode.ALL);var lf=algorithm.getAclfAlgorithm();
+        var timed=new TimedSolver(algorithm);algorithm.setSolver(timed);if(configuration.get("ipss.profile.frequencyAll").getAsBoolean())timed.setBusFrequencyMode(org.interpss.dstab.algo.DefaultDynamicSimulationSolver.BusFrequencyMode.ALL);var lf=algorithm.getAclfAlgorithm();
         timed.getClass().getMethod("setAcceptedEndpointReuseEligibility",java.util.function.BooleanSupplier.class).invoke(timed,(java.util.function.BooleanSupplier)()->true);
         lf.getDataCheckConfig().setAutoTurnLine2Xfr(true);lf.getDataCheckConfig().setTurnOffIslandBus(true);
         lf.setNonDivergent(true);lf.setMaxIterations(50);lf.setTolerance(.001);
