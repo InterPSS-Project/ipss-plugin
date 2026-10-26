@@ -22,8 +22,9 @@ import com.interpss.dstab.device.NetworkIterationAware;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /**
- * Positive-sequence WECC REGC_A converter model. REECB1 and REPCA1 are
- * composed as controllers while this device owns the network current source.
+ * Positive-sequence WECC REGC_A converter kernels. REGCA1 uses a current
+ * coordinate; REGCAU2 retains a distinct optional effective-reactance interface.
+ * Electrical and plant controls are composed while this device owns the source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
         implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
@@ -31,9 +32,12 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
-    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
-            "Filtered Voltage", "Active Current Regulator", "Reactive Current Regulator");
+    private final IntegrationStateMonitor stateMonitor;
     private final Regca1Data data;
+    private final String modelName;
+    private final double effectiveReactance;
+    private final boolean removableCompensation;
+    private final String voltageKey, activeCurrentKey, reactiveCurrentKey, activePowerKey, reactivePowerKey;
     private final Hashtable<String, Object> states = new Hashtable<>();
     private DStabGen parentGen;
     private RenewableElectricalController electricalController;
@@ -43,7 +47,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double vFiltered;
     /** Output of the REGC_A active-current regulator, before algebraic LVG. */
     private double ipState;
-    /** Output of the REGC_A reactive-current regulator, before algebraic HV logic. */
+    /** Reactive regulator coordinate: current, or voltage for nonzero REGCAU2 Xe. */
     private double iqState;
     private double p;
     private double q;
@@ -167,11 +171,28 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     public Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id, Regca1Data data) {
+        this(parentGen, bus, id, data, "REGCA1", 0.);
+    }
+
+    /** REGCAU2 shares the control kernels but retains its explicit network reactance. */
+    public Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id, Regcau2Data data) {
+        this(parentGen, bus, id, data.controls(), "REGCAU2", data.xe());
+    }
+
+    private Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
+            Regca1Data data, String modelName, double effectiveReactance) {
         this.data = data;
+        this.modelName = modelName;
+        this.effectiveReactance = effectiveReactance;
+        removableCompensation = modelName.equals("REGCA1");
+        voltageKey=modelName+"_V";activeCurrentKey=modelName+"_IP";reactiveCurrentKey=modelName+"_IQ";
+        activePowerKey=modelName+"_P";reactivePowerKey=modelName+"_Q";
+        stateMonitor = new IntegrationStateMonitor("Filtered Voltage", "Active Current Regulator",
+                reactiveStateName());
         setParentGen(parentGen);
         setDStabBus(bus);
         setId(id);
-        setExtendedDeviceId("REGCA1_" + id + "@" + bus.getId());
+        setExtendedDeviceId(modelName + "_" + id + "@" + bus.getId());
     }
 
     @Override
@@ -195,7 +216,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         ipState = lvg > EPS ? p / v / lvg : 1.0;
         // The WECC REGC_A block uses positive Iq for positive reactive-power output.
         // REEC_B supplies the opposite-signed Iqcmd to the -1/(1+sTg) regulator.
-        iqState = q / v;
+        iqState = effectiveReactance > 0. ? v + effectiveReactance * q / v : q / v;
         controller.initialize(p, q, v);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(iqState);
@@ -321,7 +342,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private double reactiveCurrentDerivative(double command, double state) {
-        double derivative = derivative(-command, state, data.tg());
+        double derivative = derivative(reactiveRegulatorTarget(command), state, data.tg());
         // REGCA1 selects one recovery-rate boundary from the initialized
         // machine Q sign. Exact zero selects neither directional boundary;
         // for nonzero Q, zero-valued limits remain active bounds, not disable flags.
@@ -368,7 +389,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     @Override public boolean supportsUncompensatedNetworkSolve() {
-        return !networkHighVoltageEnabled && supportsDeferredCurrentPublication();
+        return removableCompensation && !networkHighVoltageEnabled && supportsDeferredCurrentPublication();
     }
     @Override public Complex networkCompensationAdmittance() {
         var z=parentGen.getPosGenZ();
@@ -381,12 +402,12 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         // A bypass may read replaceable commands. These two final implementations
         // expose stored command values; custom callbacks retain ordinary dispatch.
         var controller = activeController();
-        return getClass() == Regca1Model.class && (data.tg() > EPS
+        return removableCompensation && getClass() == Regca1Model.class && (data.tg() > EPS
                 || controller instanceof Reeca1Model || controller instanceof ConverterCurrentCommands);
     }
 
     @Override public boolean supportsNetworkIterationAcceleration() {
-        return getClass() == Regca1Model.class && data.tg() > EPS && !networkHighVoltageEnabled;
+        return removableCompensation && getClass() == Regca1Model.class && data.tg() > EPS && !networkHighVoltageEnabled;
     }
 
     @Override
@@ -416,11 +437,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public Hashtable<String, Object> getStates(Object ref) {
         // Inactive devices can be observed before dynamic initialization.
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
-        states.put("REGCA1_V", getFilteredVoltage());
-        states.put("REGCA1_IP", getIp());
-        states.put("REGCA1_IQ", getIq());
-        states.put("REGCA1_P", p);
-        states.put("REGCA1_Q", q);
+        states.put(voltageKey, getFilteredVoltage());
+        states.put(activeCurrentKey, getIp());
+        states.put(reactiveCurrentKey, getIq());
+        states.put(activePowerKey, p);
+        states.put(reactivePowerKey, q);
         return states;
     }
 
@@ -456,6 +477,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     public Regca1Data getData() { return data; }
+    public String getModelName() { return modelName; }
+    public double getEffectiveReactance() { return effectiveReactance; }
     public IntegrationScheme getIntegrationScheme() { return integrationScheme; }
     /**
      * Select before initialization for fixed-step TWO_STEP diagnostics. This
@@ -471,6 +494,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * its commercial lag identities are verified, full fleet/event parity is open.
      */
     public void setIntegrationScheme(IntegrationScheme scheme) {
+        if (effectiveReactance > 0. && scheme == IntegrationScheme.TWO_STEP)
+            throw new IllegalArgumentException("Nonzero REGCAU2 Xe currently requires modified Euler");
         if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getHybridController()!=null)throw new IllegalArgumentException("Shared hybrid composition currently requires staged modified Euler");
         if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getRepccController()!=null)
             throw new IllegalArgumentException("REPCC uses staged modified Euler, not the converter two-step path");
@@ -514,9 +539,21 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return data.tg() <= EPS ? limitedActiveCommand(activeController().getIpcmd()) : ipState;
     }
     private double reactiveCurrentOutput() {
-        return data.tg() <= EPS ? -activeController().getIqcmd() : iqState;
+        double value = data.tg() <= EPS ? reactiveRegulatorTarget(activeController().getIqcmd()) : iqState;
+        return effectiveReactance > 0.
+                ? (value - getDStabBus().getVoltageMag()) / effectiveReactance : value;
+    }
+
+    private double reactiveRegulatorTarget(double command) {
+        return effectiveReactance > 0.
+                ? activeController().getReactiveVoltageCommand(getDStabBus().getVoltageMag(), effectiveReactance, command) : -command;
+    }
+
+    private String reactiveStateName() {
+        return effectiveReactance > 0. ? "Reactive Voltage Regulator" : "Reactive Current Regulator";
     }
     public double getIpRegulatorState() { return ipState; }
+    /** Stored current coordinate, or internal voltage when REGCAU2 Xe is nonzero. */
     public double getIqRegulatorState() { return iqState; }
     public double getIp() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
@@ -532,7 +569,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         Map<String, Double> named = new LinkedHashMap<>();
         named.put("Filtered Voltage", getFilteredVoltage());
         named.put("Active Current Regulator", ipState);
-        named.put("Reactive Current Regulator", iqState);
+        named.put(reactiveStateName(), iqState);
         named.put("Active Power", p);
         named.put("Reactive Power", q);
         RenewableElectricalController controller = activeController();
@@ -564,7 +601,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     @Override public java.util.Map<String, Double> getIntegrationStates() {
         return java.util.Map.of("Filtered Voltage", vFiltered,
                 "Active Current Regulator", ipState,
-                "Reactive Current Regulator", iqState);
+                reactiveStateName(), iqState);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
         return stateMonitor.snapshot();

@@ -285,7 +285,8 @@ public class PSSEDStabDirectParser {
         // Establish converter/electrical hosts before mechanical and auxiliary
         // controllers. Stable sorting preserves all remaining source ordering.
         var orderedRecords=new ArrayList<>(records);
-        orderedRecords.sort(java.util.Comparator.comparingInt(r->r.canonicalModelName().equals("REGCA1")?0:
+        orderedRecords.sort(java.util.Comparator.comparingInt(r->(r.canonicalModelName().equals("REGCA1")
+                || r.canonicalModelName().equals("REGCAU2"))?0:
                 r.canonicalModelName().equals("REECA1")?1:2));
         for (PsseDyrRecord record : orderedRecords) {
             try {
@@ -935,6 +936,8 @@ public class PSSEDStabDirectParser {
             case "REGCA1":
             case "REGCAU1":
                 return procRegca1(busId, genId, fields);
+            case "REGCAU2":
+                return procRegcau2(busId, genId, fields);
             case "REGCB1":
             case "REGCBU1":
                 return procRegcb1(busId, genId, fields);
@@ -3480,7 +3483,7 @@ public class PSSEDStabDirectParser {
     // REGCA1: IBUS MODEL ID LVPLSW Tg Rrpwr Brkpt Zerox Lvpl1 Volim
     //         Lvpnt1 Lvpnt0 Iolim Tfltr Khv Iqrmax Iqrmin Accel
     private boolean procRegca1(String busId, String genId, String[] f) {
-        if (f.length < 18) return false;
+        if (f.length != 18) return false;
         Regca1Data data = new Regca1Data(
                 getInt(f, 3, 1), getDouble(f, 4, 0.02), getDouble(f, 5, 10.0),
                 getDouble(f, 6, 0.9), getDouble(f, 7, 0.4), getDouble(f, 8, 1.22),
@@ -3489,6 +3492,22 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
         var converter = builder.addRegca1(busId, genId, data);
         if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId, genId)))
+            converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+        return converter != null;
+    }
+
+    private boolean procRegcau2(String busId, String genId, String[] f) {
+        if (f.length != 26 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f,4,-1)!=101 || getInt(f,5,-1)!=1
+                || getInt(f,6,-1)!=1 || getInt(f,7,-1)!=15
+                || getInt(f,8,-1)!=3 || getInt(f,9,-1)!=4) return false;
+        var controls = new Regca1Data(getInt(f,10,1),getDouble(f,11,0.),getDouble(f,12,0.),
+                getDouble(f,13,0.),getDouble(f,14,0.),getDouble(f,15,0.),getDouble(f,16,0.),
+                getDouble(f,17,0.),getDouble(f,18,0.),getDouble(f,19,0.),getDouble(f,20,0.),
+                getDouble(f,21,0.),getDouble(f,22,0.),getDouble(f,23,0.),getDouble(f,24,0.));
+        var converter = builder.addRegcau2(busId,genId,
+                new org.interpss.dstab.renewable.Regcau2Data(controls,getDouble(f,25,0.)));
+        if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId,genId)))
             converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
         return converter != null;
     }

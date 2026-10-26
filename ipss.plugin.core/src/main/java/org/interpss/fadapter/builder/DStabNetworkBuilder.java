@@ -3564,6 +3564,15 @@ public class DStabNetworkBuilder {
         return new Regca1Model(gen, bus, genId, data);
     }
 
+    /** Attach the distinct effective-reactance variant without modifying RAW source data. */
+    public Regca1Model addRegcau2(String busId, String genId,
+            org.interpss.dstab.renewable.Regcau2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) return null;
+        return new Regca1Model(gen, bus, genId, data);
+    }
+
     /** Attach the published behind-impedance renewable converter model. */
     public Regcb1Model addRegcb1(String busId, String genId, Regcb1Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);

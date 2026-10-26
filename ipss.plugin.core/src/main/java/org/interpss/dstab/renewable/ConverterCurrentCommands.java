@@ -4,13 +4,14 @@ package org.interpss.dstab.renewable;
  * Optional upstream controls retain their states but do not replace the absent electrical port.
  */
 public final class ConverterCurrentCommands implements RenewableElectricalController, com.interpss.dstab.controller.cml.ICMLStateProvider {
-    private double ipcmd, iqcmd, initialPower;
+    private double ipcmd, iqcmd, initialPower, initialVoltage;
     private ActivePowerResponseLimits response = ActivePowerResponseLimits.NORMAL;
     private Repca1Model plant;
     private WindControlStack wind;
     private boolean initialized;
 
     @Override public void initialize(double p, double q, double v) {
+        initialVoltage = v;
         initialPower = p;
         ipcmd = p / Math.max(.01, v);
         iqcmd = -q / Math.max(.01, v);
@@ -43,6 +44,9 @@ public final class ConverterCurrentCommands implements RenewableElectricalContro
     }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
+    @Override public double getReactiveVoltageCommand(double terminalVoltage, double reactance, double currentCommand) {
+        return initialVoltage - reactance * iqcmd;
+    }
     @Override public Repca1Model getPlantController() { return plant; }
     @Override public void setPlantController(Repca1Model controller) { plant = controller; }
     @Override public WindControlStack getWindControlStack() { return wind; }

@@ -4,6 +4,11 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 
 /** Common signal contract between a REGC_A converter and REEC_A/REEC_B controls. */
 public interface RenewableElectricalController extends IntegrationStepAware {
+    /** Converts a current command to the voltage command for an explicit reactance.
+     * Fixed-command providers retain their initialized voltage reference instead. */
+    default double getReactiveVoltageCommand(double terminalVoltage, double reactance, double currentCommand) {
+        return terminalVoltage - reactance * currentCommand;
+    }
     default ActivePowerResponseLimits getActivePowerResponseLimits() {
         return ActivePowerResponseLimits.NORMAL;
     }

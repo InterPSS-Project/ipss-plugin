@@ -2,6 +2,12 @@
 
 ## Current checkpoint
 
+The [converter source-impedance contract](benchmarks/converter-source-impedance-2026-10-25.md)
+adds exact REGCAU2 wrapper import and explicit effective-reactance behavior while
+preserving REGCA1 current-source and REGCB1 voltage-source treatment. Nonzero
+reactance retains a reactive-voltage state; fixed-command fault profiles at two
+steps have independent coupled evidence. Full model verification remains open.
+
 The maintained core 1.4.6/plugin 1.4.8 profile completes the full ten-second
 study in a **19.935-second warmed median on one logical CPU**, including
 recording and export. Five measurements span 19.485–20.716 seconds after four

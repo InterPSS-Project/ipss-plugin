@@ -37,6 +37,7 @@ source-approved families that have no implementation or parser descriptor.
 | DERA1 | CONVERTER_MACHINE | DERAU1 | 47 | LOADABLE | `org.interpss.dstab.renewable.Dera1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20DER_A.htm) |
 | GEWTGCU1 | CONVERTER_MACHINE |  | 26 | LOADABLE | `org.interpss.dstab.mach.Gewtgcu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REGCA1 | CONVERTER_MACHINE | REGCAU1 | 15 | LOADABLE | `org.interpss.dstab.renewable.Regca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm) |
+| REGCAU2 | CONVERTER_MACHINE |  | 22 | LOADABLE | `org.interpss.dstab.renewable.Regca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm) |
 | REGCB1 | CONVERTER_MACHINE | REGCBU1 | 9 | LOADABLE | `org.interpss.dstab.renewable.Regcb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_B.htm) |
 | REGFMA1 | CONVERTER_MACHINE |  | 20 | LOADABLE | `org.interpss.dstab.renewable.Regfma1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_A1.htm) |
 | REGFMB1U | CONVERTER_MACHINE |  | 37 | LOADABLE | `org.interpss.dstab.renewable.Regfmb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_B1.htm) |
