@@ -149,3 +149,79 @@ The [evidence checkpoint](checkpoints/regcc-model-2026-10-28.json) indexes the
 exact source patch, plugin runtime, complete references, tests, strict failures
 and recording hashes. Its private manifest SHA-256 is
 `687b87e50e3dbd439b3364869117f302612efc2ecd3620d8dc8932cd4c16442a`.
+
+## Public implementation and substep review
+
+Public-source inspection on 2026-10-28 supports evaluating local substeps for
+this explicit solver. The count should follow the closed-loop dynamics and
+accuracy evidence.
+
+The inspected Dynawo source is pinned to commit `b1d50a690a9e5b3a76210b353a7cfd0aa495e664`:
+
+- [REGCc](https://github.com/dynawo/dynawo/blob/b1d50a690a9e5b3a76210b353a7cfd0aa495e664/dynawo/sources/Models/Modelica/Dynawo/Electrical/Controls/WECC/REGC/REGCc.mo)
+  uses two current PI blocks with variable output bounds and anti-windup.
+- [PVVoltageSource4](https://github.com/dynawo/dynawo/blob/b1d50a690a9e5b3a76210b353a7cfd0aa495e664/dynawo/sources/Models/Modelica/Dynawo/Electrical/Photovoltaics/WECC/PVVoltageSource4.mo)
+  connects a separate PLL, converter, electrical control and plant control.
+- Its [example job](https://github.com/dynawo/dynawo/blob/b1d50a690a9e5b3a76210b353a7cfd0aa495e664/examples/DynaSwing/WECC/PV/WECCPVVoltageSource4/WECCPVVSource.jobs)
+  selects IDA. The [solver settings](https://github.com/dynawo/dynawo/blob/b1d50a690a9e5b3a76210b353a7cfd0aa495e664/examples/DynaSwing/WECC/PV/WECCPVVoltageSource4/WECCPVVSource.par)
+  set maximum order 2 and adaptive error tolerances. IDA uses
+  [implicit variable-step BDF](https://sundials.readthedocs.io/en/latest/ida/Mathematics_link.html).
+  This provides a different numerical treatment from one fixed explicit step.
+
+The public model has dialect differences: its auxiliary recovery lags use
+1 microsecond in this source revision, and the PLL is a separate component.
+Its anti-windup wiring is useful audit evidence; exact native limiter behavior
+still needs independent qualification. The current Java current-PI integrals
+advance without equivalent anti-windup feedback. That difference deserves a
+separate audit in the unresolved Q-priority profile.
+
+The published [subinterval integration description](https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Transient_Stability_Integration.htm)
+holds algebraic network variables fixed during selected local model steps.
+The [configuration reference](https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Transient_Stability_Integration_Subinterval_Models.htm)
+allows per-model counts of 1, 2, 4, 8 and higher powers of two. REGC_C is absent
+from its published automatic-subinterval model list, so that list does not
+establish a mandatory REGC_C default.
+
+### Why the existing lag floor is insufficient by itself
+
+For one unsaturated current axis with fixed terminal voltage and PLL angle,
+the Java equations reduce to the characteristic polynomial
+
+\[
+T_e s^2+(1+K_{ip})s+K_{ii}=0.
+\]
+
+This is a local screening calculation. For example, with `Kip=5`, `Kii=70`
+and effective `Te=0.01 s`, the fast pole is approximately -588.10 per second.
+At a 1/240 s network interval, modified Euler's amplification
+`1 + h*s + (h*s)^2/2` exceeds one for that pole with one step
+(about 1.552). Four local steps give stable amplification for both roots in
+this reduced system. The original low-gain reference profile, `Kip=0.5` and
+`Kii=5`, has a slower fast pole of about -146.59 per second and passes this
+one-step stability screen.
+
+The `Te >= 2*H` correction screens an isolated lag. Current-loop proportional
+feedback also affects the fastest pole, so that lag rule alone cannot establish
+closed-loop stability. Coupled network, limiter and PLL behavior require their
+own checks.
+
+### Controlled substep implementation boundary
+
+The present Java `step` field controls parameter preparation and integration.
+Calling `nextStepWithSignals(H/N, ...)` repeatedly would reconfigure the
+`Te` floor and the `4*step` recovery lags. First separate the configured
+network interval `H` from the local integration interval `h=H/N`.
+
+A controlled 1/2/4/8 experiment should keep the prepared coefficients,
+network interval, tolerance, commands and event timestamps fixed. The nine
+coupled converter coordinates should advance coherently within each local
+predictor/corrector pair. With held network voltage, recompute source current,
+PLL transforms and current-limit feedback from each trial state. Upstream
+controller history must advance only at its declared outer stages.
+
+At a quarter-cycle network interval, four and eight local steps are about
+1.042 ms and 0.521 ms. Compare those counts against the retained independent
+reference with all states and event sides, then measure full recording-inclusive
+runtime before selecting a default. The eleven bounded profiles and four
+unqualified diagnostics above retain their current status; this review adds
+analytical and source evidence.
