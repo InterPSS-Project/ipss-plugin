@@ -63,7 +63,7 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         state[CURRENT_I]=vf0; state[VF]=vf0; state[VOLTAGE_I]=vr0;
         state[LL1]=leadLagState(vr0,vr0,tc1,tb1);
         state[LL2]=leadLagState(vr0,vr0,tc2,tb2);
-        double selected=feedbackInput(state,machine);
+        double selected=fbf==0?vr0:feedbackInput(state,machine);
         state[FB_LAG]=selected; state[FB_LL]=0;
         System.arraycopy(state,0,trial,0,state.length); active=state;
         reference=state[VSENSE]-stabilizerSignal(machine);
@@ -104,7 +104,7 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         dx[LL2]=leadLagDerivative(a.ll1,x[LL2],tc2,tb2);
         double vrRate=lagDerivative(a.ll2,x[VR],ta);
         dx[VR]=blockedRate(x[VR],vrRate,a.vrMin,a.vrMax);
-        double selected=feedbackInput(x,machine);
+        double selected=fbf==0?a.regulator:feedbackInput(x,machine);
         dx[FB_LAG]=lagDerivative(selected,x[FB_LAG],tf);
         dx[FB_LL]=leadLagDerivative(a.feedbackWashout,x[FB_LL],tf1,tf2);
         dx[CURRENT_I]=limitedIntegratorDerivative(kii*a.currentError,x[CURRENT_I],a.currentPi,a.vfMin,a.vfMax);
@@ -112,9 +112,25 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         dx[VE]=(a.bridge-fieldFeedback(x[VE],exciterIfd(machine)))/te;
     }
     private Algebraic algebraics(double[] x,Machine machine){
+        if(fbf==0 && ta<=EPS){
+            // The bypassed regulator participates in an instantaneous feedback
+            // loop. Solve its limited algebraic output; dormant VR is not feedback.
+            double scale=limitScale(machine),lo=scale*vrmin,hi=scale*vrmax;
+            double selected=clamp(x[VR],lo,hi);
+            for(int i=0;i<80;i++){
+                Algebraic a=algebraicsWithFeedback(x,machine,selected);
+                double residual=selected-a.regulator;
+                if(Math.abs(residual)<1e-12)return a;
+                if(residual>0)hi=selected;else lo=selected;
+                selected=.5*(lo+hi);
+            }
+            return algebraicsWithFeedback(x,machine,selected);
+        }
+        return algebraicsWithFeedback(x,machine,feedbackInput(x,machine));
+    }
+    private Algebraic algebraicsWithFeedback(double[] x,Machine machine,double selected){
         double vt=machine.getDStabBus().getVoltageMag();
         double sensed=tr>EPS?x[VSENSE]:vt;
-        double selected=feedbackInput(x,machine);
         double washout=tf>EPS?kf*(selected-x[FB_LAG])/tf:0;
         double feedback=leadLagOutput(washout,x[FB_LL],tf1,tf2);
         double error=reference+stabilizerSignal(machine)-sensed-feedback;

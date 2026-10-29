@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,6 +40,9 @@ import com.interpss.dstab.DStabGen;
 
 /** Whole-file attachment audit for all six Texas2k Series 24 cases. */
 public class Texas2kFullDynamicCoverageTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kFullDynamicCoverageTest");
+
     private static final Set<String> MODEL_REMOVED_STACKS = Set.of(
             "5045:1", "7099:2");
     private static final Set<String> GNET_REMOVED_STACKS = Set.of(
@@ -361,7 +366,7 @@ public class Texas2kFullDynamicCoverageTest {
     }
 
     private static Path relativeCaseRoot() {
-        Path configured = Path.of(System.getProperty("texas2k.case.root",
+        Path configured = Path.of(CONFIG.string("texas2k.case.root",
                 Path.of("testData", "private", "texas2k").toString()));
         if (configured.isAbsolute() || configured.getRoot() != null) {
             throw new IllegalArgumentException(

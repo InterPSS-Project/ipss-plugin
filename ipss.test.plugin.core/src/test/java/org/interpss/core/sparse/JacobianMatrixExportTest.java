@@ -1,5 +1,7 @@
 package org.interpss.core.sparse;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -26,6 +28,9 @@ import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
 public class JacobianMatrixExportTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "JacobianMatrixExportTest");
+
 
     private static final String EXPORT_DIR = "jklu.matrix.output.dir";
 
@@ -49,9 +54,9 @@ public class JacobianMatrixExportTest extends CorePluginTestSetup {
 
     private static void exportJacobian(String name, String rawFile, double tolerance, String outputFile)
             throws InterpssException, IOException {
-        String dir = System.getProperty(EXPORT_DIR);
+        String dir = CONFIG.string(EXPORT_DIR);
         assumeTrue(dir != null && dir.trim().length() > 0,
-                "Set -D" + EXPORT_DIR + "=<dir> to export Newton-Raphson Jacobian Matrix Market cases");
+                "Set JSON setting " + EXPORT_DIR + "=<dir> to export Newton-Raphson Jacobian Matrix Market cases");
 
         IpssCorePlugin.init();
 

@@ -10,6 +10,15 @@ import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 public interface DistributionPowerFlowAlgorithm {
 
 
+    /** Explicit options override legacy runtime settings for this algorithm. */
+    default DistributionPowerFlowOptions getPowerFlowOptions() {
+        return DistributionPowerFlowOptions.DEFAULTS;
+    }
+
+    default void setPowerFlowOptions(DistributionPowerFlowOptions options) {
+        throw new UnsupportedOperationException("This algorithm does not support fixed-point options");
+    }
+
 	INetwork3Phase getNetwork();
 
 	void setNetwork(INetwork3Phase net);
@@ -40,6 +49,28 @@ public interface DistributionPowerFlowAlgorithm {
 	 * @return  true if power flow converges, false if not converge.
 	 */
 	public boolean powerflow();
+
+	/** Enables detailed profiling for this algorithm instance. */
+	public default void setFixedPointRuntimeProfileEnabled(boolean enabled) {
+	}
+
+	public default void setMinIteration(int minimum) {
+		if(minimum < 1) throw new IllegalArgumentException("minimum iterations must be positive");
+	}
+
+	public default void setPrimitiveVoltageStateEnabled(boolean enabled) {
+	}
+
+	/** Prepares control device lookups for a study with fixed device membership. */
+	public default void prepareControlLookups() {
+	}
+
+	/** Defers unobserved bus voltage objects during a closed QSTS execution. */
+	public default void setDeferredVoltageSyncEnabled(boolean enabled) {
+	}
+
+	public default void syncThreePhaseVoltages() {
+	}
 
 	public void setRegulatorControls(List<RegulatorControlData> controls);
 
@@ -99,6 +130,11 @@ public interface DistributionPowerFlowAlgorithm {
 	public boolean isFixedPointYMatrixCacheEnabled();
 
 	public void clearFixedPointYMatrixCache();
+
+	/** Invalidates numeric values after a tap change without discarding topology. */
+	public default void notifyRegulatorTapChange() {
+		clearFixedPointYMatrixCache();
+	}
 
 	public default int getFixedPointYMatrixSymbolicFactorizationCount() {
 		return 0;

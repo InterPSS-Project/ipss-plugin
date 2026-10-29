@@ -1,5 +1,7 @@
 package org.interpss.threePhase.system;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -59,6 +61,9 @@ import org.interpss.core.sparse.solver.klusolvex.KlusolveXPerformanceCounters;
 
 
 public class OpenDssParserPowerFlowComparisonTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.plugin.3phase.json", "OpenDssParserPowerFlowComparisonTest");
+
 	private static final double VOLTAGE_MAG_TOLERANCE_PU = 2.0e-2;
 	private static final double VOLTAGE_ANGLE_TOLERANCE_DEG = 2.0;
 
@@ -399,10 +404,12 @@ public class OpenDssParserPowerFlowComparisonTest {
 		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "step_05410_g2101cd0200");
 		assertNotNull(transformer, "Missing Ckt24 step transformer with %rs data");
 		Complex zPhaseB = transformer.getZabc().bb;
-		assertEquals(0.00946080416900833, zPhaseB.getReal(), 1.0e-12,
+		// 333-kVA single-phase winding on the network's 1-MVA three-phase base.
+		double powerBaseRatio = 1000.0 / (3 * 333.0);
+		assertEquals(0.00945 * powerBaseRatio, zPhaseB.getReal(), 1.0e-12,
 				"Ckt24 step transformer %rs=(0.4725,0.4725) should produce nonzero series R");
-		assertEquals(0.04059636074637965, zPhaseB.getImaginary(), 1.0e-12,
-				"Ckt24 step transformer xhl should stay unchanged while parsing %rs");
+		assertEquals(0.04055 * powerBaseRatio, zPhaseB.getImaginary(), 1.0e-12,
+				"Ckt24 step transformer xhl is converted on rated winding voltage and system power base");
 	}
 
 	@Test
@@ -917,7 +924,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: exports Ckt24 voltage mismatch versus source depth")
 	public void ckt24VoltageDepthExportDiagnostic() throws IOException {
-		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu")).message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 		OpenDSSDataParser parser = new OpenDSSDataParser();
@@ -949,7 +956,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: compares Ckt24 voltage mismatch across fixed-point tolerances")
 	public void ckt24ToleranceSensitivityDiagnostic() throws IOException {
-		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu")).message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 

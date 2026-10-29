@@ -1,5 +1,6 @@
 package org.interpss.threePhase.system;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +12,7 @@ import java.util.Map;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
+import org.interpss.threePhase.powerflow.DistributionPowerFlowOptions;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData.ControlType;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData.PhaseSelection;
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.acsc.PhaseCode;
 
 public class OpenDSSQstsFeederSmokeTest {
+
 	private static final int FULL_DAY_STEPS = 24;
 	private static final int SHORT_LARGE_FEEDER_STEPS = 6;
 	private static final double SMOKE_VOLTAGE_CEILING_PU = 2.0;
@@ -62,41 +65,9 @@ public class OpenDSSQstsFeederSmokeTest {
 
 	@Test
 	void fixedPointDefaultAntiFloatPathConvergesOnOpenDssSmokeFeeders() {
-		String oldDisableZeroDiagonalFill = System.getProperty("ipss.distpf.disableZeroDiagonalFill");
-		String oldDisableTransformerAntiFloat = System.getProperty("ipss.distpf.disableTransformerAntiFloat");
-		String oldDisableFloatingComponentDeactivation =
-				System.getProperty("ipss.distpf.disableFloatingComponentDeactivation");
-		String oldEnableFloatingComponentAntiFloat =
-				System.getProperty("ipss.distpf.enableFloatingComponentAntiFloat");
-		String oldEnableNonSwingBusAntiFloat =
-				System.getProperty("ipss.distpf.enableNonSwingBusAntiFloat");
-		String oldDisableFloatingComponentAntiFloat =
-				System.getProperty("ipss.distpf.disableFloatingComponentAntiFloat");
-		String oldDisableNonSwingBusAntiFloat =
-				System.getProperty("ipss.distpf.disableNonSwingBusAntiFloat");
-		try {
-			System.clearProperty("ipss.distpf.disableZeroDiagonalFill");
-			System.clearProperty("ipss.distpf.disableTransformerAntiFloat");
-			System.clearProperty("ipss.distpf.disableFloatingComponentDeactivation");
-			System.clearProperty("ipss.distpf.enableFloatingComponentAntiFloat");
-			System.clearProperty("ipss.distpf.enableNonSwingBusAntiFloat");
-			System.clearProperty("ipss.distpf.disableFloatingComponentAntiFloat");
-			System.clearProperty("ipss.distpf.disableNonSwingBusAntiFloat");
-
-			for(FeederSmokeCase feeder : defaultAntiFloatSmokeFeeders()) {
-				assertSmokeSummary(runSmoke(feeder));
-			}
-		}
-		finally {
-			restoreProperty("ipss.distpf.disableZeroDiagonalFill", oldDisableZeroDiagonalFill);
-			restoreProperty("ipss.distpf.disableTransformerAntiFloat", oldDisableTransformerAntiFloat);
-			restoreProperty("ipss.distpf.disableFloatingComponentDeactivation",
-					oldDisableFloatingComponentDeactivation);
-			restoreProperty("ipss.distpf.enableFloatingComponentAntiFloat", oldEnableFloatingComponentAntiFloat);
-			restoreProperty("ipss.distpf.enableNonSwingBusAntiFloat", oldEnableNonSwingBusAntiFloat);
-			restoreProperty("ipss.distpf.disableFloatingComponentAntiFloat", oldDisableFloatingComponentAntiFloat);
-			restoreProperty("ipss.distpf.disableNonSwingBusAntiFloat", oldDisableNonSwingBusAntiFloat);
-		}
+        for (FeederSmokeCase feeder : defaultAntiFloatSmokeFeeders()) {
+            assertSmokeSummary(runSmoke(feeder));
+        }
 	}
 
 	@Test
@@ -137,8 +108,12 @@ public class OpenDSSQstsFeederSmokeTest {
 		assertTrue(parser.convertActualValuesToPU(1.0),
 				"Failed to convert actual values to PU for " + feeder.name());
 
+        DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
+                .createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+        algorithm.setPowerFlowOptions(DistributionPowerFlowOptions.DEFAULTS);
 		long startNanos = System.nanoTime();
 		QstsResult result = OpenDSSQstsStudyFactory.from(parser)
+				.setPowerFlowAlgorithm(algorithm)
 				.setMode(feeder.mode())
 				.setNumberOfSteps(feeder.steps())
 				.setStepSizeHours(1.0)
@@ -180,39 +155,30 @@ public class OpenDSSQstsFeederSmokeTest {
 
 	private static SolvedRegulatorQstsCase solveIeee123RegulatorControlCase(
 			boolean disableSymbolReuse, boolean disableValueUpdate) {
-		String oldDisableSymbolReuse = System.getProperty("ipss.qsts.disableFixedPointSymbolReuse");
-		String oldDisableValueUpdate = System.getProperty("ipss.qsts.disableFixedPointValueUpdate");
-		try {
-			setBooleanProperty("ipss.qsts.disableFixedPointSymbolReuse", disableSymbolReuse);
-			setBooleanProperty("ipss.qsts.disableFixedPointValueUpdate", disableValueUpdate);
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master.dss"));
+		assertTrue(parser.getRegulatorParser().getRegControlCount() >= 7,
+				"IEEE123 should parse its per-phase regulator controls");
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+		List<RegulatorControlData> controls = parser.getRegulatorControls();
+		assertTrue(controls.size() >= 7, "IEEE123 regulator controls should be available to QSTS");
+		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
+				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+		algorithm.setPowerFlowOptions(DistributionPowerFlowOptions.withMatrixReuse(
+				!disableSymbolReuse, !disableValueUpdate));
 
-			OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
-			assertTrue(parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master.dss"));
-			assertTrue(parser.getRegulatorParser().getRegControlCount() >= 7,
-					"IEEE123 should parse its per-phase regulator controls");
-			assertTrue(parser.calcVoltageBases());
-			assertTrue(parser.convertActualValuesToPU(1.0));
-			List<RegulatorControlData> controls = parser.getRegulatorControls();
-			assertTrue(controls.size() >= 7, "IEEE123 regulator controls should be available to QSTS");
-			DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
-					.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
-
-			QstsResult result = OpenDSSQstsStudyFactory.from(parser)
-					.setPowerFlowAlgorithm(algorithm)
-					.setMode(QstsMode.DAILY)
-					.setNumberOfSteps(3)
-					.setStepSizeHours(1.0)
-					.setControlMode(QstsControlMode.STATIC)
-					.setMaxControlIterations(20)
-					.setMaxPowerFlowIterations(200)
-					.setTolerance(1.0e-8)
-					.run();
-			return new SolvedRegulatorQstsCase(result, controls, algorithm);
-		}
-		finally {
-			restoreProperty("ipss.qsts.disableFixedPointSymbolReuse", oldDisableSymbolReuse);
-			restoreProperty("ipss.qsts.disableFixedPointValueUpdate", oldDisableValueUpdate);
-		}
+		QstsResult result = OpenDSSQstsStudyFactory.from(parser)
+				.setPowerFlowAlgorithm(algorithm)
+				.setMode(QstsMode.DAILY)
+				.setNumberOfSteps(3)
+				.setStepSizeHours(1.0)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(20)
+				.setMaxPowerFlowIterations(200)
+				.setTolerance(1.0e-8)
+				.run();
+		return new SolvedRegulatorQstsCase(result, controls, algorithm);
 	}
 
 	private static List<CapacitorControlData> ckt24CapacitorControls() {
@@ -291,24 +257,6 @@ public class OpenDSSQstsFeederSmokeTest {
 				summary.name() + " max voltage is outside smoke range: " + summary.maxVoltagePu());
 		assertTrue(summary.maxIterationCount() > 0,
 				summary.name() + " should report at least one PF iteration");
-	}
-
-	private static void setBooleanProperty(String key, boolean value) {
-		if(value) {
-			System.setProperty(key, "true");
-		}
-		else {
-			System.clearProperty(key);
-		}
-	}
-
-	private static void restoreProperty(String key, String value) {
-		if(value == null) {
-			System.clearProperty(key);
-		}
-		else {
-			System.setProperty(key, value);
-		}
 	}
 
 	private record FeederSmokeCase(String name, String folder, String masterFile,

@@ -23,6 +23,11 @@ Run the testsuite
 
 The suite class is `org.interpss.CorePluginTestSuite`. Using the simple class name matches the CI workflow and avoids Surefire pattern mismatches caused by an incorrect package name.
 
+Test run settings belong in JSON resources or Java fixtures. See
+[test configuration](docs/test-configuration.md) for configuration files, benchmark
+examples, and the required sibling core APIs. A repository-wide test checks that
+test sources do not read or change JVM system properties.
+
 ##### Maven Release Deployment
 
 GitHub Actions verifies normal `master` branch pushes with:

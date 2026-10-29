@@ -23,6 +23,13 @@
             <groupId>com.interpss</groupId>
             <artifactId>ipss.plugin.core</artifactId>
             <version>${revision}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.interpss</groupId>
+            <artifactId>ipss.plugin.core</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

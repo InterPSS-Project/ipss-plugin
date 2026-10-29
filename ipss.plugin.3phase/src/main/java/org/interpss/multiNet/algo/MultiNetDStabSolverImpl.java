@@ -577,6 +577,22 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 //	
 //	}
 	
+    /** The boundary-equivalent refresh rebuilds feeder matrices; retain active faults afterwards. */
+    protected void reapplyActiveDistributionFaults(double time) throws com.interpss.dstab.common.DStabSimuException {
+        var phaseNetworks = this.multiNetSimuHelper.getSubNetworkProcessor().getThreePhaseSubNetIdList();
+        for (var event : this.dstabAlgo.getNetwork().getDynamicEventList()) {
+            if (event.getType() != com.interpss.dstab.devent.DynamicSimuEventType.BUS_FAULT || !event.isActive()
+                    || !phaseNetworks.contains(event.getBusFault().getBus().getNetwork().getId())) continue;
+            try {
+                var handler=this.dstabAlgo.getDynamicEventHandler();
+                if (handler instanceof MultiNet3PhPosSeqDynEventProcessor processor) processor.applyDynamicEventAfter(event,time);
+                else if (handler instanceof MultiNet3Ph3SeqDynEventProcessor processor) processor.applyDynamicEventAfter(event,time);
+            } catch (org.interpss.numeric.exp.IpssNumericException failure) {
+                throw new com.interpss.dstab.common.DStabSimuException("Unable to retain distribution fault after equivalent refresh: "+failure.getMessage());
+            }
+        }
+    }
+
 	@Override public boolean procInitOutputEvent() {
 		try {
 			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
@@ -590,9 +606,11 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 							//consider active or in-service machine only
 							 if(gen.isActive() && ((DStabGen)gen).getMach()!=null){
 								  Machine mach = ((DStabGen)gen).getMach();
+                                  if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepMachineStates, mach.getId())) {
 								  Hashtable<String, Object> states = BuiltMachineState.f(mach, 0.0, this.dstabAlgo);
 								  procOutputEvent(DStabSimuEvent.PlotStepMachineStates, states);
 								  procOutputEvent(DStabSimuEvent.TimeStepMachineStates, states);
+                                  }
 							 }
 						  }
 						}
@@ -602,9 +620,11 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 							procOutputEvent(DStabSimuEvent.PlotStepScriptDynamicBusDeviceStates, states);
 						}
 						//else {
-				            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
+				            if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepBusStates, bus.getId())) {
+                            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
 				            procOutputEvent(DStabSimuEvent.TimeStepBusStates, states);
 							procOutputEvent(DStabSimuEvent.PlotStepBusStates, states);
+                            }
 						//}
 					 }
 			}

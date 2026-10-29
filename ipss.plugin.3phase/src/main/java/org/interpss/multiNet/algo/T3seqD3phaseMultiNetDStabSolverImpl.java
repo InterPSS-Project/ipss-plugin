@@ -248,8 +248,13 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			    else{
 			    	
 			    	addTransNetTheveninEquivToDistYABCMatrix(false);
+                    reapplyActiveDistributionFaults(time);
 			    }
-			}
+			}else if(!this.isDistNetSolvedByPowerflow){
+                calculateTransmissionTheveninEquiv();
+                addTransNetTheveninEquivToDistYABCMatrix(true);
+                reapplyActiveDistributionFaults(time);
+            }
 		}
 	}
    
@@ -263,9 +268,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 	public boolean networkSolutionStep() throws DStabSimuException {
 		
 		boolean netSolConverged = true;
+        var previousSequences=new java.util.HashMap<String,Complex3x1>();
 		//NOTE: for testing only
 		//maxIterationTimes = 1;
-		for(int i=0;i<maxIterationTimes;i++){ 
+		for(int i=0;i<maxIterationTimes;i++){
+            netSolConverged=true;
 			
 			if(this.isTheveninEquiv){
 				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
@@ -327,7 +334,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 						throw new UnsupportedOperationException();
 					
 					else // run dynamic simulation 
-				       dsNet3Ph.solveNetEqn();
+				       if(!dsNet3Ph.solveNetEqn())throw new DStabSimuException("Distribution network solution rejected: "+dsNet3Ph.getId());
 					
 				} 
 				// When T->D passing the boundary bus voltages, only power flow for distribution systems will be considered
@@ -370,7 +377,9 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							//solveDistNetFixedSourceVolt(dsNet3Ph, sourceId);
 							
 							DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
-							distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
+							// Fixed-point current injection supports weak and looped feeders.
+							distPFAlgo.setPFMethod(DistributionPFMethod.Fixed_Point);
+							distPFAlgo.setMaxIteration(100);
 							
 							// always use the set source bus voltage above as the initial voltage
 							distPFAlgo.setInitBusVoltageEnabled(false);
@@ -384,15 +393,19 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					// 
 					else{
 						
-						 dsNet3Ph.solveNetEqn();
+						 if(!dsNet3Ph.solveNetEqn())throw new DStabSimuException("Distribution network solution rejected: "+dsNet3Ph.getId());
 					}
 				}
 			
 				
 			}
 			 
+            var previousCurrents=new java.util.HashMap<String,Complex3x1>();
+            dist2Trans3PhaseCurInjTable.forEach((id,current)->previousCurrents.put(id,new Complex3x1(current.a_0,current.b_1,current.c_2)));
 	        // step-4 calculate the current injected from each distribution system into the transmission system
 			this.calculateDist2Trans3SeqCurInjections();
+            if(!isTheveninEquiv&&!isDistNetSolvedByPowerflow)correctVoltageSourceBoundaryCurrents(previousCurrents);
+
 		
 			
 			// update the positive-sequence current injection table
@@ -401,10 +414,9 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			this.transmissionNet.setCustomBusCurrInjHashtable(this.dist2TransPosSeqCurInjTable);
 			
 			// step-5 solve the transmission network network solution
-			if(transmissionNet instanceof DStabNetwork3Phase)
-				((DStabNetwork3Phase)this.transmissionNet).solvePosSeqNetEqn();
-			else
-				this.transmissionNet.solveNetEqn();
+			if(transmissionNet instanceof DStabNetwork3Phase){
+                if(!((DStabNetwork3Phase)this.transmissionNet).solvePosSeqNetEqn())throw new DStabSimuException("Transmission network solution rejected: "+transmissionNet.getId());
+            }else if(!this.transmissionNet.solveNetEqn())throw new DStabSimuException("Transmission network solution rejected: "+transmissionNet.getId());
 			
 			//update the positive sequence voltage, as they are not updated to threeSeqVoltage by default
 			for (BaseDStabBus bus : this.transmissionNet.getBusList()) {
@@ -429,10 +441,13 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				if(busi.isActive()){
 					
 					if(i>=1){
-						if(!NumericUtil.equals(busi.getVoltage(),lastStepTransBoundaryVoltTable.get(busi.getId()),this.converge_tol))
-							netSolConverged =false;
+						var previous=previousSequences.get(busi.getId());
+                        double residual=previous==null?Double.POSITIVE_INFINITY:busi.getThreeSeqVoltage().subtract(previous).absMax();
+                        if(!Double.isFinite(residual)||residual>this.converge_tol)netSolConverged=false;
 					}
 					lastStepTransBoundaryVoltTable.put(busi.getId(), busi.getVoltage());
+                    var voltage=busi.getThreeSeqVoltage();
+                    previousSequences.put(busi.getId(),new Complex3x1(voltage.a_0,voltage.b_1,voltage.c_2));
 				}
 			 }
 			
@@ -446,6 +461,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 	
 		  } // for maxIterationTimes loop
 			
+        if(!netSolConverged)throw new DStabSimuException("Coupled sequence network solution did not converge");
 		return netSolConverged;
 	}
 	
@@ -564,7 +580,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //						throw new UnsupportedOperationException();
 //					
 //					else // run dynamic simulation 
-//				       dsNet3Ph.solveNetEqn();
+//				       if(!dsNet3Ph.solveNetEqn())throw new DStabSimuException("Distribution network solution rejected: "+dsNet3Ph.getId());
 //					
 //				} 
 //				// When T->D passing the boundary bus voltages, only power flow for distribution systems will be considered
@@ -620,7 +636,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //					// 
 //					else{
 //						
-//						 dsNet3Ph.solveNetEqn();
+//						 if(!dsNet3Ph.solveNetEqn())throw new DStabSimuException("Distribution network solution rejected: "+dsNet3Ph.getId());
 //					}
 //				}
 //			
@@ -811,9 +827,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							//consider active or in-service machine only
 							 if(gen.isActive() && ((DStabGen)gen).getMach()!=null){
 								  Machine mach = ((DStabGen)gen).getMach();
+                                  if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepMachineStates, mach.getId())) {
 								  Hashtable<String, Object> states = BuiltMachineState.f(mach, 0.0, this.dstabAlgo);
 								  procOutputEvent(DStabSimuEvent.PlotStepMachineStates, states);
 								  procOutputEvent(DStabSimuEvent.TimeStepMachineStates, states);
+                                  }
 							 }
 						  }
 						}
@@ -823,9 +841,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							procOutputEvent(DStabSimuEvent.PlotStepScriptDynamicBusDeviceStates, states);
 						}
 						//else {
-				            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
+				            if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepBusStates, bus.getId())) {
+                            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
 				            procOutputEvent(DStabSimuEvent.TimeStepBusStates, states);
 							procOutputEvent(DStabSimuEvent.PlotStepBusStates, states);
+                            }
 						//}
 					 }
 			}
@@ -913,6 +933,40 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //		
 //	}
 	
+
+    /** Newton port correction for the existing finite-impedance voltage-source interface.
+     * For fixed device injections, dI_D/dV_T=-Yeff, where
+     * Yeff=(Zport^-1-Ysource)*Zport*Ysource. Solve
+     * (I+Z_T*Yeff) dV=Z_T*(I_D-new-I_D-old), then update injected currents.
+     * Mutual transmission port blocks are retained; no boundary mode is changed.
+     */
+    private void correctVoltageSourceBoundaryCurrents(java.util.Map<String,Complex3x1> previous)throws DStabSimuException {
+        var ids=new java.util.ArrayList<String>(netEquivTable.keySet());java.util.Collections.sort(ids);
+        if(ids.isEmpty())return;
+        try {
+            var z=NetworkEquivUtil.cal3SeqNetworkTheveninEquiv(transmissionNet,ids).getMatrix3x3();
+            var effective=new java.util.ArrayList<Complex3x3>();
+            var delta=new java.util.ArrayList<Complex3x1>();
+            var ys=Complex.ONE.divide(voltSourceImpedance);
+            for(String id:ids){
+                var distId=id.contains("Dummy")?id.replace("Dummy",""):id+"Dummy";
+                var network=(DStabNetwork3Phase)subNetProcessor.getSubNetworkByBusId(distId);
+                var port=NetworkEquivUtil.cal3PhaseNetworkTheveninEquiv(network,java.util.List.of(distId)).getMatrix3x3()[0][0];
+                effective.add(VoltageSourceBoundaryCorrection.effectiveAdmittance(port,ys));
+                var old=previous.get(id);if(old==null)old=new Complex3x1();
+                delta.add(dist2Trans3PhaseCurInjTable.get(id).subtract(old));
+            }
+            var corrections=VoltageSourceBoundaryCorrection.solve(z,effective,delta);
+            for(int i=0;i<ids.size();i++){
+                var dv=corrections.get(i);
+                var current=dist2Trans3PhaseCurInjTable.get(ids.get(i)).subtract(effective.get(i).multiply(dv));
+                VoltageSourceBoundaryCorrection.requireFinite(current);
+                var sequence=current.to012();dist2Trans3PhaseCurInjTable.put(ids.get(i),current);
+                dist2TransPosSeqCurInjTable.put(ids.get(i),sequence.b_1);dist2TransNegSeqCurInjTable.put(ids.get(i),sequence.c_2);
+                dist2TransZeroSeqCurInjTable.put(ids.get(i),sequence.a_0);
+            }
+        }catch(RuntimeException failure){throw new DStabSimuException("Voltage-source boundary correction failed: "+failure.getMessage());}
+    }
 
 	private void addTransNetTheveninEquivToDistYABCMatrix(boolean isVoltSource) {
 		// TODO Auto-generated method stub

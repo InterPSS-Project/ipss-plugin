@@ -1,0 +1,367 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rdf:RDF xmlns:cim="http://iec.ch/TC57/CIM100#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <cim:Feeder rdf:ID="feeder">
+    <cim:IdentifiedObject.name>feeder</cim:IdentifiedObject.name>
+  </cim:Feeder>
+  <cim:BaseVoltage rdf:ID="hv">
+    <cim:IdentifiedObject.name>hv</cim:IdentifiedObject.name>
+    <cim:BaseVoltage.nominalVoltage>12470</cim:BaseVoltage.nominalVoltage>
+  </cim:BaseVoltage>
+  <cim:BaseVoltage rdf:ID="lv">
+    <cim:IdentifiedObject.name>lv</cim:IdentifiedObject.name>
+    <cim:BaseVoltage.nominalVoltage>480</cim:BaseVoltage.nominalVoltage>
+  </cim:BaseVoltage>
+  <cim:ConnectivityNode rdf:ID="source">
+    <cim:IdentifiedObject.name>source</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:ConnectivityNode rdf:ID="n1">
+    <cim:IdentifiedObject.name>n1</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:ConnectivityNode rdf:ID="n2">
+    <cim:IdentifiedObject.name>n2</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:ConnectivityNode rdf:ID="n3">
+    <cim:IdentifiedObject.name>n3</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:ConnectivityNode rdf:ID="n4">
+    <cim:IdentifiedObject.name>n4</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:EnergySource rdf:ID="grid">
+    <cim:IdentifiedObject.name>grid</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:EnergySource.nominalVoltage>12470</cim:EnergySource.nominalVoltage>
+    <cim:EnergySource.voltageMagnitude>12470</cim:EnergySource.voltageMagnitude>
+    <cim:EnergySource.voltageAngle>0.1</cim:EnergySource.voltageAngle>
+    <cim:EnergySource.r>0.01</cim:EnergySource.r>
+    <cim:EnergySource.x>0.05</cim:EnergySource.x>
+    <cim:EnergySource.r0>0.02</cim:EnergySource.r0>
+    <cim:EnergySource.x0>0.1</cim:EnergySource.x0>
+  </cim:EnergySource>
+  <cim:Terminal rdf:ID="gridt1">
+    <cim:IdentifiedObject.name>gridt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#grid" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#source" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:PerLengthSequenceImpedance rdf:ID="seq">
+    <cim:IdentifiedObject.name>seq</cim:IdentifiedObject.name>
+    <cim:PerLengthSequenceImpedance.r>0.0001</cim:PerLengthSequenceImpedance.r>
+    <cim:PerLengthSequenceImpedance.x>0.0002</cim:PerLengthSequenceImpedance.x>
+    <cim:PerLengthSequenceImpedance.r0>0.0003</cim:PerLengthSequenceImpedance.r0>
+    <cim:PerLengthSequenceImpedance.x0>0.0006</cim:PerLengthSequenceImpedance.x0>
+    <cim:PerLengthSequenceImpedance.bch>1e-09</cim:PerLengthSequenceImpedance.bch>
+    <cim:PerLengthSequenceImpedance.b0ch>0</cim:PerLengthSequenceImpedance.b0ch>
+  </cim:PerLengthSequenceImpedance>
+  <cim:ACLineSegment rdf:ID="seqline">
+    <cim:IdentifiedObject.name>seqline</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:Conductor.length>500</cim:Conductor.length>
+    <cim:ACLineSegment.PerLengthImpedance rdf:resource="#seq" />
+  </cim:ACLineSegment>
+  <cim:Terminal rdf:ID="seqlinet1">
+    <cim:IdentifiedObject.name>seqlinet1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#seqline" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#source" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:Terminal rdf:ID="seqlinet2">
+    <cim:IdentifiedObject.name>seqlinet2</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#seqline" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n1" />
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:PerLengthPhaseImpedance rdf:ID="matrix">
+    <cim:IdentifiedObject.name>matrix</cim:IdentifiedObject.name>
+    <cim:PerLengthPhaseImpedance.conductorCount>2</cim:PerLengthPhaseImpedance.conductorCount>
+  </cim:PerLengthPhaseImpedance>
+  <cim:PhaseImpedanceData rdf:ID="z11">
+    <cim:IdentifiedObject.name>z11</cim:IdentifiedObject.name>
+    <cim:PhaseImpedanceData.PhaseImpedance rdf:resource="#matrix" />
+    <cim:PhaseImpedanceData.row>1</cim:PhaseImpedanceData.row>
+    <cim:PhaseImpedanceData.column>1</cim:PhaseImpedanceData.column>
+    <cim:PhaseImpedanceData.r>0.0004</cim:PhaseImpedanceData.r>
+    <cim:PhaseImpedanceData.x>0.0008</cim:PhaseImpedanceData.x>
+    <cim:PhaseImpedanceData.b>2e-09</cim:PhaseImpedanceData.b>
+  </cim:PhaseImpedanceData>
+  <cim:PhaseImpedanceData rdf:ID="z21">
+    <cim:IdentifiedObject.name>z21</cim:IdentifiedObject.name>
+    <cim:PhaseImpedanceData.PhaseImpedance rdf:resource="#matrix" />
+    <cim:PhaseImpedanceData.row>2</cim:PhaseImpedanceData.row>
+    <cim:PhaseImpedanceData.column>1</cim:PhaseImpedanceData.column>
+    <cim:PhaseImpedanceData.r>0.0001</cim:PhaseImpedanceData.r>
+    <cim:PhaseImpedanceData.x>0.0002</cim:PhaseImpedanceData.x>
+    <cim:PhaseImpedanceData.b>-2e-10</cim:PhaseImpedanceData.b>
+  </cim:PhaseImpedanceData>
+  <cim:PhaseImpedanceData rdf:ID="z22">
+    <cim:IdentifiedObject.name>z22</cim:IdentifiedObject.name>
+    <cim:PhaseImpedanceData.PhaseImpedance rdf:resource="#matrix" />
+    <cim:PhaseImpedanceData.row>2</cim:PhaseImpedanceData.row>
+    <cim:PhaseImpedanceData.column>2</cim:PhaseImpedanceData.column>
+    <cim:PhaseImpedanceData.r>0.0005</cim:PhaseImpedanceData.r>
+    <cim:PhaseImpedanceData.x>0.0009</cim:PhaseImpedanceData.x>
+    <cim:PhaseImpedanceData.b>2.2e-09</cim:PhaseImpedanceData.b>
+  </cim:PhaseImpedanceData>
+  <cim:ACLineSegment rdf:ID="matrixline">
+    <cim:IdentifiedObject.name>matrixline</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:Conductor.length>200</cim:Conductor.length>
+    <cim:ACLineSegment.PerLengthImpedance rdf:resource="#matrix" />
+  </cim:ACLineSegment>
+  <cim:Terminal rdf:ID="matrixlinet1">
+    <cim:IdentifiedObject.name>matrixlinet1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#matrixline" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n1" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:Terminal rdf:ID="matrixlinet2">
+    <cim:IdentifiedObject.name>matrixlinet2</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#matrixline" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n2" />
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:ACLineSegmentPhase rdf:ID="mpC">
+    <cim:IdentifiedObject.name>mpC</cim:IdentifiedObject.name>
+    <cim:ACLineSegmentPhase.ACLineSegment rdf:resource="#matrixline" />
+    <cim:ACLineSegmentPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.C" />
+    <cim:ACLineSegmentPhase.sequenceNumber>1</cim:ACLineSegmentPhase.sequenceNumber>
+  </cim:ACLineSegmentPhase>
+  <cim:ACLineSegmentPhase rdf:ID="mpB">
+    <cim:IdentifiedObject.name>mpB</cim:IdentifiedObject.name>
+    <cim:ACLineSegmentPhase.ACLineSegment rdf:resource="#matrixline" />
+    <cim:ACLineSegmentPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.B" />
+    <cim:ACLineSegmentPhase.sequenceNumber>2</cim:ACLineSegmentPhase.sequenceNumber>
+  </cim:ACLineSegmentPhase>
+  <cim:PerLengthPhaseImpedance rdf:ID="one">
+    <cim:IdentifiedObject.name>one</cim:IdentifiedObject.name>
+    <cim:PerLengthPhaseImpedance.conductorCount>1</cim:PerLengthPhaseImpedance.conductorCount>
+  </cim:PerLengthPhaseImpedance>
+  <cim:PhaseImpedanceData rdf:ID="z1">
+    <cim:IdentifiedObject.name>z1</cim:IdentifiedObject.name>
+    <cim:PhaseImpedanceData.PhaseImpedance rdf:resource="#one" />
+    <cim:PhaseImpedanceData.row>1</cim:PhaseImpedanceData.row>
+    <cim:PhaseImpedanceData.column>1</cim:PhaseImpedanceData.column>
+    <cim:PhaseImpedanceData.r>0.001</cim:PhaseImpedanceData.r>
+    <cim:PhaseImpedanceData.x>0.0005</cim:PhaseImpedanceData.x>
+  </cim:PhaseImpedanceData>
+  <cim:ACLineSegment rdf:ID="singleline">
+    <cim:IdentifiedObject.name>singleline</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:Conductor.length>50</cim:Conductor.length>
+    <cim:ACLineSegment.PerLengthImpedance rdf:resource="#one" />
+  </cim:ACLineSegment>
+  <cim:Terminal rdf:ID="singlelinet1">
+    <cim:IdentifiedObject.name>singlelinet1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#singleline" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n2" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:Terminal rdf:ID="singlelinet2">
+    <cim:IdentifiedObject.name>singlelinet2</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#singleline" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n3" />
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:ACLineSegmentPhase rdf:ID="spB">
+    <cim:IdentifiedObject.name>spB</cim:IdentifiedObject.name>
+    <cim:ACLineSegmentPhase.ACLineSegment rdf:resource="#singleline" />
+    <cim:ACLineSegmentPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.B" />
+    <cim:ACLineSegmentPhase.sequenceNumber>1</cim:ACLineSegmentPhase.sequenceNumber>
+  </cim:ACLineSegmentPhase>
+  <cim:PowerTransformer rdf:ID="bank">
+    <cim:IdentifiedObject.name>bank</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+  </cim:PowerTransformer>
+  <cim:TransformerTank rdf:ID="tank">
+    <cim:IdentifiedObject.name>tank</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:TransformerTank.PowerTransformer rdf:resource="#bank" />
+    <cim:TransformerTank.TransformerTankInfo rdf:resource="#tankinfo" />
+  </cim:TransformerTank>
+  <cim:TransformerTankInfo rdf:ID="tankinfo">
+    <cim:IdentifiedObject.name>tankinfo</cim:IdentifiedObject.name>
+  </cim:TransformerTankInfo>
+  <cim:Terminal rdf:ID="tankt1">
+    <cim:IdentifiedObject.name>tankt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#tank" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n3" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:TransformerTankEnd rdf:ID="end1">
+    <cim:IdentifiedObject.name>end1</cim:IdentifiedObject.name>
+    <cim:TransformerTankEnd.TransformerTank rdf:resource="#tank" />
+    <cim:TransformerTankEnd.orderedPhases rdf:resource="http://iec.ch/TC57/CIM100#OrderedPhaseCodeKind.BN" />
+    <cim:TransformerEnd.endNumber>1</cim:TransformerEnd.endNumber>
+    <cim:TransformerEnd.Terminal rdf:resource="#tankt1" />
+    <cim:TransformerEnd.grounded>true</cim:TransformerEnd.grounded>
+  </cim:TransformerTankEnd>
+  <cim:TransformerEndInfo rdf:ID="rating1">
+    <cim:IdentifiedObject.name>rating1</cim:IdentifiedObject.name>
+    <cim:TransformerEndInfo.TransformerTankInfo rdf:resource="#tankinfo" />
+    <cim:TransformerEndInfo.endNumber>1</cim:TransformerEndInfo.endNumber>
+    <cim:TransformerEndInfo.connectionKind rdf:resource="http://iec.ch/TC57/CIM100#WindingConnection.I" />
+    <cim:TransformerEndInfo.phaseAngleClock>0</cim:TransformerEndInfo.phaseAngleClock>
+    <cim:TransformerEndInfo.ratedU>7199.557856794634</cim:TransformerEndInfo.ratedU>
+    <cim:TransformerEndInfo.ratedS>100000</cim:TransformerEndInfo.ratedS>
+    <cim:TransformerEndInfo.r>1.036672666666667</cim:TransformerEndInfo.r>
+  </cim:TransformerEndInfo>
+  <cim:Terminal rdf:ID="tankt2">
+    <cim:IdentifiedObject.name>tankt2</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#tank" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n4" />
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:TransformerTankEnd rdf:ID="end2">
+    <cim:IdentifiedObject.name>end2</cim:IdentifiedObject.name>
+    <cim:TransformerTankEnd.TransformerTank rdf:resource="#tank" />
+    <cim:TransformerTankEnd.orderedPhases rdf:resource="http://iec.ch/TC57/CIM100#OrderedPhaseCodeKind.BN" />
+    <cim:TransformerEnd.endNumber>2</cim:TransformerEnd.endNumber>
+    <cim:TransformerEnd.Terminal rdf:resource="#tankt2" />
+    <cim:TransformerEnd.grounded>true</cim:TransformerEnd.grounded>
+  </cim:TransformerTankEnd>
+  <cim:TransformerEndInfo rdf:ID="rating2">
+    <cim:IdentifiedObject.name>rating2</cim:IdentifiedObject.name>
+    <cim:TransformerEndInfo.TransformerTankInfo rdf:resource="#tankinfo" />
+    <cim:TransformerEndInfo.endNumber>2</cim:TransformerEndInfo.endNumber>
+    <cim:TransformerEndInfo.connectionKind rdf:resource="http://iec.ch/TC57/CIM100#WindingConnection.I" />
+    <cim:TransformerEndInfo.phaseAngleClock>0</cim:TransformerEndInfo.phaseAngleClock>
+    <cim:TransformerEndInfo.ratedU>277.1281292110204</cim:TransformerEndInfo.ratedU>
+    <cim:TransformerEndInfo.ratedS>100000</cim:TransformerEndInfo.ratedS>
+    <cim:TransformerEndInfo.r>0.0015360000000000005</cim:TransformerEndInfo.r>
+  </cim:TransformerEndInfo>
+  <cim:ShortCircuitTest rdf:ID="sc">
+    <cim:IdentifiedObject.name>sc</cim:IdentifiedObject.name>
+    <cim:ShortCircuitTest.EnergisedEnd rdf:resource="#rating1" />
+    <cim:ShortCircuitTest.GroundedEnds rdf:resource="#rating2" />
+    <cim:ShortCircuitTest.leakageImpedance>10.572028313083207</cim:ShortCircuitTest.leakageImpedance>
+    <cim:ShortCircuitTest.loss>0.4</cim:ShortCircuitTest.loss>
+    <cim:TransformerTest.basePower>100000</cim:TransformerTest.basePower>
+  </cim:ShortCircuitTest>
+  <cim:NoLoadTest rdf:ID="nl">
+    <cim:IdentifiedObject.name>nl</cim:IdentifiedObject.name>
+    <cim:NoLoadTest.EnergisedEnd rdf:resource="#rating1" />
+    <cim:NoLoadTest.loss>0.1</cim:NoLoadTest.loss>
+    <cim:NoLoadTest.excitingCurrent>0.223606797749979</cim:NoLoadTest.excitingCurrent>
+    <cim:TransformerTest.basePower>100000</cim:TransformerTest.basePower>
+  </cim:NoLoadTest>
+  <cim:RatioTapChanger rdf:ID="tap">
+    <cim:IdentifiedObject.name>tap</cim:IdentifiedObject.name>
+    <cim:RatioTapChanger.TransformerEnd rdf:resource="#end2" />
+    <cim:RatioTapChanger.stepVoltageIncrement>0.625</cim:RatioTapChanger.stepVoltageIncrement>
+    <cim:TapChanger.step>2</cim:TapChanger.step>
+    <cim:TapChanger.neutralStep>0</cim:TapChanger.neutralStep>
+    <cim:TapChanger.lowStep>-16</cim:TapChanger.lowStep>
+    <cim:TapChanger.highStep>16</cim:TapChanger.highStep>
+  </cim:RatioTapChanger>
+  <cim:LoadResponseCharacteristic rdf:ID="zip">
+    <cim:IdentifiedObject.name>zip</cim:IdentifiedObject.name>
+    <cim:LoadResponseCharacteristic.exponentModel>false</cim:LoadResponseCharacteristic.exponentModel>
+    <cim:LoadResponseCharacteristic.pConstantImpedance>20</cim:LoadResponseCharacteristic.pConstantImpedance>
+    <cim:LoadResponseCharacteristic.pConstantCurrent>30</cim:LoadResponseCharacteristic.pConstantCurrent>
+    <cim:LoadResponseCharacteristic.pConstantPower>50</cim:LoadResponseCharacteristic.pConstantPower>
+    <cim:LoadResponseCharacteristic.qConstantImpedance>10</cim:LoadResponseCharacteristic.qConstantImpedance>
+    <cim:LoadResponseCharacteristic.qConstantCurrent>20</cim:LoadResponseCharacteristic.qConstantCurrent>
+    <cim:LoadResponseCharacteristic.qConstantPower>70</cim:LoadResponseCharacteristic.qConstantPower>
+  </cim:LoadResponseCharacteristic>
+  <cim:EnergyConsumer rdf:ID="delta">
+    <cim:IdentifiedObject.name>delta</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:ConductingEquipment.BaseVoltage rdf:resource="#hv" />
+    <cim:EnergyConsumer.phaseConnection rdf:resource="http://iec.ch/TC57/CIM100#PhaseShuntConnectionKind.D" />
+    <cim:EnergyConsumer.LoadResponse rdf:resource="#zip" />
+    <cim:EnergyConsumer.p>100000</cim:EnergyConsumer.p>
+    <cim:EnergyConsumer.q>50000</cim:EnergyConsumer.q>
+  </cim:EnergyConsumer>
+  <cim:Terminal rdf:ID="deltat1">
+    <cim:IdentifiedObject.name>deltat1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#delta" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n2" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:EnergyConsumerPhase rdf:ID="deltaB">
+    <cim:IdentifiedObject.name>deltaB</cim:IdentifiedObject.name>
+    <cim:EnergyConsumerPhase.EnergyConsumer rdf:resource="#delta" />
+    <cim:EnergyConsumerPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.B" />
+    <cim:EnergyConsumerPhase.p>100000</cim:EnergyConsumerPhase.p>
+    <cim:EnergyConsumerPhase.q>50000</cim:EnergyConsumerPhase.q>
+  </cim:EnergyConsumerPhase>
+  <cim:EnergyConsumer rdf:ID="lowload">
+    <cim:IdentifiedObject.name>lowload</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:ConductingEquipment.BaseVoltage rdf:resource="#lv" />
+    <cim:EnergyConsumer.phaseConnection rdf:resource="http://iec.ch/TC57/CIM100#PhaseShuntConnectionKind.Y" />
+    <cim:EnergyConsumer.p>20000</cim:EnergyConsumer.p>
+    <cim:EnergyConsumer.q>5000</cim:EnergyConsumer.q>
+  </cim:EnergyConsumer>
+  <cim:Terminal rdf:ID="lowloadt1">
+    <cim:IdentifiedObject.name>lowloadt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#lowload" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n4" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:EnergyConsumerPhase rdf:ID="loadB">
+    <cim:IdentifiedObject.name>loadB</cim:IdentifiedObject.name>
+    <cim:EnergyConsumerPhase.EnergyConsumer rdf:resource="#lowload" />
+    <cim:EnergyConsumerPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.B" />
+    <cim:EnergyConsumerPhase.p>20000</cim:EnergyConsumerPhase.p>
+    <cim:EnergyConsumerPhase.q>5000</cim:EnergyConsumerPhase.q>
+  </cim:EnergyConsumerPhase>
+  <cim:LinearShuntCompensator rdf:ID="cap">
+    <cim:IdentifiedObject.name>cap</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:ShuntCompensator.nomU>7199.557856794634</cim:ShuntCompensator.nomU>
+    <cim:ShuntCompensator.phaseConnection rdf:resource="http://iec.ch/TC57/CIM100#PhaseShuntConnectionKind.Y" />
+  </cim:LinearShuntCompensator>
+  <cim:Terminal rdf:ID="capt1">
+    <cim:IdentifiedObject.name>capt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#cap" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n2" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:LinearShuntCompensatorPhase rdf:ID="capC">
+    <cim:IdentifiedObject.name>capC</cim:IdentifiedObject.name>
+    <cim:ShuntCompensatorPhase.ShuntCompensator rdf:resource="#cap" />
+    <cim:ShuntCompensatorPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.C" />
+    <cim:ShuntCompensatorPhase.sections>2</cim:ShuntCompensatorPhase.sections>
+    <cim:ShuntCompensatorPhase.maximumSections>3</cim:ShuntCompensatorPhase.maximumSections>
+    <cim:LinearShuntCompensatorPhase.bPerSection>2e-05</cim:LinearShuntCompensatorPhase.bPerSection>
+    <cim:LinearShuntCompensatorPhase.gPerSection>0</cim:LinearShuntCompensatorPhase.gPerSection>
+  </cim:LinearShuntCompensatorPhase>
+  <cim:PowerElectronicsConnection rdf:ID="pv">
+    <cim:IdentifiedObject.name>pv</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:PowerElectronicsConnection.ratedU>12470</cim:PowerElectronicsConnection.ratedU>
+    <cim:PowerElectronicsConnection.phaseConnection rdf:resource="http://iec.ch/TC57/CIM100#PhaseShuntConnectionKind.Y" />
+  </cim:PowerElectronicsConnection>
+  <cim:Terminal rdf:ID="pvt1">
+    <cim:IdentifiedObject.name>pvt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#pv" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n2" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:PowerElectronicsConnectionPhase rdf:ID="pvB">
+    <cim:IdentifiedObject.name>pvB</cim:IdentifiedObject.name>
+    <cim:PowerElectronicsConnectionPhase.PowerElectronicsConnection rdf:resource="#pv" />
+    <cim:PowerElectronicsConnectionPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.B" />
+    <cim:PowerElectronicsConnectionPhase.p>5000</cim:PowerElectronicsConnectionPhase.p>
+    <cim:PowerElectronicsConnectionPhase.q>1000</cim:PowerElectronicsConnectionPhase.q>
+  </cim:PowerElectronicsConnectionPhase>
+  <cim:LoadBreakSwitch rdf:ID="tie">
+    <cim:IdentifiedObject.name>tie</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:Switch.open>true</cim:Switch.open>
+    <cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+    <cim:ConductingEquipment.phases rdf:resource="http://iec.ch/TC57/CIM100#PhaseCode.BC" />
+  </cim:LoadBreakSwitch>
+  <cim:Terminal rdf:ID="tiet1">
+    <cim:IdentifiedObject.name>tiet1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#tie" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n1" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:Terminal rdf:ID="tiet2">
+    <cim:IdentifiedObject.name>tiet2</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#tie" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#n2" />
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+</rdf:RDF>

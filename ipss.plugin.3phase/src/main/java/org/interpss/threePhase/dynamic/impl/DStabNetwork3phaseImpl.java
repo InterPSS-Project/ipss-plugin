@@ -47,6 +47,13 @@ import org.slf4j.LoggerFactory;
 
 public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DStab3PBranch> implements DStabNetwork3Phase {
 
+    /** Copy through phase-aware state companions rather than flattening to scalar buses. */
+    @Override @SuppressWarnings("unchecked")
+    public <T> T jsonCopy() {
+        try {return (T)org.interpss.threePhase.state.DStab3PNetworkState.create(new org.interpss.threePhase.state.DStab3PNetworkState(this));}
+        catch(com.interpss.common.exp.InterpssException failure){throw new com.interpss.common.exp.InterpssRuntimeException(failure.getMessage());}
+    }
+
     private static final Logger log = LoggerFactory.getLogger(DStabNetwork3phaseImpl.class);
 
 	protected ISparseEqnComplexMatrix3x3 yMatrixAbc = null;
@@ -487,6 +494,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 			   //only the active buses will be initialized
 				if(b.isActive()){
+                    org.interpss.threePhase.util.ThreePhaseUtilFunction.normalizeInductionMotorAdapters(bus);
 					// set bus initial vaule
 					bus.setInitLoad(new Complex(bus.getLoadP(),bus.getLoadQ()));
 					bus.setInitVoltMag(bus.getVoltageMag());
@@ -643,14 +651,14 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 						// add the dynamic loads to dynamicBusDeviceList()
 
-                     // TODO this need to be fixed, as it causes duplication issues for adapter implementation of existing dynamic load models, such as inductionMotor3PhaseLoad
-                     // because DynLoadModel extends from DynamicBusDevice, as the DynLoadModel.setDStabBus() method will create the bus-loadmodel containing relationship.
+                        // Register independently stepped models. Induction adapters remain phase views.
 
                         bus.getDynamicBusDeviceList().addAll(bus.getDynLoadModelList());  //three-sequence based
 						bus.getDynamicBusDeviceList().addAll(bus.getPhaseADynLoadList()); // single-phase based
 						bus.getDynamicBusDeviceList().addAll(bus.getPhaseBDynLoadList()); // single-phase based
 						bus.getDynamicBusDeviceList().addAll(bus.getPhaseCDynLoadList()); // single-phase based
-						bus.getDynamicBusDeviceList().addAll(bus.getThreePhaseDynLoadList()); // three-phase based
+						for(var load:bus.getThreePhaseDynLoadList())if(!(load instanceof org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter))
+                            bus.getDynamicBusDeviceList().add(load); // independent three-phase devices only
 
 					}//end if-isLoad
 

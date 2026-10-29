@@ -3,6 +3,9 @@ package org.interpss.threePhase.powerflow.control;
 import java.util.List;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.ArrayList;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -24,6 +27,65 @@ import com.interpss.core.threephase.AclfLoad3Phase;
 
 public class CapacitorBankControl {
 	private final Map<AclfLoad3Phase, Complex3x1> baseLoadByCapacitor = new IdentityHashMap<AclfLoad3Phase, Complex3x1>();
+	private BaseAclfNetwork<?, ?> preparedNetwork;
+	private final Map<String, AclfLoad3Phase> preparedLoads = new HashMap<>();
+	private final Map<AclfLoad3Phase, BaseAclfBus<?, ?>> preparedParents = new IdentityHashMap<>();
+	private final Map<String, IBranch3Phase> preparedBranches = new HashMap<>();
+
+	/** Resolves stable device references for a study with fixed device membership. */
+	public void prepareNetwork(INetwork3Phase network) {
+		clearLookupCache();
+		BaseAclfNetwork<?, ?> aclf = aclfNetwork(network);
+		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) aclf.getBusList()) {
+			if(bus instanceof IBus3Phase threePhaseBus) {
+				for(AclfLoad3Phase load : threePhaseBus.getPhaseLoadList()) indexLoad(bus, load);
+			}
+			for(Object load : bus.getContributeLoadList()) {
+				if(load instanceof AclfLoad3Phase threePhaseLoad) indexLoad(bus, threePhaseLoad);
+			}
+		}
+		for(AclfBranch branch : (List<AclfBranch>) aclf.getBranchList()) {
+			if(branch.isActive() && branch instanceof IBranch3Phase threePhaseBranch) {
+				if(branch.getName() != null) preparedBranches.putIfAbsent(key(branch.getName()), threePhaseBranch);
+				if(branch.getId() != null) preparedBranches.putIfAbsent(key(branch.getId()), threePhaseBranch);
+			}
+		}
+		preparedNetwork = aclf;
+	}
+
+	public void clearLookupCache() {
+		preparedNetwork = null;
+		preparedLoads.clear();
+		preparedParents.clear();
+		preparedBranches.clear();
+	}
+
+	/** Buses whose live voltages are read by these controls. */
+	public List<IBus3Phase> observedBuses(INetwork3Phase network, List<CapacitorControlData> controls) {
+		BaseAclfNetwork<?, ?> aclf = aclfNetwork(network);
+		List<IBus3Phase> buses = new ArrayList<>();
+		for(CapacitorControlData control : controls) {
+			AclfLoad3Phase load = findCapacitorLoad(aclf, control.getCapacitorId());
+			IBranch3Phase branch = control.hasMonitoredElement()
+					? findBranch(aclf, control.getMonitoredElementName()) : null;
+			if(branch != null) {
+				buses.add((IBus3Phase) ((Branch) branch).getFromBus());
+				buses.add((IBus3Phase) ((Branch) branch).getToBus());
+			} else if(load != null && parentBus(aclf, load) instanceof IBus3Phase bus) {
+				buses.add(bus);
+			}
+		}
+		return buses;
+	}
+
+	private void indexLoad(BaseAclfBus<?, ?> bus, AclfLoad3Phase load) {
+		if(load.getId() != null) preparedLoads.putIfAbsent(key(load.getId()), load);
+		preparedParents.putIfAbsent(load, bus);
+	}
+
+	private String key(String name) {
+		return name == null ? "" : name.toLowerCase(Locale.ROOT);
+	}
 
 	public boolean apply(INetwork3Phase network, List<CapacitorControlData> controls) {
 		if(controls == null || controls.isEmpty()) {
@@ -192,6 +254,7 @@ public class CapacitorBankControl {
 	}
 
 	private AclfLoad3Phase findCapacitorLoad(BaseAclfNetwork<?, ?> network, String capacitorId) {
+		if(network == preparedNetwork) return preparedLoads.get(key(capacitorId));
 		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 			if(bus instanceof IBus3Phase) {
 				for(AclfLoad3Phase load : ((IBus3Phase) bus).getPhaseLoadList()) {
@@ -210,6 +273,7 @@ public class CapacitorBankControl {
 	}
 
 	private BaseAclfBus<?, ?> parentBus(BaseAclfNetwork<?, ?> network, AclfLoad3Phase capacitor) {
+		if(network == preparedNetwork) return preparedParents.get(capacitor);
 		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 			if(bus instanceof IBus3Phase && ((IBus3Phase) bus).getPhaseLoadList().contains(capacitor)) {
 				return bus;
@@ -223,6 +287,10 @@ public class CapacitorBankControl {
 
 	private IBranch3Phase findBranch(BaseAclfNetwork<?, ?> network, String name) {
 		String normalizedName = normalizeElementName(name);
+		if(network == preparedNetwork) {
+			IBranch3Phase branch = preparedBranches.get(key(normalizedName));
+			if(branch != null && ((AclfBranch) branch).isActive()) return branch;
+		}
 		for(AclfBranch branch : (List<AclfBranch>) network.getBranchList()) {
 			if(branch.isActive() && branch instanceof IBranch3Phase
 					&& (matches(branch.getName(), normalizedName) || matches(branch.getId(), normalizedName))) {

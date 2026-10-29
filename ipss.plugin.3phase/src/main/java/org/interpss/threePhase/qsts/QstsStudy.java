@@ -57,6 +57,8 @@ public class QstsStudy {
 	private int maxPowerFlowIterations = 100;
 	private double tolerance = 1.0e-6;
 	private boolean initializeFirstStepVoltages = true;
+	private Boolean runtimeProfileEnabled;
+	private Boolean staticStateReuseEnabled;
 	private List<RegulatorControlData> regulatorControls = Collections.emptyList();
 	private List<CapacitorControlData> capacitorControls = Collections.emptyList();
 	private List<InverterControlData> inverterControls = Collections.emptyList();
@@ -97,6 +99,17 @@ public class QstsStudy {
 
 	public QstsStudy setStateApplier(QstsStateApplier stateApplier) {
 		this.stateApplier = stateApplier == null ? QstsStateApplier.fromNetwork(network, scheduleData) : stateApplier;
+		return this;
+	}
+
+	/** Enables runtime timing through an explicit study setting. */
+	public QstsStudy setRuntimeProfileEnabled(boolean enabled) {
+		this.runtimeProfileEnabled = enabled;
+		return this;
+	}
+
+	public QstsStudy setStaticStateReuseEnabled(boolean enabled) {
+		this.staticStateReuseEnabled = enabled;
 		return this;
 	}
 
@@ -220,7 +233,7 @@ public class QstsStudy {
 	}
 
 	public QstsResult run() {
-		QstsRuntimeProfile profile = QstsRuntimeProfile.enabled();
+		QstsRuntimeProfile profile = QstsRuntimeProfile.enabled(runtimeProfileEnabled);
 		long setupStartNanos = profile == null ? 0L : System.nanoTime();
 		DistributionPowerFlowAlgorithm algorithm = powerFlowAlgorithm == null
 				? ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(network)
@@ -233,6 +246,12 @@ public class QstsStudy {
 		algorithm.setTolerance(tolerance);
 		algorithm.setRegulatorControls(regulatorControls);
 		algorithm.setCapacitorControls(capacitorControls);
+		algorithm.prepareControlLookups();
+		qstsCapacitorControl.prepareNetwork(network);
+		qstsRegulatorTapControl.prepareNetwork(network);
+		algorithm.setDeferredVoltageSyncEnabled(resultSamplingMode == QstsResultSamplingMode.NONE
+				&& inverterControls.isEmpty() && !usesDelayedControlQueue()
+				&& postSolveOutputMode == DistributionPostSolveOutputMode.VOLTAGE_ONLY);
 		stateApplier.initializeLoadNortonReferences();
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
@@ -240,7 +259,7 @@ public class QstsStudy {
 		boolean regulatorControlsEnabled = regulatorControlsEnabledForMode(controlsEnabled);
 		boolean steppedRegulatorControls = usesSteppedRegulatorControls(regulatorControlsEnabled);
 		algorithm.setFixedPointYMatrixCacheEnabled(qstsFixedPointYMatrixCacheEnabled(
-				delayedCapacitorControls));
+				algorithm, delayedCapacitorControls));
 		algorithm.setRegulatorControlEnabled(regulatorControlsEnabled && !steppedRegulatorControls
 				&& !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
@@ -252,62 +271,67 @@ public class QstsStudy {
 		}
 
 		List<QstsStepResult> steps = new ArrayList<>();
-		for(int i = 0; i < numberOfSteps; i++) {
-			long stepStartNanos = profile == null ? 0L : System.nanoTime();
-			int scheduleIndex = startIndex + i;
-			double hour = startHour + i * stepSizeHours;
-			QstsStepContext context = new QstsStepContext(i, scheduleIndex, hour, mode,
-					stepSizeHours, loadMultiplier, controlMode);
-			long stateStartNanos = profile == null ? 0L : System.nanoTime();
-			boolean stateChanged = stateApplier.apply(context);
-			if(profile != null) {
-				profile.addStateApply(System.nanoTime() - stateStartNanos);
+		try {
+			for(int i = 0; i < numberOfSteps; i++) {
+				long stepStartNanos = profile == null ? 0L : System.nanoTime();
+				int scheduleIndex = startIndex + i;
+				double hour = startHour + i * stepSizeHours;
+				QstsStepContext context = new QstsStepContext(i, scheduleIndex, hour, mode,
+						stepSizeHours, loadMultiplier, controlMode);
+				long stateStartNanos = profile == null ? 0L : System.nanoTime();
+				boolean stateChanged = stateApplier.apply(context);
+				if(profile != null) {
+					profile.addStateApply(System.nanoTime() - stateStartNanos);
+				}
+				long controlStartNanos = profile == null ? 0L : System.nanoTime();
+				if(delayedCapacitorControls) {
+					qstsCapacitorControl.applyConfiguredStates(network, capacitorControls);
+				}
+				int actionCount = processQueuedActions(delayedCapacitorControls, hour * 3600.0);
+				if(profile != null) {
+					profile.addControls(System.nanoTime() - controlStartNanos);
+				}
+				algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
+				long powerFlowStartNanos = profile == null ? 0L : System.nanoTime();
+				boolean reuseSolvedState = solvedReusableStaticState && !stateChanged && actionCount == 0;
+				PowerFlowControlResult controlResult = reuseSolvedState
+						? PowerFlowControlResult.reusedSolvedState()
+						: runPowerFlowControlLoop(algorithm, context, controlsEnabled,
+								steppedRegulatorControls, profile);
+				if(profile != null) {
+					profile.addPowerFlow(System.nanoTime() - powerFlowStartNanos,
+							controlResult.powerFlowIterations, controlResult.reusedSolvedState);
+				}
+				boolean converged = controlResult.converged;
+				List<QstsInverterControlSample> inverterControlSamples = controlResult.inverterControlSamples;
+				controlStartNanos = profile == null ? 0L : System.nanoTime();
+				if(converged && delayedCapacitorControls) {
+					qstsCapacitorControl.scheduleDelayed(network, capacitorControls, controlQueue,
+							hour * 3600.0);
+				}
+				if(profile != null) {
+					profile.addControls(System.nanoTime() - controlStartNanos);
+				}
+				String failureReason = converged ? null
+						: "Distribution power flow did not converge at step " + i
+								+ " mode=" + mode + " hour=" + hour;
+				long outputStartNanos = profile == null ? 0L : System.nanoTime();
+				steps.add(createStepResult(context, converged, controlResult.powerFlowIterations,
+						failureReason, actionCount, inverterControlSamples));
+				if(profile != null) {
+					profile.addOutputs(System.nanoTime() - outputStartNanos);
+					profile.finishStep(System.nanoTime() - stepStartNanos, converged);
+				}
+				if(!converged) {
+					break;
+				}
+				if(staticStateReuseEnabled) {
+					solvedReusableStaticState = converged;
+				}
 			}
-			long controlStartNanos = profile == null ? 0L : System.nanoTime();
-			if(delayedCapacitorControls) {
-				qstsCapacitorControl.applyConfiguredStates(network, capacitorControls);
-			}
-			int actionCount = processQueuedActions(delayedCapacitorControls, hour * 3600.0);
-			if(profile != null) {
-				profile.addControls(System.nanoTime() - controlStartNanos);
-			}
-			algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
-			long powerFlowStartNanos = profile == null ? 0L : System.nanoTime();
-			boolean reuseSolvedState = solvedReusableStaticState && !stateChanged && actionCount == 0;
-			PowerFlowControlResult controlResult = reuseSolvedState
-					? PowerFlowControlResult.reusedSolvedState()
-					: runPowerFlowControlLoop(algorithm, context, controlsEnabled,
-							steppedRegulatorControls, profile);
-			if(profile != null) {
-				profile.addPowerFlow(System.nanoTime() - powerFlowStartNanos,
-						controlResult.powerFlowIterations, controlResult.reusedSolvedState);
-			}
-			boolean converged = controlResult.converged;
-			List<QstsInverterControlSample> inverterControlSamples = controlResult.inverterControlSamples;
-			controlStartNanos = profile == null ? 0L : System.nanoTime();
-			if(converged && delayedCapacitorControls) {
-				qstsCapacitorControl.scheduleDelayed(network, capacitorControls, controlQueue,
-						hour * 3600.0);
-			}
-			if(profile != null) {
-				profile.addControls(System.nanoTime() - controlStartNanos);
-			}
-			String failureReason = converged ? null
-					: "Distribution power flow did not converge at step " + i
-							+ " mode=" + mode + " hour=" + hour;
-			long outputStartNanos = profile == null ? 0L : System.nanoTime();
-			steps.add(createStepResult(context, converged, controlResult.powerFlowIterations,
-					failureReason, actionCount, inverterControlSamples));
-			if(profile != null) {
-				profile.addOutputs(System.nanoTime() - outputStartNanos);
-				profile.finishStep(System.nanoTime() - stepStartNanos, converged);
-			}
-			if(!converged) {
-				break;
-			}
-			if(staticStateReuseEnabled) {
-				solvedReusableStaticState = converged;
-			}
+		} finally {
+			algorithm.syncThreePhaseVoltages();
+			algorithm.setDeferredVoltageSyncEnabled(false);
 		}
 		if(profile != null) {
 			profile.print();
@@ -351,15 +375,17 @@ public class QstsStudy {
 				&& !regulatorControls.isEmpty();
 	}
 
-	private boolean qstsFixedPointYMatrixCacheEnabled(boolean delayedCapacitorControls) {
+	private boolean qstsFixedPointYMatrixCacheEnabled(DistributionPowerFlowAlgorithm algorithm,
+			boolean delayedCapacitorControls) {
 		return pfMethod == DistributionPFMethod.Fixed_Point
 				&& !delayedCapacitorControls
-				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse")
-				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate");
+				&& algorithm.getPowerFlowOptions().symbolReuseEnabled()
+				&& algorithm.getPowerFlowOptions().valueUpdateEnabled();
 	}
 
 	private boolean qstsStaticStateReuseEnabled(boolean delayedCapacitorControls) {
-		return !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse")
+		return (staticStateReuseEnabled != null ? staticStateReuseEnabled
+				: !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse"))
 				&& !delayedCapacitorControls
 				&& controlMode == QstsControlMode.OFF
 				&& inverterControls.isEmpty();
@@ -605,7 +631,7 @@ public class QstsStudy {
 			}
 			if(steppedRegulatorControls
 					&& qstsRegulatorTapControl.apply(network, regulatorControls, false)) {
-				algorithm.clearFixedPointYMatrixCache();
+				algorithm.notifyRegulatorTapChange();
 				continue;
 			}
 			if(inverterControls.isEmpty()) {
@@ -958,8 +984,9 @@ public class QstsStudy {
 		private int powerFlowIterations;
 		private int reusedPowerFlowSteps;
 
-		private static QstsRuntimeProfile enabled() {
-			return Boolean.getBoolean("ipss.qsts.profile") ? new QstsRuntimeProfile() : null;
+		private static QstsRuntimeProfile enabled(Boolean configured) {
+			boolean enabled = configured != null ? configured : Boolean.getBoolean("ipss.qsts.profile");
+			return enabled ? new QstsRuntimeProfile() : null;
 		}
 
 		private void addSetup(long nanos) {

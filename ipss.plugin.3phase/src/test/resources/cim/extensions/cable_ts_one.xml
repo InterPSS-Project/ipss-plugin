@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rdf:RDF xmlns:cim="http://iec.ch/TC57/CIM100#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <cim:Feeder rdf:ID="feeder">
+    <cim:IdentifiedObject.name>feeder</cim:IdentifiedObject.name>
+  </cim:Feeder>
+  <cim:BaseVoltage rdf:ID="hv">
+    <cim:IdentifiedObject.name>hv</cim:IdentifiedObject.name>
+    <cim:BaseVoltage.nominalVoltage>12470</cim:BaseVoltage.nominalVoltage>
+  </cim:BaseVoltage>
+  <cim:ConnectivityNode rdf:ID="source">
+    <cim:IdentifiedObject.name>source</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:EnergySource rdf:ID="grid">
+    <cim:IdentifiedObject.name>grid</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:EnergySource.nominalVoltage>12470</cim:EnergySource.nominalVoltage>
+    <cim:EnergySource.voltageMagnitude>12470</cim:EnergySource.voltageMagnitude>
+    <cim:EnergySource.voltageAngle>0</cim:EnergySource.voltageAngle>
+    <cim:EnergySource.r>0.01</cim:EnergySource.r>
+    <cim:EnergySource.x>0.03</cim:EnergySource.x>
+    <cim:EnergySource.r0>0.02</cim:EnergySource.r0>
+    <cim:EnergySource.x0>0.06</cim:EnergySource.x0>
+  </cim:EnergySource>
+  <cim:Terminal rdf:ID="gridt1">
+    <cim:IdentifiedObject.name>gridt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#grid" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#source" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+    <cim:Terminal.phases rdf:resource="http://iec.ch/TC57/CIM100#PhaseCode.ABC" />
+  </cim:Terminal>
+  <cim:ConnectivityNode rdf:ID="end">
+    <cim:IdentifiedObject.name>end</cim:IdentifiedObject.name>
+  </cim:ConnectivityNode>
+  <cim:WireSpacingInfo rdf:ID="spacing">
+    <cim:IdentifiedObject.name>spacing</cim:IdentifiedObject.name>
+    <cim:WireSpacingInfo.isCable>true</cim:WireSpacingInfo.isCable>
+  </cim:WireSpacingInfo>
+  <cim:ACLineSegment rdf:ID="cable">
+    <cim:IdentifiedObject.name>cable</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:Conductor.length>500</cim:Conductor.length>
+    <cim:ACLineSegment.WireSpacingInfo rdf:resource="#spacing" />
+  </cim:ACLineSegment>
+  <cim:Terminal rdf:ID="cablet1">
+    <cim:IdentifiedObject.name>cablet1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#cable" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#source" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+    <cim:Terminal.phases rdf:resource="http://iec.ch/TC57/CIM100#PhaseCode.B" />
+  </cim:Terminal>
+  <cim:Terminal rdf:ID="cablet2">
+    <cim:IdentifiedObject.name>cablet2</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#cable" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#end" />
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+    <cim:Terminal.phases rdf:resource="http://iec.ch/TC57/CIM100#PhaseCode.B" />
+  </cim:Terminal>
+  <cim:TapeShieldCableInfo rdf:ID="wire0">
+    <cim:IdentifiedObject.name>wire0</cim:IdentifiedObject.name>
+    <cim:WireInfo.rAC50>0.0002</cim:WireInfo.rAC50>
+    <cim:WireInfo.rDC20>0.00019</cim:WireInfo.rDC20>
+    <cim:WireInfo.gmr>0.006</cim:WireInfo.gmr>
+    <cim:WireInfo.radius>0.008</cim:WireInfo.radius>
+    <cim:CableInfo.relativePermittivity>2.3</cim:CableInfo.relativePermittivity>
+    <cim:WireInfo.insulationThickness>0.005</cim:WireInfo.insulationThickness>
+    <cim:CableInfo.diameterOverInsulation>0.026</cim:CableInfo.diameterOverInsulation>
+    <cim:CableInfo.diameterOverJacket>0.032</cim:CableInfo.diameterOverJacket>
+    <cim:CableInfo.diameterOverScreen>0.028</cim:CableInfo.diameterOverScreen>
+    <cim:TapeShieldCableInfo.tapeThickness>0.00025</cim:TapeShieldCableInfo.tapeThickness>
+    <cim:TapeShieldCableInfo.tapeLap>20</cim:TapeShieldCableInfo.tapeLap>
+  </cim:TapeShieldCableInfo>
+  <cim:WirePosition rdf:ID="position0">
+    <cim:IdentifiedObject.name>position0</cim:IdentifiedObject.name>
+    <cim:WirePosition.WireSpacingInfo rdf:resource="#spacing" />
+    <cim:WirePosition.sequenceNumber>1</cim:WirePosition.sequenceNumber>
+    <cim:WirePosition.xCoord>0.0</cim:WirePosition.xCoord>
+    <cim:WirePosition.yCoord>-1</cim:WirePosition.yCoord>
+  </cim:WirePosition>
+  <cim:ACLineSegmentPhase rdf:ID="phase0">
+    <cim:IdentifiedObject.name>phase0</cim:IdentifiedObject.name>
+    <cim:ACLineSegmentPhase.ACLineSegment rdf:resource="#cable" />
+    <cim:ACLineSegmentPhase.sequenceNumber>1</cim:ACLineSegmentPhase.sequenceNumber>
+    <cim:ACLineSegmentPhase.phase rdf:resource="http://iec.ch/TC57/CIM100#SinglePhaseKind.B" />
+    <cim:ACLineSegmentPhase.WireInfo rdf:resource="#wire0" />
+  </cim:ACLineSegmentPhase>
+  <cim:EnergyConsumer rdf:ID="loadB">
+    <cim:IdentifiedObject.name>loadB</cim:IdentifiedObject.name>
+    <cim:Equipment.EquipmentContainer rdf:resource="#feeder" />
+    <cim:ConductingEquipment.BaseVoltage rdf:resource="#hv" />
+    <cim:EnergyConsumer.phaseConnection rdf:resource="http://iec.ch/TC57/CIM100#PhaseShuntConnectionKind.Y" />
+    <cim:EnergyConsumer.p>200000</cim:EnergyConsumer.p>
+    <cim:EnergyConsumer.q>40000</cim:EnergyConsumer.q>
+  </cim:EnergyConsumer>
+  <cim:Terminal rdf:ID="loadBt1">
+    <cim:IdentifiedObject.name>loadBt1</cim:IdentifiedObject.name>
+    <cim:Terminal.ConductingEquipment rdf:resource="#loadB" />
+    <cim:Terminal.ConnectivityNode rdf:resource="#end" />
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+    <cim:Terminal.phases rdf:resource="http://iec.ch/TC57/CIM100#PhaseCode.B" />
+  </cim:Terminal>
+</rdf:RDF>

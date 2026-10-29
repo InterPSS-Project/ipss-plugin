@@ -91,7 +91,13 @@ public class IpssCorePlugin {
 	}
 
 	public static Selection configureSparseSolverFromSystemProperties() {
-		String solver = System.getProperty(SparseEqnSolverProvider.SOLVER_PROPERTY, "java-klu").trim().toLowerCase();
+		return configureSparseSolver(System.getProperty(SparseEqnSolverProvider.SOLVER_PROPERTY, "java-klu"));
+	}
+
+    /** Selects a solver from an explicit configuration value. */
+    public static Selection configureSparseSolver(String configuredSolver) {
+        String solver = java.util.Objects.requireNonNull(configuredSolver, "configuredSolver")
+                .trim().toLowerCase(java.util.Locale.ROOT);
 		switch(solver) {
 		case "java-klu":
 		case "java_klu":

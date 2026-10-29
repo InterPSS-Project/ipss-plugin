@@ -11,7 +11,8 @@ import java.util.Locale;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
+import org.interpss.test.TestConfig;
+import org.interpss.core.dstab.reference.Tgov3dPsseReference;
 import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
@@ -23,13 +24,15 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
-/** Full-solver GENROU + native TGOV3D comparison against Independent. */
+/** Native PSS/E 36.7 GENROU + TGOV3D comparison, including all governor states. */
 public class Tgov3dIndependentSmibConformanceTest {
-    private static final double STEP = 0.0005;
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Tgov3dIndependentSmibConformanceTest");
+    private static final double STEP = 0.0001;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
     @Test
-    void threeCycleFaultMatchesIndependentBoundaryMachineAndGovernorStates() throws Exception {
+    void threeCycleFaultMatchesPsseBoundaryMachineAndGovernorStates() throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
@@ -44,6 +47,18 @@ public class Tgov3dIndependentSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
+        List<double[]> actual = new ArrayList<>();
+        algorithm.setSolver(new com.interpss.dstab.algo.defaultImpl.DStabSolverImpl(algorithm) {
+            { converge_tol = 1.e-6; setMaxIterationTimes(100); }
+            @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
+                    throws com.interpss.dstab.common.DStabSimuException {
+                super.rebaseDynamicModelInputs(method);
+                var m = (RoundRotorMachine) network.getMachine("Bus1-mach1");
+                var ref = network.getMachine("Bus2-mach1");
+                record(actual, algorithm.getSimuTime(), network, m, ref,
+                        (PsseTgov3dGovernor) m.getGovernor(), 0.0);
+            }
+        });
         assertTrue(algorithm.initialization(), "GENROU + TGOV3D SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
@@ -52,8 +67,7 @@ public class Tgov3dIndependentSmibConformanceTest {
         assertEquals("TGOV3D", governor.getName());
         assertEquals(6, governor.getNamedStates().size());
         assertEquals(governor.getValvePosition(), governor.getNamedState("Valve Position"));
-        double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
-        List<double[]> actual = new ArrayList<>();
+        double initialRelativeAngle = 0.0;
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                 initialRelativeAngle);
         while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
@@ -63,66 +77,55 @@ public class Tgov3dIndependentSmibConformanceTest {
                     initialRelativeAngle);
         }
 
-        EmbeddedTrajectoryReference reference = EmbeddedTrajectoryReference.embedded("smib-genrou-tgov3d");
-        assertTrue(!reference.samples().isEmpty());
-        assertTrue(!reference.postEventSamples().isEmpty());
-        int[] field = {
-                reference.fieldIndex("Bus", "1", "TSVpu"),
-                reference.fieldIndex("Bus", "2", "TSVpu"),
-                reference.fieldIndex("Generator", "1 1", "TSMW"),
-                reference.fieldIndex("Generator", "1 1", "TSMvar"),
-                reference.fieldIndex("Generator", "1 1", "TSRotorAngle"),
-                reference.fieldIndex("Generator", "1 1", "TSSpeed"),
-                reference.fieldIndex("Generator", "1 1", "TSMachineState:3"),
-                reference.fieldIndex("Generator", "1 1", "TSMachineState:4"),
-                reference.fieldIndex("Generator", "1 1", "TSMachineState:5"),
-                reference.fieldIndex("Generator", "1 1", "TSMachineState:6"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:1"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:2"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:3"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:4"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:5"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:6")
-        };
-        int referenceAngle = reference.fieldIndex("Generator", "2 1", "TSRotorAngle");
-        int referenceSpeed = reference.fieldIndex("Generator", "2 1", "TSSpeed");
-        var initial = reference.postEventSamples().get(0);
-        double initialReferenceAngle = initial.value(field[4]) - initial.value(referenceAngle);
-        // Independent stores the T5 integrator coordinate with an initialization
-        // offset, whereas InterPSS stores the absolute reheater pressure. The
-        // two equations have the same derivative, so translate the coordinate
-        // origin using their independently initialized t=0 values.
-        double t5CoordinateOffset = actual.get(0)[14] - initial.value(field[13]);
-        double[] maximum = new double[field.length];
-        double[] maximumTime = new double[field.length];
-        for (var expected : reference.postEventSamples()) {
-            if (Math.abs(expected.time() - 0.05) < STEP
-                    || Math.abs(expected.time() - 0.10) < STEP) continue;
-            double[] row = interpolate(actual, expected.time());
-            double[] referenceValues = new double[field.length];
-            for (int index = 0; index < field.length; index++)
-                referenceValues[index] = expected.value(field[index]);
-            referenceValues[4] -= expected.value(referenceAngle) + initialReferenceAngle;
-            referenceValues[5] -= expected.value(referenceSpeed);
-            referenceValues[13] += t5CoordinateOffset;
-            for (int column = 0; column < maximum.length; column++) {
-                double error = Math.abs(row[column + 1] - referenceValues[column]);
-                if (error > maximum[column]) {
-                    maximum[column] = error;
-                    maximumTime[column] = expected.time();
-                }
+        // PSS/E's first governor state stores K*(1-T2/T1)*filtered speed.
+        // Reheater pressure is compared directly; no initial-state translation.
+        String fullReference = CONFIG.string("tgov3d.nativeReference");
+        List<String> lines = fullReference == null ? Tgov3dPsseReference.lines()
+                : java.nio.file.Files.readAllLines(Path.of(fullReference));
+        if (fullReference == null) assertEquals(Tgov3dPsseReference.CHECKPOINT_SHA256,
+                java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(String.join("\n", lines).getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+        String[] header = lines.get(0).split(",");
+        var columns = new java.util.HashMap<String,Integer>();
+        for (int i=0;i<header.length;i++) columns.put(header[i],i);
+        double[] maximum = new double[16];
+        double[] maximumTime = new double[16];
+        int rowIndex=0, compared=0;
+        for (String line:lines.subList(1,lines.size())) {
+            double[] r=Arrays.stream(line.split(",")).mapToDouble(Double::parseDouble).toArray();
+            if (r[0]<-1.e-9) continue;
+            double time=Math.round(r[0]/STEP)*STEP;
+            while (rowIndex<actual.size()-1 && actual.get(rowIndex)[0]<time-1.e-9) rowIndex++;
+            double[] row=actual.get(rowIndex++);
+            assertEquals(time,row[0],1.e-9,"Native sample grid/event side");
+            java.util.function.ToDoubleFunction<String> v=k->r[columns.get(k)];
+            double[] expected = {v.applyAsDouble("V1"),v.applyAsDouble("V2"),
+                    100*v.applyAsDouble("PE"),100*v.applyAsDouble("QE"),
+                    v.applyAsDouble("ANGLE")-v.applyAsDouble("REF_ANGLE"),
+                    v.applyAsDouble("SPEED")-v.applyAsDouble("REF_SPEED"),
+                    v.applyAsDouble("MACH0"),v.applyAsDouble("MACH2"),
+                    v.applyAsDouble("MACH3"),v.applyAsDouble("MACH1"),
+                    v.applyAsDouble("GOV0"),v.applyAsDouble("GOV1"),
+                    v.applyAsDouble("GOV2"),v.applyAsDouble("GOV3"),
+                    v.applyAsDouble("GOV4"),v.applyAsDouble("GOV5")};
+            for (int col=0;col<maximum.length;col++) {
+                double error=Math.abs(row[col+1]-expected[col]);
+                if (error>maximum[col]) { maximum[col]=error; maximumTime[col]=time; }
             }
+            compared++;
         }
+        assertEquals(fullReference == null ? Tgov3dPsseReference.CHECKPOINTS : 10003,
+                compared,"Native checkpoints and both event sides");
         System.out.printf(Locale.ROOT,
-                "TGOV3D Independent max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
+                "TGOV3D PSS/E max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
                 + "angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g edp=%.9g "
                 + "leadLag=%.9g valve=%.9g bowl=%.9g reheater=%.9g crossover=%.9g intercept=%.9g%n",
                 Arrays.stream(maximum).boxed().toArray());
-        System.out.println("TGOV3D Independent max-error times: " + Arrays.toString(maximumTime));
+        System.out.println("TGOV3D PSS/E max-error times: " + Arrays.toString(maximumTime));
         double[] tolerance = {
-                2.7e-4, 9.0e-5, 0.077, 0.18, 0.011, 4.1e-6,
-                2.7e-5, 1.2e-4, 7.2e-5, 5.0e-5, 6.8e-5, 5.3e-5,
-                3.0e-5, 5.3e-4, 2.8e-4, 1.0e-12
+                4.0e-5, 1.3e-5, 0.0025, 0.037, 0.00055, 3.0e-7,
+                1.4e-5, 1.2e-4, 4.8e-5, 8.5e-6, 6.0e-7, 3.2e-6,
+                4.8e-6, 4.7e-6, 1.8e-5, 1.0e-12
         };
         String[] label = {
                 "Bus1 V", "Bus2 V", "P MW", "Q Mvar", "relative angle", "relative speed",
@@ -147,27 +150,12 @@ public class Tgov3dIndependentSmibConformanceTest {
                 power.getReal() * 100.0, power.getImaginary() * 100.0,
                 Math.toDegrees(machine.getAngle() - referenceMachine.getAngle() - initialRelativeAngle),
                 machine.getSpeed() - referenceMachine.getSpeed(), machine.getEq1(), machine.getPsikd(),
-                machine.getPsikq(), machine.getEd1(), governor.getLeadLagOutput(),
+                machine.getPsikq(), machine.getEd1(), governor.getData().getK() * (1.0 - governor.getData().getT2()
+                        / governor.getData().getT1()) * governor.getLeadLagState(),
                 governor.getValvePosition(), governor.getSteamBowlOutput(),
                 governor.getReheaterPressure(), governor.getCrossoverOutput(),
                 governor.getInterceptValvePosition()
         });
     }
 
-    private static double[] interpolate(List<double[]> rows, double target) {
-        for (int index = 0; index < rows.size(); index++) {
-            double[] lower = rows.get(index);
-            if (Math.abs(lower[0] - target) < 1.0e-9) return lower;
-            if (index + 1 < rows.size() && rows.get(index + 1)[0] > target) {
-                double[] upper = rows.get(index + 1);
-                double fraction = (target - lower[0]) / (upper[0] - lower[0]);
-                double[] result = new double[lower.length];
-                result[0] = target;
-                for (int column = 1; column < result.length; column++)
-                    result[column] = lower[column] + fraction * (upper[column] - lower[column]);
-                return result;
-            }
-        }
-        return rows.get(rows.size() - 1);
-    }
 }

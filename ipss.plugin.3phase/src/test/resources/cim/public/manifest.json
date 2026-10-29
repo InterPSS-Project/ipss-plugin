@@ -1,0 +1,70 @@
+{
+  "repository": "https://github.com/GRIDAPPSD/CIMHub",
+  "commit": "5ba4c63fa525108928942d564fddc022c3fb031f",
+  "cases": [
+    {
+      "name": "ieee13x",
+      "source": "CPYDAR/xml/ieee13x.xml",
+      "sha256_xml": "2271c20bb43d59864b0a699cb793ce7a701a3295dce28070ca996914b73f8e1f",
+      "xml_bytes": 286828,
+      "connectivity_nodes": 21,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/CPYDAR/xml/ieee13x.xml"
+    },
+    {
+      "name": "IEEE13_PV",
+      "source": "OEDI/xml/IEEE13_PV.xml",
+      "sha256_xml": "5cdfd160f84214406683bd9121c5b7ee361845557a19581c5631fb1ad261c216",
+      "xml_bytes": 308610,
+      "connectivity_nodes": 24,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/OEDI/xml/IEEE13_PV.xml"
+    },
+    {
+      "name": "IEEE123",
+      "source": "model_output_tests/IEEE123.xml",
+      "sha256_xml": "34df0fb4bb254a733bacbc704f17356724a3857762531472f607c0458b72fe81",
+      "xml_bytes": 1151518,
+      "connectivity_nodes": 130,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/model_output_tests/IEEE123.xml"
+    },
+    {
+      "name": "IEEE123_PV",
+      "source": "model_output_tests/IEEE123_PV.xml",
+      "sha256_xml": "30ef6b3e0720f8a7cbf92f98ed9958dd23449465d616490c7a9dd95ac0942199",
+      "xml_bytes": 1972347,
+      "connectivity_nodes": 214,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/model_output_tests/IEEE123_PV.xml"
+    },
+    {
+      "name": "IEEE390par",
+      "source": "lv_network/lvn_examples.zip!base/IEEE390par.xml",
+      "sha256_xml": "325aec8171b3c2cb60cb6e4b43edae492ef3459bd9d489cd6235422407b6b4bf",
+      "xml_bytes": 4310751,
+      "connectivity_nodes": 390,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/lv_network/lvn_examples.zip"
+    },
+    {
+      "name": "IEEE390_PV",
+      "source": "OEDI/xml/IEEE390_PV.xml",
+      "sha256_xml": "9f79e13342deba1eb5e0295c519cf6f1071497c81f9e0de600cdc2316fdc1d42",
+      "xml_bytes": 4577556,
+      "connectivity_nodes": 390,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/OEDI/xml/IEEE390_PV.xml"
+    },
+    {
+      "name": "R2_12_47_2",
+      "source": "model_output_tests/R2_12_47_2.xml",
+      "sha256_xml": "e1deb11b10ff72332b82a522ba438ca2fa7d2dd34ea3518753902a2f107a79f4",
+      "xml_bytes": 6548942,
+      "connectivity_nodes": 853,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/model_output_tests/R2_12_47_2.xml"
+    },
+    {
+      "name": "Transactive",
+      "source": "model_output_tests/Transactive.xml",
+      "sha256_xml": "34147adbfd79e2532c93fdc0cd6bc0648d30235a9d3b330eb2c62ab75a297472",
+      "xml_bytes": 13631149,
+      "connectivity_nodes": 1511,
+      "source_url": "https://github.com/GRIDAPPSD/CIMHub/blob/5ba4c63fa525108928942d564fddc022c3fb031f/model_output_tests/Transactive.xml"
+    }
+  ]
+}

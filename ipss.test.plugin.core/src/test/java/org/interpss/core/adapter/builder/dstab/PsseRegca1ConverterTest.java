@@ -252,6 +252,22 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
         return new Fixture(model, controller);
     }
 
+    @Test
+    void zeroLagsExposeLiveCommandsAndVoltageWithoutAdvancingStorage() throws Exception {
+        Fixture f=fixture(new Regca1Data(1,0,10,.9,.4,1.22,1.2,.8,.4,-1.3,0,.7,.8,-.6,.8));
+        double storedIp=f.model.getIpRegulatorState(),storedIq=f.model.getIqRegulatorState();
+        f.controller.ipcmd=.9;f.controller.iqcmd=-.2;
+        assertEquals(.9,f.model.getIp(),TOL);
+        assertEquals(.2,f.model.getIq(),TOL);
+        f.model.getDStabBus().setVoltage(new Complex(.6,0));
+        assertEquals(.6,f.model.getFilteredVoltage(),TOL);
+        // LVPL=.488, algebraic low-voltage gain=.5; both see the new voltage.
+        assertEquals(.244,f.model.getIp(),TOL);
+        assertEquals(f.model.getOutputObject(),f.model.getOutputObject());
+        assertEquals(storedIp,f.model.getIpRegulatorState(),0);
+        assertEquals(storedIq,f.model.getIqRegulatorState(),0);
+    }
+
     private static Regca1Data data(double rrpwr, double iqrmax, double iqrmin) {
         return data(0, rrpwr, iqrmax, iqrmin);
     }

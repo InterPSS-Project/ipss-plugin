@@ -4,6 +4,8 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.threephase.IBus3Phase;
@@ -20,6 +22,10 @@ public class QstsStateApplier {
 	private final QstsLoadMultiplierResolver multiplierResolver;
 	private final QstsLoadBaseState[] loadStates;
 	private final QstsProfileBinding[] loadBindings;
+	private final int[] loadMultiplierGroups;
+	private final QstsProfileBinding[] multiplierGroupBindings;
+	private final QstsLoadMultiplier[] loadMultipliers;
+	private record LoadProfileKey(Map<String, String> profiles, QstsDeviceStatus status) { }
 	private final QstsGeneratorBaseState[] generatorStates;
 	private final QstsStorageBaseState[] storageStates;
 
@@ -42,10 +48,22 @@ public class QstsStateApplier {
 		this.multiplierResolver = new QstsLoadMultiplierResolver(this.scheduleData.getProfileRegistry());
 		this.loadStates = this.loadStateStore.states().toArray(new QstsLoadBaseState[0]);
 		this.loadBindings = new QstsProfileBinding[this.loadStates.length];
+		this.loadMultiplierGroups = new int[this.loadStates.length];
+		Map<LoadProfileKey, Integer> groups = new LinkedHashMap<>();
+		List<QstsProfileBinding> groupBindings = new ArrayList<>();
 		for(int i = 0; i < this.loadStates.length; i++) {
 			QstsProfileBinding binding = bindingFor("load", this.loadStates[i].getLoadId());
 			this.loadBindings[i] = binding;
+			LoadProfileKey groupKey = binding == null
+					? new LoadProfileKey(Map.of(), QstsDeviceStatus.DEFAULT)
+					: new LoadProfileKey(binding.getProfileIdsByType(), binding.getStatus());
+			this.loadMultiplierGroups[i] = groups.computeIfAbsent(groupKey, ignored -> {
+				groupBindings.add(binding);
+				return groupBindings.size() - 1;
+			});
 		}
+		this.multiplierGroupBindings = groupBindings.toArray(QstsProfileBinding[]::new);
+		this.loadMultipliers = new QstsLoadMultiplier[this.multiplierGroupBindings.length];
 		this.generatorStates = this.generatorStateStore.states().toArray(new QstsGeneratorBaseState[0]);
 		this.storageStates = this.storageStateStore.states().toArray(new QstsStorageBaseState[0]);
 		initializeLoadNortonReferences();
@@ -140,16 +158,18 @@ public class QstsStateApplier {
 
 	private boolean applyLoads(QstsStepContext context) {
 		boolean changed = false;
+		for(int group = 0; group < multiplierGroupBindings.length; group++) {
+			loadMultipliers[group] = multiplierResolver.resolve(multiplierGroupBindings[group],
+					context.getMode(), context.getScheduleIndex(), context.getStepSizeHours(),
+					context.getLoadMultiplier());
+		}
 		for(int i = 0; i < loadStates.length; i++) {
 			QstsLoadBaseState state = loadStates[i];
 			QstsProfileBinding binding = loadBindings[i];
 			if(binding == null && unity(context.getLoadMultiplier())) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = multiplierResolver
-					.resolve(binding, context.getMode(), context.getScheduleIndex(),
-							context.getStepSizeHours(),
-							context.getLoadMultiplier());
+			QstsLoadMultiplier multiplier = loadMultipliers[loadMultiplierGroups[i]];
 			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
 					|| changed;
 		}

@@ -1,5 +1,7 @@
 package org.interpss.threePhase.system;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -27,32 +29,50 @@ import org.junit.jupiter.api.Test;
  * with Test so it is not picked up by the default Surefire test scan.
  */
 public class QstsLargeFeederPerformanceBenchmark {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.plugin.3phase.json", "QstsLargeFeederPerformanceBenchmark");
+
 	private static final FeederCase CKT24 = new FeederCase("Ckt24",
 			"testData/feeder/Ckt24", "master_ckt24_interpss.dss");
 	private static final FeederCase IEEE8500 = new FeederCase("IEEE8500",
 			"testData/feeder/IEEE8500", "Master-InterPSS.dss");
 
 	@Test
-	void controlledRepeatedStateDailyWindow() {
-		int warmupSteps = Integer.getInteger("qsts.perf.warmupSteps", 24);
-		int measureSteps = Integer.getInteger("qsts.perf.steps", 240);
-		int repeats = Integer.getInteger("qsts.perf.repeats", 3);
-		String caseSelector = System.getProperty("qsts.perf.case", "all");
+	void controlledRepeatedStateDailyWindow() throws Exception {
+		String recordingPath = CONFIG.string("qsts.perf.flightRecording");
+		try(jdk.jfr.Recording recording = recordingPath == null ? null
+				: new jdk.jfr.Recording(jdk.jfr.Configuration.getConfiguration("profile"))) {
+			if(recording != null) recording.start();
+			runConfiguredBenchmark();
+			if(recording != null) {
+				recording.stop();
+				recording.dump(java.nio.file.Path.of(recordingPath));
+			}
+		}
+	}
+
+	private void runConfiguredBenchmark() {
+		int warmupSteps = CONFIG.integer("qsts.perf.warmupSteps", 24);
+		int measureSteps = CONFIG.integer("qsts.perf.steps", 240);
+		int repeats = CONFIG.integer("qsts.perf.repeats", 3);
+		String caseSelector = CONFIG.string("qsts.perf.case", "all");
 		QstsControlMode controlMode = QstsControlMode.from(
-				System.getProperty("qsts.perf.controlMode", "STATIC"));
-		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.perf.mode", "DAILY"));
-		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.perf.stepSizeHours", "1.0"));
-		double tolerance = Double.parseDouble(System.getProperty("qsts.perf.tolerance", "1.0e-4"));
-		int maxControlIterations = Integer.getInteger("qsts.perf.maxControlIterations", 100);
+				CONFIG.string("qsts.perf.controlMode", "STATIC"));
+		QstsMode qstsMode = QstsMode.from(CONFIG.string("qsts.perf.mode", "DAILY"));
+		double stepSizeHours = Double.parseDouble(CONFIG.string("qsts.perf.stepSizeHours", "1.0"));
+		double tolerance = Double.parseDouble(CONFIG.string("qsts.perf.tolerance", "1.0e-4"));
+		int maxControlIterations = CONFIG.integer("qsts.perf.maxControlIterations", 100);
 		boolean regControlsEnabled = Boolean.parseBoolean(
-				System.getProperty("qsts.perf.regControlsEnabled", "true"));
+				CONFIG.string("qsts.perf.regControlsEnabled", "true"));
 		boolean capControlsEnabled = Boolean.parseBoolean(
-				System.getProperty("qsts.perf.capControlsEnabled", "true"));
+				CONFIG.string("qsts.perf.capControlsEnabled", "true"));
 		boolean allowDisabledControls = Boolean.parseBoolean(
-				System.getProperty("qsts.perf.allowDisabledControls", "false"));
+				CONFIG.string("qsts.perf.allowDisabledControls", "false"));
 		requireEnabledControls(controlMode, maxControlIterations, regControlsEnabled,
 				capControlsEnabled, allowDisabledControls);
-		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
+		org.interpss.core.sparse.solver.klusolvex.KlusolveXLibrary.configureLibrary(
+				CONFIG.string("nativeLibraryPath"));
+		System.out.println(IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu")).message());
 
 		List<FeederCase> feeders = selectedFeeders(caseSelector);
 		System.out.println("INTERPSS_QSTS_PERF_CONFIG cases=" + caseSelector
@@ -68,7 +88,7 @@ public class QstsLargeFeederPerformanceBenchmark {
 				+ ", tolerance=" + tolerance);
 
 		for(FeederCase feeder : feeders) {
-			feeder = withMasterOverride(feeder, System.getProperty("qsts.perf.masterFile"));
+			feeder = withMasterOverride(feeder, CONFIG.string("qsts.perf.masterFile"));
 			RunSummary warmup = runInterpssQsts(feeder, warmupSteps, "warmup", 0,
 					qstsMode, stepSizeHours, controlMode, maxControlIterations, tolerance,
 					regControlsEnabled, capControlsEnabled);
@@ -100,8 +120,13 @@ public class QstsLargeFeederPerformanceBenchmark {
 
 		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
 				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+		algorithm.setFixedPointRuntimeProfileEnabled(CONFIG.bool("qsts.perf.fixedPointProfile", false));
+		algorithm.setMinIteration(CONFIG.integer("qsts.perf.minIterations", 2));
+		algorithm.setPrimitiveVoltageStateEnabled(CONFIG.bool("qsts.perf.primitiveVoltageState", false));
 		long startNanos = System.nanoTime();
 		var study = OpenDSSQstsStudyFactory.from(parser)
+				.setRuntimeProfileEnabled(CONFIG.bool("qsts.perf.profile"))
+				.setStaticStateReuseEnabled(CONFIG.bool("qsts.perf.staticStateReuseEnabled", true))
 				.setPowerFlowAlgorithm(algorithm)
 				.setMode(qstsMode)
 				.setNumberOfSteps(steps)
@@ -181,16 +206,16 @@ public class QstsLargeFeederPerformanceBenchmark {
 		}
 		assertTrue(controlMode != QstsControlMode.OFF,
 				"Large-feeder QSTS performance comparisons must run with controls enabled; set "
-						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(maxControlIterations >= 100,
 				"Large-feeder QSTS performance comparisons must allow at least 100 control iterations; set "
-						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(regControlsEnabled,
 				"Large-feeder QSTS performance comparisons must keep regulator controls enabled; set "
-						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(capControlsEnabled,
 				"Large-feeder QSTS performance comparisons must keep capacitor controls enabled; set "
-						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
 	}
 
 	private record RunSummary(FeederCase feeder, String phase, int run, int requestedSteps,

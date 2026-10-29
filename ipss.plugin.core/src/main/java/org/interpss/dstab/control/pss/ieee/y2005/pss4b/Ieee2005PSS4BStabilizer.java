@@ -129,6 +129,11 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         boolean modifiedEuler = method == DynamicSimuMethod.MODIFIED_EULER;
         int stage = modifiedEuler ? flag : 2;
 
+        evaluate(machine, dt, stage);
+        return true;
+    }
+
+    private void evaluate(Machine machine, double dt, int stage) {
         double speedDeviation = machine.getSpeed() - initialSpeed;
         double powerDeviation = machine.getPe() - initialElectricalPower;
 
@@ -147,11 +152,11 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         highOutput = highBand.advance(highInput, dt, stage);
         outputSignal = clamp(lowOutput + intermediateOutput + highOutput,
                 effectiveData.vstmax(), effectiveData.vstmin());
-        return true;
     }
 
     @Override
     public double getOutput(Machine machine) {
+        if (lowInputFilter != null) evaluate(machine, 0.0, -1);
         return outputSignal;
     }
 
@@ -266,7 +271,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
     private static double advance(TransferBlock block, double input, double dt, int stage) {
         if (stage == 0) block.predict(input, dt);
         else if (stage == 1) block.correct(input, dt);
-        else block.euler(input, dt);
+        else if (stage == 2) block.euler(input, dt);
         return block.output(input);
     }
 

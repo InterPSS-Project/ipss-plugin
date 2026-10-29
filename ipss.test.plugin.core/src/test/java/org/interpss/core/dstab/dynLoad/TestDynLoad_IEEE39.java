@@ -20,6 +20,8 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
+import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
@@ -47,8 +49,22 @@ public class TestDynLoad_IEEE39 {
 
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
+        // The voltage checkpoint has 1e-6 precision. Do not stop the nonlinear
+        // network iteration at the default, looser 1e-4 voltage tolerance.
+        dstabAlgo.setSolver(new DStabSolverImpl(dstabAlgo) {
+            { converge_tol = 1e-6; setMaxIterationTimes(100); }
+
+            @Override public boolean networkSolutionStep() throws DStabSimuException {
+                if (!super.networkSolutionStep())
+                    throw new DStabSimuException("IEEE39 motor network did not converge at "
+                            + dstabAlgo.getSimuTime());
+                return true;
+            }
+        });
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		aclfAlgo.setTolerance(1.0E-6);
+        // This historical motor trajectory was recorded with imported off-grid taps.
+        aclfAlgo.getDataCheckConfig().setAutoSnapTransformerTap(false);
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
@@ -110,12 +126,13 @@ public class TestDynLoad_IEEE39 {
 		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus4",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.07),"3phaseFault@Bus17");
 		
 
-		if (dstabAlgo.initialization()) {
+		assertTrue(dstabAlgo.initialization());
+		{
 			double t1 = System.currentTimeMillis();
 			System.out.println("time1="+t1);
 			System.out.println("Running DStab simulation ...");
 			//System.out.println(dsNet.getMachineInitCondition());
-			dstabAlgo.performSimulation();
+			assertTrue(dstabAlgo.performSimulation());
 			double t2 = System.currentTimeMillis();
 			System.out.println("used time="+(t2-t1)/1000.0);
 
@@ -143,8 +160,10 @@ public class TestDynLoad_IEEE39 {
 
 		// With all ten machine records participating, the three-cycle fault stalls
 		// the monitored compressor motor and Bus507 remains depressed at 1.245 s.
-		// Keep this as a tight trajectory checkpoint rather than a broad envelope.
-		assertEquals(0.58953655, minPostFaultVolt, 1.0E-6);
+        // Internal regression checkpoint with full-gain frequency measurement and
+        // corrected exciter saturation and simultaneous controller stage sampling.
+        // This is not a native PSS/E acceptance value.
+		assertEquals(0.59024405, minPostFaultVolt, 1.0E-6);
 		Hashtable<Integer, MonitorRecord> motorState =
 				sm.getAcMotorStateTable().get("ACMotor_2@Bus504");
 		assertTrue(motorState != null);

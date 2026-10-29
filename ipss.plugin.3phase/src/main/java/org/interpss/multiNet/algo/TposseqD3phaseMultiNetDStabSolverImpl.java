@@ -225,6 +225,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			    else{
 			    	
 			    	addTransNetTheveninEquivToDistYABCMatrix(false);
+                    reapplyActiveDistributionFaults(time);
 			    }
 			}
 			else{ // voltage source
@@ -374,7 +375,9 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 					
 						
 						DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
-						distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
+						// Fixed-point current injection supports weak and looped feeders.
+						distPFAlgo.setPFMethod(DistributionPFMethod.Fixed_Point);
+						distPFAlgo.setMaxIteration(100);
 	
 						Boolean solFlag = distPFAlgo.powerflow();
 						
@@ -774,9 +777,11 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 							//consider active or in-service machine only
 							 if(gen.isActive() && ((DStabGen)gen).getMach()!=null){
 								  Machine mach = ((DStabGen)gen).getMach();
+                                  if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepMachineStates, mach.getId())) {
 								  Hashtable<String, Object> states = BuiltMachineState.f(mach, 0.0, this.dstabAlgo);
 								  procOutputEvent(DStabSimuEvent.PlotStepMachineStates, states);
 								  procOutputEvent(DStabSimuEvent.TimeStepMachineStates, states);
+                                  }
 							 }
 						  }
 						}
@@ -786,9 +791,11 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 							procOutputEvent(DStabSimuEvent.PlotStepScriptDynamicBusDeviceStates, states);
 						}
 						//else {
-				            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
+				            if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepBusStates, bus.getId())) {
+                            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
 				            procOutputEvent(DStabSimuEvent.TimeStepBusStates, states);
 							procOutputEvent(DStabSimuEvent.PlotStepBusStates, states);
+                            }
 						//}
 					 }
 			}

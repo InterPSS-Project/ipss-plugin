@@ -375,16 +375,13 @@ runs reproduce canonical CSV SHA-256
 `cbf28a42e540660b3073a8ca6d5e61d727ef7d9fa3b03da1ca1c38d2e226aaa1`.
 Validation reports zero errors/warnings and no limit modification.
 
-For TGOV3D, the fixture uses zero speed deadband so the terminal fault excites
-the governor rather than merely confirming its initialized state. The registered
-comparison covers all six PowerWorld governor states. PowerWorld's `LL` is the
-lead-lag block output. Its `StateT5` uses a different initialized coordinate
-origin from InterPSS's absolute reheater pressure, so the comparison translates
-only the independently initialized origin and compares the complete dynamic
-trajectory. Two cold runs reproduce canonical CSV SHA-256
-`de582e7b59d43cc8ec0d1f19a9311856fe0c1b419eb58ac65228fb23b39b9ce9`.
-Validation reports zero errors/warnings, no autocorrection, and no limit
-modification.
+For TGOV3D, the immutable PowerWorld fixture remains available under canonical
+CSV SHA-256 `de582e7b59d43cc8ec0d1f19a9311856fe0c1b419eb58ac65228fb23b39b9ce9`.
+The earlier claim that `StateT5` differs only by a coordinate origin is
+withdrawn. The benchmark reference initializes reheater pressure at 0.50001 versus
+PowerWorld's 0.12273; a constant offset does not establish equation equivalence.
+The registered TGOV3D regression now uses the benchmark reference model with no
+reheater-state translation. See [native evidence](benchmarks/tgov3d-native-2026-10-15.md).
 
 For GGOV1D, the registered GGOV1 comparison is parameterized over the base and
 deadband variants. Both compare all ten named PowerWorld governor states plus

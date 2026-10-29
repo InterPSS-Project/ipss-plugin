@@ -89,7 +89,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getBranchYabc() {
-		double zeroTolerance  = 1.0E-8;
+		// An absent phase has exactly zero impedance; a small positive value is a closed contact.
 		int dim = 3;
 		boolean hasPhaseA = true;
 	    boolean hasPhaseB = true;
@@ -101,15 +101,15 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 			    Yabc= getZabc().inv();
 			}
 			else{
-				if(zabc.aa.abs() <zeroTolerance) {
+				if(zabc.aa.abs() == 0.0) {
 					hasPhaseA = false;
 					dim = dim-1;
 				}
-				if(zabc.bb.abs() <zeroTolerance) {
+				if(zabc.bb.abs() == 0.0) {
 					hasPhaseB = false;
 					dim = dim-1;
 				}
-				if(zabc.cc.abs() <zeroTolerance) {
+				if(zabc.cc.abs() == 0.0) {
 					hasPhaseC = false;
 					dim = dim-1;
 				}
@@ -292,6 +292,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 			}
 			Static3PXformer ph3Xformer = this.to3PXformer();
 			yff = phaseMaskedTransformerY(ph3Xformer.getYffabc());
+			if(getFromShuntYabc() != null) yff = yff.add(getFromShuntYabc());
 		}
 
 	    return yff;
@@ -318,6 +319,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 			}
 			Static3PXformer ph3Xformer = this.to3PXformer();
 			ytt = phaseMaskedTransformerY(ph3Xformer.getYttabc());
+			if(getToShuntYabc() != null) ytt = ytt.add(getToShuntYabc());
 		}
 
 		return ytt;
@@ -520,6 +522,13 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	}
 
 	@Override
+	public void clearPhaseTurnRatios() {
+		this.fromTurnRatioABC = null;
+		this.toTurnRatioABC = null;
+		invalidateMatrixCache();
+	}
+
+	@Override
 	public boolean hasPhaseTurnRatio() {
 		return this.fromTurnRatioABC != null && this.toTurnRatioABC != null;
 	}
@@ -587,6 +596,12 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 		}
 		else if(this.ph == PhaseCode.C) {
 			stamped.cc = phaseY;
+		}
+		// The single-phase path must retain terminal shunts (e.g. transformer
+		// core losses and magnetizing current), just like a line's self block.
+		if(firstFrom == secondFrom) {
+			Complex3x3 shunt = firstFrom ? getFromShuntYabc() : getToShuntYabc();
+			if(shunt != null) stamped = stamped.add(shunt);
 		}
 		return stamped;
 	}

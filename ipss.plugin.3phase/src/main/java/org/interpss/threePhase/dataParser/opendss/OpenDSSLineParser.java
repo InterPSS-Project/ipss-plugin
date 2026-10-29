@@ -278,10 +278,14 @@ public class OpenDSSLineParser {
 		}
 		Complex3x3 lineZabc = zabc.multiply(lineLength);
 		double minSeriesZabcAbs = lineConfigIdx < 0 ? MIN_RAW_SERIES_ZABC_ABS : MIN_CONFIG_SERIES_ZABC_ABS;
-		lineZabc = applyMinimumSeriesImpedance(lineZabc, fromBusPhases, minSeriesZabcAbs);
+		if (!dataParser.isPreserveSpecifiedLineImpedance())
+			lineZabc = applyMinimumSeriesImpedance(lineZabc, fromBusPhases, minSeriesZabcAbs);
 		line3Phase.setZabc(lineZabc);
 
-		if(line3Phase.getZabc().absMax()<1.0E-7){
+		if (dataParser.isPreserveSpecifiedLineImpedance()
+				&& (!(lineZabc.absMax() > 0) || !Double.isFinite(lineZabc.absMax())))
+			throw new IllegalArgumentException("Line impedance must be finite and nonzero: " + line.getName());
+		if(!dataParser.isPreserveSpecifiedLineImpedance() && line3Phase.getZabc().absMax()<1.0E-7){
 			throw new Error("Line Zabc.absMax() is less than 1.0E-7. LineID, Name = "+line.getId()+", "+line.getName());
 		}
 

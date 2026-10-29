@@ -37,6 +37,7 @@ public class WesgovdIndependentSmibConformanceTest {
                 CASE.resolve("SMIB_v33_genrou_wesgovd.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        PowerWorldGenrouBoundary.install(network);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + WESGOVD SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);

@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -43,15 +45,18 @@ import com.interpss.simu.SimuContext;
 
 /** Diagnostic parity run for the complete ANDES WECC179 dynamic-data stack. */
 class Wecc179FullDyrDiagnosticTest {
-    private static final Path CASE_DIR = Path.of(System.getProperty("andes.wecc179.case.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Wecc179FullDyrDiagnosticTest");
+
+    private static final Path CASE_DIR = Path.of(CONFIG.string("andes.wecc179.case.dir",
             Path.of("target", "andes-python", "andes", "cases", "wecc").toString()));
     private static final Path RAW = CASE_DIR.resolve("wecc.raw");
     private static final Path DYR = CASE_DIR.resolve("wecc_full.dyr");
 
     @Test
     void recordsAllStatesBeforeTheFirstDivergence() throws Exception {
-        assumeTrue(Files.isRegularFile(RAW), "Install ANDES or set -Dandes.wecc179.case.dir");
-        assumeTrue(Files.isRegularFile(DYR), "Install ANDES or set -Dandes.wecc179.case.dir");
+        assumeTrue(Files.isRegularFile(RAW), "Install ANDES or set JSON setting andes.wecc179.case.dir");
+        assumeTrue(Files.isRegularFile(DYR), "Install ANDES or set JSON setting andes.wecc179.case.dir");
         IpssCorePlugin.init();
         SparseEqnSolverProvider.useJavaKlu();
 
@@ -61,7 +66,7 @@ class Wecc179FullDyrDiagnosticTest {
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
         network.setBypassDataCheck(true);
         DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
-        if (Boolean.getBoolean("wecc179.full.default.solver")) {
+        if (CONFIG.bool("wecc179.full.default.solver")) {
             algorithm.setSolver(new DStabSolverImpl(algorithm));
         }
         LoadflowAlgorithm loadflow = algorithm.getAclfAlgorithm();
@@ -80,7 +85,7 @@ class Wecc179FullDyrDiagnosticTest {
                 .map(gen -> ((DStabGen) gen).getMach())
                 .filter(mach -> mach != null)
                 .map(Machine::getId).toArray(String[]::new);
-        String focusBus = System.getProperty("wecc179.full.focus.bus", "").trim();
+        String focusBus = CONFIG.string("wecc179.full.focus.bus", "").trim();
         if (!focusBus.isEmpty()) {
             String focusMachine = "Bus" + focusBus + "-mach1";
             for (String machineId : machines) {
@@ -93,7 +98,7 @@ class Wecc179FullDyrDiagnosticTest {
                 machine.setTq011(1.0e12);
             }
         }
-        if (Boolean.getBoolean("wecc179.full.disable.saturation")) {
+        if (CONFIG.bool("wecc179.full.disable.saturation")) {
             for (String machineId : machines) {
                 RoundRotorMachine machine = (RoundRotorMachine) network.getMachine(machineId);
                 machine.setSe100(0.0);
@@ -105,18 +110,18 @@ class Wecc179FullDyrDiagnosticTest {
         monitor.addGeneratorStdMonitor(machines);
         algorithm.setSimuOutputHandler(monitor);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(Double.parseDouble(System.getProperty(
+        algorithm.setSimuStepSec(Double.parseDouble(CONFIG.string(
                 "wecc179.full.time.step", Double.toString(1.0 / 240.0))));
-        algorithm.setTotalSimuTimeSec(Double.parseDouble(System.getProperty(
+        algorithm.setTotalSimuTimeSec(Double.parseDouble(CONFIG.string(
                 "wecc179.full.total.time", "1.0")));
         algorithm.setOutPutPerSteps(1);
-        String faultBus = System.getProperty("wecc179.full.fault.bus", "").trim();
+        String faultBus = CONFIG.string("wecc179.full.fault.bus", "").trim();
         if (!faultBus.isEmpty()) {
-            double faultStart = Double.parseDouble(System.getProperty(
+            double faultStart = Double.parseDouble(CONFIG.string(
                     "wecc179.full.fault.start", "1.0"));
-            double faultDuration = Double.parseDouble(System.getProperty(
+            double faultDuration = Double.parseDouble(CONFIG.string(
                     "wecc179.full.fault.duration", "0.05"));
-            double faultX = Double.parseDouble(System.getProperty(
+            double faultX = Double.parseDouble(CONFIG.string(
                     "wecc179.full.fault.x", "0.005"));
             network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                     "Bus" + faultBus, network, SimpleFaultCode.GROUND_3P,
@@ -132,7 +137,7 @@ class Wecc179FullDyrDiagnosticTest {
                     () -> "DStab Norton initialization residual is too large: " + maximumResidual);
         }
         assertCmlControllersInitialized(network, machines);
-        Path output = Path.of(System.getProperty("wecc179.full.output.dir",
+        Path output = Path.of(CONFIG.string("wecc179.full.output.dir",
                 Path.of("target", "wecc179-full-dyr-diagnostic").toString()));
         Files.createDirectories(output);
         writeControllerInventory(output.resolve("interpss-controllers.txt"), network, machines);
@@ -561,12 +566,12 @@ class Wecc179FullDyrDiagnosticTest {
     }
 
     private static Path selectedDyr() throws Exception {
-        String selection = System.getProperty("wecc179.full.models", "").trim();
+        String selection = CONFIG.string("wecc179.full.models", "").trim();
         if (selection.isEmpty()) return DYR;
         Set<String> accepted = java.util.Arrays.stream(selection.split(","))
                 .map(value -> value.trim().toUpperCase(Locale.ROOT))
                 .collect(Collectors.toSet());
-        String busSelection = System.getProperty("wecc179.full.buses", "").trim();
+        String busSelection = CONFIG.string("wecc179.full.buses", "").trim();
         Set<String> acceptedBuses = java.util.Arrays.stream(busSelection.split(","))
                 .map(String::trim).filter(value -> !value.isEmpty()).collect(Collectors.toSet());
         StringBuilder filtered = new StringBuilder();

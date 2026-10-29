@@ -35,6 +35,7 @@ public class Esst4bAndesSmibConformanceTest {
                 CASE.resolve("SMIB_v33_genrou_esst4b.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        AndesConstantTorqueBoundary.install(algorithm, "Bus1-mach1");
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);

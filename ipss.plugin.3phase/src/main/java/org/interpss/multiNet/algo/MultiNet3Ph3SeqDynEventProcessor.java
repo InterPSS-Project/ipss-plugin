@@ -71,6 +71,29 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					// all events are cleared.
 					//net.setYMatrix(net.formYMatrix(SequenceCode.POSITIVE, false));
 					
+                    // Branch outages require the same local matrix rebuild as bus faults.
+                    java.util.Set<String> outageNetworks = new java.util.HashSet<>();
+                    for (DynamicSimuEvent event : net.getDynamicEventList()) {
+                        if (event.getType() == DynamicSimuEventType.BRANCH_OUTAGE && event.isActive()) {
+                            BaseDStabNetwork<?, ?> affected = (BaseDStabNetwork<?, ?>)
+                                    event.getBranchDynamicEvent().getBranch().getFromBus().getNetwork();
+                            try {
+                                if (threePhaseSubNetIdList.contains(affected.getId()))
+                                    ((DStabNetwork3Phase) affected).formYMatrixABC();
+                                else {
+                                    affected.formYMatrix4DStab();
+                                    affected.formScYMatrix(com.interpss.core.acsc.SequenceCode.NEGATIVE,
+                                            com.interpss.core.algo.sc.ScBusModelType.LOADFLOW_VOLT, false);
+                                    affected.formScYMatrix(com.interpss.core.acsc.SequenceCode.ZERO,
+                                            com.interpss.core.algo.sc.ScBusModelType.LOADFLOW_VOLT, false);
+                                }
+                                outageNetworks.add(affected.getId());
+                            } catch (Exception failure) {
+                                log.error("Unable to rebuild network after branch outage", failure);
+                                return false;
+                            }
+                        }
+                    }
 					String  faultSubNetworkId = null;
 					for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 						   
@@ -118,6 +141,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					
 					
 					  // update the Thevenin equivalent impedance matrix Zth of all subNetwork
+                    for (String id : outageNetworks) this.simuHelper.updateSubNetworkEquivMatrix(id);
 					if(faultSubNetworkId != null)
 			         this.simuHelper.updateSubNetworkEquivMatrix(faultSubNetworkId);
 					

@@ -32,6 +32,7 @@ public class Ieeex1AndesSmibConformanceTest {
                 CASE.resolve("SMIB_v33_genrou_ieeex1.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        AndesConstantTorqueBoundary.install(algorithm, "Bus1-mach1");
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(0.001);

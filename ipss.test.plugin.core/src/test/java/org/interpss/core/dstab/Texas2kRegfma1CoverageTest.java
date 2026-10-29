@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -31,7 +33,10 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Strict private-data gate for the five Case-6 REGFMA1 resources. */
 public class Texas2kRegfma1CoverageTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kRegfma1CoverageTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string("texas2k.case.root",
             Path.of("testData", "private", "texas2k").toString()));
 
     @BeforeAll

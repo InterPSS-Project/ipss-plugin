@@ -1,0 +1,51 @@
+{
+  "JkluThreePhaseMatrixExportTest": {
+    "jklu.3phase.matrix.export.dir": null,
+    "jklu.3phase.matrix.export.cases": null
+  },
+  "OpenDssParserPowerFlowComparisonTest": {
+    "sparseSolver": null
+  },
+  "QstsLargeFeederComparisonExport": {
+    "nativeLibraryPath": null,
+    "sparseSolver": "java-klu",
+    "qsts.compare.minIterations": 2,
+    "qsts.compare.primitiveVoltageState": false,
+    "qsts.compare.allowDisabledControls": "false",
+    "qsts.compare.capControlsEnabled": "true",
+    "qsts.compare.case": "all",
+    "qsts.compare.controlMode": "STATIC",
+    "qsts.compare.masterFile": null,
+    "qsts.compare.maxControlIterations": 100,
+    "qsts.compare.mode": "DAILY",
+    "qsts.compare.outputDir": "target/qsts-comparison",
+    "qsts.compare.regControlsEnabled": "true",
+    "qsts.compare.startIndex": 0,
+    "qsts.compare.stepSizeHours": "1.0",
+    "qsts.compare.steps": 24,
+    "qsts.compare.tolerance": "1.0e-4"
+  },
+  "QstsLargeFeederPerformanceBenchmark": {
+    "nativeLibraryPath": null,
+    "qsts.perf.minIterations": 2,
+    "qsts.perf.primitiveVoltageState": false,
+    "qsts.perf.fixedPointProfile": false,
+    "qsts.perf.flightRecording": null,
+    "qsts.perf.allowDisabledControls": "false",
+    "qsts.perf.capControlsEnabled": "true",
+    "qsts.perf.case": "all",
+    "qsts.perf.controlMode": "STATIC",
+    "qsts.perf.masterFile": null,
+    "qsts.perf.maxControlIterations": 100,
+    "qsts.perf.mode": "DAILY",
+    "qsts.perf.profile": false,
+    "qsts.perf.regControlsEnabled": "true",
+    "qsts.perf.repeats": 3,
+    "qsts.perf.stepSizeHours": "1.0",
+    "qsts.perf.staticStateReuseEnabled": true,
+    "qsts.perf.steps": 240,
+    "qsts.perf.tolerance": "1.0e-4",
+    "qsts.perf.warmupSteps": 24,
+    "sparseSolver": null
+  }
+}

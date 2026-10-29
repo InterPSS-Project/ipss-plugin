@@ -1,5 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -55,6 +57,9 @@ import com.interpss.monitor.definition.MonitoredBranchRecord;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "FastN2CandidateSelectorTexas7kTest");
+
 
 	private static final Path TEXAS7K_DIR = resolveTexas7kDir();
 	private static final Path TEXAS7K_RAW = TEXAS7K_DIR.resolve("Texas7k_20210804.RAW");
@@ -65,39 +70,39 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static final Path ACTIVS25K_CONTINGENCIES = ACTIVS25K_DIR.resolve("25k_above100kV_filtered_contingencies.json");
 	private static final Path ACTIVS25K_MONITORS = ACTIVS25K_DIR.resolve("25k_above138kV_monitored_branches.json");
 	private static final int OUTAGE_CANDIDATE_LIMIT =
-			Integer.getInteger("interpss.fastN2Texas7kOutageLimit", 300);
+			CONFIG.integer("interpss.fastN2Texas7kOutageLimit", 300);
 	private static final int MONITORED_BRANCH_LIMIT =
-			Integer.getInteger("interpss.fastN2Texas7kMonitorLimit", 600);
+			CONFIG.integer("interpss.fastN2Texas7kMonitorLimit", 600);
 	private static final int FULL_SET_VALIDATION_SAMPLE_SIZE =
-			Integer.getInteger("interpss.fastN2Texas7kValidationSamples", 100);
+			CONFIG.integer("interpss.fastN2Texas7kValidationSamples", 100);
 	private static final int FULL_SET_MAX_SURVIVOR_VALIDATION_PAIRS =
-			Integer.getInteger("interpss.fastN2Texas7kMaxSurvivorValidationPairs", 250_000);
+			CONFIG.integer("interpss.fastN2Texas7kMaxSurvivorValidationPairs", 250_000);
 	private static final int FULL_SET_MAX_RETURNED_CANDIDATES =
-			Integer.getInteger("interpss.fastN2Texas7kMaxReturnedCandidates", 10_000);
+			CONFIG.integer("interpss.fastN2Texas7kMaxReturnedCandidates", 10_000);
 	private static final int FULL_SET_EXACT_EVALUATION_CHUNK_SIZE =
-			Integer.getInteger("interpss.fastN2Texas7kExactEvaluationChunkSize",
+			CONFIG.integer("interpss.fastN2Texas7kExactEvaluationChunkSize",
 					FastN2ScreeningOptions.DEFAULT_EXACT_EVALUATION_CHUNK_SIZE);
 	private static final int FULL_SET_EXACT_EVALUATION_THREADS =
-			Integer.getInteger("interpss.fastN2Texas7kExactEvaluationThreads", 1);
+			CONFIG.integer("interpss.fastN2Texas7kExactEvaluationThreads", 1);
 	private static final boolean FULL_SET_EXACT_MONITOR_PRUNING =
-			Boolean.getBoolean("interpss.fastN2Texas7kExactMonitorPruning");
+			CONFIG.bool("interpss.fastN2Texas7kExactMonitorPruning");
 	private static final boolean FAIL_ON_SAMPLE_DANGEROUS =
-			Boolean.getBoolean("interpss.fastN2Texas7kFailOnSampleDangerous");
+			CONFIG.bool("interpss.fastN2Texas7kFailOnSampleDangerous");
 	private static final int ACTIVS25K_STREAMING_OUTAGE_BATCH_SIZE =
-			Integer.getInteger("interpss.fastN2Activs25kStreamingOutageBatchSize",
+			CONFIG.integer("interpss.fastN2Activs25kStreamingOutageBatchSize",
 					FastN2StreamingPruningOptions.DEFAULT_OUTAGE_BATCH_SIZE);
 	private static final int ACTIVS25K_STREAMING_MONITOR_BATCH_SIZE =
-			Integer.getInteger("interpss.fastN2Activs25kStreamingMonitorBatchSize",
+			CONFIG.integer("interpss.fastN2Activs25kStreamingMonitorBatchSize",
 					FastN2StreamingPruningOptions.DEFAULT_MONITOR_BATCH_SIZE);
 	private static final int ACTIVS25K_STREAMING_ENDPOINT_RHS_BATCH_SIZE =
-			Integer.getInteger("interpss.fastN2Activs25kStreamingEndpointRhsBatchSize",
+			CONFIG.integer("interpss.fastN2Activs25kStreamingEndpointRhsBatchSize",
 					FastN2StreamingPruningOptions.DEFAULT_ENDPOINT_RHS_BATCH_SIZE);
 	private static final int ACTIVS25K_TOP_K =
-			Integer.getInteger("interpss.fastN2Activs25kTopK", 10_000);
+			CONFIG.integer("interpss.fastN2Activs25kTopK", 10_000);
 	private static final int ACTIVS25K_VALIDATION_SAMPLE_SIZE =
-			Integer.getInteger("interpss.fastN2Activs25kValidationSamples", 30);
+			CONFIG.integer("interpss.fastN2Activs25kValidationSamples", 30);
 	private static final boolean ACTIVS25K_EXACT_MONITOR_PRUNING =
-			Boolean.getBoolean("interpss.fastN2Activs25kExactMonitorPruning");
+			CONFIG.bool("interpss.fastN2Activs25kExactMonitorPruning");
 	private static final double THERMAL_LIMIT_PERCENT = 100.0;
 	private static final double FALLBACK_RATING_BASE_FLOW_MULTIPLIER = 1.20;
 
@@ -125,8 +130,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	@BeforeEach
 	public void requireLargeTestsEnabled() {
-		assumeTrue(Boolean.getBoolean("interpss.largeDclfTests"),
-				"Set -Dinterpss.largeDclfTests=true to run Texas 7k Fast N-2 benchmarks");
+		assumeTrue(CONFIG.bool("interpss.largeDclfTests"),
+				"Set JSON setting interpss.largeDclfTests=true to run Texas 7k Fast N-2 benchmarks");
 	}
 
 	@Test
@@ -200,8 +205,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	@Test
 	public void texas7kFullSetPrunedOnlyBenchmark() throws Exception {
-		assumeTrue(Boolean.getBoolean("interpss.fastN2Texas7kFullSet"),
-				"Set -Dinterpss.fastN2Texas7kFullSet=true to run the full Texas 7k Fast N-2 benchmark");
+		assumeTrue(CONFIG.bool("interpss.fastN2Texas7kFullSet"),
+				"Set JSON setting interpss.fastN2Texas7kFullSet=true to run the full Texas 7k Fast N-2 benchmark");
 		assumeTrue(Files.isRegularFile(TEXAS7K_RAW), "Texas 7k RAW fixture is not available: " + TEXAS7K_RAW);
 		assumeTrue(Files.isRegularFile(TEXAS7K_CONTINGENCIES),
 				"Texas 7k contingency fixture is not available: " + TEXAS7K_CONTINGENCIES);
@@ -326,8 +331,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	@Test
 	public void activs25kInventoryReport() throws Exception {
-		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kInventory"),
-				"Set -Dinterpss.fastN2Activs25kInventory=true to run the ACTIVSg25k Fast N-2 inventory");
+		assumeTrue(CONFIG.bool("interpss.fastN2Activs25kInventory"),
+				"Set JSON setting interpss.fastN2Activs25kInventory=true to run the ACTIVSg25k Fast N-2 inventory");
 		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
 		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
 				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
@@ -364,8 +369,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	@Test
 	public void activs25kPrunedOnlyStreamingBenchmark() throws Exception {
-		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kPrunedOnly"),
-				"Set -Dinterpss.fastN2Activs25kPrunedOnly=true to run the ACTIVSg25k streaming Fast N-2 pruner");
+		assumeTrue(CONFIG.bool("interpss.fastN2Activs25kPrunedOnly"),
+				"Set JSON setting interpss.fastN2Activs25kPrunedOnly=true to run the ACTIVSg25k streaming Fast N-2 pruner");
 		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
 		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
 				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
@@ -411,8 +416,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	@Test
 	public void activs25kTopKExactStreamingBenchmark() throws Exception {
-		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kTopKExact"),
-				"Set -Dinterpss.fastN2Activs25kTopKExact=true to run the ACTIVSg25k streaming top-K exact benchmark");
+		assumeTrue(CONFIG.bool("interpss.fastN2Activs25kTopKExact"),
+				"Set JSON setting interpss.fastN2Activs25kTopKExact=true to run the ACTIVSg25k streaming top-K exact benchmark");
 		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
 		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
 				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
@@ -475,8 +480,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	@Test
 	public void activs25kValidationSamplingBenchmark() throws Exception {
-		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kValidationSampling"),
-				"Set -Dinterpss.fastN2Activs25kValidationSampling=true to run ACTIVSg25k pruned-away validation sampling");
+		assumeTrue(CONFIG.bool("interpss.fastN2Activs25kValidationSampling"),
+				"Set JSON setting interpss.fastN2Activs25kValidationSampling=true to run ACTIVSg25k pruned-away validation sampling");
 		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
 		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
 				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);

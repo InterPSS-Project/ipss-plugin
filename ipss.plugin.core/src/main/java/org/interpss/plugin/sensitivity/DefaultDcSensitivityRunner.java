@@ -300,11 +300,9 @@ public final class DefaultDcSensitivityRunner implements DcSensitivityRunner {
 				for (String id : group.branchIds()) if (activeBranch(id, "outage group " + group.id()) != null) outageIds.add(id);
 				if (outageIds.isEmpty()) continue;
 				algo.getOutageBranchList().clear();
-				List<DclfOutageBranch> outageBranches = new ArrayList<>(outageIds.size());
 				for (String id : outageIds) {
 					DclfOutageBranch outage = createCaOutageBranch(
 							algo.getDclfAlgoBranch(id), ContingencyBranchOutageType.OPEN);
-					outageBranches.add(outage);
 					algo.getOutageBranchList().add(outage);
 				}
 				Object inverse = algo.calMultiOutageInvE_PTDF(group.id());
@@ -313,9 +311,18 @@ public final class DefaultDcSensitivityRunner implements DcSensitivityRunner {
 				for (Monitor monitor : monitors) {
 					double[] factors = new double[outageIds.size()];
 					for (int i = 0; i < monitor.branches().size(); i++) {
+						int selfOutage = outageIds.indexOf(monitor.branches().get(i).getId());
+						if (selfOutage >= 0) {
+							// The opened line's final flow is zero: remove its own pre-outage
+							// flow and add no contribution from other outages. Apply the
+							// interface coefficient here, before retention/aggregation.
+							factors[selfOutage] -= monitor.coefficients().get(i);
+							continue;
+						}
 						double[] branchFactors = algo.calMultiOutageLODFs(monitor.branches().get(i), inverse);
 						for (int j = 0; j < factors.length; j++) {
-							int factorIndex = outageBranches.get(j).getBranch().getSortNumber();
+							// LODF columns use the algorithm's compact outage mapping, not branch sort numbers.
+							int factorIndex = algo.getMultiOutageMatrixIndex(j);
 							if (factorIndex >= 0 && factorIndex < branchFactors.length) {
 								factors[j] += monitor.coefficients().get(i) * branchFactors[factorIndex];
 							}

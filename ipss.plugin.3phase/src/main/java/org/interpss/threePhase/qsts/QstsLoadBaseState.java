@@ -18,6 +18,7 @@ public class QstsLoadBaseState {
 	private Complex loadCI;
 	private Complex loadCZ;
 	private Complex3x1 threePhaseLoad;
+	private boolean nonConstantPowerComponents;
 	private double appliedPMultiplier = Double.NaN;
 	private double appliedQMultiplier = Double.NaN;
 
@@ -49,6 +50,7 @@ public class QstsLoadBaseState {
 		this.loadCP = load instanceof AclfLoad ? copy(((AclfLoad) load).getLoadCP()) : copy(phaseLoad.getLoadCP());
 		this.loadCI = load instanceof AclfLoad ? copy(((AclfLoad) load).getLoadCI()) : copy(phaseLoad.getLoadCI());
 		this.loadCZ = load instanceof AclfLoad ? copy(((AclfLoad) load).getLoadCZ()) : copy(phaseLoad.getLoadCZ());
+		this.nonConstantPowerComponents = nonZero(this.loadCI) || nonZero(this.loadCZ);
 		if(this.loadCP == null && this.threePhaseLoad != null) {
 			this.loadCP = total(this.threePhaseLoad);
 		}
@@ -124,7 +126,7 @@ public class QstsLoadBaseState {
 	}
 
 	private boolean hasNonConstantPowerComponents() {
-		return nonZero(loadCI) || nonZero(loadCZ);
+		return nonConstantPowerComponents;
 	}
 
 	private boolean sameMultiplier(double pMultiplier, double qMultiplier) {

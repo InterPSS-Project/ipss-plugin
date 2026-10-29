@@ -1,0 +1,12 @@
+{
+  "dss_python": "0.15.7",
+  "engine": "DSS C-API Library version 0.14.5 revision 87d85c2622c8281b92255335bc7c09b11191b21d based on OpenDSS SVN 3723 [FPC 3.2.2] (64-bit build) MVMULT INCREMENTAL_Y CONTEXT_API PM 20240329033747; License Status: Open \nDSS-Python version: 0.15.7",
+  "tolerance": 1e-10,
+  "control_mode": "off",
+  "reference": "Independent hand-specified mixed.dss, not importer output",
+  "sha256": {
+    "mixed.xml": "0f47e5bb508c75565fc76ca6f788eedf8a40ff3735de1423055d756c7a63ef70",
+    "mixed.dss": "f773aacfc642ba88f92452df74d2e02e04d199a00a65c88612da24784c18671d",
+    "mixed-voltage.csv": "67047c3bef7af88b555e944ab41886d257b6d01b9ebbcdc53b6e64791a5bf9f4"
+  }
+}

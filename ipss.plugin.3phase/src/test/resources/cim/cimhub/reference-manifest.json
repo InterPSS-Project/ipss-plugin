@@ -1,0 +1,129 @@
+{
+  "dss_python": "0.15.7",
+  "engine": "DSS C-API Library version 0.14.5 revision 87d85c2622c8281b92255335bc7c09b11191b21d based on OpenDSS SVN 3723 [FPC 3.2.2] (64-bit build) MVMULT INCREMENTAL_Y CONTEXT_API PM 20240329033747; License Status: Open \nDSS-Python version: 0.15.7",
+  "tolerance": 1e-10,
+  "control_mode": "off",
+  "reference": "Original CIMHub ieee4/base/*.dss (not the importer output)",
+  "cases": {
+    "DDBal": {
+      "dss_sha256": "c022eaf879c8d44d49b7b3a825e3f3cb5ce375a7b1bd2c702542de2adcd37e4a",
+      "xml_sha256": "7d82b7a2438d5a1baf7d44449e183e803c3bcb17c3f69c9f49f11c70232ea986",
+      "total_power_kw_kvar": [
+        -4451.253844239155,
+        -2804.2590930433735
+      ],
+      "losses_w_var": [
+        298556.69185910304,
+        793016.0674518207
+      ],
+      "reference_csv_sha256": "cd0e47ae64081338039078c732adb56fd4b4625033979bd461eb4afa02fb7906"
+    },
+    "DDUnBal": {
+      "dss_sha256": "4e512aceb1b1735531a42b99cf2a54455b6d5f8c98facf2f420c4824a8ab2443",
+      "xml_sha256": "91145fb5e3feeb3e94d2748494008b71552e51bdc3f38f1c651a8254425cc28c",
+      "total_power_kw_kvar": [
+        -3195.403088781935,
+        -1769.2868195670546
+      ],
+      "losses_w_var": [
+        146207.99013175745,
+        395107.7495049184
+      ],
+      "reference_csv_sha256": "94360ce1d94c934ffc8efba6fa7a6e2862b68b4a4cc9eed1eb46b18189398b18"
+    },
+    "DYBal": {
+      "dss_sha256": "cc16b565c0e256039ccd81921c60c2e0ea2021e20d612a2b943db85e90350b56",
+      "xml_sha256": "edb716fdd884cede506b780bf4f74da33ad7c4baf4f7e3571f54d4dcdfea4714",
+      "total_power_kw_kvar": [
+        -4451.357149968103,
+        -2804.1180324108896
+      ],
+      "losses_w_var": [
+        298629.78550038836,
+        792860.3744637116
+      ],
+      "reference_csv_sha256": "5e2beae227d776c00dbe76b0424db54e11b60d263d3f8cb6d6439ca68e78f0c1"
+    },
+    "DYUnBal": {
+      "dss_sha256": "de53eef45419dcd85b8f3beeafb09ca45cbbe30f4d780e5f90ac9ca5c67f8242",
+      "xml_sha256": "615ce998850575bd61a215545630b3aac7086672b6ef27727c0ec735e020e1fe",
+      "total_power_kw_kvar": [
+        -4480.0342187354,
+        -2725.4145348108736
+      ],
+      "losses_w_var": [
+        313665.7114094505,
+        839806.1154460605
+      ],
+      "reference_csv_sha256": "92b581e56a521492266cc23b70b1b0218f5617387fae8806bd64e58bdd6fde06"
+    },
+    "GYDBal": {
+      "dss_sha256": "7aaa1cfe62d45ec941cfb218b805679c93a53e08f46ac34467af6b24aa10a3bf",
+      "xml_sha256": "fccd7d0ba0885cdbeb995362218e5340c57b3b30e4a75c443d9010691411ff22",
+      "total_power_kw_kvar": [
+        -4451.264116763277,
+        -2804.295032154106
+      ],
+      "losses_w_var": [
+        298563.81865344173,
+        793050.4830062708
+      ],
+      "reference_csv_sha256": "583fa3032b62ea47e507af06ed5efc40e838840990e4e146da735dd8f4c2c5b8"
+    },
+    "GYDUnBal": {
+      "dss_sha256": "adb5193239f1486c9e080144b0755480f2d5f2649917de1181a8d67186f00fcc",
+      "xml_sha256": "0fb4fd9460fb734fc368a0abe6b0f676aac0187683250393840cabf0e80b1192",
+      "total_power_kw_kvar": [
+        -3195.625702387359,
+        -1769.1106250780151
+      ],
+      "losses_w_var": [
+        146240.99023657828,
+        395157.57194585854
+      ],
+      "reference_csv_sha256": "912d6ea6485e8a282fe7a0234c7acfe29e3e529a6ae9e6593c24de5a55579014"
+    },
+    "YYBal": {
+      "dss_sha256": "dc214ac42e65668a1229b3e9edfa93eeb0f8b4c1ba5890135e1ee9c9bc98fc49",
+      "xml_sha256": "aae07a4d051b3411d94943eefebb77202999075e37a5eab70454830b238c0a16",
+      "total_power_kw_kvar": [
+        -4451.375866503958,
+        -2804.044832805657
+      ],
+      "losses_w_var": [
+        298638.6148464128,
+        792782.3862437836
+      ],
+      "reference_csv_sha256": "22f2c3fdeec9595eaf2a354aee431f9de2389ffdf590d6b3cd9f2b2a70977053"
+    },
+    "YYUnBal": {
+      "dss_sha256": "ddb5f359442d70bcaa1e16d5fef6bfafd52c7ab12e7b3a4d3ca84f77b937df3c",
+      "xml_sha256": "948d3a50d2bec976d00c116cad8d46d1b1d634465d7000614cc031dde31e65f6",
+      "total_power_kw_kvar": [
+        -4477.624715209946,
+        -2727.0898856732497
+      ],
+      "losses_w_var": [
+        314023.82549401163,
+        841257.4911666592
+      ],
+      "reference_csv_sha256": "8a05c839ace9b6644b250b08ef97b8e242fb0dccfb6350466fbe857d763d6d13"
+    },
+    "YYBalCore": {
+      "dss_sha256": "ba7e82b421f9fab983540eb68a7e2db6e9e257fb0152e7d10c98e34b7a40d2e9",
+      "xml_sha256": "10b5c4929a705c7371ecb5ef2e22d861001b2b4a7a1783675dc7cc1d116fb5de",
+      "modification": "YYBal with 0.1% core loss and 0.2% magnetizing current",
+      "total_power_kw_kvar": [
+        -4455.833622385646,
+        -2815.518671240855
+      ],
+      "losses_w_var": [
+        304325.67315910966,
+        804851.6030083351
+      ],
+      "reference_csv_sha256": "38da0adf4f66144689c488e9cb261b141f14a77e0209fbf4ff83e8d6a3ee9f67"
+    }
+  },
+  "source_commit": "5ba4c63fa525108928942d564fddc022c3fb031f",
+  "source_repository": "https://github.com/GRIDAPPSD/CIMHub"
+}

@@ -26,7 +26,9 @@ import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver GENROU + ESST1A + PSS2B comparison against Independent. */
 public class Pss2bIndependentSmibConformanceTest {
-    private static final double STEP = 0.0005;
+    // Halving the step resolves the lead-lag truncation error; reference samples
+    // remain on the native 0.5 ms grid and all channel tolerances are unchanged.
+    private static final double STEP = 0.00025;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
     @Test
@@ -38,6 +40,7 @@ public class Pss2bIndependentSmibConformanceTest {
                 CASE.resolve("SMIB_v33_genrou_esst1a_pss2b.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        PowerWorldGenrouBoundary.install(network);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "PSS2B SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);

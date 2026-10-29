@@ -32,12 +32,17 @@ final class KlusolveXMatrixMarketExporter {
 		if(!enabled()) {
 			return;
 		}
+        exportSnapshot(dimension, entries, rhsInterleaved, workflow,
+                Paths.get(System.getProperty(EXPORT_DIR_PROPERTY)),
+                System.getProperty(EXPORT_PREFIX_PROPERTY, "klusolvex"), SEQUENCE.incrementAndGet());
+    }
+
+    static void exportSnapshot(int dimension, List<KlusolveXMatrixEntry> entries,
+            double[] rhsInterleaved, String workflow, Path dir, String prefix, long sequence)
+            throws IpssNumericException {
 		if(entries == null) {
 			throw new IpssNumericException("KLUSolveX Matrix Market export requested before matrix pattern is available");
 		}
-		String prefix = System.getProperty(EXPORT_PREFIX_PROPERTY, "klusolvex");
-		long sequence = SEQUENCE.incrementAndGet();
-		Path dir = Paths.get(System.getProperty(EXPORT_DIR_PROPERTY));
 		String base = prefix + "-" + workflow + "-" + String.format("%06d", sequence);
 		try {
 			Files.createDirectories(dir);

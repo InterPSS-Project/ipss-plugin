@@ -64,8 +64,11 @@ public final class SecondOrderLeadLagBlock extends CMLControlBlockAdapter {
             stateX += 0.5 * (firstOrderDerivative(input) - oldX1Derivative) * dt;
             return;
         }
-        stateX += 0.5 * (x1Derivative(input) - oldX1Derivative) * dt;
-        x2 += 0.5 * (x2Derivative() - oldX2Derivative) * dt;
+        // Both endpoint slopes must use the same predicted state vector.
+        double x1Slope = x1Derivative(input);
+        double x2Slope = x2Derivative();
+        stateX += 0.5 * (x1Slope - oldX1Derivative) * dt;
+        x2 += 0.5 * (x2Slope - oldX2Derivative) * dt;
     }
 
     private double x1Derivative(double input) {
