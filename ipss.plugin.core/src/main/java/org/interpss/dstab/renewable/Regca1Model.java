@@ -27,7 +27,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * Electrical and plant controls are composed while this device owns the source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
+        implements DynamicGenDevice, RenewableConverterHost, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
         NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;

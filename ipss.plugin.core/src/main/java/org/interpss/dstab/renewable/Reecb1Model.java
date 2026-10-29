@@ -15,7 +15,7 @@ public final class Reecb1Model implements RenewableElectricalController {
     private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
     private final Reecb1Data data;
-    private final Regca1Model converter;
+    private final RenewableConverterHost converter;
     private Repca1Model plantController;
     private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
@@ -56,8 +56,16 @@ public final class Reecb1Model implements RenewableElectricalController {
     }
 
     public Reecb1Model(Reecb1Data data, Regca1Model converter) {
+        this(data,(RenewableConverterHost)converter);
+    }
+
+    private Reecb1Model(Reecb1Data data, RenewableConverterHost converter) {
         this.data = data;
         this.converter = converter;
+    }
+
+    public static Reecb1Model forConverterHost(Reecb1Data data, RenewableConverterHost converter) {
+        return new Reecb1Model(data,converter);
     }
 
     @Override

@@ -1,5 +1,9 @@
 # Converter source-impedance contracts
 
+The later [REGCC implementation](regcc-model-2026-10-28.md) adds the separate
+PLL converter with bounded evidence and explicit remaining accuracy diagnostics.
+The REGC_C status below describes this earlier checkpoint.
+
 Converter models retain separate current-source and voltage-source interfaces.
 The generator-record source impedance is preserved. An explicitly supplied
 effective reactance is not inferred from that record or silently discarded.

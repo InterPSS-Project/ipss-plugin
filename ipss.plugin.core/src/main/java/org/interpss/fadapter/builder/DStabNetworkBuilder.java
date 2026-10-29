@@ -3584,6 +3584,18 @@ public class DStabNetworkBuilder {
         return new Regcb1Model(gen, bus, genId, data);
     }
 
+    /** Attach the nine-state PLL converter, retaining the physical source impedance. */
+    public org.interpss.dstab.renewable.RegccModel addRegcc(String busId,String genId,
+            org.interpss.dstab.renewable.RegccData data) {
+        var bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(gen==null || gen.getMach()!=null || gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getPosGenZ()==null || gen.getPosGenZ().abs()<1e-12
+                || (gen.getXfrZ()!=null && gen.getXfrZ().abs()>0))
+            throw new IllegalArgumentException("REGCC requires nonzero source impedance and no implicit transformer");
+        return new org.interpss.dstab.renewable.RegccModel(gen,bus,genId,data);
+    }
+
     /** Attach the combined DERA1 converter and controls to a renewable generator. */
     public Dera1Model addDera1(String busId, String genId, Dera1Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
@@ -3667,6 +3679,9 @@ public class DStabNetworkBuilder {
     }
 
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reecb1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECB1: bus={}, gen={}", busId, genId);
@@ -3678,6 +3693,9 @@ public class DStabNetworkBuilder {
     }
 
     public Reecc1Model addReecc1(String busId, String genId, Reecc1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reecc1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECC1: bus={}, gen={}", busId, genId);
@@ -3704,6 +3722,11 @@ public class DStabNetworkBuilder {
             converter.setActiveElectricalController(controller);
             return controller;
         }
+        if (gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel converter) {
+            if(converter.getActiveElectricalController()!=null)return null;
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
         log.warn("REGCA1/REGCB1 not found for REECD1: bus={}, gen={}", busId, genId);
         return null;
     }
@@ -3719,10 +3742,15 @@ public class DStabNetworkBuilder {
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
+        if(gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         return null;
     }
 
     public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reeca1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECA1: bus={}, gen={}", busId, genId);
@@ -3787,6 +3815,11 @@ public class DStabNetworkBuilder {
     }
 
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null && pll.getActiveElectricalController()!=null){
+            if(pll.getActiveElectricalController().getPlantController()!=null)return null;
+            var controller=Repca1Model.forConverterHost(data,pll);pll.getActiveElectricalController().setPlantController(controller);return controller;
+        }
         Regca1Model converter = findRegca1(busId, genId);
         if (converter != null && converter.getActiveElectricalController() != null) {
             Repca1Model controller = Repca1Model.fromNativeRecord(data, converter);
@@ -3962,6 +3995,11 @@ public class DStabNetworkBuilder {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private org.interpss.dstab.renewable.RegccModel findRegcc(String busId,String genId) {
+        var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        return gen!=null && gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel model?model:null;
     }
 
     private Regcb1Model findRegcb1(String busId, String genId) {

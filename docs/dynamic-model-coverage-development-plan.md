@@ -2,6 +2,11 @@
 
 ## Current checkpoint
 
+The [REGCC implementation](benchmarks/regcc-model-2026-10-28.md) adds the distinct
+nine-state PLL converter and exact fifteen-field native parameter schema.
+Bounded standalone trajectories and explicitly unqualified stress diagnostics
+are separate; full model and complete control-chain acceptance remain open.
+
 The [converter source-impedance contract](benchmarks/converter-source-impedance-2026-10-25.md)
 adds exact REGCAU2 wrapper import and explicit effective-reactance behavior while
 preserving REGCA1 current-source and REGCB1 voltage-source treatment. Nonzero

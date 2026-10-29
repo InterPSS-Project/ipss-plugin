@@ -286,7 +286,7 @@ public class PSSEDStabDirectParser {
         // controllers. Stable sorting preserves all remaining source ordering.
         var orderedRecords=new ArrayList<>(records);
         orderedRecords.sort(java.util.Comparator.comparingInt(r->(r.canonicalModelName().equals("REGCA1")
-                || r.canonicalModelName().equals("REGCAU2"))?0:
+                || r.canonicalModelName().equals("REGCAU2") || r.canonicalModelName().equals("REGCC"))?0:
                 r.canonicalModelName().equals("REECA1")?1:2));
         for (PsseDyrRecord record : orderedRecords) {
             try {
@@ -941,6 +941,8 @@ public class PSSEDStabDirectParser {
             case "REGCB1":
             case "REGCBU1":
                 return procRegcb1(busId, genId, fields);
+            case "REGCC":
+                return procRegcc(busId, genId, fields);
             case "DERA1":
                 return procDera1(busId, genId, fields);
             case "REGFMA1":
@@ -3534,6 +3536,15 @@ public class PSSEDStabDirectParser {
                 getDouble(f, offset + 6, 0.0), getDouble(f, offset + 7, 0.0),
                 getDouble(f, offset + 8, 0.0));
         return builder.addRegcb1(busId, genId, data) != null;
+    }
+
+    private boolean procRegcc(String busId,String genId,String[] f) {
+        if(f.length!=18 || "USRMDL".equalsIgnoreCase(f[1]))return false;
+        int rate=Integer.parseInt(f[3]),priority=Integer.parseInt(f[4]);
+        double[] c=new double[13];
+        for(int i=0;i<c.length;i++)c[i]=Double.parseDouble(f[i+5].replace('D','E').replace('d','e'));
+        return builder.addRegcc(busId,genId,new org.interpss.dstab.renewable.RegccData(rate,priority,
+                c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]))!=null;
     }
 
     // DERA1 flat form, or DERAU1 wrapper with six ICONs, 41 CONs,

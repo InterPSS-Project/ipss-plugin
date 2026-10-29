@@ -1,0 +1,137 @@
+[
+  {
+    "name": "charging-h0.0005",
+    "profile": "charging",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "5532791e6b988ecffa0b3f955ddcd654a4655fd76b38496fe80e2e5bd70bd66c"
+  },
+  {
+    "name": "electrical-h0.0005",
+    "profile": "electrical",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "diagnostic",
+    "sha256": "df6d43ae9e97dfccb0a9fa468053b6cf0d2c69b0cc55adc1b3d6496ba9372c1d"
+  },
+  {
+    "name": "fault-h0.00025",
+    "profile": "fault",
+    "step_s": 0.00025,
+    "samples": 805,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "49856fdf1a19157c9fb222753d61fe964ef0881e74e4cb38ebea1ea254b85056"
+  },
+  {
+    "name": "fault-h0.0005",
+    "profile": "fault",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "d790a517bb6131db7dd3f4a8958a610a4f9b921415e46d9e5f3f8afe66e3974c"
+  },
+  {
+    "name": "flat-h0.0005",
+    "profile": "flat",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": false,
+    "acceptance": "bounded-trajectory",
+    "sha256": "e35145c9e86d297b35a2754b08f03bf73402343206518c486f341f917fa1b4e4"
+  },
+  {
+    "name": "freeze-h0.0005",
+    "profile": "freeze",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "87e3793c8e90d342a74362a8b1191d3030904e6527639877474cd2749fcf637d"
+  },
+  {
+    "name": "limit-p-h0.0005",
+    "profile": "limit-p",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "3ef4c3a7018c3360e1d007f8834148c2e0267ba6f1b743c2c7256000511e6b3b"
+  },
+  {
+    "name": "limit-q-h0.0005",
+    "profile": "limit-q",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "diagnostic",
+    "sha256": "58e8b68a2a581fce01909afb6e14139c27e4b5e7eff58a9ced280acb3204f0a3"
+  },
+  {
+    "name": "limited-rate-h0.0005",
+    "profile": "limited-rate",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "0924331e1215fb1aec4495e504b54dd3fba528ac75dd09376ff1b5bfd067da21"
+  },
+  {
+    "name": "minimum-h0.00025",
+    "profile": "minimum",
+    "step_s": 0.00025,
+    "samples": 805,
+    "fault": true,
+    "acceptance": "diagnostic",
+    "sha256": "1ba357f6e2710dc3d789e261feb68112ac0f30da197b2bab4475b9d2669b1eec"
+  },
+  {
+    "name": "minimum-h0.0005",
+    "profile": "minimum",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "diagnostic",
+    "sha256": "86bb1608a5f8282dfb9d88979df7f76faf2ce1dfc48bb0d7c77a83c7bb0d1d2f"
+  },
+  {
+    "name": "negative-q-h0.0005",
+    "profile": "negative-q",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "be1ac78285ce4882e0b98f6a06c2b2c2068138f8f3aa33643f4634589db6410a"
+  },
+  {
+    "name": "pll-limit-h0.0005",
+    "profile": "pll-limit",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "b1e723aaf54ab93d8d1fae68f009a94f33fd2306974deb7bc94d34fafecd130f"
+  },
+  {
+    "name": "power-h0.00025",
+    "profile": "power",
+    "step_s": 0.00025,
+    "samples": 805,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "390aed8097d9731afd5081c92dd60b38d7c96cae46848f872bf1266c739ebd10"
+  },
+  {
+    "name": "power-h0.0005",
+    "profile": "power",
+    "step_s": 0.0005,
+    "samples": 405,
+    "fault": true,
+    "acceptance": "bounded-trajectory",
+    "sha256": "0ca5cc83568f2cb5c5307ec47e6a8fc48de9b1dff534d606a964d135ade0d609"
+  }
+]

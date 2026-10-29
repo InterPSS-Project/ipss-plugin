@@ -25,7 +25,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
             "Measured Voltage", "Measured Active Power", "Active Power Order", "Reactive Current", "Reactive Control Integral", "Voltage Control Integral");
     private final Reeca1Data data;
-    private final Regca1Model converter;
+    private final RenewableConverterHost converter;
     private final boolean nativeRecordConvention;
     private double initializedVoltageBias;
     private Repca1Model plantController;
@@ -90,7 +90,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         this(data, converter, false);
     }
 
-    private Reeca1Model(Reeca1Data data, Regca1Model converter, boolean nativeRecord) {
+    private Reeca1Model(Reeca1Data data, RenewableConverterHost converter, boolean nativeRecord) {
         this.data = java.util.Objects.requireNonNull(data);
         this.converter = converter;
         nativeRecordConvention = nativeRecord;
@@ -99,6 +99,10 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     /** Native calculated-bias rules remain separate from the historical typed input convention. */
     public static Reeca1Model fromNativeRecord(Reeca1Data data, Regca1Model converter) {
+        return new Reeca1Model(data, converter, true);
+    }
+
+    public static Reeca1Model forConverterHost(Reeca1Data data, RenewableConverterHost converter) {
         return new Reeca1Model(data, converter, true);
     }
 
