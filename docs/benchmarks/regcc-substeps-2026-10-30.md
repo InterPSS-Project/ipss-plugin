@@ -1,5 +1,10 @@
 # REGCC local integration and current PI limits
 
+The later [state-reset investigation](regcc-state-reset-2026-10-30.md) localizes
+the unexplained cross-coordinate transition to active-PI clipping/history.
+Natural faults and direct API readbacks support a likely reference indexing
+defect; the exact private implementation cause remains unconfirmed.
+
 The runtime now separates the prepared network interval `H` from the local
 integration interval `h`. It also applies the independently observed bounds to
 the current PI outputs and stored integrals. **One local step remains the

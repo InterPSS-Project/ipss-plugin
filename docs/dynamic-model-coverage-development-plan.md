@@ -2,6 +2,11 @@
 
 ## Current checkpoint
 
+The [REGCC state-reset investigation](benchmarks/regcc-state-reset-2026-10-30.md)
+localizes the cross-coordinate anomaly to active-PI clipping/history, using
+natural faults and state/memory controls. No runtime reset rule is added;
+the likely reference implementation defect still requires vendor confirmation.
+
 The [REGCC local-integration and PI-limit audit](benchmarks/regcc-substeps-2026-10-30.md)
 separates prepared network coefficients from local steps and fixes independently
 observed PI output/integral bounds. The 1/2/4/8 coupled comparison retains one

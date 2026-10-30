@@ -10,12 +10,27 @@ def main():
     parser.add_argument('--repeat',choices=['a','b'],required=True)
     parser.add_argument('--batch',default='')
     parser.add_argument('--prepared-step',type=float,default=None,help='Prepare Te using this network interval, independently of the reference integration grid')
+    parser.add_argument('--variant',default='',help='Distinct suffix for an independently retained discriminator')
+    parser.add_argument('--audit-reactive-integral',type=float)
+    parser.add_argument('--audit-active-integral',type=float)
+    parser.add_argument('--audit-active-memory',type=float,help='Integration-memory discriminator only; not a physical disturbance')
+    parser.add_argument('--priority',type=int,choices=[0,1])
+    parser.add_argument('--reactive-generation-mvar',type=float)
+    parser.add_argument('--reverse-record-order',action='store_true')
+    parser.add_argument('--direct-readback',action='store_true')
+    parser.add_argument('--skip-zero-time-readback',action='store_true',help='Advance directly to the first step after a state perturbation')
     args=parser.parse_args();root=Path.cwd()
     if args.step not in [.0005,.00025,1/240,1/1920,1/3840]:raise ValueError('Use a declared comparison grid')
     if args.prepared_step is not None and (not math.isfinite(args.prepared_step) or args.prepared_step<=0):raise ValueError('Positive prepared network interval required')
     if args.batch and not re.fullmatch('[a-z0-9-]+',args.batch):raise ValueError('Use a plain batch directory name')
+    if args.variant and not re.fullmatch('[a-z0-9-]+',args.variant):raise ValueError('Use a plain variant name')
+    for value in [args.audit_reactive_integral,args.audit_active_integral,args.audit_active_memory,args.reactive_generation_mvar]:
+        if value is not None and not math.isfinite(value):raise ValueError('Finite discriminator values required')
+    if any(v is not None for v in [args.audit_reactive_integral,args.audit_active_integral,args.audit_active_memory]) and not args.profile.startswith('audit-ip-'):
+        raise ValueError('State discriminators require an active-current integral audit profile')
     parent=root/'target'/args.batch;parent.mkdir(exist_ok=True)
-    out=parent/f'regcc-{args.profile}-h{args.step:g}-{args.repeat}';out.mkdir(exist_ok=False)
+    name='regcc-'+args.profile+('-'+args.variant if args.variant else '')
+    out=parent/f'{name}-h{args.step:g}-{args.repeat}';out.mkdir(exist_ok=False)
     for name in ['regcc_reference_probe.py','tgov1_limit_probe.py']:shutil.copy2(root/'tools'/name,out/name)
     lines=(root/'ipss.test.plugin.core/testData/adpter/psse/v33/renewable/regca_reeca_repca_bus1062.raw').read_text().splitlines()
     lines[1]='PUBLIC THREE-BUS PLL CONVERTER REFERENCE'
@@ -24,8 +39,10 @@ def main():
             fields=line.split(',');fields[9]='.01';fields[10]='.1'
             if args.profile=='charging':fields[2]='-20'
             if args.profile=='negative-q':fields[3]='-5';fields[4]='-5';fields[5]='-5'
+            if args.reactive_generation_mvar is not None:fields[3:6]=[str(args.reactive_generation_mvar)]*3
             lines[index]=','.join(fields)
     icons=[int(args.profile in ['power','limited-rate']),int(args.profile=='limit-p')]
+    if args.priority is not None:icons[1]=args.priority
     constants=[9999.,-9999.,.01,100.,1.2,.01,.5,5.,20.,100.,100.,-100.,.09]
     if args.profile in ['limit-p','limit-q']:constants[4]=.26
     if args.profile=='freeze':constants[12]=.99
@@ -42,6 +59,8 @@ def main():
         settings=configuration('q','coarse','a')
         dyr+="1 'REECA1' '1' "+' '.join(map(str,settings['icons']+settings['constants']))+' /\n'
         shutil.copy2(root/'tools/reeca_native_probe.py',out/'reeca_native_probe.py')
+    if args.reverse_record_order:
+        records=dyr.splitlines();dyr='\n'.join([r for r in records if 'GENCLS' in r]+[r for r in records if 'GENCLS' not in r])+'\n'
     (out/'network.raw').write_text('\n'.join(lines)+'\n');(out/'dynamic.dyr').write_text(dyr)
     import psse3607
     import psspy,dyntools
@@ -81,9 +100,24 @@ def main():
         offset=0 if '-iq-' in args.profile else 1
         value=1.5*constants[4]*(1 if args.profile.endswith('upper') else -1)
         perturbation=dict(offset=offset,value=value,before=[checked('state',psspy.dsrval('STATE',indices['STATE']+i)) for i in range(9)])
-        checked('integral boundary discriminator',psspy.change_state(indices['STATE']+offset,[value,0.,value]))
+        if args.audit_reactive_integral is not None:
+            qvalue=args.audit_reactive_integral
+            checked('reactive coordinate discriminator',psspy.change_state(indices['STATE'],[qvalue,0.,qvalue]))
+            perturbation['reactive_value']=qvalue
+        if args.audit_active_integral is not None:value=args.audit_active_integral;perturbation['value']=value
+        memory=value if args.audit_active_memory is None else args.audit_active_memory
+        checked('integral boundary discriminator',psspy.change_state(indices['STATE']+offset,[value,0.,memory]))
+        perturbation['integration_memory_value']=memory
         perturbation['after']=[checked('state',psspy.dsrval('STATE',indices['STATE']+i)) for i in range(9)]
     if fault:checked('fault',psspy.dist_bus_fault(2,3,230.,[0.,100.]))
+    direct=[]
+    if args.direct_readback:
+        targets=[.05+args.step,.05+2*args.step] if args.skip_zero_time_readback else [.05,.05+args.step,.05+2*args.step]
+        for target in targets:
+            checked('direct-readback endpoint',psspy.run(0,target,1000000,1,0))
+            direct.append(dict(time_s=checked('clock',psspy.dsrval('TIME')),
+                states=[checked('state readback',psspy.dsrval('STATE',indices['STATE']+i)) for i in range(9)],
+                variables=[checked('variable readback',psspy.dsrval('VAR',indices['VAR']+i)) for i in range(10)]))
     checked('during',psspy.run(0,.10,1000000,1,0))
     if fault:checked('clear',psspy.dist_clear_fault(1))
     checked('postfault',psspy.run(0,.20,1000000,1,0))
@@ -98,6 +132,8 @@ def main():
     manifest=dict(status='complete' if quality else 'rejected-quality',model='REGCC',profile=args.profile,step_s=args.step,repeat=args.repeat,
         layout=layout,electrical_layout=electrical_layout,entered_constants=before,initialized_constants=after,icons=icons,fault=fault,initial_commands=initial_commands,apply_s=.05,clear_s=.10,end_s=.20,
         samples=len(data['time']),channels=len(keys),prepared_step_s=args.prepared_step,original_te_s=entered_te,state_perturbation=perturbation,
+        variant=args.variant,indices=indices,direct_readback=direct,reverse_record_order=args.reverse_record_order,
+        skip_zero_time_readback=args.skip_zero_time_readback,
         library_sha256=sha(library),source_document_sha256=sha(document),engine_module=psse3607.__name__,files={name:sha(name) for name in files})
     Path('manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');print(json.dumps(manifest),flush=True);assert quality
 
