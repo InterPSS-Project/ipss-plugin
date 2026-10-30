@@ -47,6 +47,9 @@ public final class PreparedNewtonApiBenchmark {
                 algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false); algorithm.getMessageLog().setEnabled(false);
                 reset(net);
                 if (!algorithm.loadflow(true)) throw new IllegalStateException(name + " initialization failed");
+                var host = (com.interpss.core.algo.LfCalculatorHost) algorithm.getLfCalculator();
+                Object firstSymbolic = prepared ? ((com.interpss.core.sparse.solver.klu.KLUSquareMatrixEqnDoubleSolver.SymbolStruct)
+                        host.nrEngine().lfEqnJMatrixCache.getSymbolTable()).symbolTable() : null;
                 int warmups = net.getNoBus() > 1000 ? largeWarmups : smallWarmups;
                 int repeats = net.getNoBus() > 1000 ? largeRepeats : smallRepeats;
                 for (int r = -warmups; r < repeats; r++) {
@@ -63,14 +66,22 @@ public final class PreparedNewtonApiBenchmark {
                 }
                 if (prepared && algorithm.getPreparedNewtonBuildCount() != 1) throw new IllegalStateException("Unexpected rebuilds: " + name);
                 if (prepared) {
-                    var host = (com.interpss.core.algo.LfCalculatorHost) algorithm.getLfCalculator();
                     var matrix = (com.interpss.core.sparse.impl.klu.KLUSparseEqnMatrix2x2Impl) host.nrEngine().lfEqnJMatrixCache;
                     if (matrix.preparedCsc() == null) throw new IllegalStateException("Prepared Jacobian hooks were not used");
+                    var nrSolver = (com.interpss.core.algo.impl.solver.DefaultNrSolver) host.getNrSolver();
+                    if (nrSolver.getPreparedResidualCount() == 0 || nrSolver.getPreparedSolveScopeCount() == 0 || nrSolver.getPreparedWorkspaceScopeCount() == 0)
+                        throw new IllegalStateException("Integrated standard NR workspaces were not used");
+                    if (firstSymbolic != ((com.interpss.core.sparse.solver.klu.KLUSquareMatrixEqnDoubleSolver.SymbolStruct)
+                            matrix.getSymbolTable()).symbolTable()) throw new IllegalStateException("Symbolic structure was not retained");
                     var counters = new LinkedHashMap<String, Long>();
                     counters.put("preparations", algorithm.getPreparedNewtonBuildCount());
                     counters.put("scalarEquations", (long) matrix.getDimension());
                     counters.put("structuralEntries", (long) matrix.getTotalElements());
                     counters.put("factorizedEntries", matrix.getFactorizedElementCount());
+                    counters.put("preparedResidualEvaluations", nrSolver.getPreparedResidualCount());
+                    counters.put("preparedWorkspaceScopes", nrSolver.getPreparedWorkspaceScopeCount());
+                    counters.put("stableSolveScopes", nrSolver.getPreparedSolveScopeCount());
+                    counters.put("retainedSymbolicAcrossSolves", 1L);
                     diagnostics.put(name, counters);
                 }
                 try (var voltages = new PrintWriter(Files.newBufferedWriter(output.resolve(name + "-interpss-" + mode + "-" + fork + "-voltage.csv")))) {

@@ -170,8 +170,12 @@ def main():
     core_sources = [CORE / ("ipss.core_EMF/src/main/java/com/interpss/core/" + p) for p in (
         "algo/LoadflowAlgorithm.java", "algo/INrSolver.java", "algo/impl/LoadflowAlgorithmImpl.java",
         "algo/impl/solver/DefaultNrSolver.java", "algo/impl/solver/PreparedPolarJacobian.java",
-        "algo/impl/calc/LfCalcNrEngine.java", "sparse/impl/klu/KLUSparseEqnMatrix2x2Impl.java",
+        "algo/impl/solver/FixedPatternLu.java", "algo/impl/calc/LfCalcMismatchHelper.java",
+        "algo/impl/calc/LfCalcIterOrchestrator.java",
+        "aclf/IAclfBusFunc.java", "aclf/impl/BaseAclfBusImpl.java", "algo/impl/calc/LfCalcNrEngine.java", "algo/impl/LfAdjustAlgorithmImpl.java",
+        "algo/impl/calc/LfCalcHvdcOuterController.java", "sparse/impl/klu/KLUSparseEqnMatrix2x2Impl.java",
         "sparse/solver/klu/BaseKLUEqnDoubleSolver.java",
+        "sparse/solver/klu/KLUSquareMatrixEqnDoubleSolver.java",
         "aclf/IAclfBusFunc.java", "aclf/impl/BaseAclfBusImpl.java")]
     for file in core_sources + [Path(__file__), source, ROOT / "tools/rustpower_benchmark.py"]:
         destination = args.output / "sources" / ("core" if file in core_sources else "plugin") / file.relative_to(CORE if file in core_sources else ROOT)

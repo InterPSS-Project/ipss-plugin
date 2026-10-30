@@ -1,5 +1,8 @@
 # Prepared polar NR Jacobian integration — 2026-10-30
 
+Latest maintained-path result: [standard NR integration](standard-nr-integration-2026-10-30.md).
+This page records its earlier implementation and measurements.
+
 The maintained core integration and algorithm documentation are committed in
 core revision `1c0e8a4af`; the separate numerical experiment is `9014b6a6e`.
 The [portable checkpoint](checkpoints/prepared-polar-jacobian-2026-10-30.json)

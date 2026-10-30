@@ -23,12 +23,14 @@ public final class RustPowerLoadflowProfile {
         Path inputs = Path.of(args[0]), output = Path.of(args[1]);
         Files.createDirectories(output);
         SparseEqnSolverProvider.useJavaKlu();
+        boolean prepared = args.length < 3 || !args[2].equals("generic");
         for (String name : new String[]{"case39", "case118", "case9241pegase"}) {
             var net = new MatpowerDirectParser().parse(inputs.resolve(name + ".m").toString());
             for (var bus : net.getBusList()) if (bus.isSwing()) bus.setDesiredVoltAng(0.0);
             net.setPolarCoordinate(true);
             net.getBusLoadLowVoltConfig().setApplyVoltAdjust(false);
             var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+            algorithm.setPreparedNewtonEnabled(prepared);
             algorithm.setLfMethod(AclfMethodType.NR);
             algorithm.setTolerance(1e-6);
             algorithm.setMaxIterations(20);
@@ -36,12 +38,14 @@ public final class RustPowerLoadflowProfile {
             algorithm.getDataCheckConfig().setAutoTurnLine2Xfr(true);
             algorithm.getNrMethodConfig().setNonDivergent(false);
             algorithm.getNrMethodConfig().setVariableUpdateLimit(false);
+            algorithm.getNrMethodConfig().setStepSizeOptimization(false);
             algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false);
             algorithm.getMessageLog().setEnabled(false);
             reset(net);
             if (!algorithm.loadflow(true)) throw new IllegalStateException(name);
-            int warmups = net.getNoBus() > 1000 ? 30 : 500;
-            int repeats = net.getNoBus() > 1000 ? 20 : 100;
+            try (var nr = LfNrProfiler.withEnabled(true); var klu = KLUSolverProfiler.withEnabled(true)) {
+            int warmups = net.getNoBus() > 1000 ? 50 : 50000;
+            int repeats = net.getNoBus() > 1000 ? 20 : 1000;
             for (int i = 0; i < warmups; i++) {
                 reset(net);
                 if (!algorithm.loadflow(false)) throw new IllegalStateException(name);
@@ -49,20 +53,20 @@ public final class RustPowerLoadflowProfile {
             LfNrProfiler.reset();
             KLUSolverProfiler.reset();
             long start = System.nanoTime();
-            try (var nr = LfNrProfiler.withEnabled(true); var klu = KLUSolverProfiler.withEnabled(true)) {
                 for (int i = 0; i < repeats; i++) {
                     reset(net);
                     if (!algorithm.loadflow(false)) throw new IllegalStateException(name);
                 }
-            }
             var report = new LinkedHashMap<String, Object>();
             report.put("case", name);
+            report.put("prepared", prepared);
             report.put("repeats", repeats);
             report.put("elapsed_ns", System.nanoTime() - start);
             report.put("nr", LfNrProfiler.snapshot());
             report.put("klu", KLUSolverProfiler.snapshot());
             Files.writeString(output.resolve(name + ".json"), new GsonBuilder().setPrettyPrinting().create().toJson(report));
             System.out.println(name + " profile saved");
+            }
         }
     }
 }

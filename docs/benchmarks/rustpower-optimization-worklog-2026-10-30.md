@@ -1,5 +1,8 @@
 # Prepared AC load-flow optimization — 2026-10-30
 
+Latest maintained-path result: [standard NR integration](standard-nr-integration-2026-10-30.md).
+This page records its earlier implementation and measurements.
+
 **Historical whole-solve experiment.** The working source now uses prepared
 Jacobian assembly through the existing NR hooks, described in the
 [integration report](prepared-polar-jacobian-2026-10-30.md). Its timing must be
