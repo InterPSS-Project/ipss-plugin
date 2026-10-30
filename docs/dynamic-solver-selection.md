@@ -118,6 +118,23 @@ integration. Use a fixed step and check model support at initialization.
 
 ## Shared performance features
 
+Eligible uninitialized positive-sequence dynamic networks now use the maintained
+prepared polar-NR path for their static load-flow solution. The ordinary polar,
+model, control and observation restrictions still apply; initialized dynamic,
+custom and three-phase networks retain the appropriate generic preparation path.
+Use `algorithm.getAclfAlgorithm().setPreparedNewtonEnabled(false)` to select
+generic load-flow preparation for that algorithm.
+
+Complex network solvers prepare CSC destinations and reuse them for compatible
+numerical updates. Exact pattern checks and operator epochs protect symbolic,
+numerical and accepted-endpoint reuse. Physical shunts remain in the dynamic
+Norton matrix, including after switching and fault clearing. The matrix-local
+`getJkluSolver().setCscPatternReuseEnabled(false)` setting retains ordinary CSC
+conversion when needed; replacement matrices own independent settings.
+
+See the [power-flow transfer review and validation](benchmarks/dynamic-power-flow-transfer-2026-10-30.md)
+for eligible types, tests, matched timing results and qualification limits.
+
 Sparse factor reuse, primitive current buffers, packed network iteration,
 converter-compensation reformulation and accepted-endpoint certificates are
 implemented in the shared engine. They are not separate numerical engines

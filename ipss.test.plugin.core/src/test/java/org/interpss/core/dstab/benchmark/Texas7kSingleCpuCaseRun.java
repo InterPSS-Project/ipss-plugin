@@ -13,18 +13,22 @@ import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 /** Ten-second fault run with all-bus voltage recovery checks and retained endpoint samples. */
 public final class Texas7kSingleCpuCaseRun {
     static final class TimedSolver extends org.interpss.dstab.algo.DefaultDynamicSimulationSolver {
+        boolean reuseCsc=true;
         long calls,iterations,nanos,integrationNanos; int maximum;
         @Override public void diffEqnIntegrationStep(double t,double dt,DynamicSimuMethod method,int flag)throws com.interpss.dstab.common.DStabSimuException {long start=System.nanoTime();try{super.diffEqnIntegrationStep(t,dt,method,flag);}finally{integrationNanos+=System.nanoTime()-start;}}
         final java.util.Map<String,long[]> stages=new java.util.LinkedHashMap<>();
         TimedSolver(com.interpss.dstab.algo.DynamicSimuAlgorithm a){super(a);}
         @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+            ((com.interpss.core.sparse.impl.klu.JKLUSparseEqnComplexImpl)dstabAlgo.getNetwork().getYMatrix()).getJkluSolver().setCscPatternReuseEnabled(reuseCsc);
             long start=System.nanoTime(); boolean ok=super.networkSolutionStep();nanos+=System.nanoTime()-start;
             var d=getLastNetworkSolutionDiagnostics();calls++;iterations+=d.iterations();maximum=Math.max(maximum,d.iterations());
             var stage=stages.computeIfAbsent(d.stage(),k->new long[2]);stage[0]++;stage[1]+=d.iterations();return ok;
         }
     }
     public static void main(String[] args)throws Exception {
-        var configuration=com.google.gson.JsonParser.parseString(Files.readString(Path.of(args[3]))).getAsJsonObject().getAsJsonObject("optimization_properties");
+        var profile=com.google.gson.JsonParser.parseString(Files.readString(Path.of(args[3]))).getAsJsonObject();
+        var configuration=profile.getAsJsonObject("optimization_properties");
+        var transfer=profile.has("power_flow_transfer")?profile.getAsJsonObject("power_flow_transfer"):null;
         long totalStart=System.nanoTime();var phaseTimes=new LinkedHashMap<String,Double>();long phaseStart=totalStart;
         Path input=Path.of(args[0]),output=Path.of(args[1]);
         if(Files.exists(output))throw new IllegalArgumentException("Refusing to overwrite results");
@@ -37,11 +41,16 @@ public final class Texas7kSingleCpuCaseRun {
         var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         var timed=new TimedSolver(algorithm);algorithm.setSolver(timed);if(configuration.get("ipss.profile.frequencyAll").getAsBoolean())timed.setBusFrequencyMode(org.interpss.dstab.algo.DefaultDynamicSimulationSolver.BusFrequencyMode.ALL);var lf=algorithm.getAclfAlgorithm();
         timed.getClass().getMethod("setAcceptedEndpointReuseEligibility",java.util.function.BooleanSupplier.class).invoke(timed,(java.util.function.BooleanSupplier)()->true);
+        if(transfer!=null) {lf.setPreparedNewtonEnabled(transfer.get("prepared_loadflow_enabled").getAsBoolean());timed.reuseCsc=transfer.get("complex_csc_reuse_enabled").getAsBoolean();}
         lf.getDataCheckConfig().setAutoTurnLine2Xfr(true);lf.getDataCheckConfig().setTurnOffIslandBus(true);
         lf.setNonDivergent(true);lf.setMaxIterations(50);lf.setTolerance(.001);
         if(!lf.loadflow())throw new AssertionError("Power flow failed");
         phaseTimes.put("power_flow_s",(System.nanoTime()-phaseStart)/1e9);phaseStart=System.nanoTime();
         String mismatch=net.maxMismatch(com.interpss.core.algo.AclfMethodType.NR).toString();
+        if(transfer!=null&&transfer.get("record_initial_power_flow").getAsBoolean())try(var initial=Files.newBufferedWriter(output.resolve("initial-power-flow.csv"),StandardOpenOption.CREATE_NEW)) {
+            initial.write("bus,vm_pu,angle_rad,gen_p_pu,gen_q_pu,load_p_pu,load_q_pu,compensation_b_pu\n");
+            for(var bus:net.getBusList())initial.write("\""+bus.getId().replace("\"","\"\"")+"\","+bus.getVoltageMag()+","+bus.getVoltageAng()+","+bus.getGenP()+","+bus.getGenQ()+","+bus.getLoadP()+","+bus.getLoadQ()+","+(bus.isCapacitor()?bus.toCapacitorBus().getB(false):0)+"\n");
+        }
         net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_I);
         net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_Z);
         net.setStaticLoadIncludedInYMatrix(false);net.setStaticLoadZPartInYMatrix(true);
@@ -178,6 +187,8 @@ public final class Texas7kSingleCpuCaseRun {
         summary.put("buses_within_2pct_last_second",tailPassing);summary.put("max_abs_final_deviation_pct",worst);summary.put("worst_bus",worstBus);
         summary.put("all_active_buses_recovered_at_10_s",complete&&finalPassing==activeCount);summary.put("worst_violations",violations.subList(0,Math.min(20,violations.size())));
         summary.put("initial_power_flow_mismatch",mismatch);summary.put("dynamic_network_tolerance_pu",1e-4);summary.put("solver","java-klu");
+        summary.put("prepared_loadflow_used",lf.wasPreparedNewtonUsed());summary.put("prepared_loadflow_builds",lf.getPreparedNewtonBuildCount());
+        summary.put("loadflow_nr_solver",lf.getLfCalculator().getNrSolver().getClass().getName());
         summary.put("dynamic_wall_seconds_unwarmed",dynamicSeconds);summary.put("total_wall_seconds_before_summary",(System.nanoTime()-totalStart)/1e9);
         Files.writeString(output.resolve("run.json"),json.toJson(summary)+"\n",StandardOpenOption.CREATE_NEW);
         System.out.println("TEN_SECOND_RECOVERY "+json.toJson(summary));
