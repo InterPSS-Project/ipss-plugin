@@ -5,12 +5,14 @@ from tgov1_limit_probe import checked,sha
 
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument('--profile',choices=['flat','fault','power','charging','negative-q','limit-p','limit-q','freeze','pll-limit','minimum','limited-rate','electrical'],required=True)
+    parser.add_argument('--profile',choices=['flat','fault','power','charging','negative-q','limit-p','limit-q','freeze','pll-limit','minimum','limited-rate','electrical','high-gain','audit-iq-upper','audit-iq-lower','audit-ip-upper','audit-ip-lower'],required=True)
     parser.add_argument('--step',type=float,default=.0005)
     parser.add_argument('--repeat',choices=['a','b'],required=True)
     parser.add_argument('--batch',default='')
+    parser.add_argument('--prepared-step',type=float,default=None,help='Prepare Te using this network interval, independently of the reference integration grid')
     args=parser.parse_args();root=Path.cwd()
-    if args.step not in [.0005,.00025]:raise ValueError('Use a declared comparison grid')
+    if args.step not in [.0005,.00025,1/240,1/1920,1/3840]:raise ValueError('Use a declared comparison grid')
+    if args.prepared_step is not None and (not math.isfinite(args.prepared_step) or args.prepared_step<=0):raise ValueError('Positive prepared network interval required')
     if args.batch and not re.fullmatch('[a-z0-9-]+',args.batch):raise ValueError('Use a plain batch directory name')
     parent=root/'target'/args.batch;parent.mkdir(exist_ok=True)
     out=parent/f'regcc-{args.profile}-h{args.step:g}-{args.repeat}';out.mkdir(exist_ok=False)
@@ -30,6 +32,10 @@ def main():
     if args.profile=='pll-limit':constants[10:12]=[.1,-.1]
     if args.profile=='minimum':constants[5]=.0001
     if args.profile=='limited-rate':constants[0:2]=[.1,-.1];constants[3]=.1
+    if args.profile=='high-gain':constants[6:8]=[5.,70.]
+    if args.profile.startswith('audit-'):constants[4]=.26
+    entered_te=constants[5]
+    if args.prepared_step is not None:constants[5]=max(constants[5],2*args.prepared_step)
     dyr="1 'REGCC' '1' "+' '.join(map(str,icons+constants))+" /\n3 'GENCLS' '1' 99999 0 /\n"
     if args.profile=='electrical':
         from reeca_native_probe import configuration
@@ -68,8 +74,15 @@ def main():
     after=[checked('constant',psspy.dsrval('CON',indices['CON']+i)) for i in range(13)]
     assert before==after
     initial_commands=[checked('initial command',psspy.dsrval('VAR',indices['VAR']+i)) for i in [0,1]]
-    fault=args.profile!='flat'
+    fault=args.profile!='flat' and not args.profile.startswith('audit-')
     checked('prefault',psspy.run(0,.05,1000000,1,0))
+    perturbation=None
+    if args.profile.startswith('audit-'):
+        offset=0 if '-iq-' in args.profile else 1
+        value=1.5*constants[4]*(1 if args.profile.endswith('upper') else -1)
+        perturbation=dict(offset=offset,value=value,before=[checked('state',psspy.dsrval('STATE',indices['STATE']+i)) for i in range(9)])
+        checked('integral boundary discriminator',psspy.change_state(indices['STATE']+offset,[value,0.,value]))
+        perturbation['after']=[checked('state',psspy.dsrval('STATE',indices['STATE']+i)) for i in range(9)]
     if fault:checked('fault',psspy.dist_bus_fault(2,3,230.,[0.,100.]))
     checked('during',psspy.run(0,.10,1000000,1,0))
     if fault:checked('clear',psspy.dist_clear_fault(1))
@@ -84,7 +97,8 @@ def main():
     if args.profile=='electrical':files.append('reeca_native_probe.py')
     manifest=dict(status='complete' if quality else 'rejected-quality',model='REGCC',profile=args.profile,step_s=args.step,repeat=args.repeat,
         layout=layout,electrical_layout=electrical_layout,entered_constants=before,initialized_constants=after,icons=icons,fault=fault,initial_commands=initial_commands,apply_s=.05,clear_s=.10,end_s=.20,
-        samples=len(data['time']),channels=len(keys),library_sha256=sha(library),source_document_sha256=sha(document),engine_module=psse3607.__name__,files={name:sha(name) for name in files})
+        samples=len(data['time']),channels=len(keys),prepared_step_s=args.prepared_step,original_te_s=entered_te,state_perturbation=perturbation,
+        library_sha256=sha(library),source_document_sha256=sha(document),engine_module=psse3607.__name__,files={name:sha(name) for name in files})
     Path('manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');print(json.dumps(manifest),flush=True);assert quality
 
 if __name__=='__main__':main()

@@ -1,5 +1,11 @@
 # REGCC converter implementation
 
+This is the original checkpoint. The later
+[local-integration and PI-limit audit](regcc-substeps-2026-10-30.md) separates
+prepared/local intervals, adds configurable local steps and corrects PI output
+limits. Its evidence supersedes the implementation gaps discussed in this
+historical review; complete model acceptance remains open.
+
 REGCC now has its own parser, builder and nine-state runtime. It was absent from
 the earlier impedance-contract change because that slice implemented REGCAU2 and
 preserved REGCB1; a voltage-source model with a PLL cannot be substituted by

@@ -24,12 +24,17 @@ public final class RegccModel extends DynamicBusDeviceImpl
             "Internal q-axis voltage","Internal d-axis voltage","PLL frequency integral","PLL angle"};
     private final RegccData data;
     private final double[] state=new double[9],trial=new double[9],dx0=new double[9],dx1=new double[9];
+    private final double[] local=new double[9],localTrial=new double[9],localRate=new double[9];
     private double[] active=state;
     private final IntegrationStateMonitor monitor=new IntegrationStateMonitor(NAMES);
     private final Hashtable<String,Object> outputs=new Hashtable<>();
     private DStabGen parentGen;
     private RenewableElectricalController controller;
-    private double deviceScale=1.,initialP,initialQ,ipcmd,iqcmd,p,q,step=.0005,effectiveTe,baseAngularFrequency;
+    private double deviceScale=1.,initialP,initialQ,ipcmd,iqcmd,p,q,networkStep=.0005,effectiveTe,baseAngularFrequency;
+    private int localSubsteps=1;
+    private boolean initialized,predictorPending;
+    private Complex predictorVoltage;
+    private double predictorIp,predictorIq,predictorInterval;
 
     public RegccModel(DStabGen generator,BaseDStabBus<?,?> bus,String id,RegccData data) {
         this.data=java.util.Objects.requireNonNull(data);
@@ -38,9 +43,21 @@ public final class RegccModel extends DynamicBusDeviceImpl
     }
     @Override public void configureIntegrationStep(double dt) {
         if (!Double.isFinite(dt) || dt<=0) throw new IllegalArgumentException("Positive REGCC integration step required");
-        step=dt;effectiveTe=Math.max(data.te(),2*dt);
+        if(predictorPending)throw new IllegalStateException("Cannot reconfigure REGCC between integration stages");
+        networkStep=dt;effectiveTe=Math.max(data.te(),2*dt);
         if(controller!=null)controller.configureIntegrationStep(dt);
     }
+    /** Configure before initialization. Parameter preparation continues to use the network interval. */
+    public void setLocalSubsteps(int count) {
+        if(initialized)throw new IllegalStateException("Configure REGCC local substeps before initialization");
+        if(count<1 || count>128 || (count&(count-1))!=0)
+            throw new IllegalArgumentException("REGCC local substeps must be a power of two from 1 through 128");
+        localSubsteps=count;
+    }
+    public int getLocalSubsteps(){return localSubsteps;}
+    public double getNetworkStep(){return networkStep;}
+    public double getLocalStep(){return networkStep/localSubsteps;}
+    public double getRecoveryTime(){return 4*networkStep;}
     @Override public boolean initStates(BaseDStabBus<?,?> bus) {
         if(bus==null || parentGen.getGen()==null || impedance().abs()<1e-12
                 || (parentGen.getXfrZ()!=null && parentGen.getXfrZ().abs()>0))return false;
@@ -56,14 +73,16 @@ public final class RegccModel extends DynamicBusDeviceImpl
         state[ED]=v+state[IP]*z.getReal()+state[IQ]*z.getImaginary();
         state[EQ]=state[IP]*z.getImaginary()-state[IQ]*z.getReal();
         ipcmd=p/v;iqcmd=q/v;
-        if(controller!=null){controller.configureIntegrationStep(step);controller.initialize(p,q,v);}
-        configureIntegrationStep(step);System.arraycopy(state,0,trial,0,9);active=state;
+        predictorPending=false;
+        if(controller!=null){controller.configureIntegrationStep(networkStep);controller.initialize(p,q,v);}
+        configureIntegrationStep(networkStep);System.arraycopy(state,0,trial,0,9);active=state;
         monitor.reset();rates(state,bus.getVoltage(),ipcmd,iqcmd,dx0);
         observe(IntegrationStateMonitor.Stage.INITIALIZATION,state,dx0);
-        outputs.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());return finite(state);
+        outputs.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());initialized=finite(state);return initialized;
     }
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {
         if(!isActive() || !parentGen.isActive())return true;
+        validateStage(dt,method,flag);
         if(controller!=null) {
             controller.step(dt,p,q,getDStabBus().getVoltageMag(),getDStabBus().getFreq(),flag);
             ipcmd=controller.getIpcmd();iqcmd=-controller.getIqcmd();
@@ -72,17 +91,51 @@ public final class RegccModel extends DynamicBusDeviceImpl
     }
     /** Prescribed complex voltage and positive-injection d/q current commands. */
     public boolean nextStepWithSignals(double dt,DynamicSimuMethod method,int flag,Complex voltage,double ip,double iq) {
-        if(method!=DynamicSimuMethod.MODIFIED_EULER)throw new IllegalArgumentException("REGCC requires modified Euler");
-        if(dt<=0 || !Double.isFinite(dt) || !Double.isFinite(ip) || !Double.isFinite(iq))return false;
-        if(dt!=step)configureIntegrationStep(dt);
+        validateStage(dt,method,flag);
+        if(voltage==null || voltage.isNaN() || voltage.isInfinite() || !Double.isFinite(ip) || !Double.isFinite(iq))return false;
+        double h=dt/localSubsteps;
         if(flag==0) {
-            rates(state,voltage,ip,iq,dx0);observe(IntegrationStateMonitor.Stage.PREDICTOR,state,dx0);
-            for(int i=0;i<9;i++)trial[i]=state[i]+dt*dx0[i];normalize(trial,voltage,ip,iq);active=trial;
-        } else if(flag==1) {
-            rates(trial,voltage,ip,iq,dx1);observe(IntegrationStateMonitor.Stage.CORRECTOR,trial,dx1);
-            for(int i=0;i<9;i++)state[i]+=.5*dt*(dx0[i]+dx1[i]);normalize(state,voltage,ip,iq);active=state;
-        } else throw new IllegalArgumentException("REGCC integration flag must be zero or one");
+            predictorVoltage=voltage;predictorIp=ip;predictorIq=iq;predictorInterval=dt;predictorPending=true;
+            System.arraycopy(state,0,trial,0,9);
+            // The outer predictor holds the sampled network input. Current feedback is live.
+            for(int sub=0;sub<localSubsteps;sub++) {
+                rates(trial,voltage,ip,iq,dx0);observe(IntegrationStateMonitor.Stage.PREDICTOR,trial,dx0);
+                for(int i=0;i<9;i++)trial[i]+=h*dx0[i];normalize(trial,voltage,ip,iq);
+            }
+            active=trial;
+        } else {
+            if(localSubsteps==1) {
+                rates(trial,voltage,ip,iq,dx1);observe(IntegrationStateMonitor.Stage.CORRECTOR,trial,dx1);
+                for(int i=0;i<9;i++)state[i]+=.5*dt*(dx0[i]+dx1[i]);normalize(state,voltage,ip,iq);
+            } else {
+                System.arraycopy(state,0,local,0,9);
+                // Interpolate the two sampled outer endpoints at local stage times.
+                // No local network solves or additional upstream history updates occur.
+                // Re-evaluate all nine coupled equations at each local trial coordinate.
+                for(int sub=0;sub<localSubsteps;sub++) {
+                    double a=(double)sub/localSubsteps,b=(double)(sub+1)/localSubsteps;
+                    Complex va=interpolate(predictorVoltage,voltage,a),vb=interpolate(predictorVoltage,voltage,b);
+                    double ipa=predictorIp+a*(ip-predictorIp),iqa=predictorIq+a*(iq-predictorIq);
+                    double ipb=predictorIp+b*(ip-predictorIp),iqb=predictorIq+b*(iq-predictorIq);
+                    rates(local,va,ipa,iqa,localRate);
+                    for(int i=0;i<9;i++)localTrial[i]=local[i]+h*localRate[i];
+                    normalize(localTrial,va,ipa,iqa);
+                    rates(localTrial,vb,ipb,iqb,dx1);observe(IntegrationStateMonitor.Stage.CORRECTOR,localTrial,dx1);
+                    for(int i=0;i<9;i++)local[i]+=.5*h*(localRate[i]+dx1[i]);
+                    normalize(local,vb,ipb,iqb);
+                }
+                System.arraycopy(local,0,state,0,9);
+            }
+            active=state;predictorPending=false;
+        }
         return finite(active);
+    }
+    private void validateStage(double dt,DynamicSimuMethod method,int flag) {
+        if(method!=DynamicSimuMethod.MODIFIED_EULER)throw new IllegalArgumentException("REGCC requires modified Euler");
+        if(dt<=0 || !Double.isFinite(dt))throw new IllegalArgumentException("Positive REGCC integration interval required");
+        if(flag!=0 && flag!=1)throw new IllegalArgumentException("REGCC integration flag must be zero or one");
+        if(flag==1 && (!predictorPending || dt!=predictorInterval))
+            throw new IllegalStateException("REGCC corrector requires its matching predictor");
     }
     private void rates(double[] x,Complex voltage,double ip,double iq,double[] dx) {
         rates(x,voltage,physicalCurrent(x,voltage).multiply(deviceScale),ip,iq,dx);
@@ -92,14 +145,18 @@ public final class RegccModel extends DynamicBusDeviceImpl
         Complex current=measuredCurrent.multiply(rotation);
         double measuredV=Math.max(.01,data.tfltr()>0?x[V]:voltage.abs());
         double ipRate=data.rateFlag()==1?ip*measuredV:ip;
-        // The two auxiliary rate-limit lags use four integration intervals.
-        dx[QRATE]=reactiveRate((iq-x[QRATE])/(4*step));
-        dx[PRATE]=activeRate((ipRate-x[PRATE])/(4*step));
+        // Preparation uses H, independently of the actual local integration interval h.
+        dx[QRATE]=reactiveRate((iq-x[QRATE])/(4*networkStep));
+        dx[PRATE]=activeRate((ipRate-x[PRATE])/(4*networkStep));
         dx[V]=data.tfltr()>0?(voltage.abs()-x[V])/data.tfltr():0.;
         double desiredId=data.rateFlag()==1?x[PRATE]/measuredV:x[PRATE];
         double errorD=desiredId-current.getReal(),errorQ=x[QRATE]+current.getImaginary();
-        dx[IP]=data.kii()*errorD;dx[IQ]=data.kii()*errorQ;
-        double id=x[IP]+data.kip()*errorD,iqOut=x[IQ]+data.kip()*errorQ;
+        // Integral-state bounds are distinct from algebraic P/Q-priority clipping.
+        // No output-error back-calculation is present in the native diagram.
+        dx[IP]=boundedIntegralRate(x[IP],data.kii()*errorD);
+        dx[IQ]=boundedIntegralRate(x[IQ],data.kii()*errorQ);
+        double id=clamp(x[IP]+data.kip()*errorD,-data.imax(),data.imax());
+        double iqOut=clamp(x[IQ]+data.kip()*errorQ,-data.imax(),data.imax());
         Complex target=vlocal.add(new Complex(id,-iqOut).multiply(parentGen.getPosGenZ()));
         dx[EQ]=(target.getImaginary()-x[EQ])/effectiveTe;
         dx[ED]=(target.getReal()-x[ED])/effectiveTe;
@@ -119,7 +176,12 @@ public final class RegccModel extends DynamicBusDeviceImpl
     }
     private void normalize(double[] x,Complex voltage,double ip,double iq) {
         if(data.tfltr()==0)x[V]=voltage.abs();
+        x[IQ]=clamp(x[IQ],-data.imax(),data.imax());
+        x[IP]=clamp(x[IP],-data.imax(),data.imax());
         x[PLL]=clamp(x[PLL],data.wmin()/baseAngularFrequency,data.wmax()/baseAngularFrequency);
+    }
+    private double boundedIntegralRate(double value,double rate) {
+        return (value>=data.imax() && rate>0) || (value<=-data.imax() && rate<0)?0.:rate;
     }
     private Complex physicalCurrent(double[] x,Complex voltage) {
         if(controller!=null && controller.isConverterBlocked())return Complex.ZERO;
@@ -176,6 +238,10 @@ public final class RegccModel extends DynamicBusDeviceImpl
     private double remaining(double priority){return Math.sqrt(Math.max(0.,data.imax()*data.imax()-priority*priority));}
     private double activeCurrentLimit(double value,double maximum){return initialP>=0?clamp(value,0.,maximum):clamp(value,-maximum,0.);}
     private static Complex rotation(double angle){return new Complex(Math.cos(angle),Math.sin(angle));}
+    private static Complex interpolate(Complex a,Complex b,double fraction) {
+        return new Complex(a.getReal()+fraction*(b.getReal()-a.getReal()),
+                a.getImaginary()+fraction*(b.getImaginary()-a.getImaginary()));
+    }
     private static double clamp(double value,double min,double max){return Math.max(min,Math.min(max,value));}
     private static boolean finite(double[] x){for(double v:x)if(!Double.isFinite(v))return false;return true;}
 }

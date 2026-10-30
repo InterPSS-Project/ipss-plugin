@@ -2,6 +2,11 @@
 
 ## Current checkpoint
 
+The [REGCC local-integration and PI-limit audit](benchmarks/regcc-substeps-2026-10-30.md)
+separates prepared network coefficients from local steps and fixes independently
+observed PI output/integral bounds. The 1/2/4/8 coupled comparison retains one
+step as the default. Unqualified trajectories remain explicit diagnostics.
+
 The [REGCC implementation](benchmarks/regcc-model-2026-10-28.md) adds the distinct
 nine-state PLL converter and exact fifteen-field native parameter schema.
 Bounded standalone trajectories and explicitly unqualified stress diagnostics

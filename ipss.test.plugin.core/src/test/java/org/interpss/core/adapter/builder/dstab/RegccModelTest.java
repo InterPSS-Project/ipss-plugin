@@ -19,8 +19,12 @@ class RegccModelTest extends CorePluginTestSetup {
     private static final String RECORD="1 'REGCC' '1' 0 0 9999 -9999 .01 100 1.2 .01 .5 5 20 100 100 -100 .09 /\n";
     private static RegccData data(int rate,int pq,double freeze){return new RegccData(rate,pq,.1,-.1,.01,.1,1.2,.0001,.5,5.,20.,100.,.1,-.1,freeze);}
     private RegccModel model(RegccData data,double p,double q)throws Exception {
+        return model(data,p,q,1);
+    }
+    private RegccModel model(RegccData data,double p,double q,int substeps)throws Exception {
         var b=DStabBuilderTestFixture.createBuilder();var m=b.addRegcc("Bus1","1",data);
         m.getParentGen().setPosGenZ(new Complex(.01,.1));m.getParentGen().setGen(new Complex(p,q));
+        m.setLocalSubsteps(substeps);
         m.getDStabBus().setVoltage(new Complex(1.,0.));m.configureIntegrationStep(.0005);assertTrue(m.initStates(m.getDStabBus()));return m;
     }
     @Test void exactCatalogAndParserKeepPhysicalSource(@TempDir Path dir)throws Exception {
@@ -94,5 +98,88 @@ class RegccModelTest extends CorePluginTestSetup {
         assertArrayEquals(state,m.getStateSnapshot());assertEquals(Complex.ZERO,m.getOutputObject());
         assertTrue(m.updateAttributes(false));assertEquals(0.,m.getP());assertEquals(0.,m.getQ());
         m.getParentGen().setStatus(true);assertNotEquals(Complex.ZERO,m.getOutputObject());assertArrayEquals(state,m.getStateSnapshot());
+    }
+    @Test void localIntervalsDoNotReprepareNetworkCoefficients()throws Exception {
+        var m=model(data(0,0,.09),.7,.2);m.configureIntegrationStep(1./240.);
+        double te=m.getEffectiveTe(),recovery=m.getRecoveryTime();
+        m.nextStepWithSignals(1./1920.,DynamicSimuMethod.MODIFIED_EULER,0,new Complex(.99,.01),.7,.2);
+        assertThrows(IllegalStateException.class,()->m.configureIntegrationStep(.001));
+        m.nextStepWithSignals(1./1920.,DynamicSimuMethod.MODIFIED_EULER,1,new Complex(.99,.01),.7,.2);
+        assertEquals(2./240.,te);assertEquals(4./240.,recovery);
+        assertEquals(te,m.getEffectiveTe());assertEquals(recovery,m.getRecoveryTime());
+        assertEquals(1./240.,m.getNetworkStep());
+    }
+    @Test void heldInputSubstepsEqualExplicitLocalPredictorCorrectorPairs()throws Exception {
+        for(int count:new int[]{2,4,8}) {
+            var local=model(data(0,0,.09),.7,.2,count);
+            var manual=model(data(0,0,.09),.7,.2);
+            double interval=.0005,h=interval/count;var voltage=new Complex(.98,.001);
+            local.nextStepWithSignals(interval,DynamicSimuMethod.MODIFIED_EULER,0,voltage,.71,.21);
+            local.nextStepWithSignals(interval,DynamicSimuMethod.MODIFIED_EULER,1,voltage,.71,.21);
+            for(int i=0;i<count;i++) {
+                manual.nextStepWithSignals(h,DynamicSimuMethod.MODIFIED_EULER,0,voltage,.71,.21);
+                manual.nextStepWithSignals(h,DynamicSimuMethod.MODIFIED_EULER,1,voltage,.71,.21);
+            }
+            assertArrayEquals(manual.getStateSnapshot(),local.getStateSnapshot(),1e-14);
+            assertEquals(.001,local.getEffectiveTe());assertEquals(.002,local.getRecoveryTime());
+            assertEquals(h,local.getLocalStep());
+        }
+    }
+    @Test void integralBoundsStopOutwardRatesAndAllowRecovery()throws Exception {
+        var m=model(data(0,0,.09),.7,.2);var x=m.getStateSnapshot();
+        x[0]=x[1]=1.2;
+        var outward=m.evaluateDerivatives(x,Complex.ONE,new Complex(-1.,1.),.7,.2);
+        assertEquals(0.,outward[0]);assertEquals(0.,outward[1]);
+        var inward=m.evaluateDerivatives(x,Complex.ONE,new Complex(1.,-1.),.7,.2);
+        assertTrue(inward[0]<0.);assertTrue(inward[1]<0.);
+        x[0]=x[1]=-1.2;
+        outward=m.evaluateDerivatives(x,Complex.ONE,new Complex(1.,-1.),.7,.2);
+        assertEquals(0.,outward[0]);assertEquals(0.,outward[1]);
+        inward=m.evaluateDerivatives(x,Complex.ONE,new Complex(-1.,1.),.7,.2);
+        assertTrue(inward[0]>0.);assertTrue(inward[1]>0.);
+    }
+    @Test void piOutputClipsIndependentlyWithoutBackCalculationInsideIntegralBounds()throws Exception {
+        var high=new RegccData(0,0,9999,-9999,.01,100,1.2,.01,5,70,20,100,100,-100,.09);
+        var m=model(high,.7,.2);var x=m.getStateSnapshot();
+        var dx=m.evaluateDerivatives(x,Complex.ONE,new Complex(0.,-1.2),.7,.2);
+        // Both PI outputs reach their bounds, while both stored integrals remain inside them.
+        double id=1.2,iq=-1.2;
+        assertEquals((1.+.01*id+.1*iq-x[6])/.01,dx[6],1e-12);
+        assertEquals((.1*id-.01*iq-x[5])/.01,dx[5],1e-12);
+        assertEquals(70*.7,dx[1],1e-12);assertEquals(70*(.2-1.2),dx[0],1e-12);
+    }
+    @Test void localStageInputsFollowTheirPositionWithinTheOuterInterval()throws Exception {
+        double interval=1./240.,tau=.01;
+        double exact=1.-.1*(1.-tau/interval*(1.-Math.exp(-interval/tau)));
+        double previous=Double.POSITIVE_INFINITY;
+        for(int count:new int[]{1,2,4,8}) {
+            var m=model(data(0,0,.09),.7,.2,count);m.configureIntegrationStep(interval);
+            m.nextStepWithSignals(interval,DynamicSimuMethod.MODIFIED_EULER,0,Complex.ONE,.7,.2);
+            m.nextStepWithSignals(interval,DynamicSimuMethod.MODIFIED_EULER,1,new Complex(.9,0.),.7,.2);
+            double error=Math.abs(m.getStateSnapshot()[2]-exact);
+            assertTrue(error<previous,"Voltage measurement should converge under a linear prescribed input");previous=error;
+        }
+        assertTrue(previous<.00004);
+    }
+    @Test void localStagesDoNotMultiplyControllerHistoryUpdates()throws Exception {
+        var m=model(data(0,0,.09),.7,.2,8);int[] calls={0,0};
+        m.setActiveElectricalController(new RenewableElectricalController(){
+            public void initialize(double p,double q,double v){}
+            public void step(double dt,double p,double q,double v,double f){fail("Stage-aware path required");}
+            public void step(double dt,double p,double q,double v,double f,int flag){calls[flag]++;}
+            public double getIpcmd(){return .7;}
+            public double getIqcmd(){return -.2;}
+            public Repca1Model getPlantController(){return null;}
+            public void setPlantController(Repca1Model plant){}
+        });
+        assertThrows(IllegalArgumentException.class,()->m.nextStep(.0005,DynamicSimuMethod.RUNGE_KUTTA,0));
+        assertThrows(IllegalArgumentException.class,()->m.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,2));
+        assertThrows(IllegalStateException.class,()->m.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertArrayEquals(new int[]{0,0},calls);
+        m.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);m.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);
+        assertArrayEquals(new int[]{1,1},calls);
+        assertThrows(IllegalStateException.class,()->m.setLocalSubsteps(4));
+        var fresh=DStabBuilderTestFixture.createBuilder().addRegcc("Bus1","1",data(0,0,.09));
+        for(int invalid:new int[]{0,3,129})assertThrows(IllegalArgumentException.class,()->fresh.setLocalSubsteps(invalid));
     }
 }
