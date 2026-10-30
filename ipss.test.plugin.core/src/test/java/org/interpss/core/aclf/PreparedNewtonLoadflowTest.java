@@ -131,6 +131,40 @@ class PreparedNewtonLoadflowTest {
         assertEquals(builds + 1, fast.getPreparedNewtonBuildCount());
     }
 
+    @Test void liveSwitchedShuntsAndSvcMatchTheStandardAssemblerAcrossRepeatedSolves() throws Exception {
+        var fast=create(true); var reference=create(false);
+        for (var algorithm:new LoadflowAlgorithm[]{fast,reference}) for (String id:new String[]{"Bus1","Bus2","Bus5"}) {
+            var bus=(AclfBus)algorithm.getNetwork().getBus(id);
+            var shunt=com.interpss.core.AclfAdjustObjectFactory.createSwitchedShunt(bus);
+            shunt.setStatus(true); shunt.setControlStatus(false); shunt.setBInit(.08);
+            shunt.setBLimit(new org.interpss.numeric.datatype.LimitType(.5,-.5));
+            if (bus.isSwing()) continue; // The public factory permits SVCs on PV/PQ buses only.
+            var svc=com.interpss.core.AclfAdjustObjectFactory.createStaticVarCompensator(bus,
+                    com.interpss.core.aclf.adj.AclfAdjustControlMode.FIXED,
+                    com.interpss.core.aclf.adj.AclfAdjustControlType.POINT_CONTROL).orElseThrow();
+            svc.setStatus(true); svc.setControlStatus(false); svc.setBInit(-.03);
+            svc.setBLimit(new org.interpss.numeric.datatype.LimitType(.5,-.5));
+        }
+        compare(fast,reference); long builds=fast.getPreparedNewtonBuildCount();
+        for (double b:new double[]{.15,-.1,.08}) {
+            for (var algorithm:new LoadflowAlgorithm[]{fast,reference}) {
+                var bus=algorithm.getNetwork().getBus("Bus5");
+                bus.getSwitchedShuntList().getFirst().setBActual(b);
+                bus.getStaticVarCompensatorList().getFirst().setBActual(-b/2);
+            }
+            compare(fast,reference); assertEquals(builds,fast.getPreparedNewtonBuildCount());
+        }
+        for (var algorithm:new LoadflowAlgorithm[]{fast,reference}) {
+            var bus=algorithm.getNetwork().getBus("Bus5");
+            bus.getSwitchedShuntList().getFirst().setStatus(false);
+            bus.getStaticVarCompensatorList().getFirst().setStatus(false);
+        }
+        compare(fast,reference); assertEquals(builds,fast.getPreparedNewtonBuildCount());
+        for (var algorithm:new LoadflowAlgorithm[]{fast,reference})
+            algorithm.getNetwork().getBus("Bus2").setGenCode(AclfGenCode.GEN_PQ);
+        compare(fast,reference); assertEquals(builds+1,fast.getPreparedNewtonBuildCount());
+    }
+
     @Test void refreshesCoefficientsAndRebuildsOnlyForTopology() throws Exception {
         var fast = create(true); var reference = create(false); compare(fast, reference);
         long builds = fast.getPreparedNewtonBuildCount();
