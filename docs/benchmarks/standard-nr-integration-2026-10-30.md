@@ -1,6 +1,6 @@
 # Standard NR numerical integration — 2026-10-30
 
-Core implementation and enhancement documents: `0511b8afc37097c4febaabe5edcf226c987d7058`.
+Measured integration and enhancement-document checkpoint: `0511b8afc37097c4febaabe5edcf226c987d7058`.
 
 **The maintained calculator has been accelerated, but the 1.2x target remains unmet.**
 The full three-fork public-API run produced ratios 1.250x, 1.348x and 1.214x.
@@ -68,6 +68,29 @@ clearing the prepared plan. Otherwise a mismatch fallback could leave an old LU
 eligible for reuse. A regression exercises that ordering explicitly. Stable
 constant-load caching still reads new generation and external injections each
 solve and preserves authoritative contributed-load data.
+
+## Controlled compensation correction after the measured checkpoint
+
+Core commit `745ef2f40ca46574b38f23e35c8819fda8d393f4` corrects an invalidation gap found after the
+measurement above. Yii includes effective switched-shunt/SVC/fixed-bank B, but
+the prepared snapshot had not tracked those physical device contributions. The
+stable-scope guard also omitted the separate SVC list.
+
+The correction tracks effective in-service compensation, preserves pending
+numeric Jacobian/LU invalidation, and excludes all compensation-bearing buses
+from the unchanged-model scope. Control locks retain the committed physical B.
+It preserves the existing total-Y formulation; a cached-base/live-device split
+and its voltage-dependent injection derivatives remain a separate design step.
+
+The same reproducer for switched shunt and SVC now returns NUMERIC with zero
+mismatch/Jacobian error at the displayed precision. Its previous errors for a
+B change of 0.1 at V=1.07 were 0.11449 pu and 0.22898, respectively. The focused
+gate passed 322 tests, including 14 new device cases, with no failures/errors/skips.
+Evidence is retained in `ipss.test.plugin.core/target/prepared-compensation-fix-20261030/`
+and `ipss.test.plugin.core/target/prepared-compensation-cache-gate-20261030.log`.
+
+The three-fork timings below still identify the earlier measured commit and
+its frozen runtime. No new performance qualification is claimed for this fix.
 
 ## Full matched result
 
