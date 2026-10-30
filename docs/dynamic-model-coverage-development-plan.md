@@ -2,6 +2,10 @@
 
 ## Current checkpoint
 
+The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-2026-10-30.md)
+preserves implementation priorities, model-specific tasks and scoped verification
+status.
+
 The [REGCC state-reset investigation](benchmarks/regcc-state-reset-2026-10-30.md)
 localizes the cross-coordinate anomaly to active-PI clipping/history, using
 natural faults and state/memory controls. No runtime reset rule is added;
