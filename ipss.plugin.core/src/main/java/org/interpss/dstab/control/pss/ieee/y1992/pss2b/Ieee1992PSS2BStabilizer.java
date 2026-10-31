@@ -22,8 +22,14 @@ import com.interpss.dstab.mach.Machine;
 /** IEEE dual-input PSS2B stabilizer with the PowerWorld extension fields. */
 @AnController(input="mach.speed", output="this.outputBlock.y", refPoint="0.0", display={})
 public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
-        implements IntegrationStepAware, org.interpss.dstab.control.util.AcceptedVoltageMeasurement {
+        implements IntegrationStepAware, org.interpss.dstab.control.util.AcceptedVoltageMeasurement,
+        org.interpss.dstab.control.util.StaggeredEulerParticipant {
     private transient Pss2bCompiledStage compiledSignals;
+    private transient Pss2bCompiledStage sharedStage;
+    private boolean initialized, sharedStageInvalidated, sharedEvaluationActive, predictorPending;
+    private long staggeredEvaluations;
+    private BaseDStabBus<?, ?> initializedInput1Bus, initializedInput2Bus;
+    private int initializedIcs1, initializedIcs2;
 
     @Override
     protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
@@ -36,6 +42,12 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     @Override public void invalidateRuntimePlan() {
         super.invalidateRuntimePlan();
         compiledSignals = null;
+        if (sharedStage != null) sharedStageInvalidated = true;
+    }
+
+    @Override public void setRuntimeExpressionBindingsEnabled(boolean enabled) {
+        super.setRuntimeExpressionBindingsEnabled(enabled);
+        if (sharedStage != null) sharedStageInvalidated = true;
     }
 
     @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
@@ -146,33 +158,27 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     /** Diagram signals corresponding to PowerWorld PSS2B states 1-8 and 19-20. */
     public double getInput1Washout1Output() {
-        if (compiledSignals != null) return compiledSignals.signal(0);
-        return childSignal(inputPath1, "this.firstWashout.y");
+        return observedChildSignal(0, inputPath1, "this.firstWashout.y");
     }
 
     public double getInput1Washout2Output() {
-        if (compiledSignals != null) return compiledSignals.signal(1);
-        return childSignal(inputPath1, "this.secondWashout.y");
+        return observedChildSignal(1, inputPath1, "this.secondWashout.y");
     }
 
     public double getInput1TransducerOutput() {
-        if (compiledSignals != null) return compiledSignals.signal(2);
-        return childSignal(inputPath1, "this.delayBlock.y");
+        return observedChildSignal(2, inputPath1, "this.delayBlock.y");
     }
 
     public double getInput2Washout1Output() {
-        if (compiledSignals != null) return compiledSignals.signal(3);
-        return childSignal(inputPath2, "this.firstWashout.y");
+        return observedChildSignal(3, inputPath2, "this.firstWashout.y");
     }
 
     public double getInput2Washout2Output() {
-        if (compiledSignals != null) return compiledSignals.signal(4);
-        return childSignal(inputPath2, "this.secondWashout.y");
+        return observedChildSignal(4, inputPath2, "this.secondWashout.y");
     }
 
     public double getInput2TransducerOutput() {
-        if (compiledSignals != null) return compiledSignals.signal(5);
-        return childSignal(inputPath2, "this.delayBlock.y");
+        return observedChildSignal(5, inputPath2, "this.delayBlock.y");
     }
 
     public double getLeadLag1Output() { return observedSignal(7, "this.leadLag1.y"); }
@@ -182,7 +188,24 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     public double getLeadLag3Output() { return observedSignal(9, "this.leadLag3.y"); }
 
     private double observedSignal(int id, String name) {
+        var shared = sharedObservation();
+        if (shared != null) return shared.signal(id);
         return compiledSignals == null ? signal(name) : compiledSignals.signal(id);
+    }
+
+    private double observedChildSignal(int id, InputPath owner, String name) {
+        var shared = sharedObservation();
+        if (shared != null) return shared.signal(id);
+        return compiledSignals == null ? childSignal(owner, name) : compiledSignals.signal(id);
+    }
+
+    private Pss2bCompiledStage sharedObservation() {
+        if (!sharedEvaluationActive) return null;
+        var plan = sharedStage();
+        // Accepted measurement callbacks and live mixing/setpoints can change
+        // feedthrough after the last rate evaluation. Refresh equations only.
+        plan.refreshSharedAlgebraic();
+        return plan;
     }
 
     private double signal(String fieldName) {
@@ -218,6 +241,8 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        initialized = false; sharedStage = null; sharedStageInvalidated = sharedEvaluationActive = predictorPending = false;
+        staggeredEvaluations = 0;
         compiledSignals = null;
         Ieee1992PSS2BStabilizerData d = getData();
         tw1 = d.getTw1(); tw2 = d.getTw2(); t6 = d.getT6();
@@ -247,13 +272,21 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         input2Signal = limitedInput(d.getIcs2(), input2Bus, machine, vsi2max, vsi2min);
         derivative1.initialize(input1Bus.getVoltageMag());
         derivative2.initialize(input2Bus.getVoltageMag());
+        initializedInput1Bus = input1Bus; initializedInput2Bus = input2Bus;
+        initializedIcs1 = d.getIcs1(); initializedIcs2 = d.getIcs2();
         inputPath1 = new InputPath(tw1, tw2, 1.0, t6);
         inputPath2 = new InputPath(tw3, tw4, ks2, t7);
-        return super.initStates(bus, machine);
+        initialized = super.initStates(bus, machine);
+        return initialized;
     }
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
+        refreshInputSignals(machine);
+        return super.nextStep(dt, method, machine, flag);
+    }
+
+    private void refreshInputSignals(Machine machine) {
         Ieee1992PSS2BStabilizerData d = getData();
         input1Signal = d.getIcs1() == 6
                 ? clamp(derivative1.getDerivative(), vsi1max, vsi1min)
@@ -261,7 +294,67 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         input2Signal = d.getIcs2() == 6
                 ? clamp(derivative2.getDerivative(), vsi2max, vsi2min)
                 : limitedInput(d.getIcs2(), input2Bus, machine, vsi2max, vsi2min);
-        return super.nextStep(dt, method, machine, flag);
+    }
+
+    @Override public boolean eulerStep(boolean predictor, double dt, Machine machine) {
+        sharedEvaluationActive = false;
+        boolean result = super.eulerStep(predictor, dt, machine);
+        if (result) acceptCompatibleStage(predictor, dt);
+        return result;
+    }
+
+    /** Both ordinary calls and prepared-stage dispatch share the same pending-history guard. */
+    void acceptCompatibleStage(boolean predictor, double dt) {
+        sharedEvaluationActive = false;
+        if (dt > 0) predictorPending = predictor;
+    }
+
+    private Pss2bCompiledStage sharedStage() {
+        if (getClass() != Ieee1992PSS2BStabilizer.class || !initialized || predictorPending || sharedStageInvalidated
+                || getRuntimePhase() != RuntimePhase.IDLE)
+            throw new IllegalStateException("Initialize PSS2B and finish any predictor before shared state access; reinitialize after structural changes");
+        if (input1Bus != initializedInput1Bus || input2Bus != initializedInput2Bus
+                || getData().getIcs1() != initializedIcs1 && (getData().getIcs1() == 6 || initializedIcs1 == 6)
+                || getData().getIcs2() != initializedIcs2 && (getData().getIcs2() == 6 || initializedIcs2 == 6))
+            throw new IllegalStateException("Reinitialize PSS2B after changing signal buses or sampled-derivative selectors");
+        if (sharedStage == null) sharedStage = compiledSignals != null ? compiledSignals : new Pss2bCompiledStage(this);
+        sharedStage.checkSharedOwners();
+        return sharedStage;
+    }
+
+    @Override public int staggeredStateCount() { return sharedStage().sharedStateCount(); }
+    @Override public void readStaggeredState(double[] values, int offset) { sharedStage().readSharedState(values, offset); }
+    @Override public void evaluateStaggered(double stepSec, double[] derivatives, int offset) {
+        requireSharedStep(stepSec);
+        var plan = sharedStage();
+        refreshInputSignals(getMachine());
+        plan.evaluateShared(derivatives, offset);
+        sharedEvaluationActive = true;
+        staggeredEvaluations++;
+    }
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        requireSharedStep(stepSec);
+        sharedStage().applySharedState(values, offset);
+        sharedEvaluationActive = true;
+    }
+    @Override public boolean averageStaggeredRatesAtDiscontinuity() {
+        return getData().getIcs1() != 6 && getData().getIcs2() != 6;
+    }
+    @Override public boolean averageStaggeredRateAtDiscontinuity(int stateIndex) {
+        java.util.Objects.checkIndex(stateIndex, staggeredStateCount());
+        // Input conditioners retain their own measurement history. A sampled
+        // derivative in one path cannot suppress the other path's event handling.
+        if (stateIndex < 3) return getData().getIcs1() != 6;
+        if (stateIndex < 6) return getData().getIcs2() != 6;
+        return averageStaggeredRatesAtDiscontinuity();
+    }
+    private static void requireSharedStep(double stepSec) {
+        if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Finite nonnegative PSS2B interval required");
+    }
+    public long getStaggeredEvaluationCount() { return staggeredEvaluations; }
+    @Override public double getOutput(Machine machine) {
+        var shared = sharedObservation();
+        return shared == null ? super.getOutput(machine) : shared.signal(10);
     }
 
     @Override public void acceptVoltageDerivativeEndpoint(double time, double step) {

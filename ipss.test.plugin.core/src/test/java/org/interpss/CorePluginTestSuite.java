@@ -77,6 +77,7 @@ import org.interpss.core.dstab.PsssbIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St2cutPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss2bIndependentSmibConformanceTest;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCompiledStageTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bSharedStateTest;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledBoundaryConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Pss2bImportValidationTest;
@@ -695,6 +696,7 @@ import org.junit.platform.suite.api.Suite;
 	St2cutPsseSmibConformanceTest.class,
 	Pss2bIndependentSmibConformanceTest.class,
     Pss2bCompiledStageTest.class,
+    Pss2bSharedStateTest.class,
     Pss2bReferenceReplayTest.class,
     Pss2bCoupledBoundaryConformanceTest.class,
     Pss2bImportValidationTest.class,

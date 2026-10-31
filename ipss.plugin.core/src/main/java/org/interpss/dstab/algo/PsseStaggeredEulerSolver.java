@@ -438,6 +438,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 && type != IeeeSteamTCDRGovernor.class && type != PsseGgov1Governor.class
                 && type != PsseHygovGovernor.class && type != IEEE1981ST1Exciter.class
                 && type != IEEE2005ST4BExciter.class && type != Ieee1992PSS2AStabilizer.class
+                && type != org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer.class
                 && type != IeeestStabilizer.class && type != Exac1Exciter.class
                 && type != Exac2Exciter.class && type != Esac1aExciter.class
                 && type != Esac6aExciter.class && type != Esdc1aExciter.class
@@ -604,7 +605,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             for(int sub=0;sub<count;sub++){
                 kernel.readStaggeredState(values,0);kernel.evaluateStaggered(h,rates,0);
                 if(!wasActive)System.arraycopy(rates,0,history,0,rates.length);
-                if(sub==0&&discontinuity)for(int i=0;i<rates.length;i++)rates[i]=.5*(rates[i]+history[i]);
+                if(sub==0&&discontinuity)for(int i=0;i<rates.length;i++)
+                    if(kernel.averageStaggeredRateAtDiscontinuity(i))rates[i]=.5*(rates[i]+history[i]);
                 for(int i=0;i<trial.length;i++)trial[i]=values[i]+h*(1.5*rates[i]-.5*history[i]);
                 kernel.applyStaggeredState(trial,0,h);kernel.readStaggeredState(values,0);
                 for(int i=0;i<history.length;i++)history[i]=values[i]!=trial[i]?0.:rates[i];
@@ -922,7 +924,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         }
         networkEndpointAvailable = false;
         if (discontinuity) for (var p:participants)
-            if (p.active.getAsBoolean() && p.model instanceof IeeestStabilizer stabilizer)
+            if (p.active.getAsBoolean() && p.model instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer)
                 stabilizer.synchronizeVoltageDerivativeMemory();
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();
@@ -939,8 +941,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             boolean active=p.active.getAsBoolean();
             if (active&&!p.wasActive) System.arraycopy(p.rates,0,p.history,0,p.rates.length);
             p.wasActive=active;
-            if (discontinuity && p.model.averageStaggeredRatesAtDiscontinuity())
-                for (int i=0;i<p.rates.length;i++) p.rates[i]=.5*(p.rates[i]+p.history[i]);
+            if (discontinuity)
+                for (int i=0;i<p.rates.length;i++)
+                    if (p.model.averageStaggeredRateAtDiscontinuity(i)) p.rates[i]=.5*(p.rates[i]+p.history[i]);
         }
         // Advance ST1 while its physical and upstream controller inputs still
         // belong to the old endpoint. Global machine rates are already captured.
@@ -981,7 +984,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         // the solved endpoint voltage, not the previous network solution.
         evaluate();
         for (var p:participants)
-            if (p.active.getAsBoolean() && p.model instanceof IeeestStabilizer stabilizer)
+            if (p.active.getAsBoolean() && p.model instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer)
                 stabilizer.acceptVoltageDerivativeEndpoint(time+dt,dt);
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,1);

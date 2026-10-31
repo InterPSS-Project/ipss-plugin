@@ -3,7 +3,8 @@
 The standard PSS2B graph now has typed Java wiring in the default modified-Euler
 solver. It reuses the existing numerical block kernels and their state storage.
 This removes expression traversal from stage evaluation without introducing a
-second set of controller equations.
+second set of controller equations. The same existing block storage now also
+supplies direct shared-state staggered integration.
 
 ## Execution contract
 
@@ -42,6 +43,56 @@ field layouts. Malformed cardinalities, non-finite parameters and improper ramp
 orders are rejected. The standard record additionally respects its published
 ramp-state allocation. Existing integration-step corrections act on prepared
 coefficients and preserve imported data.
+
+## Shared staggered integration
+
+`Ieee1992PSS2BStabilizer` directly implements `StaggeredEulerParticipant`.
+Preparation binds the two input paths, each physical ramp-filter section, the
+lead-lag cascade and the optional output-filter coordinate. The compound ramp
+block's unused outer coordinate is excluded. Bypassed coordinates retain their
+existing zero-rate behavior. Modified Euler and staggered Euler read and write
+the same block states; the enclosing staggered solver owns its reusable trial,
+rate and two-step history arrays.
+
+Pure rate evaluation samples the configured inputs and resolves the acyclic
+algebraic graph once in signal order. Existing block kernels provide the
+first-order equations. The optional washout and output-filter blocks expose
+their existing derivative functions without replacing predictor history.
+Trial writes refresh algebraic feedthrough and the static output limiter;
+they do not advance sampled voltage memory. Output observation refreshes that
+algebraic graph from held inputs and live mixing/setpoints. A measurement commit
+cannot leave the preceding output cached for another interval. The regression
+exercises actual feedthrough and preserves every block's predictor slopes.
+Ordinary modified-Euler calls retain their existing
+compiled or compatible execution and observation behavior.
+
+Only the audited standard graph can use this shared path. Changed owners,
+observers, expressions or custom blocks require coherent reinitialization;
+unknown custom graphs retain their compatible modified-Euler path. Changing a
+signal bus or changing a selector into or out of sampled voltage differentiation
+also requires reinitialization. Other live input selectors retain both configured
+buses' frequency history. Shared access rejects unfinished ordinary or prepared
+modified-Euler predictors and active runtime phases. Numerical reads and output
+observations do not commit a timer or measurement history.
+
+Both integration methods dispatch `AcceptedVoltageMeasurement` at settled
+network boundaries. Algebraic events rebase voltage memory; accepted endpoints
+advance its derivative once. The shared contract permits a per-coordinate
+event policy while retaining older participants' whole-vector selection.
+PSS2B's two input conditioners select their histories independently: a sampled
+derivative path retains its two-step history, and it cannot suppress the power
+path's event averaging. Independent first-washout recurrences distinguish both
+rules at fault application and clearing with two step sizes. The coupled test
+also gates the first power-path state after fault application. Broader mixed
+state/output qualification remains open. External reference changes use the solver's explicit
+`notifyDiscontinuity()` boundary.
+
+`Pss2bSharedStateTest` checks pure rates against the existing block equations,
+external predictor/corrector integration against the existing modified-Euler
+implementation, immutable measurement observations, duplicate endpoints,
+transactional invalid trials and reinitialization guards. Its warmed shared
+read/evaluate/apply/output loop measures zero allocated bytes across 100,000
+groups. This is a component allocation result, not a full-simulation speedup.
 
 ## Evidence and remaining work
 
@@ -90,7 +141,8 @@ does not establish exact controller-state or sampled-output lifecycle parity. No
 
 `Pss2bCoupledBoundaryConformanceTest` runs the complete retained selector,
 local/remote, limit, bypass, reference-step and ramp-order matrix through the
-default modified-Euler solver. It asserts automatic typed-stage coverage,
+default modified-Euler solver and the shared staggered solver. It asserts
+automatic typed-stage or shared-participant coverage,
 voltage range-normalized RMSE below 0.001 at both buses, rotor-angle RMSE below
 0.01 degree and prefault maximum angle error below 0.002 degree. Constant-voltage
 reference channels use a separate 1e-12 absolute RMSE check because their range
@@ -102,11 +154,17 @@ the reference solution settings. These settings differ from the engine defaults
 and are applied to the comparison fixture only. They do not change other study
 load conversions or the engine's default frequency filter.
 
-Across the half-second SMIB comparisons at 0.5/0.25 ms steps, the worst voltage
-NRMSE is 7.38e-4 at the generator bus and 7.05e-4 at the other bus. Worst absolute
-voltage errors are 0.000192/0.000066 pu; the largest rotor-angle error is 0.003381
-degree. These are boundary-acceptance results, not production-quarter-cycle or
-long-duration qualification. All controller states, measurement histories,
+Across the half-second SMIB comparisons at 0.5/0.25 ms steps, both fixtures
+explicitly use the same 0.000001 pu network voltage-correction tolerance;
+algorithm defaults are unchanged. The comparison has worst voltage NRMSE below
+0.000738 with modified Euler and 0.000979 with staggered Euler. Worst absolute
+voltage errors are below 0.000192 and 0.000025 pu, respectively; worst rotor-angle
+RMSE is below 0.00167 and 0.000556 degrees. The staggered first-postfault
+power-input state differs by less than 0.000000030 pu in its targeted gate.
+Maximum staggered output error across the matrix is below 0.001245 pu and remains
+an explicit diagnostic rather than complete published-output acceptance.
+These are boundary-acceptance results,
+not production-quarter-cycle or long-duration qualification. All controller states, measurement histories,
 outputs and network boundary channels are retained in bounded lossless traces
 with per-channel errors and their times. Controller-state and output errors
 remain explicitly diagnostic while their stage conventions are reconciled.

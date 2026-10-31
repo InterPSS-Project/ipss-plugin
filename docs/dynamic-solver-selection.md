@@ -116,6 +116,13 @@ event policy. `MODIFIED_EULER` remains the underlying derivative API selection;
 it does not turn the staggered recurrence into ordinary predictor/corrector
 integration. Use a fixed step and check model support at initialization.
 
+PSS2B directly supplies the same CML block states to the shared participant
+interface while retaining compiled modified-Euler execution. Its sampled-voltage
+histories commit at accepted network endpoints under both methods. The
+[PSS2B runtime contract](dynamic-models/pss2b-compiled-runtime.md) describes the
+audited graph restrictions, reinitialization requirements and fine-step coupled
+voltage/angle acceptance; complete controller-state parity remains open.
+
 SVSMO3T2 supplies its states, rates and limiter projection directly through the
 shared participant interface. Its coupled switching conformance also qualifies
 an explicit endpoint-clock choice:

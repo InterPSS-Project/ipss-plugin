@@ -34,10 +34,14 @@ final class Pss2bCompiledStage implements CmlCompiledStage {
     private final Entry[] entries;
     private final Node[] captured = new Node[11];
     private final double[] inputs = new double[11], states = new double[11], rates = new double[11];
+    private CMLControlBlockAdapter[] sharedStates;
+    private java.util.function.DoubleSupplier[] sharedRates;
+    private final Ieee1992PSS2BStabilizer.InputPath firstOwner, secondOwner;
     private int size;
 
     Pss2bCompiledStage(Ieee1992PSS2BStabilizer model) {
         this.model = model;
+        firstOwner = model.inputPath1; secondOwner = model.inputPath2;
         if (!model.eAdapters().isEmpty() || !model.inputPath1.belongsTo(model) || !model.inputPath2.belongsTo(model))
             throw unsupported();
         Set<Object> owned = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -174,8 +178,79 @@ final class Pss2bCompiledStage implements CmlCompiledStage {
 
     @Override public void advance(boolean predictor, double dt) {
         for (int i = 0; i < size; i++) captured[i].kernel().advance(predictor, inputs[i], dt, null, null, states, rates, i);
+        model.acceptCompatibleStage(predictor, dt);
     }
 
     @Override public void release() { size = 0; }
     @Override public boolean supportsObservationPreparation() { return true; }
+
+    int sharedStateCount() {
+        if (sharedStates == null) {
+            var storage = new ArrayList<CMLControlBlockAdapter>();
+            var equations = new ArrayList<java.util.function.DoubleSupplier>();
+            for (Node node : nodes) {
+                if (node.block() instanceof FilterNthOrderBlock compound) {
+                    for (var block : compound.getIntegrationBlocks()) {
+                        storage.add(block);
+                        equations.add(CmlBlockKernel.create(block)::equationResidual);
+                    }
+                } else {
+                    storage.add(node.block());
+                    if (node.block() instanceof Pss2aWashoutBlock washout)
+                        equations.add(washout::evaluateStateDerivative);
+                    else if (node.block() instanceof Pss2aLeadLagBlock leadLag)
+                        equations.add(leadLag::evaluateStateDerivative);
+                    else equations.add(node.kernel()::equationResidual);
+                }
+            }
+            for (var block : storage)
+                if (block instanceof com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter first
+                        && first.getType() != com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NoLimit)
+                    throw new IllegalArgumentException("PSS2B shared integration requires the audited unprojected block graph");
+            sharedStates = storage.toArray(CMLControlBlockAdapter[]::new);
+            sharedRates = equations.toArray(java.util.function.DoubleSupplier[]::new);
+        }
+        return sharedStates.length;
+    }
+
+    void readSharedState(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, sharedStateCount(), values.length);
+        for (int i = 0; i < sharedStates.length; i++) values[offset + i] = sharedStates[i].getStateX();
+    }
+
+    void checkSharedOwners() {
+        if (model.inputPath1 != firstOwner || model.inputPath2 != secondOwner
+                || !model.eAdapters().isEmpty() || !firstOwner.eAdapters().isEmpty() || !secondOwner.eAdapters().isEmpty())
+            throw new IllegalStateException("Reinitialize PSS2B after changing owners or observers");
+    }
+
+    /** The graph is acyclic: resolve its algebraic feedthrough in signal order once. */
+    void refreshSharedAlgebraic() {
+        checkSharedOwners();
+        firstOwner.setRuntimeInputValue(0. + model.input1Signal);
+        for (int i = 0; i < 3; i++) prepare(nodes[i], false);
+        firstOwner.setRuntimeOutputValue(y(2));
+        secondOwner.setRuntimeInputValue(0. + model.input2Signal);
+        for (int i = 3; i < 6; i++) prepare(nodes[i], false);
+        secondOwner.setRuntimeOutputValue(y(5));
+        for (int i = 6; i < nodes.length; i++) prepare(nodes[i], false);
+    }
+
+    void evaluateShared(double[] derivatives, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, sharedStateCount(), derivatives.length);
+        refreshSharedAlgebraic();
+        for (int i = 0; i < sharedRates.length; i++) {
+            double value = sharedRates[i].getAsDouble();
+            if (!Double.isFinite(value)) throw new IllegalStateException("Nonfinite PSS2B shared derivative");
+            derivatives[offset + i] = value;
+        }
+    }
+
+    void applySharedState(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, sharedStateCount(), values.length);
+        for (int i = 0; i < sharedStates.length; i++)
+            if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Finite PSS2B state required");
+        for (int i = 0; i < sharedStates.length; i++) sharedStates[i].setStateX(values[offset + i]);
+        refreshSharedAlgebraic();
+    }
 }

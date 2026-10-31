@@ -98,6 +98,42 @@ public class Pss2bReferenceReplayTest {
             assertTrue(fine[channel] <= .75 * coarse[channel] + 1e-7, "Multi-section step-halving convergence, channel=" + channel);
     }
 
+    @Test void sampledDerivativeAndPowerPathsHaveDistinctIndependentEventHistories() throws Exception {
+        for (String suffix : new String[]{"0p0005", "0p00025"}) {
+            Path root = caseDirectory("pss2b-native-s6-i1-r0-fault-standard-h" + suffix + "-a-20261030");
+            var manifest = new com.fasterxml.jackson.databind.ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+            double step = manifest.get("step_s").asDouble();
+            var constants = manifest.get("components").get("STAB").get("actual_constants");
+            var byTick = new java.util.TreeMap<Integer, List<Map<String, Double>>>();
+            for (var row : rows(root.resolve("native.csv"))) byTick.computeIfAbsent((int) Math.round(row.get("time_s") / step),
+                    ignored -> new ArrayList<>()).add(row);
+            for (double event : new double[]{.05, .1}) {
+                int tick = (int) Math.round(event / step);
+                var previous = byTick.get(tick - 1).getLast();
+                var right = byTick.get(tick).getLast();
+                var next = byTick.get(tick + 1).getFirst();
+                double powerPrevious = (previous.get("P_PU") - previous.get("PSS_STATE_3")) / constants.get(3).asDouble();
+                double powerRight = (right.get("P_PU") - right.get("PSS_STATE_3")) / constants.get(3).asDouble();
+                double averaged = right.get("PSS_STATE_3") + step * (.75 * powerRight + .25 * powerPrevious);
+                double ordinary = right.get("PSS_STATE_3") + step * (1.5 * powerRight - .5 * powerPrevious);
+                double averageError = Math.abs(next.get("PSS_STATE_3") - averaged);
+                double ordinaryError = Math.abs(next.get("PSS_STATE_3") - ordinary);
+                assertTrue(averageError < 3e-7, "Power-path event treatment, including independent binary32 state rounding");
+                assertTrue(ordinaryError > 10 * averageError + 1e-7, "The power-path discriminator must reject unaveraged history");
+                if (event == .1) {
+                    double derivativePrevious = (previous.get("PSS_DVDT_1") - previous.get("PSS_STATE_0")) / constants.get(0).asDouble();
+                    double derivativeRight = (right.get("PSS_DVDT_1") - right.get("PSS_STATE_0")) / constants.get(0).asDouble();
+                    double kept = right.get("PSS_STATE_0") + step * (1.5 * derivativeRight - .5 * derivativePrevious);
+                    double mixed = right.get("PSS_STATE_0") + step * (.75 * derivativeRight + .25 * derivativePrevious);
+                    double keptError = Math.abs(next.get("PSS_STATE_0") - kept);
+                    assertTrue(keptError < 1e-8, "Sampled derivative retains its two-step history across clearing");
+                    assertTrue(Math.abs(next.get("PSS_STATE_0") - mixed) > 10 * keptError + 1e-9,
+                            "The sampled derivative discriminator must reject whole-vector event averaging");
+                }
+            }
+        }
+    }
+
     private Path referenceArchive() throws Exception {
         if (references == null) references = new Pss2bReferenceFixture(staged);
         return references.archive();

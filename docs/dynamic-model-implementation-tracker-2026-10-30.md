@@ -10,7 +10,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## PSS2B
 
-- Add direct shared-state staggered participation to the existing compiled graph, preserving modified-Euler execution and sampled measurement histories.
+- Retain direct shared-state staggered participation, the existing modified-Euler execution, sampled measurement histories and audited ownership/predictor guards.
 - Extend the accepted coupled voltage/angle matrix to production-quarter-cycle and longer-duration runs.
 - Finish strict independent controller-state and sampled-output lifecycle qualification across selectors and limiter combinations.
 - Preserve separate mappings for the standard record and the existing typed extension.

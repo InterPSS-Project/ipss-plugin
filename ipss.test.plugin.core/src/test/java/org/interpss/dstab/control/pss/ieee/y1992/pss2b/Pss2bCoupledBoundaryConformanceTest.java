@@ -12,6 +12,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
+import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,25 +26,34 @@ import com.interpss.dstab.mach.Machine;
 
 /** Coupled voltage/angle acceptance and complete controller diagnostics retain all reference samples. */
 public class Pss2bCoupledBoundaryConformanceTest {
+    private static final double NETWORK_TOLERANCE = 1e-6;
     record Frame(double time, String kind, Map<String, Double> values) { }
 
     @Test void everyCapturedProfileMeetsVoltageAndAngleGatesWithTypedStages(@TempDir Path staged) throws Exception {
+        compareMatrix(staged, false);
+    }
+
+    @Test void everyCapturedProfileMeetsVoltageAndAngleGatesWithSharedStaggeredStates(@TempDir Path staged) throws Exception {
+        compareMatrix(staged, true);
+    }
+
+    private static void compareMatrix(Path staged, boolean staggered) throws Exception {
         IpssCorePlugin.init(); IpssCorePlugin.configureSparseSolver("java-klu");
         var references = new Pss2bReferenceFixture(staged);
         var results = new LinkedHashMap<String, Object>();
-        Path output = Files.createTempDirectory(Path.of("target"), "pss2b-coupled-");
+        Path output = Files.createTempDirectory(Path.of("target"), staggered ? "pss2b-staggered-coupled-" : "pss2b-coupled-");
         System.out.println("PSS2B coupled boundary output " + output.getFileName());
         for (var entry : references.matrix()) {
             if (!entry.get("repeat").asText().equals("a")) continue;
             String tag = entry.get("tag").asText();
             references.requireConstantPowerLoads("pss2b-native-" + tag);
             var root = references.stage("pss2b-native-" + tag);
-            results.put(tag, run(root, entry.get("profile"), output));
+            results.put(tag, run(root, entry.get("profile"), output, staggered));
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(), results);
         }
     }
 
-    private static Object run(Path root, JsonNode profile, Path output) throws Exception {
+    private static Object run(Path root, JsonNode profile, Path output, boolean staggered) throws Exception {
         var manifest = new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
         var expected = Pss2bReferenceReplayTest.rows(root.resolve("native.csv"));
         var context = new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(), root.resolve("dynamic.dyr").toString());
@@ -68,20 +78,25 @@ public class Pss2bCoupledBoundaryConformanceTest {
         String event = profile.get("event").asText();
         if (event.equals("fault")) net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net,
                 com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P, new Complex(0., .2), null, .05, .05), "fault");
-        var recorder = new Recorder(algorithm, event.equals("reference")); algorithm.setSolver(recorder);
+        var recorder = new Recording(algorithm, event.equals("reference"));
+        algorithm.setSolver(staggered ? new StaggeredRecorder(algorithm, recorder) : new Recorder(algorithm, recorder));
         assertTrue(algorithm.initialization());
-        assertTrue(pss.hasCompiledStageEvaluator(), "Automatic typed-stage coverage");
+        if (!staggered) assertTrue(pss.hasCompiledStageEvaluator(), "Automatic typed-stage coverage");
         recorder.coordinates = Pss2bReferenceReplayTest.coordinates(pss);
         var initial = recorder.capture(0., "INITIAL");
         recorder.enabled = true;
         while (algorithm.getSimuTime() < .5 - step / 2.) assertTrue(algorithm.solveDEqnStep(true));
         recorder.frames.add(recorder.capture(algorithm.getSimuTime(), "FINAL"));
-        assertTrue(pss.getCompiledStageEvaluationCount() > 1000);
+        assertEquals(NETWORK_TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
+                .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
+        if (staggered) assertTrue(pss.getStaggeredEvaluationCount() > 1000, "Shared participant coverage");
+        else assertTrue(pss.getCompiledStageEvaluationCount() > 1000);
         long startups = expected.stream().filter(r -> r.get("time_s") < 0.).count();
         assertEquals(expected.size(), recorder.frames.size() + startups, "Complete grid and interval-side sample count");
         var maximum = new LinkedHashMap<String, Double>(); var at = new LinkedHashMap<String, Double>();
         var sumSquares = new LinkedHashMap<String, Double>();
         double prefaultAngleMaximum = 0., minimumOutput = Double.POSITIVE_INFINITY, maximumOutput = Double.NEGATIVE_INFINITY;
+        double firstEventPowerStateError = 0.; int firstEventSamples = 0;
         for (String key : initial.values.keySet()) { maximum.put(key, 0.); at.put(key, 0.); sumSquares.put(key, 0.); }
         Path trace = output.resolve(root.getFileName() + ".csv.gz");
         long estimate = BenchmarkOutputGuard.estimateCsvBytes(expected.size(), initial.values.size());
@@ -93,6 +108,12 @@ public class Pss2bCoupledBoundaryConformanceTest {
             for (var row : expected) {
                 double time = row.get("time_s");
                 Frame actual = time < 0. ? initial : recorder.frames.get(frame++);
+                if (staggered && event.equals("fault") && pss.getData().getIcs1() == 6 && pss.getData().getIcs2() == 3
+                        && Math.abs(time - (.05 + step)) < step / 10) {
+                    firstEventSamples++;
+                    firstEventPowerStateError = Math.max(firstEventPowerStateError,
+                            Math.abs(actual.values.get("PSS_STATE_3") - row.get("PSS_STATE_3")));
+                }
                 if (time >= 0.) assertEquals(time, actual.time, 2e-5, "Accumulated independent single-precision clock");
                 if (time < .05) prefaultAngleMaximum = Math.max(prefaultAngleMaximum,
                         Math.abs(actual.values.get("MACH_ANGLE") - row.get("MACH_ANGLE")));
@@ -129,38 +150,78 @@ public class Pss2bCoupledBoundaryConformanceTest {
         }
         assertTrue(rmse.get("MACH_ANGLE") < .01, "Rotor-angle RMSE in degrees");
         assertTrue(prefaultAngleMaximum < .002, "Prefault maximum rotor-angle error in degrees");
+        if (staggered && event.equals("fault") && pss.getData().getIcs1() == 6 && pss.getData().getIcs2() == 3) {
+            assertEquals(1, firstEventSamples, "Retain the first postfault sample for the independent input-history gate");
+            assertTrue(firstEventPowerStateError < 3e-7, "A sampled derivative cannot suppress power-input event averaging");
+        }
         if (profile.get("variant").asText().equals("limits")) {
             assertEquals(pss.vstmin, minimumOutput, 1e-12, "Lower output bound must be active");
             assertEquals(pss.vstmax, maximumOutput, 1e-12, "Upper output bound must be active");
         }
         System.out.println("PSS2B coupled " + root.getFileName() + " max V=" + maximum.get("V_BUS1")
                 + " angle=" + maximum.get("MACH_ANGLE") + " output=" + maximum.get("VOTHSG"));
-        return Map.of("status", "boundary-accepted-controller-states-diagnostic", "maximum_error", maximum,
+        var result = new LinkedHashMap<String, Object>();
+        result.putAll(Map.of("status", "boundary-accepted-controller-states-diagnostic", "maximum_error", maximum,
                 "maximum_time_s", at, "rmse", rmse, "samples", expected.size(),
                 "startup_policy", "Compare retained negative-time rows to the initialized snapshot; no negative-time integration",
                 "voltage_range_nrmse", normalizedVoltage, "bus_frequency_filter_s", .04,
-                "trace", trace.getFileName().toString());
+                "trace", trace.getFileName().toString(), "integration_method", staggered ? "STAGGERED_EULER" : "MODIFIED_EULER"));
+        result.put("first_event_power_state_samples", firstEventSamples);
+        result.put("first_event_power_state_maximum", firstEventPowerStateError);
+        return result;
     }
 
     private static final class Recorder extends DefaultDynamicSimulationSolver {
+        final Recording recording;
+        Recorder(DynamicSimuAlgorithm algorithm, Recording recording) {
+            super(algorithm); this.recording = recording; converge_tol = NETWORK_TOLERANCE;
+        }
+        @Override public void beforeStep(double time) throws DStabSimuException {
+            recording.beforeStep(time); super.beforeStep(time);
+        }
+        @Override public boolean networkSolutionStep() throws DStabSimuException {
+            boolean solved = super.networkSolutionStep();
+            if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
+                recording.frames.add(recording.capture(dstabAlgo.getSimuTime(), "GRID"));
+            return solved;
+        }
+    }
+
+    private static final class StaggeredRecorder extends StaggeredEulerSolver {
+        final Recording recording;
+        StaggeredRecorder(DynamicSimuAlgorithm algorithm, Recording recording) {
+            super(algorithm); this.recording = recording; setReuseNetworkEndpoint(false);
+            setNetworkSolutionTolerance(NETWORK_TOLERANCE);
+        }
+        @Override public void beforeStep(double time) throws DStabSimuException {
+            if (recording.beforeStep(time)) notifyDiscontinuity();
+            super.beforeStep(time);
+        }
+        @Override public boolean networkSolutionStep() throws DStabSimuException {
+            boolean solved = super.networkSolutionStep();
+            if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
+                recording.frames.add(recording.capture(dstabAlgo.getSimuTime(), "GRID"));
+            return solved;
+        }
+    }
+
+    private static final class Recording {
+        final DynamicSimuAlgorithm dstabAlgo;
         final List<Frame> frames = new ArrayList<>(); final boolean referenceStep;
         boolean enabled; DoubleSupplier[] coordinates;
-        Recorder(DynamicSimuAlgorithm algorithm, boolean referenceStep) { super(algorithm); this.referenceStep = referenceStep; }
-        @Override public void beforeStep(double time) throws DStabSimuException {
+        Recording(DynamicSimuAlgorithm algorithm, boolean referenceStep) { dstabAlgo = algorithm; this.referenceStep = referenceStep; }
+        boolean beforeStep(double time) {
+            boolean changed = false;
             if (enabled && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9)) {
                 frames.add(capture(time, "INTERVAL_PRE"));
                 if (referenceStep && Math.abs(time - .05) < 1e-9) {
                     var exciter = (com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController)
                             dstabAlgo.getNetwork().getMachine("Bus1-mach1").getExciter();
                     exciter.setRefPoint(exciter.getRefPoint() + .01);
+                    changed = true;
                 }
             }
-            super.beforeStep(time);
-        }
-        @Override public boolean networkSolutionStep() throws DStabSimuException {
-            boolean solved = super.networkSolutionStep();
-            if (solved && enabled && "INITIAL".equals(networkSolutionStage)) frames.add(capture(dstabAlgo.getSimuTime(), "GRID"));
-            return solved;
+            return changed;
         }
         Frame capture(double time, String kind) {
             var net = dstabAlgo.getNetwork(); Machine machine = net.getMachine("Bus1-mach1");
