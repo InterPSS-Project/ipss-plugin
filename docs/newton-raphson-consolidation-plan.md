@@ -356,10 +356,10 @@ layout changes, auxiliary convergence checks and compatible public APIs.
   state-stamped evaluated result.
 - [x] **CLEAN-02** Remove internal prepared-versus-generic branches for residual
   evaluation and RHS publication in `LfCalcMismatchHelper` and `LfCalcNrEngine`.
-- [ ] **CLEAN-03** Retire internal calls to `computePreparedPowerMismatch()`,
+- [x] **CLEAN-03** Retire internal calls to `computePreparedPowerMismatch()`,
   `setPreparedPowerMismatch()`, `updatePreparedVoltage()` and
   `allocatePreparedGeneration()` after compatibility adapters are in place.
-- [ ] **CLEAN-04** Replace prepared-specific scope handling in
+- [x] **CLEAN-04** Replace prepared-specific scope handling in
   `LoadflowAlgorithmImpl` with common preparation/workspace lifecycle handling.
 - [x] **CLEAN-05** Reduce or replace `PreparedPolarJacobian` with preparation-only
   responsibilities; remove its duplicated residual, Jacobian, update and
@@ -375,6 +375,13 @@ layout changes, auxiliary convergence checks and compatible public APIs.
 
 Exit evidence: source review and execution tests demonstrate that selection
 changes preparation behavior without selecting a second formula implementation.
+
+The [lifecycle checkpoint](benchmarks/nr-consolidation-lifecycle-2026-10-30.md)
+closes CLEAN-03/04 for ordinary execution: legacy optional hooks are confined to
+their compatibility adapter, and engine/algorithm lifecycle observations come
+from `INrSolver`. Nine positive bridge/compatibility/exception cases pass in the
+full 7,878-identity run. Specialized contributor capabilities and migration of
+the independent historical standalone solver remain required for CLEAN-06/08.
 
 ### 8.7 Numerical, integration and performance qualification - phase 6
 

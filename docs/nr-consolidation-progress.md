@@ -141,3 +141,29 @@ failure diagnostic. One historical replay-test name is explicitly reviewed as
 replaced by three passing controller-qualification tests; the raw missing name
 and source comparison remain in the audit. A later unrelated governor test edit
 is outside the compiled snapshot. Final consolidation qualification remains open.
+
+## Common solver-owned lifecycle
+
+Core commit `bc81289c5` removes concrete default-solver checks from ordinary NR
+engine and algorithm lifecycle handling. `INrSolver` supplies stable-input,
+retained-voltage, preparation-build and cached-use observations. Existing
+virtual observation overrides and public prepared scope methods retain their
+compatibility behavior. Legacy optional residual/correction/allocation hooks
+remain inside their compatibility adapter; formulation equations and numerical
+policy are unchanged.
+
+All **465 required checks pass** in full run `nr-lifecycle-full-20261030`:
+7,878 identities, 7,771 passed, 91 skipped and the same 16 failures/errors.
+There are no missing identities, new failures/skips, changed failure diagnostics
+or fork dumps, and no Java source changes after capture. Nine added lifecycle
+cases cover a non-default bridge across both coordinates/all modes, old
+observation overrides and exception cleanup/recovery.
+
+The [checkpoint](benchmarks/nr-consolidation-lifecycle-2026-10-30.md) retains
+matched observations against the preceding compiled runtime. Warmed medians are
+54.36→54.59 ms for 25k and 248.54→242.54 ms for 70k. One-warmup samples and all
+warmed samples are preserved separately; final voltage files are byte-identical
+and independent residual checks pass. These limited observations make no final
+RustPower qualification claim. CLEAN-03/04 are closed; contributor contracts,
+standalone API migration, coverage closure and all-five-case performance
+qualification remain open.

@@ -2,9 +2,9 @@
   "schema": 1,
   "status": "in_progress",
   "release_closed": false,
-  "verification_run": "nr-consolidation-preparation-full-fixed-20261030",
-  "evidence": "ipss.test.plugin.core/target/nr-consolidation-20261030/preparation-full-fixed-test-audit.json",
-  "executed_tests": 7853,
+  "verification_run": "nr-lifecycle-full-20261030",
+  "evidence": "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/full-test-audit.json",
+  "executed_tests": 7878,
   "foundation_configurations": [
     {
       "coordinate": "rectangular",
@@ -319,7 +319,16 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#independentAlgorithmsAndNumericalOutputs",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#thirdPartyInterfaceDefaultsPreserveFreshExecutionAndRejectStrictCaching",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#backendMismatchReportsFallbackAndRejectsRequiredCache",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#repeatedCachedSolvesRetainPreparationAndResetPerSolveObservations"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#repeatedCachedSolvesRetainPreparationAndResetPerSolveObservations",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]"
       ],
       "remaining": "Final suite and third-party contributor lifecycle closure remain open.",
       "oracle": "Requested/actual mode, diagnostics and invocation counters asserted by the API tests."
@@ -908,7 +917,10 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest1",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest2",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest1",
-        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2"
+        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
       ],
       "remaining": "Contributor-layout and complete structural interaction coverage remain open.",
       "oracle": "Fresh reference assembly, explicit stale receipt rejection and structural action checks."
@@ -1818,7 +1830,19 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest1",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest2",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest1",
-        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2"
+        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
       ],
       "remaining": "Close all custom provider/observer admission boundaries after contributor migration.",
       "oracle": "Known custom callback outputs, invocation counts and observer-visible state."
@@ -1950,7 +1974,10 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#independentAlgorithmsAndNumericalOutputs",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#thirdPartyInterfaceDefaultsPreserveFreshExecutionAndRejectStrictCaching",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#backendMismatchReportsFallbackAndRejectsRequiredCache",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#repeatedCachedSolvesRetainPreparationAndResetPerSolveObservations"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#repeatedCachedSolvesRetainPreparationAndResetPerSolveObservations",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
       ],
       "remaining": "Close forced action and mutation-after-policy traces for the final implementation.",
       "oracle": "Recorded preparation/assembly/solve work and existing reuse-policy assertions."
@@ -2023,9 +2050,21 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest1",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest2",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest1",
-        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2"
+        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
       ],
-      "remaining": "Complete backend/coordinate/network replacement and exception cleanup sequences.",
+      "remaining": "Complete the remaining backend/coordinate/network replacement and failed-factorization repair interaction sequences; common scope cleanup and recovery now have positive bridge coverage.",
       "oracle": "Instance ownership, report/build counts and fresh solve comparisons."
     },
     {
@@ -2379,7 +2418,19 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#coordinateLimitsScaleAndMaximaFollowIndependentExpectedValues(boolean, boolean, double)[10]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#coordinateLimitsScaleAndMaximaFollowIndependentExpectedValues(boolean, boolean, double)[11]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#coordinateLimitsScaleAndMaximaFollowIndependentExpectedValues(boolean, boolean, double)[12]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#preUpdateMetricsRemainStableWhenAnObserverChangesALaterBus"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#preUpdateMetricsRemainStableWhenAnObserverChangesALaterBus",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
       ],
       "remaining": "Complete singular/failure/repair and missing-fixture recovery sequences.",
       "oracle": "Explicit expected failure reasons/stages and existing recovery fixtures."
@@ -2455,9 +2506,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrRectangularFormulationTest#preservedEntriesMatchFrozenAssemblerAndFullPvRowsRestorePhysicalCoupling(boolean, boolean, boolean)[5]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrRectangularFormulationTest#preservedEntriesMatchFrozenAssemblerAndFullPvRowsRestorePhysicalCoupling(boolean, boolean, boolean)[6]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrRectangularFormulationTest#preservedEntriesMatchFrozenAssemblerAndFullPvRowsRestorePhysicalCoupling(boolean, boolean, boolean)[7]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrRectangularFormulationTest#preservedEntriesMatchFrozenAssemblerAndFullPvRowsRestorePhysicalCoupling(boolean, boolean, boolean)[8]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrRectangularFormulationTest#preservedEntriesMatchFrozenAssemblerAndFullPvRowsRestorePhysicalCoupling(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]"
       ],
-      "remaining": "Historical standalone numerical API and remaining prepared lifecycle hooks still need migration.",
+      "remaining": "Historical standalone numerical API, specialized contributor contracts and final source/execution coverage closure still need migration. Ordinary engine lifecycle dispatch now uses the solver interface, with legacy optional hooks isolated in the compatibility adapter.",
       "oracle": "Mode/build/assembly counters, common plan/kernel tests and source review; standalone migration remains pending."
     },
     {
@@ -2518,6 +2578,6 @@
       "status": "closure_pending"
     }
   ],
-  "required_focused_tests": 453,
+  "required_focused_tests": 465,
   "full_regression_gate_passed": true
 }
