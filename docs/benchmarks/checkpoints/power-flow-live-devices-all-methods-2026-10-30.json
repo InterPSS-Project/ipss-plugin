@@ -1,0 +1,313 @@
+{
+  "schema": 1,
+  "date": "2026-10-30",
+  "status": "implemented_and_full_regression_audited",
+  "formulation": "Shared fixed network admittance plus live physical switched-shunt/SVC Q and derivatives; public physical Y APIs retained.",
+  "solver_families": [
+    "prepared polar NR",
+    "generic polar NR",
+    "rectangular NR",
+    "native PQ",
+    "GS",
+    "PQ_NR",
+    "XB FDNR",
+    "augmented ZBR NR",
+    "coordinated NR"
+  ],
+  "custom_and_three_phase_models": "Retain physical Yii ownership; no extra live injection.",
+  "iteration_policy": "GS and XB FDNR compose live B into their required physical iteration diagonals; native PQ retains existing B1/B11 approximations.",
+  "focused_tests": {
+    "tests": 109,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_cases": [
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[1]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[2]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[3]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[4]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[5]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[6]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[7]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[8]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "everyMethodMatchesThePhysicalFormulationAcrossDeviceMutations(Family)[9]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "fdnrRefactorsOnlyTheRequiredPhysicalQMatrix"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "genericJacobianMatchesIndependentCurrentDerivatives(boolean, boolean)[1]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "genericJacobianMatchesIndependentCurrentDerivatives(boolean, boolean)[2]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "genericJacobianMatchesIndependentCurrentDerivatives(boolean, boolean)[3]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "genericJacobianMatchesIndependentCurrentDerivatives(boolean, boolean)[4]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "gsStepRetainsThePhysicalIterationDiagonal"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "largeLiveBDoesNotContaminateTheBaseAndCustomYiiKeepsOwnership"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "pureImpedanceLoadAndInactiveBusKeepExistingPrecedence"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "secondDerivativeHelperIncludesTheLiveDevice(boolean)[1]"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "secondDerivativeHelperIncludesTheLiveDevice(boolean)[2]"
+    ]
+  ],
+  "full_tests": {
+    "run": "all-pf-live-device-full-20261030",
+    "baseline_run": "dynamic-pf-transfer-full-final-20261030",
+    "tests": 7629,
+    "passed": 7522,
+    "skipped": 91,
+    "baseline_failures_and_errors": 16,
+    "modules": {
+      "ipss.core.test": {
+        "tests": 3252,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ipss.plugin.3phase": {
+        "tests": 478,
+        "failures": 0,
+        "errors": 3,
+        "skipped": 28
+      },
+      "ipss.plugin.core": {
+        "tests": 457,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 4
+      },
+      "ipss.test.plugin.core": {
+        "tests": 3442,
+        "failures": 10,
+        "errors": 2,
+        "skipped": 59
+      }
+    },
+    "new_failures": [],
+    "removed_tests": [],
+    "dump_files": [],
+    "baseline_failure_identities": [
+      {
+        "module": "ipss.core.test",
+        "classname": "com.interpss.test.core.ca.dclf.DclfMultiOutageTest1",
+        "name": "multiOpenOutageSkipsPrunedIslandBranchFactors",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.plugin.3phase",
+        "classname": "org.interpss.multiNet.trans_dist.IEEE9_3Phase_1PAC_2SubNet_test",
+        "name": "test_IEEE9_addFeeder_1pac_Positive_Seq_Dstab",
+        "kind": "error",
+        "type": "java.lang.ClassCastException"
+      },
+      {
+        "module": "ipss.plugin.3phase",
+        "classname": "org.interpss.multiNet.unit.IEEE9_3Phase_1PAC_mnet_3ph3seq_test",
+        "name": "test_multiNet_Dstab_IEEE9_1Feeder",
+        "kind": "error",
+        "type": "java.lang.NullPointerException"
+      },
+      {
+        "module": "ipss.plugin.3phase",
+        "classname": "org.interpss.multiNet.unit.investigate_3PHSubNetYabc",
+        "name": "test_phaseShift_SeqEquiv_IEEE9Bus_1port",
+        "kind": "error",
+        "type": "com.interpss.common.exp.InterpssException"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.adapter.psse.raw.aclf.RealEDTestCases",
+        "name": "testCase1",
+        "kind": "error",
+        "type": "com.interpss.common.exp.InterpssException"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.adapter.psse.raw.aclf.RoseHulman_UserTestCases",
+        "name": "odm_testCase",
+        "kind": "error",
+        "type": "java.lang.NullPointerException"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.EndpointAlignedStateMonitorTest",
+        "name": "fullSolverVoltageAndMachineSpeedMatchSynchronousStateSnapshotsAtFaultEdges",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.Reecc1NativeConformanceTest",
+        "name": "allSevenStatesCommandsAndNetworkBoundaryFollowTheNativeFault",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+        "name": "allSixCasesRideThroughThreeCycleFault",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+        "name": "allSixCasesRideThroughGeneratorTrip",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase1",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase2",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase4",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase2_1",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase2_2",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase4_1",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      }
+    ]
+  },
+  "source_at_execution": {
+    "core": "fcd07b033d2684c09ab9bcc1c53b69013bc2128c",
+    "plugin": "6f7cbd1ffdc3aab66bb7b643dd46bf101c3d8e36",
+    "includes_preexisting_core_work": true
+  },
+  "source_and_runtime_receipt": {
+    "path": "ipss.test.plugin.core/target/all-pf-live-device-20261030/source-runtime.json",
+    "sha256": "2bdedee07c7429b263bf00893f618e73118bafd532706996a4973fd954aa9848"
+  },
+  "test_audit": {
+    "path": "ipss.test.plugin.core/target/all-pf-live-device-20261030/test-audit.json",
+    "sha256": "356b2d89df0305250be53d8743f428a543ac0fe3ebdbb870dc1f979a9aaa8a2e"
+  },
+  "evidence_root": "ipss.test.plugin.core/target/all-pf-live-device-20261030",
+  "performance_claim": null,
+  "preserved_failed_attempt": "all-pf-live-device-focused-20261030: SVC fixture Optional handling corrected before the passing focused/full runs.",
+  "implemented_core_commit": "5309d648648378f7bec22226fe5ef6c8d80c52be",
+  "later_unrelated_plugin_edits_excluded_from_commit": [
+    {
+      "path": "ipss.plugin.core/src/main/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Ieee1992PSS2BStabilizer.java",
+      "working_source_mtime_utc": "2026-10-31T00:03:15.351323+00:00",
+      "working_source_sha256": "60e499b846dce60c5c4afedb617048c5248ca65f01def684a16d9ca9cf2d36b5",
+      "tested_class_mtime_utc": "2026-10-30T21:53:18.827774+00:00",
+      "tested_class_sha256": "b7e25cbd1b2f752525fb3da2d2f48cdd7b6cc7f766fa7e1c293768eab09837c2"
+    },
+    {
+      "path": "ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/PSSEDStabDirectParser.java",
+      "working_source_mtime_utc": "2026-10-31T00:03:15.363603+00:00",
+      "working_source_sha256": "a5caa8b9c54df0afc476a0435b4d55b9fd8cc51d22ffc3432ed221e4f2cbd15c",
+      "tested_class_mtime_utc": "2026-10-30T21:53:19.708985+00:00",
+      "tested_class_sha256": "3cd38418c53c5689614a2c65c8a1fb399e8be6fc60287004866e19ba327bf0dc"
+    },
+    {
+      "path": "ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/dyr/DynamicModelCatalog.java",
+      "working_source_mtime_utc": "2026-10-31T00:03:15.361591+00:00",
+      "working_source_sha256": "92376eacd342fcecaba7e148fd6fae3b5e98bb30496a9a3a8fd761aa082bb818",
+      "tested_class_mtime_utc": "2026-10-30T21:53:19.894818+00:00",
+      "tested_class_sha256": "e8e1c2444d9b332a7d1dff407a0e66993123320dd801241fe25b0e25cb745695"
+    }
+  ]
+}
