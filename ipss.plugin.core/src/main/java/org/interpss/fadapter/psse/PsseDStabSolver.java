@@ -259,6 +259,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private static boolean acceptInitialPlantEndpoints(BaseDStabNetwork<?, ?> network) {
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
             if (!bus.isActive()) continue;
+            for (var device : bus.getDynamicBusDeviceList())
+                if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model statcom
+                        && !statcom.acceptSwitchingEndpoint()) return false;
             for (DStabGen generator : bus.getContributeGenList()) {
                 if (!generator.isActive()) continue;
                 if (generator.getDynamicGenDevice() instanceof Machine machine && machine.isActive()

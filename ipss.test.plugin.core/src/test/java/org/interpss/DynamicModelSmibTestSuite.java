@@ -14,14 +14,16 @@ import org.junit.platform.suite.api.Suite;
  */
 @Suite
 @IncludeEngines("junit-jupiter")
-@SelectPackages({"org.interpss.core.adapter.builder.dstab", "org.interpss.core.dstab"})
+@SelectPackages({"org.interpss.core.adapter.builder.dstab", "org.interpss.core.dstab", "org.interpss.dstab.svc"})
 @IncludeClassNamePatterns({
         "org\\.interpss\\.core\\.adapter\\.builder\\.dstab\\..*Tests?",
         "org\\.interpss\\.core\\.dstab\\.(cml|mach)\\..*Tests?",
         "org\\.interpss\\.core\\.dstab\\.[^.]*Smib[^.]*",
         "org\\.interpss\\.core\\.dstab\\.[^.]*(Conformance|IndependentTrajectory|NativeTrajectory)Test",
         "org\\.interpss\\.core\\.dstab\\.(Regca.*|RegfmaLimitNative|RenewableAggregateQvMode|Type3WindAndesTrajectory|Pss3cNumericalStage|ZeroTimePsseBoundaryReplay|ReferenceArtifactManifestIntegrity|EmbeddedTrajectoryCoverageInventory|PsseRunQuality)Test",
-        "org\\.interpss\\.core\\.dstab\\.reference\\.EmbeddedTrajectoryReferenceTest"
+        "org\\.interpss\\.core\\.dstab\\.reference\\.EmbeddedTrajectoryReferenceTest",
+        "org\\.interpss\\.core\\.dstab\\.Svsmo3t2Mss(Kernel|Replay)Test",
+        "org\\.interpss\\.dstab\\.svc\\.Svsmo3t2MssBoundaryTest"
 })
 @ExcludeClassNamePatterns({
         ".*\\.Texas2k[^.]*", ".*\\.Wecc[^.]*", ".*\\.Ieee39[^.]*", ".*\\.DStab_[^.]*"

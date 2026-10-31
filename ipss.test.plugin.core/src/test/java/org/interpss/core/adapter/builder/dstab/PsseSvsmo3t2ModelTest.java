@@ -25,18 +25,19 @@ import com.interpss.dstab.cache.StateMonitor;
 public class PsseSvsmo3t2ModelTest extends CorePluginTestSetup {
     private static final Path FIXTURE = Path.of("testData/psse/v33/SVSMO3T2");
 
-    @Test void malformedRecordsAndUnimplementedMssNeverAttachSilently(@TempDir Path temporary) throws Exception {
+    @Test void malformedRecordsAndMissingMssNeverAttachSilently(@TempDir Path temporary) throws Exception {
         String source = Files.readString(FIXTURE.resolve("smib.dyr"));
         var record = org.interpss.fadapter.psse.dyr.PsseDyrRecordReader.read(
                 new java.io.StringReader(source), "synthetic.dyr").get(2);
-        for (String problem : List.of("short", "long", "nan", "flag", "mss", "missing", "remote")) {
+        for (String problem : List.of("short", "long", "nan", "flag", "mss", "empty-mss", "missing", "remote")) {
             var fields = new ArrayList<>(record.fields());
             switch (problem) {
                 case "short" -> fields.remove(fields.size() - 1);
                 case "long" -> fields.add("0");
                 case "nan" -> fields.set(22, "NaN");
                 case "flag" -> fields.set(4, "2");
-                case "mss" -> fields.set(3, "1");
+                case "mss" -> { fields.set(3, "1"); fields.set(6, "3"); fields.set(7, "'MISSING'"); }
+                case "empty-mss" -> fields.set(3, "1");
                 case "missing" -> fields.set(0, "MISSING");
                 case "remote" -> fields.set(2, "99");
             }

@@ -35,6 +35,9 @@ public record Svsmo3t2Data(int remoteBusNumber, int mssSwitchingFlag,
                 || !flag(mssSwitchingFlag) || !flag(slowResetFlag) || !flag(nonlinearDroopFlag)) {
             throw new IllegalArgumentException("SVSMO3T2 invalid remote bus, flags or MSS slots");
         }
+        if (mssSwitchingFlag == 1 && mssDevices.stream().noneMatch(device -> device.busNumber() != 0)) {
+            throw new IllegalArgumentException("SVSMO3T2 enabled MSS requires an assigned bank; the entire source model would be ignored");
+        }
         for (double value : new double[]{xc0, tc1, tb1, kp, ki, veMax, veMin,
                 firingTime, continuousCurrent, deadband, deadbandRatio, deadbandTime,
                 kpr, kir, currentDeadband, vrMax, vrMin, shortCurrentMultiplier,

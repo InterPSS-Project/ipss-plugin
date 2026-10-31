@@ -32,6 +32,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private final Svsmo3t2Data data;
     private final StaticVarCompensator svc;
     private final BaseDStabBus<?, ?> remoteBus;
+    private final Svsmo3t2MssBoundary switching;
     private final double[] x = new double[6], start = new double[6];
     private final double[] rate = new double[6], firstRate = new double[6];
     private final IntegrationStateMonitor monitor = new IntegrationStateMonitor(NAMES);
@@ -40,15 +41,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private final boolean nonlinearDroopActive;
     private final boolean thermalRatingActive;
     private double initialB, baseRatio, scheduledVoltage, auxiliarySignal;
+    private double integrationTime;
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
     private boolean predictorPending, blocked, tripped, thermalLimited, deadbandLocked, shortRatingExhausted;
 
     public Svsmo3t2Model(BaseDStabBus<?, ?> bus, BaseDStabBus<?, ?> remoteBus,
             StaticVarCompensator svc, Svsmo3t2Data data) {
-        if (data.mssSwitchingFlag() != 0) {
-            throw new IllegalArgumentException("SVSMO3T2 coordinated MSS switching is not implemented yet");
-        }
+        switching = new Svsmo3t2MssBoundary((com.interpss.dstab.BaseDStabNetwork<?, ?>) bus.getNetwork(), data);
         this.data = data;
         this.svc = svc;
         this.remoteBus = remoteBus;
@@ -80,6 +80,8 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         shortTimer = unblockTimer = overvoltageTimer = deadbandTimer = 0;
         predictorPending = blocked = tripped = thermalLimited = shortRatingExhausted = false;
         deadbandLocked = data.deadband() > 0;
+        integrationTime = 0;
+        switching.initialize();
         monitor.reset();
         outputStates.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         evaluateRates();
@@ -111,6 +113,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             projectAlgebraicStates();
             updateHistory(dt);
             predictorPending = false;
+            if (finiteState()) integrationTime += dt;
         }
         return finiteState();
     }
@@ -275,7 +278,20 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         return new Complex(-voltage.getImaginary() * correction, voltage.getReal() * correction);
     }
     @Override public boolean updateAttributes(boolean netChange) { return finiteState(); }
-    @Override public boolean afterStep(double dt) { return true; }
+    /** Physical actions run only after the solver has accepted the full endpoint. */
+    @Override public boolean afterStep(double dt) {
+        if (!Double.isFinite(dt) || dt < 0 || predictorPending) return false;
+        if (dt == 0) return finiteState();
+        return acceptSwitchingEndpoint();
+    }
+    /** Call after initial network compensation is established, never during its construction. */
+    public boolean acceptSwitchingEndpoint() {
+        if (predictorPending) return false;
+        if (!tripped) switching.advance(integrationTime, getCurrent());
+        return finiteState();
+    }
+    public Svsmo3t2MssController getMssController() { return switching.controller(); }
+    public Map<String, Double> getSwitchingNamedStates() { return switching.getNamedStates(); }
     @Override public Map<String, Double> getNamedStates() {
         var result = new LinkedHashMap<String, Double>();
         // The sensor exports its residual lead-lag coordinate. The gain block

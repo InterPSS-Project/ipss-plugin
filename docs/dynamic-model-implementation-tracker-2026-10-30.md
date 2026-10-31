@@ -38,7 +38,7 @@ Models are listed in implementation priority order. Each section describes the r
 ## SVSMO3T2
 
 - Retain the [direct current-controller contract](dynamic-models/svsmo3t2-current-runtime.md), exact named FACTS import and accepted base SMIB fault gates.
-- Complete coordinated MSS switching, breaker/discharge timing and missing-device checks.
+- Retain prepared MSS switching, exact recorded-current replay, physical-stamp lifecycle and accepted single-operation coupled gates; resolve repeated-operation coupled timing.
 - Finish independent coupled/state qualification of slow reset, nonlinear droop, rating limits, blocking/trips and bypass combinations; the extended matrix remains diagnostic.
 - Resolve finite-stage differences without fitting parameters; extend validation, lifecycle and production-step/long-duration tests before promoting the partial catalog status.
 
