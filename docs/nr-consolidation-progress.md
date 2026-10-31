@@ -259,3 +259,20 @@ The linked checkpoint retains the separate all-five direct RustPower comparison,
 complete samples, exact-cache/actual-work counts and bounded-heap observations.
 Four cases meet <=1.2; IEEE118 remains above the target at 1.309. Architecture,
 complete coverage/interaction closure and final release qualification remain open.
+
+## Terminal contracts and rejected indexing candidate
+
+The [terminal checkpoint](benchmarks/nr-terminal-evaluation-contracts-2026-10-31.md)
+records test commit `65039c29a83a2ea3d3552bcd990391e3dba341c5` and 11 new independent endpoint cases. All 588
+required checks pass in the 8,001-identity full run, with 91 existing skips and
+the same 16 failures/errors. No test identities disappear or gain new failures/
+skips, baseline diagnostics remain unchanged, and no fork dumps or source drift
+occur. All 108 production classpath entries match the accepted benchmark runtime.
+
+The measured terminal-index candidate did not improve IEEE118 and was reverted;
+all 40,800 samples and both source versions remain. Its IEEE118 mean increases
+6.18%, including a retained 16.4449 ms maximum; the median increases about 1.08%.
+No general speedup is claimed. Production performance evidence remains the
+accepted exact-factor checkpoint, with four passing cases and IEEE118 at 1.309.
+Separate capabilities, complete adapter resolution and final qualification remain
+open. TC-09 now explicitly records the missing adversarial equal-hash pattern test.

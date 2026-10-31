@@ -2,9 +2,9 @@
   "schema": 1,
   "status": "in_progress",
   "release_closed": false,
-  "verification_run": "nr-exact-factor-full-20261031",
-  "evidence": "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/full-test-audit.json",
-  "executed_tests": 7990,
+  "verification_run": "nr-terminal-contract-full-20261031",
+  "evidence": "ipss.test.plugin.core/target/nr-capability-contracts-20261031/full-test-audit.json",
+  "executed_tests": 8001,
   "foundation_configurations": [
     {
       "coordinate": "rectangular",
@@ -468,7 +468,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
       "remaining": "Independent derivatives pass; the complete per-configuration linear-correction/accepted-output traceability still needs closure.",
       "oracle": "Frozen pre-consolidation assembler plus independent physical-current finite differences."
@@ -710,7 +721,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[26]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[27]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[2]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[3]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
       "remaining": "Close specialized impedance-table/custom-branch capability and all interaction sequences.",
       "oracle": "Frozen assembly and both-endpoint transformer mutation/derivative checks."
@@ -1281,7 +1303,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[17]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[25]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[9]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[9]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
       "remaining": "Close rejected control/trial receipt interactions with specialized contributors.",
       "oracle": "Current public model residuals and explicit old receipt/allocation rejection."
@@ -1367,9 +1400,20 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#pivotFallbackAndCachedMetadataKeepTheirOwnNumericalOwners",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#preparedOrderingChangeClearsTheEntry",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#signedZeroAndUnnotifiedNumericalWritesRequireExactComparison",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
-      "remaining": "Include exact-pattern collision, symbol transfer and failure receipts from the final full audit.",
+      "remaining": "Deliberately construct equal-hash but different CSC patterns; existing same-size pattern changes, symbol transfers and failure receipts are verified but do not prove this explicit adversarial case.",
       "oracle": "Frozen matrix entries, independent derivative checks and public block/scalar inspection parity."
     },
     {
@@ -1988,7 +2032,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
       "remaining": "Close all custom provider/observer admission boundaries after contributor migration.",
       "oracle": "Known custom callback outputs, invocation counts and observer-visible state."
@@ -2525,7 +2580,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
       "remaining": "Per-matrix contributor response ownership now passes, including mandatory ZBR equations. Final full helper/handoff audit remains open.",
       "oracle": "Existing public helper/handoff/control fixtures and frozen electrical assembly."
@@ -2919,7 +2985,18 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#pivotFallbackAndCachedMetadataKeepTheirOwnNumericalOwners",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#preparedOrderingChangeClearsTheEntry",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#signedZeroAndUnnotifiedNumericalWritesRequireExactComparison",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]"
       ],
       "remaining": "Separate specialized coefficient/capability contracts and final source/execution coverage closure remain. Standalone numerical API migration, ordered contributors, exact layouts, per-matrix response roles and trial ownership are implemented and verified.",
       "oracle": "Common engine/kernel source review, execution counters, frozen standalone comparison and independent physical-current/finite-difference checks."
@@ -2932,7 +3009,7 @@
       "status": "partial_evidence_target_not_met",
       "release_closed": false,
       "executed_test_ids": [],
-      "remaining": "The standalone-migration checkpoint retains initial/refined matched timings and current all-five external results. Measured overhead, final generic/frozen comparisons and the overall <=1.2 performance requirement remain open.",
+      "remaining": "The accepted exact-factor runtime meets <=1.2 on four cases; IEEE118 remains at 1.309. The terminal-index candidate was measured and rejected. Final generic/frozen comparisons and all-five qualification remain open.",
       "benchmark_evidence": [
         "docs/benchmarks/nr-consolidation-minimal-warmup-2026-10-30.md",
         "docs/benchmarks/checkpoints/nr-consolidation-minimal-warmup-2026-10-30.json",
@@ -2942,7 +3019,8 @@
         "docs/benchmarks/checkpoints/nr-owned-completion-2026-10-31.json",
         "docs/benchmarks/nr-standalone-consolidation-2026-10-31.md",
         "docs/benchmarks/checkpoints/nr-standalone-consolidation-2026-10-31.json",
-        "docs/benchmarks/checkpoints/nr-exact-factor-reuse-2026-10-31.json"
+        "docs/benchmarks/checkpoints/nr-exact-factor-reuse-2026-10-31.json",
+        "docs/benchmarks/checkpoints/nr-terminal-evaluation-contracts-2026-10-31.json"
       ],
       "oracle": "Qualified nodal operators, independent residual/reference voltage checks, raw wall times and execution receipts."
     }
@@ -2989,6 +3067,6 @@
       "status": "closure_pending"
     }
   ],
-  "required_focused_tests": 577,
+  "required_focused_tests": 588,
   "full_regression_gate_passed": true
 }
