@@ -266,9 +266,9 @@ cached and rebuilt preparation, including known-solution linear solves.
 
 ### 8.3 One polar residual/Jacobian implementation - phase 2
 
-- [ ] **POLAR-01** Identify shared nodal P/Q and load/live-device evaluation
+- [x] **POLAR-01** Identify shared nodal P/Q and load/live-device evaluation
   primitives that can serve both bulk NR evaluation and public helper facades.
-- [ ] **POLAR-02** Extract one polar residual routine using current model data,
+- [x] **POLAR-02** Extract one polar residual routine using current model data,
   external injections and the existing mismatch sign conventions.
 - [x] **POLAR-03** Extract one polar Jacobian routine and remove the mathematical
   split between ordinary prepared filling and retained-workspace filling.
@@ -282,7 +282,7 @@ cached and rebuilt preparation, including known-solution linear solves.
 - [x] **POLAR-07** Route `AclfNetJMatrixHelper.createJMatrix()` and
   `updateJMatrix()` polar requests through the shared formulation while
   preserving their public contracts and additional-block dimensions.
-- [ ] **POLAR-08** Route `DefaultNrSolver` and `LfCalcMismatchHelper` through one
+- [x] **POLAR-08** Route `DefaultNrSolver` and `LfCalcMismatchHelper` through one
   evaluated-result contract; keep external-device preparation and auxiliary
   residual refresh in their established order.
 - [ ] **POLAR-09** Preserve custom model overrides through adapters or row
@@ -297,23 +297,23 @@ model and mutation parity established before changing update/allocation logic.
 
 ### 8.4 Corrections, trial states and generation allocation - phase 3
 
-- [ ] **STATE-01** Move polar correction application and correction-maxima
+- [x] **STATE-01** Move polar correction application and correction-maxima
   calculation into one routine shared by every execution mode.
-- [ ] **STATE-02** Preserve angle/relative-magnitude conventions, global polar
+- [x] **STATE-02** Preserve angle/relative-magnitude conventions, global polar
   step scaling, variable-update limits and inactive/reference/PV behavior.
-- [ ] **STATE-03** Preserve negative-magnitude canonicalization and continuous
+- [x] **STATE-03** Preserve negative-magnitude canonicalization and continuous
   PV target restoration during line-search trials, including zero-scale trials.
 - [ ] **STATE-04** Give each trial state a valid evaluation stamp; restore both
   workspace and published state on rejected trials and rollback.
 - [ ] **STATE-05** Define voltage-publication boundaries for controllers,
   callbacks, EMF observers, logging and direct public getters. Publish before
   any consumer that cannot read the numerical workspace.
-- [ ] **STATE-06** Reuse accepted calculated P/Q only when voltage, model,
+- [x] **STATE-06** Reuse accepted calculated P/Q only when voltage, model,
   injection and control stamps still match; exclude rejected trial results.
 - [ ] **STATE-07** Consolidate generation allocation through the established
   allocation rules, including fixed generation, distributed generation,
   multiple generators and physical reactive compensation.
-- [ ] **STATE-08** Remove independent correction and allocation mathematics from
+- [x] **STATE-08** Remove independent correction and allocation mathematics from
   the prepared implementation after shared routines pass their gates.
 - [ ] **STATE-09** Test trial/rollback histories, callback visibility, repeated
   solves and allocated P/Q as well as final voltage convergence.
@@ -327,7 +327,7 @@ line-search cases that cannot retain unpublished voltages.
   reuse the same physical power/load evaluation primitives as polar NR.
 - [ ] **EXT-02** Preserve rectangular row ordering, PV voltage constraints,
   full/reduced matrix behavior and absolute rectangular corrections.
-- [ ] **EXT-03** Centralize rectangular correction application while retaining
+- [x] **EXT-03** Centralize rectangular correction application while retaining
   its existing update-limit and line-search conventions.
 - [ ] **EXT-04** Validate rectangular live-B chain rules and voltage-dependent
   load derivatives with independent finite differences.
@@ -352,9 +352,9 @@ layout changes, auxiliary convergence checks and compatible public APIs.
 
 ### 8.6 Remove prepared-specific production dispatch - phase 5
 
-- [ ] **CLEAN-01** Replace `PREPARED_MISMATCH` in `LfCalcNrEngine` with a typed,
+- [x] **CLEAN-01** Replace `PREPARED_MISMATCH` in `LfCalcNrEngine` with a typed,
   state-stamped evaluated result.
-- [ ] **CLEAN-02** Remove internal prepared-versus-generic branches for residual
+- [x] **CLEAN-02** Remove internal prepared-versus-generic branches for residual
   evaluation and RHS publication in `LfCalcMismatchHelper` and `LfCalcNrEngine`.
 - [ ] **CLEAN-03** Retire internal calls to `computePreparedPowerMismatch()`,
   `setPreparedPowerMismatch()`, `updatePreparedVoltage()` and
