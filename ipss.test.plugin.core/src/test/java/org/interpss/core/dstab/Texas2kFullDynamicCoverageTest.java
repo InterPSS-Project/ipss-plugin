@@ -232,6 +232,11 @@ public class Texas2kFullDynamicCoverageTest {
 
     private static Object runtimeModelFor(BaseDStabNetwork<?, ?> network,
             DynamicModelImportEntry entry, DynamicModelCategory category) {
+        if (category == DynamicModelCategory.FACTS_DEVICE) {
+            return network.getBusList().stream().flatMap(candidate -> candidate.getDynamicBusDeviceList().stream())
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && device.getId().equals(entry.deviceId())).findFirst().orElse(null);
+        }
         var bus = network.getDStabBus("Bus" + entry.busNumber());
         if (category == DynamicModelCategory.LOAD_CHARACTERISTIC) {
             return bus.getDynLoadModelList().stream()
@@ -310,6 +315,8 @@ public class Texas2kFullDynamicCoverageTest {
                     "generator protection is resolved before generator controllers");
             case SWITCHED_SHUNT -> throw new IllegalStateException(
                     "switched shunts are resolved before generator models");
+            case FACTS_DEVICE -> throw new IllegalStateException(
+                    "named FACTS devices are resolved before bus/generator models");
         };
     }
 

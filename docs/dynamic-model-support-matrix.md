@@ -51,6 +51,7 @@ source-approved families that have no implementation or parser descriptor.
 | WT4G1 | CONVERTER_MACHINE |  | 9 | LOADABLE | `org.interpss.dstab.mach.Wt4g1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT4G1.htm) |
 | IEEEVC | COMPENSATOR |  | 2 | LOADABLE | `org.interpss.dstab.mach.IeeeVoltageCompensatedMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Voltage%20Compensator%20IEEEVC.htm) |
 | SVSMO1T2 | SWITCHED_SHUNT | SVSMO1T3 | 65 | LOADABLE | `org.interpss.dstab.svc.Svsmo1t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO1.htm) |
+| SVSMO3T2 | FACTS_DEVICE |  | 64 | PARTIAL | `org.interpss.dstab.svc.Svsmo3t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO3.htm) |
 | AC11C | EXCITER |  | 40 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC11C.htm) |
 | AC1C | EXCITER |  | 23 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC1C.htm) |
 | AC2C | EXCITER |  | 25 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac2c.Ac2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC2C.htm) |

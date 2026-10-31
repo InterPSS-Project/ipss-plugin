@@ -294,7 +294,7 @@ public class PSSEDStabDirectParser {
             try {
                 String type = record.canonicalModelName();
                 GeneratorKey key = targetGeneratorKey(record);
-                boolean generatorTarget = !type.equals("HPLNTDU") && DynamicModelCatalog.find(type)
+                boolean generatorTarget = !record.hasNamedTarget() && !type.equals("HPLNTDU") && DynamicModelCatalog.find(type)
                         .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT)
@@ -537,6 +537,9 @@ public class PSSEDStabDirectParser {
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
+        // Named FACTS identity and remote-bus validation are atomic with builder
+        // attachment. A bus-number lookup would invent an invalid Bus0 owner.
+        if (record.hasNamedTarget()) return null;
         if (record.canonicalModelName().equals("TIOCR1")) {
             return relayBranch(builder.getBaseDStabNetwork(),record.busNumber(),
                     Integer.parseInt(record.fields().get(2)),record.fields().get(3)) == null
@@ -614,6 +617,8 @@ public class PSSEDStabDirectParser {
         }
 
         switch (type) {
+            case "SVSMO3T2":
+                return procSvsmo3t2(record);
             case "IEELBL":
             case "IEELAR":
                 return procIeel(type, record);
@@ -4471,6 +4476,23 @@ public class PSSEDStabDirectParser {
     }
 
     // ==================== Utility Methods ====================
+
+    private boolean procSvsmo3t2(PsseDyrRecord record) {
+        if (!record.hasNamedTarget() || record.parameterCount() != 64) return false;
+        var mss = new ArrayList<org.interpss.dstab.svc.Svsmo3t2Data.MssDevice>();
+        for (int i = 0; i < 8; i++) mss.add(new org.interpss.dstab.svc.Svsmo3t2Data.MssDevice(
+                record.intParameter(4 + 2 * i), record.parameter(5 + 2 * i)));
+        double[] c = new double[44];
+        for (int i = 0; i < c.length; i++) c[i] = record.doubleParameter(20 + i);
+        var data = new org.interpss.dstab.svc.Svsmo3t2Data(record.intParameter(0),
+                record.intParameter(1), record.intParameter(2), record.intParameter(3), mss,
+                c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10],
+                c[11], c[12], c[13], c[14], c[15], c[16], c[17], c[18], c[19], c[20],
+                c[21], c[22], c[23], c[24], c[25], c[26], c[27], c[28], c[29], c[30],
+                c[31], c[32], c[33], c[34], c[35], c[36], c[37], c[38], c[39], c[40],
+                c[41], c[42], c[43]);
+        return builder.addSvsmo3t2(record.deviceId(), data) != null;
+    }
 
     private GeneratorKey targetGeneratorKey(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());

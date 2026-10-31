@@ -92,6 +92,8 @@ import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.svc.Csvgn5Model;
 import org.interpss.dstab.svc.Svsmo1t2Data;
 import org.interpss.dstab.svc.Svsmo1t2Model;
+import org.interpss.dstab.svc.Svsmo3t2Data;
+import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -3684,6 +3686,30 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Svsmo1t2Model(bus, remoteBus, shunt, shunt.getId(), data);
+    }
+
+    /** Bind a named shunt FACTS controller once during import, never by bus number zero. */
+    public Svsmo3t2Model addSvsmo3t2(String factsName, Svsmo3t2Data data) {
+        BaseDStabBus<?, ?> host = null;
+        com.interpss.core.aclf.facts.StaticVarCompensator match = null;
+        for (Object item : network.getBusList()) {
+            BaseDStabBus<?, ?> candidate = (BaseDStabBus<?, ?>) item;
+            for (var device : candidate.getStaticVarCompensatorList()) {
+                if (!factsName.equals(device.getId())) continue;
+                if (match != null) throw new IllegalArgumentException("Ambiguous FACTS name: " + factsName);
+                host = candidate;
+                match = device;
+            }
+        }
+        if (match == null || !match.isActive() || !host.isActive()) return null;
+        BaseDStabBus<?, ?> remote = data.remoteBusNumber() == 0 ? host
+                : network.getDStabBus("Bus" + data.remoteBusNumber());
+        if (remote == null || !remote.isActive()) return null;
+        for (var device : host.getDynamicBusDeviceList()) {
+            if (device instanceof Svsmo3t2Model existing && existing.getStaticDevice() == match)
+                throw new IllegalArgumentException("Duplicate FACTS controller: " + factsName);
+        }
+        return new Svsmo3t2Model(host, remote, match, data);
     }
 
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {

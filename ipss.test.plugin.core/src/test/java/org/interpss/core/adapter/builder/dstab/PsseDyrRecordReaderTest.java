@@ -15,6 +15,34 @@ import org.junit.jupiter.api.Test;
 public class PsseDyrRecordReaderTest {
 
     @Test
+    void preservesNamedFactsOwnershipAndAdjacentRecordsWithoutConsumingComments() throws Exception {
+        var records = PsseDyrRecordReader.read(new StringReader(
+                "1 'GENCLS' '1' 0 0 / 'North//A''s SVC' 'svsmo3t2' 0 0\n"
+                + " .0125 / 2 'GENCLS' '1' 3 0 / 'ordinary trailing comment'\n"), "named.dyr");
+        assertEquals(3, records.size());
+        var named = records.get(1);
+        assertTrue(named.hasNamedTarget());
+        assertEquals("North//A's SVC", named.deviceId());
+        assertEquals("SVSMO3T2", named.canonicalModelName());
+        assertEquals(3, named.parameterCount());
+        assertEquals(0, named.intParameter(0));
+        assertEquals(.0125, named.doubleParameter(2));
+        assertEquals(1, named.startLine());
+        assertEquals(2, named.endLine());
+        assertEquals(2, records.get(2).busNumber());
+        assertTrue(!records.get(0).hasNamedTarget());
+    }
+
+    @Test
+    void rejectsBlankOrUnrecognizedNamedTargetsWithoutReinterpretingNumericRecords() {
+        for (String input : List.of("'   ' 'SVSMO3T2' 0 /", "'NAME' 'GENCLS' 0 0 /",
+                "'NAME' 'UNKNOWN' 0 /", "NAME 'SVSMO3T2' 0 /")) {
+            assertThrows(IllegalArgumentException.class, () -> PsseDyrRecordReader.read(
+                    new StringReader(input), "bad-named.dyr"));
+        }
+    }
+
+    @Test
     void tokenizesMultilineQuotedCommaAndScientificNotationRecords() throws Exception {
         String dyr = "// header comment\n"
                 + "-101, 'GENROU', 'A B', 8.0e0,\n"

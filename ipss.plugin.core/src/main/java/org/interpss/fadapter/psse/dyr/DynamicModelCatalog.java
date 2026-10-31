@@ -116,6 +116,9 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptor("SVSMO3T2", Set.of(), DynamicModelCategory.FACTS_DEVICE, 64,
+                    DynamicModelSupportStatus.PARTIAL, "org.interpss.dstab.svc.Svsmo3t2Model",
+                    "Switched%20Shunt%20SVSMO3.htm"),
             descriptor("REGCC", Set.of(), CONVERTER_MACHINE, 15, LOADABLE,
                     "org.interpss.dstab.renewable.RegccModel", "Machine%20Model%20REGC_C.htm"),
             descriptor("REGCAU2", Set.of(), CONVERTER_MACHINE, 22, LOADABLE,

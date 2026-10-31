@@ -6,6 +6,7 @@ public enum DynamicModelCategory {
     CONVERTER_MACHINE,
     COMPENSATOR,
     SWITCHED_SHUNT,
+    FACTS_DEVICE,
     EXCITER,
     GOVERNOR,
     STABILIZER,
