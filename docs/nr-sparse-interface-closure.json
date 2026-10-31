@@ -1,0 +1,116 @@
+{
+  "requirement": "TC-09",
+  "status": "verified",
+  "release_closed": true,
+  "global_release_closed": false,
+  "verification_run": "nr-scope-capabilities-full-20261031",
+  "core_commit": "213be7a897d54767ea6b158136cedb094b5c5a68",
+  "clauses": [
+    {
+      "area": "CSC and row publication",
+      "assertions": "Both coordinates/matrix forms and all modes: 20 numerical contracts and four explicit strict-CSJ cache rejections; common entries agree with the frozen/independent references.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[9]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[10]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[11]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[12]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[13]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[14]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[15]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[16]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[17]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[18]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[19]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[20]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[21]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[22]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[23]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrAssemblyPlanTest#foundationMatrixRetainsOrFreshlyPreparesTheSameKernels(boolean, NrExecutionMode, boolean, boolean)[24]"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Inspection, RHS and public mutation",
+      "assertions": "Fresh RHS values produce independently known solutions; coefficient inspection remains correct after prepared-to-row conversion and dimension growth.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#defaultIsConservativeAndAnExplicitHitUsesFreshRhsAndInspection",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#materializingOrdinaryRowsCannotKeepACachedPreparedEntry",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#publicDimensionGrowthMaterializesPreparedValuesAndSolvesFreshRhs"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Structural zeros",
+      "assertions": "Zero slots remain structural, zero-to-nonzero writes remain visible and signed-zero differences do not authorize a false numerical hit.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#signedZeroAndUnnotifiedNumericalWritesRequireExactComparison",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#zeroToNonzeroContributionRetainsTheKluSymbolicPattern",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.PreparedComplexCscTest#nullAndZeroCoefficientsRetainTheirStructuralSlots"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Dimension changes",
+      "assertions": "Prepared and ordinary block APIs grow dimensions, preserve existing entries, invalidate incompatible factors and solve new RHS values with known equations.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#publicDimensionGrowthMaterializesPreparedValuesAndSolvesFreshRhs",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.KLUSparseEqnMatrix2x2Test#testIncreaseDimensionn",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.KLUFactoredRowsTest#structuralChangeSymbolReuseAndDimensionGrowth"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Symbolic transfers",
+      "assertions": "Receiving operators validate structural compatibility and clear incompatible numeric ownership instead of trusting transferred hints.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.PreparedComplexCscTest#transferredSymbolicHintsAreValidatedAgainstTheReceivingMatrix",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.KLUFactoredRowsTest#structuralChangeSymbolReuseAndDimensionGrowth"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Deliberate hash collisions",
+      "assertions": "Different valid real CSC row arrays have equal Arrays.hashCode, dimension and nnz; replacement and in-place mutations require fresh analysis and independent known-solution checks. Complex symbolic hashes are checked separately.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#equalHashAndSizeCannotAuthorizeOldSymbolicOrNumericalFactors(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#equalHashAndSizeCannotAuthorizeOldSymbolicOrNumericalFactors(boolean)[2]",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.PreparedComplexCscTest#exactPatternCheckRejectsARealHashCollision"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Failure and recovery",
+      "assertions": "Singular misses, invalid preparation and failed residual certificates cannot publish partial/stale factors; repaired operators recover and preserve accepted metadata.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#aSingularMissCannotPoisonTheRetainedGoodOperatorOrItsStatus",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#certificateFailureDiscardsTheCachedCopyAndRepivots",
+        "ipss.core.test:com.interpss.test.core.sparse.klu.PreparedComplexCscTest#failedPreparationCannotLeaveAPartialPlan"
+      ],
+      "outcome": "passed"
+    },
+    {
+      "area": "Backend and block-only parity",
+      "assertions": "Java KLU/CSJ numerical parity and block-only Jacobian/correction publication pass under their asserted norms; unsupported backend selections retain explicit fallback/rejection behavior.",
+      "executed_test_ids": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSparsePublicationTest#commonJacobianAndCorrectionsSupportBlockOnlyMatrixApis",
+        "ipss.core.test:com.interpss.test.core.sparse.solver.SparseEqnSolverParityTest#javaKluMatchesCsjForDoubleSample",
+        "ipss.core.test:com.interpss.test.core.sparse.solver.SparseEqnSolverParityTest#javaKluMatchesCsjForMatrix2x2Sample",
+        "ipss.core.test:com.interpss.test.core.sparse.solver.SparseEqnSolverParityTest#javaKluMatchesCsjForProfWuSample",
+        "ipss.core.test:com.interpss.test.core.sparse.solver.SparseEqnSolverParityTest#klusolvexPropertyFallsBackToCsjInCore",
+        "ipss.core.test:com.interpss.test.core.sparse.solver.SparseEqnSolverParityTest#javaKluMatchesCsjForComplex3x3Sample",
+        "ipss.core.test:com.interpss.test.core.sparse.solver.SparseEqnSolverParityTest#unknownPropertyFallsBackToCsj"
+      ],
+      "outcome": "passed"
+    }
+  ],
+  "scope": "Declared real/block/complex sparse interfaces and supported backend publication; this does not close other requirements or performance."
+}

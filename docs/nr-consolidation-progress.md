@@ -276,3 +276,40 @@ No general speedup is claimed. Production performance evidence remains the
 accepted exact-factor checkpoint, with four passing cases and IEEE118 at 1.309.
 Separate capabilities, complete adapter resolution and final qualification remain
 open. TC-09 now explicitly records the missing adversarial equal-hash pattern test.
+
+## Independent ordinary reuse capabilities
+
+The [scope checkpoint](benchmarks/nr-scope-capabilities-2026-10-31.md) records
+core commit `213be7a897d54767ea6b158136cedb094b5c5a68`. Structural preparation, unchanged coefficient-input
+ownership and delayed voltage publication now have separate observations and
+admission. Audited rectangular workflows can own inputs while publishing each
+correction. Legacy two-argument hooks keep their former flag. Capacitor scope
+exclusion is preserved; opaque shunt/SVC replacement cannot inherit a snapshot
+contract. Unknown providers retain fresh fallback or strict-cache diagnostics.
+
+All 685 required checks pass in the 8,075-identity full run, with 74 additions,
+91 existing skips and the same 16 failures/errors. There are no missing/new
+failures/skips, changed diagnostics, fork dumps or source drift. All 108 measured
+production classpath entries match the full run. TC-09 is verified by the
+[eight-clause closure record](nr-sparse-interface-closure.json), including real
+and complex hash adversaries, dimensions, symbol transfer and public RHS APIs.
+Other requirements and global release closure remain open.
+
+Matched final means retain increases of 3.05% for IEEE118, 0.18% for PEGASE9241
+and 0.99% for 25k; final voltages are byte-identical. Startup recovery remains
+incomplete. The checkpoint retains the separate current direct RustPower
+comparison and every sample. Broader specialized capability contracts,
+remaining interaction/handoff coverage and performance qualification remain open.
+
+
+## Accepted checkpoint cleanup (2026-10-31)
+
+The user accepted the latest performance baseline and requested final commits.
+The new capability and sparse regression fixtures now share repeated setup and
+voltage assertions, identify failing buses and close owned scopes reliably.
+All 685 focused identities pass again, with no cases removed or renamed; nine
+Python checks pass. The measured production sources are unchanged and all 108
+production runtime entries are byte-identical. The 8,075-identity full run and
+all external samples remain the retained evidence. IEEE118's recorded 1.267
+ratio remains visible; this acceptance does not claim the original all-five
+threshold was met. The broader unchecked consolidation work remains backlog.

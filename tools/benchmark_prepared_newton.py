@@ -204,7 +204,8 @@ def main():
         "sparse/solver/klu/KLUSquareMatrixEqnDoubleSolver.java",
         "aclf/IAclfBusFunc.java", "aclf/impl/BaseAclfBusImpl.java")]
     core_sources += [CORE / ("ipss.core_EMF/src/main/java/com/interpss/core/" + p) for p in (
-        "algo/NrExecutionMode.java", "algo/NrExecutionReport.java", "algo/NrEvaluatedResidual.java",
+        "algo/NrExecutionMode.java", "algo/NrExecutionReport.java", "algo/NrReuseCapabilities.java",
+        "algo/NrEvaluatedResidual.java",
         "algo/NrIterationPolicy.java", "algo/impl/calc/LfCalcMethodRunner.java",
         "algo/impl/solver/PreparedNewtonSolver.java", "algo/impl/solver/FixedOperatorNrSolver.java",
         "algo/impl/solver/NrAssemblyPlan.java", "algo/impl/solver/NrPreparationValidity.java",

@@ -2,6 +2,13 @@
 
 Status: Implementation in progress. Selection, shared polar/rectangular kernels, residual/state handling and common preparation have focused validation. Standalone numerical API migration and exact numerical factor reuse are verified; specialized capability contracts and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md) and [coverage manifest](nr-consolidation-test-coverage.json).
 
+Checkpoint acceptance (2026-10-31): the user accepted the latest measured
+performance and requested final cleanup. The accepted implementation and its
+unchanged measurements are recorded in the
+[scope checkpoint](benchmarks/nr-scope-capabilities-2026-10-31.md).
+Remaining unchecked items below are follow-up consolidation work; acceptance
+does not assert that all five measured ratios are <=1.2.
+
 The target is one polar NR formulation and one rectangular NR formulation,
 with a selectable execution mode controlling preparation and caching. Both
 modes use the same equations, voltage-update rules and Newton iteration engine.
@@ -97,6 +104,13 @@ changes discard the entry. This exact-operator optimization leaves the common
 Newton equations and approximate Jacobian refresh policy unchanged. The
 [factor-reuse checkpoint](benchmarks/nr-exact-factor-reuse-2026-10-31.md)
 records mutation/failure coverage, actual factor work and memory limits.
+
+The ordinary scope-capability checkpoint separates structural preparation,
+unchanged model-input ownership and delayed publication. Rectangular scopes
+retain public voltages. Legacy hooks retain their prior admission behavior;
+broader specialized contributor/model contracts remain open under MODE-06.
+See [scope evidence](benchmarks/nr-scope-capabilities-2026-10-31.md) and the
+[verified sparse-interface clauses](nr-sparse-interface-closure.json).
 
 ## 5. Preserve model and observation semantics
 
