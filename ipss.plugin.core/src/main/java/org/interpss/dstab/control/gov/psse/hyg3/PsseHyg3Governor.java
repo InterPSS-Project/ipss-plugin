@@ -40,6 +40,10 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     private double currentOutput;
     private DeadbandMode committedDeadbandMode = DeadbandMode.NEUTRAL;
     private boolean initialized;
+    private transient PsseHyg3GovernorData preparedCurveData;
+    private transient long preparedCurveRevision = Long.MIN_VALUE;
+    private transient double[] preparedGatePoints, preparedPowerPoints;
+    private transient long gateCurvePreparationCount;
 
     public PsseHyg3Governor(String id, String name, String category) {
         super(id, name, category);
@@ -360,18 +364,40 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     public double gateCurve(double gate) {
-        double[] x = curveGv();
-        double[] y = curvePgv();
+        boolean prepared = prepareGateCurve();
+        double[] x = prepared ? preparedGatePoints : curveGv();
+        double[] y = prepared ? preparedPowerPoints : curvePgv();
         double scale=curveScale();
         double value=interpolate(gate/scale,x,y)*scale;
         return sourceConvention()?clamp(value,0,scale):value;
     }
 
     public double inverseGateCurve(double power) {
-        double[] x = curvePgv();
-        double[] y = curveGv();
+        boolean prepared = prepareGateCurve();
+        double[] x = prepared ? preparedPowerPoints : curvePgv();
+        double[] y = prepared ? preparedGatePoints : curveGv();
         double scale=curveScale();
         return interpolate(power/scale,x,y)*scale;
+    }
+
+    /** Actual preparation count; repeated numerical evaluations reuse the same immutable point arrays. */
+    public long getGateCurvePreparationCount() { return gateCurvePreparationCount; }
+
+    private boolean prepareGateCurve() {
+        // Custom owners or point providers can have observable getters without revision tracking.
+        if (getClass() != PsseHyg3Governor.class || getData().getClass() != PsseHyg3GovernorData.class) return false;
+        var data = getData(); long revision = data.getGateCurveRevision();
+        if (preparedCurveData == data && preparedCurveRevision == revision) return true;
+        double[] gate, power;
+        if (data.getGv(0) < 0.) { gate = BUILTIN_GV; power = BUILTIN_PGV; }
+        else {
+            var points = withImplicitEndpoints(data.getGv(), data.getPgv());
+            gate = points[0]; power = points[1];
+        }
+        preparedGatePoints = gate; preparedPowerPoints = power;
+        preparedCurveData = data; preparedCurveRevision = revision;
+        gateCurvePreparationCount++;
+        return true;
     }
 
     private boolean sourceConvention() { return getData().getFrequencyDeadbandConvention()==PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR; }

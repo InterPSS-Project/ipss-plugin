@@ -15,6 +15,7 @@ Models are listed in implementation priority order. Each section describes the r
 - Extend trajectory checks to internal states, gate/valve limits and both controller modes.
 - Preserve exact allocation/ICON decoding and the distinction between source-native and typed frequency/deadband conventions.
 - Check parameter copying, partial gate curves and initialization residuals through the complete import path.
+- Retain the [prepared-curve execution contract](dynamic-models/hyg3-prepared-curves.md) and complete pre/post state equivalence when extending the runtime.
 
 ## WSIEG1
 

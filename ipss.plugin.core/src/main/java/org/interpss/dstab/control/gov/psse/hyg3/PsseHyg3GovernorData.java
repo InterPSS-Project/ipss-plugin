@@ -39,6 +39,10 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     private double db2;
     private final double[] gv = {0.1, 0.25, 0.5, 0.7, 0.85, 1.0};
     private final double[] pgv = {0.0, 0.2, 0.5, 0.75, 0.9, 1.0};
+    private long gateCurveRevision;
+
+    /** Changes only when a gate-curve point is written; numerical gains remain live. */
+    public long getGateCurveRevision() { return gateCurveRevision; }
     private double h0 = 1.0;
     private double qnl;
     private double tw = 1.0;
@@ -82,18 +86,20 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     public double getDb2() { return db2; }
     public void setDb2(double value) { db2 = value; }
     public double getGv(int index) { return gv[index]; }
-    public void setGv(int index, double value) { gv[index] = value; }
+    public void setGv(int index, double value) { gv[index] = value; gateCurveRevision++; }
     public double[] getGv() { return gv.clone(); }
     public void setGv(double[] values) {
         if (values.length != gv.length) throw new IllegalArgumentException("HYG3 requires six GV points");
         System.arraycopy(values, 0, gv, 0, gv.length);
+        gateCurveRevision++;
     }
     public double getPgv(int index) { return pgv[index]; }
-    public void setPgv(int index, double value) { pgv[index] = value; }
+    public void setPgv(int index, double value) { pgv[index] = value; gateCurveRevision++; }
     public double[] getPgv() { return pgv.clone(); }
     public void setPgv(double[] values) {
         if (values.length != pgv.length) throw new IllegalArgumentException("HYG3 requires six PGV points");
         System.arraycopy(values, 0, pgv, 0, pgv.length);
+        gateCurveRevision++;
     }
     public double getH0() { return h0; }
     public void setH0(double value) { h0 = value; }
