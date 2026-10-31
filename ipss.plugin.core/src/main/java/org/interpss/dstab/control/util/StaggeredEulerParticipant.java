@@ -14,4 +14,8 @@ public interface StaggeredEulerParticipant {
     /** Some sampled-input models rebase measurement memory instead of averaging slopes. */
     default boolean averageStaggeredRatesAtDiscontinuity() { return true; }
     default void completeStaggeredStep(double stepSec) { }
+    /** Explicit endpoint clock for discrete histories; existing duration-based participants retain their contract. */
+    default void completeStaggeredStep(double stepSec, double endpointTimeSec) {
+        completeStaggeredStep(stepSec);
+    }
 }

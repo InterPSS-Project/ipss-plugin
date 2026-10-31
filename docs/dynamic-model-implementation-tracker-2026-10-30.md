@@ -2,8 +2,15 @@
 
 Models are listed in implementation priority order. Each section describes the remaining work.
 
+Every model must support both modified-Euler and staggered integration through
+shared equations and state storage. Qualify initialization, states/derivatives,
+limiter and event histories, and independent coupled SMIB trajectories for each
+method. Preserve reusable numerical buffers and explicit integration/clock
+policies; create scoped model commits and retain incomplete qualification tasks.
+
 ## PSS2B
 
+- Add direct shared-state staggered participation to the existing compiled graph, preserving modified-Euler execution and sampled measurement histories.
 - Extend the accepted coupled voltage/angle matrix to production-quarter-cycle and longer-duration runs.
 - Finish strict independent controller-state and sampled-output lifecycle qualification across selectors and limiter combinations.
 - Preserve separate mappings for the standard record and the existing typed extension.
@@ -12,6 +19,7 @@ Models are listed in implementation priority order. Each section describes the r
 
 ## HYG3U1
 
+- Expose the existing numerical equations and gate/limiter storage to shared staggered integration, retaining the modified-Euler path and prepared curves.
 - Extend trajectory checks to internal states, gate/valve limits and both controller modes.
 - Preserve exact allocation/ICON decoding and the distinction between source-native and typed frequency/deadband conventions.
 - Check parameter copying, partial gate curves and initialization residuals through the complete import path.
@@ -19,18 +27,21 @@ Models are listed in implementation priority order. Each section describes the r
 
 ## WSIEG1
 
+- Support both integration methods with one coherent owner for shared turbine/shaft states and committed limiter histories.
 - Independently qualify primary-shaft trips and subsequent secondary-shaft behavior.
 - Exercise rate/position limits, deadband transitions and turbine bypass paths.
 - Preserve the distinct extended governor equations, shared turbine ownership and machine-base scaling.
 
 ## CMLDBLU1
 
+- Support both methods for the complete composite/motor state vector and network-injection lifecycle without advancing owned states twice.
 - Compare every internal state and published diagnostic against independent captures.
 - Investigate the remaining composite-load trajectory discrepancy and tighten the accuracy gates after it is resolved.
 - Preserve bus/load-specific ownership, explicit MVA-base handling and the legacy electronic-load recovery convention.
 
 ## TIOCR1
 
+- Qualify protection updates under both methods while keeping relay timers and physical actions out of trial derivative evaluations.
 - Extend independent checks to protection coordination, reset/re-pickup and transfer-trip combinations.
 - Verify both monitored branch ends, remote load actions and breaker timing.
 - Preserve shed admittance across network rebuilds and refresh voltage-dependent current corrections during network iterations.
@@ -38,7 +49,7 @@ Models are listed in implementation priority order. Each section describes the r
 ## SVSMO3T2
 
 - Retain the [direct current-controller contract](dynamic-models/svsmo3t2-current-runtime.md), exact named FACTS import and accepted base SMIB fault gates.
-- Retain prepared MSS switching, exact recorded-current replay, physical-stamp lifecycle and accepted single-operation coupled gates; resolve repeated-operation coupled timing.
+- Retain prepared MSS switching, exact history replay, physical-stamp lifecycle and the coupled staggered/endpoint-clock matrix; finish repeated-operation modified-Euler qualification and extend production-step/duration coverage.
 - Finish independent coupled/state qualification of slow reset, nonlinear droop, rating limits, blocking/trips and bypass combinations; the extended matrix remains diagnostic.
 - Resolve finite-stage differences without fitting parameters; extend validation, lifecycle and production-step/long-duration tests before promoting the partial catalog status.
 

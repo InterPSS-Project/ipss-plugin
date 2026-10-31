@@ -10,6 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
 import org.interpss.dstab.control.util.IntegrationStateMonitor;
 import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.dstab.BaseDStabBus;
@@ -25,7 +26,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * with the controlled current on the explicit STATCOM base.
  */
 public final class Svsmo3t2Model extends DynamicBusDeviceImpl
-        implements ICMLStateProvider, IntegrationStateAccess {
+        implements ICMLStateProvider, IntegrationStateAccess, StaggeredEulerParticipant {
     private static final String[] NAMES = {"Voltage measurement filter", "Main PI integrator",
             "STATCOM output lag", "Slow-reset PI integrator", "Short-term rating integral",
             "Transient-gain lead-lag filter"};
@@ -45,6 +46,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
     private boolean predictorPending, blocked, tripped, thermalLimited, deadbandLocked, shortRatingExhausted;
+    private boolean initialized;
 
     public Svsmo3t2Model(BaseDStabBus<?, ?> bus, BaseDStabBus<?, ?> remoteBus,
             StaticVarCompensator svc, Svsmo3t2Data data) {
@@ -64,9 +66,11 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         setId(svc.getId());
         setExtendedDeviceId("SVSMO3T2_" + svc.getId() + "@" + bus.getId());
         setDStabBus(bus);
+        outputStates.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
     }
 
     @Override public boolean initStates(BaseDStabBus<?, ?> bus) {
+        initialized = false;
         if (bus != getDStabBus() || remoteBus == null || !svc.isActive()
                 || !(bus.getVoltageMag() > 0) || !(bus.getNetwork().getBaseMva() > 0)) return false;
         Arrays.fill(x, 0);
@@ -86,7 +90,63 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         outputStates.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         evaluateRates();
         observe(Stage.INITIALIZATION);
-        return finiteState();
+        initialized = finiteState();
+        return initialized;
+    }
+
+    @Override public int staggeredStateCount() { return x.length; }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        requireStaggeredBoundary();
+        System.arraycopy(x, 0, values, offset, x.length);
+    }
+
+    /** Pure derivative evaluation: the enclosing solver owns state/history buffers. */
+    @Override public void evaluateStaggered(double stepSec, double[] derivatives, int offset) {
+        requireStaggeredBoundary();
+        requireStaggeredStep(stepSec);
+        if (tripped) Arrays.fill(rate, 0); else evaluateRates();
+        observe(Stage.STAGGERED);
+        System.arraycopy(rate, 0, derivatives, offset, rate.length);
+    }
+
+    /** Project one numerical trial without advancing timers or switching banks. */
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        requireStaggeredBoundary();
+        requireStaggeredStep(stepSec);
+        java.util.Objects.checkFromIndexSize(offset, x.length, values.length);
+        for (int i = 0; i < x.length; i++) if (!Double.isFinite(values[offset + i]))
+            throw new IllegalArgumentException("Finite SVSMO3T2 integration coordinates required");
+        if (tripped) return;
+        System.arraycopy(values, offset, x, 0, x.length);
+        projectAlgebraicStates();
+        if (!finiteState()) throw new IllegalStateException("Nonfinite SVSMO3T2 projected state");
+    }
+
+    /** Commit continuous-step histories once; physical switching remains an endpoint callback. */
+    @Override public void completeStaggeredStep(double stepSec) {
+        completeStaggeredStep(stepSec, integrationTime + stepSec);
+    }
+
+    @Override public void completeStaggeredStep(double stepSec, double endpointTimeSec) {
+        requireStaggeredBoundary();
+        requireStaggeredStep(stepSec);
+        if (!Double.isFinite(endpointTimeSec) || endpointTimeSec < integrationTime
+                || stepSec > 0 && !(endpointTimeSec > integrationTime))
+            throw new IllegalArgumentException("SVSMO3T2 requires a finite advancing endpoint time");
+        if (tripped || stepSec == 0) return;
+        updateHistory(stepSec);
+        integrationTime = endpointTimeSec;
+    }
+
+    private void requireStaggeredBoundary() {
+        if (!initialized || predictorPending)
+            throw new IllegalStateException("Initialize SVSMO3T2 and finish any predictor before using shared state access");
+    }
+
+    private static void requireStaggeredStep(double stepSec) {
+        if (!Double.isFinite(stepSec) || stepSec < 0)
+            throw new IllegalArgumentException("Finite nonnegative SVSMO3T2 interval required");
     }
 
     @Override public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
@@ -252,6 +312,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         for (int i = 0; i < x.length; i++) monitor.record(i, x[i], rate[i]);
     }
     public Svsmo3t2Data getData() { return data; }
+    public double getIntegrationTime() { return integrationTime; }
     public boolean isNonlinearDroopActive() { return nonlinearDroopActive; }
     public boolean isThermalRatingActive() { return thermalRatingActive; }
     public StaticVarCompensator getStaticDevice() { return svc; }

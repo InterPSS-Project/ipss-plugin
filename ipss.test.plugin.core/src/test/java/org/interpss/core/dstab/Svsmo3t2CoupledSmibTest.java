@@ -32,8 +32,17 @@ import com.interpss.dstab.common.DStabSimuException;
 /** Independent all-sample fault comparison, including both sides of each event. */
 public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
     private static final double STEP = .0005;
+    private static final double NETWORK_TOLERANCE = 1e-6;
 
     @Test void sixStatesCurrentAndNetworkBoundaryFollowTheIndependentFault() throws Exception {
+        compare(false);
+    }
+
+    @Test void sharedStaggeredStatesFollowTheSameIndependentFault() throws Exception {
+        compare(true);
+    }
+
+    private static void compare(boolean staggered) throws Exception {
         var fixture = Path.of("testData/psse/v33/SVSMO3T2");
         var context = new PSSEMultiFileLoader().loadDStab(fixture.resolve("smib.raw").toString(),
                 fixture.resolve("smib.dyr").toString());
@@ -51,13 +60,15 @@ public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
         algorithm.setSimuOutputHandler(new StateMonitor());
         net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3", net,
                 SimpleFaultCode.GROUND_3P, new Complex(0, 100. / 529.), null, .05, .05), "fault");
-        var recorder = new Recorder(algorithm);
-        algorithm.setSolver(recorder);
+        var recorder = new Recording(algorithm);
+        algorithm.setSolver(staggered ? new StaggeredRecorder(algorithm, recorder) : new Recorder(algorithm, recorder));
         assertTrue(algorithm.initialization());
         recorder.enabled = true;
         double[] initial = recorder.frame(0);
         while (algorithm.getSimuTime() < .8 - STEP / 2) assertTrue(algorithm.solveDEqnStep(true));
         recorder.frames.add(recorder.frame(algorithm.getSimuTime()));
+        assertEquals(NETWORK_TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
+                .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
         var rows = reference();
         assertEquals(rows.stream().filter(r -> r[0] >= 0).count(), recorder.frames.size());
         String[] names = {"V_1", "V_2", "V_3", "MACHINE_ANGLE", "VAR_0",
@@ -70,14 +81,14 @@ public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
         var squares = new double[names.length];
         double prefaultAngleMaximum = 0;
         int sample = 0;
-        Path output = Files.createTempDirectory(Path.of("target"), "svsmo3t2-coupled-").resolve("actual.csv");
+        Path output = Files.createTempDirectory(Path.of("target"), staggered ? "svsmo3t2-staggered-fault-" : "svsmo3t2-coupled-").resolve("actual.csv");
         try (var writer = org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(output,
-                org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(rows.size(), names.length))) {
-            writer.write("time_s," + String.join(",", names) + "\n");
+                org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(rows.size(), names.length + 1))) {
+            writer.write("time_s,actual_time_s," + String.join(",", names) + "\n");
             for (var row : rows) {
                 double[] actual = row[0] < 0 ? initial : recorder.frames.get(sample++);
                 if (row[0] >= 0) assertEquals(row[0], actual[0], 2e-5);
-                writer.write(Double.toString(row[0]));
+                writer.write(row[0] + "," + actual[0]);
                 for (int i = 0; i < names.length; i++) {
                     double error = Math.abs(actual[i + 1] - row[columns[i]]);
                     assertTrue(Double.isFinite(error), names[i]);
@@ -92,18 +103,29 @@ public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
         var metrics = new LinkedHashMap<String, Object>();
         for (int i = 0; i < names.length; i++) metrics.put(names[i],
                 Map.of("maximum", max[i], "time_s", maxTime[i], "rmse", Math.sqrt(squares[i] / rows.size())));
-        System.out.println("SVSMO3T2 comparison " + metrics + " trace=" + output);
+        System.out.println("SVSMO3T2 " + (staggered ? "STAGGERED_EULER" : "MODIFIED_EULER")
+                + " tolerance=" + NETWORK_TOLERANCE + " comparison " + metrics + " trace=" + output);
         // The controller is explicitly PARTIAL until the complete model matrix is qualified.
         for (int i = 0; i < 3; i++) {
             final int col = columns[i];
             double range = rows.stream().mapToDouble(r -> r[col]).max().orElseThrow()
                     - rows.stream().mapToDouble(r -> r[col]).min().orElseThrow();
             assertTrue(Math.sqrt(squares[i] / rows.size()) / range < .001, names[i] + " range NRMSE");
+            if (staggered) {
+                assertTrue(max[i] < .000007, names[i] + " staggered maximum");
+                assertTrue(Math.sqrt(squares[i] / rows.size()) < .000001, names[i] + " staggered RMSE");
+            }
         }
         assertTrue(Math.sqrt(squares[3] / rows.size()) < .01, "Rotor-angle RMSE degrees");
         assertTrue(prefaultAngleMaximum < .002, "Prefault maximum rotor-angle error degrees");
-        double[] stateMaximum = {.0016, .0013, .012, 1e-12, 1e-12, .0003};
-        double[] stateRmse = {.00006, .00006, .0006, 1e-12, 1e-12, .00003};
+        if (staggered) {
+            assertTrue(max[3] < .0013, "Staggered rotor-angle maximum degrees");
+            assertTrue(Math.sqrt(squares[3] / rows.size()) < .0005, "Staggered rotor-angle RMSE degrees");
+        }
+        double[] stateMaximum = staggered ? new double[]{.000012, .0000015, .00003, 1e-12, 1e-12, .000015}
+                : new double[]{.0016, .0013, .012, 1e-12, 1e-12, .0003};
+        double[] stateRmse = staggered ? new double[]{.0000014, .00000016, .0000048, 1e-12, 1e-12, .0000018}
+                : new double[]{.00006, .00006, .0006, 1e-12, 1e-12, .00003};
         for (int i = 0; i < 6; i++) {
             assertTrue(max[i + 5] < stateMaximum[i], "STATE_" + i + " maximum absolute error");
             assertTrue(Math.sqrt(squares[i + 5] / rows.size()) < stateRmse[i], "STATE_" + i + " RMS error");
@@ -126,20 +148,46 @@ public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
         }
     }
     private static final class Recorder extends DefaultDynamicSimulationSolver {
-        boolean enabled;
-        final List<double[]> frames = new ArrayList<>();
-        Recorder(DynamicSimuAlgorithm algorithm) { super(algorithm); }
+        final Recording recording;
+        Recorder(DynamicSimuAlgorithm algorithm, Recording recording) { super(algorithm); this.recording = recording; converge_tol = NETWORK_TOLERANCE; }
         @Override public void beforeStep(double time) throws DStabSimuException {
-            if (enabled && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9)) frames.add(frame(time));
+            recording.before(time);
             super.beforeStep(time);
         }
         @Override public boolean networkSolutionStep() throws DStabSimuException {
             boolean solved = super.networkSolutionStep();
-            if (solved && enabled && "INITIAL".equals(networkSolutionStage)) frames.add(frame(dstabAlgo.getSimuTime()));
+            recording.solved(solved, networkSolutionStage);
             return solved;
         }
+    }
+
+    private static final class StaggeredRecorder extends org.interpss.dstab.algo.StaggeredEulerSolver {
+        final Recording recording;
+        StaggeredRecorder(DynamicSimuAlgorithm algorithm, Recording recording) { super(algorithm); this.recording = recording; setNetworkSolutionTolerance(NETWORK_TOLERANCE); }
+        @Override public void beforeStep(double time) throws DStabSimuException {
+            recording.before(time);
+            super.beforeStep(time);
+        }
+        @Override public boolean networkSolutionStep() throws DStabSimuException {
+            boolean solved = super.networkSolutionStep();
+            recording.solved(solved, networkSolutionStage);
+            return solved;
+        }
+    }
+
+    private static final class Recording {
+        boolean enabled;
+        final List<double[]> frames = new ArrayList<>();
+        final DynamicSimuAlgorithm algorithm;
+        Recording(DynamicSimuAlgorithm algorithm) { this.algorithm = algorithm; }
+        void before(double time) {
+            if (enabled && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9)) frames.add(frame(time));
+        }
+        void solved(boolean solved, String stage) {
+            if (solved && enabled && "INITIAL".equals(stage)) frames.add(frame(algorithm.getSimuTime()));
+        }
         double[] frame(double time) {
-            var net = dstabAlgo.getNetwork();
+            var net = algorithm.getNetwork();
             var model = net.getDStabBus("Bus3").getDynamicBusDeviceList().stream()
                     .filter(Svsmo3t2Model.class::isInstance).map(Svsmo3t2Model.class::cast).findFirst().orElseThrow();
             var states = model.getNamedStates().values().iterator();

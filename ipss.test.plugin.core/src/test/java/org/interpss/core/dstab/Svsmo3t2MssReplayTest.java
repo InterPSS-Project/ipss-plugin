@@ -24,9 +24,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Independent MSS signal replay; electrical trajectory acceptance is separate. */
 public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
+    private static final double NETWORK_TOLERANCE = 1e-6;
     @Test void singleOperationCoupledProfilesPassEveryVoltageAngleAndStateGate() throws Exception { coupled(true); }
 
     @Test @Tag("extended") void coupledSwitchingMatrixDiagnosticsRetainEveryReferenceRow() throws Exception { coupled(false); }
+
+    @Test @Tag("extended") void staggeredCoupledDiagnosticsUseTheSameEquationsAndReferences() throws Exception { coupled(false, true); }
+
+    @Test void staggeredCoupledProfilesPassWithExplicitSinglePrecisionEndpointClock() throws Exception { coupled(false, true, true); }
 
     private static Path referenceRoot() throws Exception {
         String configured = System.getProperty("svsmo3t2.mss");
@@ -66,10 +71,19 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
     }
 
     private static void coupled(boolean acceptedOnly) throws Exception {
+        coupled(acceptedOnly, false);
+    }
+
+    private static void coupled(boolean acceptedOnly, boolean staggered) throws Exception {
+        coupled(acceptedOnly, staggered, false);
+    }
+
+    private static void coupled(boolean acceptedOnly, boolean staggered, boolean singlePrecisionTime) throws Exception {
         Path matrix = referenceRoot();
         var mapper = new ObjectMapper();
         var results = new LinkedHashMap<String, Object>();
-        Path outputRoot = Files.createTempDirectory(Path.of("target"), "svsmo3t2-mss-coupled-");
+        Path outputRoot = Files.createTempDirectory(Path.of("target"), singlePrecisionTime ? "svsmo3t2-mss-staggered-single-"
+                : staggered ? "svsmo3t2-mss-staggered-" : "svsmo3t2-mss-coupled-");
         for (var entry : entries(mapper, matrix)) {
             if (!entry.get("repeat").asText().equals("a")) continue;
             Path root = matrix.resolve(entry.get("path").asText());
@@ -89,8 +103,10 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
             double step = manifest.get("step_s").asDouble();
             algo.setSimuStepSec(step);
             algo.setSimuMethod(com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER);
-            var recorder = new StartRecorder(algo);
-            algo.setSolver(recorder);
+            var starts = new HashMap<Integer, double[]>();
+            var staggeredSolver = staggered ? new StaggeredRecorder(algo, starts) : null;
+            if (singlePrecisionTime) staggeredSolver.setEndpointTimePrecision(org.interpss.dstab.algo.StaggeredEulerSolver.EndpointTimePrecision.SINGLE);
+            algo.setSolver(staggered ? staggeredSolver : new StartRecorder(algo, starts));
             algo.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
             assertTrue(algo.initialization());
             var model = (Svsmo3t2Model) net.getDStabBus("Bus3").getDynamicBusDeviceList().stream()
@@ -116,7 +132,10 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
                             model.setScheduledVoltage(initialSchedule + point.get(1).asDouble());
                             referenceEvent = true;
                         }
-                    if (referenceEvent) assertTrue(model.nextStep(0, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+                    if (referenceEvent) {
+                        assertTrue(model.nextStep(0, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+                        if (staggeredSolver != null) staggeredSolver.notifyDiscontinuity();
+                    }
                     assertTrue(algo.solveDEqnStep(true));
                 }
             }
@@ -129,8 +148,8 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
             int previousClock = Integer.MIN_VALUE;
             Path trace = outputRoot.resolve(profile + ".csv");
             try (var writer = org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(trace,
-                    org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(lines.size(), 2 * names.length + 1))) {
-            writer.write("time_s,run_start");
+                    org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(lines.size(), 2 * names.length + 3))) {
+            writer.write("time_s,nominal_time_s,endpoint_time_s,run_start");
             for (String name : names) writer.write(",actual_" + name + ",reference_" + name);
             writer.write('\n');
             for (String line : lines.subList(1, lines.size())) {
@@ -141,8 +160,9 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
                 previousClock = clock;
                 // RUN-end and next RUN-start rows can differ at the same clock:
                 // the latter follows the fresh algebraic network solution.
-                var actual = row[0] >= 0 && repeated ? recorder.starts.getOrDefault(tick, frames.get(tick)) : frames.get(tick);
-                writer.write(row[0] + "," + (repeated ? 1 : 0));
+                var actual = row[0] >= 0 && repeated ? starts.getOrDefault(tick, frames.get(tick)) : frames.get(tick);
+                if (singlePrecisionTime && row[0] >= 0) assertEquals(row[0], actual[11], 5e-12, profile + " recorded endpoint clock");
+                writer.write(row[0] + "," + (tick * step) + "," + actual[11] + "," + (repeated ? 1 : 0));
                 for (int i = 0; i < names.length; i++) {
                     double reference = row[header.indexOf(names[i])];
                     double error = Math.abs(actual[i] - reference);
@@ -169,19 +189,30 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
                     if (key.busNumber() != 0 && statuses.get(tick)[i] != row[statusHeader.indexOf(key.id())].equals("1")) mismatches++;
                 }
             }
-            if (acceptedOnly) {
+            if (acceptedOnly || singlePrecisionTime) {
                 for (int i = 0; i < 3; i++) assertTrue(Math.sqrt(squares[i] / (lines.size() - 1)) / (high[i] - low[i]) < .001, profile + " " + names[i] + " range NRMSE");
                 assertTrue(Math.sqrt(squares[3] / (lines.size() - 1)) < .01, profile + " angle RMSE degrees");
                 assertTrue(prefaultAngleMaximum < .002, profile + " prefault angle maximum degrees");
-                double[] maximum = {.00012, .00003, .009, 1e-12, 1e-12, .0005};
-                double[] rms = {.000006, .000003, .00038, 1e-12, 1e-12, .00003};
+                double[] maximum = singlePrecisionTime ? new double[]{.00031, .000015, .0021, 1e-12, 1e-12, .00011}
+                        : new double[]{.00012, .00003, .009, 1e-12, 1e-12, .0005};
+                double[] rms = singlePrecisionTime ? new double[]{.000025, .000012, .00031, 1e-12, 1e-12, .000016}
+                        : new double[]{.000006, .000003, .00038, 1e-12, 1e-12, .00003};
                 for (int i = 0; i < 6; i++) {
                     assertTrue(max[i + 5] < maximum[i], profile + " STATE_" + i + " maximum");
                     assertTrue(Math.sqrt(squares[i + 5] / (lines.size() - 1)) < rms[i], profile + " STATE_" + i + " RMSE");
                 }
                 assertEquals(0, mismatches, profile + " every physical bank status");
+                assertTrue(max[4] < maximum[2], profile + " physical current maximum");
+                assertTrue(Math.sqrt(squares[4] / (lines.size() - 1)) < rms[2], profile + " physical current RMSE");
             }
-            results.put(profile, Map.of("status", acceptedOnly ? "coupled-single-operation-accepted" : "coupled-diagnostic-not-accepted", "channels", metrics, "status_mismatches", mismatches));
+            double networkTolerance = ((org.interpss.dstab.algo.DefaultDynamicSimulationSolver) algo.getSolver())
+                    .getLastNetworkSolutionDiagnostics().voltageTolerance();
+            assertEquals(NETWORK_TOLERANCE, networkTolerance, 0.);
+            results.put(profile, Map.of("status", singlePrecisionTime ? "coupled-staggered-single-accepted"
+                    : acceptedOnly ? "coupled-single-operation-accepted" : "coupled-diagnostic-not-accepted",
+                    "integration_method", staggered ? "STAGGERED_EULER" : "MODIFIED_EULER",
+                    "endpoint_time_precision", singlePrecisionTime ? "SINGLE" : "DOUBLE", "network_tolerance", networkTolerance,
+                    "channels", metrics, "status_mismatches", mismatches));
             System.out.println("SVSMO3T2 MSS coupled " + profile + " " + results.get(profile));
         }
         assertEquals(acceptedOnly ? 10 : 15, results.size());
@@ -194,18 +225,34 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
         var net = algo.getNetwork();
         var model = (Svsmo3t2Model) net.getDStabBus("Bus3").getDynamicBusDeviceList().stream()
                 .filter(Svsmo3t2Model.class::isInstance).findFirst().orElseThrow();
-        var values = new double[11];
+        var values = new double[12];
         for (int i = 0; i < 3; i++) values[i] = net.getBus("Bus" + (i + 1)).getVoltageMag();
         values[3] = Math.toDegrees(net.getMachine("Bus2-mach1").getAngle());
         values[4] = model.getCurrent();
         int i = 5;
         for (double state : model.getNamedStates().values()) values[i++] = state;
+        values[11] = model.getIntegrationTime();
         return values;
     }
 
     private static final class StartRecorder extends org.interpss.dstab.algo.DefaultDynamicSimulationSolver {
-        final Map<Integer, double[]> starts = new HashMap<>();
-        StartRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algo) { super(algo); }
+        final Map<Integer, double[]> starts;
+        StartRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algo, Map<Integer, double[]> starts) {
+            super(algo); this.starts = starts; converge_tol = NETWORK_TOLERANCE;
+        }
+        @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+            boolean solved = super.networkSolutionStep();
+            if (solved && "INITIAL".equals(networkSolutionStage))
+                starts.put((int) Math.round(dstabAlgo.getSimuTime() / dstabAlgo.getSimuStepSec()), frame(dstabAlgo));
+            return solved;
+        }
+    }
+
+    private static final class StaggeredRecorder extends org.interpss.dstab.algo.StaggeredEulerSolver {
+        final Map<Integer, double[]> starts;
+        StaggeredRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algo, Map<Integer, double[]> starts) {
+            super(algo); this.starts = starts; setNetworkSolutionTolerance(NETWORK_TOLERANCE);
+        }
         @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
             boolean solved = super.networkSolutionStep();
             if (solved && "INITIAL".equals(networkSolutionStage))
@@ -270,6 +317,7 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
             double timerMaximum = 0;
             int clockOnlyMismatches = 0;
             double accumulatedTime = 0, previousTime = -1;
+            float recordedClock = 0;
             for (String line : observations.subList(1, observations.size())) {
                 var values = line.split(",");
                 double time = Double.parseDouble(values[0]);
@@ -278,7 +326,11 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
                 if (time >= 0) {
                     int changed = c.advance(time, row[currentColumn]);
                     if (changed >= 0) actualActions.add(keys.get(changed).id() + "@" + time);
-                    if (previousTime >= 0 && time > previousTime) accumulatedTime += manifest.get("step_s").asDouble();
+                    if (previousTime >= 0 && time > previousTime) {
+                        accumulatedTime += manifest.get("step_s").asDouble();
+                        recordedClock += (float) manifest.get("step_s").asDouble();
+                    }
+                    assertEquals(time, (double) recordedClock, 0., profile + " binary32 accumulated clock");
                     nominalClock.advance(accumulatedTime, row[currentColumn]);
                     previousTime = time;
                 }

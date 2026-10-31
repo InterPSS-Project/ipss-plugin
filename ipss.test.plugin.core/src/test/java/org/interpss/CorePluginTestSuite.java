@@ -313,6 +313,7 @@ import org.interpss.core.dstab.Dera1NativeSmibConformanceTest;
 import org.interpss.core.dstab.Regcb1NativeSmibConformanceTest;
 import org.interpss.core.dstab.Svsmo1t2PsseConformanceTest;
 import org.interpss.core.dstab.Svsmo3t2CoupledSmibTest;
+import org.interpss.core.dstab.Svsmo3t2StaggeredSmibTest;
 import org.interpss.core.dstab.Svsmo3t2MssKernelTest;
 import org.interpss.core.dstab.Svsmo3t2MssReplayTest;
 import org.interpss.dstab.svc.Svsmo3t2MssBoundaryTest;
@@ -803,6 +804,7 @@ import org.junit.platform.suite.api.Suite;
 	Regcb1ModelTest.class,
 	Svsmo1t2PsseConformanceTest.class,
     Svsmo3t2CoupledSmibTest.class,
+    Svsmo3t2StaggeredSmibTest.class,
     Svsmo3t2MssKernelTest.class,
     Svsmo3t2MssReplayTest.class,
     Svsmo3t2MssBoundaryTest.class,

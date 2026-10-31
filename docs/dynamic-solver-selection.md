@@ -116,6 +116,26 @@ event policy. `MODIFIED_EULER` remains the underlying derivative API selection;
 it does not turn the staggered recurrence into ordinary predictor/corrector
 integration. Use a fixed step and check model support at initialization.
 
+SVSMO3T2 supplies its states, rates and limiter projection directly through the
+shared participant interface. Its coupled switching conformance also qualifies
+an explicit endpoint-clock choice:
+
+```java
+var solver = new StaggeredEulerSolver(algorithm);
+solver.setEndpointTimePrecision(StaggeredEulerSolver.EndpointTimePrecision.SINGLE);
+algorithm.setSolver(solver);
+```
+
+`DOUBLE` is the default. `SINGLE` accumulates the timestamp passed to participant
+completion callbacks with binary32 addition; it does not change integration
+weights or the algorithm's nominal time. Existing participants that implement
+the one-argument completion method retain their duration-based behavior.
+Configure this option before initialization and record it when comparing
+trajectories. The [SVSMO3T2 qualification](dynamic-models/svsmo3t2-current-runtime.md)
+reports both methods and clocks separately. Its initially inactive/reactivated
+bus devices require coherent network initialization; invalidate the prepared
+network initialization state before activating new model membership.
+
 ## Shared performance features
 
 Eligible uninitialized positive-sequence dynamic networks now use the maintained

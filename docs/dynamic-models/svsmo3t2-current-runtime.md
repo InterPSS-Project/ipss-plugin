@@ -1,9 +1,11 @@
 # SVSMO3T2 current-controller runtime
 
-The implementation is **partial**. The base coupled SMIB fault passes its
-voltage and rotor-angle gates. Coordinated shunt switching also has independent
-signal-replay and single-operation coupled gates. Repeated-operation coupled
-timing, every limiter combination and production-step simulation remain open.
+The implementation is **partial**. The base coupled SMIB fault passes for both
+modified Euler and staggered Euler. Coordinated shunt switching passes its full
+coupled matrix with staggered integration and an explicitly selected binary32
+endpoint clock. Modified Euler retains its single-operation coupled gate.
+Broader limiter combinations, production steps and long-duration qualification
+remain open.
 
 ## Ownership and execution
 
@@ -56,6 +58,48 @@ definite-time duration. Entered parameters stay immutable, and the prepared
 selections are exposed. These source-specific selections must not be inferred
 from the generic block diagram alone.
 
+## Shared integration contract
+
+The model directly implements `StaggeredEulerParticipant`. Both solvers use the
+same six numerical coordinates, derivative equations and limiter projection.
+`readStaggeredState` and `evaluateStaggered` do not advance states or timers;
+`applyStaggeredState` projects a trial; `completeStaggeredStep` commits the
+continuous-step histories. MSS actions remain in the separate accepted-endpoint
+callback. The staggered solver owns reusable state/rate/history/trial arrays.
+The warmed read/evaluate/apply regression observed 88 allocated bytes across
+100,000 groups; it does not measure complete simulation time.
+
+This numerical selection is explicit:
+
+```java
+var algorithm = context.getDynSimuAlgorithm();
+var solver = new StaggeredEulerSolver(algorithm);
+solver.setEndpointTimePrecision(StaggeredEulerSolver.EndpointTimePrecision.SINGLE);
+algorithm.setSolver(solver);
+algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+```
+
+The enum passed to the derivative API remains `MODIFIED_EULER`; the selected
+solver applies the two-history staggered recurrence. Imported cases continue
+to select the ordinary predictor/corrector solver by default.
+
+Endpoint-time precision defaults to `DOUBLE`. `SINGLE` accumulates the
+participant callback clock with binary32 addition. Every captured nonnegative
+timestamp matches that arithmetic exactly. State integration weights and the
+algorithm's nominal clock remain unchanged; traces record reference, nominal
+and participant endpoint times separately. No output time shift is applied.
+The new two-argument completion callback delegates to the existing one-argument
+callback for older participants, preserving their duration-based histories.
+
+Configure the precision before initialization. Use `notifyDiscontinuity()` after
+an external reference jump; registered network events are detected automatically.
+Initially inactive bus models are omitted until initialized. Reactivating them,
+or changing their attachments, requires coherent network/model reinitialization:
+invalidate `network.setDStabNetInitialized(false)` before calling initialization.
+Stable output identity is available even while a model is initially inactive.
+Other unqualified dynamic bus-device families remain rejected by the staggered
+solver. See [solver selection](../dynamic-solver-selection.md).
+
 ## Mechanically switched shunts
 
 `Svsmo3t2MssController` keeps prepared numerical slots, statuses and timer
@@ -93,12 +137,17 @@ from being absorbed into compensation current.
 ## Evidence and remaining work
 
 The synthetic impedance-load SMIB uses identical machine/network parameters in
-both engines. Its complete base fault comparison retains startup samples and
+both engines. Both integration fixtures explicitly use the same 0.000001 pu
+network voltage-correction tolerance; production defaults are unchanged.
+Its complete base fault comparison retains startup samples and
 both sides of fault application/clearing. It gates every bus voltage at
 range-normalized RMSE below 0.001, rotor-angle RMSE below 0.01 degrees, prefault
 angle error below 0.002 degrees, and all six state errors individually. The
 observed base voltage RMSE is below 0.0001 pu and rotor-angle RMSE is approximately
-0.00031 degrees. The compressed reference is hash-pinned.
+0.000398 degrees. The compressed reference is hash-pinned.
+With staggered integration, the same fault has worst voltage RMSE approximately
+0.00000089 pu, maximum voltage error below 0.0000061 pu and rotor-angle RMSE
+approximately 0.000455 degrees. Its six state gates are tightened separately.
 
 Cold captures retain every raw channel. Disabled MSS timer storage is not
 initialized consistently by the independent implementation. Its declared
@@ -124,26 +173,34 @@ use a zero-duration limiter projection without advancing timers. Every bus
 passes range-normalized voltage RMSE below 0.001; rotor-angle RMSE is below
 0.01 degrees and prefault maximum error below 0.002 degrees. Each continuous
 state has its own maximum and RMS error gate. The worst observed voltage NRMSE
-is approximately 0.000624 and rotor-angle RMSE is below 0.000131 degrees.
+is approximately 0.000624 and rotor-angle RMSE is below 0.000158 degrees.
 
-Repeated-operation coupled profiles remain diagnostic: capacitor discharge,
-successive capacitor insertions, cooling-slot transfer and paired reactor actions
-show a few endpoint status differences, with worst voltage NRMSE approximately
-0.01111. The exact recorded-clock replay passes these same profiles. A controlled
-replay that changes only to the accumulated double-precision clock produces
-status differences in capacitor discharge, successive capacitor insertion,
-cooling-slot transfer and successive reactor removal. Paired reactor insertion
-also has a coupled discrepancy absent from either isolated replay, so finite-stage
-current feedback remains relevant. No time shift or widened voltage gate accepts
-these coupled profiles.
+The full coupled MSS matrix now passes with staggered integration and the explicit
+`SINGLE` endpoint clock at a 0.0005-second network step. This includes repeated
+capacitor insertion/removal, discharge retries, cooling-slot transfer and paired
+reactor actions. Every observed bank status matches. Worst all-bus voltage NRMSE
+is approximately 0.000481, maximum voltage error is below 0.000399 pu and worst
+rotor-angle RMSE is below 0.000544 degrees. All six states and physical current
+have individual maximum/RMS gates. The reference archives remain unchanged.
+
+Method and clock remain separate numerical policies. Ordinary modified Euler
+and double-clock staggered repeated-operation comparisons remain diagnostic.
+The double-clock staggered discrepancies occur in the same profiles as the
+clock-only replay discriminator; the explicit binary32 clock resolves them.
+Staggered integration separately resolves the paired-reactor insertion stage
+discrepancy. These accuracy results do not establish a performance improvement
+or change the ordinary solver's defaults.
 
 The extended recorded-input matrix remains explicitly diagnostic. It exercises
 lead-lag coordinates, reference changes, slow reset, nonlinear droop, definite
 and thermal ratings, deadband, blocking, trips and bypasses. Execution alone is
 not acceptance. Remaining work includes:
 
-- Resolve repeated-operation coupled MSS timing while retaining the exact
-  recorded-current replay and physical-stamp gates.
+- Extend the qualified coupled MSS matrix to production steps and longer
+  durations while retaining its declared integration/clock policy and the
+  ordinary modified-Euler comparison.
+- Complete repeated-operation modified-Euler acceptance/convergence checks;
+  the selected staggered result does not qualify every integration policy.
 - Finish coupled and internal-state qualification of every selector/limiter
   branch, including current reversal and zero-time-constant paths.
 - Resolve the remaining finite-stage behavior during exhausted-rating and

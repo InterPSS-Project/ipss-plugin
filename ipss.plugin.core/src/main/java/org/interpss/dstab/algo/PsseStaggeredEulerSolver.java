@@ -32,6 +32,7 @@ import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Model;
+import org.interpss.dstab.svc.Svsmo3t2Model;
 import com.interpss.dstab.device.DynamicBusDeviceType;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -65,6 +66,9 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * controllers: IEEET1, EXST1/ESST1A, ESST4B, PSS2A, IEEEST, GAST, TGOV1, IEESGO,
  * IEEEG1, GGOV1, HYGOV, EXAC1, EXAC2, ESAC1A, ESAC6A, ESDC1A, ESDC2A,
  * EXPIC1 and SCRX. REGCA1/REECA1 bundles use their two-step path.
+ * SVSMO3T2 bus devices provide their differential coordinates directly through
+ * the shared participant interface. Endpoint callback precision is explicit;
+ * its default remains double precision independently of integration weights.
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
  * Renewable event-history parity and full-fleet accuracy remain unverified.
@@ -193,6 +197,20 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private final java.util.IdentityHashMap<Object, Participant> participantByController = new java.util.IdentityHashMap<>();
     private final List<Renewable> renewables = new ArrayList<>();
     private final List<Participant> gridForming = new ArrayList<>();
+    private final List<Participant> busParticipants = new ArrayList<>();
+    /** Arithmetic of timestamps passed to participant completion callbacks, independently of state integration weights. */
+    public enum EndpointTimePrecision { DOUBLE, SINGLE }
+    private EndpointTimePrecision endpointTimePrecision = EndpointTimePrecision.DOUBLE;
+    private double participantEndpointTime;
+
+    /** Configure before initialization; SINGLE explicitly reproduces a binary32 accumulated endpoint clock. */
+    public void setEndpointTimePrecision(EndpointTimePrecision precision) {
+        if (previous != null) throw new IllegalStateException("Configure endpoint time precision before initialization");
+        endpointTimePrecision = java.util.Objects.requireNonNull(precision);
+    }
+
+    public EndpointTimePrecision getEndpointTimePrecision() { return endpointTimePrecision; }
+    public double getParticipantEndpointTime() { return participantEndpointTime; }
     private final List<Participant> upstreamPlants=new ArrayList<>(),upstreamAuxiliaries=new ArrayList<>();
     private final java.util.IdentityHashMap<StaggeredEulerParticipant,List<BooleanSupplier>> upstreamOwners=new java.util.IdentityHashMap<>();
     private boolean electricalEndpointPreparationEnabled;
@@ -338,7 +356,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     public boolean isReuseNetworkEndpoint() { return reuseNetworkEndpoint; }
     public int getBoundMachineCount() { return machines.size(); }
     public int getBoundRenewableCount() { return renewables.size()+gridForming.size(); }
-    /** Bound machine/controller/grid-forming states; excludes REGCA bundle-owned states. */
+    /** Bound machine/controller/bus-device states; excludes REGCA bundle-owned states. */
     public int getBoundDifferentialStateCount() {
         return states.size()+participants.stream().mapToInt(p->p.values.length).sum()
                 +localSt1Controllers.stream().mapToInt(c->c.states.size()).sum()
@@ -362,12 +380,16 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         electricalEndpointEligible.clear(); electricalEndpointPreparationCount=0; machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
         localSt1Controllers.clear();
         localExciters.clear();resolvedExciterSubsteps.clear();
-        participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); extendedStack=false;
+        participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); busParticipants.clear(); extendedStack=false;
         upstreamPlants.clear();upstreamAuxiliaries.clear();upstreamOwners.clear();
         previous = null; wasActive = null; inputDiscontinuity = false;
+        participantEndpointTime = 0;
         networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
         requireStep(fixedStep);
+        if (endpointTimePrecision == EndpointTimePrecision.SINGLE
+                && (!((float) fixedStep > 0) || !Float.isFinite((float) fixedStep)))
+            throw new IllegalArgumentException("A single-precision endpoint clock requires a representable step");
         validateSubstepTargets();
         validateModels();
         if (!super.initialization()) return false;
@@ -428,7 +450,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for (int runtimeIndex0=0; runtimeIndex0<dstabAlgo.getNetwork().getBusList().size(); runtimeIndex0++) {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex0);
             for (var device : bus.getDynamicBusDeviceList())
-                if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR)
+                if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model))
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
             for (var gen : bus.getContributeGenList()) {
                 if (!bus.isActive() || !gen.isActive()) continue;
@@ -633,6 +655,27 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for (int runtimeIndex1=0; runtimeIndex1<dstabAlgo.getNetwork().getBusList().size(); runtimeIndex1++) {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex1);
 
+            for (var device : bus.getDynamicBusDeviceList()) if (device instanceof Svsmo3t2Model model) {
+                var membership = List.copyOf(bus.getDynamicBusDeviceList());
+                attachmentsUnchanged.add(() -> {
+                    var current = bus.getDynamicBusDeviceList();
+                    if (model.getDStabBus() != bus || current.size() != membership.size()) return false;
+                    for (int i = 0; i < current.size(); i++) if (current.get(i) != membership.get(i)) return false;
+                    return true;
+                });
+                if (!bus.isActive() || !model.isActive()) {
+                    attachmentsUnchanged.add(() -> !bus.isActive() || !model.isActive());
+                    continue;
+                }
+                extendedStack = true;
+                var participant = new Participant(model, () -> bus.isActive() && model.isActive() && !model.isTripped());
+                participants.add(participant);
+                busParticipants.add(participant);
+                // A stopped discrete-history owner needs coherent reinitialization
+                // before reactivation against the solver's advancing endpoint clock.
+                attachmentsUnchanged.add(() -> !participant.active.getAsBoolean() || participant.wasActive);
+            }
+
             for (var gen:bus.getContributeGenList()) {
                 if (!bus.isActive() || !gen.isActive()) {
                     attachmentsUnchanged.add(()->!bus.isActive()||!gen.isActive());
@@ -773,6 +816,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     }
 
     private void evaluate(boolean initialEndpoint, boolean prepareElectrical) throws DStabSimuException {
+        for (var p : busParticipants)
+            if (p.active.getAsBoolean()) p.model.evaluateStaggered(fixedStep, p.rates, 0);
         for(var p:upstreamPlants)if(p.active.getAsBoolean())p.model.evaluateStaggered(fixedStep,p.rates,0);
         for(var p:upstreamAuxiliaries)if(p.active.getAsBoolean())p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var p:gridForming)
@@ -852,6 +897,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             throw new IllegalArgumentException("Staggered Euler requires a fixed integration step");
         if (method != DynamicSimuMethod.MODIFIED_EULER)
             throw new IllegalArgumentException("Set the model derivative method to MODIFIED_EULER");
+        double endpointTime = endpointTimePrecision == EndpointTimePrecision.SINGLE
+                ? (double) ((float) participantEndpointTime + (float) dt) : time + dt;
+        if (!Double.isFinite(endpointTime) || endpointTimePrecision == EndpointTimePrecision.SINGLE
+                && !(endpointTime > participantEndpointTime))
+            throw new IllegalStateException("The selected endpoint clock cannot advance; reinitialize with an appropriate precision/step");
         for (var unchanged:attachmentsUnchanged)
             if (!unchanged.getAsBoolean())
                 throw new IllegalStateException("Reinitialize after changing dynamic model attachments");
@@ -921,7 +971,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             for (int i=0;i<p.trial.length;i++) p.history[i]=p.values[i]!=p.trial[i]?0.:p.rates[i];
         }
         for (var p:participants)
-            if (p.wasActive) p.model.completeStaggeredStep(dt);
+            if (p.wasActive) p.model.completeStaggeredStep(dt, endpointTime);
+        participantEndpointTime = endpointTime;
         // Refresh model algebraic outputs/caches without advancing any state.
         evaluate(false,true); evaluate();
         networkSolutionStep();
