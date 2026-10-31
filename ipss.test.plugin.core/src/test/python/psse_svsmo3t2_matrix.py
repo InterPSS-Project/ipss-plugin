@@ -18,6 +18,8 @@ PROFILES = {
     "nonlinear-droop": ["--icon", "3", "1", "--con", "33", ".03", "--con", "34", ".05"],
     "short-rating": ["--con", "23", ".01"],
     "thermal-rating": ["--con", "29", ".0002", "--con", "30", ".001", "--con", "31", ".00005"],
+    "thermal-active": ["--con", "23", "0", "--con", "29", ".0002", "--con", "30", ".001", "--con", "31", ".00005"],
+    "slow-reset-block": ["--icon", "2", "1", "--con", "12", ".04", "--con", "13", ".2", "--fault-ohms", "10"],
     "deadband-held": ["--profile", "reference-step", "--reference-change", ".001",
                       "--con", "9", ".005", "--con", "10", "2", "--con", "11", ".01"],
     "deadband-release": ["--con", "9", ".005", "--con", "10", "2", "--con", "11", ".01"],

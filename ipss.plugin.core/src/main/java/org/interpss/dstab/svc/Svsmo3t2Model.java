@@ -43,6 +43,8 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private final boolean thermalRatingActive;
     private double initialB, baseRatio, scheduledVoltage, auxiliarySignal;
     private double integrationTime;
+    /** Last accepted physical output; trial states cannot start the rating timer early. */
+    private double acceptedCurrent;
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
     private boolean predictorPending, blocked, tripped, thermalLimited, deadbandLocked, shortRatingExhausted;
@@ -78,6 +80,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         baseRatio = data.statcomBaseMva() / bus.getNetwork().getBaseMva();
         x[0] = remoteBus.getVoltageMag();
         x[1] = x[2] = initialB * bus.getVoltageMag() / baseRatio;
+        acceptedCurrent = x[2];
         scheduledVoltage = x[0] + (data.deadband() > 0 ? 0 : droop(x[0]) * x[2]);
         preparedVrefMin = Math.min(data.vrefMin(), scheduledVoltage);
         preparedVrefMax = Math.max(data.vrefMax(), scheduledVoltage);
@@ -227,8 +230,8 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         overvoltageTimer = voltage > data.tripVoltage() ? overvoltageTimer + dt : 0;
         if (voltage > data.tripVoltage() && overvoltageTimer >= data.tripTime()) tripped = true;
         if (!thermalRatingActive && !shortRatingExhausted) {
-            shortTimer = Math.abs(x[2]) > data.continuousCurrent() ? shortTimer + dt : 0;
-            if (Math.abs(x[2]) > data.continuousCurrent() && shortTimer >= data.shortRatingTime())
+            shortTimer = Math.abs(acceptedCurrent) > data.continuousCurrent() ? shortTimer + dt : 0;
+            if (Math.abs(acceptedCurrent) > data.continuousCurrent() && shortTimer >= data.shortRatingTime())
                 shortRatingExhausted = true;
         }
         if (thermalRatingActive) {
@@ -245,6 +248,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
                 if (deadbandTimer >= data.deadbandTime()) deadbandLocked = true;
             } else deadbandTimer = 0;
         }
+        acceptedCurrent = getCurrent();
     }
 
     private double rating() {
@@ -284,7 +288,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         return data.tb2() == 0 ? error : gainRatio * error + (1 - gainRatio) * x[5];
     }
     private double resetError() {
-        double current = getCurrent();
+        double current = x[2];
         return -Math.copySign(Math.max(0, Math.abs(current) - data.currentDeadband()), current);
     }
     private double voltageReference() {
@@ -296,7 +300,9 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
                 + clamp(data.kpr() * resetError(), data.vrMin(), data.vrMax()), data.vrMin(), data.vrMax());
     }
     private double voltageError(double measured) {
-        return clamp(voltageReference() + auxiliarySignal - measured - droop(measured) * getCurrent(),
+        // The diagram feeds back the output-lag coordinate. External current
+        // blocking must not erase that internal regulator feedback.
+        return clamp(voltageReference() + auxiliarySignal - measured - droop(measured) * x[2],
                 data.veMin(), data.veMax());
     }
     private static double nonWindupRate(double state, double rate, double low, double high) {
@@ -317,7 +323,8 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     public boolean isThermalRatingActive() { return thermalRatingActive; }
     public StaticVarCompensator getStaticDevice() { return svc; }
     public BaseDStabBus<?, ?> getRemoteBus() { return remoteBus; }
-    public double getCurrent() { return tripped || effectiveBlocked(getDStabBus().getVoltageMag()) ? 0 : x[2]; }
+    /** Blocking is accepted history, not a new discrete action inside a network iteration. */
+    public double getCurrent() { return tripped || blocked ? 0 : x[2]; }
     public double getMvarOutput() { return getCurrent() * getDStabBus().getVoltageMag() * data.statcomBaseMva(); }
     public double getVoltageReference() { return voltageReference(); }
     public double getScheduledVoltage() { return scheduledVoltage; }

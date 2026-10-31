@@ -202,6 +202,18 @@ public class PsseDStabSolver extends DStabSolverImpl {
         return solved;
     }
 
+    @Override protected void rebaseDynamicModelInputs(com.interpss.dstab.algo.DynamicSimuMethod method)
+            throws DStabSimuException {
+        super.rebaseDynamicModelInputs(method);
+        // Project bus-device algebraic limits at the settled event endpoint.
+        // This is outside network iteration and does not commit any timer.
+        for (var bus : dstabAlgo.getNetwork().getBusList()) if (bus.isActive())
+            for (var device : bus.getDynamicBusDeviceList())
+                if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model model
+                        && !model.nextStep(0, method, 0))
+                    throw new DStabSimuException("Could not refresh bus-device inputs for " + model.getId());
+    }
+
     @Override
     public boolean initialization() {
         controllerPreparation.clear();controllerPreparationReport=null;

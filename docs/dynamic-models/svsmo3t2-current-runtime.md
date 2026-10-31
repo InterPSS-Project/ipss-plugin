@@ -46,7 +46,14 @@ Observation does not alter the equations.
 Zero-duration event calls can project an active PI constraint. They do not
 integrate derivatives or advance timers. Current limiting uses instantaneous
 terminal voltage, separately from the filtered regulation signal. Blocking
-duration and exhausted definite-time rating are committed histories.
+duration and exhausted definite-time rating are committed histories. External
+blocking is latched at acceptance, so a zero-time fault network solve retains
+the previously accepted current. The internal output-lag coordinate remains
+the droop and slow-reset feedback even while external current is blocked.
+The definite-time rating timer samples the previous accepted physical output;
+trial states cannot consume an additional interval before threshold pickup.
+Both solver policies project this bus device's algebraic limits after the
+settled event solution, separately from numerical integration and timer commit.
 Tripping publishes zero current and freezes this controller's continuous state.
 The stressed independent trip capture has divergent allocated-state and held
 algebraic observations after tripping; post-trip state equivalence remains open.
@@ -191,10 +198,30 @@ Staggered integration separately resolves the paired-reactor insertion stage
 discrepancy. These accuracy results do not establish a performance improvement
 or change the ordinary solver's defaults.
 
-The extended recorded-input matrix remains explicitly diagnostic. It exercises
+`Svsmo3t2LimiterSmibTest` retains a separately hash-pinned synthetic limiter
+archive, including paired cold captures that activate thermal rating and
+combine slow reset with blocking. Its registered blocking test compares every
+bus voltage and angle, rotor angle, physical current/reactive power, voltage
+reference and all six states under both methods. Staggered blocking voltage
+error is below 0.000008 pu and current error below 0.00004 pu; modified-Euler
+voltage error is below 0.0031 pu and current error below 0.015 pu. Both pass
+range-normalized voltage RMSE below 0.001. These bounds preserve the different
+finite-step integration errors.
+
+The rating-onset gate checks current through the first rating-expiration
+transition. It retains and reports the entire subsequent trajectory as
+diagnostic: post-clearing rating/voltage-limit interaction remains unresolved.
+The published Mvar diagnostic also remains a separate comparison because its
+event-side cached value can differ from the contemporaneous current/voltage
+product. The physical reactive-power gate uses the independent per-unit output.
+No event row or cached diagnostic is discarded.
+
+The extended coupled and recorded-input matrices remain explicitly diagnostic. They exercise
 lead-lag coordinates, reference changes, slow reset, nonlinear droop, definite
 and thermal ratings, deadband, blocking, trips and bypasses. Execution alone is
-not acceptance. Remaining work includes:
+not acceptance. The blocked slow-reset discriminator supports the internal
+current feedback but retains a deadband/output-coordinate residual; no gain or
+threshold was fitted to remove it. Remaining work includes:
 
 - Extend the qualified coupled MSS matrix to production steps and longer
   durations while retaining its declared integration/clock policy and the
