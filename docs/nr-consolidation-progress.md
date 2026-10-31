@@ -196,3 +196,28 @@ explicit cached execution, one preparation, workspace/symbolic reuse, affinity
 and source/runtime integrity checks pass. No unchanged batch was repeated to
 seek a passing ratio. The contributor checkpoint records the complete results;
 generic/frozen comparisons and final qualification after migration remain open.
+
+## Owned completion and remaining performance gap
+
+The [completion checkpoint](benchmarks/nr-owned-completion-2026-10-31.md) adds
+`INrSolver.finishNrExecution()`. The default contract retains legacy end,
+result-publication and allocation order. An audited retained-voltage owner
+publishes and consumes accepted powers before releasing unchanged inputs,
+avoiding another full model/voltage audit. Unknown/observed generator callbacks
+remain conservative, consumed receipts stay consumed, and every failure closes
+the scope. Equations and Jacobian/LU policy are unchanged.
+
+The full run executes **7,921 identities: 7,814 pass, 91 skip and the same 16
+failures/errors**. All **508 required checks pass**, including 15 additions.
+There are no missing/newly failing/skipped identities, changed failure
+diagnostics, fork dumps or Java source drift. The full-tested and measured
+production classpaths are byte-identical across all 108 entries.
+
+Matched before/after warmed means decrease 9.25% for IEEE118, 11.92% for
+PEGASE9241 and 9.07% for 25k, with complete samples retained and byte-identical
+voltages. Separate one-warmup 25k samples decrease from 139.51–141.25 ms to
+110.37–111.30 ms. Startup recovery remains incomplete. A direct three-process
+IEEE118/RustPower recheck still misses <=1.2: **0.040432 / 0.028512 ms = 1.418**.
+This targeted check is separate from all-five qualification and the matched
+before/after cohort. Standalone migration, coefficient/capability contracts,
+full release coverage and final performance remain open.

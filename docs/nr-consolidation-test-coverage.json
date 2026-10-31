@@ -2,9 +2,9 @@
   "schema": 1,
   "status": "in_progress",
   "release_closed": false,
-  "verification_run": "nr-contributors-final-full-20261031",
-  "evidence": "ipss.test.plugin.core/target/nr-consolidation-contributors-20261030/full-final-audit.json",
-  "executed_tests": 7906,
+  "verification_run": "nr-owned-completion-final-full-20261031",
+  "evidence": "ipss.test.plugin.core/target/nr-owned-completion-20261031/full-final-audit.json",
+  "executed_tests": 7921,
   "foundation_configurations": [
     {
       "coordinate": "rectangular",
@@ -328,7 +328,13 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]"
       ],
       "remaining": "Final suite and third-party contributor lifecycle closure remain open.",
       "oracle": "Requested/actual mode, diagnostics and invocation counters asserted by the API tests."
@@ -1202,7 +1208,16 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest1",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest2",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest1",
-        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2"
+        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]"
       ],
       "remaining": "Close rejected control/trial receipt interactions with specialized contributors.",
       "oracle": "Current public model residuals and explicit old receipt/allocation rejection."
@@ -1876,7 +1891,11 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
       ],
       "remaining": "Close all custom provider/observer admission boundaries after contributor migration.",
       "oracle": "Known custom callback outputs, invocation counts and observer-visible state."
@@ -1899,7 +1918,20 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrGenerationAllocationTest#mutationsAfterScopeClosureCannotReuseAcceptedPowers(String)[5]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrGenerationAllocationTest#cachedAndGenericAllocateIdenticalGeneratorOutputs(boolean)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrGenerationAllocationTest#cachedAndGenericAllocateIdenticalGeneratorOutputs(boolean)[2]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrGenerationAllocationTest#compatibilityAllocationOverrideRunsOnceAndSuppressesFallback"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrGenerationAllocationTest#compatibilityAllocationOverrideRunsOnceAndSuppressesFallback",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
       ],
       "remaining": "Add explicit distributed-generation and rejected-trial allocation interaction coverage.",
       "oracle": "Established model allocation outputs, fixed/inactive records and accepted-state parity."
@@ -2114,7 +2146,22 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
       ],
       "remaining": "Complete the remaining backend/coordinate/network replacement and failed-factorization repair interaction sequences; common scope cleanup and recovery now have positive bridge coverage.",
       "oracle": "Instance ownership, report/build counts and fresh solve comparisons."
@@ -2317,7 +2364,9 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
       ],
       "remaining": "Per-matrix contributor response ownership now passes, including mandatory ZBR equations. Final full helper/handoff audit remains open.",
       "oracle": "Existing public helper/handoff/control fixtures and frozen electrical assembly."
@@ -2492,7 +2541,12 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[4]"
       ],
       "remaining": "Complete singular/failure/repair and missing-fixture recovery sequences.",
       "oracle": "Explicit expected failure reasons/stages and existing recovery fixtures."
@@ -2605,7 +2659,22 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
       ],
       "remaining": "Historical standalone numerical API, separate specialized coefficient/capability contracts and final source/execution coverage closure remain. Ordered contributors, exact structural layouts, per-matrix response roles and trial ownership are implemented and verified.",
       "oracle": "Mode/build/assembly counters, common plan/kernel tests and source review; standalone migration remains pending."
@@ -2618,12 +2687,14 @@
       "status": "partial_evidence_target_not_met",
       "release_closed": false,
       "executed_test_ids": [],
-      "remaining": "All-five-case warmed cached/RustPower recheck completed with retained samples, mode and accuracy receipts. Final generic/frozen comparisons and release qualification after remaining migrations are still required.",
+      "remaining": "Matched completion before/after and one-warmup checks show reductions without changing voltages. A direct IEEE118 recheck still misses <=1.2. Final generic/frozen/all-five external qualification after remaining migrations is required.",
       "benchmark_evidence": [
         "docs/benchmarks/nr-consolidation-minimal-warmup-2026-10-30.md",
         "docs/benchmarks/checkpoints/nr-consolidation-minimal-warmup-2026-10-30.json",
         "docs/benchmarks/nr-consolidation-contributors-2026-10-31.md",
-        "docs/benchmarks/checkpoints/nr-consolidation-contributors-2026-10-31.json"
+        "docs/benchmarks/checkpoints/nr-consolidation-contributors-2026-10-31.json",
+        "docs/benchmarks/nr-owned-completion-2026-10-31.md",
+        "docs/benchmarks/checkpoints/nr-owned-completion-2026-10-31.json"
       ],
       "oracle": "Qualified nodal operators, independent residual/reference voltage checks, raw wall times and execution receipts."
     }
@@ -2670,6 +2741,6 @@
       "status": "closure_pending"
     }
   ],
-  "required_focused_tests": 493,
+  "required_focused_tests": 508,
   "full_regression_gate_passed": true
 }

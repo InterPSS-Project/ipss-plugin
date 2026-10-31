@@ -139,6 +139,8 @@ def main():
     parser.add_argument("--include-generic", action="store_true")
     parser.add_argument("--require-execution-report", action="store_true",
                         help="Require explicit CACHED/GENERIC selection and matching actual execution reports")
+    parser.add_argument("--require-owned-completion", action="store_true",
+                        help="Require positive allocation through the owned-input completion contract")
     parser.add_argument("--initial-solve-is-warmup", action="store_true",
                         help="Count Java's required initialization solve in the requested warmup count")
     parser.add_argument("--required-ratio", type=float, default=1.2)
@@ -236,6 +238,7 @@ def main():
                 command = ["java", "-Xms256m", "-Xmx2g", "-Dlog4j2.configurationFile=" + str(config),
                            "-Dipss.benchmark.initialSolveIsWarmup=" + str(args.initial_solve_is_warmup).lower(),
                            "-Dipss.benchmark.requireExecutionReport=" + str(args.require_execution_report).lower(),
+                           "-Dipss.benchmark.requireOwnedCompletion=" + str(args.require_owned_completion).lower(),
                            "-cp", str(classes) + os.pathsep + cp, "org.interpss.benchmark.PreparedNewtonApiBenchmark",
                            str(args.output), phase, str(fork), str(args.small_warmup), str(args.small_repeats),
                            str(args.large_warmup), str(args.large_repeats), *args.cases]

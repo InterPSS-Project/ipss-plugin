@@ -153,6 +153,16 @@ public final class PreparedNewtonApiBenchmark {
                     counters.put("preparedResidualEvaluations", nrSolver.getPreparedResidualCount());
                     counters.put("preparedWorkspaceScopes", nrSolver.getPreparedWorkspaceScopeCount());
                     counters.put("stableSolveScopes", nrSolver.getPreparedSolveScopeCount());
+                    Long ownedCompletionCount = null;
+                    try {
+                        ownedCompletionCount = ((Number) nrSolver.getClass().getMethod("getOwnedNrCompletionAllocationCount").invoke(nrSolver)).longValue();
+                        counters.put("ownedCompletionAllocations", ownedCompletionCount);
+                    } catch (NoSuchMethodException legacyRuntime) {
+                        // Archived maintained runtimes predate the completion observation.
+                    }
+                    if (Boolean.getBoolean("ipss.benchmark.requireOwnedCompletion")
+                            && (ownedCompletionCount == null || ownedCompletionCount != loadflowCalls))
+                        throw new IllegalStateException("Owned completion did not execute for every load flow: " + name);
                     counters.put("retainedSymbolicAcrossSolves", 1L);
                     counters.put("loadflowCalls", (long) loadflowCalls);
                     counters.put("warmupLoadflowCalls", (long) requestedWarmups + (initialSolveIsWarmup ? 0 : 1));

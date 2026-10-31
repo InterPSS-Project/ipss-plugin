@@ -391,6 +391,14 @@ from `INrSolver`. Nine positive bridge/compatibility/exception cases pass in the
 full 7,878-identity run. Specialized contributor capabilities and migration of
 the independent historical standalone solver remain required for CLEAN-06/08.
 
+The [completion checkpoint](benchmarks/nr-owned-completion-2026-10-31.md)
+extends common lifecycle ownership through accepted-generation allocation.
+An audited owner publishes before consuming its receipt and closes on every
+exit; legacy completion hooks preserve their order and observations. Fifteen
+additional cases pass in the 7,921-identity full run, with all 508 required
+checks passing. Matched reductions and a still-failing targeted external check
+are retained separately. This does not close remaining migration or release gates.
+
 ### 8.7 Numerical, integration and performance qualification - phase 6
 
 - [ ] **VERIFY-01** Parameterize supported fixtures over both coordinates and all
@@ -435,9 +443,14 @@ matched benchmark reports, with unresolved baseline failures identified.
 
 - [ ] **DELIVER-01** Update the core algorithm enhancement document with the
   final ownership boundaries, selection semantics and invalidation contract.
-- [ ] **DELIVER-02** Add examples for `AUTO`, `CACHED` and `GENERIC` in both
+- [x] **DELIVER-02** Add examples for `AUTO`, `CACHED` and `GENERIC` in both
   coordinate forms, including an unsupported-cache diagnostic and fallback
   report.
+
+  The [complete examples](newton-raphson-execution-examples.md) compile against
+  the final completion-dispatch runtime. Existing mode/backend coverage checks
+  all six coordinate/mode combinations and the strict-CSJ rejection/automatic
+  fallback contract; this documentation item does not close release qualification.
 - [ ] **DELIVER-03** Document compatibility mappings, deprecated methods,
   contributor support restrictions and the distinction between preparation
   reuse and the numerical Jacobian/LU policy.
