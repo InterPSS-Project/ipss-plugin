@@ -221,3 +221,21 @@ IEEE118/RustPower recheck still misses <=1.2: **0.040432 / 0.028512 ms = 1.418**
 This targeted check is separate from all-five qualification and the matched
 before/after cohort. Standalone migration, coefficient/capability contracts,
 full release coverage and final performance remain open.
+
+## Standalone numerical API consolidation
+
+The [standalone checkpoint](benchmarks/nr-standalone-consolidation-2026-10-31.md)
+converts the historical fixed-operator API into a compatibility facade around
+the same Newton engine, power evaluator and polar formulation. Twenty new cases
+pass in the 7,941-identity full run; all 528 required checks pass. Public logical
+degree counts and options remain, while the backend uses fixed-variable identity
+rows. The frozen historical implementation is test-only. Matched timing and
+current external results are retained, with measured overhead and the overall
+performance criterion still open. CLEAN-06/07/08 remain subject to their broader
+capability and complete source/API coverage requirements.
+
+The final full audit retains all previous identities and the same 16 existing
+failures/errors, with zero changed diagnostics or source drift. The ordinary
+solver defaults remain unchanged. The compatibility API retains its per-instance
+numerical policy and checked linear-solve behavior. The linked checkpoint keeps
+the initial and refined timing batches; it does not claim performance recovery.

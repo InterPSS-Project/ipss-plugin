@@ -203,6 +203,8 @@ def main():
         "aclf/IAclfBusFunc.java", "aclf/impl/BaseAclfBusImpl.java")]
     core_sources += [CORE / ("ipss.core_EMF/src/main/java/com/interpss/core/" + p) for p in (
         "algo/NrExecutionMode.java", "algo/NrExecutionReport.java", "algo/NrEvaluatedResidual.java",
+        "algo/NrIterationPolicy.java", "algo/impl/calc/LfCalcMethodRunner.java",
+        "algo/impl/solver/PreparedNewtonSolver.java", "algo/impl/solver/FixedOperatorNrSolver.java",
         "algo/impl/solver/NrAssemblyPlan.java", "algo/impl/solver/NrPreparationValidity.java",
         "algo/impl/solver/NrModelInputs.java", "algo/impl/solver/NrEvaluationContext.java",
         "algo/impl/solver/NrNumericalWorkspace.java", "algo/impl/solver/NrPowerEvaluation.java",

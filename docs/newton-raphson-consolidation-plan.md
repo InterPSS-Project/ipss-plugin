@@ -1,6 +1,6 @@
 # Newton-Raphson consolidation plan
 
-Status: Implementation in progress. Selection, shared polar/rectangular kernels, residual/state handling and common preparation have focused validation. Contributor migration and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md) and [coverage manifest](nr-consolidation-test-coverage.json).
+Status: Implementation in progress. Selection, shared polar/rectangular kernels, residual/state handling and common preparation have focused validation. Standalone numerical API migration is verified; specialized capability contracts and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md) and [coverage manifest](nr-consolidation-test-coverage.json).
 
 The target is one polar NR formulation and one rectangular NR formulation,
 with a selectable execution mode controlling preparation and caching. Both
@@ -398,6 +398,16 @@ exit; legacy completion hooks preserve their order and observations. Fifteen
 additional cases pass in the 7,921-identity full run, with all 508 required
 checks passing. Matched reductions and a still-failing targeted external check
 are retained separately. This does not close remaining migration or release gates.
+
+The [standalone checkpoint](benchmarks/nr-standalone-consolidation-2026-10-31.md)
+converts the historical fixed-operator API into a compatibility facade around
+the same Newton engine, power evaluator and polar formulation. Twenty new cases
+pass in the 7,941-identity full run; all 528 required checks pass. Public logical
+degree counts and options remain, while the backend uses fixed-variable identity
+rows. The frozen historical implementation is test-only. Matched timing and
+current external results are retained, with measured overhead and the overall
+performance criterion still open. CLEAN-06/07/08 remain subject to their broader
+capability and complete source/API coverage requirements.
 
 ### 8.7 Numerical, integration and performance qualification - phase 6
 

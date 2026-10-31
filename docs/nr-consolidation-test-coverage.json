@@ -2,9 +2,9 @@
   "schema": 1,
   "status": "in_progress",
   "release_closed": false,
-  "verification_run": "nr-owned-completion-final-full-20261031",
-  "evidence": "ipss.test.plugin.core/target/nr-owned-completion-20261031/full-final-audit.json",
-  "executed_tests": 7921,
+  "verification_run": "nr-standalone-final-full-20261031",
+  "evidence": "ipss.test.plugin.core/target/nr-standalone-consolidation-20261031/full-final-audit.json",
+  "executed_tests": 7941,
   "foundation_configurations": [
     {
       "coordinate": "rectangular",
@@ -2674,10 +2674,30 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[3]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[4]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#certificateRetriesFreshPivotsAndRecordsActualBackendWork",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#retainedFactorCertificateFailureDoesNotRetryWhenPolicyForbidsIt",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#validatesInstancePoliciesWithoutWeakeningDefaultGuards",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#verificationRejectsUncertifiableRhsAndRequiresSequentialSingleRhs",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#absoluteMagnitudeJacobianMatchesIndependentFiniteDifferences",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#checksReferencePowerFinitenessAndAllowsHugeFiniteVoltageAtSolvedStart",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#commonKernelReplacesFormerLargeFusedImplementation",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#instancePolicyAndOwnedBackendDoNotConsultOrMutateGlobals",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#largeFiniteMismatchUsesInstanceDivergencePolicy",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#negativeMagnitudeKeepsLegacyUnwrappedAngleConvention",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#ownsOperatorCopiesAndRejectsInvalidShapesAndOptions",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesCancellationWithMidRowDiagonalAndSignedZero",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#supportsMultipleReferencesAndNoPqEquations",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#zeroBudgetAndExactToleranceApplyNoCorrectionAndNeedNoFactors"
       ],
-      "remaining": "Historical standalone numerical API, separate specialized coefficient/capability contracts and final source/execution coverage closure remain. Ordered contributors, exact structural layouts, per-matrix response roles and trial ownership are implemented and verified.",
-      "oracle": "Mode/build/assembly counters, common plan/kernel tests and source review; standalone migration remains pending."
+      "remaining": "Separate specialized coefficient/capability contracts and final source/execution coverage closure remain. Standalone numerical API migration, ordered contributors, exact layouts, per-matrix response roles and trial ownership are implemented and verified.",
+      "oracle": "Common engine/kernel source review, execution counters, frozen standalone comparison and independent physical-current/finite-difference checks."
     },
     {
       "id": "TC-24",
@@ -2687,14 +2707,16 @@
       "status": "partial_evidence_target_not_met",
       "release_closed": false,
       "executed_test_ids": [],
-      "remaining": "Matched completion before/after and one-warmup checks show reductions without changing voltages. A direct IEEE118 recheck still misses <=1.2. Final generic/frozen/all-five external qualification after remaining migrations is required.",
+      "remaining": "The standalone-migration checkpoint retains initial/refined matched timings and current all-five external results. Measured overhead, final generic/frozen comparisons and the overall <=1.2 performance requirement remain open.",
       "benchmark_evidence": [
         "docs/benchmarks/nr-consolidation-minimal-warmup-2026-10-30.md",
         "docs/benchmarks/checkpoints/nr-consolidation-minimal-warmup-2026-10-30.json",
         "docs/benchmarks/nr-consolidation-contributors-2026-10-31.md",
         "docs/benchmarks/checkpoints/nr-consolidation-contributors-2026-10-31.json",
         "docs/benchmarks/nr-owned-completion-2026-10-31.md",
-        "docs/benchmarks/checkpoints/nr-owned-completion-2026-10-31.json"
+        "docs/benchmarks/checkpoints/nr-owned-completion-2026-10-31.json",
+        "docs/benchmarks/nr-standalone-consolidation-2026-10-31.md",
+        "docs/benchmarks/checkpoints/nr-standalone-consolidation-2026-10-31.json"
       ],
       "oracle": "Qualified nodal operators, independent residual/reference voltage checks, raw wall times and execution receipts."
     }
@@ -2741,6 +2763,6 @@
       "status": "closure_pending"
     }
   ],
-  "required_focused_tests": 508,
+  "required_focused_tests": 528,
   "full_regression_gate_passed": true
 }
