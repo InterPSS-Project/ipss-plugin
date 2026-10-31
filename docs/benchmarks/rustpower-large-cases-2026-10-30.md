@@ -9,6 +9,8 @@ RustPower 0.5.2 with KLU successfully solves both complete large-case nodal syst
 
 All three per-fork ratios also pass for both cases. The earlier IEEE39/IEEE118/PEGASE9241 cohort was not rerun here: its IEEE118 and PEGASE9241 failures remain. Passing this added cohort does not establish a five-case overall pass.
 
+The [one-warmup follow-up](rustpower-large-single-warmup-2026-10-30.md) misses the target, with ratios 2.047 and 1.668. The passing results above describe the warmed protocol documented here; the follow-up uses exactly one warmup and one measured solve in a fresh process for each case/runtime.
+
 ## Support and convergence scope
 
 RustPower accepts an externally prepared sparse Ybus, Sbus, starting voltage and PV/PQ/reference indexing. Its [official interface description](https://github.com/chengts95/rustpower#pandapower-integration-scope) distinguishes numerical solving from importing a full device/control model. Actual successful solves establish support for these two numerical systems; they do not establish complete input-format or control-model coverage.

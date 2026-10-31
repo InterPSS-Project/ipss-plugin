@@ -196,7 +196,8 @@ def external_snapshots(args):
         residual = float(np.max(abs(np.r_[mis[np.r_[pv, pq]].real, mis[pq].imag])))
         error = float(np.max(abs(v - data["v"])))
         validation[name + "/rustpower-klu"] = dict(residual_pu=residual,
-                max_complex_voltage_error_pu=error, iterations=sorted(set(counts)))
+                max_complex_voltage_error_pu=error, iterations=sorted(set(counts)),
+                warmup_solves=args.large_warmup, measured_solves=args.large_repeats)
         if residual > 1.01 * TOL or error > 1e-7:
             raise RuntimeError(f"{name}: residual={residual}, voltage error={error}")
         print(name, "rustpower-klu", stats(samples), flush=True)

@@ -137,10 +137,14 @@ def main():
     parser.add_argument("--large-repeats", type=int, default=100)
     parser.add_argument("--cpu", type=int)
     parser.add_argument("--include-generic", action="store_true")
+    parser.add_argument("--initial-solve-is-warmup", action="store_true",
+                        help="Count Java's required initialization solve in the requested warmup count")
     parser.add_argument("--required-ratio", type=float, default=1.2)
     parser.add_argument("--cases", nargs="+", choices=shared.CASES, default=list(shared.STANDARD_CASES))
     parser.add_argument("--case-directory", type=Path, help="Qualified large-case snapshots from benchmark_large_cases.py")
     args = parser.parse_args()
+    if args.initial_solve_is_warmup and min(args.small_warmup, args.large_warmup) < 1:
+        parser.error("Counting initialization as warmup requires at least one warmup")
     args.output = args.output.resolve()
     if args.output.exists() and any(args.output.iterdir()):
         raise RuntimeError("Choose a new output directory; existing evidence will not be overwritten")
@@ -211,6 +215,7 @@ def main():
                            "--large-repeats", str(args.large_repeats), "--cases", *args.cases]
             else:
                 command = ["java", "-Xms256m", "-Xmx2g", "-Dlog4j2.configurationFile=" + str(config),
+                           "-Dipss.benchmark.initialSolveIsWarmup=" + str(args.initial_solve_is_warmup).lower(),
                            "-cp", str(classes) + os.pathsep + cp, "org.interpss.benchmark.PreparedNewtonApiBenchmark",
                            str(args.output), phase, str(fork), str(args.small_warmup), str(args.small_repeats),
                            str(args.large_warmup), str(args.large_repeats), *args.cases]

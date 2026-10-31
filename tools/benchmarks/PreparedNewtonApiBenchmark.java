@@ -65,11 +65,17 @@ public final class PreparedNewtonApiBenchmark {
                         host.nrEngine().lfEqnJMatrixCache.getSymbolTable()).symbolTable() : null;
                 int warmups = net.getNoBus() > 1000 ? largeWarmups : smallWarmups;
                 int repeats = net.getNoBus() > 1000 ? largeRepeats : smallRepeats;
+                boolean initialSolveIsWarmup = Boolean.getBoolean("ipss.benchmark.initialSolveIsWarmup");
+                if (initialSolveIsWarmup && warmups < 1) throw new IllegalArgumentException("Initialization requires one warmup");
+                int requestedWarmups = warmups;
+                if (initialSolveIsWarmup) warmups--;
+                int loadflowCalls = 1;
                 for (int r = -warmups; r < repeats; r++) {
                     long start = System.nanoTime();
                     reset(net, startVoltage);
                     boolean converged = algorithm.loadflow(false);
                     long elapsed = System.nanoTime() - start;
+                    loadflowCalls++;
                     var report = algorithm.getTerminationReport();
                     if (!converged || !report.converged() || report.iteration() < 1
                             || report.maxEquationMismatchPu() > 1e-6 || algorithm.wasPreparedNewtonUsed() != prepared)
@@ -95,6 +101,10 @@ public final class PreparedNewtonApiBenchmark {
                     counters.put("preparedWorkspaceScopes", nrSolver.getPreparedWorkspaceScopeCount());
                     counters.put("stableSolveScopes", nrSolver.getPreparedSolveScopeCount());
                     counters.put("retainedSymbolicAcrossSolves", 1L);
+                    counters.put("loadflowCalls", (long) loadflowCalls);
+                    counters.put("warmupLoadflowCalls", (long) requestedWarmups + (initialSolveIsWarmup ? 0 : 1));
+                    counters.put("measuredLoadflowCalls", (long) repeats);
+                    counters.put("initialSolveCountedAsWarmup", initialSolveIsWarmup ? 1L : 0L);
                     diagnostics.put(name, counters);
                 }
                 try (var voltages = new PrintWriter(Files.newBufferedWriter(output.resolve(name + "-interpss-" + mode + "-" + fork + "-voltage.csv")))) {
