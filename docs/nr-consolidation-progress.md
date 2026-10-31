@@ -239,3 +239,23 @@ failures/errors, with zero changed diagnostics or source drift. The ordinary
 solver defaults remain unchanged. The compatibility API retains its per-instance
 numerical policy and checked linear-solve behavior. The linked checkpoint keeps
 the initial and refined timing batches; it does not claim performance recovery.
+
+## Exact numerical factor reuse
+
+The [factor-reuse checkpoint](benchmarks/nr-exact-factor-reuse-2026-10-31.md)
+records core commit `74d19134c13d805fb76c3f8eaabc58e22609d3ba`. One accepted initial operator retains its
+own numerical factor arrays; fresh CSC pattern/values, ownership and KLU
+configuration must match exactly before reuse. The common Newton engine,
+formulations, mutation validation and Jacobian refresh policy remain unchanged.
+Retained/fixed-operator plans enable it; generic preparation remains conservative.
+
+All 577 required checks pass in the 7,990-identity full run, with 49 additions,
+91 existing skips and the same 16 failures/errors. There are no missing/new
+failures/skips, changed diagnostics, fork dumps or source drift. All 108 timed
+production classpath entries match the full run. Matched warmed means decrease
+7.39% for IEEE118, 7.06% for PEGASE9241 and 9.99% for 25k, with byte-identical
+voltages and independent accuracy checks. One-warmup recovery remains incomplete.
+The linked checkpoint retains the separate all-five direct RustPower comparison,
+complete samples, exact-cache/actual-work counts and bounded-heap observations.
+Four cases meet <=1.2; IEEE118 remains above the target at 1.309. Architecture,
+complete coverage/interaction closure and final release qualification remain open.

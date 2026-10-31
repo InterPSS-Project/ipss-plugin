@@ -53,6 +53,11 @@ public final class PreparedNewtonApiBenchmark {
         return end >= 0 && start >= 0 ? end - start : null;
     }
 
+    private static Long optionalCounter(Object owner, String method) throws Exception {
+        try { return ((Number) owner.getClass().getMethod(method).invoke(owner)).longValue(); }
+        catch (NoSuchMethodException legacyRuntime) { return null; }
+    }
+
     private static void reset(AclfNetwork net, double[][] start) {
         int i = 0;
         for (var bus : net.getBusList()) {
@@ -164,6 +169,25 @@ public final class PreparedNewtonApiBenchmark {
                             && (ownedCompletionCount == null || ownedCompletionCount != loadflowCalls))
                         throw new IllegalStateException("Owned completion did not execute for every load flow: " + name);
                     counters.put("retainedSymbolicAcrossSolves", 1L);
+                    Long exactHits = optionalCounter(matrix, "getExactNumericalFactorReuseCount");
+                    if (exactHits != null) {
+                        counters.put("exactFactorCacheHits", exactHits);
+                        counters.put("initialFactorCaptures", optionalCounter(matrix, "getInitialFactorCaptureCount"));
+                        counters.put("initialFactorOwnedArrayBytes", optionalCounter(matrix, "getInitialFactorPayloadBytes"));
+                    }
+                    if (Boolean.getBoolean("ipss.benchmark.requireExactFactorReuse")
+                            && (exactHits == null || exactHits < loadflowCalls - 1))
+                        throw new IllegalStateException("Expected repeated initial-operator factor reuse: " + name);
+                    try {
+                        Object actual = matrix.getClass().getMethod("numericalStatistics").invoke(matrix);
+                        counters.put("actualSymbolicAnalyses", optionalCounter(actual, "symbolicAnalyses"));
+                        counters.put("actualFullFactorizations", optionalCounter(actual, "factorizations"));
+                        counters.put("actualRefactorizations", optionalCounter(actual, "refactorizations"));
+                        counters.put("actualPivotFallbacks", optionalCounter(actual, "pivotFallbacks"));
+                    } catch (NoSuchMethodException legacyRuntime) { }
+                    var memory = java.lang.management.ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+                    counters.put("heapUsedBytes", memory.getUsed());
+                    counters.put("heapMaxBytes", memory.getMax());
                     counters.put("loadflowCalls", (long) loadflowCalls);
                     counters.put("warmupLoadflowCalls", (long) requestedWarmups + (initialSolveIsWarmup ? 0 : 1));
                     counters.put("measuredLoadflowCalls", (long) repeats);

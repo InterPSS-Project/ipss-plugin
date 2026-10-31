@@ -1,6 +1,6 @@
 # Newton-Raphson consolidation plan
 
-Status: Implementation in progress. Selection, shared polar/rectangular kernels, residual/state handling and common preparation have focused validation. Standalone numerical API migration is verified; specialized capability contracts and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md) and [coverage manifest](nr-consolidation-test-coverage.json).
+Status: Implementation in progress. Selection, shared polar/rectangular kernels, residual/state handling and common preparation have focused validation. Standalone numerical API migration and exact numerical factor reuse are verified; specialized capability contracts and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md) and [coverage manifest](nr-consolidation-test-coverage.json).
 
 The target is one polar NR formulation and one rectangular NR formulation,
 with a selectable execution mode controlling preparation and caching. Both
@@ -88,6 +88,15 @@ Validity must be checked before choosing rebuild, refactor or LU reuse.
 A numerical zero must retain its structural slot. Notifications alone cannot
 certify validity: notification-suppressed mutations need snapshot validation
 unless an explicit ownership contract guarantees unchanged data.
+
+Retained preparation may keep one accepted numerical factorization after fresh
+assembly. Reuse requires exact CSC owner/pattern/value, symbolic owner and
+supported solver-configuration equality. RHS evaluation remains fresh; a
+numerical miss refactors separate working factors, and structural or owner
+changes discard the entry. This exact-operator optimization leaves the common
+Newton equations and approximate Jacobian refresh policy unchanged. The
+[factor-reuse checkpoint](benchmarks/nr-exact-factor-reuse-2026-10-31.md)
+records mutation/failure coverage, actual factor work and memory limits.
 
 ## 5. Preserve model and observation semantics
 

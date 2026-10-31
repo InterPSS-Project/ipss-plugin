@@ -1,0 +1,1334 @@
+{
+  "status": "exact_factor_reuse_verified_final_qualification_open",
+  "consolidation_complete": false,
+  "final_release_qualified": false,
+  "core_source_commit": "74d19134c13d805fb76c3f8eaabc58e22609d3ba",
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 7990,
+    "totals": {
+      "passed": 7883,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 577,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[10]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[11]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[12]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[13]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[14]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[15]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[16]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[17]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[18]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[19]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[20]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[21]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[22]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[23]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[24]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[25]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[26]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[27]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[28]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[29]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[30]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[31]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[32]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[7]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[8]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[9]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#aSingularMissCannotPoisonTheRetainedGoodOperatorOrItsStatus:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#alternatingChangedOperatorsCannotMutateTheSingleRetainedState:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#cachedFactorsSupportPanelsAndIndependentConcurrentWorkerScratch:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#certificateFailureDiscardsTheCachedCopyAndRepivots:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#defaultIsConservativeAndAnExplicitHitUsesFreshRhsAndInspection:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#disablingAndReenablingPreservesTheCurrentActiveOperator:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#materializingOrdinaryRowsCannotKeepACachedPreparedEntry:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#nonfiniteCandidatesCannotHitOrLeaveTheMatrixFactored(double)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#nonfiniteCandidatesCannotHitOrLeaveTheMatrixFactored(double)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#nonfiniteCandidatesCannotHitOrLeaveTheMatrixFactored(double)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#numericalCopiesOwnFactorsScratchAndIndependentEquationValues:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#patternChangesWithEqualDimensionsAndEntryCountRequireNewAnalysis(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#patternChangesWithEqualDimensionsAndEntryCountRequireNewAnalysis(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#pivotFallbackAndCachedMetadataKeepTheirOwnNumericalOwners:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#preparedOrderingChangeClearsTheEntry:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#signedZeroAndUnnotifiedNumericalWritesRequireExactComparison:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_exact_factor_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[10]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[11]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[12]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[13]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[14]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[15]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[16]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[17]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[18]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[19]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[20]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[21]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[22]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[23]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[24]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[25]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[26]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[27]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[28]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[29]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[30]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[31]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[32]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[7]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[8]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorPipelineTest#exactReuseOccursAfterFreshAssemblyAndAllMutationsStillMatchGeneric(boolean, NrExecutionMode, String)[9]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#aSingularMissCannotPoisonTheRetainedGoodOperatorOrItsStatus": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#alternatingChangedOperatorsCannotMutateTheSingleRetainedState": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#cachedFactorsSupportPanelsAndIndependentConcurrentWorkerScratch": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#certificateFailureDiscardsTheCachedCopyAndRepivots": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#defaultIsConservativeAndAnExplicitHitUsesFreshRhsAndInspection": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#disablingAndReenablingPreservesTheCurrentActiveOperator": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#materializingOrdinaryRowsCannotKeepACachedPreparedEntry": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#nonfiniteCandidatesCannotHitOrLeaveTheMatrixFactored(double)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#nonfiniteCandidatesCannotHitOrLeaveTheMatrixFactored(double)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#nonfiniteCandidatesCannotHitOrLeaveTheMatrixFactored(double)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#numericalCopiesOwnFactorsScratchAndIndependentEquationValues": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#patternChangesWithEqualDimensionsAndEntryCountRequireNewAnalysis(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#patternChangesWithEqualDimensionsAndEntryCountRequireNewAnalysis(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#pivotFallbackAndCachedMetadataKeepTheirOwnNumericalOwners": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#preparedOrderingChangeClearsTheEntry": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#signedZeroAndUnnotifiedNumericalWritesRequireExactComparison": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrExactFactorReuseTest#solverConfigurationAndSymbolicOwnerChangesDoNotReuseOldFactors": "passed"
+    }
+  },
+  "implementation": {
+    "common_engine_and_formulations_unchanged": true,
+    "fresh_operator_required": true,
+    "cache_entries_per_prepared_owner": 1,
+    "cache_default": "disabled for the general sparse backend; enabled by retained and fixed-operator NR plans",
+    "key": "CSC owner and exact pattern/values, symbolic owner and supported KLU configuration",
+    "memory_counter_scope": "owned array payload only, excludes object headers, shared immutable indices and referenced KLU metadata; not total retained heap"
+  },
+  "matched_before_after": {
+    "case118": {
+      "before": {
+        "samples": 20000,
+        "mean_ms": 0.04180775,
+        "median_ms": 0.0396,
+        "min_ms": 0.039,
+        "max_ms": 1.2364
+      },
+      "after": {
+        "samples": 20000,
+        "mean_ms": 0.038718635,
+        "median_ms": 0.037,
+        "min_ms": 0.0365,
+        "max_ms": 1.5627
+      },
+      "mean_reduction_percent": 7.388857329083709,
+      "byte_identical_voltages_sha256": "081a09d4c0db179b842da519d326462f9ae45f015bb869eaf3817161dd472f16"
+    },
+    "case9241pegase": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 14.991824,
+        "median_ms": 14.71095,
+        "min_ms": 13.6379,
+        "max_ms": 23.373
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 13.933231,
+        "median_ms": 13.67505,
+        "min_ms": 12.8541,
+        "max_ms": 19.6938
+      },
+      "mean_reduction_percent": 7.061135456232681,
+      "byte_identical_voltages_sha256": "25c9574689f76b0c234580bda2b9138f419692d4e3f9a7ccb13965cb37d1e32d"
+    },
+    "activsg25k": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 51.0931335,
+        "median_ms": 50.20295,
+        "min_ms": 47.3839,
+        "max_ms": 71.0317
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 45.9912235,
+        "median_ms": 45.2713,
+        "min_ms": 42.6889,
+        "max_ms": 66.7589
+      },
+      "mean_reduction_percent": 9.985510088160876,
+      "byte_identical_voltages_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+    }
+  },
+  "one_warmup_25k_ms": {
+    "before": [
+      113.7658,
+      107.8875
+    ],
+    "after": [
+      105.7792,
+      107.8444
+    ]
+  },
+  "external_comparison": {
+    "target": {
+      "required_ratio": 1.2,
+      "cases": {
+        "case39": {
+          "mean_ratio": 1.1563454278551426,
+          "per_fork_ratios": [
+            1.1468947496257442,
+            1.132116308111707,
+            1.1911843853644235
+          ]
+        },
+        "case118": {
+          "mean_ratio": 1.3091903817666126,
+          "per_fork_ratios": [
+            1.3395708092882221,
+            1.2801782631197882,
+            1.308881012071399
+          ]
+        },
+        "case9241pegase": {
+          "mean_ratio": 1.079273046639341,
+          "per_fork_ratios": [
+            1.093916713519134,
+            1.0321093972738475,
+            1.1125642892832541
+          ]
+        },
+        "activsg25k": {
+          "mean_ratio": 1.1581625678477603,
+          "per_fork_ratios": [
+            1.1327843696505882,
+            1.1856928032604714,
+            1.1575819719311702
+          ]
+        },
+        "activsg70k": {
+          "mean_ratio": 1.0010382591007485,
+          "per_fork_ratios": [
+            1.0263755634664031,
+            1.0010348376299931,
+            0.9758009022351457
+          ]
+        }
+      },
+      "target_met": false,
+      "separate_cohorts": true,
+      "cpu": 2,
+      "affinity_mask": 4
+    },
+    "summary": [
+      {
+        "case": "case39",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.012511633333333334,
+        "median_ms": 0.012,
+        "min_ms": 0.0115,
+        "p95_ms": 0.0127,
+        "max_ms": 2.0085,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.01259834,
+            "median_ms": 0.0123,
+            "min_ms": 0.0119,
+            "p95_ms": 0.0128,
+            "max_ms": 0.2038
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.01269215,
+            "median_ms": 0.0119,
+            "min_ms": 0.0115,
+            "p95_ms": 0.012204999999999928,
+            "max_ms": 2.0085
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.01224441,
+            "median_ms": 0.0119,
+            "min_ms": 0.0116,
+            "p95_ms": 0.0122,
+            "max_ms": 0.3724
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.028950846666666665,
+        "median_ms": 0.028,
+        "min_ms": 0.027,
+        "p95_ms": 0.0297,
+        "max_ms": 2.1366,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.028415340000000004,
+            "median_ms": 0.0274,
+            "min_ms": 0.027,
+            "p95_ms": 0.029,
+            "max_ms": 0.3079
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.029446359999999998,
+            "median_ms": 0.0284,
+            "min_ms": 0.0275,
+            "p95_ms": 0.031,
+            "max_ms": 0.751
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.028990840000000004,
+            "median_ms": 0.028,
+            "min_ms": 0.0274,
+            "p95_ms": 0.0293,
+            "max_ms": 2.1366
+          }
+        ]
+      },
+      {
+        "case": "case9241pegase",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 12.754032333333335,
+        "median_ms": 12.52655,
+        "min_ms": 12.0394,
+        "p95_ms": 13.624625,
+        "max_ms": 33.0114,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 12.679872999999997,
+            "median_ms": 12.52185,
+            "min_ms": 12.0394,
+            "p95_ms": 13.60869,
+            "max_ms": 15.3612
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 12.893484000000003,
+            "median_ms": 12.51735,
+            "min_ms": 12.1295,
+            "p95_ms": 13.85803,
+            "max_ms": 33.0114
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 12.688740000000003,
+            "median_ms": 12.5397,
+            "min_ms": 12.1283,
+            "p95_ms": 13.47178,
+            "max_ms": 15.1311
+          }
+        ]
+      },
+      {
+        "case": "case39",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.01446777,
+        "median_ms": 0.0137,
+        "min_ms": 0.0133,
+        "p95_ms": 0.016,
+        "max_ms": 1.1194,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.014448969999999997,
+            "median_ms": 0.0138,
+            "min_ms": 0.0134,
+            "p95_ms": 0.0164,
+            "max_ms": 0.1972
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.01436899,
+            "median_ms": 0.0137,
+            "min_ms": 0.0133,
+            "p95_ms": 0.0156,
+            "max_ms": 0.5048
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.01458535,
+            "median_ms": 0.0137,
+            "min_ms": 0.0134,
+            "p95_ms": 0.0154,
+            "max_ms": 1.1194
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.03790217,
+        "median_ms": 0.0365,
+        "min_ms": 0.0358,
+        "p95_ms": 0.0408,
+        "max_ms": 0.7345,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.03806436,
+            "median_ms": 0.0364,
+            "min_ms": 0.0358,
+            "p95_ms": 0.0429,
+            "max_ms": 0.7345
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.03769659,
+            "median_ms": 0.0365,
+            "min_ms": 0.036,
+            "p95_ms": 0.0396,
+            "max_ms": 0.5379
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.03794556,
+            "median_ms": 0.0366,
+            "min_ms": 0.0361,
+            "p95_ms": 0.0402,
+            "max_ms": 0.6008
+          }
+        ]
+      },
+      {
+        "case": "case9241pegase",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 13.765083333333331,
+        "median_ms": 13.5439,
+        "min_ms": 12.4095,
+        "p95_ms": 15.157340000000001,
+        "max_ms": 21.4038,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 13.870725,
+            "median_ms": 13.73795,
+            "min_ms": 12.6858,
+            "p95_ms": 15.261550000000002,
+            "max_ms": 20.2276
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 13.307486,
+            "median_ms": 13.178799999999999,
+            "min_ms": 12.4095,
+            "p95_ms": 14.33694,
+            "max_ms": 14.9302
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 14.117039000000002,
+            "median_ms": 13.93365,
+            "min_ms": 12.7277,
+            "p95_ms": 16.208209999999998,
+            "max_ms": 21.4038
+          }
+        ]
+      },
+      {
+        "case": "activsg25k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 40.64319866666667,
+        "median_ms": 39.941199999999995,
+        "min_ms": 37.7928,
+        "p95_ms": 44.202035,
+        "max_ms": 62.2321,
+        "iterations": [
+          5
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 42.075886,
+            "median_ms": 41.64505,
+            "min_ms": 37.7928,
+            "p95_ms": 45.767765000000004,
+            "max_ms": 62.2321
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 39.635004,
+            "median_ms": 39.4285,
+            "min_ms": 37.9271,
+            "p95_ms": 41.7908,
+            "max_ms": 43.3368
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 40.218706000000005,
+            "median_ms": 39.809,
+            "min_ms": 38.3639,
+            "p95_ms": 43.233985000000004,
+            "max_ms": 44.8905
+          }
+        ]
+      },
+      {
+        "case": "activsg70k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 220.2029016666667,
+        "median_ms": 218.80644999999998,
+        "min_ms": 213.0265,
+        "p95_ms": 229.98283,
+        "max_ms": 264.4602,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 219.564333,
+            "median_ms": 217.87265,
+            "min_ms": 213.7983,
+            "p95_ms": 228.69262,
+            "max_ms": 264.4602
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 220.64041100000003,
+            "median_ms": 219.19945,
+            "min_ms": 214.3214,
+            "p95_ms": 230.01517,
+            "max_ms": 244.3711
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 220.40396100000007,
+            "median_ms": 219.30905,
+            "min_ms": 213.0265,
+            "p95_ms": 230.277645,
+            "max_ms": 244.9066
+          }
+        ]
+      },
+      {
+        "case": "activsg25k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 47.07143133333334,
+        "median_ms": 46.0993,
+        "min_ms": 42.6965,
+        "p95_ms": 51.919495000000005,
+        "max_ms": 68.029,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 47.662906,
+            "median_ms": 46.6757,
+            "min_ms": 43.5051,
+            "p95_ms": 52.08878499999999,
+            "max_ms": 67.67
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 46.994939,
+            "median_ms": 46.1758,
+            "min_ms": 43.5836,
+            "p95_ms": 51.58179499999999,
+            "max_ms": 68.029
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 46.55644899999999,
+            "median_ms": 45.7202,
+            "min_ms": 42.6965,
+            "p95_ms": 51.837225,
+            "max_ms": 63.975
+          }
+        ]
+      },
+      {
+        "case": "activsg70k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 220.43152933333332,
+        "median_ms": 219.6932,
+        "min_ms": 208.8602,
+        "p95_ms": 236.59145999999998,
+        "max_ms": 253.204,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 225.35546599999998,
+            "median_ms": 223.70155,
+            "min_ms": 216.7707,
+            "p95_ms": 238.29528499999998,
+            "max_ms": 253.204
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 220.86873799999998,
+            "median_ms": 218.83800000000002,
+            "min_ms": 210.0427,
+            "p95_ms": 235.6735,
+            "max_ms": 243.5168
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 215.07038399999993,
+            "median_ms": 214.10765,
+            "min_ms": 208.8602,
+            "p95_ms": 223.681245,
+            "max_ms": 237.0946
+          }
+        ]
+      }
+    ],
+    "audit": {
+      "status": "all_numerical_count_mode_fingerprint_and_affinity_checks_passed",
+      "measured_samples": 121800,
+      "audited_groups": [
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 100
+        }
+      ],
+      "performance_target_met": false,
+      "small_rust_warmup_evidence": "Executed source range(-warmups,repeats) and per-fork launch flags; the small-case validation format has no separate warmup counters."
+    },
+    "actual_work_and_memory": {
+      "small-0": {
+        "case39": {
+          "preparations": 1,
+          "scalarEquations": 78,
+          "structuralEntries": 456,
+          "factorizedEntries": 698,
+          "preparedResidualEvaluations": 360000,
+          "preparedWorkspaceScopes": 60000,
+          "stableSolveScopes": 60000,
+          "ownedCompletionAllocations": 60000,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 59999,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 12084,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 120000,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 90885576,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 60000,
+          "warmupLoadflowCalls": 50000,
+          "measuredLoadflowCalls": 10000,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "case118": {
+          "preparations": 1,
+          "scalarEquations": 236,
+          "structuralEntries": 1106,
+          "factorizedEntries": 1646,
+          "preparedResidualEvaluations": 360000,
+          "preparedWorkspaceScopes": 60000,
+          "stableSolveScopes": 60000,
+          "ownedCompletionAllocations": 60000,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 59999,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 29716,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 120000,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 98749896,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 60000,
+          "warmupLoadflowCalls": 50000,
+          "measuredLoadflowCalls": 10000,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "case9241pegase": {
+          "preparations": 1,
+          "scalarEquations": 18482,
+          "structuralEntries": 130858,
+          "factorizedEntries": 235234,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 3685524,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 600,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 105455000,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        }
+      },
+      "small-1": {
+        "case39": {
+          "preparations": 1,
+          "scalarEquations": 78,
+          "structuralEntries": 456,
+          "factorizedEntries": 698,
+          "preparedResidualEvaluations": 360000,
+          "preparedWorkspaceScopes": 60000,
+          "stableSolveScopes": 60000,
+          "ownedCompletionAllocations": 60000,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 59999,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 12084,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 120000,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 90885576,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 60000,
+          "warmupLoadflowCalls": 50000,
+          "measuredLoadflowCalls": 10000,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "case118": {
+          "preparations": 1,
+          "scalarEquations": 236,
+          "structuralEntries": 1106,
+          "factorizedEntries": 1646,
+          "preparedResidualEvaluations": 360000,
+          "preparedWorkspaceScopes": 60000,
+          "stableSolveScopes": 60000,
+          "ownedCompletionAllocations": 60000,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 59999,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 29716,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 120000,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 97701320,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 60000,
+          "warmupLoadflowCalls": 50000,
+          "measuredLoadflowCalls": 10000,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "case9241pegase": {
+          "preparations": 1,
+          "scalarEquations": 18482,
+          "structuralEntries": 130858,
+          "factorizedEntries": 235234,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 3685524,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 600,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 105381888,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        }
+      },
+      "small-2": {
+        "case39": {
+          "preparations": 1,
+          "scalarEquations": 78,
+          "structuralEntries": 456,
+          "factorizedEntries": 698,
+          "preparedResidualEvaluations": 360000,
+          "preparedWorkspaceScopes": 60000,
+          "stableSolveScopes": 60000,
+          "ownedCompletionAllocations": 60000,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 59999,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 12084,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 120000,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 90885576,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 60000,
+          "warmupLoadflowCalls": 50000,
+          "measuredLoadflowCalls": 10000,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "case118": {
+          "preparations": 1,
+          "scalarEquations": 236,
+          "structuralEntries": 1106,
+          "factorizedEntries": 1646,
+          "preparedResidualEvaluations": 360000,
+          "preparedWorkspaceScopes": 60000,
+          "stableSolveScopes": 60000,
+          "ownedCompletionAllocations": 60000,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 59999,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 29716,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 120000,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 97701320,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 60000,
+          "warmupLoadflowCalls": 50000,
+          "measuredLoadflowCalls": 10000,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "case9241pegase": {
+          "preparations": 1,
+          "scalarEquations": 18482,
+          "structuralEntries": 130858,
+          "factorizedEntries": 235234,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 3685524,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 600,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 104857600,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        }
+      },
+      "large-0": {
+        "activsg25k": {
+          "preparations": 1,
+          "scalarEquations": 50000,
+          "structuralEntries": 335468,
+          "factorizedEntries": 773350,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 10816260,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 450,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 284387072,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "activsg70k": {
+          "preparations": 1,
+          "scalarEquations": 140000,
+          "structuralEntries": 915154,
+          "factorizedEntries": 2458082,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 32362284,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 600,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 590110944,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        }
+      },
+      "large-1": {
+        "activsg25k": {
+          "preparations": 1,
+          "scalarEquations": 50000,
+          "structuralEntries": 335468,
+          "factorizedEntries": 773350,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 10816260,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 450,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 203823760,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "activsg70k": {
+          "preparations": 1,
+          "scalarEquations": 140000,
+          "structuralEntries": 915154,
+          "factorizedEntries": 2458082,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 32362284,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 600,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 683674736,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        }
+      },
+      "large-2": {
+        "activsg25k": {
+          "preparations": 1,
+          "scalarEquations": 50000,
+          "structuralEntries": 335468,
+          "factorizedEntries": 773350,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 10816260,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 450,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 284604096,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        },
+        "activsg70k": {
+          "preparations": 1,
+          "scalarEquations": 140000,
+          "structuralEntries": 915154,
+          "factorizedEntries": 2458082,
+          "preparedResidualEvaluations": 1200,
+          "preparedWorkspaceScopes": 150,
+          "stableSolveScopes": 150,
+          "ownedCompletionAllocations": 150,
+          "retainedSymbolicAcrossSolves": 1,
+          "exactFactorCacheHits": 149,
+          "initialFactorCaptures": 1,
+          "initialFactorOwnedArrayBytes": 32362284,
+          "actualSymbolicAnalyses": 1,
+          "actualFullFactorizations": 1,
+          "actualRefactorizations": 600,
+          "actualPivotFallbacks": 0,
+          "heapUsedBytes": 561096736,
+          "heapMaxBytes": 2147483648,
+          "loadflowCalls": 150,
+          "warmupLoadflowCalls": 50,
+          "measuredLoadflowCalls": 100,
+          "initialSolveCountedAsWarmup": 1
+        }
+      }
+    }
+  },
+  "identical_production_classpath_entries": 108,
+  "evidence_root": "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031",
+  "external_evidence_root": "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031",
+  "evidence_hashes": {
+    "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/full-test-audit.json": {
+      "sha256": "443aa266602cf9ce412e302a6d5fa2e25a75f9a2714943d8b3caaa0ce221f5b9",
+      "bytes": 2601610
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/runtime-equivalence.json": {
+      "sha256": "847fecd550ee690e79a8aa9255cb22839da6626e8fbf53d5c41bfc215a0c73a4",
+      "bytes": 45281
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/matched/runs.json": {
+      "sha256": "4e1d7cc0277e854058d1831fc5dbbe73aa3a451bd3aa0cc3f6be81830b5e6a10",
+      "bytes": 164463
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/matched-summary.json": {
+      "sha256": "a8b6398643815eac8c7d522583a92b7f2b5ed07cfa4be77b0968a691248358a6",
+      "bytes": 1491
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/cold/runs.json": {
+      "sha256": "640334170c9ad67d15af50cdd48fbece4449b80ff896f680793b6ea25fe1f73d",
+      "bytes": 105974
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-reuse-20261031/transition-export/reference.json": {
+      "sha256": "e68166ddb7a66b9f3c8f5121eb9ced9be4ef7d3033b02aab37756eb61bd439cc",
+      "bytes": 1480
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031/runs.json": {
+      "sha256": "d50322482bafd7e4e42b7897f6db98559e8e9f76f47af247fd9de4d7b5cb722c",
+      "bytes": 2376
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031/result-audit.json": {
+      "sha256": "e64cfdd5a4c706487029b4830cfcd753112fcfcc6fa85d8cc04d16ceb48ddc4f",
+      "bytes": 4630
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031/summary.json": {
+      "sha256": "e86a3fa4ce2adde89be119cfa6d6f5223bfef21dbb05948e30f5b4c347ec7b11",
+      "bytes": 9422
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031/target-verification.json": {
+      "sha256": "275b9b115c1c1e92ff13cbd049e678a3922265f7f3e2ab3c4c518a369d0fa218",
+      "bytes": 1097
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031/small/sha256.json": {
+      "sha256": "49483ddae1a35f26f954b01fd0d9c6e4b4599d9c7169255e409833ccc8c856f2",
+      "bytes": 13154
+    },
+    "ipss.test.plugin.core/target/nr-exact-factor-rustpower-20261031/large/sha256.json": {
+      "sha256": "9ce2ad5a8e8ab6b16e0042b37a7183c36303382a24ba26117882ec4a911935eb",
+      "bytes": 13238
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-exact-factor-full-20261031-source-manifest.json": {
+      "sha256": "5e147f989166cefe1a09fae137a12c5da3651cafa4c597f7e47c543fb6733823",
+      "bytes": 1147100
+    }
+  },
+  "remaining": [
+    "Historical one-warmup startup recovery",
+    "Specialized coefficient/capability contracts and extension handoffs",
+    "Complete coverage, interaction sequences and final generic/frozen comparisons",
+    "All-five <=1.2 external target"
+  ]
+}
