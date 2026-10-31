@@ -108,3 +108,36 @@ Four existing piecewise assertions have the same exception type and assertion lo
 The corrected full run, `nr-consolidation-preparation-full-fixed-20261030`, executes **7,853 identities: 7,746 pass, 91 skip, 11 fail and five error**. All 453 required focused identities pass. No baseline identity disappears, gains a failure/error or becomes newly skipped, and no fork dumps occur. The four changed baseline diagnostics are reviewed as sub-tolerance numerical variation at unchanged assertion sites. The [full checkpoint](benchmarks/checkpoints/nr-consolidation-preparation-full-2026-10-30.json) and retained audit record the raw comparison and that review. Concurrent unrelated plugin edits after source capture are listed explicitly; this gate covers the compiled snapshot, and its core NR source remains current.
 
 The following [minimal-warmup benchmark](benchmarks/nr-consolidation-minimal-warmup-2026-10-30.md) verifies explicit cached/generic execution with one warmup and one measured solve per case/runtime. Cached NR / RustPower ratios are **4.277 for 25k and 1.668 for 70k**; neither meets the <=1.2 target. All accuracy, count, source/runtime fingerprint and affinity checks pass. These single observations do not qualify warmed performance or attribute the 25k slowdown. Earlier pre-consolidation results remain separate. The benchmark driver now captures every new numerical component and mode report, while preserving legacy-runtime comparison support.
+
+## 25k performance regression and admission correction
+
+The [matched diagnosis](benchmarks/nr-25k-regression-diagnosis-2026-10-30.md)
+confirms that the 88.64-to-201.47 ms historical increase is a core regression:
+both observations use one warmup, and both old/new benchmark drivers reproduce
+the core-version difference. The earlier 48.26 ms result uses 51 total warmups
+and is a separate protocol.
+
+Consolidation repeats a complete capability and endpoint-membership audit at
+every solve admission, even when an existing plan's authoritative snapshots can
+validate the model. This adds about 1.85 MB of allocation per unchanged solve
+and contributes substantial compilation work during the first measured solve.
+A separate warmed diagnostic also reproduces approximately 22% overhead.
+
+Core commit `2e83b268f` reuses the retained plan's boundary validation result.
+Cold/structurally changed inputs and open manual scopes keep full admission
+checks; unsupported notification-suppressed model replacements still trigger
+automatic fallback or strict-cache rejection. Generic execution skips its
+unused capability audit. Equations and numerical policy are unchanged.
+
+All **456 focused tests pass**, including three new admission-mutation cases.
+Matched one-warmup follow-up samples are 86–90 ms for the old core, 183–220 ms
+for the regressed core and 138–141 ms for the correction. A separate warmed
+batch averages 58.88, 71.98 and 60.72 ms respectively; old/corrected ranges
+overlap. Allocation falls to 19,624 bytes. Startup regression remains, and no
+new RustPower ratio is claimed. Full run `nr-admission-full-20261030` executes
+7,868 identities: 7,761 pass, 91 skip and the same 16 failures/errors remain.
+All 456 required checks pass, with no new failure/skip or changed baseline
+failure diagnostic. One historical replay-test name is explicitly reviewed as
+replaced by three passing controller-qualification tests; the raw missing name
+and source comparison remain in the audit. A later unrelated governor test edit
+is outside the compiled snapshot. Final consolidation qualification remains open.

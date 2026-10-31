@@ -28,3 +28,10 @@ The Java timer includes voltage reset and public load flow, including final volt
 Evidence: `ipss.test.plugin.core/target/nr-consolidation-preparation-minimal-retry-20261030/` contains the two case directories, complete raw timings/voltages, mode reports, source copies, environment/runtime fingerprints, `runs.json`, `preflight.json` and `result-audit.json`. The bounded log uses the same prefix with `.log`. The [machine-readable checkpoint](checkpoints/nr-consolidation-minimal-warmup-2026-10-30.json) retains counts and validation results.
 
 The implementation goal remains open: contributor/standalone-API migration, coverage closure and matched warmed/frozen-baseline performance qualification are still required. This run does not meet the minimal-warmup target.
+
+The subsequent [25k regression diagnosis](nr-25k-regression-diagnosis-2026-10-30.md)
+reproduces a core regression with crossed benchmark drivers. A repeated model
+capability audit adds allocations and compilation work. Core correction
+`2e83b268f` removes that duplicate admission work and partially restores
+one-warmup performance. Its follow-up observations are separate from this
+historical RustPower comparison and do not replace its timings or ratios.
