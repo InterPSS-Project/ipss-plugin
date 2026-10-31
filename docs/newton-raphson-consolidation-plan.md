@@ -270,16 +270,16 @@ cached and rebuilt preparation, including known-solution linear solves.
   primitives that can serve both bulk NR evaluation and public helper facades.
 - [ ] **POLAR-02** Extract one polar residual routine using current model data,
   external injections and the existing mismatch sign conventions.
-- [ ] **POLAR-03** Extract one polar Jacobian routine and remove the mathematical
+- [x] **POLAR-03** Extract one polar Jacobian routine and remove the mathematical
   split between ordinary prepared filling and retained-workspace filling.
-- [ ] **POLAR-04** Retain the existing relative-magnitude correction convention
+- [x] **POLAR-04** Retain the existing relative-magnitude correction convention
   and the analytic fixed-base/live-device voltage derivatives.
 - [ ] **POLAR-05** Reuse calculated powers and derivatives from the same
   evaluated state when assembling the Jacobian; refresh them when their stamp
   is invalid.
-- [ ] **POLAR-06** Support reduced and full polar matrices through equation-mask
+- [x] **POLAR-06** Support reduced and full polar matrices through equation-mask
   options in the same kernel, including reference and PV row/column behavior.
-- [ ] **POLAR-07** Route `AclfNetJMatrixHelper.createJMatrix()` and
+- [x] **POLAR-07** Route `AclfNetJMatrixHelper.createJMatrix()` and
   `updateJMatrix()` polar requests through the shared formulation while
   preserving their public contracts and additional-block dimensions.
 - [ ] **POLAR-08** Route `DefaultNrSolver` and `LfCalcMismatchHelper` through one

@@ -48,3 +48,15 @@ Evidence paths:
 - `ipss.test.plugin.core/target/nr-consolidation-20261030/mode-final-audit.json`.
 
 This phase initially maps modes onto the existing implementations. It does not yet satisfy the requirement that cached and generic modes share their mathematical kernels. Performance has not been requalified for the consolidation.
+
+## Polar Jacobian extraction
+
+Core commit `87eae80ff` replaces the independent ordinary/prepared and retained-workspace Jacobian formulas with `PolarNrFormulation`. `NrAssemblyPlan` supplies indexed electrical inputs and sparse destinations, and `NrNumericalWorkspace` supplies current numerical state. Fresh public matrix assembly and retained preparation call the same kernel. Physical-current arithmetic for these paths is shared through `NrPowerEvaluation`.
+
+Fresh/custom matrices retain their row-based publication lifecycle; retained KLU preparation publishes directly into its owned CSC values. Full/reduced masks, parallel accumulation, relative-magnitude columns, current load derivatives, live shunt B and additional auxiliary dimensions remain supported. Jacobian-only evaluation does not authorize publishing an RHS that its caller has not explicitly evaluated.
+
+The extraction gate passes 136 tests without skips, failures or errors. Eleven new `NrPolarFormulationTest` cases check full/reduced KLU/CSJ matrices against the frozen assembler, independently differentiate physical power balance with ZIP loads and live shunts, and exercise transformer asymmetry, inactive rows and additional contributor blocks. Existing mutation parity now compares against the frozen assembler so unification cannot turn it into a self-comparison.
+
+Evidence is retained in `.verification-build/nr-consolidation-polar-jacobian-gate-20261030/`, its bounded log and `ipss.test.plugin.core/target/nr-consolidation-20261030/polar-jacobian-audit.json`. Executed source copies and hashes are preserved in the same evidence root. The first extraction attempt's four lifecycle failures and their corrected gate are both retained.
+
+This closes only the polar Jacobian portion of phase 2. Residual formulas, typed evaluated-state publication, complete preparation ownership, common correction/allocation routines, rectangular/contributor extraction and retirement of the historical standalone numerical implementation remain open. A full post-consolidation regression comparison and matched RustPower performance qualification have not yet run.
