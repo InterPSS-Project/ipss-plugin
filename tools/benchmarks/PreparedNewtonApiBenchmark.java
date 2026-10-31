@@ -14,9 +14,13 @@ import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 
 /** Matched measurements through the maintained public load-flow API. */
 public final class PreparedNewtonApiBenchmark {
-    private static void reset(AclfNetwork net) {
-        for (var bus : net.getBusList()) bus.setVoltage(
-                bus.isGenPV() || bus.isSwing() ? bus.getDesiredVoltMag() : 1, 0);
+    private static void reset(AclfNetwork net, double[][] start) {
+        int i = 0;
+        for (var bus : net.getBusList()) {
+            bus.setVoltage(start == null ? (bus.isGenPV() || bus.isSwing() ? bus.getDesiredVoltMag() : 1) : start[i][0],
+                    start == null ? 0 : start[i][1]);
+            i++;
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -35,6 +39,15 @@ public final class PreparedNewtonApiBenchmark {
             for (int c = 7; c < args.length; c++) {
                 String name = args[c];
                 AclfNetwork net = new MatpowerDirectParser().parse(output.resolve(name + ".m").toString());
+                Path startPath = output.resolve(name + "-start.csv");
+                double[][] startVoltage = null;
+                if (Files.exists(startPath)) {
+                    startVoltage = Files.readAllLines(startPath).stream().skip(1).map(line -> {
+                        String[] parts = line.split(",");
+                        return new double[]{Double.parseDouble(parts[0]), Double.parseDouble(parts[1])};
+                    }).toArray(double[][]::new);
+                    if (startVoltage.length != net.getNoBus()) throw new IllegalArgumentException("Start size mismatch");
+                }
                 net.setPolarCoordinate(true); net.getBusLoadLowVoltConfig().setApplyVoltAdjust(false);
                 for (var bus : net.getBusList()) if (bus.isSwing()) bus.setDesiredVoltAng(0);
                 var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -45,7 +58,7 @@ public final class PreparedNewtonApiBenchmark {
                 algorithm.getNrMethodConfig().setStepSizeOptimization(false);
                 algorithm.getNrMethodConfig().setVariableUpdateLimit(false);
                 algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false); algorithm.getMessageLog().setEnabled(false);
-                reset(net);
+                reset(net, startVoltage);
                 if (!algorithm.loadflow(true)) throw new IllegalStateException(name + " initialization failed");
                 var host = (com.interpss.core.algo.LfCalculatorHost) algorithm.getLfCalculator();
                 Object firstSymbolic = prepared ? ((com.interpss.core.sparse.solver.klu.KLUSquareMatrixEqnDoubleSolver.SymbolStruct)
@@ -54,7 +67,7 @@ public final class PreparedNewtonApiBenchmark {
                 int repeats = net.getNoBus() > 1000 ? largeRepeats : smallRepeats;
                 for (int r = -warmups; r < repeats; r++) {
                     long start = System.nanoTime();
-                    reset(net);
+                    reset(net, startVoltage);
                     boolean converged = algorithm.loadflow(false);
                     long elapsed = System.nanoTime() - start;
                     var report = algorithm.getTerminationReport();

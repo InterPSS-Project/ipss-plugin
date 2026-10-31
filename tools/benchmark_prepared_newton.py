@@ -138,11 +138,27 @@ def main():
     parser.add_argument("--cpu", type=int)
     parser.add_argument("--include-generic", action="store_true")
     parser.add_argument("--required-ratio", type=float, default=1.2)
+    parser.add_argument("--cases", nargs="+", choices=shared.CASES, default=list(shared.STANDARD_CASES))
+    parser.add_argument("--case-directory", type=Path, help="Qualified large-case snapshots from benchmark_large_cases.py")
     args = parser.parse_args()
     args.output = args.output.resolve()
     if args.output.exists() and any(args.output.iterdir()):
         raise RuntimeError("Choose a new output directory; existing evidence will not be overwritten")
     args.output.mkdir(parents=True, exist_ok=True)
+    if any(name in shared.LARGE_CASES for name in args.cases):
+        if not all(name in shared.LARGE_CASES for name in args.cases) or args.case_directory is None:
+            raise RuntimeError("Run large-case snapshots as a separate cohort with --case-directory")
+        for name in args.cases:
+            qualification = json.loads((args.case_directory / (name + "-qualification.json")).read_text())
+            for filename, sha256 in qualification["qualified_files_sha256"].items():
+                if hashlib.sha256((args.case_directory / filename).read_bytes()).hexdigest() != sha256:
+                    raise RuntimeError("Qualified input changed: " + filename)
+            for suffix in (".m", "-ybus.npz", "-reference.npz", "-model.json", "-bus-mapping.csv"):
+                shutil.copy2(args.case_directory / (name + suffix), args.output / (name + suffix))
+            shutil.copy2(args.case_directory / (name + "-qualification.json"), args.output / (name + "-qualification.json"))
+            start_file = args.case_directory / (name + "-start.csv")
+            if start_file.exists():
+                shutil.copy2(start_file, args.output / start_file.name)
     affinity = Affinity(args.cpu)
     test_cp = next(p.attrib["value"] for p in ET.parse(args.test_report).getroot().findall("properties/property")
                    if p.attrib["name"] == "java.class.path")
@@ -177,7 +193,8 @@ def main():
         "sparse/solver/klu/BaseKLUEqnDoubleSolver.java",
         "sparse/solver/klu/KLUSquareMatrixEqnDoubleSolver.java",
         "aclf/IAclfBusFunc.java", "aclf/impl/BaseAclfBusImpl.java")]
-    for file in core_sources + [Path(__file__), source, ROOT / "tools/rustpower_benchmark.py"]:
+    for file in core_sources + [Path(__file__), source, ROOT / "tools/rustpower_benchmark.py",
+            ROOT / "tools/benchmark_large_cases.py", ROOT / "tools/benchmarks/LargePowerflowCaseExporter.java"]:
         destination = args.output / "sources" / ("core" if file in core_sources else "plugin") / file.relative_to(CORE if file in core_sources else ROOT)
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(file, destination)
@@ -191,25 +208,25 @@ def main():
                 command = [sys.executable, "-u", str(ROOT / "tools/rustpower_benchmark.py"), "--phase", "external",
                            "--output", str(args.output), "--fork", str(fork), "--small-warmup", str(args.small_warmup),
                            "--small-repeats", str(args.small_repeats), "--large-warmup", str(args.large_warmup),
-                           "--large-repeats", str(args.large_repeats)]
+                           "--large-repeats", str(args.large_repeats), "--cases", *args.cases]
             else:
                 command = ["java", "-Xms256m", "-Xmx2g", "-Dlog4j2.configurationFile=" + str(config),
                            "-cp", str(classes) + os.pathsep + cp, "org.interpss.benchmark.PreparedNewtonApiBenchmark",
                            str(args.output), phase, str(fork), str(args.small_warmup), str(args.small_repeats),
-                           str(args.large_warmup), str(args.large_repeats), *shared.CASES]
+                           str(args.large_warmup), str(args.large_repeats), *args.cases]
             environment["processes"].append(affinity.run(command))
             dump(args.output / "environment.json", environment)
-    shared.summarize(argparse.Namespace(output=args.output, cases=shared.CASES))
+    shared.summarize(argparse.Namespace(output=args.output, cases=args.cases))
     validation = json.loads((args.output / "interpss-validation.json").read_text())
     if max(v["max_complex_voltage_error_pu"] for v in validation.values()) > 1e-7:
         raise RuntimeError("Voltage agreement exceeded the qualification threshold")
     summary = json.loads((args.output / "summary.json").read_text())
     lookup = {(r["case"], r["backend"]): r for r in summary}
     ratios = {}
-    for name in shared.CASES:
+    for name in args.cases:
         rust = lookup[(name, "rustpower-klu")]
         prepared = lookup[(name, "prepared")]
-        expected = args.forks * (args.large_repeats if name == "case9241pegase" else args.small_repeats)
+        expected = args.forks * (args.large_repeats if name in ("case9241pegase", *shared.LARGE_CASES) else args.small_repeats)
         if rust["samples"] != expected or prepared["samples"] != expected:
             raise RuntimeError("Incomplete repetitions")
         ratios[name] = {"mean_ratio": prepared["mean_ms"] / rust["mean_ms"],

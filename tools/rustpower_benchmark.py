@@ -19,7 +19,9 @@ import time
 import warnings
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ("case39", "case118", "case9241pegase")
+STANDARD_CASES = ("case39", "case118", "case9241pegase")
+LARGE_CASES = ("activsg25k", "activsg70k")
+CASES = STANDARD_CASES + LARGE_CASES
 TOL = 1e-6
 
 
@@ -35,6 +37,8 @@ def stats(values):
 
 
 def external(args):
+    if all(name in LARGE_CASES for name in args.cases):
+        return external_snapshots(args)
     import numpy as np
     import pandapower as pp
     import pandapower.networks as pn
@@ -153,6 +157,56 @@ def external(args):
     dump(args.output / f"external-validation-{args.fork}.json", validation)
 
 
+def external_snapshots(args):
+    """Use already qualified fixed-control nodal snapshots, without importing a converter."""
+    import numpy as np
+    import rustpower as rp
+    from rustpower.solver import NewtonSolver
+    from scipy.sparse import load_npz
+    if "klu" not in rp.features():
+        raise RuntimeError("RustPower KLU feature required")
+    rows, validation = [], {}
+    for name in args.cases:
+        y = load_npz(args.output / (name + "-ybus.npz"))
+        data = np.load(args.output / (name + "-reference.npz"))
+        s, v0 = data["s"], data["v0"]
+        pq, pv, ref = (data[k] for k in ("pq", "pv", "ref"))
+        p = np.r_[pq, pv, ref].astype(np.int64)
+        inv = np.empty_like(p)
+        inv[p] = np.arange(len(p))
+        solver = NewtonSolver()
+        solver.setup_context(y.indptr, y.indices, y.data, s, v0, p, inv, len(pv), len(pq))
+        counts, samples = [], []
+        for i in range(-args.large_warmup, args.large_repeats):
+            begin = time.perf_counter_ns()
+            solver.set_v_init(v0)
+            solver.solve(20, TOL)
+            _ = solver.get_scalc()
+            elapsed = (time.perf_counter_ns() - begin) / 1e6
+            count = solver.get_iterations()
+            if not solver.converged or count < 1:
+                raise RuntimeError(f"{name}: failed or zero-iteration RustPower solve")
+            if i >= 0:
+                rows.append(dict(case=name, backend="rustpower-klu", fork=args.fork,
+                                 repeat=i, elapsed_ms=elapsed, iterations=count))
+                counts.append(count)
+                samples.append(elapsed)
+        v = np.asarray(solver.get_voltage())
+        mis = v * np.conj(y @ v) - s
+        residual = float(np.max(abs(np.r_[mis[np.r_[pv, pq]].real, mis[pq].imag])))
+        error = float(np.max(abs(v - data["v"])))
+        validation[name + "/rustpower-klu"] = dict(residual_pu=residual,
+                max_complex_voltage_error_pu=error, iterations=sorted(set(counts)))
+        if residual > 1.01 * TOL or error > 1e-7:
+            raise RuntimeError(f"{name}: residual={residual}, voltage error={error}")
+        print(name, "rustpower-klu", stats(samples), flush=True)
+    with (args.output / f"external-{args.fork}.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    dump(args.output / f"external-validation-{args.fork}.json", validation)
+
+
 def java(args):
     cp = args.classpath.read_text().strip()
     classes = args.output / "classes"
@@ -222,8 +276,13 @@ def main():
     parser.add_argument("--small-repeats", type=int, default=1000)
     parser.add_argument("--large-warmup", type=int, default=30)
     parser.add_argument("--large-repeats", type=int, default=60)
-    parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
+    parser.add_argument("--cases", nargs="+", choices=CASES, default=list(STANDARD_CASES))
     args = parser.parse_args()
+    if any(name in LARGE_CASES for name in args.cases):
+        if not all(name in LARGE_CASES for name in args.cases):
+            parser.error("Run standard and large-case snapshots as separate cohorts")
+        if args.phase not in ("external", "summarize"):
+            parser.error("Use benchmark_prepared_newton.py for qualified large-case Java comparisons")
     args.output = args.output.resolve()
     args.output.mkdir(exist_ok=True, parents=True)
     if args.phase != "all":
