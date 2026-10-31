@@ -14,6 +14,45 @@ import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 
 /** Matched measurements through the maintained public load-flow API. */
 public final class PreparedNewtonApiBenchmark {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static boolean selectExecution(Object algorithm, boolean prepared) throws Exception {
+        try {
+            Class<?> mode = Class.forName("com.interpss.core.algo.NrExecutionMode");
+            Object requested = Enum.valueOf((Class<? extends Enum>) mode, prepared ? "CACHED" : "GENERIC");
+            algorithm.getClass().getMethod("setNrExecutionMode", mode).invoke(algorithm, requested);
+            return true;
+        } catch (ClassNotFoundException | NoSuchMethodException legacy) {
+            if (Boolean.getBoolean("ipss.benchmark.requireExecutionReport"))
+                throw new IllegalStateException("This benchmark requires the explicit NR execution contract", legacy);
+            return false;
+        }
+    }
+
+    private static Object executionReport(Object algorithm, boolean prepared, boolean explicit) throws Exception {
+        if (!explicit) return null;
+        Object report = algorithm.getClass().getMethod("getNrExecutionReport").invoke(algorithm);
+        String requested = report.getClass().getMethod("requestedMode").invoke(report).toString();
+        String actual = report.getClass().getMethod("actualStrategy").invoke(report).toString();
+        String expected = prepared ? "CACHED" : "GENERIC";
+        if (!expected.equals(requested) || !expected.equals(actual))
+            throw new IllegalStateException("Unexpected requested/actual NR mode: " + report);
+        return report;
+    }
+
+    private static long compilationMillis() {
+        var compiler = java.lang.management.ManagementFactory.getCompilationMXBean();
+        return compiler != null && compiler.isCompilationTimeMonitoringSupported() ? compiler.getTotalCompilationTime() : -1;
+    }
+
+    private static long processCpuNanos() {
+        var operatingSystem = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+        return operatingSystem instanceof com.sun.management.OperatingSystemMXBean system ? system.getProcessCpuTime() : -1;
+    }
+
+    private static Long counterDelta(long end, long start) {
+        return end >= 0 && start >= 0 ? end - start : null;
+    }
+
     private static void reset(AclfNetwork net, double[][] start) {
         int i = 0;
         for (var bus : net.getBusList()) {
@@ -34,6 +73,7 @@ public final class PreparedNewtonApiBenchmark {
         int largeWarmups = Integer.parseInt(args[5]), largeRepeats = Integer.parseInt(args[6]);
         SparseEqnSolverProvider.useJavaKlu();
         var diagnostics = new LinkedHashMap<String, Object>();
+        var execution = new LinkedHashMap<String, Object>();
         try (var timings = new PrintWriter(Files.newBufferedWriter(output.resolve("interpss-" + mode + "-" + fork + ".csv")))) {
             timings.println("case,backend,fork,repeat,elapsed_ms,iterations,max_mismatch_pu");
             for (int c = 7; c < args.length; c++) {
@@ -52,6 +92,7 @@ public final class PreparedNewtonApiBenchmark {
                 for (var bus : net.getBusList()) if (bus.isSwing()) bus.setDesiredVoltAng(0);
                 var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
                 algorithm.setPreparedNewtonEnabled(prepared);
+                boolean explicitExecution = selectExecution(algorithm, prepared);
                 algorithm.setLfMethod(AclfMethodType.NR); algorithm.setTolerance(1e-6); algorithm.setMaxIterations(20);
                 algorithm.setInitBusVoltage(false); algorithm.getDataCheckConfig().setAutoTurnLine2Xfr(true);
                 algorithm.getNrMethodConfig().setNonDivergent(false);
@@ -59,7 +100,9 @@ public final class PreparedNewtonApiBenchmark {
                 algorithm.getNrMethodConfig().setVariableUpdateLimit(false);
                 algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false); algorithm.getMessageLog().setEnabled(false);
                 reset(net, startVoltage);
+                long compilationStart = compilationMillis(), processCpuStart = processCpuNanos();
                 if (!algorithm.loadflow(true)) throw new IllegalStateException(name + " initialization failed");
+                executionReport(algorithm, prepared, explicitExecution);
                 var host = (com.interpss.core.algo.LfCalculatorHost) algorithm.getLfCalculator();
                 Object firstSymbolic = prepared ? ((com.interpss.core.sparse.solver.klu.KLUSquareMatrixEqnDoubleSolver.SymbolStruct)
                         host.nrEngine().lfEqnJMatrixCache.getSymbolTable()).symbolTable() : null;
@@ -84,6 +127,16 @@ public final class PreparedNewtonApiBenchmark {
                             elapsed / 1e6, report.iteration(), report.maxEquationMismatchPu());
                 }
                 if (prepared && algorithm.getPreparedNewtonBuildCount() != 1) throw new IllegalStateException("Unexpected rebuilds: " + name);
+                var actualExecution = new LinkedHashMap<String, Object>();
+                actualExecution.put("selectionApi", explicitExecution ? "NrExecutionMode" : "legacy_prepared_boolean");
+                actualExecution.put("report", executionReport(algorithm, prepared, explicitExecution));
+                actualExecution.put("loadflowCalls", loadflowCalls);
+                actualExecution.put("warmupLoadflowCalls", requestedWarmups + (initialSolveIsWarmup ? 0 : 1));
+                actualExecution.put("measuredLoadflowCalls", repeats);
+                actualExecution.put("batchCompilationMillis", counterDelta(compilationMillis(), compilationStart));
+                actualExecution.put("batchProcessCpuNanos", counterDelta(processCpuNanos(), processCpuStart));
+                actualExecution.put("batchScope", "initialization, warmups, measured solves and untimed validation");
+                execution.put(name, actualExecution);
                 if (prepared) {
                     var matrix = (com.interpss.core.sparse.impl.klu.KLUSparseEqnMatrix2x2Impl) host.nrEngine().lfEqnJMatrixCache;
                     if (matrix.preparedCsc() == null) throw new IllegalStateException("Prepared Jacobian hooks were not used");
@@ -118,5 +171,7 @@ public final class PreparedNewtonApiBenchmark {
         }
         Files.writeString(output.resolve("diagnostics-" + mode + "-" + fork + ".json"),
                 new GsonBuilder().setPrettyPrinting().create().toJson(diagnostics));
+        Files.writeString(output.resolve("execution-" + mode + "-" + fork + ".json"),
+                new GsonBuilder().setPrettyPrinting().create().toJson(execution));
     }
 }

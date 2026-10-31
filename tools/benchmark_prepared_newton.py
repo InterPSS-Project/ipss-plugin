@@ -137,6 +137,8 @@ def main():
     parser.add_argument("--large-repeats", type=int, default=100)
     parser.add_argument("--cpu", type=int)
     parser.add_argument("--include-generic", action="store_true")
+    parser.add_argument("--require-execution-report", action="store_true",
+                        help="Require explicit CACHED/GENERIC selection and matching actual execution reports")
     parser.add_argument("--initial-solve-is-warmup", action="store_true",
                         help="Count Java's required initialization solve in the requested warmup count")
     parser.add_argument("--required-ratio", type=float, default=1.2)
@@ -197,6 +199,21 @@ def main():
         "sparse/solver/klu/BaseKLUEqnDoubleSolver.java",
         "sparse/solver/klu/KLUSquareMatrixEqnDoubleSolver.java",
         "aclf/IAclfBusFunc.java", "aclf/impl/BaseAclfBusImpl.java")]
+    core_sources += [CORE / ("ipss.core_EMF/src/main/java/com/interpss/core/" + p) for p in (
+        "algo/NrExecutionMode.java", "algo/NrExecutionReport.java", "algo/NrEvaluatedResidual.java",
+        "algo/impl/solver/NrAssemblyPlan.java", "algo/impl/solver/NrPreparationValidity.java",
+        "algo/impl/solver/NrModelInputs.java", "algo/impl/solver/NrEvaluationContext.java",
+        "algo/impl/solver/NrNumericalWorkspace.java", "algo/impl/solver/NrPowerEvaluation.java",
+        "algo/impl/solver/NrBusEquations.java", "algo/impl/solver/PolarNrFormulation.java",
+        "algo/impl/solver/RectangularNrFormulation.java", "algo/impl/solver/NrVoltageCorrection.java",
+        "algo/impl/solver/NrVoltageStateSnapshot.java", "algo/impl/solver/NrResidualStateStamp.java",
+        "algo/impl/solver/NrGenerationAllocation.java", "algo/impl/solver/NrAcceptedState.java",
+        "algo/impl/solver/LegacyNrResidualAdapter.java", "algo/impl/solver/optStep/BaseNrStepSizeOptimizer.java",
+        "aclf/impl/func/bus/AclfBusGenerationHelper.java", "aclf/impl/func/bus/AclfBusMismatchHelper.java",
+        "aclf/impl/func/bus/AclfBusYMatrixHelper.java", "aclf/impl/func/bus/AclfBusLoadHelper.java",
+        "aclf/impl/func/bus/AclfLoadVoltageModel.java", "aclf/impl/func/net/AclfNetJMatrixHelper.java")
+        if (CORE / ("ipss.core_EMF/src/main/java/com/interpss/core/" + p)).is_file()]
+    core_sources = list(dict.fromkeys(core_sources))
     for file in core_sources + [Path(__file__), source, ROOT / "tools/rustpower_benchmark.py",
             ROOT / "tools/benchmark_large_cases.py", ROOT / "tools/benchmarks/LargePowerflowCaseExporter.java"]:
         destination = args.output / "sources" / ("core" if file in core_sources else "plugin") / file.relative_to(CORE if file in core_sources else ROOT)
@@ -216,6 +233,7 @@ def main():
             else:
                 command = ["java", "-Xms256m", "-Xmx2g", "-Dlog4j2.configurationFile=" + str(config),
                            "-Dipss.benchmark.initialSolveIsWarmup=" + str(args.initial_solve_is_warmup).lower(),
+                           "-Dipss.benchmark.requireExecutionReport=" + str(args.require_execution_report).lower(),
                            "-cp", str(classes) + os.pathsep + cp, "org.interpss.benchmark.PreparedNewtonApiBenchmark",
                            str(args.output), phase, str(fork), str(args.small_warmup), str(args.small_repeats),
                            str(args.large_warmup), str(args.large_repeats), *args.cases]

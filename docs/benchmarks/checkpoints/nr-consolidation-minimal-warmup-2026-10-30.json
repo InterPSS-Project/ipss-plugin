@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "status": "accuracy_and_execution_verified_minimal_warmup_target_not_met",
+  "protocol": {
+    "warmups": 1,
+    "measured_solves": 1,
+    "fresh_process_per_case_and_runtime": true,
+    "cpu": 2,
+    "affinity_mask": 4,
+    "initialization_is_the_only_java_warmup": true
+  },
+  "cases": [
+    {
+      "case": "activsg25k",
+      "rustpower_ms": 47.1063,
+      "cached_ms": 201.4729,
+      "generic_ms": 3644.675,
+      "cached_rustpower_ratio": 4.2769841825827974,
+      "target_met": false,
+      "execution": {
+        "prepared": {
+          "selectionApi": "NrExecutionMode",
+          "report": {
+            "requestedMode": "CACHED",
+            "actualStrategy": "CACHED",
+            "polar": true,
+            "preparationBuilds": 0,
+            "coefficientRefreshes": 0,
+            "structuralRebuilds": 0,
+            "jacobianAssemblies": 4,
+            "factorizations": 4,
+            "triangularSolves": 6,
+            "diagnostics": []
+          },
+          "loadflowCalls": 2,
+          "warmupLoadflowCalls": 1,
+          "measuredLoadflowCalls": 1,
+          "batchCompilationMillis": 3103,
+          "batchProcessCpuNanos": 4640625000,
+          "batchScope": "initialization, warmups, measured solves and untimed validation"
+        },
+        "generic": {
+          "selectionApi": "NrExecutionMode",
+          "report": {
+            "requestedMode": "GENERIC",
+            "actualStrategy": "GENERIC",
+            "polar": true,
+            "preparationBuilds": 0,
+            "coefficientRefreshes": 0,
+            "structuralRebuilds": 0,
+            "jacobianAssemblies": 4,
+            "factorizations": 4,
+            "triangularSolves": 6,
+            "diagnostics": []
+          },
+          "loadflowCalls": 2,
+          "warmupLoadflowCalls": 1,
+          "measuredLoadflowCalls": 1,
+          "batchCompilationMillis": 6518,
+          "batchProcessCpuNanos": 12812500000,
+          "batchScope": "initialization, warmups, measured solves and untimed validation"
+        }
+      },
+      "interpss_validation": {
+        "activsg25k-interpss-generic-0-voltage.csv": {
+          "independent_mismatch_pu": 3.027923867193749e-08,
+          "max_complex_voltage_error_pu": 5.495958652442176e-09
+        },
+        "activsg25k-interpss-prepared-0-voltage.csv": {
+          "independent_mismatch_pu": 3.0279286633572156e-08,
+          "max_complex_voltage_error_pu": 5.495898477540642e-09
+        }
+      },
+      "rustpower_validation": {
+        "activsg25k/rustpower-klu": {
+          "residual_pu": 1.0273152994955126e-08,
+          "max_complex_voltage_error_pu": 9.942297610007764e-10,
+          "iterations": [
+            5
+          ],
+          "warmup_solves": 1,
+          "measured_solves": 1
+        }
+      },
+      "prepared_diagnostics": {
+        "preparations": 1,
+        "scalarEquations": 50000,
+        "structuralEntries": 335468,
+        "factorizedEntries": 773350,
+        "preparedResidualEvaluations": 16,
+        "preparedWorkspaceScopes": 2,
+        "stableSolveScopes": 2,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 2,
+        "warmupLoadflowCalls": 1,
+        "measuredLoadflowCalls": 1,
+        "initialSolveCountedAsWarmup": 1
+      },
+      "runtime_fingerprints_match": true,
+      "file_hashes_match": true,
+      "source_commit": "6e7e66180b424dbeee066c869aaeff92bad8069e"
+    },
+    {
+      "case": "activsg70k",
+      "rustpower_ms": 244.2178,
+      "cached_ms": 407.2549,
+      "generic_ms": 10208.4142,
+      "cached_rustpower_ratio": 1.6675889308641711,
+      "target_met": false,
+      "execution": {
+        "prepared": {
+          "selectionApi": "NrExecutionMode",
+          "report": {
+            "requestedMode": "CACHED",
+            "actualStrategy": "CACHED",
+            "polar": true,
+            "preparationBuilds": 0,
+            "coefficientRefreshes": 0,
+            "structuralRebuilds": 0,
+            "jacobianAssemblies": 5,
+            "factorizations": 5,
+            "triangularSolves": 6,
+            "diagnostics": []
+          },
+          "loadflowCalls": 2,
+          "warmupLoadflowCalls": 1,
+          "measuredLoadflowCalls": 1,
+          "batchCompilationMillis": 3368,
+          "batchProcessCpuNanos": 6078125000,
+          "batchScope": "initialization, warmups, measured solves and untimed validation"
+        },
+        "generic": {
+          "selectionApi": "NrExecutionMode",
+          "report": {
+            "requestedMode": "GENERIC",
+            "actualStrategy": "GENERIC",
+            "polar": true,
+            "preparationBuilds": 0,
+            "coefficientRefreshes": 0,
+            "structuralRebuilds": 0,
+            "jacobianAssemblies": 5,
+            "factorizations": 5,
+            "triangularSolves": 6,
+            "diagnostics": []
+          },
+          "loadflowCalls": 2,
+          "warmupLoadflowCalls": 1,
+          "measuredLoadflowCalls": 1,
+          "batchCompilationMillis": 7135,
+          "batchProcessCpuNanos": 24937500000,
+          "batchScope": "initialization, warmups, measured solves and untimed validation"
+        }
+      },
+      "interpss_validation": {
+        "activsg70k-interpss-generic-0-voltage.csv": {
+          "independent_mismatch_pu": 6.961317680888856e-10,
+          "max_complex_voltage_error_pu": 4.322805000738957e-11
+        },
+        "activsg70k-interpss-prepared-0-voltage.csv": {
+          "independent_mismatch_pu": 6.943662680749712e-10,
+          "max_complex_voltage_error_pu": 4.389535414791633e-11
+        }
+      },
+      "rustpower_validation": {
+        "activsg70k/rustpower-klu": {
+          "residual_pu": 1.6909261205473463e-11,
+          "max_complex_voltage_error_pu": 1.5365403273531413e-12,
+          "iterations": [
+            6
+          ],
+          "warmup_solves": 1,
+          "measured_solves": 1
+        }
+      },
+      "prepared_diagnostics": {
+        "preparations": 1,
+        "scalarEquations": 140000,
+        "structuralEntries": 915154,
+        "factorizedEntries": 2458082,
+        "preparedResidualEvaluations": 16,
+        "preparedWorkspaceScopes": 2,
+        "stableSolveScopes": 2,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 2,
+        "warmupLoadflowCalls": 1,
+        "measuredLoadflowCalls": 1,
+        "initialSolveCountedAsWarmup": 1
+      },
+      "runtime_fingerprints_match": true,
+      "file_hashes_match": true,
+      "source_commit": "6e7e66180b424dbeee066c869aaeff92bad8069e"
+    }
+  ],
+  "measured_solves": 6,
+  "total_solves": 12,
+  "source_preflight": "nr-consolidation-preparation-full-fixed-20261030",
+  "evidence_root": "ipss.test.plugin.core\\target\\nr-consolidation-preparation-minimal-retry-20261030",
+  "performance_qualification_complete": false,
+  "failed_setup": {
+    "evidence_root": "ipss.test.plugin.core/target/nr-consolidation-preparation-minimal-20261030",
+    "reason": "sandbox denied core Git provenance read before any solver phase",
+    "measured_solves": 0,
+    "warmup_solves": 0
+  }
+}

@@ -1,0 +1,350 @@
+{
+  "status": "external_terminal_compatibility_verified_full_recheck_pending",
+  "executed_tests": 453,
+  "passed": 453,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "new_tests": 10,
+  "reports": [
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest.xml",
+      "tests": 19,
+      "sha256": "265a1de4a38dec9295ba1252d217129252f4ec70e95723704fbcf87cb77fd0f3"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PqNrPredictorHandoffPolicyTest.xml",
+      "tests": 7,
+      "sha256": "35b20972c67942dd97a7fb191594b138ba128afe8400586fd2561d1eed6f8765"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest.xml",
+      "tests": 5,
+      "sha256": "47eff1e1d47338deff4d8d614bc952db16e0b3d0fae82c08b8c3a04b0da8ca7a"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest.xml",
+      "tests": 55,
+      "sha256": "68c6a4b63c5f289dafa6598271195ebdb7c2720c650d6d9e524686e808b55bf2"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.ContinuousShuntNrIntegrationTest.xml",
+      "tests": 10,
+      "sha256": "3fecee4e7eff4300bbc358fffdb420c2c423e8f0110b476309b594a44a6c595a"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.FixedGenerationShuntNrTest.xml",
+      "tests": 3,
+      "sha256": "fe970355fccdf8626f200dcd3ec5a7d89f38968ee9caf0275c37da0e7a1d5d47"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrAssemblyPlanTest.xml",
+      "tests": 30,
+      "sha256": "54863db91d1ef002fdfeec67277255c8ede330f1241a9a6d25f8fed3fcf3c0a5"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrExecutionModeTest.xml",
+      "tests": 12,
+      "sha256": "2fbbf0e4c0d51965629a484b6f83c3fef7b01a8ac419cd37c734ac8534f3adf3"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrExternalTerminalTest.xml",
+      "tests": 10,
+      "sha256": "fb007ab1ac89c7fa7411964ffb176598bc23624fc3e29917b7e13eeee0dbc544"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrGenerationAllocationTest.xml",
+      "tests": 8,
+      "sha256": "7676be8deab59d47ff7bccdb2de2deeabad1536b85f0ec8dd8453608d5668dbe"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrPolarFormulationTest.xml",
+      "tests": 11,
+      "sha256": "aa7fb1592bc6ec0d8801d48d19c465a3dce40e94ac258dd51f94d8d776c54e8f"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrRectangularFormulationTest.xml",
+      "tests": 11,
+      "sha256": "3e9027ff48927876f2791c4e4656a970a10fa59bd1e506a00fb610237d2f1304"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrResidualEvaluationTest.xml",
+      "tests": 66,
+      "sha256": "4754d37102d354e61436b9ef69cb26b610681f9eb396c62e69e05c1d858e5d0d"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrSparsePublicationTest.xml",
+      "tests": 1,
+      "sha256": "2f106c07f3494b73fd4bb19dc09d1f061821ae49ce4803c390c51a44f54ea64f"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrStatePublicationTest.xml",
+      "tests": 16,
+      "sha256": "b88920845d985b811da72e6f622cf38329bca89b6ad6b5dd9d3de19e618baf20"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.optStep.NrTrialStateTest.xml",
+      "tests": 2,
+      "sha256": "77e8a785989d776f410367b074b88604fc4aadd4e5ec24f1bbd0fa9dd25ee5a5"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.reQBus.CoordinatedControlZbrNrSolverTest.xml",
+      "tests": 56,
+      "sha256": "149e21f5a4722d3076d9f9512b16ceffdf27bd34c2931633b431e731706aa3df"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.MultiSwitchedShuntDiscreteZbrTest.xml",
+      "tests": 2,
+      "sha256": "720d1ca8d01d08aaba4cbeea629f0f4f696e8ea5efea7624bf925bcd893aea5f"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.MultiSwShuntDiscreteZbrLimitTest.xml",
+      "tests": 2,
+      "sha256": "1318233cd3014c6fa07e758cd090b486d1e87c998485e68d7a7bef73263db4fc"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.SwitchedShuntContiModeZbrTest.xml",
+      "tests": 1,
+      "sha256": "fbbbcff04271b178814738b34c1b249b7cd36d3d348299e34cab0e7e50a09cba"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.SwitchedShuntDiscreteZbrTest.xml",
+      "tests": 2,
+      "sha256": "5a8c7f6b0935bd29febdc01ae366402ee4aeab10420f8119fd8e71ffb57c59b7"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrBinarySearchOptimizeTest.xml",
+      "tests": 1,
+      "sha256": "5e05972479b5620419a1aade063be784fdf6a7e37cc6cd7ff23733099afdbc1b"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrCubicEqnOptimizeTest.xml",
+      "tests": 2,
+      "sha256": "894a552503aa57a8fc486d89f6db2fa173d396035ab55b6df0550cd9f24e8c75"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrCubicEqnStepSizeTest.xml",
+      "tests": 1,
+      "sha256": "ed1b3d6ffa89e479c75d6faa0cc56b30b1b6675f90a2bc9bf53bde07a18e1ec9"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrLinearSearchOptimizeTest.xml",
+      "tests": 1,
+      "sha256": "d03865c0ca38c1bf62cc11be252b6274642a23e18bfee8ddea1bf34376f10aac"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.helper.LowVoltageLoadJacobianTest.xml",
+      "tests": 8,
+      "sha256": "25e8625fa8fc2e9f559d7e7f82369f6a1cf5bd371c61cf5b775bd642ca8056c4"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.shunt.zbr.MultiFixedShuntZbrTest.xml",
+      "tests": 3,
+      "sha256": "5fd49843838dc1c4c9e4700350b1aaef91f71404b64832b1e7277db7d3f89b5e"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.shunt.zbr.ShuntCompensatorZbrTest.xml",
+      "tests": 3,
+      "sha256": "cc40abc69edca6aa81cb732a9f259334bd714b198c82beb3a95b66f3e95c3881"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrAclfLoopTest.xml",
+      "tests": 2,
+      "sha256": "5dcaae57a771060155e12d332db921470a9f9b4e3dbf7d7b7d1aa9dcd8a78fff"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "e50633688572bf2806e61b91191fb436e60e92b2157fad99ca366676b489dfa2"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrBusShuntTest.xml",
+      "tests": 2,
+      "sha256": "de96c3a7c5e1204ffbbd22670f72678c4c7d07b2cab119081e9266f65e5e6fdc"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrFuncTest.xml",
+      "tests": 9,
+      "sha256": "9dffcbb39b315d8ab20ea5757e936a95cbf67e2d6cdc83f04f27a21a3a6a7e75"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrLargeShuntTest.xml",
+      "tests": 4,
+      "sha256": "3e4a91bd2b1df7ef4a2a6e51f67e8d05c394724618774d2ff7aedb31f04fdae7"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrNoConsolidateTest.xml",
+      "tests": 2,
+      "sha256": "55619731dc84f735d5db8580e3037cf4a9a9fc7f4877e8f52122ff6392e6bb6d"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.zbr_algo.AclfZeroZTopoVsZbrSolverTest.xml",
+      "tests": 1,
+      "sha256": "f91d2d8255530eec2c0ec5ee2ef4fd45879c8b5ee3bcb29cff40c491c7f5e1ab"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.ZbrLfResultUtilTest.xml",
+      "tests": 4,
+      "sha256": "3218b20ce7df550ea6161f23770617f684204a3769e6f4f3b3e3e42a1db0cdbe"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.ZbrMergeValidateUtilTest.xml",
+      "tests": 8,
+      "sha256": "31fa1247bd45318f55ebc124eae89343e252c762b7c0ef62d6190ae60fc9600d"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYMultiSwitchedShuntDiscreteZbrTest.xml",
+      "tests": 7,
+      "sha256": "9312b2b2324324b000b10265f24b241b152e3ec331a4710a40242825ac9f8310"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYMultiSwShuntDiscreteZbrLimitTest.xml",
+      "tests": 2,
+      "sha256": "b777381c3386c46addff4cfc71aedca5d7d4c7eaf2324e0b180d58775299ba1a"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntContiModeZbrTest.xml",
+      "tests": 1,
+      "sha256": "b5c4a5fbf1610e733b91a68f3d0897d573691003a5f678e66478693825187b09"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntDiscreteZbrTest.xml",
+      "tests": 2,
+      "sha256": "05387cb91abb34219d651f4a0edb77ea810d836e782a635d880b7c8506cc1212"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.algo.optStep.NrBinarySearchOptXYCoordinateTest.xml",
+      "tests": 1,
+      "sha256": "3e25bc6b31c19b1b1051b6e6f03c4d1341886fd96583e661e896f47f03ad4cce"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.algo.optStep.NrCubicEqnOptXYCoordinateTest.xml",
+      "tests": 1,
+      "sha256": "a542d7f15e218c4041d1e9e07bb6d92acab314c18178dd5c7ece3be5819dd556"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.algo.optStep.NrLinearSearchOptCoordinateTest.xml",
+      "tests": 1,
+      "sha256": "f2a01e59c788ec5527080f46513f4f416cc4bbba01ed85f08c180db1076e1133"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.shunt.zbr.XYMultiFixedShuntZbrTest.xml",
+      "tests": 3,
+      "sha256": "c9cbcec9399f4c697ce4e35728afb71a30487ab719237aabb776c5456cd5f7ff"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.shunt.zbr.XYShuntCompensatorZbrTest.xml",
+      "tests": 3,
+      "sha256": "bc81f08d787647289eedb00178ae039ee3cc4a561a1a3db41eaaea9451adef50"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrAclfLoopTest.xml",
+      "tests": 2,
+      "sha256": "3cfb5e4200f13951ae6ccb5345021b8091c520ad445916d950f1f9dc67a7cab0"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "6e9e79fcc2f670f2cb681a7d67f43a8a09a1d032714c32b22877c092a3eee932"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrBusShuntTest.xml",
+      "tests": 2,
+      "sha256": "726123a585c73852f841ea13c37ad71413b7db34bf38b6ddf9a8c5184f59bbc2"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrFuncTest.xml",
+      "tests": 4,
+      "sha256": "8f9a8e6e7a7eae7c1ae44ed64deb52238e95278e0880f8e5976d23b03ddcbc62"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrLargeShuntTest.xml",
+      "tests": 2,
+      "sha256": "3ff4ea1532628602b6158c68a475cb90e04ea7767ac09fd7f7378a9933254674"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrNoConsolidateTest.xml",
+      "tests": 2,
+      "sha256": "142d353ed9e42487a2a1cc2d8f586ce15c07e06e33c656908e5161c49d5432b3"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.zbr_algo.AclfXYZeroZTopoVsZbrSolverTest.xml",
+      "tests": 1,
+      "sha256": "a4361486553c33f59ad6f11ddb1db5e7fbd5fd43e73e015cf5f6a6cce63b4e9f"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TDoubleLayeredLCCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "672b191bd20dec48036305b75871c945a1bb7665033c9065053397c0d21c1e22"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TDoubleLCCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "1b643604c035aec486ba72d08cb2c79c41d2a0bdb91c1af57f25db216b009c74"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TSingleLCCZbrAclfTest.xml",
+      "tests": 4,
+      "sha256": "51be5e657bc866e1fdcea513e07e6b8809a42e6cce0fde16de810215fe5b0a4b"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TVSCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "3c4896fe025b0d0af0f8d57e026f287c5fe97c2a12b2c868c3d281f918445d3e"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TDoubleLayeredLCCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "576f3a958f018449ceac51b5a33a6fe38a2dfdaf8ab9df65650799eea7deec1d"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TDoubleLCCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "43399001d3b480053a2a4b27b5521bc85d311d4e09029d648bd44a3367273133"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TSingleLCCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "3e734437763aaf02f00ce817f2b6436ba51b9860a340b9bb7176807fcb977894"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TVSCZbrAclfTest.xml",
+      "tests": 2,
+      "sha256": "61fe5945d42ddf37a7b2cc97cfce0c141710b825192e2d23060a44fc464c95df"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.aclf.PreparedNewtonLoadflowTest.xml",
+      "tests": 12,
+      "sha256": "7b037f39d6f723a5cc4c6b55271cb97faeb9c8f181db5fde2bd921349669324c"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.dstab.DynamicPowerFlowTransferTest.xml",
+      "tests": 1,
+      "sha256": "2a7ec2e900addacc01ba1b0c16e930f62a9e7398046271c759e8a556685cdd97"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-external-terminal-gate-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild.xml",
+      "tests": 4,
+      "sha256": "16daa44aa998aa64f77cdac0e95fc7b03bbf656530490a23e8b3a3e7d1dab1f0"
+    }
+  ],
+  "source_sha256": {
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrAssemblyPlan.java": "159830064897533e93ff57f8fb237eada2b1e206dd8e08d1e03a9160f6ef45fc",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrNumericalWorkspace.java": "70f2b31d67179079e3a38122f85338bb5d10057587a91c7673e2ea4891cd54a2",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrPowerEvaluation.java": "83410a51fd8938f0438a5578b57417ecd3516047e231490abef25ac9e9e2a873",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/PolarNrFormulation.java": "31459281ed9270da271789025dd27ad326e13aff1d26ac972772a785e760f51e",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrModelInputs.java": "5bc4ddf1567c71bbfbb5919bce828de453e504e747f0d359b31f049813945ba8",
+    "ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/NrExternalTerminalTest.java": "8a9f29a4c486c98ebc92b9e277bd0d59f591014d41fbe10038bff588427656fc"
+  },
+  "process_status": {
+    "state": "completed",
+    "min_free_bytes": 2147483648,
+    "max_log_bytes": 16777216,
+    "captured_bytes": 82860,
+    "exit_code": 0,
+    "reason": null
+  },
+  "fork_dumps": [],
+  "verification_run": "nr-consolidation-external-terminal-gate-20261030",
+  "evidence_root": "ipss.test.plugin.core\\target\\nr-consolidation-20261030"
+}

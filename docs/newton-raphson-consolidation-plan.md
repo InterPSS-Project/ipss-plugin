@@ -1,6 +1,6 @@
 # Newton-Raphson consolidation plan
 
-Status: Implementation in progress. Phase 1 selection/reporting is verified; common equation kernels and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md).
+Status: Implementation in progress. Selection, shared polar/rectangular kernels, residual/state handling and common preparation have focused validation. Contributor migration and final qualification remain open. See [implementation evidence](nr-consolidation-progress.md) and [coverage manifest](nr-consolidation-test-coverage.json).
 
 The target is one polar NR formulation and one rectangular NR formulation,
 with a selectable execution mode controlling preparation and caching. Both
@@ -202,7 +202,7 @@ fixtures, full-test audit and benchmark protocol.
 - [x] **MODE-02** Define setters/getters and next-solve-boundary semantics in
   `LoadflowAlgorithm` and `LoadflowAlgorithmImpl`; keep the coordinate selection
   independent from execution mode.
-- [ ] **MODE-03** Implement `GENERIC` using fresh assembly inputs and the same
+- [x] **MODE-03** Implement `GENERIC` using fresh assembly inputs and the same
   formulation kernels. Preserve the existing Jacobian refresh and LU-reuse
   policy, including validation required before factor reuse.
 - [x] **MODE-04** Implement explicit capability checks for `CACHED`. Supported
@@ -231,30 +231,30 @@ was either exercised or explicitly rejected/fallen back.
 - [ ] **PLAN-01** Extract an assembly plan containing indexing, equation masks,
   contributor layout, coefficients and sparse destinations; keep residual,
   Jacobian, correction and allocation formulas outside the plan.
-- [ ] **PLAN-02** Introduce a numerical workspace for both coordinate forms,
+- [x] **PLAN-02** Introduce a numerical workspace for both coordinate forms,
   including phasors, calculated P/Q, load derivatives, RHS and correction data.
 - [ ] **PLAN-03** Define an evaluated-state stamp covering voltage, model,
   external injection and equation/control revisions. Prevent a residual or
   accepted-power result from being reused at a different state.
-- [ ] **PLAN-04** Preserve the distinction between voltage changes and model
+- [x] **PLAN-04** Preserve the distinction between voltage changes and model
   changes: voltage updates require fresh residuals, while the existing NR policy
   decides whether a lagged Jacobian/LU remains eligible.
 - [ ] **PLAN-05** Implement structural invalidation for network identity,
   membership, ordering, activity, endpoints, coordinates, masks, contributor
   layout and backend changes.
-- [ ] **PLAN-06** Implement coefficient invalidation for impedance/multipliers,
+- [x] **PLAN-06** Implement coefficient invalidation for impedance/multipliers,
   taps, phase shifts, terminal/bus shunts, fixed banks and load parameters. A tap
   change must update both mutual and terminal self-admittances.
-- [ ] **PLAN-07** Refresh live switched-shunt/SVC B independently from the fixed
+- [x] **PLAN-07** Refresh live switched-shunt/SVC B independently from the fixed
   base. Preserve physical service-state, control-lock and existing load-model
   semantics, including large-B base isolation.
-- [ ] **PLAN-08** Validate notification-suppressed writes through authoritative
+- [x] **PLAN-08** Validate notification-suppressed writes through authoritative
   snapshots unless an explicit ownership contract certifies unchanged data.
-- [ ] **PLAN-09** Check validity before policy selection in `LfCalcNrEngine`
+- [x] **PLAN-09** Check validity before policy selection in `LfCalcNrEngine`
   and again for direct NR-step callers or changes after policy selection.
-- [ ] **PLAN-10** Allocate structural slots for values that can become nonzero;
+- [x] **PLAN-10** Allocate structural slots for values that can become nonzero;
   distinguish a numerical zero from an absent matrix entry.
-- [ ] **PLAN-11** Add backend publication adapters for the common numerical
+- [x] **PLAN-11** Add backend publication adapters for the common numerical
   values, including direct JKLU CSC filling and supported existing matrix APIs.
   Preserve coefficient inspection, RHS access and mutation invalidation.
 - [ ] **PLAN-12** Resolve model adapters and destination mappings outside the
@@ -323,13 +323,13 @@ line-search cases that cannot retain unpublished voltages.
 
 ### 8.5 Rectangular formulation and specialized contributors - phase 4
 
-- [ ] **EXT-01** Extract the rectangular residual/Jacobian implementation and
+- [x] **EXT-01** Extract the rectangular residual/Jacobian implementation and
   reuse the same physical power/load evaluation primitives as polar NR.
-- [ ] **EXT-02** Preserve rectangular row ordering, PV voltage constraints,
+- [x] **EXT-02** Preserve rectangular row ordering, PV voltage constraints,
   full/reduced matrix behavior and absolute rectangular corrections.
 - [x] **EXT-03** Centralize rectangular correction application while retaining
   its existing update-limit and line-search conventions.
-- [ ] **EXT-04** Validate rectangular live-B chain rules and voltage-dependent
+- [x] **EXT-04** Validate rectangular live-B chain rules and voltage-dependent
   load derivatives with independent finite differences.
 - [ ] **EXT-05** Introduce contributor contracts for additional variables,
   appended or replaced rows, residuals, derivatives and layout revisions.
@@ -361,7 +361,7 @@ layout changes, auxiliary convergence checks and compatible public APIs.
   `allocatePreparedGeneration()` after compatibility adapters are in place.
 - [ ] **CLEAN-04** Replace prepared-specific scope handling in
   `LoadflowAlgorithmImpl` with common preparation/workspace lifecycle handling.
-- [ ] **CLEAN-05** Reduce or replace `PreparedPolarJacobian` with preparation-only
+- [x] **CLEAN-05** Reduce or replace `PreparedPolarJacobian` with preparation-only
   responsibilities; remove its duplicated residual, Jacobian, update and
   allocation equations from production.
 - [ ] **CLEAN-06** Convert remaining matrix helpers into formulation facades and
@@ -654,7 +654,7 @@ or independent-reference acceptance.
 
 ### 9.6 Full-coverage execution checklist
 
-- [ ] **COVER-01** Create the requirement/configuration-to-test manifest for all
+- [x] **COVER-01** Create the requirement/configuration-to-test manifest for all
   TC rows and the 24 primary combinations.
 - [ ] **COVER-02** Implement numerical and negative capability cases for both
   coordinates, all modes, matrix forms and declared supported backends.
