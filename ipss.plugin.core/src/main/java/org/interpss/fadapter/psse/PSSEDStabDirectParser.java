@@ -2546,6 +2546,8 @@ public class PSSEDStabDirectParser {
     //         T8 T9 Ks1 T1 T2 T3 T4 T10 T11 VSI1MAX VSI1MIN VSI2MAX VSI2MIN
     //         VSTMAX VSTMIN A Ta Tb Ks4
     private boolean procPss2b(String busId, String genId, String[] f) {
+        // The standard record and the two existing typed layouts have distinct cardinalities.
+        if (f.length != 30 && f.length != 32 && f.length != 34) return false;
         if (f.length == 32) {
             int first = Integer.parseInt(f[3]), remote1 = Integer.parseInt(f[4]);
             int second = Integer.parseInt(f[5]), remote2 = Integer.parseInt(f[6]);
@@ -2555,8 +2557,10 @@ public class PSSEDStabDirectParser {
             BaseDStabBus<?, ?> b1 = network.getDStabBus(remote1 == 0 ? busId : BUS_ID_PREFIX + remote1);
             BaseDStabBus<?, ?> b2 = network.getDStabBus(remote2 == 0 ? busId : BUS_ID_PREFIX + remote2);
             if (b1 == null || b2 == null) return false;
+            int m = Integer.parseInt(f[7]), n = Integer.parseInt(f[8]);
+            if ((long) m * n > 8) return false;
             var pss = builder.addPss2b(busId, genId, first, second,
-                    Integer.parseInt(f[7]), Integer.parseInt(f[8]),
+                    m, n,
                     getDouble(f,9,0),getDouble(f,10,0),getDouble(f,11,0),
                     getDouble(f,12,0),getDouble(f,13,0),getDouble(f,14,0),
                     getDouble(f,15,0),getDouble(f,16,0),getDouble(f,17,0),getDouble(f,18,0),

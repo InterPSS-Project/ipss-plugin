@@ -10,6 +10,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import com.interpss.dstab.DStabObjectFactory;
@@ -29,8 +30,13 @@ class ModifiedEulerControllerPreparationTest {
     private Fixture load(String family,boolean optimized,Path file,boolean initialize) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         Path base=Path.of("testData/adpter/psse/v33/SMIB");
-        String dyr=Files.readString(base.resolve("SMIB_v33_genrou_"+family+".dyr"));
-        if(!dyr.contains("'PSS2A'")&&!dyr.contains("'IEEEST'"))dyr+="\n"+Files.readAllLines(base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr"))
+        String dyr=Files.readString(base.resolve("SMIB_v33_genrou_"+(family.endsWith("pss2b")?"esst1a_pss2a":family)+".dyr"));
+        if(family.endsWith("pss2b")) {
+            String record=Files.readAllLines(Path.of("testData/adpter/psse/v33/HspModels/pss2b.dyr"))
+                .stream().filter(line->line.contains("'PSS2B'")).findFirst().orElseThrow();
+            dyr=dyr.replaceAll("(?m)^.*'PSS2A'.*$",java.util.regex.Matcher.quoteReplacement(record));
+        }
+        if(!dyr.contains("'PSS2A'")&&!dyr.contains("'PSS2B'")&&!dyr.contains("'IEEEST'"))dyr+="\n"+Files.readAllLines(base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr"))
             .stream().filter(line->line.contains("'PSS2A'")).findFirst().orElseThrow()+"\n";
         Files.writeString(file,dyr);
         var context=new PSSEMultiFileLoader().loadDStab(base.resolve("SMIB_v33.raw").toString(),file.toString());
@@ -56,6 +62,9 @@ class ModifiedEulerControllerPreparationTest {
         }
         for(var controller:List.of(m.getExciter(),m.getStabilizer()))
             capture(assertInstanceOf(AbstractAnnotateController.class,controller),values);
+        if(m.getStabilizer() instanceof Ieee1992PSS2BStabilizer pss)
+            for(double v:new double[]{pss.getInput1VoltageMemory(),pss.getInput2VoltageMemory(),
+                    pss.getInput1VoltageDerivative(),pss.getInput2VoltageDerivative()})values.add(Double.doubleToRawLongBits(v));
         return values;
     }
     private void capture(AbstractAnnotateController model,List<Long> values) {
@@ -78,14 +87,17 @@ class ModifiedEulerControllerPreparationTest {
         values.add(Double.doubleToRawLongBits(block.getU()));
     }
     @Test void faultLiveParametersAndActivationPreservePredictorCorrectorStates(@TempDir Path folder) throws Exception {
-        for(String family:List.of("exst1","esst1a_pss2a","esst4b","esst1a_ieeest")) {
+        for(String family:List.of("exst1","esst1a_pss2a","esst4b","esst1a_ieeest","esst1a_pss2b")) {
             var ordinary=load(family,false,folder.resolve(family+"-ordinary.dyr"),true);
             var fast=load(family,true,folder.resolve(family+"-fast.dyr"),true);
             var report=fast.solver.getControllerPreparationReport();
-            assertEquals(2,report.compiledControllers(),report.toString());assertEquals(family.endsWith("ieeest")?0:1,report.pss2aControllers());
+            assertEquals(2,report.compiledControllers(),report.toString());
+            assertEquals(family.endsWith("ieeest")||family.endsWith("pss2b")?0:1,report.pss2aControllers());
             assertEquals(family.endsWith("ieeest")?1:0,report.ieeestControllers());
             assertEquals(family.equals("esst4b")?0:1,report.st1Controllers());
             assertEquals(snapshot(ordinary),snapshot(fast),"initial "+family);
+            if(fast.machine.getStabilizer() instanceof Ieee1992PSS2BStabilizer pss)
+                assertTrue(pss.hasCompiledStageEvaluator(),"Automatic PSS2B typed-stage coverage");
             double reference=((AbstractAnnotateController)ordinary.machine.getExciter()).getRefPoint();
             for(int tick=0;tick<240;tick++) {
                 for(var fixture:List.of(ordinary,fast)) {
@@ -99,6 +111,28 @@ class ModifiedEulerControllerPreparationTest {
                 assertEquals(snapshot(ordinary),snapshot(fast),family+" step="+tick);
             }
             if(fast.machine.getExciter() instanceof IEEE1981ST1Exciter st1)assertTrue(st1.getModifiedEulerStageCount()>400);
+        }
+    }
+    @Test void derivativeInputsRetainAcceptedMemoryAcrossTheCoupledFault(@TempDir Path folder) throws Exception {
+        for(int slot:new int[]{1,2}) {
+            var ordinary=load("esst1a_pss2b",false,folder.resolve("ordinary-"+slot+".dyr"),false);
+            var fast=load("esst1a_pss2b",true,folder.resolve("fast-"+slot+".dyr"),false);
+            for(var fixture:List.of(ordinary,fast)) {
+                var pss=(Ieee1992PSS2BStabilizer)fixture.machine.getStabilizer();
+                pss.getData().setIcs1(slot==1?6:2);pss.getData().setIcs2(slot==2?6:2);
+                pss.setInputSignalBuses(fixture.machine.getDStabBus(),fixture.machine.getDStabBus());
+                assertTrue(fixture.algorithm.initialization());
+            }
+            var pss=(Ieee1992PSS2BStabilizer)fast.machine.getStabilizer();
+            assertTrue(pss.hasCompiledStageEvaluator());
+            boolean nonzero=false;
+            for(int tick=0;tick<120;tick++) {
+                assertTrue(ordinary.algorithm.solveDEqnStep(true));assertTrue(fast.algorithm.solveDEqnStep(true));
+                assertEquals(snapshot(ordinary),snapshot(fast),"Derivative slot="+slot+" step="+tick);
+                nonzero|=Math.abs(slot==1?pss.getInput1VoltageDerivative():pss.getInput2VoltageDerivative())>1e-6;
+            }
+            assertTrue(nonzero,"The fault must exercise derivative memory");
+            assertTrue(pss.getCompiledStageEvaluationCount()>200);
         }
     }
     @Test void customBlockOrObservedMachineKeepsCompatibleDispatch(@TempDir Path folder) throws Exception {

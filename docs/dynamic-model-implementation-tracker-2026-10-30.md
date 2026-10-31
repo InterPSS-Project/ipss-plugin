@@ -4,9 +4,10 @@ Models are listed in implementation priority order. Each section describes the r
 
 ## PSS2B
 
-- Extend independent checks across the supported input selectors, remote measurements and limiter combinations.
+- Finish independent internal-state and coupled-trajectory checks across the supported input selectors, remote measurements and limiter combinations.
 - Preserve separate mappings for the standard record and the existing typed extension.
-- Verify derivative-input history and zero-duration event refresh without advancing committed state.
+- Resolve sampled-output lifecycle and finite-step trajectory differences against complete independent captures.
+- Retain the [compiled runtime contract](dynamic-models/pss2b-compiled-runtime.md), accepted derivative history and zero-duration event checks when extending qualification.
 
 ## HYG3U1
 

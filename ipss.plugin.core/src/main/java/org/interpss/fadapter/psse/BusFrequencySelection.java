@@ -3,6 +3,7 @@ package org.interpss.fadapter.psse;
 import java.util.HashSet;
 import java.util.Set;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -36,7 +37,8 @@ final class BusFrequencySelection {
     record Result(Set<String> required, String reason) { }
     static boolean isAuditedController(Object controller) {
         return LOCAL_CONTROLLERS.contains(controller.getClass().getName())
-            ||controller.getClass()==IeeestStabilizer.class||controller.getClass()==Ieee1992PSS2AStabilizer.class;
+            ||controller.getClass()==IeeestStabilizer.class||controller.getClass()==Ieee1992PSS2AStabilizer.class
+            ||controller.getClass()==Ieee1992PSS2BStabilizer.class;
     }
     static Result select(DynamicSimuAlgorithm algorithm) {
         var network=algorithm.getNetwork();var required=new HashSet<String>();
@@ -95,11 +97,21 @@ final class BusFrequencySelection {
                             required.addAll(parent.requiredBusFrequencyIds());
                             continue;
                         }
+                        if(machine.getStabilizer() instanceof Ieee1992PSS2BStabilizer parent
+                                && parent.isBuiltInSignalConditioner(controller)) {
+                            if(!parent.eAdapters().isEmpty())return all("controller observer");
+                            var parentIssue=nonstandardField(parent);
+                            if(parentIssue!=null)return all("PSS2B: "+parentIssue);
+                            required.addAll(parent.requiredBusFrequencyIds());
+                            continue;
+                        }
                         if(controller.getClass()==IeeestStabilizer.class) {
                             var data=((IeeestStabilizer)controller).getData();
                             if(data.mode()==2&&data.remoteBus()!=0)required.add("Bus"+data.remoteBus());
                         }else if(controller.getClass()==Ieee1992PSS2AStabilizer.class)
                             required.addAll(((Ieee1992PSS2AStabilizer)controller).requiredBusFrequencyIds());
+                        else if(controller.getClass()==Ieee1992PSS2BStabilizer.class)
+                            required.addAll(((Ieee1992PSS2BStabilizer)controller).requiredBusFrequencyIds());
                         else if(!LOCAL_CONTROLLERS.contains(controller.getClass().getName()))
                             return all("unclassified controller: "+controller.getClass().getName());
                     }

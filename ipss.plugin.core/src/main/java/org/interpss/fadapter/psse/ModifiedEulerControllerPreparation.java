@@ -23,6 +23,7 @@ import com.interpss.dstab.datatype.ExpCalculator;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 
 /** Prepare audited controller graphs once, retaining compatible custom dispatch. */
@@ -127,8 +128,11 @@ final class ModifiedEulerControllerPreparation {
                             ||!Arrays.equals(holder.getInputs(),function.input()))return false;
                 }
                 if(value instanceof AbstractAnnotateController child) {
-                    if(!(model instanceof Ieee1992PSS2AStabilizer parent)
-                            ||!parent.isBuiltInSignalConditioner(child)||!standardGraph(child))return false;
+                    boolean builtIn = model instanceof Ieee1992PSS2AStabilizer parentA
+                            && parentA.isBuiltInSignalConditioner(child)
+                            || model instanceof Ieee1992PSS2BStabilizer parentB
+                            && parentB.isBuiltInSignalConditioner(child);
+                    if(!builtIn||!standardGraph(child))return false;
                 }
             }
             int fields=0;

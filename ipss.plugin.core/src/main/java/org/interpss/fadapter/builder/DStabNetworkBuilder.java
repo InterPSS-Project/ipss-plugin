@@ -1263,9 +1263,16 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2B: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0) {
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0
+                || (m == 0 && n > 0)) {
             log.warn("Invalid PSS2B selectors/filter orders at {} {}: ICS1={}, ICS2={}, M={}, N={}",
                     busId, genId, ics1, ics2, m, n);
+            return null;
+        }
+        if (java.util.stream.DoubleStream.of(tw1,tw2,t6,tw3,tw4,t7,ks2,ks3,t8,t9,ks1,
+                t1,t2,t3,t4,t10,t11,vsi1max,vsi1min,vsi2max,vsi2min,vstmax,vstmin,a,ta,tb,ks4)
+                .anyMatch(value -> !Double.isFinite(value))) {
+            log.warn("Non-finite PSS2B parameter at {} {}", busId, genId);
             return null;
         }
         if (tw1 < 0.0 || tw2 < 0.0 || t6 < 0.0 || tw3 < 0.0 || tw4 < 0.0

@@ -70,8 +70,8 @@ class OptionalBusFrequencyIntegrationTest {
         for(int i=0;i<all.size();i++)assertArrayEquals(all.get(i),required.get(i),0.,"step "+i);
     }
 
-    private List<double[]> runPss2a(DefaultDynamicSimulationSolver.BusFrequencyMode mode,boolean remote,
-            java.nio.file.Path folder) throws Exception {
+    private List<double[]> runDualPss(DefaultDynamicSimulationSolver.BusFrequencyMode mode,boolean remote,
+            java.nio.file.Path folder,boolean pss2b) throws Exception {
         java.nio.file.Files.createDirectory(folder);
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var base=java.nio.file.Path.of("testData/adpter/psse/v33/SMIB");
@@ -80,14 +80,27 @@ class OptionalBusFrequencyIntegrationTest {
         raw=raw.replace("0 / END OF LOAD DATA","3,'1',1,1,1,20.000,10.000,0.000,0.000,0.000,0.000,1,1,0\n0 / END OF LOAD DATA");
         raw=raw.replace("0 / END OF BRANCH DATA","2,3,'1',0.01000,0.10000,0.00000,0.00,0.00,0.00,0.00000,0.00000,0.00000,0.00000,1,1,0.00,1,1.0000\n0 / END OF BRANCH DATA");
         var file=folder.resolve("three-bus.raw");java.nio.file.Files.writeString(file,raw);
-        var context=new PSSEMultiFileLoader().loadDStab(file.toString(),base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr").toString());
+        var dynamic=base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr");
+        if(pss2b) {
+            String record=java.nio.file.Files.readAllLines(java.nio.file.Path.of("testData/adpter/psse/v33/HspModels/pss2b.dyr"))
+                    .stream().filter(line->line.contains("'PSS2B'")).findFirst().orElseThrow();
+            String text=java.nio.file.Files.readString(dynamic).replaceAll("(?m)^.*'PSS2A'.*$",java.util.regex.Matcher.quoteReplacement(record));
+            dynamic=folder.resolve("pss2b.dyr");java.nio.file.Files.writeString(dynamic,text);
+        }
+        var context=new PSSEMultiFileLoader().loadDStab(file.toString(),dynamic.toString());
         var algorithm=context.getDynSimuAlgorithm();var network=context.getDStabilityNet();
         var solver=assertInstanceOf(DefaultDynamicSimulationSolver.class,algorithm.getSolver());solver.setBusFrequencyMode(mode);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         var machine=network.getMachine("Bus1-mach1");
-        var pss=assertInstanceOf(org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer.class,machine.getStabilizer());
-        pss.setInputSignalBuses(network.getDStabBus(remote?"Bus3":"Bus1"),network.getDStabBus("Bus1"));
-        pss.getData().setIcs1(5);pss.getData().setIcs2(1);
+        var pss=assertInstanceOf(com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer.class,machine.getStabilizer());
+        org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizerData data;
+        if(pss instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer model) {
+            model.setInputSignalBuses(network.getDStabBus(remote?"Bus3":"Bus1"),network.getDStabBus("Bus1"));data=model.getData();
+        } else {
+            var model=(org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer)pss;
+            model.setInputSignalBuses(network.getDStabBus(remote?"Bus3":"Bus1"),network.getDStabBus("Bus1"));data=model.getData();
+        }
+        data.setIcs1(5);data.setIcs2(1);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(1./240);
         var monitor=new StateMonitor();monitor.addBusStdMonitor(new String[]{"Bus1"});algorithm.setSimuOutputHandler(monitor);
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3",network,
@@ -97,7 +110,7 @@ class OptionalBusFrequencyIntegrationTest {
         assertEquals(mode==DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED&&!remote,network.getDStabBus("Bus3").getBusFreqMeasureBlock()==null);
         var result=new ArrayList<double[]>();
         for(int tick=0;tick<120;tick++) {
-            if(tick==10)pss.getData().setIcs1(2);
+            if(tick==10)data.setIcs1(2);
             assertTrue(algorithm.solveDEqnStep(true));
             var values=new ArrayList<Double>();
             for(var bus:network.getBusList())values.add(bus.getVoltageMag());
@@ -112,9 +125,9 @@ class OptionalBusFrequencyIntegrationTest {
 
     @Test void pss2aFaultAndLiveFrequencySelectorsRetainExactStatesAndHistories(
             @org.junit.jupiter.api.io.TempDir java.nio.file.Path folder) throws Exception {
-        for(boolean remote:new boolean[]{false,true}) {
-            var all=runPss2a(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL,remote,folder.resolve("all-"+remote));
-            var required=runPss2a(DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED,remote,folder.resolve("required-"+remote));
+        for(boolean pss2b:new boolean[]{false,true})for(boolean remote:new boolean[]{false,true}) {
+            var all=runDualPss(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL,remote,folder.resolve("all-"+remote+"-"+pss2b),pss2b);
+            var required=runDualPss(DefaultDynamicSimulationSolver.BusFrequencyMode.REQUIRED,remote,folder.resolve("required-"+remote+"-"+pss2b),pss2b);
             for(int tick=0;tick<all.size();tick++)assertArrayEquals(all.get(tick),required.get(tick),0.,"remote="+remote+" step="+tick);
         }
     }

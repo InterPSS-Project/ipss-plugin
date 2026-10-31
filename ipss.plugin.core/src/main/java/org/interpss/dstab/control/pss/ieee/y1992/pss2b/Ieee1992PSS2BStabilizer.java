@@ -22,7 +22,34 @@ import com.interpss.dstab.mach.Machine;
 /** IEEE dual-input PSS2B stabilizer with the PowerWorld extension fields. */
 @AnController(input="mach.speed", output="this.outputBlock.y", refPoint="0.0", display={})
 public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
-        implements IntegrationStepAware {
+        implements IntegrationStepAware, org.interpss.dstab.control.util.AcceptedVoltageMeasurement {
+    private transient Pss2bCompiledStage compiledSignals;
+
+    @Override
+    protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
+        compiledSignals = null;
+        if (getClass() != Ieee1992PSS2BStabilizer.class) return null;
+        try { return compiledSignals = new Pss2bCompiledStage(this); }
+        catch (IllegalArgumentException unsupportedGraph) { return null; }
+    }
+
+    @Override public void invalidateRuntimePlan() {
+        super.invalidateRuntimePlan();
+        compiledSignals = null;
+    }
+
+    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
+            throws com.interpss.common.exp.InterpssException {
+        if (getClass() != Ieee1992PSS2BStabilizer.class) return super.bindCompiledParameter(name);
+        return switch (name) {
+            case "input1Signal" -> () -> input1Signal;
+            case "input2Signal" -> () -> input2Signal;
+            case "ks3" -> () -> ks3;
+            case "ks4" -> () -> ks4;
+            default -> super.bindCompiledParameter(name);
+        };
+    }
+
     public double tw1, tw2, t6;
     @AnControllerField(type=CMLFieldEnum.Controller, input="this.input1Signal",
             y0="0.0", initOrderNumber=-2)
@@ -76,13 +103,31 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     private BaseDStabBus<?, ?> input1Bus;
     private BaseDStabBus<?, ?> input2Bus;
 
+    /** Include both configured buses so changing a live selector cannot omit frequency history. */
+    public java.util.Set<String> requiredBusFrequencyIds() {
+        var ids = new java.util.HashSet<String>();
+        if (input1Bus != null) ids.add(input1Bus.getId());
+        if (input2Bus != null) ids.add(input2Bus.getId());
+        return java.util.Set.copyOf(ids);
+    }
+
+    /** Standard child paths consume scalar inputs supplied by this controller. */
+    public final boolean isBuiltInSignalConditioner(Object controller) {
+        return getClass() == Ieee1992PSS2BStabilizer.class && controller != null
+                && controller.getClass() == InputPath.class
+                && (controller == inputPath1 || controller == inputPath2)
+                && ((InputPath) controller).belongsTo(this);
+    }
+
     public void setInputSignalBuses(BaseDStabBus<?, ?> first, BaseDStabBus<?, ?> second) {
         input1Bus = java.util.Objects.requireNonNull(first);
         input2Bus = java.util.Objects.requireNonNull(second);
     }
 
-    private double input1PreviousVoltage;
-    private double input2PreviousVoltage;
+    private final org.interpss.dstab.control.pss.psse.ieeest.IeeestVoltageDerivative derivative1 =
+            new org.interpss.dstab.control.pss.psse.ieeest.IeeestVoltageDerivative();
+    private final org.interpss.dstab.control.pss.psse.ieeest.IeeestVoltageDerivative derivative2 =
+            new org.interpss.dstab.control.pss.psse.ieeest.IeeestVoltageDerivative();
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
 
@@ -101,34 +146,44 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     /** Diagram signals corresponding to PowerWorld PSS2B states 1-8 and 19-20. */
     public double getInput1Washout1Output() {
+        if (compiledSignals != null) return compiledSignals.signal(0);
         return childSignal(inputPath1, "this.firstWashout.y");
     }
 
     public double getInput1Washout2Output() {
+        if (compiledSignals != null) return compiledSignals.signal(1);
         return childSignal(inputPath1, "this.secondWashout.y");
     }
 
     public double getInput1TransducerOutput() {
+        if (compiledSignals != null) return compiledSignals.signal(2);
         return childSignal(inputPath1, "this.delayBlock.y");
     }
 
     public double getInput2Washout1Output() {
+        if (compiledSignals != null) return compiledSignals.signal(3);
         return childSignal(inputPath2, "this.firstWashout.y");
     }
 
     public double getInput2Washout2Output() {
+        if (compiledSignals != null) return compiledSignals.signal(4);
         return childSignal(inputPath2, "this.secondWashout.y");
     }
 
     public double getInput2TransducerOutput() {
+        if (compiledSignals != null) return compiledSignals.signal(5);
         return childSignal(inputPath2, "this.delayBlock.y");
     }
 
-    public double getLeadLag1Output() { return signal("this.leadLag1.y"); }
-    public double getLeadLag2Output() { return signal("this.leadLag2.y"); }
-    public double getRampTrackingOutput() { return signal("this.rampFilter.y"); }
-    public double getGeLeadLagOutput() { return signal("this.outputBlock.y"); }
-    public double getLeadLag3Output() { return signal("this.leadLag3.y"); }
+    public double getLeadLag1Output() { return observedSignal(7, "this.leadLag1.y"); }
+    public double getLeadLag2Output() { return observedSignal(8, "this.leadLag2.y"); }
+    public double getRampTrackingOutput() { return observedSignal(6, "this.rampFilter.y"); }
+    public double getGeLeadLagOutput() { return observedSignal(10, "this.outputBlock.y"); }
+    public double getLeadLag3Output() { return observedSignal(9, "this.leadLag3.y"); }
+
+    private double observedSignal(int id, String name) {
+        return compiledSignals == null ? signal(name) : compiledSignals.signal(id);
+    }
 
     private double signal(String fieldName) {
         try {
@@ -163,6 +218,7 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        compiledSignals = null;
         Ieee1992PSS2BStabilizerData d = getData();
         tw1 = d.getTw1(); tw2 = d.getTw2(); t6 = d.getT6();
         tw3 = d.getTw3(); tw4 = d.getTw4(); t7 = d.getT7();
@@ -174,14 +230,23 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         vstmax = d.getVstmax(); vstmin = d.getVstmin();
         a = d.getA(); ta = d.getTa(); tb = d.getTb(); ks4 = d.getKs4();
         m = d.getM(); n = d.getN();
+        if (d.getIcs1() < 1 || d.getIcs1() > 6 || d.getIcs2() < 1 || d.getIcs2() > 6
+                || m < 0 || n < 0 || (m == 0 && n > 0)
+                || java.util.stream.DoubleStream.of(tw1,tw2,t6,tw3,tw4,t7,ks2,ks3,t8,t9,ks1,
+                        t1,t2,t3,t4,t10,t11,vsi1max,vsi1min,vsi2max,vsi2min,vstmax,vstmin,a,ta,tb,ks4)
+                        .anyMatch(value -> !Double.isFinite(value))
+                || java.util.stream.DoubleStream.of(tw1,tw2,t6,tw3,tw4,t7,t8,t9,t2,t4,t11,tb)
+                        .anyMatch(value -> value < 0.)
+                || (n > 0 && t9 == 0. && t8 != 0.) || (tb == 0. && ta != 0.)) return false;
         applyPowerWorldCorrections();
 
         if (input1Bus == null) input1Bus = bus;
         if (input2Bus == null) input2Bus = bus;
+        if (!input1Bus.isActive() || !input2Bus.isActive()) return false;
         input1Signal = limitedInput(d.getIcs1(), input1Bus, machine, vsi1max, vsi1min);
         input2Signal = limitedInput(d.getIcs2(), input2Bus, machine, vsi2max, vsi2min);
-        input1PreviousVoltage = input1Bus.getVoltageMag();
-        input2PreviousVoltage = input2Bus.getVoltageMag();
+        derivative1.initialize(input1Bus.getVoltageMag());
+        derivative2.initialize(input2Bus.getVoltageMag());
         inputPath1 = new InputPath(tw1, tw2, 1.0, t6);
         inputPath2 = new InputPath(tw3, tw4, ks2, t7);
         return super.initStates(bus, machine);
@@ -190,20 +255,43 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
         Ieee1992PSS2BStabilizerData d = getData();
-        BaseDStabBus<?, ?> bus = machine.getDStabBus();
-        double sampleInterval=dt>0?dt:integrationStep;
         input1Signal = d.getIcs1() == 6
-                ? clamp(sampleInterval>0?(input1Bus.getVoltageMag() - input1PreviousVoltage) / sampleInterval:0, vsi1max, vsi1min)
+                ? clamp(derivative1.getDerivative(), vsi1max, vsi1min)
                 : limitedInput(d.getIcs1(), input1Bus, machine, vsi1max, vsi1min);
         input2Signal = d.getIcs2() == 6
-                ? clamp(sampleInterval>0?(input2Bus.getVoltageMag() - input2PreviousVoltage) / sampleInterval:0, vsi2max, vsi2min)
+                ? clamp(derivative2.getDerivative(), vsi2max, vsi2min)
                 : limitedInput(d.getIcs2(), input2Bus, machine, vsi2max, vsi2min);
-        boolean result = super.nextStep(dt, method, machine, flag);
-        if (flag != 0 && dt>0) {
-            input1PreviousVoltage = input1Bus.getVoltageMag();
-            input2PreviousVoltage = input2Bus.getVoltageMag();
+        return super.nextStep(dt, method, machine, flag);
+    }
+
+    @Override public void acceptVoltageDerivativeEndpoint(double time, double step) {
+        if (getData().getIcs1() == 6) {
+            derivative1.accept(time, input1Bus.getVoltageMag(), step);
+            input1Signal = clamp(derivative1.getDerivative(), vsi1max, vsi1min);
         }
-        return result;
+        if (getData().getIcs2() == 6) {
+            derivative2.accept(time, input2Bus.getVoltageMag(), step);
+            input2Signal = clamp(derivative2.getDerivative(), vsi2max, vsi2min);
+        }
+    }
+
+    @Override public void synchronizeVoltageDerivativeMemory() {
+        if (getData().getIcs1() == 6) derivative1.synchronizeVoltage(input1Bus.getVoltageMag());
+        if (getData().getIcs2() == 6) derivative2.synchronizeVoltage(input2Bus.getVoltageMag());
+    }
+
+    public double getInput1VoltageMemory() { return derivative1.getVoltage(); }
+    public double getInput2VoltageMemory() { return derivative2.getVoltage(); }
+    public double getInput1VoltageDerivative() { return derivative1.getDerivative(); }
+    public double getInput2VoltageDerivative() { return derivative2.getDerivative(); }
+
+    @Override public java.util.Map<String, Double> getNamedStates() {
+        var states = new java.util.LinkedHashMap<>(super.getNamedStates());
+        states.put("input1VoltageMemory", derivative1.getVoltage());
+        states.put("input1VoltageDerivative", derivative1.getDerivative());
+        states.put("input2VoltageMemory", derivative2.getVoltage());
+        states.put("input2VoltageDerivative", derivative2.getDerivative());
+        return java.util.Collections.unmodifiableMap(states);
     }
 
     private void applyPowerWorldCorrections() {
@@ -272,6 +360,13 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     @AnController(output="this.delayBlock.y", refPoint="0.0")
     public class InputPath extends AbstractChildAnnotateController {
+        boolean belongsTo(Ieee1992PSS2BStabilizer owner) { return Ieee1992PSS2BStabilizer.this == owner; }
+        @Override public boolean supportsCompiledOutputScheduling() {
+            return getClass() == InputPath.class
+                    && Ieee1992PSS2BStabilizer.this.getClass() == Ieee1992PSS2BStabilizer.class
+                    && eAdapters().isEmpty() && Ieee1992PSS2BStabilizer.this.eAdapters().isEmpty();
+        }
+
         public double one = 1.0, firstWashoutTime;
         @AnControllerField(type=CMLFieldEnum.ControlBlock,
                 input="this.input - this.refPoint",

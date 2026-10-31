@@ -189,7 +189,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 for (DStabGen generator : bus.getContributeGenList()) {
                     if (generator.isActive() && generator.getDynamicGenDevice() instanceof Machine machine
                             && machine.isActive() && machine.getStabilizer() instanceof
-                            org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer stabilizer
+                            org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer
                             && stabilizer.isActive()) {
                         if ("CORRECTOR".equals(networkSolutionStage))
                             stabilizer.acceptVoltageDerivativeEndpoint(networkEvaluationTime, timestep);
@@ -262,7 +262,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
             for (DStabGen generator : bus.getContributeGenList()) {
                 if (!generator.isActive()) continue;
                 if (generator.getDynamicGenDevice() instanceof Machine machine && machine.isActive()
-                        && machine.getStabilizer() instanceof org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer stabilizer
+                        && machine.getStabilizer() instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer
                         && stabilizer.isActive()) stabilizer.synchronizeVoltageDerivativeMemory();
                 if (generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regca1Model converter
                         && converter.isActive()) {

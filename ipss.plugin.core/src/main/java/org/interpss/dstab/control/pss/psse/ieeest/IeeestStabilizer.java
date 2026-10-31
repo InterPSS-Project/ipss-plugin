@@ -17,7 +17,8 @@ import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 /** PSS/E IEEEST stabilizer following the PowerWorld/WECC block ordering. */
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
-public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant {
+public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant,
+        org.interpss.dstab.control.util.AcceptedVoltageMeasurement {
     @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
             throws com.interpss.common.exp.InterpssException {
         if (getClass() != IeeestStabilizer.class) return super.bindCompiledParameter(name);

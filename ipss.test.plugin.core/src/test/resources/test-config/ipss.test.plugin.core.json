@@ -108,6 +108,10 @@
   "Texas2kRegfma1CoverageTest": {
     "texas2k.case.root": null
   },
+  "Pss2bReferenceReplayTest": {
+    "referenceArchive": "testData/private/verification-artifacts/pss2b-qualification-20261030/captures.zip",
+    "archiveSha256": "639c256db1a2b1fa18ebb40999294d6e4a8fdf50b05be5252de6913acb07fdfe"
+  },
   "HspModelReferenceConformanceTest": {
     "hsp.referenceRoot": "testData/private/verification-artifacts/2026-10-30-hsp-usage/references"
   },
