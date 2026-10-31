@@ -123,6 +123,13 @@ histories commit at accepted network endpoints under both methods. The
 audited graph restrictions, reinitialization requirements and fine-step coupled
 voltage/angle acceptance; complete controller-state parity remains open.
 
+HYG3 directly supplies its existing Java equations and nine state coordinates
+to the same participant interface. Both methods reuse prepared numerical
+buffers and commit gate-backlash and deadband histories only at accepted steps.
+The [HYG3 runtime contract](dynamic-models/hyg3-prepared-curves.md) describes
+the state order, diagnostic snapshots and both-method fine-step SMIB boundary
+gates. Full transient-state and production-step qualification remain open.
+
 SVSMO3T2 supplies its states, rates and limiter projection directly through the
 shared participant interface. Its coupled switching conformance also qualifies
 an explicit endpoint-clock choice:

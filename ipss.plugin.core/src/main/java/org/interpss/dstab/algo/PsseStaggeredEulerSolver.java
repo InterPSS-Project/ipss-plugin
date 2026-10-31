@@ -436,7 +436,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         if (type != Ieee1968Type1Exciter.class && type != PsseGASTGasTurGovernor.class
                 && type != PsseTGov1SteamTurGovernor.class && type != PsseIEESGOSteamTurGovernor.class
                 && type != IeeeSteamTCDRGovernor.class && type != PsseGgov1Governor.class
-                && type != PsseHygovGovernor.class && type != IEEE1981ST1Exciter.class
+                && type != PsseHygovGovernor.class
+                && type != org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor.class
+                && type != IEEE1981ST1Exciter.class
                 && type != IEEE2005ST4BExciter.class && type != Ieee1992PSS2AStabilizer.class
                 && type != org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer.class
                 && type != IeeestStabilizer.class && type != Exac1Exciter.class

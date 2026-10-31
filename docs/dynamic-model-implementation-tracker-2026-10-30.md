@@ -19,7 +19,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
-- Expose the existing numerical equations and gate/limiter storage to shared staggered integration, retaining the modified-Euler path and prepared curves.
+- Retain the direct shared-state contract, reusable numerical storage, accepted backlash/hysteresis histories and unchanged modified-Euler equations.
+- Extend both-method coupled boundary gates to production-quarter-cycle steps and longer runs; finish transient state-coordinate and limiter/event qualification.
 - Extend trajectory checks to internal states, gate/valve limits and both controller modes.
 - Preserve exact allocation/ICON decoding and the distinction between source-native and typed frequency/deadband conventions.
 - Check parameter copying, partial gate curves and initialization residuals through the complete import path.
