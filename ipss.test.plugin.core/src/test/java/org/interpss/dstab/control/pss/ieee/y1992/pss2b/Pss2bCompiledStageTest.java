@@ -20,7 +20,7 @@ import com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock;
 import com.interpss.dstab.controller.cml.wrapper.ControlBlockFieldAnWrapper;
 
 /** Typed stages must preserve generic block storage, live parameters and pending history. */
-class Pss2bCompiledStageTest {
+public class Pss2bCompiledStageTest {
     private static final Path FIXTURE = Path.of("testData/adpter/psse/v33/HspModels");
 
     @BeforeAll static void setup() { IpssCorePlugin.init(); }

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.common.exp.InterpssException;
 
 /** Invalid layouts must not attach a partially initialized controller. */
-class Pss2bImportValidationTest {
+public class Pss2bImportValidationTest {
     @BeforeAll static void setup() { IpssCorePlugin.init(); }
 
     @Test void rejectMalformedStandardRecordsAndUnrealizableParameters(@TempDir Path folder) throws Exception {

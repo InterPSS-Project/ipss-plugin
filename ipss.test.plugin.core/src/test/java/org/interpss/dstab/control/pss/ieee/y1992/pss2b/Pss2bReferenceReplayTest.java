@@ -1,7 +1,6 @@
 package org.interpss.dstab.control.pss.ieee.y1992.pss2b;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +12,6 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.test.TestConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -27,10 +25,9 @@ import com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController;
 import com.interpss.dstab.mach.Machine;
 
 /** Recorded-boundary replay localizes state coordinates independently of network feedback. */
-class Pss2bReferenceReplayTest {
-    private static final TestConfig CONFIG = TestConfig.load("/test-config/ipss.test.plugin.core.json", "Pss2bReferenceReplayTest");
+public class Pss2bReferenceReplayTest {
     @TempDir Path staged;
-    private boolean archiveChecked;
+    private Pss2bReferenceFixture references;
 
     @Test void derivativeReplayReportsBothIndependentStepSizes() throws Exception {
         for (int slot : new int[]{1, 2}) {
@@ -102,31 +99,13 @@ class Pss2bReferenceReplayTest {
     }
 
     private Path referenceArchive() throws Exception {
-        Path archive = Path.of(CONFIG.string("referenceArchive"));
-        assumeTrue(Files.isRegularFile(archive), "Retained private PSS2B qualification archive is unavailable");
-        if (!archiveChecked) {
-            try (var stream = Files.newInputStream(archive)) {
-                var hash = java.security.MessageDigest.getInstance("SHA-256");
-                byte[] buffer = new byte[65536]; int size;
-                while ((size = stream.read(buffer)) >= 0) hash.update(buffer, 0, size);
-                assertEquals(CONFIG.string("archiveSha256"), java.util.HexFormat.of().formatHex(hash.digest()));
-            }
-            archiveChecked = true;
-        }
-        return archive;
+        if (references == null) references = new Pss2bReferenceFixture(staged);
+        return references.archive();
     }
 
     private Path caseDirectory(String profile) throws Exception {
-        Path archive = referenceArchive();
-        Path root = staged.resolve(profile); Files.createDirectories(root);
-        try (var zip = new java.util.zip.ZipFile(archive.toFile())) {
-            for (String name : List.of("manifest.json", "network.raw", "dynamic.dyr", "native.csv")) {
-                var entry = zip.getEntry(profile + "/" + name); assertNotNull(entry, profile + "/" + name);
-                assertTrue(entry.getSize() >= 0 && entry.getSize() < 16 * 1024 * 1024, "Bound staged fixture size");
-                try (var stream = zip.getInputStream(entry)) { Files.copy(stream, root.resolve(name)); }
-            }
-        }
-        return root;
+        referenceArchive();
+        return references.stage(profile);
     }
 
     private static double selected(int code, Machine machine, Map<String, Double> row, int slot, int bus, double max, double min) {
@@ -220,7 +199,7 @@ class Pss2bReferenceReplayTest {
     }
 
     /** Compare equations using exactly the coefficients executed by the independent engine. */
-    private static void useCapturedCoefficients(Ieee1992PSS2BStabilizer pss,
+    static void useCapturedCoefficients(Ieee1992PSS2BStabilizer pss,
             com.fasterxml.jackson.databind.JsonNode manifest) {
         var values = manifest.get("components").get("STAB").get("actual_constants");
         double[] c = new double[23]; for (int i = 0; i < c.length; i++) c[i] = values.get(i).asDouble();
@@ -262,7 +241,7 @@ class Pss2bReferenceReplayTest {
         }
     }
 
-    private static java.util.function.DoubleSupplier[] coordinates(Ieee1992PSS2BStabilizer pss) {
+    static java.util.function.DoubleSupplier[] coordinates(Ieee1992PSS2BStabilizer pss) {
         java.util.function.DoubleSupplier[] result = new java.util.function.DoubleSupplier[17];
         java.util.function.DoubleSupplier unused = () -> 0.;
         java.util.Arrays.fill(result, unused);
@@ -300,7 +279,7 @@ class Pss2bReferenceReplayTest {
                 .findFirst().orElseThrow().getField());
     }
 
-    private static List<Map<String, Double>> rows(Path path) throws Exception {
+    static List<Map<String, Double>> rows(Path path) throws Exception {
         var lines = Files.readAllLines(path); String[] names = lines.getFirst().split(",");
         List<Map<String, Double>> result = new ArrayList<>();
         for (String line : lines.subList(1, lines.size())) {

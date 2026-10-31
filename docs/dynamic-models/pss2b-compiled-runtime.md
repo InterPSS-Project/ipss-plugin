@@ -83,9 +83,40 @@ In fully bypassed profiles, the reference publishes the preceding controller
 stage's output while allocated algebraic coordinates refresh at the current
 boundary. The tests check this sampled-output recurrence and the fresh algebraic
 equation separately, preserving every event-side duplicate. This observation
-does not establish coupled event-lifecycle parity. Complete coupled reference
-accuracy and sampled-output lifecycle alignment still need qualification. No whole-model
+does not establish exact controller-state or sampled-output lifecycle parity. No whole-model
 `VERIFIED` or measured speedup claim is made by this change.
+
+## Coupled boundary acceptance
+
+`Pss2bCoupledBoundaryConformanceTest` runs the complete retained selector,
+local/remote, limit, bypass, reference-step and ramp-order matrix through the
+default modified-Euler solver. It asserts automatic typed-stage coverage,
+voltage range-normalized RMSE below 0.001 at both buses, rotor-angle RMSE below
+0.01 degree and prefault maximum angle error below 0.002 degree. Constant-voltage
+reference channels use a separate 1e-12 absolute RMSE check because their range
+is zero. Limiter profiles must reach both output bounds.
+
+The synthetic reference probes use constant-P/constant-Q loads, verified from
+their retained runnable scripts, and a 0.04-second bus-frequency filter from
+the reference solution settings. These settings differ from the engine defaults
+and are applied to the comparison fixture only. They do not change other study
+load conversions or the engine's default frequency filter.
+
+Across the half-second SMIB comparisons at 0.5/0.25 ms steps, the worst voltage
+NRMSE is 7.38e-4 at the generator bus and 7.05e-4 at the other bus. Worst absolute
+voltage errors are 0.000192/0.000066 pu; the largest rotor-angle error is 0.003381
+degree. These are boundary-acceptance results, not production-quarter-cycle or
+long-duration qualification. All controller states, measurement histories,
+outputs and network boundary channels are retained in bounded lossless traces
+with per-channel errors and their times. Controller-state and output errors
+remain explicitly diagnostic while their stage conventions are reconciled.
+
+Every raw reference sample is compared. Both interval-side duplicates are
+retained, including segments without a physical event. Negative-time startup
+samples are compared to the initialized snapshot and carry an explicit
+`STARTUP_HELD_INITIAL` tag and actual time zero; the test does not invent a
+negative-time simulation history. The new parser, typed-stage, replay and coupled
+boundary checks are registered in `CorePluginTestSuite`.
 
 Focused import, compiled-stage, coupled SMIB, measurement, replay and artifact
 checks pass. The registered core suite retains its previously recorded failures

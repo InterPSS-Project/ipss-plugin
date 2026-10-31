@@ -4,7 +4,8 @@ Models are listed in implementation priority order. Each section describes the r
 
 ## PSS2B
 
-- Finish independent internal-state and coupled-trajectory checks across the supported input selectors, remote measurements and limiter combinations.
+- Extend the accepted coupled voltage/angle matrix to production-quarter-cycle and longer-duration runs.
+- Finish strict independent controller-state and sampled-output lifecycle qualification across selectors and limiter combinations.
 - Preserve separate mappings for the standard record and the existing typed extension.
 - Resolve sampled-output lifecycle and finite-step trajectory differences against complete independent captures.
 - Retain the [compiled runtime contract](dynamic-models/pss2b-compiled-runtime.md), accepted derivative history and zero-duration event checks when extending qualification.
