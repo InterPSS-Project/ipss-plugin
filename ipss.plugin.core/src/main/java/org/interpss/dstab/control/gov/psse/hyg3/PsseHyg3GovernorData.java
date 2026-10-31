@@ -21,6 +21,10 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     private FrequencyDeadbandConvention frequencyDeadbandConvention=FrequencyDeadbandConvention.HZ_HYSTERESIS;
     public FrequencyDeadbandConvention getFrequencyDeadbandConvention() { return frequencyDeadbandConvention; }
     public void setFrequencyDeadbandConvention(FrequencyDeadbandConvention value) { frequencyDeadbandConvention=java.util.Objects.requireNonNull(value); }
+    public enum BacklashConvention { PER_UNIT_GATE, MW_ON_GOVERNOR_BASE }
+    private BacklashConvention backlashConvention = BacklashConvention.MW_ON_GOVERNOR_BASE;
+    public BacklashConvention getBacklashConvention() { return backlashConvention; }
+    public void setBacklashConvention(BacklashConvention value) { backlashConvention = java.util.Objects.requireNonNull(value); }
     private int controlFlag = PID_CONTROL;
     private double rgate = 0.05;
     private double relec;

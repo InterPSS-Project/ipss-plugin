@@ -16,10 +16,12 @@ import org.interpss.test.TestConfig;
 final class Hyg3ReferenceFixture {
     private static final TestConfig CONFIG = TestConfig.load("/test-config/ipss.test.plugin.core.json", "Hyg3StateConformanceTest");
     private final Path staged;
+    private final TestConfig config;
     private boolean checked;
-    Hyg3ReferenceFixture(Path staged) { this.staged = staged; }
+    Hyg3ReferenceFixture(Path staged) { this(staged,CONFIG); }
+    Hyg3ReferenceFixture(Path staged, TestConfig config) { this.staged = staged; this.config = config; }
     private Path archive() throws Exception {
-        Path path = Path.of(CONFIG.string("referenceArchive"));
+        Path path = Path.of(config.string("referenceArchive"));
         assumeTrue(Files.isRegularFile(path), "Retained synthetic HYG3 qualification archive is unavailable");
         if (!checked) {
             var hash = MessageDigest.getInstance("SHA-256");
@@ -27,7 +29,7 @@ final class Hyg3ReferenceFixture {
                 byte[] buffer = new byte[65536]; int size;
                 while ((size = stream.read(buffer)) >= 0) hash.update(buffer, 0, size);
             }
-            assertEquals(CONFIG.string("archiveSha256"), HexFormat.of().formatHex(hash.digest())); checked = true;
+            assertEquals(config.string("archiveSha256"), HexFormat.of().formatHex(hash.digest())); checked = true;
         }
         return path;
     }

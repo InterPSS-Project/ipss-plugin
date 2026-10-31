@@ -17,6 +17,14 @@ public interface StaggeredEulerParticipant {
     default boolean averageStaggeredRateAtDiscontinuity(int stateIndex) {
         return averageStaggeredRatesAtDiscontinuity();
     }
+    /**
+     * Average an externally notified input jump with the rate cached at the latest accepted endpoint,
+     * rather than with the preceding integration interval's retained rate.
+     * Opt in only when no subsequent accepted-history callback changes that RHS.
+     * The two-step integration history remains separate and is never replaced.
+     * Scheduled network-event boundaries retain their separate qualified policy.
+     */
+    default boolean useAcceptedEndpointRateAtInputDiscontinuity() { return false; }
     default void completeStaggeredStep(double stepSec) { }
     /** Explicit endpoint clock for discrete histories; existing duration-based participants retain their contract. */
     default void completeStaggeredStep(double stepSec, double endpointTimeSec) {

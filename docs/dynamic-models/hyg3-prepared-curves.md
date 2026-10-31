@@ -61,7 +61,7 @@ all scalar inputs and gains still use their existing live bindings.
 
 Trial evaluation and state projection can refresh algebraic commands, gate
 backlash output and turbine power. They never commit the backlash reference or
-frequency-deadband mode. Only the ordinary corrector or
+frequency-deadband mode. Only a positive-duration ordinary corrector or
 `completeStaggeredStep()` commits those histories. Rejecting a nonfinite trial
 occurs before any coordinate is written. Shared access also rejects an
 unfinished modified-Euler predictor, a failed initialization or replacement of
@@ -69,8 +69,8 @@ the initialized machine/data owner. Coherent reinitialization resets the guard,
 history and diagnostic state.
 
 Read-only snapshots expose current coordinates, the last evaluated rates and
-their evaluation coordinates/stage, plus the committed gate output and deadband
-mode. The deadband mode is encoded as low=0, neutral=1, high=2. Snapshot maps are
+their evaluation coordinates/stage, plus the committed gate output, backlash
+input reference and deadband mode. The deadband mode is encoded as low=0, neutral=1, high=2. Snapshot maps are
 detached and immutable; they allocate only when requested. Turbine-head
 observation uses the currently published gate output without committing history.
 
@@ -175,8 +175,8 @@ boundary channels with every independent sample. It applies separate, explicit
 absolute envelopes per state and per method/interval, retained alongside the
 measured maxima and their times. All raw integration coordinates are also saved.
 The initialized states, fine-step matrix and five-second quarter-cycle matrix
-pass under both methods. Rate/position-limit and backlash-active extensions
-remain open; these profiles do not activate every limiter branch.
+pass under both methods. These profiles do not activate every limiter branch;
+the active-limit extension below adds separate coverage.
 
 At quarter-cycle steps over five seconds, worst voltage range-normalized RMSE is
 below 0.000216 with modified Euler and 0.000022 with staggered Euler. Worst
@@ -197,5 +197,107 @@ With backlash bypassed, the reference's allocated input-history diagnostic
 the raw channel separately from the live `BACKLASH_INPUT`. They compare the
 active gate output through `VAR3`; they do not report an unused allocated slot
 as a physical gate-input error or introduce fake integration history to match
-it. Active backlash/history publication still needs independent qualification.
+it. The active-backlash extension below qualifies that history separately.
 The complete model is not promoted to `VERIFIED` by this slice.
+
+## Active actuator limits and backlash
+
+`Hyg3LimitConformanceTest` adds independent synthetic reference reversals with
+opening/closing valve-rate limits, upper/lower gate-position limits, moving
+backlash and a backlash width that holds the output fixed. Both control modes
+run for one second at 0.5 ms and quarter-cycle intervals. Fresh cold pairs have
+identical complete numerical exports. The hash-pinned private archive retains
+the exact generator, entered/executed coefficients, raw outputs and runtime
+provenance. All state, diagnostic and electrical-boundary samples are retained,
+including startup and duplicated event timestamps.
+
+The active gate-limit captures disprove clipping the controller integral or
+command to the gate-position bounds: both cross those bounds while the physical
+gate remains limited. The runtime now constrains only the physical valve and
+gate coordinates at those actuator limits. Removing the unsupported integral
+projection also removes its unsupported outward-slope suppression. An archived
+negative control fails the corresponding isolated projection test.
+
+Source-native `Db2` is a per-unit gate width. It is no longer divided by the
+governor MVA base. `BacklashConvention` makes that choice independent of the
+frequency-deadband convention; existing typed clients retain their MW-on-base
+interpretation. The reader selects the source convention and the builder copies
+it explicitly. The retained negative control distinguishes the two units with
+an input movement smaller than the entered width.
+
+The backlash input reference changes only when an accepted step moves the
+backlash output. Trial evaluation and zero-duration predictor/corrector refresh
+cannot accept this history. Replaying each recorded physical gate coordinate
+through the actual runtime agrees with both the output and input-history
+diagnostics within 0.00000002 pu. This is a component replay result; the coupled
+trajectories have their own gates.
+
+## Input jumps and two-step history
+
+For the PID input filter, the independent reference reversals distinguish the
+latest pre-jump slope from the older two-step integration history. With `fLeft`
+and `fRight` evaluated at the current event endpoint, and `fPrevious` retained
+from the preceding interval, the qualified recurrence is:
+
+```text
+fEvent = (fLeft + fRight) / 2
+xNext = x + h * (1.5 * fEvent - 0.5 * fPrevious)
+```
+
+Using `fPrevious` in both places changes the event integration. The second and
+third reversals discriminate the formulas even when the first starts from
+equilibrium. Independent recurrence defects are below 0.00000003 pu. A frozen
+negative control fails the coupled quarter-cycle input-filter gate with an
+error of 0.00000762 pu. Correct event handling reduces the maximum across the
+staggered active-limit matrix to below 0.00000023 pu.
+
+HYG3 opts into `StaggeredEulerParticipant.useAcceptedEndpointRateAtInputDiscontinuity()`.
+The solver copies its latest accepted RHS into a reusable event buffer before
+the notified input refresh can overwrite it. It leaves the two-step history
+separate, performs no additional model/network evaluation and adds no per-step
+numerical allocation. Reactivated participants use their initialized slope.
+Other participants retain their existing policy. Scheduled network-event
+boundaries also retain their independently gated policy: extending the new rule
+to those boundaries changed existing strict fault-state results and was not
+promoted. An external input change must still call `notifyDiscontinuity()`.
+
+## Coupled active-limit acceptance and precision limits
+
+Both methods compare every published state and diagnostic against explicit
+per-channel absolute envelopes. Physical actuator bounds, rotor-angle RMSE and
+electrical-boundary gates are enforced. The original five-second fault matrix
+retains its stricter gates. The two methods remain different integration
+schemes: modified Euler has larger finite-step state differences immediately
+after a reference jump.
+
+Discrete input-history releases/reversals are checked by count, direction,
+accepted pre/post values and a maximum displacement of one physical interval.
+Unconditional history errors remain in the lossless diagnostics. A one-step
+release-time difference can put the methods on opposite sides of a 0.04 pu
+history jump; those rows are explicitly counted rather than hidden by a large
+continuous-error tolerance or removed from the data.
+
+Slow valve-rate plateaus expose a separate precision limit. On those intervals,
+the reference gate exactly follows binary32 accumulation of `gate + h * valve`
+to within 1e-12 pu after decimal export. Its cumulative rounding is about
+0.00002 pu at the fine interval. The test verifies this recurrence directly;
+production equations and state storage retain double precision.
+
+Across the active-limit matrix, maximum bus-voltage error is below 0.000006 pu
+and rotor-angle RMSE below 0.0033 degree. Some small-response voltage channels
+still fail the strict 0.001 range-normalized target despite their small absolute
+errors: worst voltage NRMSE is about 0.0733 at the fine interval and 0.00401 at
+the quarter-cycle interval. Raw reference ranges and both errors remain reported; a constant range
+produces an undefined normalized value. These results qualify the declared
+absolute/state/event gates, not universal strict range-normalized acceptance.
+Longer active-limit runs, typed hysteresis, tuning transitions and complete
+model acceptance remain in the tracker.
+
+The focused model/solver matrix passes all 121 checks without skips. The complete
+core-plugin module passes 457 checks with four existing skips. The registered
+core integration suite executes 2,784 checks with the same four failing methods
+as the retained baseline, no errors and 13 skips. Its existing endpoint-monitor,
+converter-conformance and disturbance-smoke failures remain unresolved; the
+suite is not reported as fully passing. The private evidence capsules retain
+the tested source/classes, core library, dependency hashes, complete comparisons,
+negative controls and test reports.

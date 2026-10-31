@@ -93,6 +93,7 @@ public class Hyg3SharedStateTest {
     @Test void trialProjectionAndObservationCannotCommitBacklashOrHysteresis() throws Exception {
         var governor = model(1, false); var data = governor.getData();
         data.setDb2(10.); data.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.HZ_HYSTERESIS);
+        data.setBacklashConvention(PsseHyg3GovernorData.BacklashConvention.MW_ON_GOVERNOR_BASE);
         data.setDbH(.036); data.setDbL(-.024); data.setEps(.012);
         double[] initial = new double[9], trial = new double[9], rates = new double[9];
         governor.readStaggeredState(initial, 0); System.arraycopy(initial, 0, trial, 0, 9);
@@ -100,10 +101,10 @@ public class Hyg3SharedStateTest {
         governor.getMachine().setSpeed(1.002);
         trial[1] = 2.; trial[3] = 5.; trial[4] = 2.;
         governor.applyStaggeredState(trial, 0, H); governor.evaluateStaggered(H, rates, 0);
-        assertEquals(data.getPmax(), governor.getIntegralState(), 0.);
+        assertEquals(trial[1], governor.getIntegralState(), 0., "The actuator bounds do not constrain the governor integral");
         assertEquals(data.getPmax(), governor.getGatePosition(), 0.);
         assertEquals(data.getVelopen(), governor.getValveState(), 0.);
-        assertTrue(rates[1] <= 0.); assertTrue(rates[3] <= 0.); assertTrue(rates[4] <= 0.);
+        assertTrue(rates[3] <= 0.); assertTrue(rates[4] <= 0.);
         assertEquals(histories, governor.getIntegrationHistories());
         governor.applyStaggeredState(initial, 0, H);
         assertEquals(histories, governor.getIntegrationHistories());
@@ -206,6 +207,47 @@ public class Hyg3SharedStateTest {
         assertEquals(expected, rates[1], 1e-15, "The diagram sums direct speed and both derivative paths");
         governor.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, machine, 0);
         assertEquals(expected, governor.getStateDerivativeSnapshot().rates().get("Integral"), 1e-15);
+    }
+
+    @Test void gatePositionBoundsDoNotClipGovernorIntegralOrCommand() throws Exception {
+        for (int mode : new int[]{0,1}) {
+            var governor = model(mode,false); double initial = governor.getGatePosition();
+            governor.getData().setPmax(initial+.001); governor.getData().setPmin(initial-.001);
+            var machine = governor.getMachine(); assertTrue(governor.initStates(machine.getDStabBus(),machine));
+            double[] trial = new double[9]; governor.readStaggeredState(trial,0);
+            trial[1] = initial+.05; trial[4] = initial+.02;
+            governor.applyStaggeredState(trial,0,H);
+            assertEquals(trial[1],governor.getIntegralState(),0.,"Only physical gate position uses the gate-position bounds");
+            assertEquals(trial[1],governor.getControlValveCommand(),1e-15,"The governor command can exceed the actuator gate bounds");
+            assertEquals(initial+.001,governor.getGatePosition(),0.);
+            double reference = governor.getRefPoint();
+            assertThrows(IllegalArgumentException.class,()->governor.setRefPoint(Double.NaN));
+            assertEquals(reference,governor.getRefPoint(),0.);
+        }
+    }
+
+    @Test void zeroDurationModifiedEulerRefreshCannotAcceptBacklashHistory() throws Exception {
+        for (int mode : new int[]{0,1}) {
+            var governor=model(mode,false); governor.getData().setDb2(.02);
+            double[] trial=new double[9]; governor.readStaggeredState(trial,0); trial[4]+=.03;
+            var history=governor.getIntegrationHistories(); governor.applyStaggeredState(trial,0,H);
+            var states=governor.getIntegrationStates(); var machine=governor.getMachine();
+            governor.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,machine,0);
+            governor.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,machine,1);
+            assertEquals(states,governor.getIntegrationStates()); assertEquals(history,governor.getIntegrationHistories());
+            governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,0);
+            governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,1);
+            assertNotEquals(history,governor.getIntegrationHistories());
+        }
+    }
+
+    @Test void nativeBacklashWidthIsPerUnitGate() throws Exception {
+        var governor = model(0,false); governor.getData().setDb2(.02);
+        double initial = governor.getGateOutput(); double[] trial = new double[9];
+        governor.readStaggeredState(trial,0); trial[4] += .01;
+        governor.applyStaggeredState(trial,0,H);
+        assertEquals(initial,governor.getGateOutput(),1e-15,
+                "A native 0.02 pu backlash must hold a 0.01 pu gate movement");
     }
 
     @Test void warmedBothMethodUpdatesReuseNumericalBuffers() throws Exception {

@@ -301,12 +301,13 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private static final class Participant {
         final StaggeredEulerParticipant model;
         final BooleanSupplier active;
-        final double[] values, rates, history, trial;
-        boolean wasActive;
+        final double[] values, rates, history, trial, eventLeftRates;
+        boolean wasActive, hasEventLeftRates;
         Participant(StaggeredEulerParticipant model, BooleanSupplier active) {
             this.model=model;this.active=active;
             int size=model.staggeredStateCount();
             values=new double[size];rates=new double[size];history=new double[size];trial=new double[size];
+            eventLeftRates=model.useAcceptedEndpointRateAtInputDiscontinuity()?new double[size]:null;
         }
     }
 
@@ -911,6 +912,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 throw new IllegalStateException("Reinitialize after changing dynamic model attachments");
         timestep=dt;
         boolean discontinuity=eventBoundaryThisStep || inputDiscontinuity;
+        if (discontinuity) for (var p:participants) {
+            p.hasEventLeftRates=inputDiscontinuity && !eventBoundaryThisStep
+                    && p.eventLeftRates!=null && p.wasActive && p.active.getAsBoolean();
+            if (p.hasEventLeftRates) System.arraycopy(p.rates,0,p.eventLeftRates,0,p.rates.length);
+        }
         boolean reuse = reuseNetworkEndpoint && networkEndpointAvailable && !discontinuity
                 && !dstabAlgo.getNetwork().isYMatrixDirty();
         networkEndpointAvailable = false;
@@ -945,7 +951,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             p.wasActive=active;
             if (discontinuity)
                 for (int i=0;i<p.rates.length;i++)
-                    if (p.model.averageStaggeredRateAtDiscontinuity(i)) p.rates[i]=.5*(p.rates[i]+p.history[i]);
+                    if (p.model.averageStaggeredRateAtDiscontinuity(i))
+                        p.rates[i]=.5*(p.rates[i]+(p.hasEventLeftRates?p.eventLeftRates[i]:p.history[i]));
         }
         // Advance ST1 while its physical and upstream controller inputs still
         // belong to the old endpoint. Global machine rates are already captured.

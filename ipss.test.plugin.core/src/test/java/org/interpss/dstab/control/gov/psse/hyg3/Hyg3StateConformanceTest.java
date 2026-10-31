@@ -109,7 +109,7 @@ public class Hyg3StateConformanceTest {
             var maximum = new LinkedHashMap<String, Double>(); var at = new LinkedHashMap<String, Double>();
             var squared = new LinkedHashMap<String, Double>(); var low = new LinkedHashMap<String, Double>(); var high = new LinkedHashMap<String, Double>();
             assertEquals(0., manifest.path("initialized_constants").get(14).asDouble(), 0., "This matrix bypasses backlash");
-            for (String key : reference.getFirst().keySet()) if (!key.equals("time_s") && !key.equals("VAR2")) {
+            for (String key : reference.getFirst().keySet()) if (!key.equals("time_s")) {
                 maximum.put(key, 0.); at.put(key, 0.); squared.put(key, 0.); low.put(key, Double.POSITIVE_INFINITY); high.put(key, Double.NEGATIVE_INFINITY);
             }
             int frame = 0, startups = 0;
@@ -158,7 +158,7 @@ public class Hyg3StateConformanceTest {
             result.put("step_s",step); result.put("duration_s",duration);
             result.put("coordinate_policy","Published compensation coordinates compared explicitly; stored integration coordinates also retained");
             result.put("inactive_reference_history",Map.of("VAR2",reference.getFirst().get("VAR2")));
-            result.put("backlash_input_policy","Compare active output VAR3; retain frozen allocated VAR2 separately from the live BACKLASH_INPUT");
+            result.put("backlash_input_policy","Compare accepted input history VAR2 and output VAR3 separately from the live BACKLASH_INPUT");
             double[] stateTolerance = stateTolerances(staggered,duration);
             var stateBounds = new LinkedHashMap<String,Double>();
             for (int i = 0; i < stateTolerance.length; i++) {
@@ -166,7 +166,7 @@ public class Hyg3StateConformanceTest {
                 if (!(maximum.get(key) < stateTolerance[i])) failures.add(tag+" "+key+" maximum "+maximum.get(key)+" exceeds "+stateTolerance[i]);
             }
             result.put("state_absolute_tolerance",stateBounds);
-            String[] boundaryKeys = {"P_PU","Q_PU","PMECH","SPEED","A1","A2","VAR0","VAR1","VAR3","VAR4"};
+            String[] boundaryKeys = {"P_PU","Q_PU","PMECH","SPEED","A1","A2","VAR0","VAR1","VAR2","VAR3","VAR4"};
             double[] boundaryTolerance = boundaryTolerances(staggered,duration); var boundaryBounds = new LinkedHashMap<String,Double>();
             for (int i = 0; i < boundaryKeys.length; i++) {
                 String key = boundaryKeys[i]; boundaryBounds.put(key,boundaryTolerance[i]);
@@ -191,11 +191,11 @@ public class Hyg3StateConformanceTest {
 
     private static double[] boundaryTolerances(boolean staggered, double duration) {
         if (duration == .5) return staggered
-                ? new double[]{5e-5,1.4e-5,4e-5,2.9e-7,.00045,.00015,7.5e-6,2.9e-7,8e-6,6e-5}
-                : new double[]{.00015,.0021,4e-5,1.7e-6,.0028,.00075,7.5e-6,1.7e-6,8e-6,6e-5};
+                ? new double[]{5e-5,1.4e-5,4e-5,2.9e-7,.00045,.00015,7.5e-6,2.9e-7,1e-7,8e-6,6e-5}
+                : new double[]{.00015,.0021,4e-5,1.7e-6,.0028,.00075,7.5e-6,1.7e-6,1e-7,8e-6,6e-5};
         return staggered
-                ? new double[]{.00016,.00095,1e-5,2e-6,.0016,.0005,7.5e-6,2e-6,6e-6,8.5e-6}
-                : new double[]{.002,.014,1.3e-5,1.6e-5,.028,.008,1.6e-5,1.6e-5,6.5e-6,2.3e-5};
+                ? new double[]{.00016,.00095,1e-5,2e-6,.0016,.0005,7.5e-6,2e-6,1e-7,6e-6,8.5e-6}
+                : new double[]{.002,.014,1.3e-5,1.6e-5,.028,.008,1.6e-5,1.6e-5,1e-7,6.5e-6,2.3e-5};
     }
 
     static List<Map<String, Double>> rows(Path path) throws IOException {

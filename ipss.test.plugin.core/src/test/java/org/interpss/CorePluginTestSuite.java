@@ -151,6 +151,7 @@ import org.interpss.dstab.control.gov.psse.hyg3.Hyg3PreparedCurveTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedStateTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedSmibTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3StateConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LimitConformanceTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
 import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
@@ -1057,6 +1058,7 @@ import org.junit.platform.suite.api.Suite;
     Hyg3SharedStateTest.class,
     Hyg3SharedSmibTest.class,
     Hyg3StateConformanceTest.class,
+    Hyg3LimitConformanceTest.class,
 	PsseHygovrGovernorTest.class,
 	Lcfb1PrefControllerTest.class,
 	PsseRegca1ConverterTest.class,

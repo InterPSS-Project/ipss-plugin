@@ -46,6 +46,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     private double pref;
     private double auxiliaryInput;
     private double committedGateOutput;
+    private double committedBacklashInput;
     private double currentGateOutput;
     private double currentCv;
     private double currentOutput;
@@ -114,6 +115,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         state.set(0.0, 0.0, gate0, gate0, q0, 0.0, pe0, 0.0, 0.0);
         oldState.copyFrom(state);
         committedGateOutput = gate0;
+        committedBacklashInput = gate0;
         currentGateOutput = gate0;
         currentCv = gate0;
         currentOutput = pm0;
@@ -154,8 +156,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             currentCv = result.cv;
             currentGateOutput = result.gateOutput;
             currentOutput = result.pmech;
-            committedGateOutput = currentGateOutput;
-            committedDeadbandMode = result.deadbandMode;
+            if (dt > 0.) commitHistories(result);
             predictorPending = false;
         } else {
             throw new InterpssRuntimeException("HYG3 invalid integration flag: " + flag);
@@ -169,6 +170,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     @Override public int staggeredStateCount() { return 9; }
+
+    @Override public boolean useAcceptedEndpointRateAtInputDiscontinuity() { return true; }
 
     private void requireSharedState() {
         if (!initialized || initializedMachine != getMachine() || initializedData != getData())
@@ -216,6 +219,12 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             throw new IllegalArgumentException("HYG3 accepted step must be finite and positive");
         Algebraic result = algebraic(state, committedGateOutput, committedDeadbandMode);
         publish(result);
+        commitHistories(result);
+    }
+
+    private void commitHistories(Algebraic result) {
+        if (result.backlashWidth > SMALL && result.gateOutput != committedGateOutput)
+            committedBacklashInput = state.gate;
         committedGateOutput = result.gateOutput;
         committedDeadbandMode = result.deadbandMode;
     }
@@ -233,7 +242,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return stateMonitor.snapshot(); }
     @Override public java.util.Map<String, Double> getIntegrationHistories() {
         return java.util.Map.of("Committed gate output", committedGateOutput,
-                "Committed deadband mode", (double) committedDeadbandMode.ordinal());
+                "Committed deadband mode", (double) committedDeadbandMode.ordinal(),
+                "Committed backlash input", committedBacklashInput);
     }
 
     private void retainRates(State s, Derivatives d, Stage stage) {
@@ -247,8 +257,10 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
 
     @Override
     public void setRefPoint(double value) {
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("HYG3 reference must be finite");
         pref = value;
     }
+    public double getRefPoint() { return pref; }
 
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
     public double getAuxiliaryInput() { return auxiliaryInput; }
@@ -294,6 +306,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     public double getControlValveCommand() { return currentCv; }
     public double getGatePosition() { return state.gate; }
     public double getGateOutput() { return currentGateOutput; }
+    public double getBacklashInputHistory() { return committedBacklashInput; }
+    public double getEffectiveBacklashWidth() { return deadband2Pu(); }
     public double getWaterFlow() { return state.flow; }
     /** Physical head at the currently published gate output; observation commits no history. */
     public double getTurbineHead() {
@@ -392,8 +406,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             cv = s.integrator;
             tdInput = frequency.output;
         }
-        cv = clamp(cv, effectivePmin, effectivePmax);
-        double gateOutput = backlash(s.gate, priorGateOutput, deadband2Pu());
+        double backlashWidth = deadband2Pu();
+        double gateOutput = backlash(s.gate, priorGateOutput, backlashWidth);
         double pgv = gateCurve(gateOutput);
         double flow = effectiveTw > SMALL ? s.flow : pgv * Math.sqrt(d.getH0());
         double head = square(flow / Math.max(SMALL, pgv));
@@ -407,7 +421,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double valve = d.getTp() > SMALL ? s.valve : servoTarget;
         valve = clamp(valve, d.getVelclose(), d.getVelopen());
         algebraicBuffer.set(frequency.mode, tdInput, tdSignal, integralError, cv,
-                gateOutput, valve, pmech);
+                gateOutput, valve, pmech, backlashWidth);
         return algebraicBuffer;
     }
 
@@ -416,8 +430,6 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double tdDot = d.getTd() > SMALL ? (a.tdInput - s.tdLag) / d.getTd() : 0.0;
         double k1Dot = d.getTf() > SMALL ? (a.tdSignal - s.k1Lag) / d.getTf() : 0.0;
         double integralDot = d.getKi() * a.integralError;
-        if ((s.integrator >= effectivePmax && integralDot > 0.0)
-                || (s.integrator <= effectivePmin && integralDot < 0.0)) integralDot = 0.0;
         double valveDot = d.getTp() > SMALL
                 ? (d.getKg() * (a.cv - a.gateOutput) - s.valve) / d.getTp() : 0.0;
         if ((s.valve >= d.getVelopen() && valveDot > 0.0)
@@ -444,7 +456,6 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     private void constrain(State s) {
-        s.integrator = clamp(s.integrator, effectivePmin, effectivePmax);
         s.gate = clamp(s.gate, effectivePmin, effectivePmax);
         s.valve = clamp(s.valve, getData().getVelclose(), getData().getVelopen());
     }
@@ -496,6 +507,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     private double deadband2Pu() {
+        if (getData().getBacklashConvention() == PsseHyg3GovernorData.BacklashConvention.PER_UNIT_GATE)
+            return getData().getDb2();
         return governorBaseMva > SMALL ? getData().getDb2() / governorBaseMva : 0.0;
     }
 
@@ -599,11 +612,11 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
     private static final class Algebraic {
         DeadbandMode deadbandMode;
-        double tdInput, tdSignal, integralError, cv, gateOutput, valve, pmech;
+        double tdInput, tdSignal, integralError, cv, gateOutput, valve, pmech, backlashWidth;
         void set(DeadbandMode mode, double input, double signal, double error, double command,
-                double gate, double valve, double power) {
+                double gate, double valve, double power, double width) {
             deadbandMode = mode; tdInput = input; tdSignal = signal; integralError = error;
-            cv = command; gateOutput = gate; this.valve = valve; pmech = power;
+            cv = command; gateOutput = gate; this.valve = valve; pmech = power; backlashWidth = width;
         }
     }
     private static final class Derivatives {
