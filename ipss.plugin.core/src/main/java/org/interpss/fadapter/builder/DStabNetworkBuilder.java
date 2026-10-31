@@ -2714,6 +2714,7 @@ public class DStabNetworkBuilder {
     private static void copyHyg3Data(PsseHyg3GovernorData source,
             PsseHyg3GovernorData target) {
         target.setControlFlag(source.getControlFlag());
+        target.setFrequencyDeadbandConvention(source.getFrequencyDeadbandConvention());
         target.setRgate(source.getRgate()); target.setRelec(source.getRelec());
         target.setTt(source.getTt()); target.setTd(source.getTd());
         target.setK2(source.getK2()); target.setKi(source.getKi());

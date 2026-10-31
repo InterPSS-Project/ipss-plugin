@@ -17,6 +17,10 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     /** PSS/E/PowerWorld DYR flag: zero selects the lower double-derivative path. */
     public static final int DOUBLE_DERIVATIVE_CONTROL = 0;
 
+    public enum FrequencyDeadbandConvention { HZ_HYSTERESIS, PER_UNIT_SCALED_ERROR }
+    private FrequencyDeadbandConvention frequencyDeadbandConvention=FrequencyDeadbandConvention.HZ_HYSTERESIS;
+    public FrequencyDeadbandConvention getFrequencyDeadbandConvention() { return frequencyDeadbandConvention; }
+    public void setFrequencyDeadbandConvention(FrequencyDeadbandConvention value) { frequencyDeadbandConvention=java.util.Objects.requireNonNull(value); }
     private int controlFlag = PID_CONTROL;
     private double rgate = 0.05;
     private double relec;

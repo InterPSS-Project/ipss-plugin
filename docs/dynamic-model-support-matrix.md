@@ -8,6 +8,9 @@ flat run, disturbance coverage, or independent trajectory comparison.
 Verification status is deliberately kept separate from this generated
 loadability inventory.
 
+The [dynamic-model implementation work list](dynamic-model-implementation-tracker-2026-10-30.md)
+records remaining implementation and verification tasks.
+
 The [additional Texas7k exciter integration](benchmarks/texas7k-optimized-exciters-2026-10-24.md)
 extends the opt-in staggered solver to eight more exciter families. Its complete
 no-event gate passes, but full-network fault accuracy remains open; catalog
@@ -123,7 +126,7 @@ source-approved families that have no implementation or parser descriptor.
 | HYGOV2D | GOVERNOR | HYGOV2DU | 19 | LOADABLE | `org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20HYGOV2%20and%20HYGOV2D.htm) |
 | HYGOVD | GOVERNOR | HYGOVDU | 15 | LOADABLE | `org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20HYGOV%20and%20HYGOVD.htm) |
 | HYGOVR | GOVERNOR | HYGOVR1, HYGOVRU | 26 | LOADABLE | `org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20HYGOVR.htm) |
-| IEEEG1 | GOVERNOR | WSIEG1 | 22 | LOADABLE | `org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20IEEEG1%2C%20IEEEG1D%20and%20IEEEG1_GE.htm) |
+| IEEEG1 | GOVERNOR |  | 22 | LOADABLE | `org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20IEEEG1%2C%20IEEEG1D%20and%20IEEEG1_GE.htm) |
 | IEEEG1D | GOVERNOR | IEEEG1SDU | 23 | LOADABLE | `org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20IEEEG1%2C%20IEEEG1D%20and%20IEEEG1_GE.htm) |
 | IEEEG3 | GOVERNOR |  | 14 | LOADABLE | `org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20IEEEG3_PTI%20and%20IEEEG3D.htm) |
 | IEEEG3D | GOVERNOR | IEEEG3DU | 17 | LOADABLE | `org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20IEEEG3_PTI%20and%20IEEEG3D.htm) |
@@ -139,6 +142,7 @@ source-approved families that have no implementation or parser descriptor.
 | WPIDHYD | GOVERNOR | WPIDHYDU | 24 | LOADABLE | `org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WPIDHY%20and%20WPIDHYD.htm) |
 | WSHYDD | GOVERNOR |  | 30 | LOADABLE | `org.interpss.dstab.control.gov.wecc.wshydd.WshyddGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WSHYDD.htm) |
 | WSHYGP | GOVERNOR |  | 30 | LOADABLE | `org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WSHYGP.htm) |
+| WSIEG1 | GOVERNOR |  | 36 | LOADABLE | `org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WSIEG1.htm) |
 | IEEEST | STABILIZER |  | 19 | LOADABLE | `org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20IEEEST.htm) |
 | PSS2A | STABILIZER |  | 23 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2A.htm) |
 | PSS2B | STABILIZER |  | 27 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2B.htm) |
@@ -190,6 +194,7 @@ source-approved families that have no implementation or parser descriptor.
 | REAXDU | POWER_REFERENCE_CONTROLLER |  | 23 | LOADABLE | `org.interpss.dstab.renewable.HplntdCoordinator$Port` | [Reference](https://www.wecc.org/sites/default/files/documents/progress_report/2026/Approved%20Dynamic%20Models%20May%202026.pdf) |
 | WTGIBFFRA | POWER_REFERENCE_CONTROLLER |  | 46 | LOADABLE | `org.interpss.dstab.renewable.WtgibffraModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Paux%20Controller%20WTGIBFFR_A.htm) |
 | WTGWGOA | POWER_REFERENCE_CONTROLLER | WTGWGOAU | 8 | LOADABLE | `org.interpss.dstab.renewable.WtgwgoaModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pref%20Controller%20WTGWGO_A.htm) |
+| CMLDBLU1 | LOAD_CHARACTERISTIC |  | 139 | LOADABLE | `org.interpss.dstab.dynLoad.impl.Cmldblu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20CMPLDW.htm) |
 | CMLDZNU2 | LOAD_CHARACTERISTIC |  | 142 | LOADABLE | `org.interpss.dstab.dynLoad.impl.Cmldznu2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20CMPLDW.htm) |
 | IEELAR | LOAD_CHARACTERISTIC |  | 14 | LOADABLE | `org.interpss.dstab.dynLoad.impl.IeelLoadModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20IEEL.htm) |
 | IEELBL | LOAD_CHARACTERISTIC |  | 14 | LOADABLE | `org.interpss.dstab.dynLoad.impl.IeelLoadModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20IEEL.htm) |
@@ -198,3 +203,4 @@ source-approved families that have no implementation or parser descriptor.
 | LVS3BL | LOAD_PROTECTION |  | 29 | LOADABLE | `org.interpss.dstab.relay.Lvs3blRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20LVS3.htm) |
 | FRQTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.FrqtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20FRQDCAT%20and%20FRQTPAT.htm) |
 | VTGTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.VtgtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm) |
+| TIOCR1 | BRANCH_PROTECTION |  | 28 | LOADABLE | `org.interpss.dstab.relay.Tiocr1RelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Line%20Relays%20TIOCR1.htm) |

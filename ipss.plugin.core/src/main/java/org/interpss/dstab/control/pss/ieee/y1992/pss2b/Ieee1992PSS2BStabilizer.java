@@ -73,6 +73,14 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     public double vsi2max;
     public double vsi2min;
 
+    private BaseDStabBus<?, ?> input1Bus;
+    private BaseDStabBus<?, ?> input2Bus;
+
+    public void setInputSignalBuses(BaseDStabBus<?, ?> first, BaseDStabBus<?, ?> second) {
+        input1Bus = java.util.Objects.requireNonNull(first);
+        input2Bus = java.util.Objects.requireNonNull(second);
+    }
+
     private double input1PreviousVoltage;
     private double input2PreviousVoltage;
     private double integrationStep;
@@ -168,10 +176,12 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         m = d.getM(); n = d.getN();
         applyPowerWorldCorrections();
 
-        input1Signal = limitedInput(d.getIcs1(), bus, machine, vsi1max, vsi1min);
-        input2Signal = limitedInput(d.getIcs2(), bus, machine, vsi2max, vsi2min);
-        input1PreviousVoltage = bus.getVoltageMag();
-        input2PreviousVoltage = bus.getVoltageMag();
+        if (input1Bus == null) input1Bus = bus;
+        if (input2Bus == null) input2Bus = bus;
+        input1Signal = limitedInput(d.getIcs1(), input1Bus, machine, vsi1max, vsi1min);
+        input2Signal = limitedInput(d.getIcs2(), input2Bus, machine, vsi2max, vsi2min);
+        input1PreviousVoltage = input1Bus.getVoltageMag();
+        input2PreviousVoltage = input2Bus.getVoltageMag();
         inputPath1 = new InputPath(tw1, tw2, 1.0, t6);
         inputPath2 = new InputPath(tw3, tw4, ks2, t7);
         return super.initStates(bus, machine);
@@ -181,16 +191,17 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
         Ieee1992PSS2BStabilizerData d = getData();
         BaseDStabBus<?, ?> bus = machine.getDStabBus();
+        double sampleInterval=dt>0?dt:integrationStep;
         input1Signal = d.getIcs1() == 6
-                ? clamp((bus.getVoltageMag() - input1PreviousVoltage) / dt, vsi1max, vsi1min)
-                : limitedInput(d.getIcs1(), bus, machine, vsi1max, vsi1min);
+                ? clamp(sampleInterval>0?(input1Bus.getVoltageMag() - input1PreviousVoltage) / sampleInterval:0, vsi1max, vsi1min)
+                : limitedInput(d.getIcs1(), input1Bus, machine, vsi1max, vsi1min);
         input2Signal = d.getIcs2() == 6
-                ? clamp((bus.getVoltageMag() - input2PreviousVoltage) / dt, vsi2max, vsi2min)
-                : limitedInput(d.getIcs2(), bus, machine, vsi2max, vsi2min);
+                ? clamp(sampleInterval>0?(input2Bus.getVoltageMag() - input2PreviousVoltage) / sampleInterval:0, vsi2max, vsi2min)
+                : limitedInput(d.getIcs2(), input2Bus, machine, vsi2max, vsi2min);
         boolean result = super.nextStep(dt, method, machine, flag);
-        if (flag != 0) {
-            input1PreviousVoltage = bus.getVoltageMag();
-            input2PreviousVoltage = bus.getVoltageMag();
+        if (flag != 0 && dt>0) {
+            input1PreviousVoltage = input1Bus.getVoltageMag();
+            input2PreviousVoltage = input2Bus.getVoltageMag();
         }
         return result;
     }

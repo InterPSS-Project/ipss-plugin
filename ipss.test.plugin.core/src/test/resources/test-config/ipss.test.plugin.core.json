@@ -108,6 +108,9 @@
   "Texas2kRegfma1CoverageTest": {
     "texas2k.case.root": null
   },
+  "HspModelReferenceConformanceTest": {
+    "hsp.referenceRoot": "testData/private/verification-artifacts/2026-10-30-hsp-usage/references"
+  },
   "Texas2kSixCaseDynamicSmokeTest": {
     "texas2k.case.root": null
   },

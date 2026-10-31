@@ -162,6 +162,7 @@ public class PSSEDStabDirectParser {
     private static final String BUS_ID_PREFIX = "Bus";
 
     private final DStabNetworkBuilder builder;
+    private final List<PsseDyrRecord> pendingWsieg1 = new ArrayList<>();
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
@@ -262,6 +263,7 @@ public class PSSEDStabDirectParser {
                     == org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER).orElse(false))
                 declaredElectricalGenerators.add(targetGeneratorKey(record));
         }
+        pendingWsieg1.clear();
         pendingSt2cut.clear();
         pendingIeeest.clear();
         pendingRepca1.clear();
@@ -329,7 +331,7 @@ public class PSSEDStabDirectParser {
                     report.add(record, DynamicModelImportStatus.MISSING_TARGET, missingTarget);
                     continue;
                 }
-                boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
+                boolean deferred = type.equals("WSIEG1") || type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C") || type.equals("OEL3C") || type.equals("BASOEL2")
@@ -346,6 +348,14 @@ public class PSSEDStabDirectParser {
                 report.add(record, DynamicModelImportStatus.ERROR, e.getMessage());
             }
         }
+        for(PsseDyrRecord record:pendingWsieg1) {
+            try {
+                boolean attached=procGovWsieg1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact extended steam governor with resolved shaft ownership":"WSIEG1 requires valid curves and available shaft machines");
+            } catch(RuntimeException invalid) {report.add(record,DynamicModelImportStatus.REJECTED,invalid.getMessage());}
+        }
+        pendingWsieg1.clear();
         // Electrical controls must attach after their converter but before
         // deferred plant controls, regardless of source-record ordering.
         for(PsseDyrRecord record:pendingReece) {
@@ -527,6 +537,11 @@ public class PSSEDStabDirectParser {
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
+        if (record.canonicalModelName().equals("TIOCR1")) {
+            return relayBranch(builder.getBaseDStabNetwork(),record.busNumber(),
+                    Integer.parseInt(record.fields().get(2)),record.fields().get(3)) == null
+                    ? "TIOCR1 monitored branch does not exist" : null;
+        }
         if (record.canonicalModelName().equals("IEELAR")) {
             return ieelTargets(record).isEmpty()
                     ? "no active load matches IEELAR area " + record.busNumber()
@@ -604,6 +619,10 @@ public class PSSEDStabDirectParser {
                 return procIeel(type, record);
             case "PERC1":
                 return procPerc1(busId, genId, fields);
+            case "TIOCR1":
+                return procTiocr1(record);
+            case "CMLDBLU1":
+                return procCmldblu1(record);
             case "CMLDZNU2":
                 return procCmldznu2(record);
             case "IEEEVC":
@@ -815,6 +834,8 @@ public class PSSEDStabDirectParser {
             case "SEXS":
                 return procExcSexs(busId, genId, fields);
 
+            case "WSIEG1":
+                pendingWsieg1.add(record);return true;
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
             case "IEEEG1D":
@@ -2525,6 +2546,28 @@ public class PSSEDStabDirectParser {
     //         T8 T9 Ks1 T1 T2 T3 T4 T10 T11 VSI1MAX VSI1MIN VSI2MAX VSI2MIN
     //         VSTMAX VSTMIN A Ta Tb Ks4
     private boolean procPss2b(String busId, String genId, String[] f) {
+        if (f.length == 32) {
+            int first = Integer.parseInt(f[3]), remote1 = Integer.parseInt(f[4]);
+            int second = Integer.parseInt(f[5]), remote2 = Integer.parseInt(f[6]);
+            if ((remote1 != 0 && (first == 1 || first == 3 || first == 4))
+                    || (remote2 != 0 && (second == 1 || second == 3 || second == 4))) return false;
+            var network = builder.getBaseDStabNetwork();
+            BaseDStabBus<?, ?> b1 = network.getDStabBus(remote1 == 0 ? busId : BUS_ID_PREFIX + remote1);
+            BaseDStabBus<?, ?> b2 = network.getDStabBus(remote2 == 0 ? busId : BUS_ID_PREFIX + remote2);
+            if (b1 == null || b2 == null) return false;
+            var pss = builder.addPss2b(busId, genId, first, second,
+                    Integer.parseInt(f[7]), Integer.parseInt(f[8]),
+                    getDouble(f,9,0),getDouble(f,10,0),getDouble(f,11,0),
+                    getDouble(f,12,0),getDouble(f,13,0),getDouble(f,14,0),
+                    getDouble(f,15,0),getDouble(f,16,0),getDouble(f,17,0),getDouble(f,18,0),
+                    getDouble(f,19,0),getDouble(f,20,0),getDouble(f,21,0),
+                    getDouble(f,22,0),getDouble(f,23,0),getDouble(f,24,0),getDouble(f,25,0),
+                    getDouble(f,26,0),getDouble(f,27,0),getDouble(f,28,0),getDouble(f,29,0),
+                    getDouble(f,30,0),getDouble(f,31,0),1.0,0.0,0.0,1.0);
+            if (pss == null) return false;
+            pss.setInputSignalBuses(b1, b2);
+            return true;
+        }
         return builder.addPss2b(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0),
                 getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
@@ -2650,6 +2693,27 @@ public class PSSEDStabDirectParser {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss7c(busId, genId, parameters) != null;
+    }
+
+    private boolean procGovWsieg1(String busId, String genId, PsseDyrRecord record) {
+        double[] constants = new double[34];
+        for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 2);
+        var bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen generator = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (generator == null || !(generator.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine machine)) return false;
+        com.interpss.dstab.mach.Machine secondary=null;
+        int secondaryBus=record.intParameter(0);
+        if(secondaryBus!=0) {
+            var secondBus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+secondaryBus);
+            DStabGen second=secondBus==null?null:(DStabGen)secondBus.getContributeGen(record.parameter(1));
+            if(second==null || !(second.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine other)
+                    || other==machine || other.getGovernor()!=null)return false;
+            secondary=other;
+        }
+        var governor = new org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor(machine.getId()+"_Gov", constants);
+        governor.setMachine(machine);
+        if(secondary!=null)governor.attachSecondaryShaft(secondary);
+        return true;
     }
 
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
@@ -3005,8 +3069,22 @@ public class PSSEDStabDirectParser {
     // PSS/E HYG3U1 conversion order: one controller ICON followed by 36 CONs.
     // ICON 1 selects PID and ICON 0 selects the double-derivative branch.
     private boolean procGovHyg3(String busId, String genId, String[] f) {
-        if (f.length < 40) return false;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            int[] allocation = {5, 0, 2, 36, 9, 5};
+            if (f.length != 48) return false;
+            for (int i = 0; i < allocation.length; i++)
+                if (Integer.parseInt(f[4+i]) != allocation[i]) return false;
+            // The second allocated ICON is internal storage, initialized to zero.
+            if (Integer.parseInt(f[11]) != 0) return false;
+            String[] normalized = new String[40];
+            System.arraycopy(f, 0, normalized, 0, 3);
+            normalized[3] = f[10];
+            System.arraycopy(f, 12, normalized, 4, 36);
+            f = normalized;
+        }
+        if (f.length != 40) return false;
         PsseHyg3GovernorData d = new PsseHyg3GovernorData();
+        d.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR);
         d.setControlFlag(getInt(f, 3, 0));
         d.setRgate(getDouble(f, 4, 0)); d.setRelec(getDouble(f, 5, 0));
         d.setTt(getDouble(f, 6, 0)); d.setTd(getDouble(f, 7, 0));
@@ -4178,6 +4256,23 @@ public class PSSEDStabDirectParser {
         return !targets.isEmpty();
     }
 
+    private boolean procCmldblu1(PsseDyrRecord record) {
+        if(!record.fields().get(1).equalsIgnoreCase("USRLOD")) return false;
+        int[] allocation={12,1,0,132,27,146,48};
+        for(int i=0;i<allocation.length;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+record.busNumber());
+        if(bus==null || bus.getInfoOnlyDynModel()!=null)return false;
+        var targets=new ArrayList<LoadTarget>();
+        addMatchingLoads(targets,bus,record.deviceId(),record.deviceId().equals("*")||record.deviceId().equals("#"));
+        if(targets.isEmpty())return false;
+        var ids=new java.util.LinkedHashSet<String>();Complex power=Complex.ZERO;
+        for(var target:targets){ids.add(target.load().getId());power=power.add(target.load().getLoad(bus.getVoltageMag()));}
+        double[] constants=new double[132];
+        for(int i=0;i<132;i++)constants[i]=record.doubleParameter(i+7);
+        new org.interpss.dstab.dynLoad.impl.Cmldblu1Model("CMLDBLU1_"+record.deviceId(),bus,ids,power,constants);
+        return true;
+    }
+
     private boolean procCmldznu2(PsseDyrRecord record) {
         int[] allocation = {12, 3, 2, 133, 27, 146, 48, 0, 0};
         for (int i = 0; i < allocation.length; i++) {
@@ -4270,6 +4365,32 @@ public class PSSEDStabDirectParser {
                 builder.getBaseDStabNetwork(), bus.getId(), load.getId());
         return scope != null ? scope.zoneNumber()
                 : bus.getZone() != null ? Math.toIntExact(bus.getZone().getNumber()) : 0;
+    }
+
+    private boolean procTiocr1(PsseDyrRecord record) {
+        var f=record.fields();var network=builder.getBaseDStabNetwork();
+        int from=record.busNumber(),to=Integer.parseInt(f.get(2)),slot=Integer.parseInt(f.get(4));
+        int mode=Integer.parseInt(f.get(5)),loadBus=Integer.parseInt(f.get(6));
+        if(mode<0||mode>1||slot<1||slot>2)return false;
+        AclfBranch monitored=relayBranch(network,from,to,f.get(3));
+        if(monitored==null)return false;
+        BaseDStabBus<?,?> host=network.getDStabBus(BUS_ID_PREFIX+(loadBus==0?from:loadBus));
+        if(host==null)return false;
+        String loadId=loadBus==0?null:f.get(7);
+        if(loadBus!=0&&!loadId.equals("*")&&host.getContributeLoad(loadId)==null)return false;
+        AclfBranch[] transfers=new AclfBranch[3];
+        for(int i=0;i<3;i++) {
+            int b=Integer.parseInt(f.get(8+3*i));
+            if(b==0)continue;
+            transfers[i]=relayBranch(network,b,Integer.parseInt(f.get(9+3*i)),f.get(10+3*i));
+            if(transfers[i]==null)return false;
+        }
+        double[] constants=new double[14];
+        for(int i=0;i<14;i++)constants[i]=Double.parseDouble(f.get(17+i));
+        new org.interpss.dstab.relay.Tiocr1RelayModel(monitored,
+                monitored.getFromBusId().equals(BUS_ID_PREFIX+from),slot,mode==1,host,loadId,
+                transfers,new org.interpss.dstab.relay.Tiocr1Data(constants));
+        return true;
     }
 
     private boolean procLds3bl(String busId, String loadId, PsseDyrRecord record) {

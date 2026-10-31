@@ -16,7 +16,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * {@code 0=double derivative}; PowerWorld maps those values to the two
  * branches shown as {@code cflag>0} and {@code cflag<0} in the diagram.</p>
  */
-public class PsseHyg3Governor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseHyg3Governor extends AbstractGovernor implements IntegrationStepAware, com.interpss.dstab.controller.cml.ICMLStateProvider {
     private static final double SMALL = 1.0e-9;
     private static final double[] BUILTIN_GV = {0.0, 0.07, 0.25, 0.67, 0.75, 0.83, 1.0};
     private static final double[] BUILTIN_PGV = {0.0, 0.0, 0.20, 0.80, 0.90, 0.96, 1.0};
@@ -172,6 +172,17 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         return getData().getControlFlag() == PsseHyg3GovernorData.DOUBLE_DERIVATIVE_CONTROL
                 ? doubleDerivativeOutput(state, tdSignal) : 0.0;
     }
+    @Override
+    public java.util.Map<String,Double> getNamedStates() {
+        var values=new java.util.LinkedHashMap<String,Double>();
+        values.put("Input filter",state.tdLag);values.put("Integral",state.integrator);
+        values.put("Derivative lag",state.k1Lag);values.put("Valve",state.valve);
+        values.put("Gate",state.gate);values.put("Electrical power",state.peMeasured);
+        values.put("Water flow",state.flow);values.put("Double derivative 1",state.k2First);
+        values.put("Double derivative 2",state.k2Second);
+        return java.util.Map.copyOf(values);
+    }
+
     public double getEffectivePmax() { return effectivePmax; }
     public double getEffectivePmin() { return effectivePmin; }
     public double getEffectiveTw() { return effectiveTw; }
@@ -200,10 +211,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double[] pgv = d.getPgv();
         if (!finite(gv) || !finite(pgv)) return false;
         if (gv[0] < 0.0) return true; // PSLF's documented built-in curve selector.
-        for (int i = 1; i < gv.length; i++) {
-            if (gv[i] <= gv[i - 1] || pgv[i] < pgv[i - 1]) return false;
-        }
-        return true;
+        try { withImplicitEndpoints(gv,pgv); return true; }
+        catch(IllegalArgumentException invalid) { return false; }
     }
 
     private Algebraic algebraic(State s, double priorGateOutput, DeadbandMode priorMode) {
@@ -310,6 +319,14 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     private DeadbandResult deadband(double value, DeadbandMode priorMode) {
+        if(getData().getFrequencyDeadbandConvention()==PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR) {
+            double high=getData().getDbH(),low=getData().getDbL(),error=getData().getEps();
+            if(value>high) return new DeadbandResult(DeadbandMode.HIGH,
+                    high>0&&error>0 ? value*error/high : value-high);
+            if(value<low) return new DeadbandResult(DeadbandMode.LOW,
+                    high>0&&error>0 ? value*error/high : value-low);
+            return new DeadbandResult(DeadbandMode.NEUTRAL,0);
+        }
         double frequency = Math.max(SMALL, getMachine().getDStabBus().getNetwork().getFrequency());
         double upper = getData().getDbH() / frequency;
         double lower = getData().getDbL() / frequency;
@@ -345,14 +362,20 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     public double gateCurve(double gate) {
         double[] x = curveGv();
         double[] y = curvePgv();
-        return interpolate(gate, x, y);
+        double scale=curveScale();
+        double value=interpolate(gate/scale,x,y)*scale;
+        return sourceConvention()?clamp(value,0,scale):value;
     }
 
     public double inverseGateCurve(double power) {
         double[] x = curvePgv();
         double[] y = curveGv();
-        return interpolate(power, x, y);
+        double scale=curveScale();
+        return interpolate(power/scale,x,y)*scale;
     }
+
+    private boolean sourceConvention() { return getData().getFrequencyDeadbandConvention()==PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR; }
+    private double curveScale() { return sourceConvention()?Math.max(1,getData().getPmax()):1; }
 
     private double[] curveGv() {
         if (getData().getGv(0) < 0.0) return BUILTIN_GV;
@@ -365,16 +388,16 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     private static double[][] withImplicitEndpoints(double[] x, double[] y) {
-        int leading = x[0] > 0.0 ? 1 : 0;
-        int trailing = x[x.length - 1] < 1.0 ? 1 : 0;
-        double[] xx = new double[x.length + leading + trailing];
-        double[] yy = new double[y.length + leading + trailing];
-        int offset = leading;
-        if (leading == 1) { xx[0] = 0.0; yy[0] = 0.0; }
-        System.arraycopy(x, 0, xx, offset, x.length);
-        System.arraycopy(y, 0, yy, offset, y.length);
-        if (trailing == 1) { xx[xx.length - 1] = 1.0; yy[yy.length - 1] = 1.0; }
-        return new double[][] {xx, yy};
+        double[] xx=new double[x.length+2],yy=new double[y.length+2];int count=1;
+        for(int i=0;i<x.length;i++) {
+            if(x[i]==0 && y[i]==0)continue;
+            if(x[i]==xx[count-1] && y[i]==yy[count-1])continue;
+            if(x[i]<=xx[count-1] || y[i]<yy[count-1])
+                throw new IllegalArgumentException("HYG3 gate points must be ordered");
+            xx[count]=x[i];yy[count++]=y[i];
+        }
+        if(xx[count-1]<1) {xx[count]=1;yy[count++]=1;}
+        return new double[][]{java.util.Arrays.copyOf(xx,count),java.util.Arrays.copyOf(yy,count)};
     }
 
     private static double interpolate(double value, double[] x, double[] y) {

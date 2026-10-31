@@ -24,7 +24,10 @@ public final class Cmldznu2Data {
 
     private final double[] values;
 
-    public Cmldznu2Data(double[] values) {
+    public Cmldznu2Data(double[] values) { this(values, false); }
+
+    /** Bus-scoped variants may specify an explicit positive subsystem MVA base. */
+    public Cmldznu2Data(double[] values, boolean busScoped) {
         if (values == null || values.length != PARAMETER_COUNT) {
             throw new IllegalArgumentException("CMLDZNU2 requires exactly 133 constants");
         }
@@ -34,7 +37,7 @@ public final class Cmldznu2Data {
                 throw new IllegalArgumentException("CMLDZNU2 " + PARAMETER_NAMES.get(i) + " must be finite");
             }
         }
-        if (value(0) > 0.0) {
+        if (!busScoped && value(0) > 0.0) {
             throw new IllegalArgumentException("CMLDZNU2 subsystem MVA setting must be non-positive");
         }
         if (value(9) > value(10) || value(12) > value(13)) {

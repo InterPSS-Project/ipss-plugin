@@ -35,6 +35,7 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
         setId(id);
         setDStabBus(bus);
         setExtendedDeviceId("CMLDZNU2_" + kind + "_" + id + "@" + bus.getId());
+        states.put(com.interpss.dstab.common.DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());
         setLoadPercent(100.0 * fraction);
         bus.getDynLoadModelList().add(this);
     }
@@ -71,9 +72,8 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
     private void updateElectronicFraction(double voltage) {
         double available = data.electronicVoltageFraction(voltage);
         if (available < minimumElectronicFraction) minimumElectronicFraction = available;
-        electronicFraction = available < 1.0 ? Math.min(available, electronicFraction)
-                : minimumElectronicFraction
-                        + data.value(132) * (1.0 - minimumElectronicFraction);
+        electronicFraction = minimumElectronicFraction
+                + data.value(132) * (available - minimumElectronicFraction);
     }
 
     @Override

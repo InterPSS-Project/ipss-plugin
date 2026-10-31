@@ -304,6 +304,8 @@ public class Texas2kFullDynamicCoverageTest {
                     "load characteristics are resolved before generator models");
             case LOAD_PROTECTION -> throw new IllegalStateException(
                     "load protection is resolved before generator models");
+            case BRANCH_PROTECTION -> throw new IllegalStateException(
+                    "branch protection requires a branch-specific coverage resolver");
             case GENERATOR_PROTECTION -> throw new IllegalStateException(
                     "generator protection is resolved before generator controllers");
             case SWITCHED_SHUNT -> throw new IllegalStateException(

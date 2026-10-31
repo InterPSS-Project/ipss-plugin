@@ -1,0 +1,118 @@
+"""Cold small-network references for the usage-ranked HSP model additions."""
+import argparse
+import csv
+import json
+import math
+import os
+from pathlib import Path
+import shutil
+from tgov1_limit_probe import checked, sha
+
+
+def load_fixture(name):
+    return name.startswith('cmldblu1')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--fixture', required=True, choices=[
+        'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
+        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-electronic', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
+    parser.add_argument('--profile', choices=['flat', 'fault', 'reference-step'], default='fault')
+    parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01],default=.2)
+    parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
+    parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
+    parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
+    parser.add_argument('--repeat', choices=['a', 'b'], required=True)
+    args = parser.parse_args()
+    root = Path.cwd()
+    source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/HspModels'
+    out = root / 'target' / args.batch / (
+        f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else ''))
+    out.mkdir(parents=True, exist_ok=False)
+    load = load_fixture(args.fixture)
+    relay = args.fixture.startswith('tiocr1')
+    shutil.copy2(source / ('load-network.raw' if load else 'dual-network.raw' if args.fixture=='wsieg1-dual' else 'network.raw'), out / 'network.raw')
+    shutil.copy2(source / (args.fixture + '.dyr'), out / 'dynamic.dyr')
+    for file in ['hsp_model_reference_probe.py', 'tgov1_limit_probe.py']:
+        shutil.copy2(root / 'tools' / file, out / file)
+    import psse3607
+    import psspy
+    import dyntools
+    os.chdir(out)
+    checked('initialize', psspy.psseinit(50))
+    for fn in [psspy.progress_output, psspy.report_output, psspy.alert_output, psspy.prompt_output]:
+        checked('log', fn(2, 'native.log', [0, 0]))
+    library = Path(psspy.__file__).resolve().parents[1] / 'PSSBIN/DSMDL.DLL'
+    checked('library', psspy.addmodellibrary(str(library)))
+    checked('network', psspy.read(0, 'network.raw'))
+    checked('flow', psspy.fnsl([0, 0, 0, 1, 1, 0, 99, 0]))
+    assert psspy.solved() == 0
+    conversion=[100.,0.,0.,100.] if args.fixture=='tiocr1-current' else [0.,100.,0.,100.]
+    checked('generators', psspy.cong(0))
+    for stage in [1, 2, 3]:
+        checked('loads', psspy.conl(0, 1, stage, [0, 0], conversion))
+    checked('order', psspy.ordr(0)); checked('factor', psspy.fact())
+    checked('converted', psspy.tysl(0))
+    checked('dynamic', psspy.dyre_new([1, 1, 1, 1], 'dynamic.dyr', '', '', ''))
+    if relay:
+        index = lambda kind: checked('relay index', psspy.rmodind(1, 2, '1', 1, kind))
+    elif load:
+        index = lambda kind: checked('load index', psspy.lmodind(2, '1', 'CHARAC', kind))
+    else:
+        category = 'STAB' if args.fixture.startswith('pss') else 'GOV'
+        index = lambda kind: checked('controller index', psspy.mdlind(1, '1', category, kind))
+    expected = [14,0,3,15] if relay else [132,27,146,0] if load else [23,17,4,6] if args.fixture.startswith('pss') else [34,6,8,0] if args.fixture.startswith('wsieg') else [36,9,5,2]
+    layout = {kind:index(kind) if count else 0 for kind,count in zip(['NCON','NSTATE','NVAR','NICON'],expected)}
+    assert list(layout.values()) == expected, layout
+    layout.update({kind:index(kind) if layout['N'+kind] else 0 for kind in ['CON','STATE','VAR','ICON']})
+    if args.fixture.startswith('pss'):
+        for i in range(layout['NVAR']):
+            checked('initialize diagnostic storage',psspy.change_var(layout['VAR']+i,0.0))
+    entered = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]
+    for kind, fn in [('STATE', psspy.state_channel), ('VAR', psspy.var_channel)]:
+        for i in range(layout['N' + kind]):
+            if load and kind == 'VAR' and (i // 73) != args.channel_part: continue
+            checked('channel', fn([-1, layout[kind] + i], kind + str(i)))
+    for code, name in [(1, 'ANGLE_DEG'), (2, 'P_PU'), (3, 'Q_PU'), (6, 'PMECH'), (7, 'SPEED'), (10,'STABILIZER')]:
+        checked('machine', psspy.machine_array_channel([-1, code, 1], '1', name))
+    if args.fixture=='wsieg1-dual':
+        for code,name in [(6,'PMECH_LP'),(7,'SPEED_LP')]:
+            checked('secondary machine',psspy.machine_array_channel([-1,code,2],'1',name))
+    for bus in ([1, 2, 3] if load or args.fixture=='wsieg1-dual' else [1, 2]):
+        checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
+    di, df = psspy.getdefaultint(), psspy.getdefaultreal()
+    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, df, args.step] + [df]*5))
+    checked('start', psspy.strt_2([0, 0], 'native.out'))
+    initialized = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]
+    checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
+    if args.profile == 'fault':
+        checked('fault', psspy.dist_bus_fault(2 if load else 1, 3, 230.0 if load or args.fixture=='wsieg1-dual' else 100.0, [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
+    if args.profile == 'reference-step':
+        checked('reference', psspy.increment_gref(1, '1', .03))
+    checked('during', psspy.run(0, .10, 1000000, 1, 0))
+    if args.profile == 'fault': checked('clear', psspy.dist_clear_fault(1))
+    checked('postfault', psspy.run(0, .5, 1000000, 1, 0))
+    _, labels, data = dyntools.CHNF('native.out').get_data()
+    keys = sorted(k for k in labels if isinstance(k, int))
+    assert all(math.isfinite(v) for k in ['time'] + keys for v in data[k])
+    with Path('native.csv').open('w', newline='') as stream:
+        writer = csv.writer(stream, lineterminator='\n')
+        writer.writerow(['time_s'] + [labels[k] for k in keys])
+        for i, time in enumerate(data['time']):
+            writer.writerow([format(time, '.12g')] + [format(data[k][i], '.12g') for k in keys])
+    checked('model report', psspy.docu(0, 1, [0, 3, 1]))
+    log = Path('native.log').read_text(errors='replace')
+    quality = 'Initial conditions check O.K.' in log and all(message not in log for message in ['Network not converged','Incomplete data record'])
+    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args),
+        layout=layout, entered_constants=entered, initialized_constants=initialized,
+        load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu], samples=len(data['time']), channels=len(keys), engine_module=psse3607.__name__,
+        library_sha256=sha(library), source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
+        files={p.name:sha(p) for p in Path('.').iterdir() if p.is_file()})
+    Path('manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+    print(json.dumps(dict(fixture=args.fixture, status=manifest['status'], layout=layout)), flush=True)
+    assert quality
+
+
+if __name__ == '__main__':
+    main()

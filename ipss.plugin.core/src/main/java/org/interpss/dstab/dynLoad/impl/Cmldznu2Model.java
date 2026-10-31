@@ -15,7 +15,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Zone-scoped composite load assembled from the native distribution and motor components. */
-public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider {
+public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider {
     private static final double EPS = 1.0e-10;
 
     private final Cmldznu2Data data;

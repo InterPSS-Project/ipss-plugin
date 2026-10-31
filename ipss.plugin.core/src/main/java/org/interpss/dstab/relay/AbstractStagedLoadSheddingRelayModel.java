@@ -33,6 +33,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private Complex initialShunt = Complex.ZERO;
     private double elapsedTime;
     private double shedFraction;
+    private Object appliedYMatrix;
+    private static final String LEDGER_KEY = AbstractStagedLoadSheddingRelayModel.class.getName()+".admittanceLedger";
 
     protected AbstractStagedLoadSheddingRelayModel(String modelName,
             BaseDStabBus<?, ?> loadBus, String loadId, StagedLoadSheddingRelayData data) {
@@ -118,7 +120,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         return true;
     }
 
-    private void applyStage(int stageIndex) {
+    protected final void applyStage(int stageIndex) {
         if (operated[stageIndex]) return;
         double fraction = Math.min(data.stages().get(stageIndex).fraction(), 1.0 - shedFraction);
         operated[stageIndex] = true;
@@ -136,10 +138,17 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     }
 
     private void addAdmittanceDelta(double fraction) {
+        @SuppressWarnings("unchecked")
+        BaseDStabNetwork<?, ?> owner=(BaseDStabNetwork<?, ?>)loadBus.getNetwork();
+        @SuppressWarnings("unchecked")
+        java.util.List<AbstractStagedLoadSheddingRelayModel> ledger=(java.util.List<AbstractStagedLoadSheddingRelayModel>)owner.getExtraInfo()
+                .computeIfAbsent(LEDGER_KEY,k->new java.util.ArrayList<AbstractStagedLoadSheddingRelayModel>());
+        if(!ledger.contains(this))ledger.add(this);
         double v0 = loadBus.getInitVoltMag();
         if (v0 <= 0.0) v0 = loadBus.getVoltageMag();
         Complex delta = initialStaticLoad.multiply(-fraction).conjugate().divide(v0 * v0);
         if (data.shedShunt()) delta = delta.subtract(initialShunt.multiply(fraction));
+        appliedYMatrix=owner.getYMatrix();
         if (delta.abs() > 0.0) {
             @SuppressWarnings("unchecked")
             BaseDStabNetwork<?, ?> network = (BaseDStabNetwork<?, ?>) loadBus.getNetwork();
@@ -150,14 +159,12 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
 
     /** Reapply persistent load-relay admittance changes after a topology rebuild. */
     public static void reapplyAfterNetworkRebuild(BaseDStabNetwork<?, ?> network) {
-        for (Object busObject : network.getBusList()) {
-            BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) busObject;
-            for (Object device : bus.getDynamicBusDeviceList()) {
-                if (device instanceof AbstractStagedLoadSheddingRelayModel relay
-                        && relay.shedFraction > 0.0) {
-                    relay.addAdmittanceDelta(relay.shedFraction);
-                }
-            }
+        Object stored=network.getExtraInfo().get(LEDGER_KEY);
+        if(!(stored instanceof java.util.List<?> ledger))return;
+        for(Object entry:ledger) {
+            var relay=(AbstractStagedLoadSheddingRelayModel)entry;
+            if(relay.shedFraction>0 && relay.appliedYMatrix!=network.getYMatrix())
+                relay.addAdmittanceDelta(relay.shedFraction);
         }
     }
 
@@ -171,14 +178,42 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         java.util.Arrays.fill(operated, false);
         elapsedTime = 0.0;
         shedFraction = 0.0;
+        appliedYMatrix=null;
         resetTransferTrips();
         return true;
     }
 
     protected final double elapsedTime() { return elapsedTime; }
     protected final BaseDStabBus<?, ?> loadBus() { return loadBus; }
-    @Override public Object getOutputObject() { return Complex.ZERO; }
-    @Override public boolean updateAttributes(boolean netChange) { return true; }
+    @Override public Object getOutputObject() {
+        if (shedFraction == 0.0 || initialStaticLoad.abs() == 0.0) return Complex.ZERO;
+        var voltage=loadBus.getVoltage();
+        double magnitude=voltage.abs(),initial=loadBus.getInitVoltMag();
+        if(magnitude<=1e-12 || initial<=0)return Complex.ZERO;
+        var network=(BaseDStabNetwork<?,?>)loadBus.getNetwork();
+        var active=loadBus.getActiveStaticLoadModel()==null?network.getStaticLoadModel():loadBus.getActiveStaticLoadModel();
+        var reactive=loadBus.getReactiveStaticLoadModeel()==null?network.getReactiveStaticLoadModel():loadBus.getReactiveStaticLoadModeel();
+        if(network.isStaticLoadIncludedInYMatrix())active=reactive=com.interpss.dstab.StaticLoadModel.CONST_Z;
+        var removedPower=new Complex(initialStaticLoad.getReal()*loadFactor(active,magnitude,initial,network),
+                initialStaticLoad.getImaginary()*loadFactor(reactive,magnitude,initial,network));
+        // The matrix ledger removes an equivalent Z stamp. Restore its difference
+        // from the actual voltage-dependent removed current on every network iteration.
+        var equivalentCurrent=initialStaticLoad.conjugate().multiply(voltage).divide(initial*initial);
+        return removedPower.divide(voltage).conjugate().subtract(equivalentCurrent).multiply(shedFraction);
+    }
+    private static double loadFactor(com.interpss.dstab.StaticLoadModel model,double v,double initial,
+            BaseDStabNetwork<?,?> network) {
+        if(model==com.interpss.dstab.StaticLoadModel.CONST_I)
+            return v/initial*network.getConstantCurrentLoadVoltageCurve().currentMultiplier(v,network.getStaticLoadSwitchVolt());
+        if(model==com.interpss.dstab.StaticLoadModel.CONST_P) {
+            double threshold=network.getStaticLoadSwitchVolt();
+            return threshold>0&&v<threshold?.5*(1-Math.cos(Math.PI*v/threshold)):1;
+        }
+        return v*v/(initial*initial);
+    }
+    @Override public boolean updateAttributes(boolean netChange) {
+        reapplyAfterNetworkRebuild((BaseDStabNetwork<?,?>)loadBus.getNetwork());return true;
+    }
 
     @Override
     public Map<String, Double> getNamedStates() {
