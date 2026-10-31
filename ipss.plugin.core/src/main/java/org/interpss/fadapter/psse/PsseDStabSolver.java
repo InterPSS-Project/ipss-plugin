@@ -42,6 +42,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
             int st4Controllers,int pss2aControllers,int ieeestControllers,int compatibleControllers) { }
     private final ModifiedEulerControllerPreparation controllerPreparation=new ModifiedEulerControllerPreparation();
     private ControllerPreparationReport controllerPreparationReport;
+    private final java.util.List<org.interpss.dstab.svc.Svsmo3t2Model> statcomEventModels = new java.util.ArrayList<>();
     /** Configure before initialization; false retains compatible controller dispatch. */
     public void setControllerRuntimePreparationEnabled(boolean enabled){controllerRuntimePreparationEnabled=enabled;}
     public boolean isControllerRuntimePreparationEnabled(){return controllerRuntimePreparationEnabled;}
@@ -88,6 +89,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 ||!java.util.Objects.equals(frequencyOutputIds,frequencyOutputHandler==null?null:
                         frequencyOutputHandler.requiredBusFrequencyIds())))
             throw new DStabSimuException("Frequency output dependencies changed; reinitialize before continuing");
+        if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
+            for (var model : statcomEventModels)
+                if (model.isActive() && model.getDStabBus() != null && model.getDStabBus().isActive()) model.acceptNetworkEvent();
         super.beforeStep(time);
     }
     public static final int DEFAULT_MAXIMUM_NETWORK_ITERATIONS = 50;
@@ -216,7 +220,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
-        controllerPreparation.clear();controllerPreparationReport=null;
+        controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         var validation=validateModelParameters();
@@ -231,6 +235,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
         network.setConstantCurrentLoadVoltageCurve(ConstantCurrentLoadVoltageCurve.ELLIPTIC);
         configureIntegrationStepAwareModels(dstabAlgo.getNetwork(), dstabAlgo.getSimuStepSec());
         if (!super.initialization()) return false;
+        for (var bus : network.getBusList())
+            for (var device : bus.getDynamicBusDeviceList())
+                if (device instanceof org.interpss.dstab.svc.Svsmo3t2Model model) statcomEventModels.add(model);
         selectFrequencyMeasurements();
         if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
                 &&dstabAlgo.getSimuMethod()==com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)

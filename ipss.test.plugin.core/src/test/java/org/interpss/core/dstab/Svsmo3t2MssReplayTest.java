@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Independent MSS signal replay; electrical trajectory acceptance is separate. */
 public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
+    private static final org.interpss.test.TestConfig CONFIG = org.interpss.test.TestConfig.load(
+            "/test-config/svsmo3t2.json", "Svsmo3t2MssReplayTest");
     private static final double NETWORK_TOLERANCE = 1e-6;
     @Test void singleOperationCoupledProfilesPassEveryVoltageAngleAndStateGate() throws Exception { coupled(true); }
 
@@ -34,7 +36,7 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
     @Test void staggeredCoupledProfilesPassWithExplicitSinglePrecisionEndpointClock() throws Exception { coupled(false, true, true); }
 
     private static Path referenceRoot() throws Exception {
-        String configured = System.getProperty("svsmo3t2.mss");
+        String configured = CONFIG.string("matrix");
         if (configured != null) return Path.of(configured);
         Path root = Files.createTempDirectory(Path.of("target"), "svsmo3t2-mss-reference-").toAbsolutePath().normalize();
         String[][] archives = {{"mss.zip", "f95f32b00bc77a461a2aee39bda99ed63d6dc1fc39ecda869ec5ef126b988c67"},

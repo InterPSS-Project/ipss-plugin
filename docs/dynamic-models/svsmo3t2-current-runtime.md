@@ -41,7 +41,11 @@ Named states expose published coordinates. In particular, the voltage sensor
 exports `(1 - Tc1/Tb1)` times its low-pass storage, while the transient-gain
 block exports its low-pass storage directly. `IntegrationStateAccess` separately
 exposes numerical storage and the states/rates of the last derivative evaluation.
-Observation does not alter the equations.
+Its optional `getIntegrationHistories()` method returns an immutable detached
+snapshot of accepted current, timers, rating availability and limiter/trip flags.
+An empty default map means that histories are not exposed. Reading diagnostics
+does not evaluate inputs, commit a step or alter the equations; these maps are
+constructed only when requested, outside the numerical loop.
 
 Zero-duration event calls can project an active PI constraint. They do not
 integrate derivatives or advance timers. Current limiting uses instantaneous
@@ -60,9 +64,15 @@ It is distinct from either always scaling the available rating or simply
 clipping the capability envelope. Independent captures with different voltage
 spans and short-term multipliers distinguish these equations. No fitted
 voltage threshold or added smoothing is used.
-Tripping publishes zero current and freezes this controller's continuous state.
-The stressed independent trip capture has divergent allocated-state and held
-algebraic observations after tripping; post-trip state equivalence remains open.
+An overvoltage trip first latches the command and removes available current
+rating. The PI command is projected to zero, while residual current decays through
+the output lag. The next scheduled electrical-network event detaches the device,
+sets physical current to zero and freezes the controller's continuous states.
+The prepared solver device list dispatches this event without scanning all buses
+each step. `acceptNetworkEvent()` also provides an explicit boundary for callers;
+it rejects an unfinished predictor and is idempotent after removal.
+Reinitialization resets trip/removal flags and timers. Automatic notification
+from arbitrary external matrix edits or MSS-triggered rebuilds remains unqualified.
 
 Independent discriminators also establish source initialization selections:
 positive slow-reset gains suppress nonlinear droop even when the separate
@@ -152,6 +162,12 @@ from being absorbed into compensation current.
 The synthetic impedance-load SMIB uses identical machine/network parameters in
 both engines. Both integration fixtures explicitly use the same 0.000001 pu
 network voltage-correction tolerance; production defaults are unchanged.
+Diagnostic selection uses the classpath fixture
+`test-config/svsmo3t2.json`, independently of JVM-wide settings. Null matrix paths
+select the hash-pinned bundled references, including the recorded-input replay.
+Explicit fixture paths can select retained cold captures, and the limiter
+diagnostic's optional profile key narrows that diagnostic only; acceptance tests
+continue to run their full declared matrix.
 Its complete base fault comparison retains startup samples and
 both sides of fault application/clearing. It gates every bus voltage at
 range-normalized RMSE below 0.001, rotor-angle RMSE below 0.01 degrees, prefault
@@ -237,6 +253,34 @@ event-side cached value can differ from the contemporaneous current/voltage
 product. The physical reactive-power gate uses the independent per-unit output.
 No event row or cached diagnostic is discarded.
 
+The separately hash-pinned trip supplement compares complete mild overvoltage
+trip, half-step trip, no-trip control and overlapping-fault discriminator runs
+under both integration methods. Every trip-command and network-removal flag
+matches both sides of every reference event. All bus voltages pass range NRMSE
+below 0.001. Across these profiles, modified Euler has maximum voltage error
+below 0.000230 pu and rotor-angle RMSE below 0.000350 degrees; staggered Euler
+has maximum voltage error below 0.000066 pu and rotor-angle RMSE below
+0.000095 degrees. Physical current and reactive power have separate maximum
+and RMS gates. All six continuous states are gated throughout the independently
+identified network-connected phase, including the pending trip interval.
+
+Independent device-mode observations and reconstructed terminal KCL establish
+the distinction between the trip command and subsequent electrical removal.
+After removal, the source's inactive allocated-state storage can continue
+changing with stale rates, while some algebraic diagnostics hold their last
+values. Those samples remain in the full trace and all-row error metrics;
+the runtime freezes its detached owner instead of reproducing unused storage
+drift. The state gate uses the reference rating transition and the next known
+network event to define its active phase, independently of implementation flags.
+The more severe capacitive-fault trip remains diagnostic: its ordinary
+modified-Euler rotor-angle comparison does not meet the base accuracy target.
+
+The overlapping-fault discriminator also requires core event processing to
+restore every still-active bus/branch fault after a matrix rebuild. Core commit
+`b3ff6e402` supplies that correction without replaying unrelated one-shot actions;
+its focused tests reproduce the original lost stamp and its complete isolated
+core suite passes. The plugin comparisons use that exact core artifact.
+
 The broader extended coupled and recorded-input matrices retain diagnostic
 branches beyond these accepted profiles. They exercise
 lead-lag coordinates, reference changes, slow reset, nonlinear droop, definite
@@ -255,7 +299,9 @@ threshold was fitted to remove it. Remaining work includes:
 - Extend the rating/voltage-limit gates to current reversal, equal voltage
   thresholds, non-unit bases and production integration intervals; retain the
   explicit coarse thermal error envelope without fitting or shifting traces.
-- Verify short blocking intervals and reinitialization/reconnection histories.
+- Verify short blocking intervals, external/MSS-triggered trip removal and
+  complete coupled reinitialization/reconnection histories; retain the accepted
+  scheduled-event trip/control matrix and read-only history contract.
 - Qualify non-unit STATCOM/network MVA-base ratios and remote regulation during
   coordinated bank actions.
 - Extend validation and coupled tests to production steps and longer runs,

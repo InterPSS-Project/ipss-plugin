@@ -56,6 +56,7 @@ def main():
     parser.add_argument("--con", type=float, nargs=2, action="append", default=[], metavar=("OFFSET", "VALUE"))
     parser.add_argument("--icon", type=int, nargs=2, action="append", default=[], metavar=("OFFSET", "VALUE"))
     parser.add_argument("--fault-ohms", type=float, default=100.)
+    parser.add_argument("--trip-rebuild-time", type=float)
     parser.add_argument("--reference-change", type=float, default=.01)
     parser.add_argument("--load-law", choices=("constant-impedance", "constant-power"), default="constant-impedance")
     parser.add_argument("--mss-case", choices=("capacitor-off", "capacitor-on", "reactor-off", "reactor-on", "capacitor-pair", "capacitor-transfer", "mixed", "mixed-reverse", "reactor-pair-off", "reactor-pair-on"))
@@ -65,6 +66,8 @@ def main():
     args = parser.parse_args()
     if not 0 < args.step <= .01 or not .1 <= args.stop <= 20:
         parser.error("step and duration exceed the reviewed small-case budget")
+    if args.trip_rebuild_time is not None and (args.profile != "fault" or not .05 < args.trip_rebuild_time < .099):
+        parser.error("the negligible rebuild discriminator must lie inside the main fault")
     estimated_bytes = (math.ceil(args.stop / args.step) * (2 if args.mss_case else 1) + 16) * 4096
     if estimated_bytes > FILE_LIMIT:
         parser.error("full-resolution capture exceeds the per-file budget; use an explicitly reviewed export budget")
@@ -168,6 +171,12 @@ def main():
                      for i in range(allocation["N" + key])]
                for key in ("CON", "STATE", "VAR")}
     initial["ICON"] = icon_values()
+    lifecycle = []
+    def observe_lifecycle(kind):
+        lifecycle.append({"time_s": checked("simulation time", psspy.dsrval("TIME", 0)), "kind": kind,
+                          "model_status": checked("model status", psspy.fcdmind("STATCOM A", "STATUS")),
+                          "device_mode": checked("device mode", psspy.fcdint_2("STATCOM A", "MODE"))})
+    observe_lifecycle("INITIAL")
     observations = []
     def time():
         return checked("simulation time", psspy.dsrval("TIME", 0))
@@ -192,9 +201,17 @@ def main():
     if mss:
         observe("INITIAL")
     run_to(.05)
+    observe_lifecycle("BEFORE_DISTURBANCE")
     if args.profile == "fault":
         checked("fault", psspy.dist_bus_fault(3, 3, 230., [0., args.fault_ohms]))
+        if args.trip_rebuild_time is not None:
+            run_to(args.trip_rebuild_time)
+            observe_lifecycle("BEFORE_REBUILD_DISCRIMINATOR")
+            checked("negligible rebuild fault", psspy.dist_bus_fault(1, 3, 230., [0., 1.e12]))
+            run_to(args.trip_rebuild_time + .001)
+            checked("clear negligible rebuild fault", psspy.dist_clear_fault(2))
         run_to(.1)
+        observe_lifecycle("BEFORE_CLEARING")
         checked("clear", psspy.dist_clear_fault(1))
     elif args.profile == "reference-step":
         checked("scheduled voltage step", psspy.change_fctmod_var("STATCOM A", "SVSMO3T2", 26,
@@ -210,6 +227,7 @@ def main():
         if mss:
             observe("REFERENCE_POINT")
     run_to(args.stop)
+    observe_lifecycle("FINAL")
     _, names, values = dyntools.CHNF(str(output)).get_data()
     channels = sorted(key for key in names if isinstance(key, int))
     if args.profile == "reference-step":
@@ -236,6 +254,9 @@ def main():
                 "profile": args.profile, "step_s": args.step, "stop_s": args.stop,
                 "con_overrides": args.con, "icon_overrides": args.icon,
                 "fault_ohms": args.fault_ohms, "reference_change": args.reference_change,
+                "trip_rebuild_time": args.trip_rebuild_time,
+                "trip_rebuild_impedance_ohms": 1.e12 if args.trip_rebuild_time is not None else None,
+                "trip_rebuild_duration_s": .001 if args.trip_rebuild_time is not None else None,
                 "reference_points": args.reference_point, "mss_case": args.mss_case,
                 "mss_conductance_mw": args.mss_conductance_mw,
                 "mss_bus": args.mss_bus,
@@ -243,6 +264,7 @@ def main():
                 "load_conversion": args.load_law, "allocation": allocation,
                 "initial_voltage": initial_voltage, "initial_QSHNT_Mvar": initial_q_into_device,
                 "initialized": initial, "samples": len(values["time"]),
+                "lifecycle_observations": lifecycle,
                 "before_initialization": before_initialization,
                 "canonical_sha256": canonical_csv_sha256(args.output / "reference.csv", unused_mss_channels),
                 "canonical_algorithm": "CSV header and every row, original decimal tokens and order, LF; omit only uninitialized timer channels for MSS slots whose bus is zero and VAR_21 when MSS coordination is disabled. Complete raw CSV retained.",

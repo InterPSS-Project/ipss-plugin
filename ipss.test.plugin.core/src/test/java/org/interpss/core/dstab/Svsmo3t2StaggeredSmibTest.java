@@ -93,13 +93,17 @@ public class Svsmo3t2StaggeredSmibTest extends CorePluginTestSetup {
         model.readStaggeredState(values, 2);
         var states = model.getNamedStates();
         var switching = model.getSwitchingNamedStates();
+        var histories = model.getIntegrationHistories();
+        assertThrows(UnsupportedOperationException.class, () -> histories.put("Tripped", 1.));
         for (int i = 0; i < 3; i++) model.evaluateStaggered(.0005, rates, 3);
         assertEquals(states, model.getNamedStates());
         assertEquals(switching, model.getSwitchingNamedStates());
+        assertEquals(histories, model.getIntegrationHistories());
         assertEquals(77, values[0]); assertEquals(77, values[9]);
         assertEquals(99, rates[0]); assertEquals(99, rates[10]);
         model.applyStaggeredState(values, 2, .0005);
         assertEquals(switching, model.getSwitchingNamedStates());
+        assertEquals(histories, model.getIntegrationHistories());
         assertEquals(0, model.getIntegrationTime());
         var projected = model.getNamedStates();
         var invalid = values.clone(); invalid[5] = Double.NaN;
@@ -108,8 +112,10 @@ public class Svsmo3t2StaggeredSmibTest extends CorePluginTestSetup {
         assertThrows(IllegalArgumentException.class, () -> model.completeStaggeredStep(.0005, Double.NaN));
         model.completeStaggeredStep(0, 0);
         assertEquals(switching, model.getSwitchingNamedStates());
+        assertEquals(histories, model.getIntegrationHistories());
         assertEquals(0, model.getIntegrationTime());
         assertTrue(model.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 0));
+        assertThrows(IllegalStateException.class, model::acceptNetworkEvent);
         assertThrows(IllegalStateException.class, () -> model.readStaggeredState(values, 2));
         assertThrows(IllegalStateException.class, () -> model.completeStaggeredStep(.0005));
         assertTrue(model.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 1));

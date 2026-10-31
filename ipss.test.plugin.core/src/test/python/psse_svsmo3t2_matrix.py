@@ -33,6 +33,12 @@ PROFILES = {
     "deadband-release": ["--con", "9", ".005", "--con", "10", "2", "--con", "11", ".01"],
     "undervoltage-block": ["--fault-ohms", "10"],
     "overvoltage-trip": ["--fault-ohms", "-100", "--con", "24", ".01"],
+    "overvoltage-trip-half": ["--step", ".00025", "--fault-ohms", "-100", "--con", "24", ".01"],
+    "overvoltage-trip-mild": ["--fault-ohms", "-1000", "--con", "22", "1.02", "--con", "24", ".01"],
+    "overvoltage-trip-mild-half": ["--step", ".00025", "--fault-ohms", "-1000", "--con", "22", "1.02", "--con", "24", ".01"],
+    "overvoltage-no-trip": ["--fault-ohms", "-1000", "--con", "22", "1.02", "--con", "24", ".08"],
+    "overvoltage-trip-rebuild": ["--fault-ohms", "-1000", "--con", "22", "1.02", "--con", "24", ".01", "--trip-rebuild-time", ".065"],
+    "overvoltage-no-trip-rebuild": ["--fault-ohms", "-1000", "--con", "22", "1.02", "--con", "24", ".08", "--trip-rebuild-time", ".065"],
     "bypasses": ["--con", "1", "0", "--con", "2", "0", "--con", "7", "0",
                  "--con", "27", "0", "--con", "28", "0"],
 }

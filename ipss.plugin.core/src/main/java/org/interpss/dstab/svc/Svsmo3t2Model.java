@@ -48,7 +48,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
     private boolean predictorPending, blocked, tripped, thermalLimited, deadbandLocked, shortRatingExhausted;
-    private boolean initialized;
+    private boolean initialized, networkDetached;
 
     public Svsmo3t2Model(BaseDStabBus<?, ?> bus, BaseDStabBus<?, ?> remoteBus,
             StaticVarCompensator svc, Svsmo3t2Data data) {
@@ -86,6 +86,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         preparedVrefMax = Math.max(data.vrefMax(), scheduledVoltage);
         shortTimer = unblockTimer = overvoltageTimer = deadbandTimer = 0;
         predictorPending = blocked = tripped = thermalLimited = shortRatingExhausted = false;
+        networkDetached = false;
         deadbandLocked = data.deadband() > 0;
         integrationTime = 0;
         switching.initialize();
@@ -108,7 +109,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     @Override public void evaluateStaggered(double stepSec, double[] derivatives, int offset) {
         requireStaggeredBoundary();
         requireStaggeredStep(stepSec);
-        if (tripped) Arrays.fill(rate, 0); else evaluateRates();
+        if (networkDetached) Arrays.fill(rate, 0); else evaluateRates();
         observe(Stage.STAGGERED);
         System.arraycopy(rate, 0, derivatives, offset, rate.length);
     }
@@ -120,7 +121,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         java.util.Objects.checkFromIndexSize(offset, x.length, values.length);
         for (int i = 0; i < x.length; i++) if (!Double.isFinite(values[offset + i]))
             throw new IllegalArgumentException("Finite SVSMO3T2 integration coordinates required");
-        if (tripped) return;
+        if (networkDetached) return;
         System.arraycopy(values, offset, x, 0, x.length);
         projectAlgebraicStates();
         if (!finiteState()) throw new IllegalStateException("Nonfinite SVSMO3T2 projected state");
@@ -137,7 +138,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         if (!Double.isFinite(endpointTimeSec) || endpointTimeSec < integrationTime
                 || stepSec > 0 && !(endpointTimeSec > integrationTime))
             throw new IllegalArgumentException("SVSMO3T2 requires a finite advancing endpoint time");
-        if (tripped || stepSec == 0) return;
+        if (networkDetached || stepSec == 0) return;
         updateHistory(stepSec);
         integrationTime = endpointTimeSec;
     }
@@ -155,7 +156,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     @Override public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (method != DynamicSimuMethod.MODIFIED_EULER || !Double.isFinite(dt) || dt < 0
                 || (flag != 0 && flag != 1)) return false;
-        if (tripped) return finiteState();
+        if (networkDetached) return finiteState();
         // Event-side limiter projection is algebraic. No derivative integration,
         // timer advance or accepted-history commit occurs at zero duration.
         if (dt == 0) { projectAlgebraicStates(); return finiteState(); }
@@ -220,6 +221,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     }
 
     private void updateHistory(double dt) {
+        boolean previouslyTripped = tripped;
         double voltage = getDStabBus().getVoltageMag();
         boolean outside = voltage < data.uv2() || voltage > data.ov2();
         if (outside && !blocked) { blocked = true; unblockTimer = 0; }
@@ -248,6 +250,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
                 if (deadbandTimer >= data.deadbandTime()) deadbandLocked = true;
             } else deadbandTimer = 0;
         }
+        if (tripped && !previouslyTripped) projectAlgebraicStates();
         acceptedCurrent = getCurrent();
     }
 
@@ -330,7 +333,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     public StaticVarCompensator getStaticDevice() { return svc; }
     public BaseDStabBus<?, ?> getRemoteBus() { return remoteBus; }
     /** Blocking is accepted history, not a new discrete action inside a network iteration. */
-    public double getCurrent() { return tripped || blocked ? 0 : x[2]; }
+    public double getCurrent() { return networkDetached || blocked ? 0 : x[2]; }
     public double getMvarOutput() { return getCurrent() * getDStabBus().getVoltageMag() * data.statcomBaseMva(); }
     public double getVoltageReference() { return voltageReference(); }
     public double getScheduledVoltage() { return scheduledVoltage; }
@@ -344,6 +347,30 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     }
     public boolean isBlocked() { return blocked; }
     public boolean isTripped() { return tripped; }
+    public boolean isNetworkDetached() { return networkDetached; }
+    /** Accept a scheduled electrical-network event, independently of state integration. */
+    public void acceptNetworkEvent() {
+        if (predictorPending) throw new IllegalStateException("Finish the predictor before accepting a network event");
+        if (tripped) { networkDetached = true; acceptedCurrent = 0; }
+    }
+    /** Available rating before voltage reduction/blocking; a tripped device has none. */
+    public double getAvailableCurrentRating() { return tripped ? 0 : rating(); }
+    @Override public Map<String, Double> getIntegrationHistories() {
+        var result = new LinkedHashMap<String, Double>();
+        result.put("Accepted physical current", acceptedCurrent);
+        result.put("Available current rating", getAvailableCurrentRating());
+        result.put("Short-rating elapsed seconds", shortTimer);
+        result.put("Unblocking elapsed seconds", unblockTimer);
+        result.put("Overvoltage elapsed seconds", overvoltageTimer);
+        result.put("Deadband elapsed seconds", deadbandTimer);
+        result.put("Blocked", blocked ? 1. : 0.);
+        result.put("Tripped", tripped ? 1. : 0.);
+        result.put("Network detached", networkDetached ? 1. : 0.);
+        result.put("Thermal rating limited", thermalLimited ? 1. : 0.);
+        result.put("Definite rating exhausted", shortRatingExhausted ? 1. : 0.);
+        result.put("Deadband locked", deadbandLocked ? 1. : 0.);
+        return Collections.unmodifiableMap(result);
+    }
     @Override public Object getOutputObject() {
         Complex voltage = getDStabBus().getVoltage();
         double magnitude = voltage.abs();

@@ -668,7 +668,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     continue;
                 }
                 extendedStack = true;
-                var participant = new Participant(model, () -> bus.isActive() && model.isActive() && !model.isTripped());
+                var participant = new Participant(model, () -> bus.isActive() && model.isActive() && !model.isNetworkDetached());
                 participants.add(participant);
                 busParticipants.add(participant);
                 // A stopped discrete-history owner needs coherent reinitialization

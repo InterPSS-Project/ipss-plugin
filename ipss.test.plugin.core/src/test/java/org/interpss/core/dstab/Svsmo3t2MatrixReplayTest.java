@@ -26,10 +26,11 @@ import com.interpss.dstab.cache.StateMonitor;
 /** Full recorded-input state diagnostics; execution is not a trajectory acceptance gate. */
 @Tag("extended")
 public class Svsmo3t2MatrixReplayTest extends CorePluginTestSetup {
+    private static final org.interpss.test.TestConfig CONFIG = org.interpss.test.TestConfig.load(
+            "/test-config/svsmo3t2.json", "Svsmo3t2MatrixReplayTest");
     @Test void replayEveryCapturedInputWithoutRemovingAnySamples() throws Exception {
-        String configured = System.getProperty("svsmo3t2.matrix");
-        assertNotNull(configured, "Supply -Dsvsmo3t2.matrix=<cold-capture directory>");
-        Path matrix = Path.of(configured);
+        String configured = CONFIG.string("matrix");
+        Path matrix = configured == null ? Svsmo3t2LimiterSmibTest.referenceRoot() : Path.of(configured);
         var mapper = new ObjectMapper();
         var results = new LinkedHashMap<String, Object>();
         Path output = Files.createTempDirectory(Path.of("target"), "svsmo3t2-replay-");

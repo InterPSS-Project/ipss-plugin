@@ -172,10 +172,18 @@ public class PsseSvsmo3t2ModelTest extends CorePluginTestSetup {
         for (int i = 0; i < 300 && !model.isTripped(); i++) step(model);
         assertTrue(model.isTripped());
         assertEquals(0, model.getCurrent());
+        assertFalse(model.isNetworkDetached(), "Trip command precedes the next electrical-network event");
+        assertEquals(0, model.getAvailableCurrentRating());
+        model.acceptNetworkEvent();
+        assertTrue(model.isNetworkDetached());
         var tripped = model.getNamedStates();
         bus.setVoltage(Complex.ONE);
         for (int i = 0; i < 20; i++) step(model);
         assertEquals(tripped, model.getNamedStates(), "A tripped FACTS controller freezes its continuous state");
+        assertTrue(model.initStates(bus));
+        assertFalse(model.isTripped());
+        assertFalse(model.isNetworkDetached());
+        assertEquals(0., model.getIntegrationHistories().get("Overvoltage elapsed seconds"));
     }
 
     private static void step(Svsmo3t2Model model) {

@@ -51,6 +51,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Retain the [direct current-controller contract](dynamic-models/svsmo3t2-current-runtime.md), exact named FACTS import and accepted base SMIB fault gates.
 - Retain prepared MSS switching, exact history replay, physical-stamp lifecycle and the coupled staggered/endpoint-clock matrix; finish repeated-operation modified-Euler qualification and extend production-step/duration coverage.
 - Retain accepted blocking/output-history, internal current-feedback, event projection and complete definite/thermal rating-envelope gates under both methods; extend rating coverage to production steps and finish cached-diagnostic lifecycle qualification.
+- Retain the independent trip-command/network-removal matrix under both methods, reference-defined active-state gates and read-only committed histories; qualify external switching, coupled reconnection and severe trip trajectories.
 - Finish independent coupled/state qualification of slow reset, nonlinear droop, rating limits, blocking/trips and bypass combinations; the extended matrix remains diagnostic.
 - Resolve finite-stage differences without fitting parameters; extend validation, lifecycle and production-step/long-duration tests before promoting the partial catalog status.
 
