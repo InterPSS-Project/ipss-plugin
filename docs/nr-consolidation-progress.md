@@ -167,3 +167,32 @@ and independent residual checks pass. These limited observations make no final
 RustPower qualification claim. CLEAN-03/04 are closed; contributor contracts,
 standalone API migration, coverage closure and all-five-case performance
 qualification remain open.
+
+## Shared specialized equation contributors
+
+Core commit `a871c59b7` introduces `NrEquationContributor` and
+`NrEquationAssembly`. ZBR and coordinated controls now contribute equations
+around the common electrical kernels, with explicit auxiliary offsets, exact
+layout keys and ordered stamps. Each owned response matrix retains its own
+electrical-only role selection through RHS, corrections and trial cleanup.
+Potential zero converter derivatives retain structural slots. Rejected trials
+restore voltages, loads, ZBR flows and control state even when cleanup fails.
+
+All **493 required checks pass** in `nr-contributors-final-full-20261031`:
+7,906 identities, 7,799 pass, 91 skip and the same 16 failures/errors. There are
+28 new cases, no missing/newly failing/skipped identity, no changed baseline
+failure diagnostic or fork dump, and no Java source drift after capture.
+The [checkpoint](benchmarks/nr-consolidation-contributors-2026-10-31.md) closes
+EXT-05/06/08/10. Separate coefficient/capability contracts, full custom/handoff
+coverage, standalone migration and final matched performance remain open.
+
+The same regression-tested snapshot completes a matched warmed RustPower
+recheck on all five cases. Pooled cached/RustPower ratios are **1.272, 1.425,
+1.288, 1.336 and 1.139** for IEEE39, IEEE118, PEGASE9241, 25k and 70k.
+Only 70k meets <=1.2. The 25k means are 55.09 ms and 41.25 ms after 50 total
+warmups; this is separate from the historical one-warmup regression. All
+121,800 measured solves and per-process distributions are retained. Accuracy,
+explicit cached execution, one preparation, workspace/symbolic reuse, affinity
+and source/runtime integrity checks pass. No unchanged batch was repeated to
+seek a passing ratio. The contributor checkpoint records the complete results;
+generic/frozen comparisons and final qualification after migration remain open.

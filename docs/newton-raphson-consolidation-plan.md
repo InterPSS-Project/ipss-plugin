@@ -331,24 +331,32 @@ line-search cases that cannot retain unpublished voltages.
   its existing update-limit and line-search conventions.
 - [x] **EXT-04** Validate rectangular live-B chain rules and voltage-dependent
   load derivatives with independent finite differences.
-- [ ] **EXT-05** Introduce contributor contracts for additional variables,
+- [x] **EXT-05** Introduce contributor contracts for additional variables,
   appended or replaced rows, residuals, derivatives and layout revisions.
-- [ ] **EXT-06** Adapt `ZbrNrSolver` and coordinated solvers to contribute their
+- [x] **EXT-06** Adapt `ZbrNrSolver` and coordinated solvers to contribute their
   auxiliary/control equations around the shared electrical kernel, preserving
   existing public classes and supported configurations.
 - [ ] **EXT-07** Preserve co-solved device columns, limits and bound transitions;
   changing a control active set must invalidate the appropriate layout/factors.
-- [ ] **EXT-08** Preserve `createNetworkResponseJMatrix()` semantics, including
+- [x] **EXT-08** Preserve `createNetworkResponseJMatrix()` semantics, including
   mandatory electrical auxiliaries and existing control-variable exclusions.
 - [ ] **EXT-09** Preserve custom residual, matrix, update and allocation hooks
   through explicit compatibility adapters and test their invocation behavior.
-- [ ] **EXT-10** Keep unsupported coordinate/model combinations explicit until
+- [x] **EXT-10** Keep unsupported coordinate/model combinations explicit until
   their equations are implemented and qualified; avoid silent method changes.
 - [ ] **EXT-11** Verify PQ-to-NR handoff, full-Newton control responses and
   dynamic pre-initialization load flow continue to use the shared NR contracts.
 
 Exit evidence: rectangular and augmented-system parity with valid contributor
 layout changes, auxiliary convergence checks and compatible public APIs.
+
+The [contributor checkpoint](benchmarks/nr-consolidation-contributors-2026-10-31.md)
+closes EXT-05/06/08/10. The shared assembly orders mandatory electrical
+auxiliaries before optional controls, owns exact structural keys and retains
+each matrix's equation roles through residuals, corrections and trial rollback.
+Twenty-eight new cases pass in the 7,906-identity full run. Layout validation
+does not yet provide the separate coefficient/capability contracts in MODE-06;
+EXT-07/09/11 and final qualification remain open.
 
 ### 8.6 Remove prepared-specific production dispatch - phase 5
 

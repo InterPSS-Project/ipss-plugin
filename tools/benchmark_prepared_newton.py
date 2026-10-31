@@ -209,6 +209,8 @@ def main():
         "algo/impl/solver/NrVoltageStateSnapshot.java", "algo/impl/solver/NrResidualStateStamp.java",
         "algo/impl/solver/NrGenerationAllocation.java", "algo/impl/solver/NrAcceptedState.java",
         "algo/impl/solver/LegacyNrResidualAdapter.java", "algo/impl/solver/optStep/BaseNrStepSizeOptimizer.java",
+        "algo/NrEquationContributor.java", "algo/impl/solver/NrEquationAssembly.java",
+        "algo/impl/solver/ZbrNrSolver.java", "algo/impl/solver/CoordinatedControlZbrNrSolver.java",
         "aclf/impl/func/bus/AclfBusGenerationHelper.java", "aclf/impl/func/bus/AclfBusMismatchHelper.java",
         "aclf/impl/func/bus/AclfBusYMatrixHelper.java", "aclf/impl/func/bus/AclfBusLoadHelper.java",
         "aclf/impl/func/bus/AclfLoadVoltageModel.java", "aclf/impl/func/net/AclfNetJMatrixHelper.java")

@@ -2,9 +2,9 @@
   "schema": 1,
   "status": "in_progress",
   "release_closed": false,
-  "verification_run": "nr-lifecycle-full-20261030",
-  "evidence": "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/full-test-audit.json",
-  "executed_tests": 7878,
+  "verification_run": "nr-contributors-final-full-20261031",
+  "evidence": "ipss.test.plugin.core/target/nr-consolidation-contributors-20261030/full-final-audit.json",
+  "executed_tests": 7906,
   "foundation_configurations": [
     {
       "coordinate": "rectangular",
@@ -458,7 +458,11 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrResidualEvaluationTest#opaqueCustomBusStateRequiresFreshRhsCallbacks",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrResidualEvaluationTest#ordinaryRowViewsCannotModifyTheOwnedResidual",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrResidualEvaluationTest#newerEvaluationInvalidatesAnOlderRetainedReceipt",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrResidualEvaluationTest#rectangularStandardBusInputsSupportStateCheckedPublication"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrResidualEvaluationTest#rectangularStandardBusInputsSupportStateCheckedPublication",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]"
       ],
       "remaining": "Independent derivatives pass; the complete per-configuration linear-correction/accepted-output traceability still needs closure.",
       "oracle": "Frozen pre-consolidation assembler plus independent physical-current finite differences."
@@ -920,7 +924,20 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#structuralKeyEqualityDetectsHashCollisionsAndRejectsStaleUpdates",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#layoutDefensivelyCopiesKeysAndRejectsDuplicateContributorIds",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[9]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[10]"
       ],
       "remaining": "Contributor-layout and complete structural interaction coverage remain open.",
       "oracle": "Fresh reference assembly, explicit stale receipt rejection and structural action checks."
@@ -1253,7 +1270,8 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest1",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest2",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest1",
-        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2"
+        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#zeroToNonzeroContributionRetainsTheKluSymbolicPattern"
       ],
       "remaining": "Include exact-pattern collision, symbol transfer and failure receipts from the final full audit.",
       "oracle": "Frozen matrix entries, independent derivative checks and public block/scalar inspection parity."
@@ -1281,7 +1299,9 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#coordinateLimitsScaleAndMaximaFollowIndependentExpectedValues(boolean, boolean, double)[10]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#coordinateLimitsScaleAndMaximaFollowIndependentExpectedValues(boolean, boolean, double)[11]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#coordinateLimitsScaleAndMaximaFollowIndependentExpectedValues(boolean, boolean, double)[12]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#preUpdateMetricsRemainStableWhenAnObserverChangesALaterBus"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStatePublicationTest#preUpdateMetricsRemainStableWhenAnObserverChangesALaterBus",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials"
       ],
       "remaining": "Map the completed correction checks to every supported execution strategy at release.",
       "oracle": "Independently computed corrections/maxima and exact published field snapshots."
@@ -1303,7 +1323,13 @@
         "ipss.core.test:com.interpss.test.core.aclf.cord_polar.algo.optStep.NrLinearSearchOptimizeTest#test",
         "ipss.core.test:com.interpss.test.core.aclf.cord_xy.algo.optStep.NrBinarySearchOptXYCoordinateTest#test",
         "ipss.core.test:com.interpss.test.core.aclf.cord_xy.algo.optStep.NrCubicEqnOptXYCoordinateTest#minMaxMisXYCoordinateTest",
-        "ipss.core.test:com.interpss.test.core.aclf.cord_xy.algo.optStep.NrLinearSearchOptCoordinateTest#test"
+        "ipss.core.test:com.interpss.test.core.aclf.cord_xy.algo.optStep.NrLinearSearchOptCoordinateTest#test",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError"
       ],
       "remaining": "Close control rollback and rejected-candidate allocation histories with contributor contracts.",
       "oracle": "Exact pre-trial state snapshots, exception restoration and existing optimizer fixtures."
@@ -1403,7 +1429,8 @@
         "ipss.core.test:com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYMultiSwShuntDiscreteZbrLimitTest#test",
         "ipss.core.test:com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntContiModeZbrTest#contiModeZbrTest",
         "ipss.core.test:com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntDiscreteZbrTest#testDeConsolidate",
-        "ipss.core.test:com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntDiscreteZbrTest#test"
+        "ipss.core.test:com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntDiscreteZbrTest#test",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations"
       ],
       "remaining": "Contributor contract migration and transition-history mapping remain open.",
       "oracle": "Existing electrical/control residual, limit and active-set fixtures; further history closure remains pending."
@@ -1569,9 +1596,16 @@
         "ipss.core.test:com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TSingleLCCZbrAclfTest#aclfLfTestDeconsolidate",
         "ipss.core.test:com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TSingleLCCZbrAclfTest#aclfLfTest",
         "ipss.core.test:com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TVSCZbrAclfTest#testDeConsolidate",
-        "ipss.core.test:com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TVSCZbrAclfTest#testConsolidate"
+        "ipss.core.test:com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TVSCZbrAclfTest#testConsolidate",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]"
       ],
-      "remaining": "Specialized contributor contracts, layout changes and final integration closure remain open.",
+      "remaining": "The shared contributor and combined control/ZBR response contracts now pass. Complete specialized coefficient/capability admission and all release interaction sequences remain required.",
       "oracle": "Existing augmented electrical/auxiliary residual and zero-impedance fixtures."
     },
     {
@@ -1977,7 +2011,19 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#repeatedCachedSolvesRetainPreparationAndResetPerSolveObservations",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#structuralKeyEqualityDetectsHashCollisionsAndRejectsStaleUpdates",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[9]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[10]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#zeroToNonzeroContributionRetainsTheKluSymbolicPattern"
       ],
       "remaining": "Close forced action and mutation-after-policy traces for the final implementation.",
       "oracle": "Recorded preparation/assembly/solve work and existing reuse-policy assertions."
@@ -2062,7 +2108,13 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError"
       ],
       "remaining": "Complete the remaining backend/coordinate/network replacement and failed-factorization repair interaction sequences; common scope cleanup and recovery now have positive bridge coverage.",
       "oracle": "Instance ownership, report/build counts and fresh solve comparisons."
@@ -2261,9 +2313,13 @@
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest1",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitMergeNetworkTest2",
         "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest1",
-        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2"
+        "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild#splitNetworkTest2",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt"
       ],
-      "remaining": "Final full helper/handoff audit and contributor response-view mapping remain open.",
+      "remaining": "Per-matrix contributor response ownership now passes, including mandatory ZBR equations. Final full helper/handoff audit remains open.",
       "oracle": "Existing public helper/handoff/control fixtures and frozen electrical assembly."
     },
     {
@@ -2430,7 +2486,13 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#anOpenScopeCannotSupplyAnUncheckedAdmissionForTheNextSolve",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[1]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrExecutionModeTest#retainedAdmissionStillDetectsNotificationSuppressedCustomLoadReplacement(NrExecutionMode)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedUnsupportedCoordinatesRemainExplicit",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError"
       ],
       "remaining": "Complete singular/failure/repair and missing-fixture recovery sequences.",
       "oracle": "Explicit expected failure reasons/stages and existing recovery fixtures."
@@ -2515,9 +2577,37 @@
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]",
         "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]",
-        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]"
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedUnsupportedCoordinatesRemainExplicit",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#structuralKeyEqualityDetectsHashCollisionsAndRejectsStaleUpdates",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#unchangedNetworkValidationDoesNotAllocatePerBusSnapshots",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#layoutDefensivelyCopiesKeysAndRejectsDuplicateContributorIds",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[4]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[5]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[6]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[7]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[8]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[9]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[10]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#zeroToNonzeroContributionRetainsTheKluSymbolicPattern",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]"
       ],
-      "remaining": "Historical standalone numerical API, specialized contributor contracts and final source/execution coverage closure still need migration. Ordinary engine lifecycle dispatch now uses the solver interface, with legacy optional hooks isolated in the compatibility adapter.",
+      "remaining": "Historical standalone numerical API, separate specialized coefficient/capability contracts and final source/execution coverage closure remain. Ordered contributors, exact structural layouts, per-matrix response roles and trial ownership are implemented and verified.",
       "oracle": "Mode/build/assembly counters, common plan/kernel tests and source review; standalone migration remains pending."
     },
     {
@@ -2528,10 +2618,12 @@
       "status": "partial_evidence_target_not_met",
       "release_closed": false,
       "executed_test_ids": [],
-      "remaining": "Minimal-warmup cached/generic/RustPower checks ran accurately but missed the target. Matched warmed, frozen-maintained-baseline and remaining standard-case qualification are still required.",
+      "remaining": "All-five-case warmed cached/RustPower recheck completed with retained samples, mode and accuracy receipts. Final generic/frozen comparisons and release qualification after remaining migrations are still required.",
       "benchmark_evidence": [
         "docs/benchmarks/nr-consolidation-minimal-warmup-2026-10-30.md",
-        "docs/benchmarks/checkpoints/nr-consolidation-minimal-warmup-2026-10-30.json"
+        "docs/benchmarks/checkpoints/nr-consolidation-minimal-warmup-2026-10-30.json",
+        "docs/benchmarks/nr-consolidation-contributors-2026-10-31.md",
+        "docs/benchmarks/checkpoints/nr-consolidation-contributors-2026-10-31.json"
       ],
       "oracle": "Qualified nodal operators, independent residual/reference voltage checks, raw wall times and execution receipts."
     }
@@ -2578,6 +2670,6 @@
       "status": "closure_pending"
     }
   ],
-  "required_focused_tests": 465,
+  "required_focused_tests": 493,
   "full_regression_gate_passed": true
 }

@@ -1,0 +1,1307 @@
+{
+  "core_commit": "a871c59b7",
+  "core_source_before": "0249193c6533e9be5a4482bae0f222d477078d23",
+  "status": "contributor_correctness_passed_matched_performance_target_not_met",
+  "consolidation_complete": false,
+  "final_rustpower_qualification": false,
+  "closed_plan_items": [
+    "EXT-05",
+    "EXT-06",
+    "EXT-08",
+    "EXT-10"
+  ],
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 7906,
+    "totals": {
+      "passed": 7799,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 493,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedUnsupportedCoordinatesRemainExplicit:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#layoutDefensivelyCopiesKeysAndRejectsDuplicateContributorIds:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[10]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[7]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[8]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[9]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#structuralKeyEqualityDetectsHashCollisionsAndRejectsStaleUpdates:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#unchangedNetworkValidationDoesNotAllocatePerBusSnapshots:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#zeroToNonzeroContributionRetainsTheKluSymbolicPattern:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_contributor_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedResponseRetainsOnlyTheOrdinaryAndMandatoryElectricalEquations": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#coordinatedUnsupportedCoordinatesRemainExplicit": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#combinedControlResponsePreservesActualZbrRowsAndItsReversibleFlowCompensation": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrContributorIntegrationTest#failedJointTrialRestoresVoltagesLoadsFlowsAndOwnedStateEvenIfCleanupFails(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#trialCleanupAttemptsEveryOwnerAndRemainsIdempotentAfterAFailure(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#everyOwnedResponseKeepsItsRoleMaskThroughResidualsCorrectionsAndTrials": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#responseSkipsControlLayoutAndPreservesTheFullLayoutReceipt": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#structuralKeyEqualityDetectsHashCollisionsAndRejectsStaleUpdates": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#unchangedNetworkValidationDoesNotAllocatePerBusSnapshots": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#layoutDefensivelyCopiesKeysAndRejectsDuplicateContributorIds": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[7]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[8]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[9]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#networkStructuralMutationsInvalidateContributionLayouts(String)[10]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#captureFailureClosesAlreadyCapturedOwnersBeforePropagatingTheError": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#zeroToNonzeroContributionRetainsTheKluSymbolicPattern": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrEquationAssemblyTest#orderedContributionsShareFreshElectricalAssemblyAndExplicitBlockOffsets(boolean, boolean)[4]": "passed"
+    }
+  },
+  "limitations": [
+    "Structural layout validation is not complete numerical coefficient/capability admission.",
+    "Custom hook/handoff and all release interaction sequences remain open.",
+    "The independent historical standalone numerical API still requires migration.",
+    "All-five-case final <=1.2 qualification is not established."
+  ],
+  "evidence": [
+    {
+      "path": "ipss.test.plugin.core/target/nr-consolidation-contributors-20261030/full-final-audit.json",
+      "sha256": "fa4bf329fe0e524604867d172e430726844867d3c23ed2573ab53ef2f19b07e6"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-contributors-final-full-source-manifest.json",
+      "sha256": "59af1b217dffd8892911d6f698c3f5327954fd22cbf56219a59a0c497feed2ab"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-contributors-final-full-20261031.log.status.json",
+      "sha256": "eeac8f809df6684632657ac981f0d66a167f0a1eeb43cbb31cc27bf7db76bf99"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-consolidation-contributors-20261030/performance-audit.json",
+      "sha256": "a70cf46f98189da6f852067e26731365ce23687a6ee8b4b60c0426312fb9655a"
+    }
+  ],
+  "performance": {
+    "protocol": {
+      "cpu": 2,
+      "affinity_mask": 4,
+      "forks_per_runtime": 3,
+      "initialization_included_in_warmups": true,
+      "small_cases": {
+        "warmups": 50000,
+        "measurements": 10000
+      },
+      "large_cases": {
+        "warmups": 50,
+        "measurements": 100
+      },
+      "required_ratio": 1.2,
+      "boundary": "Reset voltages and public solve; InterPSS includes publication and generation allocation. RustPower includes calculated-power retrieval.",
+      "accuracy": "Independent original-Ybus residual and all-bus complex-voltage comparison.",
+      "settings": "1e-6 pu, 20 iterations, controls/globalization/update limits/low-voltage adjustment disabled.",
+      "starts": "Compensated flat start except qualified saved-state restart for 70k."
+    },
+    "results": [
+      {
+        "case": "case39",
+        "prepared": {
+          "case": "case39",
+          "backend": "prepared",
+          "samples": 30000,
+          "mean_ms": 0.015838973333333336,
+          "median_ms": 0.0151,
+          "min_ms": 0.0147,
+          "p95_ms": 0.0177,
+          "max_ms": 0.7344,
+          "iterations": [
+            4
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 10000,
+              "mean_ms": 0.01575786,
+              "median_ms": 0.015,
+              "min_ms": 0.0147,
+              "p95_ms": 0.0176,
+              "max_ms": 0.7344
+            },
+            {
+              "fork": 1,
+              "samples": 10000,
+              "mean_ms": 0.016067759999999997,
+              "median_ms": 0.0151,
+              "min_ms": 0.0148,
+              "p95_ms": 0.0179,
+              "max_ms": 0.657
+            },
+            {
+              "fork": 2,
+              "samples": 10000,
+              "mean_ms": 0.015691300000000002,
+              "median_ms": 0.015,
+              "min_ms": 0.0148,
+              "p95_ms": 0.017,
+              "max_ms": 0.4838
+            }
+          ]
+        },
+        "rustpower": {
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "samples": 30000,
+          "mean_ms": 0.012454963333333334,
+          "median_ms": 0.012,
+          "min_ms": 0.0116,
+          "p95_ms": 0.0124,
+          "max_ms": 0.845,
+          "iterations": [
+            4
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 10000,
+              "mean_ms": 0.0124523,
+              "median_ms": 0.012,
+              "min_ms": 0.0117,
+              "p95_ms": 0.0122,
+              "max_ms": 0.7914
+            },
+            {
+              "fork": 1,
+              "samples": 10000,
+              "mean_ms": 0.01249435,
+              "median_ms": 0.012,
+              "min_ms": 0.0117,
+              "p95_ms": 0.0141,
+              "max_ms": 0.2475
+            },
+            {
+              "fork": 2,
+              "samples": 10000,
+              "mean_ms": 0.01241824,
+              "median_ms": 0.0119,
+              "min_ms": 0.0116,
+              "p95_ms": 0.0124,
+              "max_ms": 0.845
+            }
+          ]
+        },
+        "mean_ratio": 1.2716997159633014,
+        "per_fork_ratios": [
+          1.265457786914867,
+          1.2860020729369672,
+          1.2635687504831603
+        ],
+        "target_met": false,
+        "execution": [
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 3,
+              "factorizations": 3,
+              "triangularSolves": 4,
+              "diagnostics": []
+            },
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "batchCompilationMillis": 910,
+            "batchProcessCpuNanos": 1984375000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 3,
+              "factorizations": 3,
+              "triangularSolves": 4,
+              "diagnostics": []
+            },
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "batchCompilationMillis": 921,
+            "batchProcessCpuNanos": 1906250000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 3,
+              "factorizations": 3,
+              "triangularSolves": 4,
+              "diagnostics": []
+            },
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "batchCompilationMillis": 926,
+            "batchProcessCpuNanos": 2015625000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          }
+        ],
+        "counters": [
+          {
+            "preparations": 1,
+            "scalarEquations": 78,
+            "structuralEntries": 456,
+            "factorizedEntries": 698,
+            "preparedResidualEvaluations": 360000,
+            "preparedWorkspaceScopes": 60000,
+            "stableSolveScopes": 60000,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 78,
+            "structuralEntries": 456,
+            "factorizedEntries": 698,
+            "preparedResidualEvaluations": 360000,
+            "preparedWorkspaceScopes": 60000,
+            "stableSolveScopes": 60000,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 78,
+            "structuralEntries": 456,
+            "factorizedEntries": 698,
+            "preparedResidualEvaluations": 360000,
+            "preparedWorkspaceScopes": 60000,
+            "stableSolveScopes": 60000,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "initialSolveCountedAsWarmup": 1
+          }
+        ],
+        "independent_validation": {
+          "case39-interpss-prepared-0-voltage.csv": {
+            "independent_mismatch_pu": 5.320296951908283e-08,
+            "max_complex_voltage_error_pu": 4.525880256036854e-09
+          },
+          "case39-interpss-prepared-1-voltage.csv": {
+            "independent_mismatch_pu": 5.320296951908283e-08,
+            "max_complex_voltage_error_pu": 4.525880256036854e-09
+          },
+          "case39-interpss-prepared-2-voltage.csv": {
+            "independent_mismatch_pu": 5.320296951908283e-08,
+            "max_complex_voltage_error_pu": 4.525880256036854e-09
+          }
+        },
+        "evidence_root": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031"
+      },
+      {
+        "case": "case118",
+        "prepared": {
+          "case": "case118",
+          "backend": "prepared",
+          "samples": 30000,
+          "mean_ms": 0.041378196666666665,
+          "median_ms": 0.0398,
+          "min_ms": 0.039,
+          "p95_ms": 0.0439,
+          "max_ms": 0.9908,
+          "iterations": [
+            4
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 10000,
+              "mean_ms": 0.04096117,
+              "median_ms": 0.0395,
+              "min_ms": 0.039,
+              "p95_ms": 0.0436,
+              "max_ms": 0.9908
+            },
+            {
+              "fork": 1,
+              "samples": 10000,
+              "mean_ms": 0.04161671,
+              "median_ms": 0.0399,
+              "min_ms": 0.0394,
+              "p95_ms": 0.0441,
+              "max_ms": 0.8388
+            },
+            {
+              "fork": 2,
+              "samples": 10000,
+              "mean_ms": 0.04155671,
+              "median_ms": 0.0398,
+              "min_ms": 0.0393,
+              "p95_ms": 0.0443,
+              "max_ms": 0.5758
+            }
+          ]
+        },
+        "rustpower": {
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "samples": 30000,
+          "mean_ms": 0.029030303333333337,
+          "median_ms": 0.0277,
+          "min_ms": 0.027,
+          "p95_ms": 0.032,
+          "max_ms": 1.2823,
+          "iterations": [
+            4
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 10000,
+              "mean_ms": 0.02977989,
+              "median_ms": 0.0277,
+              "min_ms": 0.027,
+              "p95_ms": 0.0478,
+              "max_ms": 1.2823
+            },
+            {
+              "fork": 1,
+              "samples": 10000,
+              "mean_ms": 0.02871254,
+              "median_ms": 0.0277,
+              "min_ms": 0.0273,
+              "p95_ms": 0.0291,
+              "max_ms": 0.5049
+            },
+            {
+              "fork": 2,
+              "samples": 10000,
+              "mean_ms": 0.02859848,
+              "median_ms": 0.0276,
+              "min_ms": 0.0272,
+              "p95_ms": 0.029,
+              "max_ms": 0.6272
+            }
+          ]
+        },
+        "mean_ratio": 1.425344964244833,
+        "per_fork_ratios": [
+          1.3754641135343346,
+          1.4494262785528553,
+          1.453109046354911
+        ],
+        "target_met": false,
+        "execution": [
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 3,
+              "factorizations": 3,
+              "triangularSolves": 4,
+              "diagnostics": []
+            },
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "batchCompilationMillis": 623,
+            "batchProcessCpuNanos": 3093750000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 3,
+              "factorizations": 3,
+              "triangularSolves": 4,
+              "diagnostics": []
+            },
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "batchCompilationMillis": 615,
+            "batchProcessCpuNanos": 3093750000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 3,
+              "factorizations": 3,
+              "triangularSolves": 4,
+              "diagnostics": []
+            },
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "batchCompilationMillis": 633,
+            "batchProcessCpuNanos": 3109375000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          }
+        ],
+        "counters": [
+          {
+            "preparations": 1,
+            "scalarEquations": 236,
+            "structuralEntries": 1106,
+            "factorizedEntries": 1646,
+            "preparedResidualEvaluations": 360000,
+            "preparedWorkspaceScopes": 60000,
+            "stableSolveScopes": 60000,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 236,
+            "structuralEntries": 1106,
+            "factorizedEntries": 1646,
+            "preparedResidualEvaluations": 360000,
+            "preparedWorkspaceScopes": 60000,
+            "stableSolveScopes": 60000,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 236,
+            "structuralEntries": 1106,
+            "factorizedEntries": 1646,
+            "preparedResidualEvaluations": 360000,
+            "preparedWorkspaceScopes": 60000,
+            "stableSolveScopes": 60000,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60000,
+            "warmupLoadflowCalls": 50000,
+            "measuredLoadflowCalls": 10000,
+            "initialSolveCountedAsWarmup": 1
+          }
+        ],
+        "independent_validation": {
+          "case118-interpss-prepared-0-voltage.csv": {
+            "independent_mismatch_pu": 3.1537862653484076e-09,
+            "max_complex_voltage_error_pu": 1.4543185522495588e-10
+          },
+          "case118-interpss-prepared-1-voltage.csv": {
+            "independent_mismatch_pu": 3.1537862653484076e-09,
+            "max_complex_voltage_error_pu": 1.4543185522495588e-10
+          },
+          "case118-interpss-prepared-2-voltage.csv": {
+            "independent_mismatch_pu": 3.1537862653484076e-09,
+            "max_complex_voltage_error_pu": 1.4543185522495588e-10
+          }
+        },
+        "evidence_root": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031"
+      },
+      {
+        "case": "case9241pegase",
+        "prepared": {
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "samples": 300,
+          "mean_ms": 16.579384333333334,
+          "median_ms": 16.2574,
+          "min_ms": 15.0045,
+          "p95_ms": 19.061265,
+          "max_ms": 24.7803,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 100,
+              "mean_ms": 16.634091,
+              "median_ms": 16.4452,
+              "min_ms": 15.2657,
+              "p95_ms": 18.260409999999997,
+              "max_ms": 20.4281
+            },
+            {
+              "fork": 1,
+              "samples": 100,
+              "mean_ms": 16.209789999999998,
+              "median_ms": 15.88155,
+              "min_ms": 15.0045,
+              "p95_ms": 17.781655,
+              "max_ms": 24.7803
+            },
+            {
+              "fork": 2,
+              "samples": 100,
+              "mean_ms": 16.894272,
+              "median_ms": 16.553649999999998,
+              "min_ms": 15.3492,
+              "p95_ms": 19.229519999999997,
+              "max_ms": 23.6033
+            }
+          ]
+        },
+        "rustpower": {
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "samples": 300,
+          "mean_ms": 12.871480666666667,
+          "median_ms": 12.62415,
+          "min_ms": 12.1022,
+          "p95_ms": 14.086395000000001,
+          "max_ms": 30.8331,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 100,
+              "mean_ms": 12.961354000000002,
+              "median_ms": 12.754249999999999,
+              "min_ms": 12.3358,
+              "p95_ms": 14.086395,
+              "max_ms": 19.7558
+            },
+            {
+              "fork": 1,
+              "samples": 100,
+              "mean_ms": 12.600401999999999,
+              "median_ms": 12.51875,
+              "min_ms": 12.1022,
+              "p95_ms": 13.40206,
+              "max_ms": 13.6436
+            },
+            {
+              "fork": 2,
+              "samples": 100,
+              "mean_ms": 13.052685999999996,
+              "median_ms": 12.601849999999999,
+              "min_ms": 12.1191,
+              "p95_ms": 14.980914999999998,
+              "max_ms": 30.8331
+            }
+          ]
+        },
+        "mean_ratio": 1.288071261006439,
+        "per_fork_ratios": [
+          1.2833605964315147,
+          1.2864502259531085,
+          1.294313829352825
+        ],
+        "target_met": false,
+        "execution": [
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 5,
+              "factorizations": 5,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 1794,
+            "batchProcessCpuNanos": 4453125000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 5,
+              "factorizations": 5,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 1649,
+            "batchProcessCpuNanos": 4250000000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 5,
+              "factorizations": 5,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 1390,
+            "batchProcessCpuNanos": 4046875000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          }
+        ],
+        "counters": [
+          {
+            "preparations": 1,
+            "scalarEquations": 18482,
+            "structuralEntries": 130858,
+            "factorizedEntries": 235234,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 18482,
+            "structuralEntries": 130858,
+            "factorizedEntries": 235234,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 18482,
+            "structuralEntries": 130858,
+            "factorizedEntries": 235234,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          }
+        ],
+        "independent_validation": {
+          "case9241pegase-interpss-prepared-0-voltage.csv": {
+            "independent_mismatch_pu": 4.188368095031717e-09,
+            "max_complex_voltage_error_pu": 5.2362293560279524e-11
+          },
+          "case9241pegase-interpss-prepared-1-voltage.csv": {
+            "independent_mismatch_pu": 4.188368095031717e-09,
+            "max_complex_voltage_error_pu": 5.2362293560279524e-11
+          },
+          "case9241pegase-interpss-prepared-2-voltage.csv": {
+            "independent_mismatch_pu": 4.188368095031717e-09,
+            "max_complex_voltage_error_pu": 5.2362293560279524e-11
+          }
+        },
+        "evidence_root": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031"
+      },
+      {
+        "case": "activsg25k",
+        "prepared": {
+          "case": "activsg25k",
+          "backend": "prepared",
+          "samples": 300,
+          "mean_ms": 55.09442166666666,
+          "median_ms": 54.46355,
+          "min_ms": 50.9811,
+          "p95_ms": 59.39941,
+          "max_ms": 71.8593,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 100,
+              "mean_ms": 54.882878,
+              "median_ms": 54.412,
+              "min_ms": 50.9811,
+              "p95_ms": 59.259344999999996,
+              "max_ms": 65.1577
+            },
+            {
+              "fork": 1,
+              "samples": 100,
+              "mean_ms": 54.836873,
+              "median_ms": 53.614000000000004,
+              "min_ms": 51.4121,
+              "p95_ms": 61.10026,
+              "max_ms": 71.8593
+            },
+            {
+              "fork": 2,
+              "samples": 100,
+              "mean_ms": 55.563513999999984,
+              "median_ms": 55.05625,
+              "min_ms": 51.8764,
+              "p95_ms": 59.298365000000004,
+              "max_ms": 66.4383
+            }
+          ]
+        },
+        "rustpower": {
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "samples": 300,
+          "mean_ms": 41.24686766666667,
+          "median_ms": 40.6285,
+          "min_ms": 37.7618,
+          "p95_ms": 45.689765,
+          "max_ms": 59.0471,
+          "iterations": [
+            5
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 100,
+              "mean_ms": 41.938237,
+              "median_ms": 41.6055,
+              "min_ms": 38.2777,
+              "p95_ms": 45.858455,
+              "max_ms": 47.7975
+            },
+            {
+              "fork": 1,
+              "samples": 100,
+              "mean_ms": 40.868434,
+              "median_ms": 39.9864,
+              "min_ms": 38.3244,
+              "p95_ms": 44.38275,
+              "max_ms": 55.7466
+            },
+            {
+              "fork": 2,
+              "samples": 100,
+              "mean_ms": 40.933932,
+              "median_ms": 40.03835,
+              "min_ms": 37.7618,
+              "p95_ms": 44.922975,
+              "max_ms": 59.0471
+            }
+          ]
+        },
+        "mean_ratio": 1.3357237720912027,
+        "per_fork_ratios": [
+          1.3086596367892145,
+          1.3417904145776665,
+          1.357394984679214
+        ],
+        "target_met": false,
+        "execution": [
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 4,
+              "factorizations": 4,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 3670,
+            "batchProcessCpuNanos": 13843750000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 4,
+              "factorizations": 4,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 3485,
+            "batchProcessCpuNanos": 12453125000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 4,
+              "factorizations": 4,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 3357,
+            "batchProcessCpuNanos": 15578125000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          }
+        ],
+        "counters": [
+          {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          }
+        ],
+        "independent_validation": {
+          "activsg25k-interpss-prepared-0-voltage.csv": {
+            "independent_mismatch_pu": 3.0279286633572156e-08,
+            "max_complex_voltage_error_pu": 5.495898477540642e-09
+          },
+          "activsg25k-interpss-prepared-1-voltage.csv": {
+            "independent_mismatch_pu": 3.0279286633572156e-08,
+            "max_complex_voltage_error_pu": 5.495898477540642e-09
+          },
+          "activsg25k-interpss-prepared-2-voltage.csv": {
+            "independent_mismatch_pu": 3.0279286633572156e-08,
+            "max_complex_voltage_error_pu": 5.495898477540642e-09
+          }
+        },
+        "evidence_root": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031"
+      },
+      {
+        "case": "activsg70k",
+        "prepared": {
+          "case": "activsg70k",
+          "backend": "prepared",
+          "samples": 300,
+          "mean_ms": 249.36715766666666,
+          "median_ms": 248.7656,
+          "min_ms": 236.4745,
+          "p95_ms": 264.120695,
+          "max_ms": 320.7548,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 100,
+              "mean_ms": 251.883826,
+              "median_ms": 248.7201,
+              "min_ms": 241.7256,
+              "p95_ms": 274.6225,
+              "max_ms": 320.7548
+            },
+            {
+              "fork": 1,
+              "samples": 100,
+              "mean_ms": 253.45431799999997,
+              "median_ms": 251.76454999999999,
+              "min_ms": 245.7254,
+              "p95_ms": 266.86587499999996,
+              "max_ms": 293.2856
+            },
+            {
+              "fork": 2,
+              "samples": 100,
+              "mean_ms": 242.763329,
+              "median_ms": 241.50915,
+              "min_ms": 236.4745,
+              "p95_ms": 253.27196,
+              "max_ms": 263.4956
+            }
+          ]
+        },
+        "rustpower": {
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "samples": 300,
+          "mean_ms": 218.9608113333333,
+          "median_ms": 217.8155,
+          "min_ms": 211.9473,
+          "p95_ms": 227.218045,
+          "max_ms": 255.5901,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 100,
+              "mean_ms": 217.64486900000003,
+              "median_ms": 216.44774999999998,
+              "min_ms": 211.9473,
+              "p95_ms": 225.002745,
+              "max_ms": 235.6415
+            },
+            {
+              "fork": 1,
+              "samples": 100,
+              "mean_ms": 220.73646300000001,
+              "median_ms": 219.1837,
+              "min_ms": 214.144,
+              "p95_ms": 228.3047,
+              "max_ms": 255.5901
+            },
+            {
+              "fork": 2,
+              "samples": 100,
+              "mean_ms": 218.501102,
+              "median_ms": 217.37385,
+              "min_ms": 212.0669,
+              "p95_ms": 226.42584,
+              "max_ms": 246.7964
+            }
+          ]
+        },
+        "mean_ratio": 1.138866613382449,
+        "per_fork_ratios": [
+          1.1573157095653837,
+          1.1482213430229693,
+          1.1110393804787309
+        ],
+        "target_met": true,
+        "execution": [
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 5,
+              "factorizations": 5,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 2005,
+            "batchProcessCpuNanos": 41125000000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 5,
+              "factorizations": 5,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 1739,
+            "batchProcessCpuNanos": 40734375000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          },
+          {
+            "selectionApi": "NrExecutionMode",
+            "report": {
+              "requestedMode": "CACHED",
+              "actualStrategy": "CACHED",
+              "polar": true,
+              "preparationBuilds": 0,
+              "coefficientRefreshes": 0,
+              "structuralRebuilds": 0,
+              "jacobianAssemblies": 5,
+              "factorizations": 5,
+              "triangularSolves": 6,
+              "diagnostics": []
+            },
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "batchCompilationMillis": 1691,
+            "batchProcessCpuNanos": 40328125000,
+            "batchScope": "initialization, warmups, measured solves and untimed validation"
+          }
+        ],
+        "counters": [
+          {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          },
+          {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 1200,
+            "preparedWorkspaceScopes": 150,
+            "stableSolveScopes": 150,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 150,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 100,
+            "initialSolveCountedAsWarmup": 1
+          }
+        ],
+        "independent_validation": {
+          "activsg70k-interpss-prepared-0-voltage.csv": {
+            "independent_mismatch_pu": 6.943662680749712e-10,
+            "max_complex_voltage_error_pu": 4.389535414791633e-11
+          },
+          "activsg70k-interpss-prepared-1-voltage.csv": {
+            "independent_mismatch_pu": 6.943662680749712e-10,
+            "max_complex_voltage_error_pu": 4.389535414791633e-11
+          },
+          "activsg70k-interpss-prepared-2-voltage.csv": {
+            "independent_mismatch_pu": 6.943662680749712e-10,
+            "max_complex_voltage_error_pu": 4.389535414791633e-11
+          }
+        },
+        "evidence_root": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031"
+      }
+    ],
+    "integrity": {
+      "nr-contributors-rustpower-small-20261031": {
+        "runtime_changes": [],
+        "source_changes": [],
+        "evidence_hash_changes": [],
+        "affinity_mask": 4
+      },
+      "nr-contributors-rustpower-large-20261031": {
+        "runtime_changes": [],
+        "source_changes": [],
+        "evidence_hash_changes": [],
+        "affinity_mask": 4
+      }
+    },
+    "pinned_rustpower_files_sha256": {
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\METADATA": "7f5ed458e56c7a375e1d022d99877d1e2d6ae4af4a974abe28001e5e92e51561",
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\RECORD": "340270ad0117741fb4fde6b83752bd245c4270dac38d41af4c3c7850a8d20711",
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\WHEEL": "ec72fe4c6beae3839fa74ca164bfae4482051dc25322aaa4459550db06627733",
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\__init__.py": "cffb3d7b997fb11ff6379156ee1ff9f8cdddd6c88375c48619a7b67a21c260b3",
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\__init__.pyi": "81c59cfcc34a0cd608d60a57af529e40cda6a44e29bc83aed576a5ee16e89537",
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\rustpower.pyd": "18123a2178a758fa7cc2e0386c91d581c887d5d9007669373077a98347187de1"
+    },
+    "all_cases_target_met": false,
+    "evidence": [
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031/environment.json",
+        "sha256": "5cc3bad734bb2f8b56303805108305e0a750a0f76c2270100545c6cf9bba917d"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031/summary.json",
+        "sha256": "b40e5d681ae04d6e65f64b6b7cfda7c87c4d56240547ee51d415759a5b7bf25f"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031/target-verification.json",
+        "sha256": "b0f85d90c24bed522d72f714226bc770a2cc1cd8cc0a964bc0ff476eb7a4a9d9"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031/sha256.json",
+        "sha256": "3413c39bc9cc31cc13ae005ca7ccaceb93a1ed5e1050a5b9218928bb919fb0ea"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031/interpss-validation.json",
+        "sha256": "51a1d060e7e15fd2603365d74951c11d2d77cfcd2402a8a58965ce34ac4820cc"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-small-20261031.log.status.json",
+        "sha256": "6120c5c602701b6ef3495e1792844b0ee2bffb145aff3915dd34a7cbb99987f5"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031/environment.json",
+        "sha256": "11c7af9235fdb15178df108b5340a7b51928dac400fd89d2c91f8d03128d9bb1"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031/summary.json",
+        "sha256": "539664fa2ea53052b2afbc9dfa55bf8d4cab3a753272a71eea73c53522169b67"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031/target-verification.json",
+        "sha256": "eb5761e75c0de6c8e51d72c877f2e24586532b3c02e02202f5220acabeee5bf8"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031/sha256.json",
+        "sha256": "5e74649b4450c03b5acba1a2bf1a925d028a41bc6fb180254d2e9f108e0af1c2"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031/interpss-validation.json",
+        "sha256": "16b093d701199411c8157c58278f67bd572f810de5d1e1833f4123afed46e134"
+      },
+      {
+        "path": "ipss.test.plugin.core/target/nr-contributors-rustpower-large-20261031.log.status.json",
+        "sha256": "ae95f1088113484d4a3bb6d4d929584636f742bf6226292ea3a2e1df0afd1622"
+      }
+    ]
+  }
+}
