@@ -83,9 +83,11 @@ predictor/ownership guards and state diagnostics. Its warmed update loop measure
 zero allocated bytes for each control mode with each integration method. This
 component result does not establish a whole-simulation speedup.
 
-Before changing numerical storage, the maintained executable and complete flat
-and fault state/boundary traces were frozen. After the change all retained
-modified-Euler traces remain byte-for-byte identical. Existing import, equation,
+Before the storage-only refactor, the maintained executable and complete flat
+and fault state/boundary traces were frozen. At that checkpoint all retained
+modified-Euler traces remained byte-for-byte identical. The subsequent
+direct-speed equation correction described below intentionally changes the
+double-derivative trajectories. Existing import, equation,
 limiter, prepared-curve and independent SMIB tests continue to pass.
 
 `Hyg3SharedSmibTest` exercises the retained synthetic selector, deadband and
@@ -106,7 +108,94 @@ boundary results do not qualify the complete internal controller trajectory.
 The lossless bounded traces retain all independent channels, all stored states,
 physical diagnostics and committed histories. Each channel's maximum error and
 its time are recorded. Transient state-coordinate and cached-output lifecycle
-differences remain diagnostic rather than accepted whole-model parity. These
-fine-step, half-second runs do not replace production-step, long-duration or
-extended limiter/event qualification. The model remains incomplete in the work
-list.
+differences in that earlier matrix remain diagnostic. The state-coordinate and
+quarter-cycle extension below adds independent acceptance; extended limiter/event
+and longer-duration qualification remain incomplete in the work list.
+
+## Published compensation coordinates
+
+The integration lags retain their existing storage coordinates. The published
+derivative-block states use positive compensation coordinates. For derivative
+input `u`, derivative lag `zD` and the two double-derivative lags `z1`, `z2`:
+
+```text
+x2 = KD / TF * zD
+x7 = K2 / TF * z1
+x8 = K2 / TF * z2
+D1 = KD / TF * u - x2
+D2 = K2 / TF^2 * u - x7 / TF - x8
+```
+
+`readPublishedState()` exposes these coordinates in diagram order without
+changing numerical storage, physical equations, predictor slopes or committed
+histories. The existing typed canonical-state getters retain their distinct
+coordinate convention. Scalar gain/time writes remain live, and the read uses
+caller-owned arrays. Its warmed allocation check remains zero in both methods.
+
+`tools/hyg3_reference_probe.py` captures synthetic nonunit-gain/time-constant
+discriminators with both controller modes, two fine steps and five-second
+quarter-cycle runs. Each profile has a verified cold pair with identical
+numerical exports. Complete scripts, inputs, logs, outputs and exact source/runtime
+provenance remain in a hash-pinned private archive. No source-case inventory is
+used by this probe or its reports.
+
+`Hyg3StateConformanceTest` independently reconstructs the compensation-state
+two-history recurrences from the captured executed coefficients. Nonunit gains
+discriminate which section owns `K2`; a unit-gain profile alone could not prove
+that placement. The three maximum recurrence defects are below 2e-10, 8e-10 and
+3e-9, respectively. Reconstruction uses the executed coefficient precision;
+production import continues to preserve entered parameters.
+
+## Direct filtered-speed feedback
+
+The double-derivative branch's integral input sums the direct filtered-speed
+path together with the first and second derivative paths. The runtime previously
+omitted the direct term. It now uses:
+
+```text
+integral_rate = KI * (Pref - auxiliary - u - D1 - D2 - Rgate * CV - Relec * Pe)
+```
+
+The independent integral recurrence agrees within two binary32 state ULPs
+when the direct path is included and rejects its omission. A retained negative
+control also shows the isolated equation regression failing before the fix:
+the expected integral rate is -0.006 while the old implementation returns zero.
+The correction applies to the shared Java equations, so both integration
+methods receive the same physical fix. The PID branch is unchanged. Captures
+hold auxiliary input at zero; the existing typed auxiliary convention remains.
+
+In the retained fine-step coupled matrix, worst integral-state error falls from
+about 0.000114 to below 0.000006 pu. This improvement follows the documented
+signal path; no gains, initial states, offsets or filtering are fitted.
+
+## Complete-state and quarter-cycle gates
+
+The extended coupled test compares all nine published state coordinates and
+boundary channels with every independent sample. It applies separate, explicit
+absolute envelopes per state and per method/interval, retained alongside the
+measured maxima and their times. All raw integration coordinates are also saved.
+The initialized states, fine-step matrix and five-second quarter-cycle matrix
+pass under both methods. Rate/position-limit and backlash-active extensions
+remain open; these profiles do not activate every limiter branch.
+
+At quarter-cycle steps over five seconds, worst voltage range-normalized RMSE is
+below 0.000216 with modified Euler and 0.000022 with staggered Euler. Worst
+rotor-angle RMSE is below 0.000775 and 0.000337 degree, respectively. Both methods
+retain the requested 0.001 voltage NRMSE and 0.01-degree angle-RMSE gates. The
+electrical-power filter has a larger finite-stage envelope with modified Euler;
+its independent maximum remains below 0.000769 pu. The state-specific gates do
+not substitute one common large tolerance for the smaller filter/state errors.
+
+Reference and physical timestamps remain separate. The comparison verifies the
+reference clock through explicit binary32 accumulation and preserves every
+physical grid point and event-side duplicate. Negative-time startup records
+retain the declared initialized-snapshot comparison. No time shift or sample
+reduction is used.
+
+With backlash bypassed, the reference's allocated input-history diagnostic
+`VAR2` stays at its initialized value. The tests assert that behavior and retain
+the raw channel separately from the live `BACKLASH_INPUT`. They compare the
+active gate output through `VAR3`; they do not report an unused allocated slot
+as a physical gate-input error or introduce fake integration history to match
+it. Active backlash/history publication still needs independent qualification.
+The complete model is not promoted to `VERIFIED` by this slice.

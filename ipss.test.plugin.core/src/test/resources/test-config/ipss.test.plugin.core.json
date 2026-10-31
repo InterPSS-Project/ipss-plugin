@@ -115,6 +115,10 @@
   "HspModelReferenceConformanceTest": {
     "hsp.referenceRoot": "testData/private/verification-artifacts/2026-10-30-hsp-usage/references"
   },
+  "Hyg3StateConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-state-qualification-20261031/captures.zip",
+    "archiveSha256": "e7604e97fd17e559ae13e60557ae1821be46376bdf31dea4c917f79c9706486b"
+  },
   "Texas2kSixCaseDynamicSmokeTest": {
     "texas2k.case.root": null
   },

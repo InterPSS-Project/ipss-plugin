@@ -166,6 +166,48 @@ public class Hyg3SharedStateTest {
         assertEquals(1., governor.getTurbineHead(), 1e-14);
     }
 
+    @Test void publishedCompensationCoordinatesPreserveStorageAndDerivativeHistory() throws Exception {
+        for (int mode : new int[]{0, 1}) for (boolean bypass : new boolean[]{false, true}) {
+            var governor = model(mode, bypass); var data = governor.getData();
+            double[] state = new double[9], published = new double[13];
+            governor.readStaggeredState(state, 0);
+            state[0] = .003; state[2] = .001; state[7] = -.002; state[8] = .0007;
+            governor.applyStaggeredState(state, 0, H);
+            var storage = governor.getIntegrationStates(); var history = governor.getIntegrationHistories();
+            var snapshot = governor.getStateDerivativeSnapshot(); Arrays.fill(published, 79.);
+            for (double gain : new double[]{.4, 1.7}) {
+                data.setK2(gain); data.setK1(gain/3.);
+                governor.readPublishedState(published, 2);
+                assertEquals(79., published[0]); assertEquals(79., published[12]);
+                for (int i : new int[]{0, 1, 3, 4, 5, 6}) assertEquals(state[i], published[i+2], 0.);
+                double tf = data.getTf();
+                assertEquals(bypass ? 0. : data.getK1()/tf*state[2], published[4], 0.);
+                assertEquals(bypass ? 0. : gain/tf*state[7], published[9], 0.);
+                assertEquals(bypass ? 0. : gain/tf*state[8], published[10], 0.);
+                if (!bypass) {
+                    assertEquals(data.getK1()/tf*state[0]-published[4], governor.getK1Output(), 1e-16);
+                    if (mode == 0) assertEquals(gain/(tf*tf)*state[0]-published[9]/tf-published[10],
+                            governor.getK2SecondOutput(), 1e-15);
+                }
+                assertEquals(storage, governor.getIntegrationStates()); assertEquals(history, governor.getIntegrationHistories());
+                assertEquals(snapshot, governor.getStateDerivativeSnapshot());
+            }
+            assertThrows(IndexOutOfBoundsException.class, () -> governor.readPublishedState(new double[8], 0));
+        }
+    }
+
+    @Test void doubleDerivativeControlIncludesDirectFilteredSpeedPath() throws Exception {
+        var governor = model(0, true); var data = governor.getData(); var machine = governor.getMachine();
+        data.setRgate(0.); data.setRelec(0.);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        machine.setSpeed(1.003);
+        double expected = -data.getKi()*(machine.getSpeed()-1.);
+        double[] rates = new double[9]; governor.evaluateStaggered(H, rates, 0);
+        assertEquals(expected, rates[1], 1e-15, "The diagram sums direct speed and both derivative paths");
+        governor.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, machine, 0);
+        assertEquals(expected, governor.getStateDerivativeSnapshot().rates().get("Integral"), 1e-15);
+    }
+
     @Test void warmedBothMethodUpdatesReuseNumericalBuffers() throws Exception {
         var bean = java.lang.management.ManagementFactory.getThreadMXBean();
         org.junit.jupiter.api.Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);
@@ -193,5 +235,6 @@ public class Hyg3SharedStateTest {
             governor.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, governor.getMachine(), 1);
         }
         sink = governor.getOutput(governor.getMachine());
+        governor.readPublishedState(states, 0);
     }
 }

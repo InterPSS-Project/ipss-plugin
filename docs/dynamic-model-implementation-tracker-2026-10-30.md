@@ -19,9 +19,9 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
-- Retain the direct shared-state contract, reusable numerical storage, accepted backlash/hysteresis histories and unchanged modified-Euler equations.
-- Extend both-method coupled boundary gates to production-quarter-cycle steps and longer runs; finish transient state-coordinate and limiter/event qualification.
-- Extend trajectory checks to internal states, gate/valve limits and both controller modes.
+- Retain the direct shared-state contract, reusable numerical storage and accepted backlash/hysteresis histories.
+- Retain the independently qualified compensation coordinates, direct-speed feedback correction and both-method state/boundary gates through five seconds at quarter-cycle steps.
+- Extend longer-duration, active rate/position limits, backlash/hysteresis, bypass and tuning-transition qualification under both methods; distinguish inactive allocated diagnostics from live physical signals.
 - Preserve exact allocation/ICON decoding and the distinction between source-native and typed frequency/deadband conventions.
 - Check parameter copying, partial gate curves and initialization residuals through the complete import path.
 - Retain the [prepared-curve execution contract](dynamic-models/hyg3-prepared-curves.md) and complete pre/post state equivalence when extending the runtime.

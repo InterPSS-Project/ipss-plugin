@@ -254,6 +254,37 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     public double getAuxiliaryInput() { return auxiliaryInput; }
     public double getInputFilterState() { return state.tdLag; }
     public double getK1FilterState() { return state.k1Lag; }
+    /** Positive compensation coordinate of the first derivative block. */
+    public double getDerivativeCompensationState() {
+        double tf = getData().getTf();
+        return tf > SMALL ? getData().getK1() / tf * state.k1Lag : 0.;
+    }
+    /** Positive compensation coordinate of the first section of the double derivative. */
+    public double getDoubleDerivativeFirstCompensationState() {
+        double tf = getData().getTf();
+        return tf > SMALL ? getData().getK2() / tf * state.k2First : 0.;
+    }
+    /** Positive compensation coordinate of the second section of the double derivative. */
+    public double getDoubleDerivativeSecondCompensationState() {
+        double tf = getData().getTf();
+        return tf > SMALL ? getData().getK2() / tf * state.k2Second : 0.;
+    }
+    /**
+     * Published diagram order: input filter, integral, derivative compensation,
+     * valve, gate, electrical-power filter, water flow and the two double-derivative
+     * compensations. These observation coordinates do not replace integration storage
+     * or the existing typed canonical-state accessors. Reading commits no history.
+     */
+    public void readPublishedState(double[] values, int offset) {
+        if (!initialized) throw new IllegalStateException("Initialize HYG3 before observing published states");
+        java.util.Objects.checkFromIndexSize(offset, 9, values.length);
+        values[offset] = state.tdLag; values[offset+1] = state.integrator;
+        values[offset+2] = getDerivativeCompensationState();
+        values[offset+3] = state.valve; values[offset+4] = state.gate;
+        values[offset+5] = state.peMeasured; values[offset+6] = state.flow;
+        values[offset+7] = getDoubleDerivativeFirstCompensationState();
+        values[offset+8] = getDoubleDerivativeSecondCompensationState();
+    }
     public double getK1Output() {
         double tdSignal = algebraic(state, currentGateOutput, committedDeadbandMode).tdSignal;
         return washoutOutput(tdSignal, state.k1Lag, getData().getK1(), getData().getTf());
@@ -370,7 +401,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
                 - d.getDturb() * (getMachine().getSpeed() - 1.0) * gateOutput;
         double integralError = d.getControlFlag() == PsseHyg3GovernorData.PID_CONTROL
                 ? tdSignal
-                : pref - auxiliaryInput - k1Output - k2DoubleOutput
+                : pref - auxiliaryInput - tdSignal - k1Output - k2DoubleOutput
                         - d.getRgate() * cv - d.getRelec() * pe;
         double servoTarget = d.getKg() * (cv - gateOutput);
         double valve = d.getTp() > SMALL ? s.valve : servoTarget;

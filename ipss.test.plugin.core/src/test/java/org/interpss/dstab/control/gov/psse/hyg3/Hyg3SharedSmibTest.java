@@ -83,6 +83,8 @@ public class Hyg3SharedSmibTest {
                 writer.write("\n");
                 for (var row : expected) {
                     double time = row.get("time_s");
+                    assertEquals(expected.getFirst().get("VAR2"), row.get("VAR2"), 0.,
+                            "Bypassed backlash retains its initialized reference input-history slot");
                     Frame actual = time < 0. ? run.initial : run.frames.get(frame++);
                     if (time < 0.) startup++; else assertEquals(time, actual.time, 5e-6, "Independent accumulated clock");
                     writer.write(time + "," + actual.time + "," + (time < 0. ? "STARTUP_HELD_INITIAL" : actual.kind));
@@ -113,7 +115,8 @@ public class Hyg3SharedSmibTest {
                     .filter(key -> !key.equals("time_s") && !run.initial.values.containsKey(key)).toList());
             diagnostics.put(profile, result);
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(out.resolve("diagnostic.json").toFile(), diagnostics);
-            assertEquals(List.of(), result.get("unmapped_reference_channels"), "Every retained reference channel has a diagnostic mapping");
+            assertEquals(List.of("VAR2"), result.get("unmapped_reference_channels"),
+                    "Inactive allocated input history is retained as raw reference data, separately from the live gate input");
             for (double normalized : nrmse.values()) assertTrue(normalized < .001, "Voltage range-normalized RMSE");
             assertTrue(Math.sqrt(squares.get("ANGLE_DEG")/expected.size()) < .01, "Rotor-angle RMSE in degrees");
             for (int i = 0; i < 9; i++) assertEquals(expected.getFirst().get("STATE"+i), run.initial.values.get("STATE"+i), 1e-6);
@@ -138,12 +141,16 @@ public class Hyg3SharedSmibTest {
     }
 
     private static Recording simulate(String profile, boolean staggered, boolean flat) throws Exception {
+        return simulate(CASE.resolve("network.raw"), CASE.resolve(profile+".dyr"), staggered, flat, H, .5);
+    }
+
+    static Recording simulate(Path raw, Path dynamic, boolean staggered, boolean flat, double step, double duration) throws Exception {
         var loader = new PSSEMultiFileLoader();
-        var context = loader.loadDStab(CASE.resolve("network.raw").toString(), CASE.resolve(profile+".dyr").toString());
+        var context = loader.loadDStab(raw.toString(), dynamic.toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());
         var algorithm = context.getDynSimuAlgorithm(); var net = context.getDStabilityNet();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
-        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER); algorithm.setSimuStepSec(H); algorithm.setTotalSimuTimeSec(.5);
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER); algorithm.setSimuStepSec(step); algorithm.setTotalSimuTimeSec(duration);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         if (!flat) net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net, SimpleFaultCode.GROUND_3P,
                 new Complex(0., .2), null, .05, .05), "fault");
@@ -151,19 +158,20 @@ public class Hyg3SharedSmibTest {
         algorithm.setSolver(staggered ? new SharedRecorder(algorithm, recording) : new OrdinaryRecorder(algorithm, recording));
         assertTrue(algorithm.initialization());
         recording.initial = recording.capture(0., "INITIAL"); recording.enabled = true;
-        while (algorithm.getSimuTime() < .5-H/2.) assertTrue(algorithm.solveDEqnStep(true));
+        while (algorithm.getSimuTime() < duration-step/2.) assertTrue(algorithm.solveDEqnStep(true));
         recording.frames.add(recording.capture(algorithm.getSimuTime(), "FINAL"));
         var governor = (PsseHyg3Governor) net.getMachine("Bus1-mach1").getGovernor();
-        if (staggered) assertTrue(governor.getStaggeredEvaluationCount() > 1000, "Actual shared-state dispatch");
+        if (staggered) assertTrue(governor.getStaggeredEvaluationCount() > duration/step, "Actual shared-state dispatch");
         else assertEquals(0, governor.getStaggeredEvaluationCount());
         assertEquals(TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
                 .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
         return recording;
     }
 
-    private static final class Recording {
+    static final class Recording {
         final DynamicSimuAlgorithm algorithm; final boolean flat; final List<Frame> frames = new ArrayList<>();
         boolean enabled; Frame initial;
+        final double[] published = new double[9];
         Recording(DynamicSimuAlgorithm algorithm, boolean flat) { this.algorithm = algorithm; this.flat = flat; }
         void before(double time) {
             if (enabled && !flat && (Math.abs(time-.05)<1e-9 || Math.abs(time-.1)<1e-9))
@@ -182,9 +190,11 @@ public class Hyg3SharedSmibTest {
             values.put("PMECH", machine.getPm()); values.put("STABILIZER", 0.);
             var states = governor.getIntegrationStates();
             for (int i = 0; i < 9; i++) values.put("STATE"+i, states.get(NAMES[i]));
+            governor.readPublishedState(published, 0);
+            for (int i = 0; i < 9; i++) values.put("PUBLISHED"+i, published[i]);
             values.put("VAR0", governor.getControlValveCommand());
             values.put("VAR1", governor.applyFrequencyDeadband(machine.getSpeed()-1.));
-            values.put("VAR2", governor.getGatePosition()); values.put("VAR3", governor.getGateOutput());
+            values.put("BACKLASH_INPUT", governor.getGatePosition()); values.put("VAR3", governor.getGateOutput());
             values.put("VAR4", governor.getTurbineHead());
             governor.getIntegrationHistories().forEach((key, value) -> values.put("HISTORY."+key, value));
             return new Frame(time, kind, values);
