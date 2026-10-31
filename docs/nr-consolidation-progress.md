@@ -74,3 +74,13 @@ The final checkpoint executes **368 tests, all passing, with no skips or fork du
 Evidence: `.verification-build/nr-consolidation-state-allocation-final-20261030/`, its bounded log, `ipss.test.plugin.core/target/nr-consolidation-20261030/state-allocation-audit.json`, and the [machine-readable checkpoint](benchmarks/checkpoints/nr-consolidation-state-allocation-2026-10-30.json). Executed source bytes and runtime hashes are retained. Earlier failed extraction attempts remain available.
 
 Preparation ownership, rectangular Jacobian extraction, specialized contributor contracts, the historical standalone solver facade, complete coverage mapping, the full post-change regression and performance qualification remain open. The earlier one-warmup benchmark describes the frozen pre-consolidation runtime and does not qualify these changes.
+
+## Rectangular Jacobian extraction
+
+Core commit `31af0303f` moves rectangular assembly into `RectangularNrFormulation`. Both coordinates now use the indexed inputs, numerical workspace, physical-current evaluation and sparse publication adapters. `AclfNetJMatrixHelper` is a formulation facade. Rectangular rows remain `[Q, P]`, both voltage columns remain active for PV buses, reduced PV rows use the voltage-squared constraint, and corrections retain their negative sign.
+
+The former full rectangular matrix suppressed off-diagonal PV reactive derivatives while keeping that row's physical diagonal derivatives. Full matrices now retain the complete physical reactive row. Independent current-balance finite differences verify the correction; the frozen assembler remains the oracle for preserved entries. PV active-load derivatives and switched-shunt/SVC chain rules are included.
+
+The extraction gate passes **379 tests with no failures, errors, skips or fork dumps**, including 11 new rectangular cases covering full/reduced matrices, both sparse backends, voltage-dependent loads, independent derivatives, live-device updates, block-only matrix publication and additional auxiliary dimensions. Evidence is in `.verification-build/nr-consolidation-rectangular-first-20261030/`, its bounded log and the [checkpoint](benchmarks/checkpoints/nr-consolidation-rectangular-2026-10-30.json).
+
+Reusable rectangular preparation remains explicitly unsupported at this checkpoint. Preparation ownership, contributor contracts, the standalone API migration and final full-regression/performance gates are still required.
