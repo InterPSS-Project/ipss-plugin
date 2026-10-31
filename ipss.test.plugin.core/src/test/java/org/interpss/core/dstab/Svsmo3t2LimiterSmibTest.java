@@ -49,13 +49,30 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(), results);
     }
 
+    @Test void completeDefiniteAndThermalRatingProfilesPassBothMethods() throws Exception {
+        Path matrix = referenceRoot();
+        Path output = Files.createTempDirectory(Path.of("target"), "svsmo3t2-rating-accepted-");
+        var results = new LinkedHashMap<String, Object>();
+        for (String profile : new String[]{"short-rating", "thermal-active", "short-rating-no-ov", "thermal-no-ov",
+                "short-rating-wide-ov", "short-rating-narrow-ov", "short-rating-high-multiplier", "thermal-active-half"})
+            for (boolean staggered : new boolean[]{false, true}) {
+                String key = profile + (staggered ? "-staggered" : "-modified");
+                results.put(key, compare(matrix.resolve(profile), output.resolve(key + ".csv"), staggered, "rating"));
+            }
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(), results);
+        System.out.println("SVSMO3T2 complete rating acceptance " + output);
+    }
+
     @Test @Tag("extended") void compareBothMethodsWithoutDroppingLimiterOrEventSamples() throws Exception {
         var mapper = new ObjectMapper();
         Path matrix = referenceRoot();
         Path output = Files.createTempDirectory(Path.of("target"), "svsmo3t2-limiter-coupled-");
         var results = new LinkedHashMap<String, Object>();
         String selected = System.getProperty("svsmo3t2.profile");
-        for (var entry : mapper.readTree(matrix.resolve("matrix.json").toFile())) {
+        var entries = (com.fasterxml.jackson.databind.node.ArrayNode) mapper.readTree(matrix.resolve("matrix.json").toFile());
+        Path supplement = matrix.resolve("matrix-ratings.json");
+        if (Files.exists(supplement)) entries.addAll((com.fasterxml.jackson.databind.node.ArrayNode) mapper.readTree(supplement.toFile()));
+        for (var entry : entries) {
             if (!entry.get("repeat").asText().equals("a")) continue;
             String profile = entry.get("profile").asText();
             if (selected != null && !profile.equals(selected)) continue;
@@ -73,11 +90,17 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         String configured = System.getProperty("svsmo3t2.matrix");
         if (configured != null) return Path.of(configured);
         Path root = Files.createTempDirectory(Path.of("target"), "svsmo3t2-limiter-reference-").toAbsolutePath().normalize();
+        extract(root, "limiters.zip", "2f8edde0aff5b9699cbd0f3cf88aa908a5b584c2154f9b70bf55e332bd12bf28");
+        extract(root, "ratings.zip", "49c580c091258ea4b208c65dd7d5ff3ba80864a9c07f2c7ec43ca56045a0a741");
+        return root;
+    }
+
+    private static void extract(Path root, String archive, String expectedHash) throws Exception {
         byte[] bytes;
-        try (var stream = Svsmo3t2LimiterSmibTest.class.getResourceAsStream("/dynamic-models/svsmo3t2/limiters.zip")) {
+        try (var stream = Svsmo3t2LimiterSmibTest.class.getResourceAsStream("/dynamic-models/svsmo3t2/" + archive)) {
             assertNotNull(stream); bytes = stream.readAllBytes();
         }
-        assertEquals("2f8edde0aff5b9699cbd0f3cf88aa908a5b584c2154f9b70bf55e332bd12bf28",
+        assertEquals(expectedHash,
                 java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
         try (var zip = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(bytes))) {
             java.util.zip.ZipEntry entry;
@@ -90,7 +113,6 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
                 }
             }
         }
-        return root;
     }
 
     private static Object compare(Path root, Path output, boolean staggered, String qualification) throws Exception {
@@ -152,9 +174,10 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         int[] columns = Arrays.stream(NAMES).mapToInt(header::indexOf).toArray();
         for (int column : columns) assertTrue(column >= 0);
         double[] maximum = new double[NAMES.length], at = new double[NAMES.length], squares = new double[NAMES.length];
-        double[] low = new double[3], high = new double[3];
+        double[] low = new double[NAMES.length], high = new double[NAMES.length];
         Arrays.fill(low, Double.POSITIVE_INFINITY); Arrays.fill(high, Double.NEGATIVE_INFINITY);
         double ratingOnsetMaximum = 0;
+        double prefaultAngleMaximum = 0, referenceThermalMaximum = 0, minimumReferenceRating = Double.POSITIVE_INFINITY;
         int previousClock = Integer.MIN_VALUE;
         try (var writer = org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(output,
                 org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(lines.size(), 2 * NAMES.length + 3))) {
@@ -173,12 +196,15 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
                     double reference = row[columns[i]], error = Math.abs(actual[i] - reference);
                     assertTrue(Double.isFinite(error), NAMES[i]);
                     squares[i] += error * error;
-                    if (i < 3) { low[i] = Math.min(low[i], reference); high[i] = Math.max(high[i], reference); }
+                    low[i] = Math.min(low[i], reference); high[i] = Math.max(high[i], reference);
+                    if (i == 6 && row[0] < .05) prefaultAngleMaximum = Math.max(prefaultAngleMaximum, error);
                     if (i == 7 && tick * step >= .074 && tick * step < .08)
                         ratingOnsetMaximum = Math.max(ratingOnsetMaximum, error);
                     if (error > maximum[i]) { maximum[i] = error; at[i] = row[0]; }
                     writer.write("," + actual[i] + "," + reference);
                 }
+                referenceThermalMaximum = Math.max(referenceThermalMaximum, row[header.indexOf("STATE_4")]);
+                minimumReferenceRating = Math.min(minimumReferenceRating, row[header.indexOf("VAR_10")]);
                 writer.write('\n');
             }
         }
@@ -212,13 +238,53 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
             // This gate localizes expiration timing. All later samples remain
             // in the trace and metrics; post-clearing rating parity is still open.
             assertTrue(ratingOnsetMaximum < (staggered ? .000001 : .007), "Rating-onset current maximum");
+        } else if (qualification.equals("rating")) {
+            double count = lines.size() - 1;
+            boolean coarseThermal = model.isThermalRatingActive() && step == .0005
+                    && high[2] > model.getData().ov1();
+            for (int i = 0; i < 3; i++) {
+                assertTrue(Math.sqrt(squares[i] / count) / (high[i] - low[i]) < .001, NAMES[i] + " range NRMSE");
+                assertTrue(maximum[i] < (staggered ? coarseThermal ? .0032 : .000019 : .004), NAMES[i] + " maximum");
+            }
+            for (int i = 3; i < 6; i++) {
+                assertTrue(Math.sqrt(squares[i] / count) < (staggered ? .0008 : .002), NAMES[i] + " RMSE degrees");
+                assertTrue(maximum[i] < .015, NAMES[i] + " maximum degrees");
+            }
+            assertTrue(prefaultAngleMaximum < .002, "Prefault rotor angle maximum degrees");
+            assertTrue(Math.sqrt(squares[6] / count) < (staggered ? .00055 : .0016), "Rotor angle RMSE degrees");
+            assertTrue(maximum[6] < (staggered ? .0015 : .003), "Rotor angle maximum degrees");
+            double currentMax = staggered ? coarseThermal ? .0155 : .00009 : .019;
+            double currentRms = staggered ? coarseThermal ? .0009 : .000022 : .0025;
+            assertTrue(maximum[7] < currentMax, "Physical current maximum");
+            assertTrue(Math.sqrt(squares[7] / count) < currentRms, "Physical current RMSE");
+            assertTrue(Math.sqrt(squares[8] / count) / (high[8] - low[8]) < .003, "Reactive power range NRMSE");
+            assertTrue(maximum[8] < (staggered ? coarseThermal ? .020 : .00011 : .025), "Reactive power maximum");
+            assertTrue(maximum[10] < .00000004, "Voltage reference maximum");
+            double[] maxState = staggered ? coarseThermal
+                    ? new double[]{.000056, .00028, currentMax, 1e-12, .00000003, .000027}
+                    : new double[]{.000013, .0002, currentMax, 1e-12, .00000003, .000014}
+                    : new double[]{.0017, .0013, currentMax, 1e-12, .000013, .00044};
+            double[] rmsState = staggered ? coarseThermal
+                    ? new double[]{.000009, .00019, currentRms, 1e-12, .000000011, .0000092}
+                    : new double[]{.000004, .000096, currentRms, 1e-12, .000000006, .0000042}
+                    : new double[]{.00009, .00026, currentRms, 1e-12, .0000082, .00008};
+            for (int i = 0; i < 6; i++) {
+                assertTrue(maximum[11 + i] < maxState[i], "STATE_" + i + " maximum");
+                assertTrue(Math.sqrt(squares[11 + i] / count) < rmsState[i], "STATE_" + i + " RMSE");
+            }
+            assertTrue(minimumReferenceRating < model.getData().continuousCurrent() * model.getData().shortCurrentMultiplier() - .1,
+                    "Reference must exercise rating reduction");
+            if (model.isThermalRatingActive()) assertTrue(referenceThermalMaximum > model.getData().thermalLimit(),
+                    "Reference must exercise the thermal integrator threshold");
+            else assertEquals(0, maximum[15], 0., "Definite rating must leave thermal state inactive");
         }
         System.out.println("SVSMO3T2 limiter " + output.getFileName() + " " + errors);
         return Map.of("status", qualification.equals("blocking") ? "coupled-blocking-accepted-cached-mvar-diagnostic"
-                : qualification.equals("rating-onset") ? "rating-onset-accepted-full-trajectory-diagnostic" : "diagnostic-not-accepted",
+                : qualification.equals("rating-onset") ? "rating-onset-accepted-full-trajectory-diagnostic"
+                : qualification.equals("rating") ? "coupled-rating-accepted-cached-mvar-diagnostic" : "diagnostic-not-accepted",
                 "integration_method", staggered ? "STAGGERED_EULER" : "MODIFIED_EULER", "rating_onset_current_maximum", ratingOnsetMaximum,
                 "endpoint_clock", staggered ? "SINGLE" : "DOUBLE", "network_tolerance", TOLERANCE,
-                "samples", lines.size() - 1, "channels", errors);
+                "step_s", step, "samples", lines.size() - 1, "channels", errors);
     }
 
     private static Svsmo3t2Model model(DynamicSimuAlgorithm algorithm) {

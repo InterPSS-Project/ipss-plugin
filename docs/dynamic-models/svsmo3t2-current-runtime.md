@@ -54,6 +54,12 @@ The definite-time rating timer samples the previous accepted physical output;
 trial states cannot consume an additional interval before threshold pickup.
 Both solver policies project this bus device's algebraic limits after the
 settled event solution, separately from numerical integration and timer commit.
+The overvoltage branch compares the voltage-dependent full short-term
+capability against the currently available rating before reducing that rating.
+It is distinct from either always scaling the available rating or simply
+clipping the capability envelope. Independent captures with different voltage
+spans and short-term multipliers distinguish these equations. No fitted
+voltage threshold or added smoothing is used.
 Tripping publishes zero current and freezes this controller's continuous state.
 The stressed independent trip capture has divergent allocated-state and held
 algebraic observations after tripping; post-trip state equivalence remains open.
@@ -209,14 +215,30 @@ range-normalized voltage RMSE below 0.001. These bounds preserve the different
 finite-step integration errors.
 
 The rating-onset gate checks current through the first rating-expiration
-transition. It retains and reports the entire subsequent trajectory as
-diagnostic: post-clearing rating/voltage-limit interaction remains unresolved.
+transition. A separate complete-profile gate now covers definite and thermal
+ratings, inactive/active overvoltage limiting, changed voltage spans and rating
+multipliers, and a halved thermal step. Both methods compare every original
+sample, bus voltage/angle, rotor angle, physical current/reactive power and all
+six states. Every bus passes range-normalized voltage RMSE below 0.001;
+reactive-power range NRMSE is below 0.003 and rotor-angle RMSE below 0.0016
+degrees. Each state has separate maximum/RMS bounds. Thermal profiles must
+actually cross the integral threshold, and every profile must reduce its
+available current rating.
+
+For the original definite-rating profile, the corrected staggered current
+maximum error is below 0.000032 pu and voltage error below 0.000007 pu.
+The coarser thermal profile retains a 0.0151 pu current maximum error and
+0.0031 pu voltage maximum error within its explicit numerical envelope.
+At half that step, the current maximum error is below 0.000017 pu and voltage
+error below 0.0000034 pu. This branch-sensitive finite-step comparison is
+reported separately; it does not establish production-step accuracy.
 The published Mvar diagnostic also remains a separate comparison because its
 event-side cached value can differ from the contemporaneous current/voltage
 product. The physical reactive-power gate uses the independent per-unit output.
 No event row or cached diagnostic is discarded.
 
-The extended coupled and recorded-input matrices remain explicitly diagnostic. They exercise
+The broader extended coupled and recorded-input matrices retain diagnostic
+branches beyond these accepted profiles. They exercise
 lead-lag coordinates, reference changes, slow reset, nonlinear droop, definite
 and thermal ratings, deadband, blocking, trips and bypasses. Execution alone is
 not acceptance. The blocked slow-reset discriminator supports the internal
@@ -230,8 +252,9 @@ threshold was fitted to remove it. Remaining work includes:
   the selected staggered result does not qualify every integration policy.
 - Finish coupled and internal-state qualification of every selector/limiter
   branch, including current reversal and zero-time-constant paths.
-- Resolve the remaining finite-stage behavior during exhausted-rating and
-  thermal-limit transitions without fitting parameters or shifting traces.
+- Extend the rating/voltage-limit gates to current reversal, equal voltage
+  thresholds, non-unit bases and production integration intervals; retain the
+  explicit coarse thermal error envelope without fitting or shifting traces.
 - Verify short blocking intervals and reinitialization/reconnection histories.
 - Qualify non-unit STATCOM/network MVA-base ratios and remote regulation during
   coordinated bank actions.

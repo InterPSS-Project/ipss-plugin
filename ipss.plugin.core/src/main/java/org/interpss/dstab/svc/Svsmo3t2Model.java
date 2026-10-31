@@ -261,8 +261,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         double max = rating();
         if (voltage < data.uv1() && data.uv1() > data.uv2())
             return max * (voltage - data.uv2()) / (data.uv1() - data.uv2());
-        if (voltage > data.ov1() && data.ov2() > data.ov1())
-            return max * (1 - 2 * (voltage - data.ov1()) / (data.ov2() - data.ov1()));
+        if (voltage > data.ov1() && data.ov2() > data.ov1()) {
+            double factor = 1 - 2 * (voltage - data.ov1()) / (data.ov2() - data.ov1());
+            // Select the voltage-reduction branch using full short-term
+            // capability, then reduce the currently available rating. This is
+            // distinct from clipping the capability envelope to that rating.
+            double capability = data.continuousCurrent() * data.shortCurrentMultiplier();
+            return capability * factor < max ? max * factor : max;
+        }
         return max;
     }
 
