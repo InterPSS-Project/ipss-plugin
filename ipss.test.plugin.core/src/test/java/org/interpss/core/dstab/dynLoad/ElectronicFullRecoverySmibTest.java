@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 public class ElectronicFullRecoverySmibTest {
     private static final TestConfig CONFIG = TestConfig.load("/test-config/ipss.test.plugin.core.json", "ElectronicFullRecoverySmibTest");
     private record Reference(String dyr, List<Map<String, Double>> rows, double faultX, boolean distributed,
-            double electronicFraction, double step, double duration) { }
+            double electronicFraction, double step, double duration, String omitted) { }
     private static final Map<String, Reference> REFERENCES = new HashMap<>();
     private static String sha(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
@@ -61,6 +61,12 @@ public class ElectronicFullRecoverySmibTest {
             int previous = REFERENCES.size(); load(duration, true, "duration-", .5);
             assertEquals(previous + 2, REFERENCES.size());
         }
+        Path partial = Path.of(CONFIG.string("partial.archive", "testData/private/verification-artifacts/cmldblu1-partial-distribution-20261101/captures.zip"));
+        if (Files.isRegularFile(partial)) {
+            assertEquals("01e6b5659580189d8c6928ec74245791bba0588f0699572335af616f4b966546", sha(Files.readAllBytes(partial)));
+            int previous = REFERENCES.size(); load(partial, true, "partial-", .5);
+            assertEquals(previous + 3, REFERENCES.size());
+        }
     }
     private static void load(Path archive, boolean distributed) throws Exception {
         load(archive, distributed, distributed ? "distributed-" : "", 1);
@@ -83,7 +89,8 @@ public class ElectronicFullRecoverySmibTest {
                 REFERENCES.put(prefix + e.getKey(), new Reference(new String(z.getInputStream(z.getEntry(p.get("dyr").getAsString())).readAllBytes(), StandardCharsets.UTF_8),
                         first.stream().filter(row -> row.get("time_s") >= 0).toList(), p.get("fault_x").getAsDouble(), distributed, electronicFraction,
                         p.has("step") ? p.get("step").getAsDouble() : .0005,
-                        p.has("duration") ? p.get("duration").getAsDouble() : .5));
+                        p.has("duration") ? p.get("duration").getAsDouble() : .5,
+                        p.has("omitted") ? p.get("omitted").getAsString() : distributed ? "none" : "both"));
             }
         }
     }
@@ -92,7 +99,9 @@ public class ElectronicFullRecoverySmibTest {
             "distributed-.1,false", "distributed-.1,true", "distributed-.01,false", "distributed-.01,true",
             "mixed-.1,false", "mixed-.1,true", "mixed-.01,false", "mixed-.01,true",
             "mixed-distributed-.1,false", "mixed-distributed-.1,true",
-            "duration-quarter,false", "duration-quarter,true", "duration-fine,false", "duration-fine,true"})
+            "duration-quarter,false", "duration-quarter,true", "duration-fine,false", "duration-fine,true",
+            "partial-no-transformer,false", "partial-no-transformer,true",
+            "partial-no-feeder,false", "partial-no-feeder,true", "partial-no-feeder-low,false", "partial-no-feeder-low,true"})
     void repeatedDropoutAndRecoveryMatchIndependentBoundaries(String impedance, boolean staggered) throws Exception {
         var ref = REFERENCES.get(impedance);
         Assumptions.assumeTrue(ref != null, "Retain independent captures for this profile");
@@ -106,8 +115,14 @@ public class ElectronicFullRecoverySmibTest {
         actual.write(out.resolve("actual.csv.gz"));
         assertEquals(1, actual.model.getData().value(132));
         assertEquals(ref.electronicFraction(), actual.model.getFel()); assertEquals(ref.rows().size(), actual.frames.size());
-        assertEquals(ref.distributed() ? 5 : 3, actual.algorithm.getNetwork().getNoBus());
-        if (ref.distributed()) {
+        assertEquals(switch (ref.omitted()) { case "both" -> 3; case "none" -> 5; default -> 4; }, actual.algorithm.getNetwork().getNoBus());
+        if (ref.omitted().equals("transformer")) {
+            assertSame(actual.model.getDStabBus(), actual.model.getLowVoltBus());
+            assertNotSame(actual.model.getLowVoltBus(), actual.model.getLoadBus());
+        } else if (ref.omitted().equals("feeder")) {
+            assertNotSame(actual.model.getDStabBus(), actual.model.getLowVoltBus());
+            assertSame(actual.model.getLowVoltBus(), actual.model.getLoadBus());
+        } else if (ref.distributed()) {
             assertNotSame(actual.model.getDStabBus(), actual.model.getLowVoltBus());
             assertNotSame(actual.model.getLowVoltBus(), actual.model.getLoadBus());
         } else assertSame(actual.model.getDStabBus(), actual.model.getLoadBus());

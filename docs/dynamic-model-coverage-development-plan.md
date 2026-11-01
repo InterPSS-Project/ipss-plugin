@@ -4,7 +4,9 @@
 
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
-omitted distribution and to fully represented transformer/feeder boundaries.
+omitted distribution, fully represented transformer/feeder boundaries, and
+either individually omitted element. Owned low-side shunt cancellation
+preserves unrelated parent loads and shunts in the transformer-omitted case.
 The latter retain accepted terminal-current history and condition the network
 with independently prepared G/B. Failed-solve rollback, matrix rebuild and
 repeated-leaf-initialization tests cover both integration methods.

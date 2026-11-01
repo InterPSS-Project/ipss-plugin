@@ -4,8 +4,8 @@ The omitted-distribution legacy composite now applies its independently
 established low-voltage static rule when a full-recovery electronic portion is
 also present. Motor fractions must be zero and both static frequency
 coefficients must be zero. The represented-distribution extension now also
-supports this mixture when both transformer and feeder are present. Partial
-element omission retains the prior path. Complete deep-fault reference
+supports this mixture with both elements present or either element omitted.
+Complete deep-fault reference
 qualification remains open as detailed below.
 
 Previously, the mixed configuration selected the generic static voltage
@@ -146,14 +146,14 @@ sample retained. Modified Euler yields bus-voltage NRMSE `0.00000791`, static-P
 NRMSE `0.0001132` and angle RMSE `0.00007570` degrees. Staggered integration
 yields `0.000000844`, `0.00005937` and `0.00001195` degrees respectively.
 
-This remains an isolated prototype, not production support. The deep fault
-still exhausts the unchanged 50-iteration limit. Its numerical conditioning
-must be resolved before broadening selection; the reference physical-balance
-issue above remains separate. The diagnostic shunt port also required explicit
+At this stage the isolated prototype still exhausted the unchanged
+50-iteration limit for the deep fault. The conditioning experiment below
+resolved that iteration failure; the reference physical-balance issue remains
+separate. The diagnostic shunt port also required explicit
 registration for staggered integration: arbitrary algebraic subclasses must
-not be silently accepted. Production work must preserve owned-device discovery,
-reinitialization and commit/discard semantics, and validate omitted-element,
-tap and restoration cases before adopting the boundary calculation.
+not be silently accepted. These findings motivated the owned production
+components and lifecycle gates described below. Tap and general restoration
+qualification remain open.
 
 Private independently prepared prototype archive SHA-256:
 `5b2e1d04c7cd9bb141eb27e63c5df53a603d48c7d5006b2710384bace7657e96`.
@@ -185,13 +185,11 @@ the largest active-power residual is `5.68e-6 pu` and the largest load-current
 residual is `2.53e-5 pu`. These checks support the physical consistency of the
 converged prototype, without resolving the deep reference's terminal mapping.
 
-Production eligibility is still unchanged. Before adoption, replace the
-diagnostic shunt subclass with an explicitly owned algebraic component and
-test failed-solve stamp rollback, repeated initialization, matrix rebuilds,
-tap changes and restoration. Verify that accepted-current history remains
-unchanged on a failed solve and that omitted-element configurations retain
-their existing path. Numerical conditioning must not silently change the
-first-entry voltage used to prepare G/B.
+This experiment preceded the production components below. Production tests
+now cover stamp rollback, repeated leaf initialization, matrix rebuilds and
+accepted-current history, including omitted-element configurations. Tap
+changes and general restoration remain open. Numerical conditioning must not
+silently change the first-entry voltage used to prepare G/B.
 
 Private conditioning and physical-balance archive SHA-256:
 `0e75cdf02a658f9441d982415225076cb9837b339dc62f9f84007040d73d61f1`.
@@ -224,6 +222,44 @@ physical-equation tests, not a substitute for independent deep-fault trajectory
 acceptance. The complete composite remains `LOADABLE`; tap actions, general
 restoration, motor mixtures and broader production-step qualification remain
 open.
+
+## Partial distribution elements
+
+The shared boundary calculation also supports an omitted transformer or feeder.
+With no transformer, terminal current is reconstructed from feeder current plus
+the composite's owned low-side shunt current. With no feeder, the preparation
+voltage is the transformer low-side voltage and no duplicate low-side shunt
+port is created. Both-elements-omitted configurations retain their existing
+collapsed current port.
+
+Low-side shunt ownership is captured during distribution initialization.
+Cancellation excludes unrelated parent-bus shunts, and registering the owned
+current-only shunt does not overwrite an existing parent load allocation.
+The same accepted-current history, prepared G/B and stamp rollback serve both
+integration methods without additional differential states or integration
+stages.
+
+Paired independent half-second references cover transformer omission and two
+feeder-omitted fault strengths. The stronger feeder-omitted control is needed
+because the moderate control's power trajectory was already close even with
+the old polynomial fallback. Across both methods:
+
+| Control | Previous worst angle RMSE (degrees) | Corrected worst angle RMSE (degrees) |
+| --- | ---: | ---: |
+| Transformer omitted | 0.116277 | 0.00009818 |
+| Feeder omitted, moderate fault | 0.00008687 | 0.00009813 |
+| Feeder omitted, stronger fault | 0.192821 | 0.00005176 |
+
+Every cold-captured field repeats exactly. The registered comparisons retain
+all samples and event sides and preserve the existing voltage, component P/Q,
+machine P/Q, speed, angle and G/B gates. Lifecycle tests now cover both methods
+for fully represented and either partially omitted topology. A separate
+ownership test checks unrelated parent load/shunt preservation and repeated
+shunt-leaf initialization. General restoration, tap actions, motor mixtures
+and deep-fault reference qualification remain open.
+
+Private partial-distribution reference archive SHA-256:
+`01e6b5659580189d8c6928ec74245791bba0588f0699572335af616f4b966546`.
 
 ## Ten-second moderate-fault controls
 

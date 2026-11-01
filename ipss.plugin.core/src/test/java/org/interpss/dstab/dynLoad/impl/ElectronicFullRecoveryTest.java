@@ -84,4 +84,26 @@ class ElectronicFullRecoveryTest {
             } else assertTrue(e.getEquivY().abs() > 0);
         }
     }
+
+    @Test void omittedTransformerPreservesUnrelatedParentLoadAndShunt() {
+        var net = DStabObjectFactory.createDStabilityNetwork(); net.setBaseKva(100000); net.setFrequency(60);
+        var bus = DStabObjectFactory.createDStabBus("B", net).orElseThrow();
+        bus.setLoadCode(com.interpss.core.aclf.AclfLoadCode.CONST_P);
+        bus.setLoadP(.6); bus.setLoadQ(.15); var originalLoad = new Complex(.6, .15); bus.setInitLoad(originalLoad);
+        bus.setVoltage(Complex.ONE); bus.setFreq(1); var originalShunt = new Complex(0, .03); bus.setShuntY(originalShunt);
+        double[] c = new double[132]; c[0] = -.77; c[1] = .017; c[2] = .031; c[3] = .046; c[4] = .35;
+        c[22] = .5; c[23] = .96; c[24] = .72; c[25] = .6; c[26] = .94;
+        c[27] = c[32] = 2; c[28] = c[33] = 1;
+        var model = new Cmldblu1Model("M", bus, java.util.Set.of("1"), new Complex(.4, .1), c);
+        assertTrue(model.initStates());
+        assertSame(bus, model.getLowVoltBus()); assertNotSame(bus, model.getLoadBus());
+        assertEquals(.2, bus.getLoadP(), 1e-15); assertEquals(.05, bus.getLoadQ(), 1e-15);
+        assertEquals(originalLoad, bus.getInitLoad(), "A current-only shunt leaf must not erase the parent allocation");
+        var shunt = bus.getDynLoadModelList().stream().filter(v -> v instanceof LegacyDistributionShuntPort).findFirst().orElseThrow();
+        assertEquals(0, bus.getShuntY().add(shunt.getEquivY()).subtract(originalShunt).abs(), 1e-15);
+        assertEquals(Complex.ZERO, shunt.getInitLoadPQ());
+        assertTrue(shunt.initStates());
+        assertEquals(0, bus.getShuntY().add(shunt.getEquivY()).subtract(originalShunt).abs(), 1e-15);
+        assertEquals(0, shunt.getNortonCurInj().add(model.getOwnedLowSideShunt().multiply(bus.getVoltage())).abs(), 1e-15);
+    }
 }

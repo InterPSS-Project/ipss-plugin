@@ -38,7 +38,7 @@ public final class Cmldblu1Model extends Cmldznu2Model {
                 && getData().value(31) == 0 && getData().value(36) == 0) {
             if (getLoadBus() == getDStabBus()) return new LegacyStaticLoadPort(getLoadBus(), getId() + "_S", getData(),
                     assignedActivePower, getCollapsedParentOwnedShunt());
-            if (distXfr != null && distFdr != null)
+            if (distXfr != null || distFdr != null)
                 return new LegacyDistributedStaticLoadPort(this, assignedActivePower);
         }
         return new LegacyStaticLoadModel(getLoadBus(), getId() + "_S", getStaticFraction(),
@@ -47,11 +47,11 @@ public final class Cmldblu1Model extends Cmldznu2Model {
 
     @Override protected void prepareAlgebraicNetworkInterface(Cmldznu2AlgebraicLoadModel staticComponent,
             Cmldznu2AlgebraicLoadModel electronicComponent) {
-        if (staticComponent instanceof LegacyDistributedStaticLoadPort) {
+        if (staticComponent instanceof LegacyDistributedStaticLoadPort && getLowVoltBus() != getLoadBus()) {
             var low = getLowVoltBus();
             low.setLoadCode(com.interpss.core.aclf.AclfLoadCode.CONST_P);
-            low.setInitLoad(Complex.ZERO);
-            var shunt = new LegacyDistributionShuntPort(low, getId() + "_lowShunt", getData(), low.getShuntY());
+            if (low.getInitLoad() == null) low.setInitLoad(Complex.ZERO);
+            var shunt = new LegacyDistributionShuntPort(low, getId() + "_lowShunt", getData(), getOwnedLowSideShunt());
             if (!shunt.initStates()) throw new IllegalStateException("Cannot initialize owned distribution shunt");
         }
         // The static port cancels the owned shunt numerically. Its first-entry
@@ -61,14 +61,18 @@ public final class Cmldblu1Model extends Cmldznu2Model {
     }
 
     Complex distributionBoundaryCurrent() {
+        if (distXfr == null) return getLowVoltBus().getVoltage().subtract(getLoadBus().getVoltage())
+                .divide(distFdr.getZ()).add(getOwnedLowSideShunt().multiply(getLowVoltBus().getVoltage()));
         return getDStabBus().getVoltage().subtract(getLowVoltBus().getVoltage()
                 .divide(distXfr.getToTurnRatio())).divide(distXfr.getZ());
     }
 
     double distributionPreparationVoltage(Complex incoming) {
-        double tap = distXfr.getToTurnRatio();
-        Complex low = getDStabBus().getVoltage().subtract(distXfr.getZ().multiply(incoming)).multiply(tap);
-        Complex feeder = incoming.divide(tap).subtract(low.multiply(getLowVoltBus().getShuntY()));
+        double tap = distXfr == null ? 1 : distXfr.getToTurnRatio();
+        Complex low = distXfr == null ? getDStabBus().getVoltage()
+                : getDStabBus().getVoltage().subtract(distXfr.getZ().multiply(incoming)).multiply(tap);
+        if (distFdr == null) return low.abs();
+        Complex feeder = incoming.divide(tap).subtract(low.multiply(getOwnedLowSideShunt()));
         return low.subtract(distFdr.getZ().multiply(feeder)).abs();
     }
 

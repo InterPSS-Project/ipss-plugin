@@ -31,6 +31,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private Cmldznu2AlgebraicLoadModel electronicLoadComponent;
     private Complex collapsedParentRemainder;
     private Complex collapsedParentOriginalShunt;
+    private Complex ownedLowSideShunt = Complex.ZERO;
 
     public Cmldznu2Model(String id, BaseDStabBus<?, ?> bus, Set<String> targetLoadIds,
             Complex targetPower, Cmldznu2Data data) {
@@ -209,6 +210,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                 / (lowVoltage.abs() * lowVoltage.abs());
         double lowSusceptance = data.value(1) / mvaFactor + fromCompensation;
         Complex componentLowShunt = new Complex(0, lowSusceptance);
+        ownedLowSideShunt = componentLowShunt;
         if (getLowVoltBus() == getDStabBus()) addShunt(getLowVoltBus(), lowSusceptance);
         else getLowVoltBus().setShuntY(componentLowShunt);
         Complex feederCurrent = incomingCurrent.divide(tap).subtract(lowVoltage.multiply(componentLowShunt));
@@ -298,6 +300,9 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
             throw new IllegalStateException("An owned parent shunt requires omitted distribution elements");
         return getDStabBus().getShuntY().subtract(collapsedParentOriginalShunt);
     }
+
+    /** The low-side capacitor owned by this composite, excluding unrelated parent shunts. */
+    protected Complex getOwnedLowSideShunt() { return ownedLowSideShunt; }
 
     /** Whether the distribution hook already included all reactive compensation. */
     protected boolean distributionIncludesReactiveCompensation() { return false; }

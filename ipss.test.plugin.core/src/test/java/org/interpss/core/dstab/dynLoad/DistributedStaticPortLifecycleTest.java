@@ -14,11 +14,20 @@ public class DistributedStaticPortLifecycleTest {
   return new Complex(states.get("STATIC.AcceptedTerminalCurrentReal"),states.get("STATIC.AcceptedTerminalCurrentImag"));
  }
  static Path input() throws Exception {
+  return input("none");
+ }
+ static Path input(String omitted) throws Exception {
   String source=Files.readString(Cmldblu1SharedSmibTest.CASE.resolve("cmldblu1-restart.dyr"));
   String original="0.004 0.009 0 0.0 0.0 0.05 0 0.96";
   check(source.contains(original),"Expected public synthetic fixture");
   var path=Files.createTempFile(Path.of("target"),"distribution-control-",".dyr");
-  Files.writeString(path,source.replace(original,"0.004 0.009 0 0.0 0.0 0 0.5 0.96"));
+  source=source.replace(original,"0.004 0.009 0 0.0 0.0 0 0.5 0.96");
+  String distribution="-0.77 0.017 0.031 0.046 0.35 0.071 1.01 0.99";
+  check(source.contains(distribution),"Expected synthetic distribution parameters");
+  if(omitted.equals("transformer")) source=source.replace(distribution,"-0.77 0.017 0.031 0.046 0.35 0 1.01 0.99");
+  else if(omitted.equals("feeder")) source=source.replace(distribution,"-0.77 0.017 0 0 0.35 0.071 1.01 0.99");
+  else check(omitted.equals("none"),"Known omission selector");
+  Files.writeString(path,source);
   return path;
  }
  @org.junit.jupiter.params.ParameterizedTest
@@ -58,11 +67,11 @@ public class DistributedStaticPortLifecycleTest {
   return new Complex(magnitude*Math.cos(angle),magnitude*Math.sin(angle));
  }
  @org.junit.jupiter.params.ParameterizedTest
- @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
- void trialRollbackRebuildAndInitialization(boolean staggered) throws Exception {
+ @org.junit.jupiter.params.provider.CsvSource({"false,none","true,none","false,transformer","true,transformer","false,feeder","true,feeder"})
+ void trialRollbackRebuildAndInitialization(boolean staggered,String omitted) throws Exception {
   IpssCorePlugin.init(); IpssCorePlugin.configureSparseSolver("java-klu");
   var fixture=Cmldblu1SharedSmibTest.CASE;
-  var input=input();
+  var input=input(omitted);
   var loader=new org.interpss.fadapter.psse.PSSEMultiFileLoader();
   var context=loader.loadDStab(fixture.resolve("load-network.raw").toString(),input.toString());
   var algorithm=context.getDynSimuAlgorithm();check(algorithm.getAclfAlgorithm().loadflow(),"Power flow");
