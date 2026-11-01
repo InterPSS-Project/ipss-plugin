@@ -153,3 +153,41 @@ tap and restoration cases before adopting the boundary calculation.
 
 Private independently prepared prototype archive SHA-256:
 `5b2e1d04c7cd9bb141eb27e63c5df53a603d48c7d5006b2710384bace7657e96`.
+
+### Prepared-admittance conditioning experiment
+
+A subsequent isolated prototype resolves the deep-profile iteration failure.
+Once G/B is independently prepared, it replaces the static leaf's numerical
+admittance with `G + jB`, updates the corresponding matrix diagonal by the
+difference from the previous stamp, and marks the factorization dirty. The
+current injection remains `Y_numerical * V - conjugate(S(V) / V)`; therefore
+the physical load equation and capacitor are unchanged. The prototype saves
+the preceding stamp at solve entry and restores it if the solve fails.
+
+Both repeated-fault profiles now complete under both integration methods at
+the unchanged 50-iteration limit and `1e-4` voltage-correction tolerance. No
+reference-fed values are used. Deep-profile G differs from the reference by
+less than `3.8e-7`. Moderate-profile angle RMSE remains below `0.0000802`
+degrees; deep-profile angle RMSE remains approximately `2.837` degrees.
+Convergence and reference agreement are separate results.
+
+Additional full-record diagnostics independently check transformer and feeder
+currents, shunt currents, component P/Q and resistive losses from the recorded
+internal phasors. All 1,005 samples per profile/method, including event sides,
+are retained. Deep-profile terminal active demand stays above `0.05054 pu`;
+the maximum active-power balance residual is `5.51e-8 pu` for modified Euler
+and `7.73e-10 pu` for staggered integration. Across both profiles and methods,
+the largest active-power residual is `5.68e-6 pu` and the largest load-current
+residual is `2.53e-5 pu`. These checks support the physical consistency of the
+converged prototype, without resolving the deep reference's terminal mapping.
+
+Production eligibility is still unchanged. Before adoption, replace the
+diagnostic shunt subclass with an explicitly owned algebraic component and
+test failed-solve stamp rollback, repeated initialization, matrix rebuilds,
+tap changes and restoration. Verify that accepted-current history remains
+unchanged on a failed solve and that omitted-element configurations retain
+their existing path. Numerical conditioning must not silently change the
+first-entry voltage used to prepare G/B.
+
+Private conditioning and physical-balance archive SHA-256:
+`0e75cdf02a658f9441d982415225076cb9837b339dc62f9f84007040d73d61f1`.
