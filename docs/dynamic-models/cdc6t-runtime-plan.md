@@ -31,3 +31,22 @@ claimed by this change.
 The exact source-library identity is retained in private evidence. The source
 data sheet establishes layout and state roles; detailed controller equations and
 event sequencing still require authoritative evidence and independent probes.
+
+## Retained independent boundary evidence
+
+`tools/cdc6t_reference_probe.py` now produces cold flat and rectifier-fault
+captures on the existing small LCC network fixture. The staged RAW marks its
+disconnected bus out of service; the original RAW is retained alongside it.
+The fixture uses fixed classical machine sources to isolate the DC boundary.
+This is a preliminary small-network discriminator, not final SMIB qualification.
+
+Both cold pairs match exactly. The reference confirms three differential states,
+18 diagnostic variables and three internal control flags. The flat state values
+are 500,000 V, 1,000 A and 505,000 V. The all-sample contract verifies the
+five-ohm DC voltage drop, rectifier/inverter power signs and 100 MVA power base,
+including startup and duplicate segment/event samples. Flat states are constant;
+the fault produces nonzero transducer and terminal-power response.
+
+These tests validate the reference contract only. CDC6T remains unsupported by
+the Java dynamic runtime. Implement and compare the controller, state/history
+integration and network coupling before changing that status.

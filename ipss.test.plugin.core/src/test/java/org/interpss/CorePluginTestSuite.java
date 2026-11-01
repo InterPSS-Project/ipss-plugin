@@ -276,6 +276,7 @@ import org.interpss.core.dstab.dynLoad.CompositeTapControlSmibTest;
 import org.interpss.core.dstab.Tiocr1AcceptedHistoryTest;
 import org.interpss.core.dstab.Tiocr1ResetReferenceTest;
 import org.interpss.core.dstab.Tiocr1LoadOnlyReferenceTest;
+import org.interpss.core.dstab.Cdc6tReferenceContractTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1222,6 +1223,7 @@ import org.junit.platform.suite.api.Suite;
     Tiocr1AcceptedHistoryTest.class,
     Tiocr1ResetReferenceTest.class,
     Tiocr1LoadOnlyReferenceTest.class,
+    Cdc6tReferenceContractTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,
