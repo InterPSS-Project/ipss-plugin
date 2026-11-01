@@ -38,8 +38,8 @@ def main():
     load = load_fixture(args.fixture)
     if args.clear_diagnostic_storage and not load:
         parser.error('--clear-diagnostic-storage is restricted to composite-load probes')
-    if args.constant and not args.fixture.startswith('cmldblu1'):
-        parser.error('--constant is restricted to legacy composite-load probes')
+    if args.constant and not load:
+        parser.error('--constant is restricted to composite-load probes')
     relay = args.fixture.startswith('tiocr1')
     shutil.copy2(source / ('load-network.raw' if load else 'dual-network.raw' if args.fixture=='wsieg1-dual' else 'network.raw'), out / 'network.raw')
     shutil.copy2(source / (args.fixture + '.dyr'), out / 'dynamic.dyr')
@@ -47,20 +47,23 @@ def main():
         shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')
         path = out / 'dynamic.dyr'
         text = path.read_text()
-        match = re.search(r"(?ms)^\s*2\s+'USRLOD'\s+'1'\s+'CMLDBLU1'.*?/", text)
+        model = 'CMLDZNU2' if args.fixture == 'cmldznu2' else 'CMLDBLU1'
+        match = re.search(r"(?ms)^\s*\d+\s+'USRLOD'\s+'[^']+'\s+'" + model + r"'.*?/", text)
         if match is None: parser.error('Expected the exact synthetic composite record')
         fields = re.findall(r"'[^']*'|[^\s,]+", match.group()[:-1])
-        assert len(fields) == 143 and fields[7:11] == ['132', '27', '146', '48']
+        count, icons = (133, 2) if model == 'CMLDZNU2' else (132, 0)
+        start = 11 + icons
+        assert len(fields) == start + count and fields[7:11] == [str(count), '27', '146', '48']
         seen = set()
         for item in args.constant:
             index_text, value_text = item.split('=', 1)
             index, value = int(index_text), float(value_text)
-            if not 0 <= index < 132 or index in seen or not math.isfinite(value):
+            if not 0 <= index < count or index in seen or not math.isfinite(value):
                 parser.error('Constants require unique valid indices and finite values')
             seen.add(index)
-            fields[11 + index] = format(value, '.17g')
-        replacement = ' '.join(fields[:11]) + '\n' + '\n'.join(
-            ' '.join(fields[i:i+8]) for i in range(11, len(fields), 8)) + ' /'
+            fields[start + index] = format(value, '.17g')
+        replacement = ' '.join(fields[:start]) + '\n' + '\n'.join(
+            ' '.join(fields[i:i+8]) for i in range(start, len(fields), 8)) + ' /'
         path.write_text(text[:match.start()] + replacement + text[match.end():])
     for file in ['hsp_model_reference_probe.py', 'tgov1_limit_probe.py']:
         shutil.copy2(root / 'tools' / file, out / file)

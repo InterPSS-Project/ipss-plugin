@@ -91,9 +91,9 @@ frozen old/new replay executables, inputs and validation provenance remain in
 the private verification-artifact chain.
 
 Validation: all eleven lifecycle/coordinate checks pass, alongside the maintained
-composite/motor checks in a 160-check focused reactor run. The core module
+composite/motor checks in a 186-check focused reactor run. The core module
 passes 458 checks with four existing skips; the three-phase motor gates pass
-15 checks. The registered suite executes 2,902 checks with the same four
+15 checks. The registered suite executes 2,928 checks with the same four
 baseline failures, zero errors and 13 skips. These results establish no new
 regressions and retain the qualification limits above.
 

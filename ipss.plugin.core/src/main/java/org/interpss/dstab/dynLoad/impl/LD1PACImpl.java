@@ -31,6 +31,19 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     private final IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
             "Vmeas", "Fmeas", "TemperatureA", "TemperatureB");
     private long staggeredEvaluationCount;
+    public enum CharacteristicPolicy { STANDALONE, LEGACY_COMPOSITE, ZONE_COMPOSITE }
+    private CharacteristicPolicy characteristicPolicy = CharacteristicPolicy.STANDALONE;
+    private boolean legacyCompositeCharacteristic;
+    private Complex electricalNortonY;
+
+    /** Select the compressor family's characteristic before initialization. */
+    public void setCharacteristicPolicy(CharacteristicPolicy policy) {
+        java.util.Objects.requireNonNull(policy);
+        if (PQmotor != null && policy != characteristicPolicy)
+            throw new IllegalStateException("Compressor characteristic must be selected before initialization");
+        characteristicPolicy = policy;
+        legacyCompositeCharacteristic = policy == CharacteristicPolicy.LEGACY_COMPOSITE;
+    }
 
     @Override public int staggeredStateCount() { return 4; }
     @Override public void readStaggeredState(double[] values, int offset) {
@@ -191,16 +204,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	protected static final double LOAD_FACTOR_EDEFAULT = 0.85;
 
 	/**
-	 * The cached value of the '{@link #getLoadFactor() <em>Load Factor</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getLoadFactor()
-	 * @generated
-	 * @ordered
-	 */
-	protected double loadFactor = LOAD_FACTOR_EDEFAULT;
-
-	/**
 	 * The default value of the '{@link #getVstall() <em>Vstall</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -219,6 +222,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * @ordered
 	 */
 	protected double vstall = VSTALL_EDEFAULT;
+    private double configuredVstall = VSTALL_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getRstall() <em>Rstall</em>}' attribute.
@@ -479,6 +483,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * @ordered
 	 */
 	protected double vbrk = VBRK_EDEFAULT;
+    private double configuredVbrk = VBRK_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getFrst() <em>Frst</em>}' attribute.
@@ -993,6 +998,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public LD1PACImpl() {
 		super();
+        // The inherited accessor and all numerical equations share one field.
+        this.loadFactor = LOAD_FACTOR_EDEFAULT;
 		this.states = new Hashtable<>();
 	}
 	
@@ -1014,6 +1021,15 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         uVRelayTimer1 = 0; uVRelayTimer2 = 0;
         statusA = 1; statusB = 1; fthA = 1; fthB = 1;
         kuv = 1; kcon = 1; fcon_trip = 0;
+        equivY = null; electricalNortonY = null; vstallbrk = 0;
+
+        vstall = configuredVstall; vbrk = configuredVbrk;
+        if (legacyCompositeCharacteristic) {
+            p0 = 1 - kp1 * Math.pow(1 - vbrk, np1);
+            q0 = Math.tan(Math.acos(powerFactor)) - kq1 * Math.pow(1 - vbrk, nq1);
+            vstall += lFadj * (loadFactor - 1);
+            vbrk += lFadj * (loadFactor - 1);
+        }
 		boolean flag = true;
         this.stage = 1; // initialized to running state
         
@@ -1034,13 +1050,15 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		this.setLoadPQ(new Complex(pac,qac));
 		
 		// if mva is not defined and loading factor is available
-		if(this.getMvaBase()==0.0){
+        if(legacyCompositeCharacteristic || this.getMvaBase()==0.0){
 			if(this.loadFactor >0 && this.loadFactor<=1.0)
 				logger.debug("AC motor MVABase will be calculated based on load factor");
 			else 
 				this.loadFactor = 1.0;
 			
-			this.setMvaBase(this.pac*this.getDStabBus().getNetwork().getBaseMva()/this.loadFactor);
+            double initialPower = legacyCompositeCharacteristic
+                    ? loadFactor * runningActiveCharacteristic(getDStabBus().getVoltageMag()) : loadFactor;
+            this.setMvaBase(this.pac*this.getDStabBus().getNetwork().getBaseMva()/initialPower);
 		}
 		
 		this.I_CONV_FACTOR_M2S = this.getMvaBase()/this.getDStabBus().getNetwork().getBaseMva();
@@ -1070,6 +1088,10 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 				/this.getMvaBase();
 		double qac_mbase = this.qac*this.getDStabBus().getNetwork().getBaseMva()
 				/this.getMvaBase();
+        if (legacyCompositeCharacteristic) {
+            qac_mbase = runningReactiveCharacteristic(vt);
+            compensateShuntY = new Complex(0, (qac_mbase * I_CONV_FACTOR_M2S - qac) / (vt * vt));
+        }
 		Complex Sac = new Complex(pac_mbase, qac_mbase);
 		double i_motor = Sac.abs()/vt;
 		
@@ -1080,8 +1102,10 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		this.tempB_old = this.tempB;
 		
 		// update the Vstall and Vbrk if necessary
-		this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
-		this.vbrk = this.vbrk*(1+this.lFadj*(this.loadFactor-1));
+        if (characteristicPolicy == CharacteristicPolicy.STANDALONE) {
+            this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
+            this.vbrk = this.vbrk*(1+this.lFadj*(this.loadFactor-1));
+        }
 		
 		// initialize the parts A and B of the motor
 		this.pac_a = pac_mbase; 
@@ -1092,8 +1116,10 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		
 		
 	   // Calculate the P0 and Q0 at stage 0
-		this.p0 = pac_mbase - kp1*Math.pow((vt-vbrk),np1);
-		this.q0 = qac_mbase - this.kq1*Math.pow((vt-vbrk),nq1);
+        if (!legacyCompositeCharacteristic) {
+            this.p0 = pac_mbase - kp1*Math.pow((vt-vbrk),np1);
+            this.q0 = qac_mbase - this.kq1*Math.pow((vt-vbrk),nq1);
+        }
 		
 		
 		
@@ -1103,7 +1129,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			// Below Vbrk the running-motor characteristic is the Kp2/Np2
 			// branch. Using Kp1 with a negative base makes non-integer Np1
 			// produce NaN and leaves the impedance-transition voltage at zero.
-			pac_calc = this.p0 + kp2*Math.pow((vbrk-v),np2);
+            pac_calc = runningActiveCharacteristic(v) * (legacyCompositeCharacteristic ? loadFactor : 1);
 			
 			if(pac_calc<pst){
 				this.vstallbrk = v;
@@ -1331,12 +1357,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		double vmag = this.getDStabBus().getVoltageMag();
 		if(this.statusA == 1){
 			if(vmag >= this.vbrk){
-				this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0));
+                this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
 				this.qac_a  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
 				
 			}
 			else if(vmag <this.vbrk && vmag > this.vstallbrk){
-				this.pac_a = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0));
+                this.pac_a = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
 				this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
 			}
 			else{
@@ -1355,12 +1381,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			if(this.statusB == 1){
 				if(vmag >= this.vbrk){
-					this.pac_b  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0));
+                    this.pac_b  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
 					this.qac_b  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
 					
 				}
 				else if(vmag <this.vbrk && vmag > this.vstallbrk){
-					this.pac_b = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0));
+                    this.pac_b = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
 					this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
 				}
 				else{
@@ -1388,13 +1414,26 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		
 		this.PQmotor = new Complex(Pmotor, Qmotor);
 		
-		this.setLoadPQ(this.PQmotor.multiply(getPowerConvFactorM2S()));
+        double powerFactorM2S = getPowerConvFactorM2S();
+        Complex terminalPower = legacyCompositeCharacteristic
+                ? new Complex(Pmotor * powerFactorM2S, Qmotor * powerFactorM2S - compensateShuntY.getImaginary() * vmag * vmag)
+                : this.PQmotor.multiply(powerFactorM2S);
+        this.setLoadPQ(terminalPower);
 		
 		this.pac = Pmotor*getPowerConvFactorM2S();       // both are on system base
-		this.qac = Qmotor*getPowerConvFactorM2S();
+        this.qac = terminalPower.getImaginary();
 		
 		return this.PQmotor;
 	}
+
+    private double runningActiveCharacteristic(double voltage) {
+        return voltage >= vbrk ? p0 + kp1 * Math.pow(voltage - vbrk, np1)
+                : p0 + kp2 * Math.pow(vbrk - voltage, np2);
+    }
+    private double runningReactiveCharacteristic(double voltage) {
+        return voltage >= vbrk ? q0 + kq1 * Math.pow(voltage - vbrk, nq1)
+                : q0 + kq2 * Math.pow(vbrk - voltage, nq2);
+    }
 	
 	/**
 	 * calculation the factor for converting current from motor mvabase to system vabase
@@ -1417,7 +1456,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	public Complex getPosSeqEquivY() {
 		Complex zstall = new Complex(this.rstall,this.xstall);
 		Complex y = new Complex(1.0,0).divide(zstall);
-		this.equivY = y.multiply(getMvaBase()/this.getDStabBus().getNetwork().getBaseMva());
+        electricalNortonY = y.multiply(getMvaBase()/this.getDStabBus().getNetwork().getBaseMva());
+        this.equivY = legacyCompositeCharacteristic ? electricalNortonY.add(compensateShuntY) : electricalNortonY;
 		
 		return this.equivY;
 	}
@@ -1439,7 +1479,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 		if(this.equivY==null) getPosSeqEquivY();
 		
-		this.nortonCurInj = this.equivY.multiply(vt).subtract(Imotor_systembase);
+        this.nortonCurInj = (legacyCompositeCharacteristic ? electricalNortonY : equivY).multiply(vt).subtract(Imotor_systembase);
 		
 		 
 	 	  if(this.nortonCurInj.isNaN()) {
@@ -1811,6 +1851,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public void setVstall(double newVstall) {
 		vstall = newVstall;
+        configuredVstall = newVstall;
 	}
 
 	public double getRstall() {
@@ -1915,6 +1956,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public void setVbrk(double newVbrk) {
 		vbrk = newVbrk;
+        configuredVbrk = newVbrk;
 	}
 
 	public double getFrst() {
@@ -2126,6 +2168,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		named.put("StallTimer", acStallTimer);
         named.put("StallTimerB", acStallTimerB);
 		named.put("RestartTimer", acRestartTimer);
+        named.put("RunningP0", p0); named.put("RunningQ0", q0);
 		return Map.copyOf(named);
 	}
 

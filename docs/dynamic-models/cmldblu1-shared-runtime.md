@@ -57,10 +57,11 @@ independent model accuracy have separate evidence.
 
 ## Legacy distribution initialization
 
-The bus/load-specific legacy realization has its own initialization hook.
-The zone-scoped model retains its existing initialization: independently
-captured zone behavior differs in both reactive allocation and internal voltage.
-Sharing motor equations does not establish identical distribution preparation.
+The bus/load-specific legacy and zone-scoped realizations share analytic
+distribution geometry with distinct reactive-allocation policies. Their
+[compressor preparation](cmldblu1-compressor-initialization.md) explicitly
+separates standalone, legacy and zone characteristic conventions. Sharing motor
+equations does not establish identical distribution or compressor preparation.
 
 The legacy hook computes the effective transformer ratio from the fixed-tap
 ratio, transformer drop and compensated low-side voltage target. Discrete tap
@@ -122,10 +123,10 @@ differences are retained separately; their exact internal parity remains open.
 
 Across the complete half-second motor, mixed-motor and electronic comparisons
 at both steps and under both methods, the worst external-voltage NRMSE is
-0.00024045 and the worst rotor-angle RMSE is 0.00026382 degrees. Every voltage
+0.000062392 and the worst rotor-angle RMSE is 0.00016442 degrees. Every voltage
 channel must satisfy NRMSE below 0.001, and rotor RMSE must remain below 0.01
 degrees. Per-channel peak caps additionally detect regressions. The largest
-rotor peak difference is about 0.000404 degrees.
+rotor peak difference is about 0.00029166 degrees.
 
 The electronic fixture's modified-Euler Q peak is 0.002830 pu immediately after
 fault application at 0.5 ms, and 0.001439 pu at 0.25 ms. Its speed peak also
@@ -176,9 +177,9 @@ Exact executable/source provenance, original and regenerated captures,
 pre/post recordings, manifests and test reports remain under the existing
 private verification-artifact directory.
 
-Validation of the maintained composite checks: 160 focused checks pass across the reactor; the core
+Validation of the maintained composite checks: 186 focused checks pass across the reactor; the core
 module passes 458 checks with four existing skips; 15 three-phase motor checks
-pass. The registered core suite executes 2,902 checks with zero errors, 13 skips
+pass. The registered core suite executes 2,928 checks with zero errors, 13 skips
 and the same four failures as the retained pre-change baseline. It therefore
 does not establish a completely green system gate. Neutral-language validation
 also passes. These results retain the incomplete model-qualification status above.

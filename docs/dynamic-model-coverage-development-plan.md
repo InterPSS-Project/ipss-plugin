@@ -6,6 +6,13 @@ The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-
 preserves implementation priorities, model-specific tasks and scoped verification
 status.
 
+The [compressor loading and operating-point correction](dynamic-models/cmldblu1-compressor-initialization.md)
+unifies parameter storage, separates the legacy/zone characteristic policies,
+and corrects shared distribution geometry and reactive accounting. Independent
+legacy initialization and fault gates pass under both integration methods;
+complete internal-state, protection and warm-restoration qualification remains
+open.
+
 The [composite-load initialization correction](dynamic-models/cmldblu1-shared-runtime.md)
 adds separate legacy distribution preparation, allocated reactive-demand matching
 and internal current-balance gates under both integration methods. Complete
