@@ -50,3 +50,24 @@ the fault produces nonzero transducer and terminal-power response.
 These tests validate the reference contract only. CDC6T remains unsupported by
 the Java dynamic runtime. Implement and compare the controller, state/history
 integration and network coupling before changing that status.
+
+## Measurement component
+
+`Cdc6tMeasurements` implements the three first-order voltage/current measurement
+equations with shared primitive state, input and derivative buffers. It provides
+explicit modified-Euler predictor/corrector stages and the common staggered
+participant interface. Initialization sets measurements from the solved boundary;
+reading diagnostic maps does not advance history. Predictors can be cancelled,
+zero-duration local steps do not advance state, and nonfinite updates fail before
+changing stored coordinates. Mixed local/staggered trial ownership is rejected.
+
+Analytic exponential tests verify second-order convergence for local modified
+Euler and accepted two-step rates. This component is not yet attached to a DC
+network device, and does not implement blocking, bypass, recovery or current
+command limits. Only positive measurement time constants are admitted at this
+stage; zero-time handling requires its own source and reference qualification.
+
+Recorded-input replay also remains diagnostic: endpoint-sampled voltage inputs
+alone leave roughly 48 V of peak measured-voltage discrepancy around the fault.
+Resolve input sampling and event-stage sequencing in the coupled implementation
+before claiming state-trajectory parity. Do not tune time constants to this error.
