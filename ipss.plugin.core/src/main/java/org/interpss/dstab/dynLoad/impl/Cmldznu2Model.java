@@ -377,7 +377,9 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     /** Exact algebraic leaf type; the shared solver must not accept arbitrary custom loads. */
     public static boolean isAlgebraicComponent(Object model) {
         return model != null && (model.getClass() == Cmldznu2AlgebraicLoadModel.class
-                || model.getClass() == LegacyStaticLoadModel.class || model.getClass() == LegacyStaticLoadPort.class);
+                || model.getClass() == LegacyStaticLoadModel.class || model.getClass() == LegacyStaticLoadPort.class
+                || model.getClass() == LegacyDistributedStaticLoadPort.class
+                || model.getClass() == LegacyDistributionShuntPort.class);
     }
 
     /** Refreshes the algebraic components after a network-voltage or frequency change. */

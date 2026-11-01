@@ -3,8 +3,10 @@
 The omitted-distribution legacy composite now applies its independently
 established low-voltage static rule when a full-recovery electronic portion is
 also present. Motor fractions must be zero and both static frequency
-coefficients must be zero. Represented distribution remains outside this
-extension.
+coefficients must be zero. The represented-distribution extension now also
+supports this mixture when both transformer and feeder are present. Partial
+element omission retains the prior path. Complete deep-fault reference
+qualification remains open as detailed below.
 
 Previously, the mixed configuration selected the generic static voltage
 polynomial, bypassing low-voltage G/B preparation. Independent repeated-fault
@@ -52,9 +54,11 @@ Unit checks cover repeated leaf initialization, numerical-pair cancellation,
 unrelated parent shunts and load allocations, and rejection of the optimized
 selection for frequency-dependent static loads.
 
-The mixed represented-distribution controls remain diagnostic: worst angle
-RMSE is approximately 0.532 degrees. Their raw evidence is retained separately
-from the accepted profiles. Motor mixtures, frequency dependence, restoration,
+The original mixed represented-distribution baseline had worst angle RMSE of
+approximately 0.532 degrees. Moderate-fault reference comparisons now pass with
+the prepared boundary and numerical stamp; the deep profile remains diagnostic
+because of the physical-balance discrepancy below. Raw evidence is retained
+separately from the originally accepted profiles. Motor mixtures, frequency dependence, restoration,
 tap actions and production-step/long-duration acceptance remain open; the
 complete composite remains `LOADABLE`.
 
@@ -191,3 +195,32 @@ first-entry voltage used to prepare G/B.
 
 Private conditioning and physical-balance archive SHA-256:
 `0e75cdf02a658f9441d982415225076cb9837b339dc62f9f84007040d73d61f1`.
+
+## Production components and lifecycle gates
+
+`LegacyDistributedStaticLoadPort` now implements the independent boundary
+calculation and prepared numerical stamp through the existing shared network
+callbacks. `LegacyDistributionShuntPort` retains the physical low-side shunt
+current while cancelling only its numerical stamp. Both are explicitly
+recognized algebraic types under staggered integration; custom subclasses are
+not implicitly accepted. The omitted-distribution static port retains its
+existing behavior. No additional differential states or integration stages are
+introduced, and owned component references replace repeated discovery.
+
+The distributed static port exposes accepted terminal-current real and
+imaginary parts as named diagnostics. Trial evaluations and failed solves do
+not commit this history. Matrix factorization is invalidated only when its
+numerical stamp changes, including rollback; ordinary current queries do not
+change the matrix. Rebuilding the matrix uses the leaf's accepted stamp once.
+
+Registered lifecycle tests exercise both methods on the synthetic network:
+failed first-entry rollback, failure after an accepted entry, matrix rebuilding,
+repeated leaf initialization, and absence of duplicate leaf registration.
+The moderate repeated-fault reference is checked with the existing unchanged
+voltage, power, speed, angle and G/B thresholds. Deep repeated-fault tests
+retain every event side and assert convergence, positive terminal active
+demand, internal current balance and demand-plus-losses balance. They are
+physical-equation tests, not a substitute for independent deep-fault trajectory
+acceptance. The complete composite remains `LOADABLE`; tap actions, general
+restoration, motor mixtures and broader production-step qualification remain
+open.

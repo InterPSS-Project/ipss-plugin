@@ -62,6 +62,7 @@ final class Cmldblu1SharedRecording {
         values.put("Load.V", model.getLoadBus().getVoltageMag());
         values.put("Load.A", model.getLoadBus().getVoltageAng());
         values.put("Low.V", model.getLowVoltBus().getVoltageMag());
+        values.put("Low.A", model.getLowVoltBus().getVoltageAng());
         return new Frame(time, kind, Collections.unmodifiableMap(values));
     }
     void before(double time) {

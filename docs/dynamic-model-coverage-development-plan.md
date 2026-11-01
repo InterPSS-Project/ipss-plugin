@@ -4,9 +4,15 @@
 
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
-omitted distribution. The electronic numerical interface survives leaf
+omitted distribution and to fully represented transformer/feeder boundaries.
+The latter retain accepted terminal-current history and condition the network
+with independently prepared G/B. Failed-solve rollback, matrix rebuild and
+repeated-leaf-initialization tests cover both integration methods.
+The electronic numerical interface survives leaf
 reinitialization, while physical shunt current and unrelated load ownership
-remain intact. Represented-distribution mixed controls remain diagnostic.
+remain intact. Moderate represented-distribution reference trajectories pass;
+deep-fault convergence and passive balance are tested separately while the
+deep reference terminal-current mapping remains unresolved.
 
 The [electronic full-recovery path](dynamic-models/cmldblu1-electronic-recovery.md)
 uses the present voltage fraction directly, avoiding unnecessary minimum-history

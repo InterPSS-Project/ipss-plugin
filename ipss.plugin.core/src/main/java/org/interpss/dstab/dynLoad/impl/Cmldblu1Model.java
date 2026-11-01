@@ -33,21 +33,43 @@ public final class Cmldblu1Model extends Cmldznu2Model {
     }
 
     @Override protected Cmldznu2AlgebraicLoadModel createStaticComponent(double assignedActivePower) {
-        if (getLoadBus() == getDStabBus() && getFmA() == 0 && getFmB() == 0
+        if (getFmA() == 0 && getFmB() == 0
                 && getFmC() == 0 && getFmD() == 0
-                && getData().value(31) == 0 && getData().value(36) == 0)
-            return new LegacyStaticLoadPort(getLoadBus(), getId() + "_S", getData(),
+                && getData().value(31) == 0 && getData().value(36) == 0) {
+            if (getLoadBus() == getDStabBus()) return new LegacyStaticLoadPort(getLoadBus(), getId() + "_S", getData(),
                     assignedActivePower, getCollapsedParentOwnedShunt());
+            if (distXfr != null && distFdr != null)
+                return new LegacyDistributedStaticLoadPort(this, assignedActivePower);
+        }
         return new LegacyStaticLoadModel(getLoadBus(), getId() + "_S", getStaticFraction(),
                 getData(), assignedActivePower);
     }
 
     @Override protected void prepareAlgebraicNetworkInterface(Cmldznu2AlgebraicLoadModel staticComponent,
             Cmldznu2AlgebraicLoadModel electronicComponent) {
+        if (staticComponent instanceof LegacyDistributedStaticLoadPort) {
+            var low = getLowVoltBus();
+            low.setLoadCode(com.interpss.core.aclf.AclfLoadCode.CONST_P);
+            low.setInitLoad(Complex.ZERO);
+            var shunt = new LegacyDistributionShuntPort(low, getId() + "_lowShunt", getData(), low.getShuntY());
+            if (!shunt.initStates()) throw new IllegalStateException("Cannot initialize owned distribution shunt");
+        }
         // The static port cancels the owned shunt numerically. Its first-entry
         // preparation also requires the electronic leaf to use a pure current interface.
         if (staticComponent instanceof LegacyStaticLoadPort && electronicComponent != null)
             electronicComponent.useCurrentSourceInterface();
+    }
+
+    Complex distributionBoundaryCurrent() {
+        return getDStabBus().getVoltage().subtract(getLowVoltBus().getVoltage()
+                .divide(distXfr.getToTurnRatio())).divide(distXfr.getZ());
+    }
+
+    double distributionPreparationVoltage(Complex incoming) {
+        double tap = distXfr.getToTurnRatio();
+        Complex low = getDStabBus().getVoltage().subtract(distXfr.getZ().multiply(incoming)).multiply(tap);
+        Complex feeder = incoming.divide(tap).subtract(low.multiply(getLowVoltBus().getShuntY()));
+        return low.subtract(distFdr.getZ().multiply(feeder)).abs();
     }
 
     @Override protected boolean initializeInductionMotor(InductionMotor motor) {

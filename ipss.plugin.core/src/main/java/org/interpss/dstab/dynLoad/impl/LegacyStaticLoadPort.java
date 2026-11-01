@@ -9,7 +9,7 @@ import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.device.NetworkIterationAware;
 
 /** Static composite current port with solve-scoped low-voltage preparation. */
-final class LegacyStaticLoadPort extends LegacyStaticLoadModel implements NetworkIterationAware {
+class LegacyStaticLoadPort extends LegacyStaticLoadModel implements NetworkIterationAware {
     private static final double SWITCH_VOLTAGE = .7;
     private final Complex ownedShunt;
     private double conductance = Double.NaN, susceptance = Double.NaN;
@@ -19,7 +19,12 @@ final class LegacyStaticLoadPort extends LegacyStaticLoadModel implements Networ
 
     LegacyStaticLoadPort(BaseDStabBus<?, ?> bus, String id, Cmldznu2Data data,
             double assignedPower, Complex ownedShunt) {
-        super(bus, id, 1, data, assignedPower);
+        this(bus, id, data, assignedPower, ownedShunt, 1);
+    }
+
+    LegacyStaticLoadPort(BaseDStabBus<?, ?> bus, String id, Cmldznu2Data data,
+            double assignedPower, Complex ownedShunt, double fraction) {
+        super(bus, id, fraction, data, assignedPower);
         this.ownedShunt = java.util.Objects.requireNonNull(ownedShunt);
         if (ownedShunt.isNaN() || ownedShunt.isInfinite())
             throw new IllegalArgumentException("A finite owned shunt is required");
@@ -46,7 +51,7 @@ final class LegacyStaticLoadPort extends LegacyStaticLoadModel implements Networ
 
     @Override public void beforeNetworkIteration(int iteration) throws DStabSimuException {
         if (!solving) throw new DStabSimuException("Static-load network preparation requires begin");
-        double voltage = getDStabBus().getVoltageMag();
+        double voltage = preparationVoltage();
         if (!Double.isFinite(voltage)) throw new DStabSimuException("Nonfinite static-load voltage");
         if (voltage < SWITCH_VOLTAGE && voltage > 1e-12 && Double.isNaN(trialConductance)) {
             double squared = voltage * voltage;
@@ -54,8 +59,15 @@ final class LegacyStaticLoadPort extends LegacyStaticLoadModel implements Networ
             trialSusceptance = -trialPower.getImaginary() / squared;
             if (!Double.isFinite(trialConductance) || !Double.isFinite(trialSusceptance))
                 throw new DStabSimuException("Nonfinite prepared static-load admittance");
+            preparedAdmittance(trialConductance, trialSusceptance);
         } else if (voltage >= SWITCH_VOLTAGE) trialPower = unscaledPolynomialPower();
     }
+
+    /** The omitted-distribution port prepares directly from its terminal iterate. */
+    protected double preparationVoltage() { return getDStabBus().getVoltageMag(); }
+
+    /** An expanded distribution port may condition its numerical matrix pair. */
+    protected void preparedAdmittance(double g, double b) { }
 
     private Complex unscaledPolynomialPower() {
         double scale = 1 + accumulatedLoadChangeFactor;

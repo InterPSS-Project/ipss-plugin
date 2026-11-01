@@ -52,17 +52,23 @@ public class ElectronicFullRecoverySmibTest {
             assertEquals("b96d98e706628220ea5d598feb6c3fe5afaa0d0c58d515c755c94a7ed7e38d16", sha(Files.readAllBytes(mixed)));
             int previous = REFERENCES.size(); load(mixed, false, "mixed-", .5);
             assertEquals(previous + 2, REFERENCES.size());
+            load(mixed, true, "mixed-distributed-", .5, "diagnostic_profiles", ".1");
         }
     }
     private static void load(Path archive, boolean distributed) throws Exception {
         load(archive, distributed, distributed ? "distributed-" : "", 1);
     }
     private static void load(Path archive, boolean distributed, String prefix, double electronicFraction) throws Exception {
+        load(archive, distributed, prefix, electronicFraction, "profiles", null);
+    }
+    private static void load(Path archive, boolean distributed, String prefix, double electronicFraction,
+            String section, String selected) throws Exception {
         try (var z = new ZipFile(archive.toFile())) {
             var manifest = JsonParser.parseString(new String(z.getInputStream(z.getEntry("references.json")).readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject();
             for (var e : manifest.getAsJsonObject("files").entrySet())
                 assertEquals(e.getValue().getAsString(), sha(z.getInputStream(z.getEntry(e.getKey())).readAllBytes()));
-            for (var e : manifest.getAsJsonObject("profiles").entrySet()) {
+            for (var e : manifest.getAsJsonObject(section).entrySet()) {
+                if (selected != null && !selected.equals(e.getKey())) continue;
                 var p = e.getValue().getAsJsonObject();
                 var first = rows(z.getInputStream(z.getEntry(p.get("entry").getAsString())).readAllBytes());
                 assertEquals(first, rows(z.getInputStream(z.getEntry(p.get("repeat_entry").getAsString())).readAllBytes()));
@@ -75,7 +81,8 @@ public class ElectronicFullRecoverySmibTest {
     @AfterAll static void clear() { REFERENCES.clear(); }
     @ParameterizedTest @CsvSource({".06,false", ".06,true", ".01,false", ".01,true", ".1,false", ".1,true",
             "distributed-.1,false", "distributed-.1,true", "distributed-.01,false", "distributed-.01,true",
-            "mixed-.1,false", "mixed-.1,true", "mixed-.01,false", "mixed-.01,true"})
+            "mixed-.1,false", "mixed-.1,true", "mixed-.01,false", "mixed-.01,true",
+            "mixed-distributed-.1,false", "mixed-distributed-.1,true"})
     void repeatedDropoutAndRecoveryMatchIndependentBoundaries(String impedance, boolean staggered) throws Exception {
         var ref = REFERENCES.get(impedance);
         Assumptions.assumeTrue(ref != null, "Retain independent captures for this profile");
