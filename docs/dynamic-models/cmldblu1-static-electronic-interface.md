@@ -224,3 +224,37 @@ physical-equation tests, not a substitute for independent deep-fault trajectory
 acceptance. The complete composite remains `LOADABLE`; tap actions, general
 restoration, motor mixtures and broader production-step qualification remain
 open.
+
+## Ten-second moderate-fault controls
+
+Cold-repeated independent captures now cover the represented static/electronic
+mixture for ten seconds at quarter-cycle and 0.5 ms intervals. Every captured
+field repeats exactly. Comparisons retain both sides of all events and the
+reference clock's final overshoot; no samples are discarded or angle offsets
+applied. The registered SMIB test verifies each timestamp against the
+accumulated reference clock.
+
+| Step | Integration | Worst external voltage NRMSE | Worst static P/Q NRMSE | Angle RMSE (degrees) |
+| --- | --- | ---: | ---: | ---: |
+| Quarter cycle | Modified Euler | 0.00022077 | 0.00045714 | 0.00068034 |
+| Quarter cycle | Staggered | 0.00001846 | 0.00004886 | 0.00025146 |
+| 0.5 ms | Modified Euler | 0.00011595 | 0.00027818 | 0.00121398 |
+| 0.5 ms | Staggered | 0.00011554 | 0.00027743 | 0.00121131 |
+
+External/internal voltages, machine P/Q and speed, and both load components'
+P/Q pass the existing 0.001 range-normalized RMSE gate. G/B retains its `5e-6`
+maximum-error gate. The ten-second controls use the separately requested
+0.01-degree angle RMSE limit; the half-second controls retain their unchanged
+0.0002-degree limit. The longer-run allowance does not replace the short-run
+gate or qualify the unresolved deep-fault reference.
+
+Internal source-machine states are retained as diagnostics rather than being
+claimed as fully matched: fine-step field-state NRMSE reaches approximately
+0.00229. Independent replay of the recorded field-voltage/current boundary
+reduces peak field-state error from `0.00023846` to `0.00002170` pu when each
+accepted replay state is rounded to binary32. This supports a precision
+contribution, but does not prove that rounding alone explains every coupled
+trajectory difference. Production arithmetic remains unchanged.
+
+Private ten-second reference archive SHA-256:
+`edc9467107056197587b69c791ab793042ce3d9802c58a985c7c0cfc84803bb3`.
