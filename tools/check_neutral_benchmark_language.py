@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 
-JAVA_BASELINE = "8e7337574b69eb332991a0c539ef0a0a18662bbf"
+JAVA_BASELINE = "f3b43863fd11e2da3c88195e5dbc5a2d30130ab2"
 VENDOR_WORDING = re.compile(r"PSS(?:/|\N{REGISTERED SIGN})E", re.IGNORECASE)
 DOC_SUFFIXES = {".md", ".markdown", ".rst", ".adoc"}
 
