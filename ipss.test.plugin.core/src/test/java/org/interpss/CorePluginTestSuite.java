@@ -252,6 +252,9 @@ import org.interpss.fadapter.psse.PsseNetworkConvergenceTest;
 import org.interpss.fadapter.psse.PsseNetworkIterationLifecycleTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
 import org.interpss.core.dstab.dynLoad.Cmldznu2ModelTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1SharedStateTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1SharedSmibTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1StateConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -1172,6 +1175,9 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.StaticLoadMatrixSplitTest.class,
 	Perc1ModelTest.class,
 	Cmldznu2ModelTest.class,
+    Cmldblu1SharedStateTest.class,
+    Cmldblu1SharedSmibTest.class,
+    Cmldblu1StateConformanceTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,

@@ -17,11 +17,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
-        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-electronic', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
+        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
     parser.add_argument('--profile', choices=['flat', 'fault', 'reference-step'], default='fault')
     parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01],default=.2)
     parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
+    parser.add_argument('--clear-diagnostic-storage', action='store_true',
+                        help='Clear allocated composite diagnostic storage before initialization; retain unmodified captures separately')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
@@ -31,6 +33,8 @@ def main():
         f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
+    if args.clear_diagnostic_storage and not load:
+        parser.error('--clear-diagnostic-storage is restricted to composite-load probes')
     relay = args.fixture.startswith('tiocr1')
     shutil.copy2(source / ('load-network.raw' if load else 'dual-network.raw' if args.fixture=='wsieg1-dual' else 'network.raw'), out / 'network.raw')
     shutil.copy2(source / (args.fixture + '.dyr'), out / 'dynamic.dyr')
@@ -66,7 +70,7 @@ def main():
     layout = {kind:index(kind) if count else 0 for kind,count in zip(['NCON','NSTATE','NVAR','NICON'],expected)}
     assert list(layout.values()) == expected, layout
     layout.update({kind:index(kind) if layout['N'+kind] else 0 for kind in ['CON','STATE','VAR','ICON']})
-    if args.fixture.startswith('pss'):
+    if args.fixture.startswith('pss') or args.clear_diagnostic_storage:
         for i in range(layout['NVAR']):
             checked('initialize diagnostic storage',psspy.change_var(layout['VAR']+i,0.0))
     entered = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]

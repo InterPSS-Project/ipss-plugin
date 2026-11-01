@@ -1,0 +1,128 @@
+package org.interpss.core.dstab.dynLoad;
+
+import static org.junit.jupiter.api.Assertions.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
+import java.util.zip.GZIPOutputStream;
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.IpssCorePlugin;
+import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
+import org.interpss.dstab.algo.StaggeredEulerSolver;
+import org.interpss.dstab.dynLoad.impl.Cmldblu1Model;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.common.DStabSimuException;
+
+/** Complete synthetic recordings, including distinct left and right fault boundaries. */
+final class Cmldblu1SharedRecording {
+    record Frame(double time, String kind, Map<String, Double> values) { }
+    final DynamicSimuAlgorithm algorithm;
+    final boolean flat;
+    final List<Frame> frames = new ArrayList<>();
+    boolean enabled;
+    Cmldblu1Model model;
+    Frame initial;
+
+    private Cmldblu1SharedRecording(DynamicSimuAlgorithm algorithm, boolean flat) {
+        this.algorithm = algorithm; this.flat = flat;
+    }
+    Frame capture(double time, String kind) {
+        var net = algorithm.getNetwork();
+        var values = new TreeMap<String, Double>();
+        for (int bus = 1; bus <= 3; bus++) {
+            var voltage = net.getDStabBus("Bus" + bus).getVoltage();
+            values.put("V" + bus, voltage.abs()); values.put("A" + bus, Math.toDegrees(voltage.getArgument()));
+        }
+        var machine = net.getMachine("Bus1-mach1");
+        var voltage = machine.getDStabBus().getVoltage();
+        var power = voltage.multiply(machine.getIgen().subtract(voltage.multiply(machine.getYgen())).conjugate());
+        values.put("ANGLE_DEG", Math.toDegrees(machine.getAngle()));
+        values.put("SPEED", machine.getSpeed() - 1); values.put("PMECH", machine.getPm());
+        values.put("P_PU", power.getReal()); values.put("Q_PU", power.getImaginary());
+        values.putAll(model.getNamedStates());
+        values.put("Load.V", model.getLoadBus().getVoltageMag());
+        values.put("Load.A", model.getLoadBus().getVoltageAng());
+        values.put("Low.V", model.getLowVoltBus().getVoltageMag());
+        return new Frame(time, kind, Collections.unmodifiableMap(values));
+    }
+    void before(double time) {
+        if (enabled && !flat && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9))
+            frames.add(capture(time, "EVENT_PRE"));
+    }
+    static Cmldblu1SharedRecording simulate(String fixture, boolean staggered, boolean flat, double h) throws Exception {
+        var loader = new PSSEMultiFileLoader();
+        var context = loader.loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
+                Cmldblu1SharedSmibTest.CASE.resolve(fixture + ".dyr").toString());
+        assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());
+        var algorithm = context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(h); algorithm.setTotalSimuTimeSec(.5);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        var result = new Cmldblu1SharedRecording(algorithm, flat);
+        algorithm.setSolver(staggered ? new SharedRecorder(algorithm, result) : new OrdinaryRecorder(algorithm, result));
+        if (!flat) algorithm.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",
+                algorithm.getNetwork(), SimpleFaultCode.GROUND_3P,
+                new Complex(0, fixture.endsWith("electronic") ? .01 : .2), null, .05, .05), "fault");
+        assertTrue(algorithm.initialization());
+        result.model = assertInstanceOf(Cmldblu1Model.class,
+                algorithm.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel());
+        result.initial = result.capture(0, "INITIAL"); result.enabled = true;
+        while (algorithm.getSimuTime() < .5 - h / 2) assertTrue(algorithm.solveDEqnStep(true));
+        result.frames.add(result.capture(algorithm.getSimuTime(), "FINAL"));
+        return result;
+    }
+    private static final class OrdinaryRecorder extends DefaultDynamicSimulationSolver {
+        final Cmldblu1SharedRecording recording;
+        OrdinaryRecorder(DynamicSimuAlgorithm a, Cmldblu1SharedRecording r) { super(a); recording = r; }
+        @Override public void beforeStep(double t) throws DStabSimuException { recording.before(t); super.beforeStep(t); }
+        @Override public boolean networkSolutionStep() throws DStabSimuException {
+            boolean solved = super.networkSolutionStep();
+            if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
+                recording.frames.add(recording.capture(dstabAlgo.getSimuTime(), "GRID"));
+            return solved;
+        }
+    }
+    private static final class SharedRecorder extends StaggeredEulerSolver {
+        final Cmldblu1SharedRecording recording;
+        SharedRecorder(DynamicSimuAlgorithm a, Cmldblu1SharedRecording r) {
+            super(a); recording = r; setReuseNetworkEndpoint(false);
+        }
+        @Override public void beforeStep(double t) throws DStabSimuException { recording.before(t); super.beforeStep(t); }
+        @Override public boolean networkSolutionStep() throws DStabSimuException {
+            boolean solved = super.networkSolutionStep();
+            if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
+                recording.frames.add(recording.capture(dstabAlgo.getSimuTime(), "GRID"));
+            return solved;
+        }
+    }
+    void write(Path path) throws Exception {
+        try (var raw = BenchmarkOutputGuard.newOutputStream(path,
+                BenchmarkOutputGuard.estimateCsvBytes(frames.size(), initial.values.size() + 2));
+                var zip = new GZIPOutputStream(raw);
+                var writer = new BufferedWriter(new OutputStreamWriter(zip, StandardCharsets.UTF_8))) {
+            writer.write("time_s,sample_kind," + String.join(",", initial.values.keySet()) + "\n");
+            for (var row : frames) {
+                writer.write(row.time + "," + row.kind);
+                for (double value : row.values.values()) { assertTrue(Double.isFinite(value)); writer.write("," + value); }
+                writer.write("\n");
+            }
+        }
+    }
+    /** Standalone launch also permits a frozen pre-change class overlay. */
+    public static void main(String[] args) throws Exception {
+        IpssCorePlugin.init(); IpssCorePlugin.configureSparseSolver("java-klu");
+        Path output = Path.of(args[0]); Files.createDirectories(output);
+        for (String fixture : List.of("cmldblu1", "cmldblu1-mixed", "cmldblu1-electronic"))
+            for (boolean flat : List.of(true, false)) {
+                var recording = simulate(fixture, false, flat, .0005);
+                recording.write(output.resolve(fixture + (flat ? "-flat" : "-fault") + ".csv.gz"));
+            }
+    }
+}

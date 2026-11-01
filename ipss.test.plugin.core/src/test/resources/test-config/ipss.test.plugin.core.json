@@ -323,6 +323,9 @@
     "interpss.fastN2Activs25kStreamingMonitorBatchSize": null,
     "interpss.fastN2Activs25kStreamingEndpointRhsBatchSize": null
   },
+  "Cmldblu1StateConformanceTest": {
+    "reference.root": "testData/private/verification-artifacts/cmldblu1-shared-state-20261031/references"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

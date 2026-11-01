@@ -33,6 +33,9 @@ import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.svc.Svsmo3t2Model;
+import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
+import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
+import org.interpss.dstab.dynLoad.impl.Cmldznu2Model;
 import com.interpss.dstab.device.DynamicBusDeviceType;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -394,6 +397,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         validateSubstepTargets();
         validateModels();
         if (!super.initialization()) return false;
+        // Composite loads create internal buses and devices during initialization.
+        validateModels();
         dstabAlgo.getNetwork().setPolarCoordinate(false);
         bind();
         try {
@@ -455,9 +460,17 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private void validateModels() {
         for (int runtimeIndex0=0; runtimeIndex0<dstabAlgo.getNetwork().getBusList().size(); runtimeIndex0++) {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex0);
-            for (var device : bus.getDynamicBusDeviceList())
-                if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model))
+            for (var device : bus.getDynamicBusDeviceList()) {
+                if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model)
+                        && !supportedLoad(device))
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
+                if (supportedLoad(device) && (bus.getDynLoadModelList() == null
+                        || bus.getDynLoadModelList().stream().noneMatch(load -> load == device)))
+                    throw new IllegalArgumentException("Register the dynamic load through addDynamicLoadModel before initialization: " + device.getId());
+            }
+            if (bus.getDynLoadModelList() != null) for (var load : bus.getDynLoadModelList())
+                if (!supportedLoad(load))
+                    throw new IllegalArgumentException("Unsupported staggered-Euler dynamic load: " + load.getClass().getName());
             for (var gen : bus.getContributeGenList()) {
                 if (!bus.isActive() || !gen.isActive()) continue;
                 // The engine explicitly represents allowed generators without a
@@ -487,6 +500,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for (var branch : dstabAlgo.getNetwork().getBranchList())
             if (!branch.getDynamicBranchDeviceList().isEmpty())
                 throw new IllegalArgumentException("Unsupported dynamic branch device: " + branch.getId());
+    }
+
+    private static boolean supportedLoad(Object model) {
+        return model != null && (model.getClass() == InductionMotorImpl.class
+                || model.getClass() == LD1PACImpl.class || Cmldznu2Model.isAlgebraicComponent(model));
     }
 
     private void state(DoubleSupplier value, DoubleConsumer set, DoubleSupplier derivative) {
@@ -659,8 +677,41 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     }
 
     private void bind() {
+        var buses = List.copyOf(dstabAlgo.getNetwork().getBusList());
+        boolean trackLoads = buses.stream().anyMatch(bus -> bus.getDynLoadModelList() != null
+                && !bus.getDynLoadModelList().isEmpty());
+        if (trackLoads) attachmentsUnchanged.add(() -> {
+            var current = dstabAlgo.getNetwork().getBusList();
+            if (current.size() != buses.size()) return false;
+            for (int i = 0; i < current.size(); i++) if (current.get(i) != buses.get(i)) return false;
+            return true;
+        });
+        var boundLoads = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
         for (int runtimeIndex1=0; runtimeIndex1<dstabAlgo.getNetwork().getBusList().size(); runtimeIndex1++) {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex1);
+
+            if (trackLoads && bus.getDynLoadModelList() == null) {
+                attachmentsUnchanged.add(() -> bus.getDynLoadModelList() == null || bus.getDynLoadModelList().isEmpty());
+            } else if (trackLoads) {
+                var membership = List.copyOf(bus.getDynLoadModelList());
+                attachmentsUnchanged.add(() -> {
+                    var current = bus.getDynLoadModelList();
+                    if (current == null || current.size() != membership.size()) return false;
+                    for (int i = 0; i < current.size(); i++)
+                        if (current.get(i) != membership.get(i) || current.get(i).getDStabBus() != bus) return false;
+                    return true;
+                });
+                for (var load : membership) {
+                    if (!boundLoads.add(load)) throw new IllegalArgumentException("A dynamic load has multiple owners");
+                    if (load instanceof StaggeredEulerParticipant model) {
+                        int count = model.staggeredStateCount();
+                        attachmentsUnchanged.add(() -> model.staggeredStateCount() == count);
+                        extendedStack = true;
+                        var participant = new Participant(model, () -> bus.isActive() && load.isActive());
+                        participants.add(participant); busParticipants.add(participant);
+                    }
+                }
+            }
 
             for (var device : bus.getDynamicBusDeviceList()) if (device instanceof Svsmo3t2Model model) {
                 var membership = List.copyOf(bus.getDynamicBusDeviceList());

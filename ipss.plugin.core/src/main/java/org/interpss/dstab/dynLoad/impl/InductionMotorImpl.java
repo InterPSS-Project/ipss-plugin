@@ -12,6 +12,9 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.MotorProtectionControl;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,9 +27,108 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 /**
  * An implementation of the model object '<em><b>Induction Motor</b></em>'.
   */
-public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor {
+public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor,
+        StaggeredEulerParticipant, IntegrationStateAccess {
+    private final double[] electricalRates = new double[4];
+    private final double[] observedRates = new double[5];
+    private final double[] evaluatedCurrent = new double[2];
+    private IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
+            "EPrimeQ", "EPrimeD", "Slip");
+    private long staggeredEvaluationCount;
+
+    @Override public int staggeredStateCount() { return twoAxisModel ? 5 : 3; }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        values[offset] = ep.getReal();
+        values[offset + 1] = ep.getImaginary();
+        if (twoAxisModel) {
+            values[offset + 2] = ek.getReal();
+            values[offset + 3] = ek.getImaginary();
+        }
+        values[offset + staggeredStateCount() - 1] = slip;
+    }
+
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), rates.length);
+        if (!Double.isFinite(stepSec) || stepSec <= 0)
+            throw new IllegalArgumentException("A motor integration interval must be finite and positive");
+        evaluateRates(rates, offset, IntegrationStateMonitor.Stage.STAGGERED);
+        staggeredEvaluationCount++;
+    }
+
+    private void evaluateRates(double[] rates, int offset, IntegrationStateMonitor.Stage stage) {
+        boolean connected = Fuv > 0 && Fonline > 0;
+        Complex source = twoAxisModel ? epp : ep;
+        if (connected) {
+            Complex voltage = getDStabBus().getVoltage();
+            Complex impedance = twoAxisModel ? zppMotorBase : zpMotorBase;
+            MotorElectricalKernel.divide(voltage.getReal() - source.getReal(),
+                    voltage.getImaginary() - source.getImaginary(), impedance.getReal(),
+                    impedance.getImaginary(), evaluatedCurrent);
+        } else { evaluatedCurrent[0] = 0; evaluatedCurrent[1] = 0; }
+        calculateElectricalRates(2 * Math.PI * getDStabBus().getNetwork().getFrequency(),
+                evaluatedCurrent[0], evaluatedCurrent[1], electricalRates);
+        int electricalCount = staggeredStateCount() - 1;
+        for (int i = 0; i < electricalCount; i++) rates[offset + i] = connected ? electricalRates[i] : 0;
+        double torque = connected ? source.getReal() * evaluatedCurrent[0]
+                + source.getImaginary() * evaluatedCurrent[1] : 0;
+        iMotor = connected ? new Complex(evaluatedCurrent[0], evaluatedCurrent[1]) : Complex.ZERO;
+        te = torque; tm = mechanicalTorqueFactor(1 - slip) * tm0;
+        rates[offset + electricalCount] = (tm - torque) / (2 * h);
+        observeRates(stage, rates, offset);
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
+        for (int i = 0; i < staggeredStateCount(); i++)
+            if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
+        boolean connected = Fuv > 0 && Fonline > 0;
+        ep = connected ? new Complex(values[offset], values[offset + 1]) : Complex.ZERO;
+        if (twoAxisModel) {
+            ek = new Complex(values[offset + 2], values[offset + 3]);
+            epp = connected ? calculateTwoCageSourceVoltage(ep, ek) : Complex.ZERO;
+        }
+        slip = Math.max(0, Math.min(1, values[offset + staggeredStateCount() - 1]));
+        w = 1 - slip;
+    }
+
+    private void observeRates(IntegrationStateMonitor.Stage stage, double[] rates, int offset) {
+        integrationMonitor.begin(stage);
+        integrationMonitor.record(0, ep.getReal(), rates[offset]);
+        integrationMonitor.record(1, ep.getImaginary(), rates[offset + 1]);
+        if (twoAxisModel) {
+            integrationMonitor.record(2, ek.getReal(), rates[offset + 2]);
+            integrationMonitor.record(3, ek.getImaginary(), rates[offset + 3]);
+        }
+        integrationMonitor.record(staggeredStateCount() - 1, slip, rates[offset + staggeredStateCount() - 1]);
+    }
+
+    @Override public Map<String, Double> getIntegrationStates() {
+        var result = new LinkedHashMap<String, Double>();
+        result.put("EPrimeQ", ep.getReal()); result.put("EPrimeD", ep.getImaginary());
+        if (twoAxisModel) { result.put("EkReal", ek.getReal()); result.put("EkImag", ek.getImaginary()); }
+        result.put("Slip", slip);
+        return Map.copyOf(result);
+    }
+
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return integrationMonitor.snapshot(); }
+    @Override public Map<String, Double> getIntegrationHistories() {
+        return Map.of("TripTimer1", lvProtectionTimer1, "TripTimer2", lvProtectionTimer2,
+                "ReconnectTimer1", lvReconnectTimer1, "ReconnectTimer2", lvReconnectTimer2,
+                "UvFraction", Fuv, "OnlineFraction", Fonline);
+    }
+    public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
+    private void resetIntegrationObservation() {
+        integrationMonitor = twoAxisModel
+                ? new IntegrationStateMonitor("EPrimeQ", "EPrimeD", "EkReal", "EkImag", "Slip")
+                : new IntegrationStateMonitor("EPrimeQ", "EPrimeD", "Slip");
+        staggeredEvaluationCount = 0;
+    }
     /** Explicit value-only companion for configured and in-flight motor state. */
     public static final class ModelState extends com.interpss.state.net.NameTagState {
+        public long staggeredEvaluationCount;
         public String scriptsValue, extendedId, deviceKind;
         public boolean protectionListAllocated;
         public double inheritedLoadFactor;
@@ -121,6 +223,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         public double mvaBase;
         public ModelState(InductionMotorImpl source){
             super(source);
+            staggeredEvaluationCount = source.staggeredEvaluationCount;
             if(source.getClass()!=InductionMotorImpl.class)throw new IllegalArgumentException("Unsupported induction motor subclass");
             if(source.motorProtectionList!=null&&!source.motorProtectionList.isEmpty())throw new IllegalArgumentException("External motor protection controls require explicit companions");
             protectionListAllocated=source.motorProtectionList!=null;
@@ -311,6 +414,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.currInj2Net=currInj2Net==null?null:currInj2Net.toComplex();
             target.nortonCurInj=nortonCurInj==null?null:nortonCurInj.toComplex();
             target.mvaBase=mvaBase;
+            target.resetIntegrationObservation();
+            target.staggeredEvaluationCount = staggeredEvaluationCount;
             return target;
         }
     }
@@ -1872,6 +1977,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	public boolean initStates() {
 		boolean initSucceed = true;
+		staggeredEvaluationCount = 0;
+        integrationMonitor.reset();
 		
 		
 		// calculate the operation parameter Xp,Tp0 if physical parameters are provided
@@ -2198,14 +2305,23 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    extendedDeviceId = "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,  extendedDeviceId);
 	    
+        resetIntegrationObservation();
 	    return initSucceed;
 		
 	}
 	@Override
 	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+
+        if (dt == 0) {
+            evaluateRates(observedRates, 0, flag == 0
+                    ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
+            return true;
+        }
 		// if the motor is out-of-service or tripped
 		
 		if(this.Fuv<=0.0 || this.Fonline <=0.0){
+            evaluateRates(observedRates, 0, flag == 0
+                    ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
 			this.ep = new Complex(0.0);
 			this.epp = new Complex(0.0);
 			this.te = 0.0;
@@ -2246,8 +2362,11 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	}
 	
 	private void integrationSubStep(double dt, double w0, double Ir, double Im, int flag) {
-		double Epr = ep.getReal();
-	    double Epm = ep.getImaginary();
+        calculateElectricalRates(w0, Ir, Im, electricalRates);
+        System.arraycopy(electricalRates, 0, observedRates, 0, staggeredStateCount() - 1);
+        observedRates[staggeredStateCount() - 1] = 0;
+        observeRates(flag == 0 ? IntegrationStateMonitor.Stage.PREDICTOR
+                : IntegrationStateMonitor.Stage.CORRECTOR, observedRates, 0);
 	    
 	 
 	    
@@ -2256,29 +2375,27 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	        slip_old = slip;
 	        if (twoAxisModel) {
 	            ek_old = ek;
-	            Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
-	            dEp_dt1 = derivatives[0];
-	            dEk_dt1 = derivatives[1];
+	            dEp_dt1 = new Complex(electricalRates[0], electricalRates[1]);
+	            dEk_dt1 = new Complex(electricalRates[2], electricalRates[3]);
 	            ep = ep_old.add(dEp_dt1.multiply(dt));
 	            ek = ek_old.add(dEk_dt1.multiply(dt));
 	            epp = calculateTwoCageSourceVoltage(ep, ek);
 	        }
 	        else {
-	            dEp_dt1 =calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
+	            dEp_dt1 = new Complex(electricalRates[0], electricalRates[1]);
 	            ep = ep_old.add(dEp_dt1.multiply(dt));
 	        }
 	    }
 	    else if (flag ==1) {
 	        if (twoAxisModel) {
-	            Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
-	            dEp_dt2 = derivatives[0];
-	            Complex dEk_dt2 = derivatives[1];
+	            dEp_dt2 = new Complex(electricalRates[0], electricalRates[1]);
+	            Complex dEk_dt2 = new Complex(electricalRates[2], electricalRates[3]);
 	            ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
 	            ek = ek_old.add(dEk_dt1.add(dEk_dt2).multiply(dt/2.0));
 	            epp = calculateTwoCageSourceVoltage(ep, ek);
 	        }
 	        else {
-	            dEp_dt2 = calc_Ep_corrective_step( w0, Epr, Epm, Im, Ir);
+	            dEp_dt2 = new Complex(electricalRates[0], electricalRates[1]);
 	            ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
 	        }
 	    }
@@ -2291,6 +2408,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    w =1-slip;
 	    tm = mechanicalTorqueFactor(w)*tm0;
 	    double dSLIP_dt = (tm-te)/(2*this.h);
+        integrationMonitor.recordRate(staggeredStateCount() - 1, dSLIP_dt);
 	    if (flag == 0) {
 	        slipDerivative1 = dSLIP_dt;
 	        slip = slip_old + dSLIP_dt*dt;
@@ -2308,6 +2426,21 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 */
 	private Complex[] calculateTwoCageDerivatives(Complex epState, Complex ekState,
 	        double ir, double ii, double w0, double currentSlip) {
+        calculateTwoCageDerivatives(epState, ekState, ir, ii, w0, currentSlip, electricalRates);
+        return new Complex[] { new Complex(electricalRates[0], electricalRates[1]),
+                new Complex(electricalRates[2], electricalRates[3]) };
+    }
+
+    private void calculateElectricalRates(double w0, double ir, double ii, double[] rates) {
+        if (twoAxisModel) calculateTwoCageDerivatives(ep, ek, ir, ii, w0, slip, rates);
+        else {
+            rates[0] = w0 * slip * ep.getImaginary() - (ep.getReal() + (xs - xp) * ii) / tp0;
+            rates[1] = -w0 * slip * ep.getReal() - (ep.getImaginary() - (xs - xp) * ir) / tp0;
+        }
+    }
+
+    private void calculateTwoCageDerivatives(Complex epState, Complex ekState,
+            double ir, double ii, double w0, double currentSlip, double[] rates) {
 	    double lpMinusLl = xp-xl;
 	    double coupling = (xp-xpp)/(lpMinusLl*lpMinusLl);
 	    double slipSpeed = w0*currentSlip;
@@ -2323,7 +2456,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    double dEpi = ((xs-xp)*adjustedIr-epState.getReal()*tp0*slipSpeed
 	            -epState.getImaginary())/tp0;
 	    double dEki = (eq18-ekState.getReal()*tpp0*slipSpeed)/tpp0;
-	    return new Complex[] {new Complex(dEpr, dEpi), new Complex(dEkr, dEki)};
+        rates[0] = dEpr; rates[1] = dEpi; rates[2] = dEkr; rates[3] = dEki;
 	}
 
 	private Complex calculateTwoCageSourceVoltage(Complex epState, Complex ekState) {
@@ -2396,20 +2529,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		this.torqueExponent = exponent;
 	}
 	
-    private Complex calc_Ep_predict_step(double w0, double Epr, double Epm, double Im, double Ir){
-    	 double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
- 	     double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
- 	     
- 	     return new Complex(dEpr,dEpm);
-	}
-    
-    private Complex calc_Ep_corrective_step(double w0, double Epr, double Epm, double Im, double Ir){
-   	 double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
-	     double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
-	     
-	     return new Complex(dEpr,dEpm);
-	}
-	
+
 	@Override
 	public Complex getPosSeqEquivY() {
 		if(equivYSysBase == null){

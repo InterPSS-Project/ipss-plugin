@@ -9,6 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.Cmldznu2Data;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
 
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.BaseDStabBus;
@@ -213,6 +214,21 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     public Cmldznu2Data getData() { return data; }
     public Set<String> getTargetLoadIds() { return targetLoadIds; }
     public double getStaticFraction() { return staticFraction; }
+
+    /** Leaf-owned coordinates and diagnostics; the composite container owns no duplicate state vector. */
+    public Map<String, IntegrationStateAccess> getIntegrationStateOwners() {
+        var owners = new LinkedHashMap<String, IntegrationStateAccess>();
+        if (getInductionMotorA() instanceof IntegrationStateAccess state) owners.put("MotorA", state);
+        if (getInductionMotorB() instanceof IntegrationStateAccess state) owners.put("MotorB", state);
+        if (getInductionMotorC() instanceof IntegrationStateAccess state) owners.put("MotorC", state);
+        if (get1PhaseACMotor() instanceof IntegrationStateAccess state) owners.put("MotorD", state);
+        return Map.copyOf(owners);
+    }
+
+    /** Exact algebraic leaf type; the shared solver must not accept arbitrary custom loads. */
+    public static boolean isAlgebraicComponent(Object model) {
+        return model != null && model.getClass() == Cmldznu2AlgebraicLoadModel.class;
+    }
 
     /** Refreshes the algebraic components after a network-voltage or frequency change. */
     public void refreshAlgebraicComponents() {

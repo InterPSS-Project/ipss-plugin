@@ -7,6 +7,9 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.LD1PAC;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -21,7 +24,78 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 /**
  * An implementation of the model object '<em><b>LD1PAC</b></em>'.
  */
-public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider {
+public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider,
+        StaggeredEulerParticipant, IntegrationStateAccess {
+    private final double[] integrationRates = new double[4];
+    private final double[] evaluatedCurrent = new double[2];
+    private final IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
+            "Vmeas", "Fmeas", "TemperatureA", "TemperatureB");
+    private long staggeredEvaluationCount;
+
+    @Override public int staggeredStateCount() { return 4; }
+    @Override public void readStaggeredState(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, 4, values.length);
+        values[offset] = vt_measured; values[offset + 1] = freq_measured;
+        values[offset + 2] = tempA; values[offset + 3] = tempB;
+    }
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, 4, rates.length);
+        if (!Double.isFinite(stepSec) || stepSec <= 0)
+            throw new IllegalArgumentException("A motor integration interval must be finite and positive");
+        evaluateRates(vt_measured, freq_measured, rates, offset, IntegrationStateMonitor.Stage.STAGGERED);
+        staggeredEvaluationCount++;
+    }
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        java.util.Objects.checkFromIndexSize(offset, 4, values.length);
+        if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
+        for (int i = 0; i < 4; i++)
+            if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
+        vt_measured = tv > 1e-12 ? values[offset] : getDStabBus().getVoltageMag();
+        freq_measured = tf > 1e-12 ? values[offset + 1] : frequencyInput();
+        tempA = values[offset + 2]; tempB = values[offset + 3];
+    }
+    @Override public void completeStaggeredStep(double stepSec) {
+        if (!Double.isFinite(stepSec) || stepSec < 0)
+            throw new IllegalArgumentException("An accepted motor interval must be finite and nonnegative");
+        if (stepSec == 0) return;
+        vt_measured_old = vt_measured; freq_measured_old = freq_measured;
+        tempA_old = tempA; tempB_old = tempB;
+        timeCounter += stepSec;
+    }
+    private void evaluateRates(double measuredVoltage, double measuredFrequency, double[] rates,
+            int offset, IntegrationStateMonitor.Stage stage) {
+        Complex voltage = getDStabBus().getVoltage();
+        double magnitude = getDStabBus().getVoltageMag();
+        rates[offset] = tv > 1e-12 ? (magnitude - measuredVoltage) / tv : 0;
+        rates[offset + 1] = tf > 1e-12 ? (frequencyInput() - measuredFrequency) / tf : 0;
+        rates[offset + 2] = (heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a) * rstall - tempA) / tth;
+        rates[offset + 3] = (heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b) * rstall - tempB) / tth;
+        integrationMonitor.begin(stage);
+        integrationMonitor.record(0, measuredVoltage, rates[offset]);
+        integrationMonitor.record(1, measuredFrequency, rates[offset + 1]);
+        integrationMonitor.record(2, tempA, rates[offset + 2]);
+        integrationMonitor.record(3, tempB, rates[offset + 3]);
+    }
+    private double heatingCurrentSquared(Complex voltage, double magnitude, int status, double p, double q) {
+        if (status == 0 || magnitude <= vstallbrk) {
+            evaluatedCurrent[0] = voltage.getReal() * YStall.getReal() - voltage.getImaginary() * YStall.getImaginary();
+            evaluatedCurrent[1] = voltage.getReal() * YStall.getImaginary() + voltage.getImaginary() * YStall.getReal();
+        } else MotorElectricalKernel.divide(p, q, voltage.getReal(), voltage.getImaginary(), evaluatedCurrent);
+        return Math.pow(org.apache.commons.math3.util.FastMath.hypot(evaluatedCurrent[0], evaluatedCurrent[1]), 2);
+    }
+    @Override public Map<String, Double> getIntegrationStates() {
+        return Map.of("Vmeas", vt_measured, "Fmeas", freq_measured,
+                "TemperatureA", tempA, "TemperatureB", tempB);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return integrationMonitor.snapshot(); }
+    @Override public Map<String, Double> getIntegrationHistories() {
+        return Map.of("UvTimer1", uVRelayTimer1, "UvTimer2", uVRelayTimer2,
+                "StallTimer", acStallTimer, "RestartTimer", acRestartTimer,
+                "ContactorFraction", kcon, "ContactorTripFraction", fcon_trip,
+                "UvFraction", kuv, "RunA", (double) statusA, "RunB", (double) statusB,
+                "AcceptedTime", timeCounter);
+    }
+    public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
     private static final Logger logger = LoggerFactory.getLogger(LD1PACImpl.class);
 	private BaseDStabBus<?, ?> frequencySourceBus;
 	/**
@@ -931,6 +1005,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	@Override
 	public boolean initStates() {
+        integrationMonitor.reset(); staggeredEvaluationCount = 0; timeCounter = 0;
 		boolean flag = true;
         this.stage = 1; // initialized to running state
         
@@ -1063,106 +1138,35 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * The stall timer as well as the recovery timer are also counted and updated in this method
 	 */
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-		boolean boolFlag = true;
-		
-		// check the protection actions and update the status of AC motor accordingly
-		timestep = dt;
-		
-		// check whether the ac motor is stalled or not
-		double vmag = this.getDStabBus().getVoltageMag();
-		
-		// thermal overload protection
-		/*
-		 * When the motor is stalled, the temperature of the motor is computed by
-			integrating I^2 R through the thermal time constant Tth.  If the temperature reaches Th2t, all of the load is
-			tripped.   If the temperature is between  Th1t and  Th2t, a linear fraction of the load is tripped.   The termperature
-			 of the A and B portions of the load are computed separately.  The fractions of the A
-			and B parts of the load that have not been tripped by the thermal protection is output as fthA and fthB, respectively.	
-		 */
-		
-		Complex vt = this.getDStabBus().getVoltage();
-		
-		Complex ImotorA_pu = new Complex(0.0);
-		Complex ImotorB_pu = new Complex(0.0);
-		
-		if(this.statusA ==0)
-			 ImotorA_pu = vt.multiply(this.YStall);
-		else{
-			if(vmag>this.vstallbrk)
-				ImotorA_pu = new Complex(pac_a, qac_a).divide(vt).conjugate();
-			else
-				ImotorA_pu = vt.multiply(this.YStall);
-		}
-			
-		
-		if(this.statusB ==0)
-			 ImotorB_pu = vt.multiply(this.YStall);
-		else{
-			if(vmag>this.vstallbrk)
-			    ImotorB_pu = new Complex(pac_b, qac_b).divide(vt).conjugate();
-			else
-			    ImotorB_pu = vt.multiply(this.YStall);
-		}
-		
-		if(method==DynamicSimuMethod.MODIFIED_EULER) {
-			
-			if(flag == 0) {
-		       // voltage measurements
-			
-				if (this.tv > 1.0e-12) {
-					dv_dt0 = (vmag-this.vt_measured_old)/this.tv;
-					this.vt_measured = this.vt_measured_old+ dv_dt0*dt;
-				} else this.vt_measured = vmag;
-				if (this.tf > 1.0e-12) {
-					df_dt0 = (frequencyInput()-this.freq_measured_old)/this.tf;
-					this.freq_measured = this.freq_measured_old + df_dt0*dt;
-				} else this.freq_measured = frequencyInput();
-				
-				// temperature
-				
-			    dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
-				
-				dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
-					
-				this.tempA = this.tempA_old+ dThA_dt0*dt;
-				this.tempB = this.tempB_old+ dThB_dt0*dt;
-			}
-			else if (flag ==1) {
-				
-			   if (this.tv > 1.0e-12) {
-				   dv_dt1 = (vmag-vt_measured)/this.tv;
-				   this.vt_measured = this.vt_measured_old + (dv_dt0 + dv_dt1)*0.5*dt;
-			   } else this.vt_measured = vmag;
-			   if (this.tf > 1.0e-12) {
-				   df_dt1 = (frequencyInput()-this.freq_measured)/this.tf;
-				   this.freq_measured = this.freq_measured_old + (df_dt0 + df_dt1)*0.5*dt;
-			   } else this.freq_measured = frequencyInput();
-			   
-			   dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
-				
-			   dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
-			   
-			   this.tempA = this.tempA_old + (dThA_dt0+dThA_dt1)*0.5*dt;
-			   this.tempB = this.tempB_old + (dThB_dt0+dThB_dt1)*0.5*dt;
-			   
-			   this.vt_measured_old = this.vt_measured;
-			   this.freq_measured_old = this.freq_measured;
-			   
-			   this.tempA_old = this.tempA;
-			   this.tempB_old = this.tempB;
-			   
-			   timeCounter+=dt;
-			}
-		
-		}
-		else {
-			throw new Error("Only the Modified Euler method is supported. ");
-		}
-		
-		return boolFlag;
-	}
-	
+    public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        if (method != DynamicSimuMethod.MODIFIED_EULER)
+            throw new IllegalArgumentException("Only modified Euler is supported by ordinary motor dispatch");
+        if (!Double.isFinite(dt) || dt < 0 || flag < 0 || flag > 1)
+            throw new IllegalArgumentException("Invalid motor interval or integration stage");
+        evaluateRates(flag == 0 && dt > 0 ? vt_measured_old : vt_measured,
+                flag == 0 && dt > 0 ? freq_measured_old : freq_measured, integrationRates, 0,
+                flag == 0 ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
+        if (dt == 0) return true;
+        timestep = dt;
+        if (flag == 0) {
+            dv_dt0 = integrationRates[0]; df_dt0 = integrationRates[1];
+            dThA_dt0 = integrationRates[2]; dThB_dt0 = integrationRates[3];
+            vt_measured = tv > 1e-12 ? vt_measured_old + dv_dt0 * dt : getDStabBus().getVoltageMag();
+            freq_measured = tf > 1e-12 ? freq_measured_old + df_dt0 * dt : frequencyInput();
+            tempA = tempA_old + dThA_dt0 * dt;
+            tempB = tempB_old + dThB_dt0 * dt;
+        } else {
+            dv_dt1 = integrationRates[0]; df_dt1 = integrationRates[1];
+            dThA_dt1 = integrationRates[2]; dThB_dt1 = integrationRates[3];
+            vt_measured = tv > 1e-12 ? vt_measured_old + (dv_dt0 + dv_dt1) * .5 * dt : getDStabBus().getVoltageMag();
+            freq_measured = tf > 1e-12 ? freq_measured_old + (df_dt0 + df_dt1) * .5 * dt : frequencyInput();
+            tempA = tempA_old + (dThA_dt0 + dThA_dt1) * .5 * dt;
+            tempB = tempB_old + (dThB_dt0 + dThB_dt1) * .5 * dt;
+            completeStaggeredStep(dt);
+        }
+        return true;
+    }
+
 	/**
 	 *  to check whether AC motor stalls, restarts and the actions of the protections
       %  this should be perform after the network solution step

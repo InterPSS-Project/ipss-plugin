@@ -37,7 +37,9 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
-- Support both methods for the complete composite/motor state vector and network-injection lifecycle without advancing owned states twice.
+- Retain the [shared motor runtime](dynamic-models/cmldblu1-shared-runtime.md), direct leaf-state participation under both methods, reusable rate/current buffers and post-expansion ownership checks.
+- Resolve distribution/tap/reactive-compensation initialization against independent internal voltages; the complete model remains unqualified.
+- Complete the allocated angle-deviation observations, separate restartable-compressor stall timer, bypasses and accepted protection/reclosure lifecycle without advancing owned states twice.
 - Compare every internal state and published diagnostic against independent captures.
 - Investigate the remaining composite-load trajectory discrepancy and tighten the accuracy gates after it is resolved.
 - Preserve bus/load-specific ownership, explicit MVA-base handling and the legacy electronic-load recovery convention.
