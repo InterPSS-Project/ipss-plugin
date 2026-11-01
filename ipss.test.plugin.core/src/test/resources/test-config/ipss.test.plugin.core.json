@@ -335,6 +335,9 @@
   "Cmldblu1CompressorInitializationTest": {
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-compressor-loading-20261031/captures-v2.zip"
   },
+  "CompressorCurrentConformanceTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

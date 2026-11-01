@@ -91,8 +91,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
     private double heatingCurrentSquared(Complex voltage, double magnitude, int status, double p, double q) {
         if (status == 0 || magnitude <= vstallbrk) {
-            evaluatedCurrent[0] = voltage.getReal() * YStall.getReal() - voltage.getImaginary() * YStall.getImaginary();
-            evaluatedCurrent[1] = voltage.getReal() * YStall.getImaginary() + voltage.getImaginary() * YStall.getReal();
+            double conductance = YStall.getReal() * (legacyCompositeCharacteristic && status == 1 ? loadFactor : 1);
+            evaluatedCurrent[0] = voltage.getReal() * conductance - voltage.getImaginary() * YStall.getImaginary();
+            evaluatedCurrent[1] = voltage.getReal() * YStall.getImaginary() + voltage.getImaginary() * conductance;
         } else MotorElectricalKernel.divide(p, q, voltage.getReal(), voltage.getImaginary(), evaluatedCurrent);
         return Math.pow(org.apache.commons.math3.util.FastMath.hypot(evaluatedCurrent[0], evaluatedCurrent[1]), 2);
     }
@@ -946,7 +947,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	private double Gstall = 0.0, Bstall = 0.0;
 	private Complex YStall = null;
 	
-	private Complex equivYpq = null;
 	
 	private Complex PQmotor = null;
 	
@@ -1129,7 +1129,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			// Below Vbrk the running-motor characteristic is the Kp2/Np2
 			// branch. Using Kp1 with a negative base makes non-integer Np1
 			// produce NaN and leaves the impedance-transition voltage at zero.
-            pac_calc = runningActiveCharacteristic(v) * (legacyCompositeCharacteristic ? loadFactor : 1);
+            // The running low-voltage branch carries the same loading factor,
+            // so it cancels when finding its intersection with the polynomial.
+            pac_calc = runningActiveCharacteristic(v);
 			
 			if(pac_calc<pst){
 				this.vstallbrk = v;
@@ -1155,7 +1157,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		
 		this.PQmotor = new Complex(pac_mbase,qac_mbase);
 		
-		this.equivYpq = this.PQmotor.conjugate().divide(vt*vt);
 		
 		
 		extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
@@ -1366,7 +1367,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 				this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
 			}
 			else{
-				this.pac_a =this.Gstall*vmag*vmag;
+                this.pac_a = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor : 1);
 				this.qac_a =-this.Bstall*vmag*vmag;
 			}
 			
@@ -1390,7 +1391,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 					this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
 				}
 				else{
-					this.pac_b =this.Gstall*vmag*vmag;
+                    this.pac_b = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor : 1);
 					this.qac_b =-this.Bstall*vmag*vmag;
 				}
 				
@@ -1466,20 +1467,23 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	public Complex getNortonCurInj() {
 		Complex vt = this.getDStabBus().getVoltage();
 		
-		Complex Imotor_systembase = null;
-		
-		if(vt.abs()>this.vbrk){
-			// call this method to update "this.PQmotor"
-			calculateMotorPower();
-			Imotor_systembase = this.PQmotor.divide(vt).conjugate().multiply(this.I_CONV_FACTOR_M2S);
-		}
-		else
-			Imotor_systembase =  this.equivYpq.multiply(vt).multiply(this.I_CONV_FACTOR_M2S);
-		
-			
+        // Every trial voltage needs a fresh constitutive current. A cached
+        // low-voltage admittance can otherwise survive a branch or stall change.
+        calculateMotorPower();
+        if (vt.getReal() == 0 && vt.getImaginary() == 0) {
+            evaluatedCurrent[0] = 0;
+            evaluatedCurrent[1] = 0;
+        } else {
+            MotorElectricalKernel.divide(PQmotor.getReal(), PQmotor.getImaginary(),
+                    vt.getReal(), vt.getImaginary(), evaluatedCurrent);
+        }
+
 		if(this.equivY==null) getPosSeqEquivY();
 		
-        this.nortonCurInj = (legacyCompositeCharacteristic ? electricalNortonY : equivY).multiply(vt).subtract(Imotor_systembase);
+        Complex y = legacyCompositeCharacteristic ? electricalNortonY : equivY;
+        this.nortonCurInj = new Complex(
+                y.getReal()*vt.getReal() - y.getImaginary()*vt.getImaginary() - evaluatedCurrent[0]*I_CONV_FACTOR_M2S,
+                y.getReal()*vt.getImaginary() + y.getImaginary()*vt.getReal() + evaluatedCurrent[1]*I_CONV_FACTOR_M2S);
 		
 		 
 	 	  if(this.nortonCurInj.isNaN()) {
@@ -1638,12 +1642,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			// call this method to update "this.PQmotor"
 			calculateMotorPower();
 			
-			if(vmag>1.0E-8)
-			    this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
-			else {
-				this.equivYpq = new Complex(1.0E4,1.0E4); // a large value
-				
-			}
 			return flag;
 	}
 	

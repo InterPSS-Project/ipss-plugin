@@ -6,6 +6,12 @@ The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-
 preserves implementation priorities, model-specific tasks and scoped verification
 status.
 
+The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
+fixes the legacy running impedance branch, transition preparation and heating;
+every trial network voltage refreshes current through shared reusable numerical
+storage. Independent recorded-state controls pass under both methods. Complete
+composite trajectories and the standalone import wrapper remain unqualified.
+
 The [compressor loading and operating-point correction](dynamic-models/cmldblu1-compressor-initialization.md)
 unifies parameter storage, separates the legacy/zone characteristic policies,
 and corrects shared distribution geometry and reactive accounting. Independent

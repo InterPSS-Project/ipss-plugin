@@ -11,22 +11,27 @@ from tgov1_limit_probe import checked, sha
 
 
 def load_fixture(name):
-    return name.startswith('cmldblu1') or name == 'cmldznu2'
+    return name.startswith('cmldblu1') or name in ['cmldznu2', 'acmtblu1']
+
+
+def load_contract(name):
+    if name == 'acmtblu1': return [35, 9, 29, 0]
+    return [133, 27, 146, 2] if name == 'cmldznu2' else [132, 27, 146, 0]
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
-        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
+        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'acmtblu1', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
     parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'reference-step'], default='fault')
-    parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01],default=.2)
+    parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01,.04,.06],default=.2)
     parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
     parser.add_argument('--clear-diagnostic-storage', action='store_true',
-                        help='Clear allocated composite diagnostic storage before initialization; retain unmodified captures separately')
+                        help='Clear allocated load diagnostic storage before initialization; retain unmodified captures separately')
     parser.add_argument('--constant', action='append', default=[], metavar='INDEX=VALUE',
-                        help='Controlled composite-load discriminator; preserve original and modified DYR inputs')
+                        help='Controlled load-model discriminator; preserve original and modified DYR inputs')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
@@ -36,24 +41,29 @@ def main():
         f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
+    if args.fixture == 'acmtblu1' and args.channel_part != 0:
+        parser.error('The standalone compressor fits in one complete channel part')
     if args.clear_diagnostic_storage and not load:
-        parser.error('--clear-diagnostic-storage is restricted to composite-load probes')
+        parser.error('--clear-diagnostic-storage is restricted to load-model probes')
     if args.constant and not load:
-        parser.error('--constant is restricted to composite-load probes')
+        parser.error('--constant is restricted to load-model probes')
     relay = args.fixture.startswith('tiocr1')
     shutil.copy2(source / ('load-network.raw' if load else 'dual-network.raw' if args.fixture=='wsieg1-dual' else 'network.raw'), out / 'network.raw')
-    shutil.copy2(source / (args.fixture + '.dyr'), out / 'dynamic.dyr')
+    dynamic_source = (root / 'ipss.test.plugin.core/testData/reference-fixtures/compressor-current/acmtblu1.dyr'
+                      if args.fixture == 'acmtblu1' else source / (args.fixture + '.dyr'))
+    shutil.copy2(dynamic_source, out / 'dynamic.dyr')
     if args.constant:
         shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')
         path = out / 'dynamic.dyr'
         text = path.read_text()
-        model = 'CMLDZNU2' if args.fixture == 'cmldznu2' else 'CMLDBLU1'
+        model = 'ACMTBLU1' if args.fixture == 'acmtblu1' else 'CMLDZNU2' if args.fixture == 'cmldznu2' else 'CMLDBLU1'
         match = re.search(r"(?ms)^\s*\d+\s+'USRLOD'\s+'[^']+'\s+'" + model + r"'.*?/", text)
-        if match is None: parser.error('Expected the exact synthetic composite record')
+        if match is None: parser.error('Expected the exact synthetic load record')
         fields = re.findall(r"'[^']*'|[^\s,]+", match.group()[:-1])
-        count, icons = (133, 2) if model == 'CMLDZNU2' else (132, 0)
+        count, states, variables, icons = load_contract(args.fixture)
+        reserved = 16 if model == 'ACMTBLU1' else 48
         start = 11 + icons
-        assert len(fields) == start + count and fields[7:11] == [str(count), '27', '146', '48']
+        assert len(fields) == start + count and fields[6:11] == [str(icons), str(count), str(states), str(variables), str(reserved)]
         seen = set()
         for item in args.constant:
             index_text, value_text = item.split('=', 1)
@@ -93,7 +103,7 @@ def main():
     else:
         category = 'STAB' if args.fixture.startswith('pss') else 'GOV'
         index = lambda kind: checked('controller index', psspy.mdlind(1, '1', category, kind))
-    expected = [14,0,3,15] if relay else [133,27,146,2] if args.fixture=='cmldznu2' else [132,27,146,0] if load else [23,17,4,6] if args.fixture.startswith('pss') else [34,6,8,0] if args.fixture.startswith('wsieg') else [36,9,5,2]
+    expected = [14,0,3,15] if relay else load_contract(args.fixture) if load else [23,17,4,6] if args.fixture.startswith('pss') else [34,6,8,0] if args.fixture.startswith('wsieg') else [36,9,5,2]
     layout = {kind:index(kind) if count else 0 for kind,count in zip(['NCON','NSTATE','NVAR','NICON'],expected)}
     assert list(layout.values()) == expected, layout
     layout.update({kind:index(kind) if layout['N'+kind] else 0 for kind in ['CON','STATE','VAR','ICON']})
