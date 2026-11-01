@@ -24,7 +24,9 @@ def main():
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
         'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'acmtblu1', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
-    parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'reference-step'], default='fault')
+    parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'reference-step',
+                                            'tap-reference-up', 'tap-reference-down',
+                                            'tap-reference-reversal', 'tap-reference-deadband'], default='fault')
     parser.add_argument('--fault-x-pu', type=float, default=.2,
                         help='Finite positive fault reactance on system base')
     parser.add_argument('--second-fault-x-pu', type=float,
@@ -42,6 +44,8 @@ def main():
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
+    if args.profile.startswith('tap-reference-') and not args.fixture.startswith('cmldblu1'):
+        parser.error('Tap-reference profiles require a legacy bus composite fixture')
     if not math.isfinite(args.end_time) or not .5 <= args.end_time <= 10:
         parser.error('--end-time must be finite and between 0.5 and 10 seconds')
     if not math.isfinite(args.fault_x_pu) or args.fault_x_pu <= 0:
@@ -157,7 +161,25 @@ def main():
         checked('fault', psspy.dist_bus_fault(2 if load else 1, 3, 230.0 if load or args.fixture=='wsieg1-dual' else 100.0, [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
     if args.profile == 'reference-step':
         checked('reference', psspy.increment_gref(1, '1', .03))
+    def change_tap_target(time_s, delta):
+        event = dict(time_s=time_s, delta_pu=delta, before={}, after={})
+        for offset in [12, 13]:
+            before = checked('tap target before', psspy.dsrval('CON', layout['CON'] + offset))
+            checked('tap target change', psspy.change_ldmod_con(2, '1', 'CMLDBLU1', offset + 1, before + delta))
+            after = checked('tap target after', psspy.dsrval('CON', layout['CON'] + offset))
+            assert abs(after - (before + delta)) < 2e-7
+            event['before'][str(offset)] = before
+            event['after'][str(offset)] = after
+        return event
+    tap_reference_events = []
+    if args.profile.startswith('tap-reference-'):
+        delta = -.1 if args.profile == 'tap-reference-down' else .1
+        tap_reference_events.append(change_tap_target(.05, delta))
     checked('during', psspy.run(0, .10, 1000000, 1, 0))
+    if args.profile == 'tap-reference-reversal':
+        tap_reference_events.append(change_tap_target(.10, -.2))
+    if args.profile == 'tap-reference-deadband':
+        tap_reference_events.append(change_tap_target(.10, -.085))
     if args.profile in ['fault', 'repeated-faults']: checked('clear', psspy.dist_clear_fault(1))
     if args.profile == 'repeated-faults':
         checked('recovery', psspy.run(0, .20, 1000000, 1, 0))
@@ -187,6 +209,7 @@ def main():
         input_consistency = dict(maximum_voltage_input_error_pu=voltage_error, tolerance_pu=2e-7)
         quality = quality and voltage_error <= 2e-7
     manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args),
+        tap_reference_events=tap_reference_events,
         input_consistency=input_consistency,
         layout=layout, generator_layout=generator_layout, entered_constants=entered, initialized_constants=initialized,
         load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu],

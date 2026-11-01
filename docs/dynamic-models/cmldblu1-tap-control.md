@@ -37,10 +37,53 @@ Halving the step therefore does not eliminate the large downward transition.
 
 This is not yet an accepted tap-control equation. Do not reproduce it with an
 unexplained limit assignment or change physical parameters to match the trace.
-The next discriminator should separate downward control, direction reversal,
-pending tap actions and limit handling. Independently vary the control delay,
-tap delay and lower bound, and inspect the exact legacy diagram or implementation
-documentation before choosing production semantics.
+The following discriminators separate downward control, direction reversal,
+pending tap actions and limit handling.
+
+## Localized pending-action/deadband interaction
+
+Additional cold pairs independently change the lower limit, control delay,
+tap delay and compensation, then exercise fault-free target changes. The probe
+now supports `tap-reference-up`, `tap-reference-down`,
+`tap-reference-reversal` and `tap-reference-deadband`. These profiles change both
+voltage-band endpoints through the reference API, preserve the band's width,
+and record the actual before/after constants in the evidence manifest.
+
+| Discriminator | Observation |
+| --- | --- |
+| Lower limit 0.95 | Large jump lands at 0.95 instead of 0.91 |
+| Control delay 0.02 s, tap delay 0.01 s | First action moves from 0.07 s to 0.08 s; large jump remains |
+| Control delay 0.01 s, tap delay 0.02 s | First action moves to 0.08 s; subsequent actions are farther apart; large jump remains |
+| Zero compensation impedance | Large jump remains |
+| Fault-free upward target change | Normal 0.005 increments, bounded at the upper limit |
+| Fault-free downward target change | Normal 0.005 decrements |
+| Fault-free upward-to-downward command reversal | First reversed action is a normal 0.005 decrement |
+| Fault-free return to deadband with a pending action | Direct jump from 1.06519794464 to 0.910000026226 |
+
+In the last profile, the band becomes approximately [1.030, 1.060] pu at
+0.1 seconds. The low-side voltage is about 1.05038 pu. The normalized control
+delay counter decreases while the previously scheduled action time remains
+approximately 0.10150009 seconds. At that pending time, the tap jumps to its
+lower limit. The corresponding fault-clearing capture shows the same sequence.
+This isolates the observed transition to a pending action expiring after return
+to the deadband; it does not prove a particular source-code defect.
+
+The [WECC specification, transformer section](https://www.wecc.org/sites/default/files/documents/meeting/2024/WECC%20Comp%20Load%20Model%20Specification_final.pdf)
+describes delayed discrete steps until voltage returns within the band. It does
+not justify a direct lower-bound jump in that situation. This source describes
+the newer composite family, so its rules must not be silently substituted for
+an exact legacy contract. Keep the legacy deviation explicit when implementing
+and qualifying deadband hold/cancellation behavior.
+
+Seven additional cold pairs match every captured field exactly. The reversal
+pair has differences of at most `1.35631564269e-19` in diagnostics `VAR69` through
+`VAR72`; every other field, including tap actions, states and network boundaries,
+matches exactly. Both unmodified captures are retained, and those diagnostic
+differences are reported rather than discarded or normalized away.
+
+The additional private archive includes the complete captures, source probes,
+per-field cold comparison, transition analysis and integrity checks. SHA-256:
+`46df94e9454567a72351a1339d4cef93f5d7d93e4aa39972cfc8fdcb6caff680`.
 
 ## Shared-runtime requirements
 
