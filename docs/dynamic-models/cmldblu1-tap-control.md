@@ -95,6 +95,33 @@ the comparison does not replace the original strict trajectory gates. Any
 future stage change must distinguish physical transformer stamping, internal
 load observation and accepted machine inputs under each integration method.
 
+### Electrical-application experiment
+
+A test-only solver wrapper held the physical transformer at the preceding
+accepted tap during the endpoint solve. The hold persisted through zero-time
+initial solves, so the following interval—not merely the recorder—observed
+the old electrical tap. Command history retained its original timing. No
+production equations, physical parameters or comparison timestamps changed.
+Upward, downward and reversal controls ran under both methods, retaining
+endpoint current/power balance checks and all reference samples.
+
+| Reversal metric | Production | Delayed electrical application |
+| --- | --- | --- |
+| Modified-Euler angle RMSE (degrees) | 0.000148788 | 0.0000948083 |
+| Staggered angle RMSE (degrees) | 0.000270553 | 0.0000285250 |
+| Staggered active-power NRMSE | 0.00919222 | 0.000376031 |
+| Staggered reactive-power NRMSE | 0.00805806 | 0.00333947 |
+
+This is not a qualified replacement. Modified-Euler downward angle RMSE
+worsened from 0.000100342 to 0.000144425 degrees. Reactive-power normalized
+error remains above the existing limit, and physical low-side voltage differs
+by about 0.00494 pu at command-action samples. The reference updates its
+internal voltage with the commanded tap before external electrical application.
+The implementation therefore needs a justified distinction between command,
+internal algebraic observation and applied network tap; a blanket one-interval
+delay cannot satisfy the full contract. The diagnostic wrapper and exact test
+reports are retained privately and are not installed as a production option.
+
 ### Runtime regression results
 
 The final runtime passed the core module checks (486 tests, four existing skips)
