@@ -14,7 +14,9 @@ second set of equations is introduced. Repeated RHS/current requests do not
 commit thermal fractions or advance a timer.
 
 The representative motor temperature follows
-`dT/dt = (Rstall * I_rms^2 - T) / Tth`. Thermal shedding can occur while the
+`dT/dt = (Rstall * I_rms^2 - T) / Tth` for positive `Tth`. The
+[zero-time-constant bypass](acmtblu1-thermal-bypass.md) separately qualifies
+algebraic temperature and its accepted thermal-action input. Thermal shedding can occur while the
 run/stall flag is still running. For increasing thresholds, the remaining
 fraction is one below `Th1t`, decreases linearly to zero at `Th2t`, and is
 latched at its lowest accepted value. Cooling cannot reconnect thermally

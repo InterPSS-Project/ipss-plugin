@@ -360,6 +360,10 @@
       "reference.archive": "testData/private/verification-artifacts/acmtblu1-startup-frequency-20261101/captures.zip",
       "reference.bypass.archive": "testData/private/verification-artifacts/acmtblu1-startup-frequency-20261101/bypass-captures.zip"
     },
+    "CompressorThermalBypassTest": {
+      "reference.archive": "testData/private/verification-artifacts/acmtblu1-thermal-parameters-20261101/captures.zip",
+      "reference.refinements": "testData/private/verification-artifacts/acmtblu1-thermal-parameters-20261101/refinements.zip"
+    },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

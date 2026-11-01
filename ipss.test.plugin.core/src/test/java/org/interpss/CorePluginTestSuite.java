@@ -265,6 +265,7 @@ import org.interpss.core.dstab.dynLoad.CompressorFrequencyInputTest;
 import org.interpss.core.dstab.dynLoad.CompressorProtectionConformanceTest;
 import org.interpss.core.dstab.dynLoad.CompressorThermalConformanceTest;
 import org.interpss.core.dstab.dynLoad.CompressorStartupFrequencyTest;
+import org.interpss.core.dstab.dynLoad.CompressorThermalBypassTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -1198,6 +1199,7 @@ import org.junit.platform.suite.api.Suite;
     CompressorProtectionConformanceTest.class,
     CompressorThermalConformanceTest.class,
     CompressorStartupFrequencyTest.class,
+    CompressorThermalBypassTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,

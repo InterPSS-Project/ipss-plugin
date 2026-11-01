@@ -82,11 +82,13 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
 
     private void updateLegacyThermalProtection() {
-        fthA = Math.min(fthA, thermalRemaining(tempA));
+        // A bypass exposes the current algebraic temperature immediately, but
+        // accepted trip decisions consume the separately sampled heating input.
+        fthA = Math.min(fthA, thermalRemaining(thermalBypassed() ? rstall * acceptedHeatingSquaredA : tempA));
         // Group B holds its thermal fraction while waiting to restart. The
         // accepted restart action clears its timer before this evaluation.
         if (statusB != 0 || acRestartTimer == 0)
-            fthB = Math.min(fthB, thermalRemaining(tempB));
+            fthB = Math.min(fthB, thermalRemaining(thermalBypassed() ? rstall * acceptedHeatingSquaredB : tempB));
         if (fthA == 0) tempA = tempA_old = 0;
         if (fthB == 0) tempB = tempB_old = 0;
     }
@@ -132,12 +134,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
                 ? acceptedVoltageMagnitude : getDStabBus().getVoltageMag();
     }
     private void sampleElectricalInputs() {
-        if (electricalInputMode != ElectricalInputMode.ACCEPTED_ENDPOINT) return;
+        boolean held = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT;
+        if (!held && !thermalBypassed()) return;
         Complex voltage = getDStabBus().getVoltage();
-        acceptedVoltageMagnitude = getDStabBus().getVoltageMag();
-        acceptedHeatingSquaredA = heatingCurrentSquared(voltage, acceptedVoltageMagnitude, statusA, pac_a, qac_a, fthA);
-        acceptedHeatingSquaredB = heatingCurrentSquared(voltage, acceptedVoltageMagnitude, statusB, pac_b, qac_b, fthB);
-        if (tv <= 1e-12) vt_measured = vt_measured_old = acceptedVoltageMagnitude;
+        double magnitude = getDStabBus().getVoltageMag();
+        if (held) acceptedVoltageMagnitude = magnitude;
+        acceptedHeatingSquaredA = heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
+        acceptedHeatingSquaredB = heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
+        if (held && tv <= 1e-12) vt_measured = vt_measured_old = acceptedVoltageMagnitude;
     }
 
     /** Choose a prepared phase sampler or the existing bus-frequency input before initialization. */
@@ -179,7 +183,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
             projectTimerPickups(getDStabBus().getVoltageMag());
             updateLegacyContactor(getDStabBus().getVoltageMag());
         }
-        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT) {
+        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT || thermalBypassed()) {
             calculateMotorPower();
             sampleElectricalInputs();
         }
@@ -305,8 +309,11 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
             if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
         vt_measured = tv > 1e-12 ? values[offset] : voltageInput();
         freq_measured = tf > 1e-12 ? values[offset + 1] : frequencyInput();
-        tempA = legacyCompositeCharacteristic && fthA == 0 ? 0 : values[offset + 2];
-        tempB = legacyCompositeCharacteristic && fthB == 0 ? 0 : values[offset + 3];
+        if (thermalBypassed()) refreshAlgebraicTemperatures(getDStabBus().getVoltage(), getDStabBus().getVoltageMag());
+        else {
+            tempA = legacyCompositeCharacteristic && fthA == 0 ? 0 : values[offset + 2];
+            tempB = legacyCompositeCharacteristic && fthB == 0 ? 0 : values[offset + 3];
+        }
         if (legacyCompositeCharacteristic) applyTimers(values, offset + 4);
     }
     @Override public void completeStaggeredStep(double stepSec) {
@@ -323,12 +330,17 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         double magnitude = getDStabBus().getVoltageMag();
         rates[offset] = tv > 1e-12 ? (voltageInput() - measuredVoltage) / tv : 0;
         rates[offset + 1] = tf > 1e-12 ? (frequencyInput() - measuredFrequency) / tf : 0;
-        double heatA = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredA
-                : heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
-        double heatB = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredB
-                : heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
-        rates[offset + 2] = temperatureRate(tempA, heatA, fthA);
-        rates[offset + 3] = temperatureRate(tempB, heatB, fthB);
+        if (thermalBypassed()) {
+            refreshAlgebraicTemperatures(voltage, magnitude);
+            rates[offset + 2] = rates[offset + 3] = 0;
+        } else {
+            double heatA = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredA
+                    : heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
+            double heatB = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredB
+                    : heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
+            rates[offset + 2] = temperatureRate(tempA, heatA, fthA);
+            rates[offset + 3] = temperatureRate(tempB, heatB, fthB);
+        }
         if (legacyCompositeCharacteristic) evaluateTimerRates(voltageInput(), rates, offset + 4);
         integrationMonitor.begin(stage);
         integrationMonitor.record(0, measuredVoltage, rates[offset]);
@@ -344,7 +356,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         }
     }
     private double temperatureRate(double temperature, double heatingSquared, double remaining) {
-        return legacyCompositeCharacteristic && remaining == 0 ? 0 : (heatingSquared * rstall - temperature) / tth;
+        return thermalBypassed() || legacyCompositeCharacteristic && remaining == 0 ? 0 : (heatingSquared * rstall - temperature) / tth;
     }
     private double heatingCurrentSquared(Complex voltage, double magnitude, int status, double p, double q, double remaining) {
         if (legacyCompositeCharacteristic && (kcon == 0 || remaining == 0)) return 0;
@@ -381,8 +393,13 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
                 Map.entry("InitialEndpointAccepted", initialEndpointAccepted ? 1. : 0.),
                 Map.entry("AcceptedTime", timeCounter));
         if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
-                && electricalInputMode == ElectricalInputMode.LIVE_NETWORK) return result;
+                && electricalInputMode == ElectricalInputMode.LIVE_NETWORK && !thermalBypassed()) return result;
         var history = new LinkedHashMap<>(result);
+        if (thermalBypassed()) {
+            history.put("ThermalBypass", 1.);
+            history.put("ThermalActionTemperatureA", rstall * acceptedHeatingSquaredA);
+            history.put("ThermalActionTemperatureB", rstall * acceptedHeatingSquaredB);
+        }
         history.put("FrequencySampleTime", phaseSampleTime);
         history.put("FrequencyPhase", acceptedPhase);
         history.put("FrequencySampleDeviation", phaseFrequencyDeviation);
@@ -1679,7 +1696,47 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         double freq = frequencySignal();
         frequencyOutput = freq;
         double reactiveFrequencyGain = cmpKqf * reactiveFrequencyScale;
-		double vmag = this.getDStabBus().getVoltageMag();
+        double vmag = this.getDStabBus().getVoltageMag();
+        evaluateIndividualPowers(vmag, freq, reactiveFrequencyGain);
+        if (thermalBypassed()) projectAlgebraicTemperatures(getDStabBus().getVoltage(), vmag);
+
+        // ac motor total power on motor base
+
+        double Pmotor = this.pac_a*(1-this.frst)*this.fthA+this.pac_b*this.frst*this.fthB;
+        double Qmotor = this.qac_a*(1-this.frst)*this.fthA+this.qac_b*this.frst*this.fthB;
+
+        // consider the UV Relay,contractor as well as load change
+
+        Pmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Pmotor;
+        Qmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Qmotor;
+
+        this.PQmotor = new Complex(Pmotor, Qmotor);
+
+        double powerFactorM2S = getPowerConvFactorM2S();
+        Complex terminalPower = legacyCompositeCharacteristic
+                ? new Complex(Pmotor * powerFactorM2S, Qmotor * powerFactorM2S - compensateShuntY.getImaginary() * vmag * vmag)
+                : this.PQmotor.multiply(powerFactorM2S);
+        this.setLoadPQ(terminalPower);
+
+        this.pac = Pmotor*getPowerConvFactorM2S();       // both are on system base
+        this.qac = terminalPower.getImaginary();
+
+        return this.PQmotor;
+    }
+
+    private boolean thermalBypassed() { return legacyCompositeCharacteristic && tth == 0; }
+
+    private void refreshAlgebraicTemperatures(Complex voltage, double magnitude) {
+        evaluateIndividualPowers(magnitude, frequencySignal(), cmpKqf * reactiveFrequencyScale);
+        projectAlgebraicTemperatures(voltage, magnitude);
+    }
+
+    private void projectAlgebraicTemperatures(Complex voltage, double magnitude) {
+        tempA = tempA_old = rstall * heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
+        tempB = tempB_old = rstall * heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
+    }
+
+    private void evaluateIndividualPowers(double vmag, double freq, double reactiveFrequencyGain) {
 		if(this.statusA == 1){
 			if(vmag >= this.vbrk){
                 this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
@@ -1727,29 +1784,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			}
 		}
 		
-		// ac motor total power on motor base
-		
-		double Pmotor = this.pac_a*(1-this.frst)*this.fthA+this.pac_b*this.frst*this.fthB;
-		double Qmotor = this.qac_a*(1-this.frst)*this.fthA+this.qac_b*this.frst*this.fthB;
-		
-		// consider the UV Relay,contractor as well as load change
-		
-		Pmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Pmotor;
-		Qmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Qmotor;
-		
-		this.PQmotor = new Complex(Pmotor, Qmotor);
-		
-        double powerFactorM2S = getPowerConvFactorM2S();
-        Complex terminalPower = legacyCompositeCharacteristic
-                ? new Complex(Pmotor * powerFactorM2S, Qmotor * powerFactorM2S - compensateShuntY.getImaginary() * vmag * vmag)
-                : this.PQmotor.multiply(powerFactorM2S);
-        this.setLoadPQ(terminalPower);
-		
-		this.pac = Pmotor*getPowerConvFactorM2S();       // both are on system base
-        this.qac = terminalPower.getImaginary();
-		
-		return this.PQmotor;
-	}
+    }
 
     private double runningActiveCharacteristic(double voltage) {
         return voltage >= vbrk ? p0 + kp1 * Math.pow(voltage - vbrk, np1)

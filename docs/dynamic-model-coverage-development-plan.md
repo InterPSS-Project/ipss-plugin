@@ -34,6 +34,11 @@ physical endpoint time from integration duration. Phase memory waits through
 nonpositive startup endpoints while other coordinates integrate; independent
 active-frequency replay and coupled controls qualify the stated policy under
 both methods without suppressing numerical-method differences.
+The [thermal-bypass correction](dynamic-models/acmtblu1-thermal-bypass.md) accepts
+zero thermal time constant, projects algebraic temperature through shared
+numerical storage and preserves the separately accepted input for trip actions.
+Independent replay, coupled faults and composite attachment checks cover both
+methods; complete composite and remaining validation/restoration work stays open.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;
