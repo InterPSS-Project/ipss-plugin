@@ -33,7 +33,9 @@ final class BusFrequencySelection {
         "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
         "org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor",
         "org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor",
-        "org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor");
+        "org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor",
+        "org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor",
+        "org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor$SecondaryShaft");
     record Result(Set<String> required, String reason) { }
     static boolean isAuditedController(Object controller) {
         return LOCAL_CONTROLLERS.contains(controller.getClass().getName())

@@ -29,9 +29,10 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## WSIEG1
 
-- Support both integration methods with one coherent owner for shared turbine/shaft states and committed limiter histories.
-- Independently qualify primary-shaft trips and subsequent secondary-shaft behavior.
-- Exercise rate/position limits, deadband transitions and turbine bypass paths.
+- Retain the [direct shared-state contract](dynamic-models/wsieg1-shared-runtime.md), reusable numerical storage, audited measurement/preparation eligibility and one coherent turbine owner under both integration methods.
+- Retain the independent excited primary/secondary-trip matrix, active-owner state gates and held secondary output; preserve raw inactive allocated-state diagnostics separately.
+- Extend active rate/position-limit and hysteresis qualification, independent bypass/time-constant correction variants, reconnection and longer-duration coverage.
+- Verify initialization residuals and shared-shaft power-base edge cases across the full import path.
 - Preserve the distinct extended governor equations, shared turbine ownership and machine-base scaling.
 
 ## CMLDBLU1

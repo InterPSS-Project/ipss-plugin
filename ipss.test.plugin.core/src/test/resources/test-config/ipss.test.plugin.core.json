@@ -123,6 +123,12 @@
     "referenceArchive": "testData/private/verification-artifacts/hyg3-limit-qualification-20261031/captures.zip",
     "archiveSha256": "142abcabacbd6e4fea03b275f652d58cecdaec268c9ec404975c62e39ea560f6"
   },
+  "Wsieg1StateConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-shared-state-20261031/captures.zip",
+    "archiveSha256": "ae6ffd32654e18910161eb0df94001164d312cfff07f5455ef2d947f470db89c",
+    "beforeArchive": "testData/private/verification-artifacts/wsieg1-shared-state-20261031/before-validation.zip",
+    "beforeArchiveSha256": "d96d02d6d70a3ba34e5cfe00bc2fd31659b67bbbbc35c89d735eccb801bc0c6a"
+  },
   "Texas2kSixCaseDynamicSmokeTest": {
     "texas2k.case.root": null
   },

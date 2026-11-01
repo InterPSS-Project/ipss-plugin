@@ -3,6 +3,10 @@ package org.interpss.dstab.control.gov.wecc.wsieg1;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
@@ -10,7 +14,8 @@ import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
 /** Extended WECC steam governor: two deadbands, valve curve and four turbine stages. */
-public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider {
+public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess {
+    private static final String[] STATE_NAMES={"Speed lag","Valve","Turbine 1","Turbine 2","Turbine 3","Turbine 4"};
     /** Constant order after the secondary bus and machine identifier. */
     public static final java.util.List<String> CONSTANT_NAMES=java.util.List.of(
             "K","T1","T2","T3","Uo","Uc","Pmax","Pmin","T4","K1","K2","T5","K3","K4",
@@ -19,23 +24,34 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private final double[] c;
     private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6];
     private final double[] curveX = new double[5], curveY = new double[5];
+    private final IntegrationStateMonitor monitor=new IntegrationStateMonitor(STATE_NAMES);
     private int points, mode;
     private double reference, lower, upper, gateMemory;
     private boolean initialized, predicted;
+    private Machine initializedMachine;
+    private long staggeredEvaluationCount;
+    private double initialReference, backlashInputMemory;
     private double secondaryScale=1;
+    private Machine secondaryMachine;
     public void attachSecondaryShaft(Machine machine) {
-        if(machine==null || machine==getMachine() || machine.getGovernor()!=null)
-            throw new IllegalArgumentException("Secondary shaft must be a different machine without a governor");
+        if(secondaryMachine!=null || machine==null || machine==getMachine() || machine.getGovernor()!=null)
+            throw new IllegalArgumentException("Only one distinct secondary shaft without an existing governor can be attached");
         var companion=new SecondaryShaft(this);companion.setMachine(machine);
+        secondaryMachine=machine;
     }
-    private static final class SecondaryShaft extends AbstractGovernor implements ICMLStateProvider {
+    /** The companion owns an output binding, never another copy of the turbine states. */
+    public static boolean isSecondaryShaft(Object controller) { return controller instanceof SecondaryShaft; }
+    private static final class SecondaryShaft extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant {
         private final Wsieg1Governor owner;
+        private Machine initializedMachine;
         SecondaryShaft(Wsieg1Governor owner) {super(owner.getId()+"_LP","WSIEG1_LP","WECC");this.owner=owner;}
         @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine) {
             double base=bus.getNetwork().getBaseKva();
             owner.secondaryScale=owner.getMachine().getRating(org.interpss.numeric.datatype.Unit.UnitType.mVA,base)
                     /machine.getRating(org.interpss.numeric.datatype.Unit.UnitType.mVA,base);
-            return Double.isFinite(owner.secondaryScale)&&owner.secondaryScale>0;
+            boolean valid=Double.isFinite(owner.secondaryScale)&&owner.secondaryScale>0;
+            initializedMachine=valid?machine:null;
+            return valid;
         }
         @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag) {
             // The shared turbine is integrated by its high-pressure owner exactly once per stage.
@@ -43,6 +59,16 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         }
         @Override public double getOutput(Machine machine) { return owner.secondaryScale*owner.shaftOutput(1); }
         @Override public Map<String,Double> getNamedStates() {return Map.of("Shared turbine output",getOutput(getMachine()));}
+        @Override public int staggeredStateCount() { return 0; }
+        private void requireBuffer(double[] values,int offset) {
+            owner.requireSharedState();
+            if(initializedMachine!=getMachine() || getMachine().getGovernor()!=this)
+                throw new IllegalStateException("Reinitialize after replacing the secondary-shaft owner");
+            java.util.Objects.checkFromIndexSize(offset,0,values.length);
+        }
+        @Override public void readStaggeredState(double[] values,int offset) { requireBuffer(values,offset); }
+        @Override public void evaluateStaggered(double step,double[] rates,int offset) { requireBuffer(rates,offset);requireStep(step); }
+        @Override public void applyStaggeredState(double[] values,int offset,double step) { requireBuffer(values,offset);requireStep(step); }
     }
 
     public Wsieg1Governor(String id, double[] constants) {
@@ -67,9 +93,12 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine machine) {
+        initialized=false;predicted=false;monitor.reset();staggeredEvaluationCount=0;
+        if(machine==null || machine!=getMachine() || !Double.isFinite(machine.getPm()) || !Double.isFinite(machine.getSpeed()))return false;
         double sum=c[9]+c[12]+c[15]+c[18];
-        if(sum<=0) return false;
+        if(!Double.isFinite(sum)||sum<=0) return false;
         double p=machine.getPm()/sum, gate=interpolate(p,curveY,curveX);
+        if(!Double.isFinite(p)||!Double.isFinite(gate))return false;
         upper=c[6];lower=c[7];
         int block=(int)c[33];
         if((block==1||block==3)&&lower==0) lower=gate;
@@ -79,26 +108,75 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         Arrays.fill(x,p);x[0]=0;x[1]=gate;
         System.arraycopy(x,0,old,0,6);Arrays.fill(d0,0);
         gateMemory=gate;reference=gate;mode=0;predicted=false;initialized=true;
+        initializedMachine=machine;initialReference=gate;backlashInputMemory=gate;
+        derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.INITIALIZATION);
         return true;
     }
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag) {
         if(!initialized || !Double.isFinite(dt)||dt<0 || method!=DynamicSimuMethod.MODIFIED_EULER
                 || (flag!=0&&flag!=1) || (flag==1&&!predicted)) return false;
-        if(dt==0) return true; // Event-boundary algebraic refresh cannot advance state/history.
+        if(dt==0) {
+            derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.PREDICTOR);
+            return true; // Event-boundary algebraic refresh cannot advance state/history.
+        }
         if(flag==0) {
             System.arraycopy(x,0,old,0,6);
             derivatives(old,d0,machine.getSpeed()-1);
+            retainRates(old,d0,Stage.PREDICTOR);
             for(int i=0;i<6;i++) x[i]=old[i]+dt*d0[i];
             predicted=true;
         } else {
             derivatives(x,d1,machine.getSpeed()-1);
+            retainRates(x,d1,Stage.CORRECTOR);
             for(int i=0;i<6;i++) x[i]=old[i]+.5*dt*(d0[i]+d1[i]);
             predicted=false;
         }
         x[1]=clamp(x[1],lower,upper);
         synchronizeBypasses(x);
-        if(flag==1) { gateMemory=backlash(x[1]);mode=deadbandMode(machine.getSpeed()-1); }
+        if(flag==1) commitHistories();
         return true;
+    }
+
+    private void commitHistories() {
+        double output=backlash(x[1]);if(c[22]>0. && output!=gateMemory)backlashInputMemory=x[1];
+        gateMemory=output;mode=deadbandMode(getMachine().getSpeed()-1);
+    }
+    private static void requireStep(double step) {
+        if(!Double.isFinite(step)||step<=0.)throw new IllegalArgumentException("Shared integration step must be finite and positive");
+    }
+    private void requireSharedState() {
+        if(!initialized||initializedMachine!=getMachine()||getMachine().getGovernor()!=this)
+            throw new IllegalStateException("Initialize the governor with its current machine owner before shared integration");
+        if(predicted)throw new IllegalStateException("Finish the modified-Euler predictor before shared integration");
+    }
+    private void requireBuffer(double[] values,int offset) {requireSharedState();java.util.Objects.checkFromIndexSize(offset,6,values.length);}
+    @Override public int staggeredStateCount() { return 6; }
+    @Override public void readStaggeredState(double[] values,int offset) {requireBuffer(values,offset);System.arraycopy(x,0,values,offset,6);}
+    @Override public void evaluateStaggered(double step,double[] rates,int offset) {
+        requireBuffer(rates,offset);requireStep(step);derivatives(x,d1,getMachine().getSpeed()-1.);
+        retainRates(x,d1,Stage.STAGGERED);System.arraycopy(d1,0,rates,offset,6);staggeredEvaluationCount++;
+    }
+    @Override public void applyStaggeredState(double[] values,int offset,double step) {
+        requireBuffer(values,offset);requireStep(step);
+        for(int i=0;i<6;i++)if(!Double.isFinite(values[offset+i]))throw new IllegalArgumentException("Trial states must be finite");
+        System.arraycopy(values,offset,x,0,6);x[1]=clamp(x[1],lower,upper);synchronizeBypasses(x);
+    }
+    @Override public void completeStaggeredStep(double step) {requireSharedState();requireStep(step);commitHistories();}
+    public long getStaggeredEvaluationCount() {return staggeredEvaluationCount;}
+    /** Published compensation coordinate; bypassed turbine slots expose their algebraic input. */
+    public void readPublishedState(double[] values,int offset) {
+        requireBuffer(values,offset);values[offset]=c[1]>0?(1.-c[2]/c[1])*x[0]:0.;values[offset+1]=x[1];
+        System.arraycopy(x,1,values,offset+1,5);
+    }
+    private void retainRates(double[] state,double[] rates,Stage stage) {
+        monitor.begin(stage);for(int i=0;i<6;i++)monitor.record(i,state[i],rates[i]);
+    }
+    @Override public Map<String,Double> getIntegrationStates() {
+        var states=new LinkedHashMap<String,Double>();for(int i=0;i<6;i++)states.put(STATE_NAMES[i],x[i]);return Map.copyOf(states);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {return monitor.snapshot();}
+    @Override public Map<String,Double> getIntegrationHistories() {
+        return Map.of("Valve deadband memory",gateMemory,"Speed deadband mode",(double)mode,"Valve input reference",backlashInputMemory);
     }
     private int deadbandMode(double u) {
         if(mode==0) return u>c[20]?1:u< -c[20]?-1:0;
@@ -136,6 +214,11 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     @Override public void setRefPoint(double value) { if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite reference");reference=value; }
     public double getRefPoint() { return reference; }
+    public double getInitialReference() { return initialReference; }
+    public double getSecondaryBaseScale() { return secondaryMachine==null?0.:secondaryScale; }
+    public double getSpeedDeadbandOutput() { return speedInput(getMachine().getSpeed()-1.); }
+    public double getValveOutput() { return backlash(x[1]); }
+    public double getBacklashInputHistory() { return backlashInputMemory; }
     public double getValvePosition() { return x[1]; }
     public double valvePower(double gate) { return interpolate(gate,curveX,curveY); }
     public double getEffectiveMinimum() { return lower; }
@@ -143,8 +226,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     public double[] getConstants() { return c.clone(); }
     @Override public Map<String,Double> getNamedStates() {
         var states=new LinkedHashMap<String,Double>();
-        String[] names={"Speed lag","Valve","Turbine 1","Turbine 2","Turbine 3","Turbine 4"};
-        for(int i=0;i<6;i++)states.put(names[i],x[i]);
+        for(int i=0;i<6;i++)states.put(STATE_NAMES[i],x[i]);
         states.put("Valve deadband memory",gateMemory);states.put("Speed deadband mode",(double)mode);
         return Map.copyOf(states);
     }
