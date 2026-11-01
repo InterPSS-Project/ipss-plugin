@@ -370,6 +370,9 @@
   "CompositeStaticPolynomialSmibTest": {
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-static-normalization-20261101/captures.zip"
   },
+  "CompositeOmittedDistributionTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-omitted-elements-20261101/captures-v2.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

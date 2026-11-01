@@ -158,6 +158,8 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	}
     	
     	this.getDistEquivalent().setMva(this.mvaBase);
+        double mvaConvFactor = systemMVABase / this.mvaBase;
+        if (initializeOmittedDistribution(mvaConvFactor)) return initializeMotorComponents();
     	
     	//1. create the low-voltage bus and the load bus
   
@@ -210,7 +212,6 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    //distXfr.setToBus(lowBus);
   	    
   	    
-  	    double  mvaConvFactor = systemMVABase/this.mvaBase;
   	    
   	    double Xxf = this.getDistEquivalent().getXXf();
   	    
@@ -250,6 +251,9 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
         initializeDistributionEquivalent(VtransBus, ItransBus, mvaConvFactor);
         return initializeMotorComponents();
     }
+
+    /** A model dialect may attach leaves directly where distribution elements are omitted. */
+    protected boolean initializeOmittedDistribution(double mvaConvFactor) { return false; }
 
     /** Initialize the distribution voltages before attaching component devices. */
     protected void initializeDistributionEquivalent(Complex VtransBus, Complex ItransBus, double mvaConvFactor) {
@@ -554,7 +558,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			 //TODO only a temporal solution
     			//this.indMotorD.setTpp0(0.0);
     			
-                initflag = this.ac1PMotor.initStates() && initflag;
+                initflag = initializeSinglePhaseMotor(this.ac1PMotor) && initflag;
     		}
     		else{
     			 log.error(" The motor D should be a 1-phase air conditioner motor. Type = "+this.motorDType);
@@ -569,6 +573,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 
     /** Family-specific operating-point demand may differ from the physical motor circuit. */
     protected boolean initializeInductionMotor(InductionMotor motor) { return motor.initStates(); }
+    protected boolean initializeSinglePhaseMotor(LD1PAC motor) { return motor.initStates(); }
 
 	/** Load represented by this composite container before its parent-bus loads are detached. */
 	protected Complex resolveCompositeLoad() {

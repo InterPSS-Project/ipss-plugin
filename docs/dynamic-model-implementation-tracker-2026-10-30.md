@@ -37,6 +37,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Retain the [omitted-distribution topology and scoped allocation contract](dynamic-models/cmldblu1-omitted-distribution.md), exact transformer/feeder omission sentinels, merged-bus shunts and unrelated load ownership under both methods. Extend full zone, internal-coordinate, restoration and production-step/long-duration qualification.
 - Retain the [independently checked low-voltage current and heating law](dynamic-models/cmldblu1-compressor-current.md), fresh trial-voltage currents and reusable numerical storage under both methods.
 - Retain the [strict standalone compressor import and coupled controls](dynamic-models/acmtblu1-shared-import.md), per-load ownership and explicit accepted-timer precision.
 - Retain the [sampled-phase frequency contract and running P/Q factors](dynamic-models/acmtblu1-frequency-input.md), explicit event preparation and independent filter/bypass/current checks under both methods. Resolve remaining continuous-state and active protection qualification, and the separate composite low-voltage static-admittance discrepancy.

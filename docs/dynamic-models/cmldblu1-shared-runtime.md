@@ -7,7 +7,9 @@ complete independent model qualification remains open. The catalog remains
 ## Ownership and numerical execution
 
 The composite is an information-only container. Initialization creates its
-distribution buses, motor devices and algebraic static/electronic components.
+present distribution buses, motor devices and algebraic static/electronic
+components. [Omitted distribution elements](cmldblu1-omitted-distribution.md)
+share existing bus objects and preserve scoped component allocations.
 `StaggeredEulerSolver` must validate that expanded network and bind the actual
 leaf devices. Previously it validated only the unexpanded network and omitted
 the motors: a synthetic fault changed Motor A's E-prime by 0.19305 pu under

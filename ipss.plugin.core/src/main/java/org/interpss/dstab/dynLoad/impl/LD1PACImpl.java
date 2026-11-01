@@ -41,6 +41,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     private boolean legacyCompositeCharacteristic;
     private Complex electricalNortonY;
     private AclfLoad parentLoad;
+    private Complex initialLoadAllocation;
     public enum AcceptedTimerPrecision { DOUBLE, BINARY32 }
     private AcceptedTimerPrecision acceptedTimerPrecision = AcceptedTimerPrecision.DOUBLE;
     public enum FrequencyInputMode { BUS_FREQUENCY, TERMINAL_PHASE_DOUBLE, TERMINAL_PHASE_BINARY32 }
@@ -291,6 +292,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     /** Bind a complete source load record before initialization; loading factor is not coverage. */
     public void setParentLoad(AclfLoad load) {
         java.util.Objects.requireNonNull(load);
+        if (initialLoadAllocation != null) throw new IllegalStateException("A compressor allocation already owns this load");
         if (PQmotor != null) throw new IllegalStateException("Source load must be bound before initialization");
         if (getDStabBus() == null || getDStabBus().getContributeLoad(load.getId()) != load)
             throw new IllegalArgumentException("Source load must belong to the compressor bus");
@@ -298,6 +300,17 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
 
     public AclfLoad getParentLoad() { return parentLoad; }
+
+    /** Bind a composite-owned operating-point allocation before the first initialization. */
+    public void setInitialLoadAllocation(Complex power) {
+        java.util.Objects.requireNonNull(power);
+        if (power.isNaN() || power.isInfinite() || power.getReal() <= 0)
+            throw new IllegalArgumentException("A finite positive compressor allocation is required");
+        if (parentLoad != null || PQmotor != null && !power.equals(initialLoadAllocation))
+            throw new IllegalStateException("Compressor allocation must be bound before initialization");
+        initialLoadAllocation = power;
+    }
+    public Complex getInitialLoadAllocation() { return initialLoadAllocation; }
 
     /** Select the compressor family's characteristic before initialization. */
     public void setCharacteristicPolicy(CharacteristicPolicy policy) {
@@ -1386,7 +1399,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		//In the future, this may need to be update to consider the constant P load only
         Complex busTotalLoad = this.getDStabBus().getInitLoad();
         if (parentLoad != null && !parentLoad.isActive()) return false;
-        Complex allocatedPower = parentLoad == null
+        Complex allocatedPower = initialLoadAllocation != null ? initialLoadAllocation : parentLoad == null
                 ? new Complex(busTotalLoad.getReal()*this.loadPercent/100.0d,
                         busTotalLoad.getReal()*this.loadPercent/100.0d*Math.tan(Math.acos(this.powerFactor)))
                 : parentLoad.getLoad(getDStabBus().getVoltageMag());
@@ -1394,7 +1407,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
                 || !Double.isFinite(allocatedPower.getImaginary()) || allocatedPower.getReal() <= 0) return false;
         this.pac = allocatedPower.getReal();
         this.qac = allocatedPower.getImaginary();
-        if (parentLoad != null) setLoadPercent(100 * pac / busTotalLoad.getReal());
+        if (parentLoad != null || initialLoadAllocation != null) setLoadPercent(100 * pac / busTotalLoad.getReal());
 		
 		
 		// pac and qac is the initial power

@@ -53,6 +53,13 @@ methods. Fresh trial-voltage power and exact generic fallbacks remain intact;
 the severe low-voltage static-admittance and internal-observation discrepancy
 requires separate diagnosis.
 
+The [omitted-distribution correction](dynamic-models/cmldblu1-omitted-distribution.md)
+collapses exactly absent transformer/feeder elements onto existing bus objects.
+Explicit component operating points preserve unrelated parent loads and shunts
+when both elements are absent. Independent two-step-size coupled controls and
+merged-bus flat checks cover both integration methods; complete zone/state,
+severe low-voltage and restoration qualification remain open.
+
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;
 every trial network voltage refreshes current through shared reusable numerical

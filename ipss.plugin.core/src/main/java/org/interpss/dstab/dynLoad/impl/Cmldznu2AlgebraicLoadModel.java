@@ -28,12 +28,19 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
     private double minimumElectronicFraction = 1.0;
     private double electronicFraction = 1.0;
     private Complex initialAdmittance;
+    private final double assignedInitialActivePower;
 
     Cmldznu2AlgebraicLoadModel(Kind kind, BaseDStabBus<?, ?> bus,
             String id, double fraction, Cmldznu2Data data) {
+        this(kind, bus, id, fraction, data, Double.NaN);
+    }
+
+    Cmldznu2AlgebraicLoadModel(Kind kind, BaseDStabBus<?, ?> bus,
+            String id, double fraction, Cmldznu2Data data, double assignedInitialActivePower) {
         this.kind = kind;
         this.data = data;
         this.fraction = fraction;
+        this.assignedInitialActivePower = assignedInitialActivePower;
         staticImpedanceOnly = kind == Kind.STATIC
                 && impedancePolynomial(data, 27) && impedancePolynomial(data, 32)
                 && data.value(31) == 0 && data.value(36) == 0;
@@ -50,7 +57,7 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
         initialVoltage = getDStabBus().getVoltageMag();
         Complex total = getDStabBus().getInitLoad();
         if (total == null || initialVoltage <= EPS) return false;
-        p0 = total.getReal() * fraction;
+        p0 = Double.isNaN(assignedInitialActivePower) ? total.getReal() * fraction : assignedInitialActivePower;
         double pf = kind == Kind.STATIC ? data.value(26) : data.value(23);
         q0 = reactiveFromPowerFactor(p0, pf);
         Complex initial = new Complex(p0, q0);
