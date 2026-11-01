@@ -68,6 +68,35 @@ samples, changing physical parameters or hiding the raw comparisons.
 
 ## Regression validation
 
+### First-action stage discriminator
+
+The upward target control was independently repeated at 0.25 ms, preserving
+the same physical parameters and target-change times as the 0.5 ms control.
+Relative to the first tap action, both resolutions show:
+
+| Observed quantity | First response after tap action |
+| --- | --- |
+| Internal low-side voltage | Same sample |
+| External bus voltages, machine active power, static-load active power | One integration interval |
+| Machine speed deviation above `1e-9` pu | Two integration intervals |
+
+The external-voltage/power delay therefore changes from 0.5 ms to 0.25 ms.
+Reconstructed machine power from the source-bus and adjacent-bus phasors agrees
+with its channel within `1.7e-7` pu over both complete captures. The external
+network channels share the delay; it is not an isolated stale power channel.
+This supports staged coupling as the next investigation, but does not prove
+the exact internal call order or explain all accumulated trajectory error.
+
+`tools/audit_composite_tap_stages.py` checks the exact synthetic network fixture,
+reports explicit response thresholds, keeps duplicate samples, and reconstructs
+power from branch impedance. It makes no sample shifts or acceptance claims.
+Both fine-step cold runs and every raw field are retained with their hashes;
+the comparison does not replace the original strict trajectory gates. Any
+future stage change must distinguish physical transformer stamping, internal
+load observation and accepted machine inputs under each integration method.
+
+### Runtime regression results
+
 The final runtime passed the core module checks (486 tests, four existing skips)
 and the selected three-phase checks (15 tests). The registered integration suite
 ran 3,560 tests with four existing failures, no errors and 13 skips. The failure
