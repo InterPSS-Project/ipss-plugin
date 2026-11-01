@@ -27,7 +27,8 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  */
 public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider,
         StaggeredEulerParticipant, IntegrationStateAccess, org.interpss.dstab.control.util.NetworkEventInput,
-        org.interpss.dstab.control.util.InitialEndpointAction {
+        org.interpss.dstab.control.util.InitialEndpointAction,
+        org.interpss.dstab.control.util.IntegrationStepContext {
     private final double[] integrationRates = new double[9];
     private final double[] timerStart = new double[5], timerFirstRates = new double[5], timerTrial = new double[5];
     private final double[] evaluatedCurrent = new double[2];
@@ -54,6 +55,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     private boolean networkEventRatesPrepared;
     private boolean legacyUvTripped;
     private boolean initialEndpointAccepted;
+    private double pendingSamplingEndpoint = Double.NaN;
+
+    @Override public void prepareIntegrationStep(double startTimeSec, double stepSec) {
+        if (!Double.isFinite(startTimeSec) || !Double.isFinite(stepSec) || stepSec < 0
+                || !Double.isFinite(startTimeSec + stepSec))
+            throw new IllegalArgumentException("A finite compressor interval and physical clock are required");
+        pendingSamplingEndpoint = startTimeSec + stepSec;
+    }
 
     private void updateLegacyContactor(double voltage) {
         if (voltage < vc1off) {
@@ -186,7 +195,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         return frequencySourceBus == null ? getDStabBus() : frequencySourceBus;
     }
     private void acceptPhaseSample(double interval) {
+        double endpoint = pendingSamplingEndpoint;
+        pendingSamplingEndpoint = Double.NaN;
         if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY || interval == 0) return;
+        // Continuous states still integrate during startup. Only the sampled
+        // phase memory and its clock wait for the first positive endpoint.
+        if (endpoint <= 0) return;
         double nextTime = frequencyInputMode == FrequencyInputMode.TERMINAL_PHASE_BINARY32
                 ? (double) ((float) phaseSampleTime + (float) interval) : phaseSampleTime + interval;
         if (!Double.isFinite(nextTime) || !(nextTime > phaseSampleTime))
@@ -1305,6 +1319,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         kuv = 1; kcon = 1; fcon_trip = 0;
         legacyUvTripped = false;
         initialEndpointAccepted = false;
+        pendingSamplingEndpoint = Double.NaN;
         equivY = null; electricalNortonY = null; vstallbrk = 0;
 
         vstall = configuredVstall; vbrk = configuredVbrk;

@@ -29,6 +29,11 @@ fractions, complete-trip temperature projection and restart-pending behavior.
 Independent replay and paired coupled controls retain method-specific criteria;
 parameter validation, restoration and production-step/long-duration work remain open;
 the separate severe composite/static-load discrepancy remains diagnostic.
+The [startup-clock correction](dynamic-models/acmtblu1-startup-clock.md) separates
+physical endpoint time from integration duration. Phase memory waits through
+nonpositive startup endpoints while other coordinates integrate; independent
+active-frequency replay and coupled controls qualify the stated policy under
+both methods without suppressing numerical-method differences.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;

@@ -112,7 +112,8 @@ coordinates/static-load behavior, additional initial-action interactions,
 time-constant validation and production-interval/long-duration qualification
 remain separate work.
 
-The thermal captures use zero frequency sensitivity. They do not extend the
-earlier frequency-input qualification to nonflat startup with active P/Q
-frequency gains. Unmasked frequency-state differences remain in the coupled
-reports; that combined initialization/measurement profile is still open.
+The thermal captures use zero frequency sensitivity. The separate
+[startup-clock controls](acmtblu1-startup-clock.md) qualify nonflat startup with
+active P/Q frequency gains. Unmasked numerical-method frequency-state
+differences remain in the coupled reports; complete composite and restoration
+qualification remain open.

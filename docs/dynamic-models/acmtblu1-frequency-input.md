@@ -35,6 +35,11 @@ zero-duration refreshes cannot advance phase memory, timers or continuous
 states. Reinitialization resets the measurement history. Changing its mode
 after initialization is rejected.
 
+The [physical startup-clock contract](acmtblu1-startup-clock.md) separately
+keeps phase memory through nonpositive startup endpoints. Other coordinates
+still integrate, and duration-only low-level clients retain their established
+positive-time convention.
+
 ## Explicit scheduled-event preparation
 
 The small `NetworkEventInput` contract identifies a zero-time input-history

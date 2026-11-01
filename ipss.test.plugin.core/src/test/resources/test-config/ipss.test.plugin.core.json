@@ -356,6 +356,10 @@
   "CompressorThermalConformanceTest": {
     "reference.archive": "testData/private/verification-artifacts/acmtblu1-protection-20261101/accepted.zip"
   },
+    "CompressorStartupFrequencyTest": {
+      "reference.archive": "testData/private/verification-artifacts/acmtblu1-startup-frequency-20261101/captures.zip",
+      "reference.bypass.archive": "testData/private/verification-artifacts/acmtblu1-startup-frequency-20261101/bypass-captures.zip"
+    },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

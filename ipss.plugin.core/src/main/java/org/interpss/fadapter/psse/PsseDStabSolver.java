@@ -46,6 +46,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private record EventInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
             org.interpss.dstab.control.util.NetworkEventInput input) { }
     private final java.util.List<EventInput> networkEventInputs = new java.util.ArrayList<>();
+    private record StepInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
+            org.interpss.dstab.control.util.IntegrationStepContext input) { }
+    private final java.util.List<StepInput> integrationStepInputs = new java.util.ArrayList<>();
     /** Configure before initialization; false retains compatible controller dispatch. */
     public void setControllerRuntimePreparationEnabled(boolean enabled){controllerRuntimePreparationEnabled=enabled;}
     public boolean isControllerRuntimePreparationEnabled(){return controllerRuntimePreparationEnabled;}
@@ -95,6 +98,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
         if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
             for (var model : statcomEventModels)
                 if (model.isActive() && model.getDStabBus() != null && model.getDStabBus().isActive()) model.acceptNetworkEvent();
+        for (var entry : integrationStepInputs)
+            if (entry.bus().isActive() && entry.device().isActive())
+                entry.input().prepareIntegrationStep(time, dstabAlgo.getSimuStepSec());
         super.beforeStep(time);
     }
     public static final int DEFAULT_MAXIMUM_NETWORK_ITERATIONS = 50;
@@ -226,7 +232,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
-        controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();
+        controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();integrationStepInputs.clear();
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         var validation=validateModelParameters();
@@ -246,6 +252,8 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if (device instanceof org.interpss.dstab.svc.Svsmo3t2Model model) statcomEventModels.add(model);
                 if (device instanceof org.interpss.dstab.control.util.NetworkEventInput input)
                     networkEventInputs.add(new EventInput(device, bus, input));
+                if (device instanceof org.interpss.dstab.control.util.IntegrationStepContext input)
+                    integrationStepInputs.add(new StepInput(device, bus, input));
             }
         selectFrequencyMeasurements();
         if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
