@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
-        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'acmtblu1', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
+        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'acmtblu1', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current', 'tiocr1-load-only'])
     parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'short-repeated-faults', 'reference-step',
                                             'tap-reference-up', 'tap-reference-down',
                                             'tap-reference-reversal', 'tap-reference-deadband'], default='fault')
@@ -116,7 +116,7 @@ def main():
     checked('network', psspy.read(0, 'network.raw'))
     checked('flow', psspy.fnsl([0, 0, 0, 1, 1, 0, 99, 0]))
     assert psspy.solved() == 0
-    conversion=[100.,0.,0.,100.] if args.fixture=='tiocr1-current' else [0.,100.,0.,100.]
+    conversion=[100.,0.,0.,100.] if args.fixture in ('tiocr1-current','tiocr1-load-only') else [0.,100.,0.,100.]
     checked('generators', psspy.cong(0))
     for stage in [1, 2, 3]:
         checked('loads', psspy.conl(0, 1, stage, [0, 0], conversion))

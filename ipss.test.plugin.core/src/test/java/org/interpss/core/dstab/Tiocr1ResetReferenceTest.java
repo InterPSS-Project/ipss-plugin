@@ -83,7 +83,7 @@ public class Tiocr1ResetReferenceTest {
         }
         fail("Missing physical-action event-side duplicate");return Double.NaN;
     }
-    private static List<Map<String,Double>> csv(byte[] bytes) {
+    static List<Map<String,Double>> csv(byte[] bytes) {
         String[] lines=new String(bytes,StandardCharsets.UTF_8).strip().split("\\R"),keys=lines[0].split(",");
         var rows=new ArrayList<Map<String,Double>>();
         for(int i=1;i<lines.length;i++) {

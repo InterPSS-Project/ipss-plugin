@@ -49,7 +49,7 @@ public class HspUsageRankedModelTest {
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete(),loader.getLastDynamicImportReport().failureSummary());
         var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
-        if(fixture.equals("tiocr1-current")) {net.setStaticLoadIncludedInYMatrix(false);net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_I);}
+        if(fixture.equals("tiocr1-current")||fixture.equals("tiocr1-load-only")) {net.setStaticLoadIncludedInYMatrix(false);net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_I);}
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         double dt=.0005;algorithm.setSimuStepSec(dt);algorithm.setTotalSimuTimeSec(.5);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
@@ -77,6 +77,13 @@ public class HspUsageRankedModelTest {
             assertEquals(initialAngle,machine.getAngle(),1e-5,fixture+" flat angle");
         }
         recording.rows.add(new Captured(algorithm.getSimuTime(),"FINAL",capture(net)));
+        if(fixture.equals("tiocr1-load-only")) {
+            assertTrue(net.getBranchList().stream().allMatch(b->b.isActive()),"Load-only protection preserves lines");
+            var relay=(Tiocr1RelayModel)net.getDStabBus("Bus1").getDynamicBusDeviceList().stream()
+                    .filter(Tiocr1RelayModel.class::isInstance).findFirst().orElseThrow();
+            assertTrue(relay.isOperated());assertEquals(.1,relay.getShedFraction(),1e-12);
+            assertEquals(1,relay.getNetworkActionVersion());
+        }
         for(var frame:recording.rows) {
             rows.add(Double.toString(frame.time())+","+frame.values().values().stream().map(Object::toString).collect(java.util.stream.Collectors.joining(","))
                     +","+frame.kind()+","+frame.time());

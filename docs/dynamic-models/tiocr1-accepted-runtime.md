@@ -79,13 +79,23 @@ production equations were changed for this qualification.
 
 ## Remaining qualification
 
+An additional cold-repeated independent SMIB profile isolates remote static-load
+shedding with all transfer-trip targets disabled. Both methods retain all lines,
+shed the requested fraction once and pass complete voltage, power, rotor-angle
+and speed trajectories. The active load follows constant current and the reactive
+load constant impedance. All event-side duplicates are retained. Peak voltage
+errors are `0.000183` pu for modified Euler and `2.66e-6` pu for staggered
+integration; peak rotor-angle errors are below `5.1e-5` degrees. The reference
+capture identity is pinned in `Tiocr1LoadOnlyReferenceTest`; this profile does
+not establish dynamic-load or low-voltage shedding equivalence.
+
 Remote static-load lifecycle checks now exercise constant-P, constant-I and
 constant-Z active loads with constant-Z reactive load under both methods. They
 verify physical removed power from the combined matrix change and live current
 correction at changing terminal voltages. Repeated network rebuilds and duplicate
 refresh calls preserve the accepted shed fraction exactly once. These checks
 cover normal-voltage operation; low-voltage curve transitions, dynamic-load
-targets and independent remote-action trajectories remain separate requirements.
+targets and additional independent remote-action trajectories remain separate requirements.
 
 These results qualify the base coupled boundary profiles, not every relay
 configuration. Raw relay diagnostic current/position publication differs around
