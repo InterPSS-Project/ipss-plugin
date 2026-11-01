@@ -32,6 +32,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private Complex collapsedParentRemainder;
     private Complex collapsedParentOriginalShunt;
     private Complex ownedLowSideShunt = Complex.ZERO;
+    private CompositeTapControlPort tapControl;
 
     public Cmldznu2Model(String id, BaseDStabBus<?, ?> bus, Set<String> targetLoadIds,
             Complex targetPower, Cmldznu2Data data) {
@@ -272,6 +273,10 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
             if (!electronicLoadComponent.initStates()) return false;
         }
         prepareAlgebraicNetworkInterface(staticLoadComponent, electronicLoadComponent);
+        if (data.value(8) == 1 && distXfr != null && data.value(11) > 0) {
+            tapControl = new CompositeTapControlPort(this);
+            if (!tapControl.initStates()) return false;
+        }
         if (!distributionIncludesReactiveCompensation()) applyReactiveCompensation();
         if (getLoadBus() == getDStabBus()) {
             var parent = getDStabBus(); Complex combined = collapsedParentRemainder.add(parent.getInitLoad());
@@ -350,6 +355,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         }
         if (staticLoadComponent != null) states.putAll(staticLoadComponent.getNamedStates());
         if (electronicLoadComponent != null) states.putAll(electronicLoadComponent.getNamedStates());
+        if (tapControl != null) states.putAll(tapControl.getNamedStates());
         return Map.copyOf(states);
     }
 
@@ -368,6 +374,14 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     public Cmldznu2Data getData() { return data; }
     public Set<String> getTargetLoadIds() { return targetLoadIds; }
     public double getStaticFraction() { return staticFraction; }
+    /** Owned distribution transformer, or null when the input omits it. */
+    public com.interpss.dstab.DStabBranch getDistributionTransformer() { return distXfr; }
+
+    /** Change the active tap-control target between completed integration intervals. */
+    public void setTapVoltageBand(double minimum, double maximum) {
+        if (tapControl == null) throw new IllegalStateException("No active transformer tap controller");
+        tapControl.setVoltageBand(minimum,maximum);
+    }
 
     /** Leaf-owned coordinates and diagnostics; the composite container owns no duplicate state vector. */
     public Map<String, IntegrationStateAccess> getIntegrationStateOwners() {
@@ -376,6 +390,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         if (getInductionMotorB() instanceof IntegrationStateAccess state) owners.put("MotorB", state);
         if (getInductionMotorC() instanceof IntegrationStateAccess state) owners.put("MotorC", state);
         if (get1PhaseACMotor() instanceof IntegrationStateAccess state) owners.put("MotorD", state);
+        if (tapControl != null) owners.put("TapControl",tapControl);
         return Map.copyOf(owners);
     }
 
@@ -385,6 +400,11 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                 || model.getClass() == LegacyStaticLoadModel.class || model.getClass() == LegacyStaticLoadPort.class
                 || model.getClass() == LegacyDistributedStaticLoadPort.class
                 || model.getClass() == LegacyDistributionShuntPort.class);
+    }
+
+    /** Exact supported discrete-history leaf; it is not an algebraic load. */
+    public static boolean isTapControl(Object model) {
+        return model != null && model.getClass() == CompositeTapControlPort.class;
     }
 
     /** Refreshes the algebraic components after a network-voltage or frequency change. */

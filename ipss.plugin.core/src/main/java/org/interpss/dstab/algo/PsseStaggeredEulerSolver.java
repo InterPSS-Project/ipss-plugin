@@ -505,7 +505,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
 
     private static boolean supportedLoad(Object model) {
         return model != null && (model.getClass() == InductionMotorImpl.class
-                || model.getClass() == LD1PACImpl.class || Cmldznu2Model.isAlgebraicComponent(model));
+                || model.getClass() == LD1PACImpl.class || Cmldznu2Model.isAlgebraicComponent(model)
+                || Cmldznu2Model.isTapControl(model));
     }
 
     private void state(DoubleSupplier value, DoubleConsumer set, DoubleSupplier derivative) {
@@ -707,7 +708,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     if (load instanceof StaggeredEulerParticipant model) {
                         int count = model.staggeredStateCount();
                         attachmentsUnchanged.add(() -> model.staggeredStateCount() == count);
-                        extendedStack = true;
+                        // A discrete-only owner must not change machine derivative preparation.
+                        if (count > 0) extendedStack = true;
                         var participant = new Participant(model, () -> bus.isActive() && load.isActive());
                         participants.add(participant); busParticipants.add(participant);
                     }

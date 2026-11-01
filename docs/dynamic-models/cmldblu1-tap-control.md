@@ -1,9 +1,85 @@
 # Composite-load tap-control qualification
 
-The legacy composite currently prepares its transformer tap during initialization,
-but does not implement runtime tap movement. This is an open implementation gap
-for both modified-Euler and staggered integration. The fixed-tap trajectory gates
-do not qualify enabled tap control.
+The composite now has a shared runtime tap controller for modified-Euler and
+staggered integration. Tap-state agreement, physical endpoint balance and owned
+history rollback are tested. Full coupled reference qualification remains open:
+the reference's action-sample publication and deadband behavior differ from the
+new runtime. Fixed-tap trajectory gates do not qualify those active-tap cases.
+
+## Runtime implementation
+
+`CompositeTapControl` stores scalar tap position, signed control-delay memory,
+clock and pending action time. `CompositeTapControlPort` is a zero-injection
+leaf with no differential coordinates. Both integration methods advance the
+same discrete history using the previous solved voltage. The controller uses
+the initialized subsystem MVA base for line-drop compensation, not the raw
+negative loading-factor input. Voltage/current calculations use primitive
+arithmetic; observation maps are allocated only when requested.
+Registering this zero-coordinate owner does not select the staggered solver's
+extended machine-derivative preparation path. A regression test explicitly
+enables the optional preparation setting and verifies that the discrete-only
+owner leaves that path unused.
+
+The controller is attached only for an enabled flag, a represented transformer
+and a positive tap step. Disabled and initialization-only flags keep their
+existing fixed-tap behavior. A disconnected transformer cannot advance history.
+Active controls reject invalid bounds or negative delays before initialization.
+`setTapVoltageBand` changes the runtime target between completed intervals.
+
+A tap action updates the transformer's existing matrix entries and invalidates
+factorization. Ordinary steps do not rebuild the matrix. The following network
+solve accepts the history; failure restores the old tap, matrix entries and
+timer values. Getters publish committed history. Reinitializing the leaf resets
+its clock/tap without registering another device; matrix reconstruction retains
+the transformer stamp exactly once. The container exposes the discrete owner
+through `getIntegrationStateOwners()` and named `LTC` diagnostics.
+
+Return to the deadband cancels a pending action and holds the tap. It does not
+reproduce the independently observed lower-bound jump described below.
+
+## Verification scope and remaining accuracy work
+
+The registered SMIB test exercises upward, downward, reversal and deadband
+targets under both methods, plus both-method failed-solve rollback. Unit tests
+cover delays, bounds, reversal memory, zero intervals, zero delays and snapshots.
+At every nonnegative reference sample, ordinary target profiles agree on tap
+position within `1.2e-7`; maximum low-side voltage error is below `6e-5` pu.
+Independent current and active-power balance checks cover every solved endpoint,
+including each tap action, with a `2e-6` absolute residual bound.
+
+Those checks are **not full-trajectory acceptance**. Direct comparisons retain
+all nonnegative samples and both sides of every recorded event. Against the
+original captures, active-power NRMSE reaches about 0.00919, reactive-power NRMSE
+0.01564, and external-voltage NRMSE 0.01413. Worst rotor-angle RMSE is about
+0.000271 degrees. The strict 0.001 normalized and 0.0002-degree short-run criteria
+remain unmet and are printed separately as `TAP_FULL_TRAJECTORY_QUALIFIED=false`.
+No established trajectory acceptance limits have been changed.
+
+At the first upward action, the reference publishes the new tap/internal voltage
+while static-load and machine active power retain their preceding values. The
+new runtime instead records the re-solved electrical endpoint. For example,
+reference static power stays near 0.19528823 pu at that sample while the new
+endpoint is about 0.19719486 pu. This localizes an observation/integration-stage
+difference; it does not establish that it explains every accumulated angle error.
+Reducing reference network tolerance to `1e-6` changes low-side voltages by less
+than `2e-6` pu and does not remove this action-sample difference. Both original
+and tighter captures are retained. Reconcile the stage contract without dropping
+samples, changing physical parameters or hiding the raw comparisons.
+
+## Regression validation
+
+The final runtime passed the core module checks (486 tests, four existing skips)
+and the selected three-phase checks (15 tests). The registered integration suite
+ran 3,560 tests with four existing failures, no errors and 13 skips. The failure
+names and assertion messages are checked against the retained parent baseline;
+this is a regression comparison, not a claim that the full suite passes.
+All ten new both-method tap SMIB checks passed. The six ordinary-target full
+trajectory assessments still report unqualified, as described above.
+
+Private evidence retains the final reports, source and runtime hashes, ordered
+dependencies, and independently repeated tighter-network reference captures.
+Earlier diagnostic CSVs and interrupted/failed investigation logs are labeled
+separately from the final validation runs.
 
 ## Independent discriminator
 
@@ -100,7 +176,6 @@ per-field cold comparison, transition analysis and integrity checks. SHA-256:
 - Compare full coupled SMIB trajectories under both methods after the transition
   contract is resolved; the current reference captures alone do not prove parity.
 
-No production equations or acceptance tolerances changed in this investigation.
-The private evidence archive includes the complete cold captures, numeric
+The initial diagnostic archive includes the complete cold captures, numeric
 analysis, source snapshot and per-file integrity manifest. Archive SHA-256:
 `b230582a4bedb754c7486bb405308250d55c712b969601b0c508eaf140aff8be`.

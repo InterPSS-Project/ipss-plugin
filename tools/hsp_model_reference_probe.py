@@ -34,6 +34,8 @@ def main():
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1 / 240], default=.0005)
     parser.add_argument('--end-time', type=float, default=.5,
                         help='Final simulation time, from 0.5 through 10 seconds')
+    parser.add_argument('--network-tolerance', type=float,
+                        help='Optional explicit network convergence tolerance for a diagnostic control')
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
     parser.add_argument('--generator-states', action='store_true',
                         help='Record the coupled GENROU electrical and mechanical states in load-model diagnostics')
@@ -44,6 +46,8 @@ def main():
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
+    if args.network_tolerance is not None and (not math.isfinite(args.network_tolerance) or args.network_tolerance <= 0):
+        parser.error('--network-tolerance must be finite and positive')
     if args.profile.startswith('tap-reference-') and not args.fixture.startswith('cmldblu1'):
         parser.error('Tap-reference profiles require a legacy bus composite fixture')
     if not math.isfinite(args.end_time) or not .5 <= args.end_time <= 10:
@@ -153,7 +157,8 @@ def main():
     for bus in ([1, 2, 3] if load or args.fixture=='wsieg1-dual' else [1, 2]):
         checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
-    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, df, args.step] + [df]*5))
+    checked('step', psspy.dynamics_solution_param_2([di]*8,
+        [df, df if args.network_tolerance is None else args.network_tolerance, args.step] + [df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))

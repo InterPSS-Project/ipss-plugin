@@ -1,4 +1,7 @@
 {
+  "CompositeTapControlSmibTest": {
+    "recording.enabled": false
+  },
   "BenchmarkOutputGuard": {
     "ipss.benchmark.maxFileBytes": 536870912,
     "ipss.benchmark.minFreeBytes": 2147483648

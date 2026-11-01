@@ -46,6 +46,10 @@ public final class Cmldznu2Data {
         if (value(11) < 0.0) {
             throw new IllegalArgumentException("CMLDZNU2 tap step must be non-negative");
         }
+        if (value(8) == 1 && value(5) != 0 && value(11) > 0
+                && (value(9) <= 0 || value(12) <= 0 || value(14) < 0 || value(15) < 0)) {
+            throw new IllegalArgumentException("Active transformer tap control requires positive tap/voltage bounds and nonnegative delays");
+        }
         for (int i = 18; i <= 22; i++) requireUnitInterval(i);
         requirePowerFactor(23);
         requirePowerFactor(26);
