@@ -10,13 +10,14 @@ import org.interpss.dstab.dynLoad.Cmldznu2Data;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Zone-scoped composite load assembled from the native distribution and motor components. */
-public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider {
+public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider, IntegrationStepAware {
     private static final double EPS = 1.0e-10;
 
     private final Cmldznu2Data data;
@@ -38,6 +39,11 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         setId(id);
         setGroupId("zone:" + (bus.getZone() == null ? "" : bus.getZone().getNumber()));
         configure();
+    }
+
+    @Override public void configureIntegrationStep(double timeStepSec) {
+        if (get1PhaseACMotor() instanceof IntegrationStepAware motor)
+            motor.configureIntegrationStep(timeStepSec);
     }
 
     private void configure() {

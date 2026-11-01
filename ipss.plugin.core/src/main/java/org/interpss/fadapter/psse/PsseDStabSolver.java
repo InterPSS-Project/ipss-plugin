@@ -349,7 +349,16 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     static void configureIntegrationStepAwareModels(BaseDStabNetwork<?, ?> network,
             double timeStep) {
+        var prepared = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
+            // Composite owners must forward preparation before expanding their leaves.
+            configure(bus.getInfoOnlyDynModel(), timeStep);
+            for (DynamicDevice device : bus.getDynamicBusDeviceList())
+                if (prepared.add(device)) configure(device, timeStep);
+            if (bus.getDynLoadModelList() != null)
+                for (DynamicDevice device : bus.getDynLoadModelList())
+                    if (prepared.add(device)) configure(device, timeStep);
+            if (prepared.add(bus.getScriptDynamicBusDevice())) configure(bus.getScriptDynamicBusDevice(), timeStep);
             for (DStabGen generator : bus.getContributeGenList()) {
                 DynamicDevice device = generator.getDynamicGenDevice();
                 configure(device, timeStep);

@@ -10,11 +10,14 @@ rules are still open. Catalog status remains `LOADABLE`.
 
 ## Equations and numerical storage
 
-For positive `Tth`, the existing differential temperature equation remains
+For an active differential `Tth`, the temperature equation remains
 `dT/dt = (Rstall * I_rms² - T) / Tth`. For `Tth = 0`, independent captures retain
 zero as the prepared parameter and expose the algebraic temperature
 `T = Rstall * I_rms²`. The implementation preserves that value instead of
 introducing a small positive time constant or discarding the thermal model.
+The subsequent [outer-interval preparation](acmtblu1-short-lags.md) also selects
+this shared algebraic branch for a positive legacy time constant at or below
+twice the configured network interval, while preserving its raw value.
 
 The exact standalone reader now accepts zero and still rejects negative or
 nonfinite thermal times before attachment. Allocation, parameter order, source

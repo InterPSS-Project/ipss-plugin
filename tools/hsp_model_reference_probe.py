@@ -165,7 +165,15 @@ def main():
     checked('model report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and all(message not in log for message in ['Network not converged','Incomplete data record'])
+    input_consistency = None
+    if args.fixture == 'acmtblu1':
+        channels = {labels[k]: k for k in keys}
+        voltage_error = max(abs(a - b) for name in ['VAR0', 'VAR13']
+                            for a, b in zip(data[channels[name]], data[channels['V2']]))
+        input_consistency = dict(maximum_voltage_input_error_pu=voltage_error, tolerance_pu=2e-7)
+        quality = quality and voltage_error <= 2e-7
     manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args),
+        input_consistency=input_consistency,
         layout=layout, generator_layout=generator_layout, entered_constants=entered, initialized_constants=initialized,
         load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu], samples=len(data['time']), channels=len(keys), engine_module=psse3607.__name__,
         library_sha256=sha(library), source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),

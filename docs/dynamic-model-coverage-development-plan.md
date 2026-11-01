@@ -39,6 +39,13 @@ zero thermal time constant, projects algebraic temperature through shared
 numerical storage and preserves the separately accepted input for trip actions.
 Independent replay, coupled faults and composite attachment checks cover both
 methods; complete composite and remaining validation/restoration work stays open.
+The [outer-interval lag preparation](dynamic-models/acmtblu1-short-lags.md)
+resolves the identified production-step voltage-filter instability through
+independently established voltage/frequency/thermal bypass boundaries. Shared
+preinitialization discovery reaches standalone and unexpanded composite motors;
+raw constants and local-stage intervals remain separate. Both-method coupled
+controls retain method-specific state evidence; strict differential
+modified-Euler state parity and complete composite qualification stay open.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;
