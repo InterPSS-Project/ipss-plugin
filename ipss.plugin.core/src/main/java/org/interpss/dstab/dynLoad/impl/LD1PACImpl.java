@@ -45,6 +45,41 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     private double frequencyOutput = 1, lastFrequencyEventTime = Double.NaN;
     private boolean frequencyEventPending;
     private double reactiveFrequencyScale = 1;
+    public enum ElectricalInputMode { LIVE_NETWORK, ACCEPTED_ENDPOINT }
+    private ElectricalInputMode electricalInputMode = ElectricalInputMode.LIVE_NETWORK;
+    private double acceptedVoltageMagnitude, acceptedHeatingSquaredA, acceptedHeatingSquaredB;
+    private final double[] networkEventLeftRates = new double[4];
+    private boolean networkEventRatesPrepared;
+
+    /** Select the model's electrical measurement boundary before initialization. */
+    public void setElectricalInputMode(ElectricalInputMode mode) {
+        java.util.Objects.requireNonNull(mode);
+        if (PQmotor != null && mode != electricalInputMode)
+            throw new IllegalStateException("Electrical input sampling must be selected before initialization");
+        electricalInputMode = mode;
+    }
+    public ElectricalInputMode getElectricalInputMode() { return electricalInputMode; }
+    @Override public boolean providesNetworkEventLeftRates() {
+        return electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT;
+    }
+    @Override public boolean readNetworkEventLeftRates(double[] rates, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, 4, rates.length);
+        if (!networkEventRatesPrepared) return false;
+        System.arraycopy(networkEventLeftRates, 0, rates, offset, 4);
+        return true;
+    }
+    private double voltageInput() {
+        return electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT
+                ? acceptedVoltageMagnitude : getDStabBus().getVoltageMag();
+    }
+    private void sampleElectricalInputs() {
+        if (electricalInputMode != ElectricalInputMode.ACCEPTED_ENDPOINT) return;
+        Complex voltage = getDStabBus().getVoltage();
+        acceptedVoltageMagnitude = getDStabBus().getVoltageMag();
+        acceptedHeatingSquaredA = heatingCurrentSquared(voltage, acceptedVoltageMagnitude, statusA, pac_a, qac_a);
+        acceptedHeatingSquaredB = heatingCurrentSquared(voltage, acceptedVoltageMagnitude, statusB, pac_b, qac_b);
+        if (tv <= 1e-12) vt_measured = vt_measured_old = acceptedVoltageMagnitude;
+    }
 
     /** Choose a prepared phase sampler or the existing bus-frequency input before initialization. */
     public void setFrequencyInputMode(FrequencyInputMode mode) {
@@ -68,15 +103,27 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
     @Override public void acceptNetworkEventInput(double physicalTimeSec) {
         if (!Double.isFinite(physicalTimeSec)) throw new IllegalArgumentException("Invalid event time");
-        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
+        if ((frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
+                && electricalInputMode == ElectricalInputMode.LIVE_NETWORK)
                 || physicalTimeSec == lastFrequencyEventTime) return;
         if (physicalTimeSec < lastFrequencyEventTime)
             throw new IllegalArgumentException("Frequency events must be ordered");
-        eventFrequencyDeviation = phaseFrequencyDeviation;
-        phaseFrequencyDeviation = 0;
-        frequencyEventPending = true;
+        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT) {
+            networkEventLeftRates[0] = tv > 1e-12 ? (acceptedVoltageMagnitude - vt_measured) / tv : 0;
+            networkEventLeftRates[1] = tf > 1e-12 ? (frequencyInput() - freq_measured) / tf : 0;
+            networkEventLeftRates[2] = (acceptedHeatingSquaredA * rstall - tempA) / tth;
+            networkEventLeftRates[3] = (acceptedHeatingSquaredB * rstall - tempB) / tth;
+            networkEventRatesPrepared = true;
+            calculateMotorPower();
+            sampleElectricalInputs();
+        }
+        if (frequencyInputMode != FrequencyInputMode.BUS_FREQUENCY) {
+            eventFrequencyDeviation = phaseFrequencyDeviation;
+            phaseFrequencyDeviation = 0;
+            frequencyEventPending = true;
+            if (tf <= 1e-12) freq_measured = freq_measured_old = 1;
+        }
         lastFrequencyEventTime = physicalTimeSec;
-        if (tf <= 1e-12) freq_measured = freq_measured_old = 1;
     }
     private BaseDStabBus<?, ?> frequencyBus() {
         return frequencySourceBus == null ? getDStabBus() : frequencySourceBus;
@@ -146,7 +193,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
         for (int i = 0; i < 4; i++)
             if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
-        vt_measured = tv > 1e-12 ? values[offset] : getDStabBus().getVoltageMag();
+        vt_measured = tv > 1e-12 ? values[offset] : voltageInput();
         freq_measured = tf > 1e-12 ? values[offset + 1] : frequencyInput();
         tempA = values[offset + 2]; tempB = values[offset + 3];
     }
@@ -162,10 +209,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
             int offset, IntegrationStateMonitor.Stage stage) {
         Complex voltage = getDStabBus().getVoltage();
         double magnitude = getDStabBus().getVoltageMag();
-        rates[offset] = tv > 1e-12 ? (magnitude - measuredVoltage) / tv : 0;
+        rates[offset] = tv > 1e-12 ? (voltageInput() - measuredVoltage) / tv : 0;
         rates[offset + 1] = tf > 1e-12 ? (frequencyInput() - measuredFrequency) / tf : 0;
-        rates[offset + 2] = (heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a) * rstall - tempA) / tth;
-        rates[offset + 3] = (heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b) * rstall - tempB) / tth;
+        double heatA = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredA
+                : heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a);
+        double heatB = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredB
+                : heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b);
+        rates[offset + 2] = (heatA * rstall - tempA) / tth;
+        rates[offset + 3] = (heatB * rstall - tempB) / tth;
         integrationMonitor.begin(stage);
         integrationMonitor.record(0, measuredVoltage, rates[offset]);
         integrationMonitor.record(1, measuredFrequency, rates[offset + 1]);
@@ -196,7 +247,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
                 Map.entry("ContactorTripFraction", fcon_trip), Map.entry("UvFraction", kuv),
                 Map.entry("RunA", (double) statusA), Map.entry("RunB", (double) statusB),
                 Map.entry("AcceptedTime", timeCounter));
-        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY) return result;
+        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
+                && electricalInputMode == ElectricalInputMode.LIVE_NETWORK) return result;
         var history = new LinkedHashMap<>(result);
         history.put("FrequencySampleTime", phaseSampleTime);
         history.put("FrequencyPhase", acceptedPhase);
@@ -206,6 +258,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         history.put("FrequencyInput", frequencyInput());
         history.put("FrequencyEventSeen", Double.isFinite(lastFrequencyEventTime) ? 1. : 0.);
         history.put("FrequencyEventTime", Double.isFinite(lastFrequencyEventTime) ? lastFrequencyEventTime : 0.);
+        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT) {
+            history.put("ElectricalVoltage", acceptedVoltageMagnitude);
+            history.put("ElectricalHeatingSquaredA", acceptedHeatingSquaredA);
+            history.put("ElectricalHeatingSquaredB", acceptedHeatingSquaredB);
+            history.put("ElectricalEventRatesPrepared", networkEventRatesPrepared ? 1. : 0.);
+        }
         return Map.copyOf(history);
     }
     public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
@@ -1120,6 +1178,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         acceptedPhase = frequencyBus().getVoltageAng(); phaseSampleTime = 0;
         phaseFrequencyDeviation = 0; eventFrequencyDeviation = 0; frequencyEventPending = false;
         frequencyOutput = 1; lastFrequencyEventTime = Double.NaN;
+        networkEventRatesPrepared = false;
 
         acStallTimer = 0; acStallTimerB = 0; acRestartTimer = 0;
         uVRelayTimer1 = 0; uVRelayTimer2 = 0;
@@ -1274,6 +1333,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, extended_device_Id);
 		this.setExtendedDeviceId(extended_device_Id);
+
+        sampleElectricalInputs();
 		
 		return flag;
 	}
@@ -1298,14 +1359,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
         if (flag == 0) {
             dv_dt0 = integrationRates[0]; df_dt0 = integrationRates[1];
             dThA_dt0 = integrationRates[2]; dThB_dt0 = integrationRates[3];
-            vt_measured = tv > 1e-12 ? vt_measured_old + dv_dt0 * dt : getDStabBus().getVoltageMag();
+            vt_measured = tv > 1e-12 ? vt_measured_old + dv_dt0 * dt : voltageInput();
             freq_measured = tf > 1e-12 ? freq_measured_old + df_dt0 * dt : frequencyInput();
             tempA = tempA_old + dThA_dt0 * dt;
             tempB = tempB_old + dThB_dt0 * dt;
         } else {
             dv_dt1 = integrationRates[0]; df_dt1 = integrationRates[1];
             dThA_dt1 = integrationRates[2]; dThB_dt1 = integrationRates[3];
-            vt_measured = tv > 1e-12 ? vt_measured_old + (dv_dt0 + dv_dt1) * .5 * dt : getDStabBus().getVoltageMag();
+            vt_measured = tv > 1e-12 ? vt_measured_old + (dv_dt0 + dv_dt1) * .5 * dt : voltageInput();
             freq_measured = tf > 1e-12 ? freq_measured_old + (df_dt0 + df_dt1) * .5 * dt : frequencyInput();
             tempA = tempA_old + (dThA_dt0 + dThA_dt1) * .5 * dt;
             tempB = tempB_old + (dThB_dt0 + dThB_dt1) * .5 * dt;
@@ -1624,6 +1685,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	public boolean afterStep(double dt) {
         if (!Double.isFinite(dt) || dt < 0)
             throw new IllegalArgumentException("An accepted compressor interval must be finite and nonnegative");
+        if (dt == 0) return true;
+        networkEventRatesPrepared = false;
 		/**
 		 *  to check whether AC motor stalls, restarts and the actions of the protections
 	      %  this should be perform after the network solution step
@@ -1756,6 +1819,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			// call this method to update "this.PQmotor"
 			calculateMotorPower();
 			
+            sampleElectricalInputs();
             acceptPhaseSample(dt);
 			return flag;
 	}

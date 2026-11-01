@@ -310,7 +310,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             this.model=model;this.active=active;
             int size=model.staggeredStateCount();
             values=new double[size];rates=new double[size];history=new double[size];trial=new double[size];
-            eventLeftRates=model.useAcceptedEndpointRateAtInputDiscontinuity()?new double[size]:null;
+            eventLeftRates=model.useAcceptedEndpointRateAtInputDiscontinuity()
+                    || model.providesNetworkEventLeftRates()?new double[size]:null;
         }
     }
 
@@ -984,6 +985,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             finally { networkSolutionStage = previousStage; }
         }
         networkEndpointAvailable = false;
+        if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
+            for (var p : participants)
+                if (p.eventLeftRates != null && p.model.providesNetworkEventLeftRates()
+                        && p.wasActive && p.active.getAsBoolean())
+                    p.hasEventLeftRates = p.model.readNetworkEventLeftRates(p.eventLeftRates, 0);
         if (discontinuity) for (var p:participants)
             if (p.active.getAsBoolean() && p.model instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer)
                 stabilizer.synchronizeVoltageDerivativeMemory();

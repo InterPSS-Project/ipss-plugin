@@ -3,7 +3,9 @@
 Status: exact bus/load import, independent preparation and expanded coupled
 controls pass under modified Euler and staggered integration. The
 [sampled-phase frequency path](acmtblu1-frequency-input.md) and frequency-dependent
-current law have separate independent checks. Complete continuous-state,
+current law have separate independent checks. The
+[electrical-input correction](acmtblu1-electrical-inputs.md) adds independent
+voltage/temperature integration and strict coupled staggered state gates. Complete
 protection and restoration qualification remains open;
 `ACMTBLU1` is cataloged as `LOADABLE`.
 
@@ -81,9 +83,11 @@ published state/diagnostic remain available in the private evidence chain.
 The original frequency-insensitive controls now have additional nonzero-
 sensitivity and filter-bypass controls. Recorded-phase replay checks the new
 measurement path separately, preserving integration-method differences and the
-raw bypass-coordinate observation error. Filtered voltage and temperature
-trajectories remain diagnostics; successful boundary gates do not establish
-equality of every continuous state. Active UV,
+raw bypass-coordinate observation error. Voltage and temperature now have
+independent accepted-input checks and strict staggered coupled state gates;
+modified-Euler/source differences retain their separate analytic interpretation.
+Successful short controls do not establish full protection or long-duration
+qualification. Active UV,
 contactor/thermal actions, restoration, production intervals and long runs also
 remain open. No complete-run performance claim is made from this import repair.
 

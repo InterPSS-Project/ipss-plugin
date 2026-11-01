@@ -341,11 +341,13 @@
   "Acmtblu1SharedSmibTest": {
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip",
     "reference.preparation.archive": "testData/private/verification-artifacts/cmldblu1-severe-boundary-audit-20261101/preparation.zip",
-    "reference.frequency.archive": "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip"
+    "reference.frequency.archive": "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip",
+    "reference.electrical.archive": "testData/private/verification-artifacts/acmtblu1-state-inputs-20261101/captures.zip"
   },
   "CompressorFrequencyInputTest": {
     "reference.archive": "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip",
-    "reference.base.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip"
+    "reference.base.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip",
+    "reference.electrical.archive": "testData/private/verification-artifacts/acmtblu1-state-inputs-20261101/captures.zip"
   },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,

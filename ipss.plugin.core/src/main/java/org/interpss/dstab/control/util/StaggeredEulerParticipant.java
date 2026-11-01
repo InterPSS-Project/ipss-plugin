@@ -25,6 +25,15 @@ public interface StaggeredEulerParticipant {
      * Scheduled network-event boundaries retain their separate qualified policy.
      */
     default boolean useAcceptedEndpointRateAtInputDiscontinuity() { return false; }
+    /** Whether this owner prepares pre-event endpoint rates in its explicit network-event callback. */
+    default boolean providesNetworkEventLeftRates() { return false; }
+    /**
+     * Purely copy prepared pre-event endpoint derivatives after the converged
+     * network-event callback. Return false when none are prepared. These are
+     * separate from two-step integration history; coordinate averaging policy
+     * still decides which entries are used.
+     */
+    default boolean readNetworkEventLeftRates(double[] derivatives, int offset) { return false; }
     default void completeStaggeredStep(double stepSec) { }
     /** Explicit endpoint clock for discrete histories; existing duration-based participants retain their contract. */
     default void completeStaggeredStep(double stepSec, double endpointTimeSec) {

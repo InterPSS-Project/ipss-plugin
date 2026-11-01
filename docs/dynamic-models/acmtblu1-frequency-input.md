@@ -111,3 +111,8 @@ Active UV/contactor/thermal actions, restoration, production integration
 intervals, long runs and the composite's separate internal-voltage/static-load
 discrepancy remain open. No complete-run performance claim follows from these
 component and short coupled checks.
+
+The [electrical-input contract](acmtblu1-electrical-inputs.md) separately qualifies
+accepted voltage/heating inputs, the sensed-voltage bypass and pre-event
+endpoint derivatives. Frequency and electrical measurement modes are explicit
+independent choices; they share the existing state vector and accepted callback.

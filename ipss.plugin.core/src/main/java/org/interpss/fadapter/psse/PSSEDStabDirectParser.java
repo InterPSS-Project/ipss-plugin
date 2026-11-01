@@ -1077,6 +1077,7 @@ public class PSSEDStabDirectParser {
             acMotor.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.LEGACY_COMPOSITE);
             acMotor.setAcceptedTimerPrecision(LD1PACImpl.AcceptedTimerPrecision.BINARY32);
             acMotor.setFrequencyInputMode(LD1PACImpl.FrequencyInputMode.TERMINAL_PHASE_BINARY32);
+            acMotor.setElectricalInputMode(LD1PACImpl.ElectricalInputMode.ACCEPTED_ENDPOINT);
             acMotor.setLoadPercent(100 * target.load().getLoad(bus.getVoltageMag()).getReal() / totalP);
             acMotor.setTstall(c[0]);
             acMotor.setTrst(c[1]);

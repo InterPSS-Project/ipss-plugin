@@ -14,8 +14,12 @@ The [frequency-input correction](dynamic-models/acmtblu1-frequency-input.md)
 adds accepted phase/clock history, explicit scheduled-event preparation and
 documented running P/Q sensitivity through the same numerical engine. Independent
 replay and expanded coupled controls pass; method-specific state differences
-and the raw bypass observation error remain explicit. Full continuous-state
-and active protection qualification remain open;
+and the raw bypass observation error remain explicit. The
+[electrical-input correction](dynamic-models/acmtblu1-electrical-inputs.md)
+qualifies accepted voltage/heating samples, voltage bypass and prepared pre-event
+derivatives without duplicating continuous storage. Independent replay and
+strict coupled staggered voltage/temperature gates pass; full active protection,
+restoration and longer-duration qualification remain open;
 the separate severe composite/static-load discrepancy remains diagnostic.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
