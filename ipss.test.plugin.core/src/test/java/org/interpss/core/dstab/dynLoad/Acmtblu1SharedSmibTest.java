@@ -35,6 +35,9 @@ public class Acmtblu1SharedSmibTest {
     private static final Path PREPARATION=Path.of(CONFIG.string("reference.preparation.archive",
             "testData/private/verification-artifacts/cmldblu1-severe-boundary-audit-20261101/preparation.zip"));
     private static final String PREPARATION_SHA="b834d90d43fe5640c832e1c18a060902a154c6ea47c7664c859ae6d7afacac1b";
+    private static final Path FREQUENCY=Path.of(CONFIG.string("reference.frequency.archive",
+            "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip"));
+    private static final String FREQUENCY_SHA="6653c1edfeb7b2d62d8475f020616487110a160b0491a7c8cb324901b3fcdc68";
     private static final Path RAW=Path.of("testData/adpter/psse/v33/HspModels/load-network.raw");
     private static final Path DYR=Path.of("testData/reference-fixtures/compressor-current/acmtblu1.dyr");
     private static final Map<String,Reference> REFERENCES=new TreeMap<>();
@@ -52,8 +55,13 @@ public class Acmtblu1SharedSmibTest {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         if(Files.isRegularFile(ARCHIVE))readReferences(ARCHIVE,ARCHIVE_SHA,false);
         if(Files.isRegularFile(PREPARATION))readReferences(PREPARATION,PREPARATION_SHA,true);
+        if(Files.isRegularFile(FREQUENCY))readReferences(FREQUENCY,FREQUENCY_SHA,false,"frequency-");
     }
+    @AfterAll static void releaseReferenceMaps(){REFERENCES.clear();}
     private static void readReferences(Path archive,String hash,boolean flat)throws Exception {
+        readReferences(archive,hash,flat,"");
+    }
+    private static void readReferences(Path archive,String hash,boolean flat,String prefix)throws Exception {
         assertEquals(hash,sha(Files.readAllBytes(archive)));
         try(var zip=new ZipFile(archive.toFile())) {
             var manifest=JsonParser.parseString(new String(zip.getInputStream(zip.getEntry("references.json")).readAllBytes(),StandardCharsets.UTF_8)).getAsJsonObject();
@@ -65,7 +73,7 @@ public class Acmtblu1SharedSmibTest {
                 for(var row:rows){double time=row.get("time_s");assertTrue(time>=previous);if(time==previous)duplicates++;previous=time;assertEquals(row.get("V2"),row.get("VAR0"),0);}
                 assertEquals(flat?2:4,duplicates);assertTrue(rows.getFirst().get("time_s")<0);
                 var metadata=JsonParser.parseString(new String(zip.getInputStream(zip.getEntry(dir+"manifest.json")).readAllBytes(),StandardCharsets.UTF_8)).getAsJsonObject();
-                REFERENCES.put((flat?"preparation-":"")+e.getKey(),new Reference(p.get("step_sec").getAsDouble(),flat?0:metadata.getAsJsonObject("settings").get("fault_x_pu").getAsDouble(),metadata.getAsJsonArray("initialized_constants").get(4).getAsDouble(),
+                REFERENCES.put(prefix+(flat?"preparation-":"")+e.getKey(),new Reference(p.get("step_sec").getAsDouble(),flat?0:metadata.getAsJsonObject("settings").get("fault_x_pu").getAsDouble(),metadata.getAsJsonArray("initialized_constants").get(4).getAsDouble(),
                         new String(zip.getInputStream(zip.getEntry(dir+"dynamic.dyr")).readAllBytes(),StandardCharsets.UTF_8),rows.stream().filter(r->r.get("time_s")>=0).toList()));
             }
         }
@@ -84,6 +92,7 @@ public class Acmtblu1SharedSmibTest {
         assertEquals(100,m.getLoadPercent(),0);assertSame(loaded.context.getDStabilityNet().getDStabBus("Bus2").getContributeLoad("1"),m.getParentLoad());
         assertEquals(LD1PACImpl.AcceptedTimerPrecision.BINARY32,m.getAcceptedTimerPrecision());
         assertEquals(LD1PACImpl.AcceptedTimerPrecision.DOUBLE,new LD1PACImpl().getAcceptedTimerPrecision());
+        assertEquals(LD1PACImpl.FrequencyInputMode.TERMINAL_PHASE_BINARY32,m.getFrequencyInputMode());
     }
     @ParameterizedTest @ValueSource(strings={"short","long","allocation","missing","nonfinite"})
     void malformedOrUnownedRecordsCannotAttachPartialModels(String kind) throws Exception {
@@ -154,7 +163,7 @@ public class Acmtblu1SharedSmibTest {
         assertTrue(a.initialization());var m=motor(loaded);var first=reference.rows.getFirst();assertEquals(reference.loading,m.getLoadFactor(),1e-7);assertEquals(first.get("VAR26"),m.getMvaBase(),1e-4);assertEquals(first.get("VAR24"),m.getNamedStates().get("RunningP0"),2e-7);assertEquals(first.get("VAR25"),m.getNamedStates().get("RunningQ0"),2e-7);assertEquals(first.get("VAR27"),m.getVstall(),1e-7);assertEquals(first.get("VAR28"),m.getVbrk(),1e-7);
         recorder.commit(0);recorder.enabled=true;while(a.getSimuTime()<.5-reference.h/2)assertTrue(a.solveDEqnStep(true));recorder.capture(a.getSimuTime());assertEquals(reference.rows.size(),recorder.rows.size());assertEquals(reference.rows.size(),recorder.published.size());
         var errors=new LinkedHashMap<String,Object>();var polished=new LinkedHashMap<String,Object>();for(String key:List.of("V1","V2","V3","P_PU","Q_PU","ANGLE_DEG","SPEED")){errors.put(key,error(reference.rows,recorder.published,key,key,0));polished.put(key,error(reference.rows,recorder.rows,key,key,0));}
-        var stateErrors=new LinkedHashMap<String,Object>();String[] states={"Vmeas","Fmeas","TemperatureA","TemperatureB"};for(int i=0;i<states.length;i++)stateErrors.put(states[i],error(reference.rows,recorder.published,"STATE"+i,states[i],i==1?-1:0));
+        var stateErrors=new LinkedHashMap<String,Object>();String[] states={"Vmeas","Fmeas","TemperatureA","TemperatureB"};for(int i=0;i<states.length;i++)stateErrors.put(states[i],error(reference.rows,recorder.published,"STATE"+i,states[i],i==1?-1:0));stateErrors.put("FrequencyOutput",error(reference.rows,recorder.published,"VAR1","FrequencyOutput",0));
         Files.createDirectories(out);var report=new LinkedHashMap<String,Object>();report.put("status","coupled-compressor-control-frequency-and-protection-qualification-incomplete");report.put("observation_boundary","accepted history commit, before the next network repolish; event-side solves retained at the same grid time");report.put("profile",name);report.put("method",shared?"staggered":"modified-euler");report.put("boundary_errors",errors);report.put("repolished_boundary_errors",polished);report.put("state_errors",stateErrors);
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),100000)){new GsonBuilder().setPrettyPrinting().create().toJson(report,w);}
         writeCsv(out.resolve("actual.csv"),recorder.published);writeCsv(out.resolve("repolished.csv"),recorder.rows);

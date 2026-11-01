@@ -1052,6 +1052,7 @@ public class PSSEDStabDirectParser {
         if (c[4] == 0 || c[4] > 1) c[4] = 1;
         if (!(c[4] > 0) || !(c[5] > 0 && c[5] <= 1)
                 || c[7] < 0 || c[8] < 0 || c[7] + c[8] == 0 || !(c[27] > 0)) return false;
+        if (c[5] == 1 && c[22] != 0) return false;
         var bus = builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX + record.busNumber());
         var targets = new ArrayList<LoadTarget>();
         boolean wildcard = record.deviceId().equals("*");
@@ -1075,6 +1076,7 @@ public class PSSEDStabDirectParser {
             acMotor.setParentLoad(target.load());
             acMotor.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.LEGACY_COMPOSITE);
             acMotor.setAcceptedTimerPrecision(LD1PACImpl.AcceptedTimerPrecision.BINARY32);
+            acMotor.setFrequencyInputMode(LD1PACImpl.FrequencyInputMode.TERMINAL_PHASE_BINARY32);
             acMotor.setLoadPercent(100 * target.load().getLoad(bus.getVoltageMag()).getReal() / totalP);
             acMotor.setTstall(c[0]);
             acMotor.setTrst(c[1]);

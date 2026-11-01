@@ -1,8 +1,10 @@
 # Standalone compressor import and shared execution
 
-Status: exact bus/load import, independent preparation and zero-frequency-
-sensitivity coupled controls pass under modified Euler and staggered integration.
-Complete frequency, protection and restoration qualification remains open;
+Status: exact bus/load import, independent preparation and expanded coupled
+controls pass under modified Euler and staggered integration. The
+[sampled-phase frequency path](acmtblu1-frequency-input.md) and frequency-dependent
+current law have separate independent checks. Complete continuous-state,
+protection and restoration qualification remains open;
 `ACMTBLU1` is cataloged as `LOADABLE`.
 
 ## Import and ownership
@@ -65,7 +67,7 @@ Across the coupled fault controls, observed worst errors are approximately:
 
 | Quantity | Error | Regression limit |
 |---|---:|---:|
-| Bus-voltage range-normalized RMSE | 4.42e-5 | 6e-5 |
+| Bus-voltage range-normalized RMSE | 4.66e-5 | 6e-5 |
 | Generator P range-normalized RMSE | 4.30e-4 | 6e-4 |
 | Generator Q range-normalized RMSE | 5.40e-5 | 8e-5 |
 | Rotor-angle RMSE | 0.00364 degrees | 0.005 degrees |
@@ -76,11 +78,12 @@ published state/diagnostic remain available in the private evidence chain.
 
 ## Remaining qualification
 
-The frequency-sensitivity coefficients are disabled in these isolating controls.
-The published frequency coordinate and the upstream phase/frequency measurement
-path still need independent qualification with nonzero sensitivity. Filtered
-voltage and temperature trajectories are retained as diagnostics; successful
-boundary gates do not establish equality of every continuous state. Active UV,
+The original frequency-insensitive controls now have additional nonzero-
+sensitivity and filter-bypass controls. Recorded-phase replay checks the new
+measurement path separately, preserving integration-method differences and the
+raw bypass-coordinate observation error. Filtered voltage and temperature
+trajectories remain diagnostics; successful boundary gates do not establish
+equality of every continuous state. Active UV,
 contactor/thermal actions, restoration, production intervals and long runs also
 remain open. No complete-run performance claim is made from this import repair.
 

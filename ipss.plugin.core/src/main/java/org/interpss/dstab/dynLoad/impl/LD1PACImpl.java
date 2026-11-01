@@ -26,7 +26,7 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  * An implementation of the model object '<em><b>LD1PAC</b></em>'.
  */
 public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider,
-        StaggeredEulerParticipant, IntegrationStateAccess {
+        StaggeredEulerParticipant, IntegrationStateAccess, org.interpss.dstab.control.util.NetworkEventInput {
     private final double[] integrationRates = new double[4];
     private final double[] evaluatedCurrent = new double[2];
     private final IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
@@ -39,6 +39,60 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     private AclfLoad parentLoad;
     public enum AcceptedTimerPrecision { DOUBLE, BINARY32 }
     private AcceptedTimerPrecision acceptedTimerPrecision = AcceptedTimerPrecision.DOUBLE;
+    public enum FrequencyInputMode { BUS_FREQUENCY, TERMINAL_PHASE_DOUBLE, TERMINAL_PHASE_BINARY32 }
+    private FrequencyInputMode frequencyInputMode = FrequencyInputMode.BUS_FREQUENCY;
+    private double acceptedPhase, phaseSampleTime, phaseFrequencyDeviation, eventFrequencyDeviation;
+    private double frequencyOutput = 1, lastFrequencyEventTime = Double.NaN;
+    private boolean frequencyEventPending;
+    private double reactiveFrequencyScale = 1;
+
+    /** Choose a prepared phase sampler or the existing bus-frequency input before initialization. */
+    public void setFrequencyInputMode(FrequencyInputMode mode) {
+        java.util.Objects.requireNonNull(mode);
+        if (PQmotor != null && mode != frequencyInputMode)
+            throw new IllegalStateException("Frequency input must be selected before initialization");
+        frequencyInputMode = mode;
+    }
+    public FrequencyInputMode getFrequencyInputMode() { return frequencyInputMode; }
+    public double getFrequencyOutput() { return frequencyOutput; }
+    private void prepareReactiveFrequencyScale() {
+        reactiveFrequencyScale = !legacyCompositeCharacteristic ? 1
+                : Math.abs(powerFactor) < 1 ? 1 / Math.sqrt(1 - powerFactor * powerFactor) : 0;
+    }
+    private double frequencySignal() {
+        return legacyCompositeCharacteristic ? Math.max(.95, Math.min(1.05, freq_measured)) : freq_measured;
+    }
+    @Override public boolean averageStaggeredRateAtDiscontinuity(int index) {
+        // The sampled phase input has its own explicit event preparation.
+        return index != 1 || frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY;
+    }
+    @Override public void acceptNetworkEventInput(double physicalTimeSec) {
+        if (!Double.isFinite(physicalTimeSec)) throw new IllegalArgumentException("Invalid event time");
+        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
+                || physicalTimeSec == lastFrequencyEventTime) return;
+        if (physicalTimeSec < lastFrequencyEventTime)
+            throw new IllegalArgumentException("Frequency events must be ordered");
+        eventFrequencyDeviation = phaseFrequencyDeviation;
+        phaseFrequencyDeviation = 0;
+        frequencyEventPending = true;
+        lastFrequencyEventTime = physicalTimeSec;
+        if (tf <= 1e-12) freq_measured = freq_measured_old = 1;
+    }
+    private BaseDStabBus<?, ?> frequencyBus() {
+        return frequencySourceBus == null ? getDStabBus() : frequencySourceBus;
+    }
+    private void acceptPhaseSample(double interval) {
+        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY || interval == 0) return;
+        double nextTime = frequencyInputMode == FrequencyInputMode.TERMINAL_PHASE_BINARY32
+                ? (double) ((float) phaseSampleTime + (float) interval) : phaseSampleTime + interval;
+        if (!Double.isFinite(nextTime) || !(nextTime > phaseSampleTime))
+            throw new IllegalStateException("Frequency input clock cannot advance");
+        double phase = frequencyBus().getVoltageAng();
+        phaseFrequencyDeviation = Math.IEEEremainder(phase - acceptedPhase, 2 * Math.PI)
+                / (2 * Math.PI * getDStabBus().getNetwork().getFrequency() * (nextTime - phaseSampleTime));
+        acceptedPhase = phase; phaseSampleTime = nextTime; frequencyEventPending = false;
+        if (tf <= 1e-12) freq_measured = 1 + phaseFrequencyDeviation;
+    }
 
     /** Select the arithmetic of committed protection timers before initialization. */
     public void setAcceptedTimerPrecision(AcceptedTimerPrecision precision) {
@@ -71,6 +125,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
             throw new IllegalStateException("Compressor characteristic must be selected before initialization");
         characteristicPolicy = policy;
         legacyCompositeCharacteristic = policy == CharacteristicPolicy.LEGACY_COMPOSITE;
+        prepareReactiveFrequencyScale();
     }
 
     @Override public int staggeredStateCount() { return 4; }
@@ -119,9 +174,13 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
     private double heatingCurrentSquared(Complex voltage, double magnitude, int status, double p, double q) {
         if (status == 0 || magnitude <= vstallbrk) {
-            double conductance = YStall.getReal() * (legacyCompositeCharacteristic && status == 1 ? loadFactor : 1);
-            evaluatedCurrent[0] = voltage.getReal() * conductance - voltage.getImaginary() * YStall.getImaginary();
-            evaluatedCurrent[1] = voltage.getReal() * YStall.getImaginary() + voltage.getImaginary() * conductance;
+            double deviation = frequencySignal() - 1;
+            double conductance = YStall.getReal() * (legacyCompositeCharacteristic && status == 1
+                    ? loadFactor * (1 + cmpKpf * deviation) : 1);
+            double susceptance = YStall.getImaginary() * (legacyCompositeCharacteristic && status == 1
+                    ? 1 + cmpKqf * reactiveFrequencyScale * deviation : 1);
+            evaluatedCurrent[0] = voltage.getReal() * conductance - voltage.getImaginary() * susceptance;
+            evaluatedCurrent[1] = voltage.getReal() * susceptance + voltage.getImaginary() * conductance;
         } else MotorElectricalKernel.divide(p, q, voltage.getReal(), voltage.getImaginary(), evaluatedCurrent);
         return Math.pow(org.apache.commons.math3.util.FastMath.hypot(evaluatedCurrent[0], evaluatedCurrent[1]), 2);
     }
@@ -131,12 +190,23 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return integrationMonitor.snapshot(); }
     @Override public Map<String, Double> getIntegrationHistories() {
-        return Map.ofEntries(Map.entry("UvTimer1", uVRelayTimer1), Map.entry("UvTimer2", uVRelayTimer2),
+        Map<String, Double> result = Map.ofEntries(Map.entry("UvTimer1", uVRelayTimer1), Map.entry("UvTimer2", uVRelayTimer2),
                 Map.entry("StallTimer", acStallTimer), Map.entry("StallTimerB", acStallTimerB),
                 Map.entry("RestartTimer", acRestartTimer), Map.entry("ContactorFraction", kcon),
                 Map.entry("ContactorTripFraction", fcon_trip), Map.entry("UvFraction", kuv),
                 Map.entry("RunA", (double) statusA), Map.entry("RunB", (double) statusB),
                 Map.entry("AcceptedTime", timeCounter));
+        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY) return result;
+        var history = new LinkedHashMap<>(result);
+        history.put("FrequencySampleTime", phaseSampleTime);
+        history.put("FrequencyPhase", acceptedPhase);
+        history.put("FrequencySampleDeviation", phaseFrequencyDeviation);
+        history.put("FrequencyEventDeviation", eventFrequencyDeviation);
+        history.put("FrequencyEventPending", frequencyEventPending ? 1. : 0.);
+        history.put("FrequencyInput", frequencyInput());
+        history.put("FrequencyEventSeen", Double.isFinite(lastFrequencyEventTime) ? 1. : 0.);
+        history.put("FrequencyEventTime", Double.isFinite(lastFrequencyEventTime) ? lastFrequencyEventTime : 0.);
+        return Map.copyOf(history);
     }
     public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
     private static final Logger logger = LoggerFactory.getLogger(LD1PACImpl.class);
@@ -1043,7 +1113,13 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	@Override
 	public boolean initStates() {
+        prepareReactiveFrequencyScale();
+        if (legacyCompositeCharacteristic && cmpKqf != 0 && reactiveFrequencyScale == 0)
+            throw new IllegalArgumentException("Reactive frequency sensitivity requires a nonunity power factor");
         integrationMonitor.reset(); staggeredEvaluationCount = 0; timeCounter = 0;
+        acceptedPhase = frequencyBus().getVoltageAng(); phaseSampleTime = 0;
+        phaseFrequencyDeviation = 0; eventFrequencyDeviation = 0; frequencyEventPending = false;
+        frequencyOutput = 1; lastFrequencyEventTime = Double.NaN;
 
         acStallTimer = 0; acStallTimerB = 0; acRestartTimer = 0;
         uVRelayTimer1 = 0; uVRelayTimer2 = 0;
@@ -1390,21 +1466,23 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	private Complex calculateMotorPower(){
 		
 		// Calculate the AC motor power
-		double freq = this.freq_measured;
+        double freq = frequencySignal();
+        frequencyOutput = freq;
+        double reactiveFrequencyGain = cmpKqf * reactiveFrequencyScale;
 		double vmag = this.getDStabBus().getVoltageMag();
 		if(this.statusA == 1){
 			if(vmag >= this.vbrk){
                 this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
-				this.qac_a  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
+                this.qac_a = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+reactiveFrequencyGain*(freq-1.0));
 				
 			}
 			else if(vmag <this.vbrk && vmag > this.vstallbrk){
                 this.pac_a = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
-				this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
+                this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+reactiveFrequencyGain*(freq-1.0));
 			}
 			else{
-                this.pac_a = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor : 1);
-				this.qac_a =-this.Bstall*vmag*vmag;
+                this.pac_a = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor*(1+cmpKpf*(freq-1)) : 1);
+                this.qac_a = -this.Bstall*vmag*vmag*(legacyCompositeCharacteristic ? 1+reactiveFrequencyGain*(freq-1) : 1);
 			}
 			
 		}
@@ -1419,16 +1497,16 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			if(this.statusB == 1){
 				if(vmag >= this.vbrk){
                     this.pac_b  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
-					this.qac_b  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
+                    this.qac_b = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+reactiveFrequencyGain*(freq-1.0));
 					
 				}
 				else if(vmag <this.vbrk && vmag > this.vstallbrk){
                     this.pac_b = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
-					this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
+                    this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+reactiveFrequencyGain*(freq-1.0));
 				}
 				else{
-                    this.pac_b = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor : 1);
-					this.qac_b =-this.Bstall*vmag*vmag;
+                    this.pac_b = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor*(1+cmpKpf*(freq-1)) : 1);
+                    this.qac_b = -this.Bstall*vmag*vmag*(legacyCompositeCharacteristic ? 1+reactiveFrequencyGain*(freq-1) : 1);
 				}
 				
 			}
@@ -1678,6 +1756,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			// call this method to update "this.PQmotor"
 			calculateMotorPower();
 			
+            acceptPhaseSample(dt);
 			return flag;
 	}
 	
@@ -1876,7 +1955,11 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	}
 
 	public void setPowerFactor(double newPowerFactor) {
+        if (PQmotor != null && legacyCompositeCharacteristic
+                && cmpKqf != 0 && Math.abs(newPowerFactor) >= 1)
+            throw new IllegalArgumentException("Reactive frequency sensitivity requires a nonunity power factor");
 		powerFactor = newPowerFactor;
+        prepareReactiveFrequencyScale();
 	}
 
 	public double getVstall() {
@@ -2030,6 +2113,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	}
 
 	public void setCmpKqf(double newCmpKqf) {
+        if (PQmotor != null && legacyCompositeCharacteristic
+                && newCmpKqf != 0 && reactiveFrequencyScale == 0)
+            throw new IllegalArgumentException("Reactive frequency sensitivity requires a nonunity power factor");
 		cmpKqf = newCmpKqf;
 	}
 
@@ -2186,8 +2272,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	}
 
 	private double frequencyInput() {
-		return frequencySourceBus == null
-				? this.getDStabBus().getFreq() : frequencySourceBus.getFreq();
+        if (frequencyInputMode != FrequencyInputMode.BUS_FREQUENCY)
+            return 1 + (frequencyEventPending && tf > 1e-12 ? .5 * eventFrequencyDeviation : phaseFrequencyDeviation);
+        return frequencyBus().getFreq();
 	}
 
 	@Override
@@ -2195,6 +2282,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		Map<String, Double> named = new LinkedHashMap<>();
 		named.put("Vmeas", vt_measured);
 		named.put("Fmeas", freq_measured);
+        named.put("FrequencyOutput", frequencyOutput);
 		named.put("TemperatureA", tempA);
 		named.put("TemperatureB", tempB);
 		named.put("UvTimer1", uVRelayTimer1);

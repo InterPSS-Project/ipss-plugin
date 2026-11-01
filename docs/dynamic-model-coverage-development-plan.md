@@ -10,14 +10,19 @@ The [standalone compressor import correction](dynamic-models/acmtblu1-shared-imp
 binds the complete source load and all constants, reuses the shared motor
 equations and exposes accepted-timer precision explicitly. Independent
 preparation, flat and coupled controls pass through both integration methods.
-Frequency, full continuous-state and active protection qualification remain open;
+The [frequency-input correction](dynamic-models/acmtblu1-frequency-input.md)
+adds accepted phase/clock history, explicit scheduled-event preparation and
+documented running P/Q sensitivity through the same numerical engine. Independent
+replay and expanded coupled controls pass; method-specific state differences
+and the raw bypass observation error remain explicit. Full continuous-state
+and active protection qualification remain open;
 the separate severe composite/static-load discrepancy remains diagnostic.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;
 every trial network voltage refreshes current through shared reusable numerical
 storage. Independent recorded-state controls pass under both methods. Complete
-composite trajectories and the standalone import wrapper remain unqualified.
+composite trajectories and complete standalone protection/restoration remain unqualified.
 
 The [compressor loading and operating-point correction](dynamic-models/cmldblu1-compressor-initialization.md)
 unifies parameter storage, separates the legacy/zone characteristic policies,

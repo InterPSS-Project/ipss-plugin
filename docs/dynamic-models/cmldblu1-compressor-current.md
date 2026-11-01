@@ -13,6 +13,11 @@ omitted that multiplier. Its intersection with the running polynomial also
 applied the loading factor to only one side, selecting an incorrect transition
 voltage. The factor cancels between the two running active-power branches.
 
+With nonzero frequency sensitivity, both running branches also use the
+[qualified frequency factors](acmtblu1-frequency-input.md), including the
+power-factor normalization of the reactive coefficient. Heating uses the same
+frequency-adjusted running current. A stalled group does not use those factors.
+
 The thermal calculation now uses the same running conductance. It retains the
 full stall current for stalled groups. Parallel reactive compensation supplies
 terminal reactive power and remains outside the motor's heating current.
