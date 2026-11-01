@@ -76,18 +76,19 @@ public class CompressorFrequencyInputTest {
         // Recover the explicitly declared binary32 clock, rather than differentiating
         // decimal CSV serialization errors over a submillisecond interval.
         var input=new double[first.size()];for(int i=1;i<input.length;i++)input[i]=Math.IEEEremainder(phase(first.get(i)).getArgument()-phase(first.get(i-1)).getArgument(),2*Math.PI)/(2*Math.PI*60*((double)first.get(i).get("time_s").floatValue()-(double)first.get(i-1).get("time_s").floatValue()));
-        var rows=new ArrayList<Map<String,Double>>();var stateError=new Error();var outputError=new Error();double[] x=new double[4],rates=new double[4];int previousGrid=0;double previousRate=0,exact=0,envelope=0,maximumAnalyticExcess=0;
+        var rows=new ArrayList<Map<String,Double>>();var stateError=new Error();var outputError=new Error();double[] x=new double[m.staggeredStateCount()],rates=new double[m.staggeredStateCount()];int previousGrid=0;double previousRate=0,exact=0,envelope=0,maximumAnalyticExcess=0;
+        var timers=new CompressorTimerReplay(m,true);
         for(var r:ref.rows){double time=r.get("time_s");int grid=(int)Math.round(time/ref.h);
             if(grid>previousGrid){assertEquals(previousGrid+1,grid);m.readStaggeredState(x,0);
                 var oldStates=m.getIntegrationStates();var oldHistory=m.getIntegrationHistories();m.evaluateStaggered(ref.h,rates,0);m.evaluateStaggered(ref.h,rates,0);assertTrue(m.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));m.getNortonCurInj();assertEquals(oldStates,m.getIntegrationStates());assertEquals(oldHistory,m.getIntegrationHistories(),"Only accepted callbacks may advance phase memory");
                 double tau=m.getTf();if(tau>1e-12){double a=ref.h/tau,decay=Math.exp(-a),stability=1-a+.5*a*a,u=input[previousGrid]*(events.contains(previousGrid)?.5:1);envelope=stability*envelope+Math.abs(stability-decay)*Math.abs(exact-u);exact=decay*exact+(1-decay)*u;}
-                if(shared){m.evaluateStaggered(ref.h,rates,0);x[1]+=ref.h*(1.5*rates[1]-.5*previousRate);previousRate=rates[1];}
-                else{assertTrue(m.nextStep(ref.h,DynamicSimuMethod.MODIFIED_EULER,0));bus.setVoltage(phase(r));assertTrue(m.nextStep(ref.h,DynamicSimuMethod.MODIFIED_EULER,1));x[1]=m.getMeasuredFrequency();}
+                if(shared){x=timers.advance(ref.h);m.evaluateStaggered(ref.h,rates,0);x[1]+=ref.h*(1.5*rates[1]-.5*previousRate);previousRate=rates[1];}
+                else{assertTrue(m.nextStep(ref.h,DynamicSimuMethod.MODIFIED_EULER,0));bus.setVoltage(phase(r));assertTrue(m.nextStep(ref.h,DynamicSimuMethod.MODIFIED_EULER,1));m.readStaggeredState(x,0);}
                 x[0]=r.get("STATE0");x[2]=r.get("STATE2");x[3]=r.get("STATE3");m.applyStaggeredState(x,0,0);if(shared)m.completeStaggeredStep(ref.h);bus.setVoltage(phase(r));assertTrue(m.afterStep(ref.h));previousGrid=grid;
                 if(enforce&&tau<=1e-12)assertEquals(input[grid],m.getMeasuredFrequency()-1,3e-15,"Bypass must publish the declared phase derivative without another filter or fitted constant");
                 if(!shared&&tau>1e-12){double excess=Math.abs(m.getMeasuredFrequency()-1-exact)-envelope;maximumAnalyticExcess=Math.max(maximumAnalyticExcess,excess);if(enforce)assertTrue(excess<=3e-9,"Modified Euler exceeded the analytic held-input truncation bound: "+excess);}
             }else if(!rows.isEmpty()){
-                bus.setVoltage(boundary(r));m.getNortonCurInj();m.acceptNetworkEventInput(time);var state=m.getIntegrationStates();var history=m.getIntegrationHistories();m.acceptNetworkEventInput(time);assertEquals(state,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
+                timers.beforeEvent(ref.h);bus.setVoltage(boundary(r));m.getNortonCurInj();timers.acceptEvent(time);var state=m.getIntegrationStates();var history=m.getIntegrationHistories();m.acceptNetworkEventInput(time);assertEquals(state,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
             }
             assertEquals(time,m.getIntegrationHistories().get("FrequencySampleTime"),6e-13,"Prepared source clock is distinct from the nominal integration clock");
             double error=m.getMeasuredFrequency()-1-r.get("STATE1"),signal=m.getFrequencyOutput()-r.get("VAR1");stateError.add(error,time);outputError.add(signal,time);
@@ -108,8 +109,8 @@ public class CompressorFrequencyInputTest {
     void recordedPhaseQualifiesTheFilterAndBypassWithoutABusFrequencyFilter(String name,boolean shared)throws Exception{replay(name,shared,Files.createTempDirectory(Path.of("target"),"compressor-frequency-replay-"),true);}
     @ParameterizedTest @MethodSource("currents")
     void independentRunningAndStalledCurrentsUseThePublishedFrequencyFactors(String name,boolean shared)throws Exception {
-        var ref=REFERENCES.get(name);var m=motor(ref);double[] x=new double[4],rates=new double[4];var errors=new Error[]{new Error(),new Error(),new Error(),new Error()};var rows=new ArrayList<Map<String,Double>>();int previous=0;
-        for(var r:ref.rows){double time=r.get("time_s");int grid=(int)Math.round(time/ref.h);var v=boundary(r);m.getDStabBus().setVoltage(v);x[0]=r.get("STATE0");x[1]=r.get("VAR1");x[2]=r.get("STATE2");x[3]=r.get("STATE3");m.applyStaggeredState(x,0,0);if(grid>previous){assertTrue(m.afterStep(ref.h));previous=grid;}else if(time>0)m.acceptNetworkEventInput(time);
+        var ref=REFERENCES.get(name);var m=motor(ref);double[] rates=new double[m.staggeredStateCount()];var errors=new Error[]{new Error(),new Error(),new Error(),new Error()};var rows=new ArrayList<Map<String,Double>>();int previous=0;var timers=new CompressorTimerReplay(m,shared);
+        for(var r:ref.rows){double time=r.get("time_s");int grid=(int)Math.round(time/ref.h);boolean advance=grid>previous,event=!advance&&!rows.isEmpty();if(event)timers.beforeEvent(ref.h);double[] x=advance?timers.advance(ref.h):timers.current();var v=boundary(r);m.getDStabBus().setVoltage(v);x[0]=r.get("STATE0");x[1]=r.get("VAR1");x[2]=r.get("STATE2");x[3]=r.get("STATE3");m.applyStaggeredState(x,0,0);if(advance){m.completeStaggeredStep(ref.h);assertTrue(m.afterStep(ref.h));previous=grid;}else if(event)timers.acceptEvent(time);
             assertEquals(r.get("VAR16"),m.getIntegrationHistories().get("RunA"));assertEquals(r.get("VAR17"),m.getIntegrationHistories().get("RunB"));
             var y=m.getPosSeqEquivY().subtract(m.getCompensateShuntY());var current=v.multiply(y).subtract(m.getNortonCurInj());var power=v.multiply(current.conjugate()).multiply(m.getDStabBus().getNetwork().getBaseMva()/m.getMvaBase());
             if(shared)m.evaluateStaggered(ref.h,rates,0);else{assertTrue(m.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));rates[2]=m.getStateDerivativeSnapshot().rates().get("TemperatureA");rates[3]=m.getStateDerivativeSnapshot().rates().get("TemperatureB");}
@@ -122,7 +123,7 @@ public class CompressorFrequencyInputTest {
     private static Reference example(){Assumptions.assumeFalse(REFERENCES.isEmpty());return REFERENCES.values().iterator().next();}
     @Test void phaseWrapEventsAndPureEvaluationsRespectHistoryOwnership()throws Exception {
         var m=motor(example());var bus=m.getDStabBus();double amplitude=bus.getVoltageMag();bus.setVoltage(new Complex(amplitude*Math.cos(Math.toRadians(179)),amplitude*Math.sin(Math.toRadians(179))));assertTrue(m.initStates());bus.setVoltage(new Complex(amplitude*Math.cos(Math.toRadians(-179)),amplitude*Math.sin(Math.toRadians(-179))));m.completeStaggeredStep(.0005);assertTrue(m.afterStep(.0005));var h=m.getIntegrationHistories();double interval=h.get("FrequencySampleTime");assertEquals(Math.toRadians(2)/(2*Math.PI*60*interval),h.get("FrequencySampleDeviation"),1e-12);
-        m.acceptNetworkEventInput(.0005);var state=m.getIntegrationStates();h=m.getIntegrationHistories();m.acceptNetworkEventInput(.0005);double[] rates=new double[4];for(int i=0;i<5;i++){m.evaluateStaggered(.0005,rates,0);m.getNortonCurInj();assertTrue(m.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));}assertEquals(state,m.getIntegrationStates());assertEquals(h,m.getIntegrationHistories());assertThrows(IllegalArgumentException.class,()->m.acceptNetworkEventInput(0));assertThrows(IllegalArgumentException.class,()->m.acceptNetworkEventInput(Double.NaN));assertThrows(IllegalStateException.class,()->m.setFrequencyInputMode(LD1PACImpl.FrequencyInputMode.BUS_FREQUENCY));
+        m.acceptNetworkEventInput(.0005);var state=m.getIntegrationStates();h=m.getIntegrationHistories();m.acceptNetworkEventInput(.0005);double[] rates=new double[m.staggeredStateCount()];for(int i=0;i<5;i++){m.evaluateStaggered(.0005,rates,0);m.getNortonCurInj();assertTrue(m.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));}assertEquals(state,m.getIntegrationStates());assertEquals(h,m.getIntegrationHistories());assertThrows(IllegalArgumentException.class,()->m.acceptNetworkEventInput(0));assertThrows(IllegalArgumentException.class,()->m.acceptNetworkEventInput(Double.NaN));assertThrows(IllegalStateException.class,()->m.setFrequencyInputMode(LD1PACImpl.FrequencyInputMode.BUS_FREQUENCY));
         assertTrue(m.initStates());assertEquals(0,m.getIntegrationHistories().get("FrequencySampleTime"));assertEquals(0,m.getIntegrationHistories().get("FrequencyEventSeen"));assertEquals(0,m.getIntegrationHistories().get("FrequencyEventPending"));assertEquals(1,m.getMeasuredFrequency());
     }
     @Test void liveReactiveGainChangesDoNotUseAStaleNormalization()throws Exception {
@@ -132,8 +133,8 @@ public class CompressorFrequencyInputTest {
     void acceptedElectricalInputsQualifyVoltageAndTemperatureStates(String name,boolean shared)throws Exception {
         var ref=REFERENCES.get(name);var m=motor(ref,true);var bus=m.getDStabBus();
         assertEquals(LD1PACImpl.ElectricalInputMode.ACCEPTED_ENDPOINT,m.getElectricalInputMode());
-        double[] x=new double[4],rates=new double[4],history=new double[4],eventLeft=new double[4];m.readStaggeredState(x,0);
-        int[] slot={0,2,3};String[] key={"STATE0","STATE2","STATE3"};
+        double[] x=new double[m.staggeredStateCount()],rates=new double[m.staggeredStateCount()],history=new double[m.staggeredStateCount()],eventLeft=new double[m.staggeredStateCount()];m.readStaggeredState(x,0);
+        int[] slot={0,2,3,4,5,6,7,8};String[] key={"STATE0","STATE2","STATE3"};
         double[] exact={ref.rows.getFirst().get("STATE0"),ref.rows.getFirst().get("STATE2"),ref.rows.getFirst().get("STATE3")},bound=new double[3];
         for(int i=0;i<3;i++)bound[i]=Math.abs(x[slot[i]]-exact[i]);
         var errors=new Error[]{new Error(),new Error(),new Error()};var rows=new ArrayList<Map<String,Double>>();
@@ -160,10 +161,10 @@ public class CompressorFrequencyInputTest {
         else if(m.getTv()<=1e-12)assertTrue(errors[0].max<=2e-7,errors[0].report().toString());
     }
     @Test void electricalHistoryChangesOnlyAtAcceptedAndExplicitEventBoundaries()throws Exception {
-        var m=motor(example(),true);var bus=m.getDStabBus();double[] a=new double[4],b=new double[4];m.evaluateStaggered(.0005,a,0);var state=m.getIntegrationStates();var history=m.getIntegrationHistories();var current=m.getNortonCurInj();
+        var m=motor(example(),true);var bus=m.getDStabBus();double[] a=new double[m.staggeredStateCount()],b=new double[m.staggeredStateCount()];m.evaluateStaggered(.0005,a,0);var state=m.getIntegrationStates();var history=m.getIntegrationHistories();var current=m.getNortonCurInj();
         bus.setVoltage(bus.getVoltage().multiply(.7));assertNotEquals(current,m.getNortonCurInj());assertTrue(m.afterStep(0));m.evaluateStaggered(.0005,b,0);assertArrayEquals(a,b,0);assertEquals(state,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
         m.acceptNetworkEventInput(.1);assertEquals(bus.getVoltageMag(),m.getIntegrationHistories().get("ElectricalVoltage"));history=m.getIntegrationHistories();m.acceptNetworkEventInput(.1);assertEquals(history,m.getIntegrationHistories());assertEquals(state,m.getIntegrationStates());
-        double[] left=new double[4],copy=new double[4];assertTrue(m.readNetworkEventLeftRates(left,0));assertTrue(m.readNetworkEventLeftRates(copy,0));assertArrayEquals(left,copy,0);assertEquals(history,m.getIntegrationHistories());
+        double[] left=new double[m.staggeredStateCount()],copy=new double[m.staggeredStateCount()];assertTrue(m.readNetworkEventLeftRates(left,0));assertTrue(m.readNetworkEventLeftRates(copy,0));assertArrayEquals(left,copy,0);assertEquals(history,m.getIntegrationHistories());
         m.completeStaggeredStep(.0005);assertTrue(m.afterStep(.0005));assertFalse(m.readNetworkEventLeftRates(copy,0));
         assertThrows(IllegalStateException.class,()->m.setElectricalInputMode(LD1PACImpl.ElectricalInputMode.LIVE_NETWORK));assertThrows(NullPointerException.class,()->m.setElectricalInputMode(null));
         assertEquals(LD1PACImpl.ElectricalInputMode.LIVE_NETWORK,new LD1PACImpl().getElectricalInputMode());

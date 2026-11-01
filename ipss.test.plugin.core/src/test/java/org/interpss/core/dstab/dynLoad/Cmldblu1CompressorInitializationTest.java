@@ -108,7 +108,7 @@ public class Cmldblu1CompressorInitializationTest {
         var current=voltage.multiply(motor.getPosSeqEquivY()).subtract((Complex)motor.getOutputObject());
         assertEquals(0,voltage.multiply(current.conjugate()).subtract(motor.getInitLoadPQ()).abs(),1e-10,
                 "Parallel reactive compensation must preserve physical initial demand");
-        double[] rates=new double[4];motor.evaluateStaggered(.0005,rates,0);
+        double[] rates=new double[motor.staggeredStateCount()];motor.evaluateStaggered(.0005,rates,0);
         for(double rate:rates)assertEquals(0,rate,1e-10,"The independently checked initial states must be in equilibrium");
         assertThrows(IllegalStateException.class,()->motor.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.STANDALONE));
     }

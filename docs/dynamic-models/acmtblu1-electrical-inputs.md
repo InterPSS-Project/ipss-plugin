@@ -2,7 +2,7 @@
 
 Status: accepted electrical inputs, voltage/temperature replay and expanded
 coupled SMIB controls pass under modified Euler and staggered integration.
-Active protection, restoration and complete composite-load qualification remain
+Thermal protection, restoration and complete composite-load qualification remain
 open; the catalog status remains `LOADABLE`.
 
 ## Measurement boundary
@@ -38,7 +38,8 @@ inputs, and changing the mode after initialization is rejected.
 
 The existing `NetworkEventInput` callback refreshes accepted electrical inputs
 after a scheduled event has converged, without advancing time. A bypassed
-voltage coordinate projects to the new input; differential coordinates remain
+voltage coordinate projects to the new input; dropped timer pickups apply their
+defined resets without a time advance. Other differential coordinates remain
 unchanged. Repeated notification at the same physical time is idempotent.
 
 The staggered participant contract now optionally exposes model-prepared
@@ -57,8 +58,9 @@ the staggered event derivatives.
 
 The prepared buffer is allocated once. Copies are read-only, repeated reads do
 not consume it, and the next accepted callback invalidates it. The existing
-four-state vector and derivative buffers remain the sole continuous-state
-storage; no wrapper model or second numerical realization is introduced.
+state fields and derivative buffers remain the sole integration storage; the
+[legacy nine-state contract](acmtblu1-protection.md) includes all five timers.
+No wrapper model or second numerical realization is introduced.
 
 ## Independent checks
 
@@ -91,7 +93,9 @@ the accepted pre-event derivative from the preceding interval's history; the
 same strict replay gate applies after that correction.
 
 These checks qualify input sampling and the declared integration policies.
-They do not establish active UV/contactor/thermal actions, warm restoration,
+Separate [UV/contactor qualification](acmtblu1-protection.md) now covers those
+active branches and all five timer coordinates. These electrical-input checks
+do not establish thermal actions, warm restoration,
 production-step/long-duration behavior or complete composite trajectory parity.
 No whole-simulation timing claim follows from removing repeated current work
 inside the derivative callback.

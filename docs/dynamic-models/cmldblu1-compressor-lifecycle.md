@@ -7,10 +7,12 @@ continues to classify the model as `LOADABLE`.
 
 ## Shared implementation
 
-`LD1PACImpl` retains its four shared voltage/frequency/temperature coordinates
-and reusable numerical buffers. Stall and restart timers are accepted histories
-updated by `afterStep`, outside trial derivative evaluation. The restartable
-group has a separate `StallTimerB` history and named-state observation. Existing
+`LD1PACImpl` retains shared voltage/frequency/temperature coordinates and reusable
+numerical buffers. The [legacy nine-state contract](acmtblu1-protection.md) now
+integrates all five UV/stall/restart timers through the selected method;
+`afterStep` only applies their actions and resets. Other typed/zone policies
+retain their existing accepted-counter convention. The restartable group has a
+separate `StallTimerB` state and named-state observation. Existing
 `StallTimer` and `RestartTimer` keys remain available.
 
 Previously, the single stall timer stopped updating once the non-restartable
@@ -18,7 +20,7 @@ group A stalled. Group B could restart, but a later voltage dip could not stall
 it again. Its restart timer also remained latched after restarting. The shared
 implementation now updates each running group's stall timer independently,
 clears inactive timers, and resets the restart timer at its action. Both
-integration methods call the same accepted-history implementation.
+integration methods share the timer equations and accepted-action implementation.
 
 Fresh initialization resets timer, run, UV, contactor and thermal-trip history.
 Invalid accepted intervals fail before any history mutation. Repeated derivative

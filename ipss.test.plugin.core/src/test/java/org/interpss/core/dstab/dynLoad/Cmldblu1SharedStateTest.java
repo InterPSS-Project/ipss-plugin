@@ -96,17 +96,21 @@ public class Cmldblu1SharedStateTest {
         motor.evaluateStaggered(.0005, rates, 0); restored.evaluateStaggered(.0005, copiedRates, 0);
         assertArrayEquals(rates, copiedRates, 0);
     }
-    @Test void protectionTimersAdvanceOnlyThroughAcceptedAfterStep() throws Exception {
+    @Test void inductionTimersCommitAndLegacyCompressorTimersHaveOneIntegrationOwner() throws Exception {
         var m = model(); var motor = (InductionMotorImpl) m.getInductionMotorA();
         var compressor = (LD1PACImpl) m.get1PhaseACMotor();
         m.getLoadBus().setVoltage(new Complex(.1, 0));
-        double[] rates = new double[5];
-        for (int i = 0; i < 10; i++) { motor.evaluateStaggered(.001, rates, 0); compressor.evaluateStaggered(.001, rates, 0); }
+        double[] rates = new double[5], compressorRates = new double[compressor.staggeredStateCount()];
+        for (int i = 0; i < 10; i++) { motor.evaluateStaggered(.001, rates, 0); compressor.evaluateStaggered(.001, compressorRates, 0); }
         assertEquals(0., motor.getIntegrationHistories().get("TripTimer1"));
         assertEquals(0., compressor.getIntegrationHistories().get("StallTimer"));
         assertTrue(motor.afterStep(.001)); assertTrue(compressor.afterStep(.001));
         assertEquals(.001, motor.getIntegrationHistories().get("TripTimer1"), 0);
-        assertEquals(.001, compressor.getIntegrationHistories().get("StallTimer"), 0);
+        assertEquals(0., compressor.getIntegrationHistories().get("StallTimer"), 0);
+        double[] state = new double[compressor.staggeredStateCount()];compressor.readStaggeredState(state,0);
+        compressor.evaluateStaggered(.001,compressorRates,0);for(int i=0;i<state.length;i++)state[i]+=.001*compressorRates[i];
+        compressor.applyStaggeredState(state,0,.001);compressor.completeStaggeredStep(.001);assertTrue(compressor.afterStep(.001));
+        assertEquals(.001, compressor.getIntegrationStates().get("StallTimer"),0);
     }
     @Test void detachedInductionMotorCoastsWithoutResettingTrialElectricalStates() throws Exception {
         var motor = (InductionMotorImpl) model().getInductionMotorA(); motor.setFonline(0);
@@ -136,7 +140,7 @@ public class Cmldblu1SharedStateTest {
         bean.setThreadAllocatedMemoryEnabled(true);
         var model = model(); var motor = (InductionMotorImpl) model.getInductionMotorA();
         var compressor = (LD1PACImpl) model.get1PhaseACMotor();
-        double[] rates = new double[5];
+        double[] rates = new double[Math.max(motor.staggeredStateCount(), compressor.staggeredStateCount())];
         for (int i = 0; i < 50000; i++) { motor.evaluateStaggered(.0005, rates, 0); compressor.evaluateStaggered(.0005, rates, 0); }
         long thread = Thread.currentThread().threadId(), before = bean.getThreadAllocatedBytes(thread);
         for (int i = 0; i < 20000; i++) compressor.evaluateStaggered(.0005, rates, 0);

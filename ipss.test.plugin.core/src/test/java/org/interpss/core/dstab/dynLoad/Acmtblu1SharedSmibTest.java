@@ -44,7 +44,7 @@ public class Acmtblu1SharedSmibTest {
     private static final Path RAW=Path.of("testData/adpter/psse/v33/HspModels/load-network.raw");
     private static final Path DYR=Path.of("testData/reference-fixtures/compressor-current/acmtblu1.dyr");
     private static final Map<String,Reference> REFERENCES=new TreeMap<>();
-    private record Reference(double h,double fault,double loading,String dyr,List<Map<String,Double>> rows) { }
+    record Reference(double h,double fault,double loading,String dyr,List<Map<String,Double>> rows) { }
     private record Loaded(PSSEMultiFileLoader loader,SimuContext context) { }
     private static String sha(byte[] raw) throws Exception { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(raw)); }
     private static List<Map<String,Double>> csv(byte[] raw) {
@@ -98,6 +98,7 @@ public class Acmtblu1SharedSmibTest {
         assertEquals(LD1PACImpl.AcceptedTimerPrecision.DOUBLE,new LD1PACImpl().getAcceptedTimerPrecision());
         assertEquals(LD1PACImpl.FrequencyInputMode.TERMINAL_PHASE_BINARY32,m.getFrequencyInputMode());
         assertEquals(LD1PACImpl.ElectricalInputMode.ACCEPTED_ENDPOINT,m.getElectricalInputMode());
+        assertEquals(9,m.staggeredStateCount());assertEquals(9,m.getIntegrationStates().size());
     }
     @ParameterizedTest @ValueSource(strings={"short","long","allocation","missing","nonfinite"})
     void malformedOrUnownedRecordsCannotAttachPartialModels(String kind) throws Exception {
@@ -163,13 +164,17 @@ public class Acmtblu1SharedSmibTest {
         for(int i=0;i<source.size();i++){double expected=source.get(i).get(key),delta=actual.get(i).get(observed)+offset-expected;assertTrue(Double.isFinite(delta));sum+=delta*delta;min=Math.min(min,expected);high=Math.max(high,expected);if(Math.abs(delta)>max){max=Math.abs(delta);time=source.get(i).get("time_s");}}
         double rmse=Math.sqrt(sum/source.size());return Map.of("rmse",rmse,"maximum_absolute",max,"source_time_of_maximum",time,"range_normalized_rmse",high>min?rmse/(high-min):rmse);}
     private static void run(String name,boolean shared,Path out,boolean enforce)throws Exception {
-        var reference=REFERENCES.get(name);var loaded=load(reference.dyr,Files.readString(RAW));assertTrue(loaded.loader.getLastDynamicImportReport().isStrictlyComplete());var a=loaded.context.getDynSimuAlgorithm();assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuStepSec(reference.h);a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());var recorder=new Recorder(a,reference.fault>0);a.setSolver(shared?new Shared(a,recorder):new Ordinary(a,recorder));
+        runReference(name,REFERENCES.get(name),shared,out,enforce);
+    }
+    static Map<String,Object> runReference(String name,Reference reference,boolean shared,Path out,boolean enforce)throws Exception {
+        var loaded=load(reference.dyr,Files.readString(RAW));assertTrue(loaded.loader.getLastDynamicImportReport().isStrictlyComplete());var a=loaded.context.getDynSimuAlgorithm();assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuStepSec(reference.h);a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());var recorder=new Recorder(a,reference.fault>0);a.setSolver(shared?new Shared(a,recorder):new Ordinary(a,recorder));
         if(reference.fault>0)for(double t:new double[]{.05,.2})a.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",a.getNetwork(),SimpleFaultCode.GROUND_3P,new Complex(0,reference.fault),null,t,.05),"fault-"+t);
         assertTrue(a.initialization());var m=motor(loaded);var first=reference.rows.getFirst();assertEquals(reference.loading,m.getLoadFactor(),1e-7);assertEquals(first.get("VAR26"),m.getMvaBase(),1e-4);assertEquals(first.get("VAR24"),m.getNamedStates().get("RunningP0"),2e-7);assertEquals(first.get("VAR25"),m.getNamedStates().get("RunningQ0"),2e-7);assertEquals(first.get("VAR27"),m.getVstall(),1e-7);assertEquals(first.get("VAR28"),m.getVbrk(),1e-7);
         recorder.commit(0);recorder.enabled=true;while(a.getSimuTime()<.5-reference.h/2)assertTrue(a.solveDEqnStep(true));recorder.capture(a.getSimuTime());assertEquals(reference.rows.size(),recorder.rows.size());assertEquals(reference.rows.size(),recorder.published.size());
         var errors=new LinkedHashMap<String,Object>();var polished=new LinkedHashMap<String,Object>();for(String key:List.of("V1","V2","V3","P_PU","Q_PU","ANGLE_DEG","SPEED")){errors.put(key,error(reference.rows,recorder.published,key,key,0));polished.put(key,error(reference.rows,recorder.rows,key,key,0));}
-        var stateErrors=new LinkedHashMap<String,Object>();String[] states={"Vmeas","Fmeas","TemperatureA","TemperatureB"};for(int i=0;i<states.length;i++)stateErrors.put(states[i],error(reference.rows,recorder.published,"STATE"+i,states[i],i==1?-1:0));stateErrors.put("FrequencyOutput",error(reference.rows,recorder.published,"VAR1","FrequencyOutput",0));
+        var stateErrors=new LinkedHashMap<String,Object>();String[] states={"Vmeas","Fmeas","TemperatureA","TemperatureB","UvTimer1","UvTimer2","StallTimer","StallTimerB","RestartTimer"};for(int i=0;i<states.length;i++)stateErrors.put(states[i],error(reference.rows,recorder.published,"STATE"+i,states[i],i==1?-1:0));stateErrors.put("FrequencyOutput",error(reference.rows,recorder.published,"VAR1","FrequencyOutput",0));
         for(var pair:Map.of("VAR13","ElectricalVoltage","VAR19","MotorCurrentA","VAR20","MotorCurrentB").entrySet())stateErrors.put(pair.getValue(),error(reference.rows,recorder.published,pair.getKey(),pair.getValue(),0));
+        for(var pair:Map.of("VAR10","UvFraction","VAR11","ContactorFraction","VAR12","ContactorClosed","VAR14","ThermalFractionA","VAR18","ThermalFractionB").entrySet())stateErrors.put(pair.getValue(),error(reference.rows,recorder.published,pair.getKey(),pair.getValue(),0));
         Files.createDirectories(out);var report=new LinkedHashMap<String,Object>();report.put("status","coupled-compressor-control-frequency-and-protection-qualification-incomplete");report.put("observation_boundary","accepted history commit, before the next network repolish; event-side solves retained at the same grid time");report.put("profile",name);report.put("method",shared?"staggered":"modified-euler");report.put("boundary_errors",errors);report.put("repolished_boundary_errors",polished);report.put("state_errors",stateErrors);
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),100000)){new GsonBuilder().setPrettyPrinting().create().toJson(report,w);}
         writeCsv(out.resolve("actual.csv"),recorder.published);writeCsv(out.resolve("repolished.csv"),recorder.rows);
@@ -180,6 +185,8 @@ public class Acmtblu1SharedSmibTest {
         }
         if(enforce)for(int i=0;i<reference.rows.size();i++)for(var pair:Map.of("VAR16","RunA","VAR17","RunB").entrySet())assertEquals(reference.rows.get(i).get(pair.getKey()),recorder.published.get(i).get(pair.getValue()),"Accepted run/stall action at the same source grid");
         if(enforce&&shared)for(String key:List.of("Vmeas","TemperatureA","TemperatureB"))assertTrue(((Number)((Map<?,?>)stateErrors.get(key)).get("maximum_absolute")).doubleValue()<=(key.equals("Vmeas")?2.5e-5:2.5e-6),key+": "+stateErrors.get(key));
+        if(enforce&&shared)for(String key:List.of("UvTimer1","UvTimer2","StallTimer","StallTimerB","RestartTimer"))assertTrue(((Number)((Map<?,?>)stateErrors.get(key)).get("maximum_absolute")).doubleValue()<=2e-8,key+": "+stateErrors.get(key));
+        return report;
     }
     private static void writeCsv(Path file,List<Map<String,Double>> rows)throws Exception{var keys=rows.getFirst().keySet();try(var w=BenchmarkOutputGuard.newWriter(file,BenchmarkOutputGuard.estimateCsvBytes(rows.size(),keys.size()))){w.write(String.join(",",keys)+"\n");for(var row:rows){boolean first=true;for(String key:keys){if(!first)w.write(",");first=false;w.write(row.get(key).toString());}w.write("\n");}}}
     @ParameterizedTest @MethodSource("profiles")

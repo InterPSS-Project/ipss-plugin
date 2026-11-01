@@ -349,6 +349,9 @@
     "reference.base.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip",
     "reference.electrical.archive": "testData/private/verification-artifacts/acmtblu1-state-inputs-20261101/captures.zip"
   },
+  "CompressorProtectionConformanceTest": {
+    "reference.archive": "testData/private/verification-artifacts/acmtblu1-protection-20261101/accepted.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

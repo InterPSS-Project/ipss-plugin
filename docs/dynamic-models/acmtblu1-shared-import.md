@@ -6,7 +6,9 @@ controls pass under modified Euler and staggered integration. The
 current law have separate independent checks. The
 [electrical-input correction](acmtblu1-electrical-inputs.md) adds independent
 voltage/temperature integration and strict coupled staggered state gates. Complete
-protection and restoration qualification remains open;
+thermal protection and restoration qualification remains open; independent
+[UV/contactor controls and nine-state timer integration](acmtblu1-protection.md)
+pass under both methods;
 `ACMTBLU1` is cataloged as `LOADABLE`.
 
 ## Import and ownership
@@ -40,9 +42,12 @@ constants remain in the private captures.
 
 Native imports select `AcceptedTimerPrecision.BINARY32` before initialization.
 Typed clients default to `DOUBLE`. Changing precision after initialization is
-rejected. The option affects committed UV, stall and restart counters only;
-continuous states, integration intervals and network clocks remain unchanged.
-Trial currents and derivative evaluations cannot advance the counters.
+rejected. The option rounds UV, stall and restart timer storage only at accepted
+endpoints; integration intervals and network clocks remain unchanged. Those
+five legacy timers are differential coordinates, integrated by the selected
+method alongside voltage, frequency and temperatures. Trial currents and
+derivative evaluations cannot advance them, and `afterStep` cannot integrate
+them again. Typed/zone characteristic policies retain their existing counters.
 
 The distinction matters at strict timer comparisons. With a 0.5 ms interval,
 binary32 accumulation leaves the 20 ms restart counter just below its threshold

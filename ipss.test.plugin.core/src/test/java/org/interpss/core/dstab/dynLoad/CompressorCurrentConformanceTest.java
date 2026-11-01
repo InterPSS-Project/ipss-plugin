@@ -117,12 +117,14 @@ public class CompressorCurrentConformanceTest {
         var rows=new ArrayList<Map<String,Double>>();String[] names={"raw_P","raw_Q","thermal_rate_A","thermal_rate_B","trial_P","trial_Q"};
         var full=new LinkedHashMap<String,Error>();var qualified=new LinkedHashMap<String,Error>();
         for(String key:names){full.put(key,new Error());qualified.put(key,new Error());}
-        double[] state=new double[4],rates=new double[4];int previousGrid=0;
+        double[] rates=new double[motor.staggeredStateCount()];int previousGrid=0;var timers=new CompressorTimerReplay(motor,shared);
         for(int i=0;i<profile.rows.size();i++) {
             var source=profile.rows.get(i);double time=source.get("time_s");int grid=(int)Math.round(time/profile.h);
+            boolean advance=grid>previousGrid,event=!advance&&i>0;if(event)timers.beforeEvent(profile.h);
+            double[] state=advance?timers.advance(profile.h):timers.current();
             Complex v=voltage(source);model.getLoadBus().setVoltage(v);
             state[0]=source.get("STATE0");state[1]=1+source.get("STATE1");state[2]=source.get("STATE2");state[3]=source.get("STATE3");motor.applyStaggeredState(state,0,0);
-            if(grid>previousGrid){assertEquals(previousGrid+1,grid);assertTrue(motor.afterStep(profile.h));previousGrid=grid;}
+            if(advance){assertEquals(previousGrid+1,grid);motor.completeStaggeredStep(profile.h);assertTrue(motor.afterStep(profile.h));previousGrid=grid;}else if(event)timers.acceptEvent(time);
             double[] actual=rawPower(motor,v),expected=expectedPower(source);boolean same=matches(motor,source);
             var accepted=motor.getIntegrationStates();var history=motor.getIntegrationHistories();
             if(shared)motor.evaluateStaggered(profile.h,rates,0);
@@ -159,7 +161,7 @@ public class CompressorCurrentConformanceTest {
     void zeroVoltageHasFiniteCurrentAndThermalRates(boolean shared) throws Exception {
         var model=Cmldblu1SharedStateTest.model("cmldblu1-restart");var motor=(LD1PACImpl)model.get1PhaseACMotor();model.getLoadBus().setVoltage(Complex.ZERO);
         assertEquals(Complex.ZERO,motor.getOutputObject());
-        if(shared){double[] rates=new double[4];motor.evaluateStaggered(.0005,rates,0);for(double rate:rates)assertTrue(Double.isFinite(rate));}
+        if(shared){double[] rates=new double[motor.staggeredStateCount()];motor.evaluateStaggered(.0005,rates,0);for(double rate:rates)assertTrue(Double.isFinite(rate));}
         else {assertTrue(motor.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));assertTrue(motor.getStateDerivativeSnapshot().rates().values().stream().allMatch(Double::isFinite));}
     }
     @Test void warmedCurrentPublicationUsesBoundedScratchStorage() throws Exception {

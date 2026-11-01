@@ -13,8 +13,9 @@ introduced an additional measurement response. Rebasing the general bus
 frequency block at network events also discarded the phase jump needed by this
 model's independent measurement history.
 
-`LD1PACImpl` retains its existing four continuous coordinates and reusable
-derivative/current buffers. The frequency coordinate remains absolute pu in the
+`LD1PACImpl` retains its voltage/frequency/temperature coordinates and reusable
+derivative/current buffers. The [legacy integration vector](acmtblu1-protection.md)
+also includes the five timer states. The frequency coordinate remains absolute pu in the
 shared state vector; the independent allocated state is observed as deviation
 from one. No parallel model implementation or duplicate state vector is added.
 

@@ -18,8 +18,12 @@ and the raw bypass observation error remain explicit. The
 [electrical-input correction](dynamic-models/acmtblu1-electrical-inputs.md)
 qualifies accepted voltage/heating samples, voltage bypass and prepared pre-event
 derivatives without duplicating continuous storage. Independent replay and
-strict coupled staggered voltage/temperature gates pass; full active protection,
-restoration and longer-duration qualification remain open;
+strict coupled staggered voltage/temperature gates pass. The
+[UV/contactor correction](dynamic-models/acmtblu1-protection.md) integrates the
+five legacy timers as shared differential states, fixes raw-voltage pickup and
+contactor hysteresis, and independently qualifies UV shedding, opening and
+reclosure through replay and coupled controls under both methods. Thermal
+trip/reset, restoration and production-step/long-duration qualification remain open;
 the separate severe composite/static-load discrepancy remains diagnostic.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)

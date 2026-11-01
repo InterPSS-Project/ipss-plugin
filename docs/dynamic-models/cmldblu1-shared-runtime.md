@@ -22,8 +22,9 @@ integration vector. Existing named-state keys are retained.
 - A single-cage induction motor stores E-prime real/imaginary and slip. A
   double-cage motor also stores Ek real/imaginary; its Norton-source E-double-prime
   is an algebraic combination of E-prime and Ek.
-- The compressor stores sensed voltage/frequency and two temperatures, with
-  separate accepted stall histories for non-restartable and restartable groups.
+- The legacy compressor stores sensed voltage/frequency, two temperatures and
+  five differential UV/stall/restart timers in its shared nine-state vector.
+  Other typed/zone policies retain four coordinates and accepted timer counters.
 - Derivative evaluation refreshes algebraic current/torque and diagnostic rate
   buffers without advancing differential coordinates or committed timers.
 - The ordinary method retains its established predictor/corrector ordering,
@@ -32,7 +33,8 @@ integration vector. Existing named-state keys are retained.
   The two finite-step methods are therefore not asserted bit-identical.
 - Accepted compressor measurement/temperature history and elapsed time commit
   once per interval. Motor protection remains in the engine's accepted
-  `afterStep` callback; it is not also called by the shared completion hook.
+  `afterStep` callback; legacy timer values are already integrated when it
+  applies actions/resets. It is not also called by the shared completion hook.
 - Zero-duration ordinary refreshes and repeated shared derivative evaluations
   do not commit state or protection history. Invalid trial buffers/nonfinite
   values fail before applying a partial state vector.

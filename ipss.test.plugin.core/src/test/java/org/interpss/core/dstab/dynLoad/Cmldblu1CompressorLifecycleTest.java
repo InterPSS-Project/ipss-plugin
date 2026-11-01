@@ -135,7 +135,7 @@ public class Cmldblu1CompressorLifecycleTest {
     private static Map<String,Object> replay(double h,boolean staggered,Path output,boolean enforce) throws Exception {
         var source=REFERENCES.get(h);var model=Cmldblu1SharedStateTest.model("cmldblu1-restart");
         var motor=(LD1PACImpl)model.get1PhaseACMotor();var actual=new ArrayList<Map<String,Double>>();
-        double[] accepted=new double[4],predicted=new double[4],k1=new double[4],k2=new double[4];
+        double[] accepted=new double[motor.staggeredStateCount()],predicted=new double[motor.staggeredStateCount()],k1=new double[motor.staggeredStateCount()],k2=new double[motor.staggeredStateCount()];
         int previousGrid=0;Map<String,Double> previous=source.getFirst();
         for(var row:source) {
             int grid=(int)Math.round(row.get("time_s")/h);
@@ -145,9 +145,9 @@ public class Cmldblu1CompressorLifecycleTest {
                 assertEquals(history,motor.getIntegrationHistories(),"Trial evaluations cannot commit protection");
                 if(staggered) {
                     motor.readStaggeredState(accepted,0);motor.evaluateStaggered(h,k1,0);
-                    for(int j=0;j<4;j++)predicted[j]=accepted[j]+h*k1[j];motor.applyStaggeredState(predicted,0,h);
+                    for(int j=0;j<accepted.length;j++)predicted[j]=accepted[j]+h*k1[j];motor.applyStaggeredState(predicted,0,h);
                     input(model,row);motor.evaluateStaggered(h,k2,0);
-                    for(int j=0;j<4;j++)predicted[j]=accepted[j]+.5*h*(k1[j]+k2[j]);
+                    for(int j=0;j<accepted.length;j++)predicted[j]=accepted[j]+.5*h*(k1[j]+k2[j]);
                     motor.applyStaggeredState(predicted,0,h);motor.completeStaggeredStep(h);
                 } else {
                     assertTrue(motor.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0));input(model,row);
@@ -211,9 +211,9 @@ public class Cmldblu1CompressorLifecycleTest {
             assertThrows(IllegalArgumentException.class,()->motor.afterStep(invalid));
             assertEquals(history,motor.getIntegrationHistories());
         }
-        model.getLoadBus().setVoltage(new Complex(.1,0));for(int i=0;i<40;i++)assertTrue(motor.afterStep(.0005));
+        model.getLoadBus().setVoltage(new Complex(.1,0));for(int i=0;i<40;i++){assertTrue(motor.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0));assertTrue(motor.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1));assertTrue(motor.afterStep(.0005));}
         assertEquals(0,motor.getIntegrationHistories().get("RunA"));assertEquals(0,motor.getIntegrationHistories().get("RunB"));
-        model.getLoadBus().setVoltage(Complex.ONE);for(int i=0;i<50;i++)assertTrue(motor.afterStep(.0005));
+        model.getLoadBus().setVoltage(Complex.ONE);for(int i=0;i<50;i++){assertTrue(motor.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0));assertTrue(motor.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1));assertTrue(motor.afterStep(.0005));}
         assertEquals(1,motor.getIntegrationHistories().get("RunB"));
         model.getLoadBus().setVoltage(initial);assertTrue(motor.initStates());
         for(String name:List.of("StallTimer","StallTimerB","RestartTimer","UvTimer1","UvTimer2","AcceptedTime"))assertEquals(0,motor.getIntegrationHistories().get(name));
