@@ -40,6 +40,10 @@ public class HspUsageRankedModelTest {
         run(fixture,flat,false);
     }
     static void run(String fixture,boolean flat,boolean staggered) throws Exception {
+        run(fixture,flat,staggered,false);
+    }
+    static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile) throws Exception {
+        assertFalse(resetProfile && (flat || !fixture.startsWith("tiocr1-")));
         var loader=new PSSEMultiFileLoader();
         var context=loader.loadDStab(CASE.resolve(fixture.startsWith("cmldblu1")?"load-network.raw":fixture.equals("wsieg1-dual")?"dual-network.raw":"network.raw").toString(),CASE.resolve(fixture+".dyr").toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete(),loader.getLastDynamicImportReport().failureSummary());
@@ -49,9 +53,11 @@ public class HspUsageRankedModelTest {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         double dt=.0005;algorithm.setSimuStepSec(dt);algorithm.setTotalSimuTimeSec(.5);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
-        var recording=new SmallNetworkRecorder(algorithm,flat);
+        var recording=new SmallNetworkRecorder(algorithm,flat,resetProfile);
         algorithm.setSolver(staggered?new StaggeredNetworkRecorder(algorithm,recording):recording);
-        if(!flat)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(fixture.startsWith("cmldblu1")?"Bus2":"Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,fixture.equals("cmldblu1-electronic")?.01:.2),null,.05,.05),"Fault");
+        if(!flat)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(fixture.startsWith("cmldblu1")?"Bus2":"Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,fixture.equals("cmldblu1-electronic")?.01:.2),null,.05,resetProfile?.01:.05),"Fault");
+        if(resetProfile)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,
+                new Complex(0,.2),null,.2,.05),"Second fault");
         assertTrue(algorithm.initialization(),fixture+" initialization");
         var machine=net.getMachine("Bus1-mach1");
         double initialV=net.getDStabBus("Bus1").getVoltageMag(),initialAngle=machine.getAngle();
@@ -76,20 +82,24 @@ public class HspUsageRankedModelTest {
                     +","+frame.kind()+","+frame.time());
         }
         Path out=Path.of("target/hsp-model-actual-20261030");Files.createDirectories(out);
-        Files.write(out.resolve(fixture+(staggered?"-staggered":"")+(flat?"-flat":"-fault")+".csv"),rows);
+        Files.write(out.resolve(fixture+(resetProfile?"-reset":"")+(staggered?"-staggered":"")+(flat?"-flat":"-fault")+".csv"),rows);
     }
 
     private record Captured(double time,String kind,SortedMap<String,Double> values) { }
     /** Observe the solved algebraic boundary at each accepted grid time, before advancing states. */
     private static final class SmallNetworkRecorder extends org.interpss.dstab.algo.DefaultDynamicSimulationSolver {
-        final List<Captured> rows=new ArrayList<>();final boolean flat;boolean enabled;
-        SmallNetworkRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm,boolean flat) {super(algorithm);this.flat=flat;}
+        final List<Captured> rows=new ArrayList<>();final boolean flat,resetProfile;boolean enabled;
+        SmallNetworkRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm,boolean flat,boolean resetProfile) {
+            super(algorithm);this.flat=flat;this.resetProfile=resetProfile;
+        }
         @Override public void beforeStep(double t) throws com.interpss.dstab.common.DStabSimuException {
             captureBeforeStep(t);
             super.beforeStep(t);
         }
         void captureBeforeStep(double t) {
-            if(enabled&&((!flat&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9))||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty())))rows.add(new Captured(t,"EVENT_PRE",capture(dstabAlgo.getNetwork())));
+            boolean scheduled=!flat&&(Math.abs(t-.05)<1e-9||Math.abs(t-(resetProfile?.06:.1))<1e-9
+                    ||resetProfile&&(Math.abs(t-.2)<1e-9||Math.abs(t-.25)<1e-9));
+            if(enabled&&(scheduled||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty())))rows.add(new Captured(t,"EVENT_PRE",capture(dstabAlgo.getNetwork())));
         }
         @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
             boolean solved=super.networkSolutionStep();

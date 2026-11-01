@@ -60,12 +60,29 @@ Only the final revision is retained as the production implementation. Private
 evidence includes the final runtime/source hashes, complete reports and the
 unchanged independent capture identities.
 
+## Reset and repeated pickup
+
+Independent cold-repeated SMIB captures now cover a short fault that only partly
+advances the moving element, recovery to zero, and a second fault that reaches
+pickup. Monitoring and physical-trip configurations pass with both integration
+methods. All nonnegative grid samples and event-side duplicates are compared;
+the immutable captures also retain negative-time startup samples.
+
+Reset is checked throughout the recovered interval, second pickup agrees within
+one integration interval, and the physical trip agrees within `5e-6` seconds.
+Voltage and active/reactive power additionally require full-reference-range
+NRMSE below `0.001`. The new profiles use their own tightened peak-error bounds;
+the earlier single-fault bounds remain unchanged. In particular, the repeated
+fault has a staggered voltage peak error of `6.09e-6` pu, above the earlier
+single-fault bound but below its new `6.7e-6` pu bound. No model parameters or
+production equations were changed for this qualification.
+
 ## Remaining qualification
 
 These results qualify the base coupled boundary profiles, not every relay
 configuration. Raw relay diagnostic current/position publication differs around
 trip-event samples and still needs an explicit observation-stage contract.
-Protection coordination, reset/re-pickup, remote-action combinations, reconnection,
+Protection coordination, additional reset/re-pickup settings, remote-action combinations, reconnection,
 production-step and longer-duration cases remain on the implementation work list.
 The accepted-history tests also exercise both monitored ends, but those additional
 terminal cases are lifecycle tests rather than new independent trajectory captures.

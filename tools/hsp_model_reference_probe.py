@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
         'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'acmtblu1', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
-    parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'reference-step',
+    parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'short-repeated-faults', 'reference-step',
                                             'tap-reference-up', 'tap-reference-down',
                                             'tap-reference-reversal', 'tap-reference-deadband'], default='fault')
     parser.add_argument('--fault-x-pu', type=float, default=.2,
@@ -50,12 +50,14 @@ def main():
         parser.error('--network-tolerance must be finite and positive')
     if args.profile.startswith('tap-reference-') and not args.fixture.startswith('cmldblu1'):
         parser.error('Tap-reference profiles require a legacy bus composite fixture')
+    if args.profile == 'short-repeated-faults' and not args.fixture.startswith('tiocr1-'):
+        parser.error('The short reset/re-pickup profile requires a relay fixture')
     if not math.isfinite(args.end_time) or not .5 <= args.end_time <= 10:
         parser.error('--end-time must be finite and between 0.5 and 10 seconds')
     if not math.isfinite(args.fault_x_pu) or args.fault_x_pu <= 0:
         parser.error('--fault-x-pu must be finite and positive')
     if args.second_fault_x_pu is not None and (
-            args.profile != 'repeated-faults' or not math.isfinite(args.second_fault_x_pu)
+            args.profile not in ['repeated-faults', 'short-repeated-faults'] or not math.isfinite(args.second_fault_x_pu)
             or args.second_fault_x_pu <= 0):
         parser.error('--second-fault-x-pu requires repeated-faults and a finite positive value')
     root = Path.cwd()
@@ -162,7 +164,7 @@ def main():
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
-    if args.profile in ['fault', 'repeated-faults']:
+    if args.profile in ['fault', 'repeated-faults', 'short-repeated-faults']:
         checked('fault', psspy.dist_bus_fault(2 if load else 1, 3, 230.0 if load or args.fixture=='wsieg1-dual' else 100.0, [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
     if args.profile == 'reference-step':
         checked('reference', psspy.increment_gref(1, '1', .03))
@@ -180,13 +182,14 @@ def main():
     if args.profile.startswith('tap-reference-'):
         delta = -.1 if args.profile == 'tap-reference-down' else .1
         tap_reference_events.append(change_tap_target(.05, delta))
-    checked('during', psspy.run(0, .10, 1000000, 1, 0))
+    first_clear_time = .06 if args.profile == 'short-repeated-faults' else .10
+    checked('during', psspy.run(0, first_clear_time, 1000000, 1, 0))
     if args.profile == 'tap-reference-reversal':
         tap_reference_events.append(change_tap_target(.10, -.2))
     if args.profile == 'tap-reference-deadband':
         tap_reference_events.append(change_tap_target(.10, -.085))
-    if args.profile in ['fault', 'repeated-faults']: checked('clear', psspy.dist_clear_fault(1))
-    if args.profile == 'repeated-faults':
+    if args.profile in ['fault', 'repeated-faults', 'short-repeated-faults']: checked('clear', psspy.dist_clear_fault(1))
+    if args.profile in ['repeated-faults', 'short-repeated-faults']:
         checked('recovery', psspy.run(0, .20, 1000000, 1, 0))
         checked('second fault', psspy.dist_bus_fault(2 if load else 1, 3,
             230.0 if load or args.fixture=='wsieg1-dual' else 100.0,
@@ -218,8 +221,9 @@ def main():
         input_consistency=input_consistency,
         layout=layout, generator_layout=generator_layout, entered_constants=entered, initialized_constants=initialized,
         load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu],
+        first_fault_clear_time_s=first_clear_time if args.profile in ['fault', 'repeated-faults', 'short-repeated-faults'] else None,
         second_fault_impedance_pu=([0.0, args.second_fault_x_pu if args.second_fault_x_pu is not None else args.fault_x_pu]
-                                   if args.profile == 'repeated-faults' else None),
+                                   if args.profile in ['repeated-faults', 'short-repeated-faults'] else None),
         samples=len(data['time']), channels=len(keys), engine_module=psse3607.__name__,
         library_sha256=sha(library), source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
         files={p.name:sha(p) for p in Path('.').iterdir() if p.is_file()})
