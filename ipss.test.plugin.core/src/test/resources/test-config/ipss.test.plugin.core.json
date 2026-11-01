@@ -376,6 +376,9 @@
   "CompositeStaticLowVoltageTest": {
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-low-voltage-static-20261101/captures-qualified.zip"
   },
+  "ElectronicFullRecoverySmibTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-electronic-full-recovery-20261101/captures.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

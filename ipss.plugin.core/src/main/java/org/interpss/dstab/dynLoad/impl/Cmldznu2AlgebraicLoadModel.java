@@ -94,6 +94,12 @@ class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLStatePr
 
     private void updateElectronicFraction(double voltage) {
         double available = data.electronicVoltageFraction(voltage);
+        // Full recovery is memoryless: min + 1 * (available - min) = available.
+        // Trial voltages must not create unnecessary irreversible history in this mode.
+        if (data.value(132) == 1.0) {
+            electronicFraction = available;
+            return;
+        }
         if (available < minimumElectronicFraction) minimumElectronicFraction = available;
         electronicFraction = minimumElectronicFraction
                 + data.value(132) * (available - minimumElectronicFraction);

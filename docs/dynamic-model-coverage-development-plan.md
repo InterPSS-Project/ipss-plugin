@@ -2,6 +2,11 @@
 
 ## Current checkpoint
 
+The [electronic full-recovery path](dynamic-models/cmldblu1-electronic-recovery.md)
+uses the present voltage fraction directly, avoiding unnecessary minimum-history
+updates. Isolated coupled ramp, dropout and repeated-recovery controls pass under
+both integration methods. Mixed/distributed and longer-run qualification remains open.
+
 The [legacy static current port](dynamic-models/cmldblu1-static-low-voltage.md)
 implements independently established low-voltage admittance preparation for
 whole static composites with omitted distribution and zero frequency

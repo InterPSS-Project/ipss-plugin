@@ -270,6 +270,7 @@ import org.interpss.core.dstab.dynLoad.CompressorShortLagTest;
 import org.interpss.core.dstab.dynLoad.CompositeStaticPolynomialSmibTest;
 import org.interpss.core.dstab.dynLoad.CompositeOmittedDistributionTest;
 import org.interpss.core.dstab.dynLoad.CompositeStaticLowVoltageTest;
+import org.interpss.core.dstab.dynLoad.ElectronicFullRecoverySmibTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -1208,6 +1209,7 @@ import org.junit.platform.suite.api.Suite;
     CompositeStaticPolynomialSmibTest.class,
     CompositeOmittedDistributionTest.class,
     CompositeStaticLowVoltageTest.class,
+    ElectronicFullRecoverySmibTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,

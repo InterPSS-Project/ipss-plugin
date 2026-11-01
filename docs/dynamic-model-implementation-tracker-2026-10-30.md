@@ -37,6 +37,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Retain the [memoryless electronic full-recovery path](dynamic-models/cmldblu1-electronic-recovery.md) and independent both-method ramp/dropout/recovery controls. Extend mixed/distributed and production-step/long-duration electronic qualification; partial-recovery history handling remains a distinct open task.
 - Retain the [whole static current-port and accepted low-voltage preparation](dynamic-models/cmldblu1-static-low-voltage.md), exact scoped numerical cancellation, read-only getters and shared network-iteration commit/discard lifecycle under both methods. Extend the independently checked boundary to mixed components, represented distribution and frequency dependence; qualify restoration, production steps and long runs before promoting the complete model.
 - Retain the [omitted-distribution topology and scoped allocation contract](dynamic-models/cmldblu1-omitted-distribution.md), exact transformer/feeder omission sentinels, merged-bus shunts and unrelated load ownership under both methods. Extend full zone, internal-coordinate, restoration and production-step/long-duration qualification.
 - Retain the [independently checked low-voltage current and heating law](dynamic-models/cmldblu1-compressor-current.md), fresh trial-voltage currents and reusable numerical storage under both methods.
