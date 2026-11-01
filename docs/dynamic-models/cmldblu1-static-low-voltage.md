@@ -123,15 +123,49 @@ raw timestamps are preserved without interpolation or offsets.
 | Peak rotor-angle error, degrees | 0.0043661 | 0.0029371 |
 
 This extends diagnostic evidence, not the accepted model scope. Both angle
-RMSE values exceed the existing half-second gate of 0.0002 degrees. A paired
-fine-step, long-duration run is still required to separate integration-order
-and duration effects before setting a production-step acceptance gate. No
+RMSE values exceed the existing half-second gate of 0.0002 degrees. The paired
+fine-step runs below extend the diagnosis but do not yet resolve the
+integration-order and duration effects needed for production-step acceptance. No
 equations, model parameters or existing accuracy thresholds changed.
 
 The probe accepts an explicit end time through ten seconds, preserving its
-half-second default. The shared recorder permits one additional terminal step
-to retain clock-rounded reference endpoints. The existing static-port and
+half-second default. The shared recorder has a bounded eleven-second ceiling
+to retain clock-rounded reference endpoints; callers verify every source clock
+sample. The existing static-port and
 ownership regression selection passes all 109 checks.
 
 Private diagnostic archive SHA-256:
 `c9403da77b75d2665126b63dd5c7ae46375bd8d7ede9e97a07eae91b306e75d8`.
+
+### Long-duration timestep refinement
+
+The same repeated-fault profile now has cold-repeated ten-second captures at
+0.5 ms and 0.25 ms. All recorded reference fields repeat exactly, and their
+half-second prefixes exactly match the previously retained short controls.
+Full comparisons retain all event-side duplicates and explicitly validate
+every accumulated reference timestamp. At 0.25 ms, the accumulated clock needs
+eleven extra steps to cross ten seconds; assuming only one overshoot step is
+insufficient.
+
+| Step | Method | Worst voltage NRMSE | Worst static P/Q NRMSE | Angle RMSE, degrees |
+| --- | --- | ---: | ---: | ---: |
+| 0.5 ms | Modified Euler | 0.000056737 | 0.00023312 | 0.00081014 |
+| 0.5 ms | Staggered | 0.000055910 | 0.00022956 | 0.00080985 |
+| 0.25 ms | Modified Euler | 0.00023752 | 0.00097561 | 0.0037571 |
+| 0.25 ms | Staggered | 0.00023749 | 0.00097550 | 0.0037570 |
+
+Reducing the step does not monotonically reduce reference error. In a separate
+internal convergence diagnostic, comparing the two modified-Euler runs at
+common nominal-time/event-side samples gives maximum differences of
+`4.332e-7 pu` in voltage and `1.719e-5 degrees` in angle. That comparison is not
+independent acceptance and does not replace the full reference comparisons.
+The staggered cross-step maxima are `0.00017396 pu` and `0.00005004 degrees`.
+
+These results do not establish a load-equation defect or justify relaxing the
+existing angle gate. Reference-step, finite-precision and event-boundary
+effects still need independent discrimination. Both methods' long-duration
+qualification remains open. The 109 focused regression checks still pass;
+only the diagnostic recorder's bounded duration allowance changed.
+
+Private refinement archive SHA-256:
+`68fd59c23ec1a8068e87e20b081cfbc9c1ba3dd9f2e8f743bd30ccbec4cdb05f`.

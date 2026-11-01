@@ -88,8 +88,10 @@ final class Cmldblu1SharedRecording {
     private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered,
             boolean flat, double h, double faultX, double secondFaultX, double endTime) throws Exception {
         // Retain a reference's final clock-rounded overshoot instead of discarding its last sample.
-        if (!Double.isFinite(h) || h <= 0 || !Double.isFinite(endTime) || endTime < .5 || endTime > 10 + h)
-            throw new IllegalArgumentException("End time must be finite and within the ten-second recording plus one step");
+        // Accumulated single-precision clocks can require several extra steps.
+        // Keep a bounded recording allowance; callers must verify every source timestamp.
+        if (!Double.isFinite(h) || h <= 0 || !Double.isFinite(endTime) || endTime < .5 || endTime > 11)
+            throw new IllegalArgumentException("Recording end time must be finite and between 0.5 and 11 seconds");
         var loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
                 dynamicFile.toString());
