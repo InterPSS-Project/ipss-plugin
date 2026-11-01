@@ -52,6 +52,9 @@ public class CompositeTapControlSmibTest {
         var a=setup(profile,staggered);var m=model(a);
         var feeder=a.getNetwork().getBranchList().stream().filter(b->b.getFromBus()==m.getLowVoltBus()
                 && b.getToBus()==m.getLoadBus()).findFirst().orElseThrow();
+        var sourceBranch=a.getNetwork().getBranchList().stream()
+                .filter(b->b.getFromBus().getId().equals("Bus1") && b.getToBus()==m.getDStabBus())
+                .findFirst().orElseThrow();
         String[] lines=new String(entry(profile+"/a/native.csv"),StandardCharsets.UTF_8).strip().split("\\R");
         String[] keys=lines[0].split(",");Map<String,Integer> index=new HashMap<>();
         for(int j=0;j<keys.length;j++)index.put(keys[j],j);
@@ -84,11 +87,21 @@ public class CompositeTapControlSmibTest {
             assertTrue(incoming.divide(tap).subtract(downstream).subtract(m.getLowVoltBus().getShuntY().multiply(low)).abs()<2e-6,"Low-side KCL at every endpoint");
             assertTrue(downstream.subtract(demand.divide(load).conjugate()).subtract(m.getLoadBus().getShuntY().multiply(load)).abs()<2e-6,"Load KCL at every endpoint");
             assertTrue(Math.abs(parent.multiply(incoming.conjugate()).getReal()-demand.getReal()-downstream.abs()*downstream.abs()*feeder.getZ().getReal())<2e-6,"Passive power balance at every endpoint");
+            var physicalDemand=demand.add(feeder.getZ().multiply(downstream.abs()*downstream.abs()))
+                    .add(m.getDistributionTransformer().getZ().multiply(incoming.abs()*incoming.abs()))
+                    .add(low.multiply(m.getLowVoltBus().getShuntY().multiply(low).conjugate()))
+                    .add(load.multiply(m.getLoadBus().getShuntY().multiply(load).conjugate()));
+            assertTrue(parent.multiply(incoming.conjugate()).subtract(physicalDemand).abs()<2e-6,
+                    "Complex power includes feeder/transformer losses and both physical shunts");
             maxTap=Math.max(maxTap,Math.abs(tap-Double.parseDouble(values[index.get("VAR12")])));
             maxV=Math.max(maxV,Math.abs(m.getLowVoltBus().getVoltageMag()-Double.parseDouble(values[index.get("VAR30")])));
             maxAngle=Math.max(maxAngle,Math.abs(Math.toDegrees(a.getNetwork().getMachine("Bus1-mach1").getAngle())-Double.parseDouble(values[index.get("ANGLE_DEG")])));
             var machine=a.getNetwork().getMachine("Bus1-mach1");var voltage=machine.getDStabBus().getVoltage();
             var power=voltage.multiply(machine.getIgen().subtract(voltage.multiply(machine.getYgen())).conjugate());
+            var sourceCurrent=sourceBranch.yff().multiply(voltage).add(sourceBranch.yft().multiply(parent));
+            var sourcePower=voltage.multiply(sourceCurrent.conjugate());
+            assertTrue(power.subtract(sourcePower).abs()<1e-6,
+                    "Recorded machine power and independently solved branch power share an endpoint");
             if(CONFIG.bool("recording.enabled")) {
                 var s=m.getNamedStates();
                 diagnostic.add(String.join(",",Double.toString(t),Double.toString(tap),Double.toString(m.getLowVoltBus().getVoltageMag()),

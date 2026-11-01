@@ -122,6 +122,28 @@ internal algebraic observation and applied network tap; a blanket one-interval
 delay cannot satisfy the full contract. The diagnostic wrapper and exact test
 reports are retained privately and are not installed as a production option.
 
+### Reactive-power localization
+
+The delayed-application diagnostic was also compared against the retained
+`1e-6` reference network-tolerance controls. The tighter reference changes peak
+machine reactive power by about `9.6e-6` pu, but it does not explain the residual:
+staggered reversal reactive-power NRMSE changes only from 0.00333947 to
+0.00325565. No reference or acceptance limit was replaced.
+
+At every sample, independently reconstructed source-branch power agrees with
+the implementation's machine getter within `2.4e-8` pu active power and `6e-11`
+pu reactive power. Thus the remaining reactive discrepancy is not a stale
+machine-power getter in this diagnostic. In the upward control it peaks near
+0.2785 seconds at `3.34e-5` pu, while static-load reactive-power error stays
+below `3.3e-7` pu and electronic reactive-power error below `1.6e-9` pu.
+Investigate the coupled machine electrical states and terminal voltages next;
+these measurements do not justify changing composite-load coefficients.
+
+The production tap SMIB checks additionally require complete complex-power
+balance, including transformer/feeder losses and both physical shunts, and
+agreement between machine power and independently solved source-branch power.
+These constraints supplement the existing endpoint KCL and active-power tests.
+
 ### Runtime regression results
 
 The final runtime passed the core module checks (486 tests, four existing skips)
