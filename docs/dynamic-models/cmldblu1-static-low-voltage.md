@@ -169,3 +169,37 @@ only the diagnostic recorder's bounded duration allowance changed.
 
 Private refinement archive SHA-256:
 `68fd59c23ec1a8068e87e20b081cfbc9c1ba3dd9f2e8f743bd30ccbec4cdb05f`.
+
+### Source-machine precision discriminator
+
+The SMIB recorder now includes `MACHINE.Eq1`, `MACHINE.Ed1`,
+`MACHINE.Psikd` and `MACHINE.Psikq`. Recording these coordinates leaves every
+previously recorded value exactly unchanged in both fine-step runs and both
+integration methods. This permits diagnosis of the source machine separately
+from the load current port.
+
+The initial field-state difference is `5.04e-9 pu` or less. At the final
+recorded endpoint, it grows to approximately `9.90e-5 pu` with 0.5 ms steps
+and `0.00031576 pu` with 0.25 ms steps under either method.
+
+An independent recorded-input check uses the fixture's field equation
+`dEq1/dt = (Efd - XadIfd) / 6`, with the original recorded field voltage and
+field-current demand. Trapezoidal replay with and without binary32 state
+rounding gives:
+
+| Step | Unrounded replay peak error, pu | Rounded replay peak error, pu |
+| --- | ---: | ---: |
+| 0.5 ms | 0.00017562 | 0.000021339 |
+| 0.25 ms | 0.00064579 | 0.000012279 |
+
+The rounded one-step field-state predictions match approximately 97% of the
+recorded updates. Angle-only replay does not account for the whole coupled
+angle discrepancy. These observations support finite-precision accumulation
+in the machine-state path as a contributor; endpoint replay is not the
+reference's complete staged integration and does not prove sole causation.
+No rounding is added to the production solver, and no load equations or
+acceptance thresholds are changed. The full long-duration gate remains open.
+
+The 109 focused regression checks pass with the additional diagnostic fields.
+Private machine-boundary and replay archive SHA-256:
+`52fc1f5a5200a8804e8052d9e57246e6889e3451b7f886d3d180d42e9f0e3aa5`.

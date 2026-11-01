@@ -46,6 +46,13 @@ final class Cmldblu1SharedRecording {
         values.put("ANGLE_DEG", Math.toDegrees(machine.getAngle()));
         values.put("SPEED", machine.getSpeed() - 1); values.put("PMECH", machine.getPm());
         values.put("P_PU", power.getReal()); values.put("Q_PU", power.getImaginary());
+        // Boundary coordinates distinguish source-machine integration effects from load errors.
+        if (machine instanceof com.interpss.dstab.mach.RoundRotorMachine round) {
+            values.put("MACHINE.Eq1", round.getEq1());
+            values.put("MACHINE.Ed1", round.getEd1());
+            values.put("MACHINE.Psikd", round.getPsikd());
+            values.put("MACHINE.Psikq", round.getPsikq());
+        }
         values.putAll(model.getNamedStates());
         if (model.get1PhaseACMotor() instanceof org.interpss.dstab.control.util.IntegrationStateAccess owner) {
             var histories = owner.getIntegrationHistories();
