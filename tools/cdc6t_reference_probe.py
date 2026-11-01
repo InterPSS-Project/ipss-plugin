@@ -15,6 +15,7 @@ def main():
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     parser.add_argument('--profile', choices=['flat', 'fault', 'modulation'], default='flat')
     parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
+    parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope'], default='default')
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
     root = Path.cwd()
@@ -49,6 +50,10 @@ def main():
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
+    if args.limit_curve == 'active':
+        constants[15:21] = [480, 800, 490, 1000, 500, 1200]
+    elif args.limit_curve == 'two-slope':
+        constants[15:21] = [480, 800, 490, 980, 500, 1200]
     (out / 'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))
                                     + "'1' 'CDC6T' " + ' '.join(map(str, constants)) + ' /\n')
     for name in ['cdc6t_reference_probe.py', 'tgov1_limit_probe.py']:

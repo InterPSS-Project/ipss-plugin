@@ -84,7 +84,8 @@ Independent cold-paired fault captures now distinguish all three modes. Every
 current sample matches the selected measurement equation within `3.4e-5` A;
 substituting the other voltage exceeds 10 A error in the power-control profiles.
 The component remains upstream of voltage-dependent current limitation and
-blocking/recovery logic, which are not yet implemented.
+blocking/recovery logic. The normal current ceiling is now implemented separately;
+protection and recovery remain unfinished.
 
 Auxiliary MW conversion and nonzero compensation have equation tests only.
 Direct writes to the auxiliary diagnostic VAR were reset by the reference
@@ -92,3 +93,25 @@ runtime, so those attempted modulation profiles provide no response evidence.
 The probe now rejects a requested modulation unless the recorded input actually
 changes. Independent modulation qualification needs the proper auxiliary-signal
 model/interface; do not treat a successful API call as proof of an applied input.
+
+## Voltage-dependent current ceiling
+
+`Cdc6tVoltageCurrentLimit` prepares the slopes of an ordered three-point curve
+once. Evaluation takes measured inverter volts and returns an ampere ceiling,
+with constant extrapolation below/above the first/last breakpoint. The normal
+current order passes through a minimum selector. No per-evaluation arrays or
+temporary objects are created.
+
+Cold-repeated flat, equal-slope fault and unequal-slope fault captures qualify
+the normal-operation equation using every recorded sample. Both sloped segments
+are active in the fault controls; the unequal-slope control prevents a single-line
+implementation from passing accidentally. Peak current error is below `3.9e-5` A.
+Breakpoint, plateau and smaller-order behavior have separate analytic checks.
+
+This component requires strictly increasing voltage coordinates and nondecreasing
+nonnegative current coordinates. Unordered or coincident input points are not
+silently reordered. Their source-specific interpretation remains to be qualified,
+including the unordered plateau points in the earlier baseline fixture. The
+restart minimum, recovery ramps and blocking/bypass overrides are not part of
+this normal-operation ceiling. Neither component is yet attached to a runnable
+Java DC-link device, so full CDC6T support remains unavailable.
