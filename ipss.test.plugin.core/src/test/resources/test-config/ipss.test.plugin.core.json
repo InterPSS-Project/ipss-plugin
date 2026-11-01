@@ -326,6 +326,9 @@
   "Cmldblu1StateConformanceTest": {
     "reference.root": "testData/private/verification-artifacts/cmldblu1-shared-state-20261031/references"
   },
+  "Cmldblu1InitializationTest": {
+    "reference.root": "testData/private/verification-artifacts/cmldblu1-initialization-extended-20261031/references"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

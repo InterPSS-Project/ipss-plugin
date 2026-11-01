@@ -82,8 +82,8 @@ public class HspModelReferenceConformanceTest {
         boolean composite=fixture.startsWith("cmldblu1");
         bounds.put("V1",composite?.00045:fixture.startsWith("tiocr1-")?.00027:.00021);bounds.put("V2",composite?.00085:.00008);
         bounds.put("P_PU",composite?.005:.00014);bounds.put("Q_PU",composite?.0031:.00185);
-        bounds.put("ANGLE_DEG",fixture.equals("cmldblu1-electronic")?.0052:composite?.0014:fixture.equals("pss2b-remote")?.00072:.00025);bounds.put("PMECH",.00007);
-        bounds.put("SPEED",fixture.equals("cmldblu1-electronic")?2.8e-6:composite?1.6e-6:1.6e-6);bounds.put("STABILIZER",.0009);
+        bounds.put("ANGLE_DEG",fixture.equals("cmldblu1-electronic")?.0001:composite?.00043:fixture.equals("pss2b-remote")?.00072:.00025);bounds.put("PMECH",.00007);
+        bounds.put("SPEED",fixture.equals("cmldblu1-electronic")?2.95e-6:composite?1.4e-6:1.6e-6);bounds.put("STABILIZER",.0009);
         if(fixture.equals("wsieg1-dual")) {bounds.put("PMECH_LP",.00001);bounds.put("SPEED_LP",1.6e-6);}
         if(fixture.startsWith("hyg3")) {
             String[] names={"Input filter","Integral","Derivative lag","Valve","Gate","Electrical power","Water flow","Double derivative 1","Double derivative 2"};

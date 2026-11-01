@@ -1,29 +1,32 @@
-"""Cold small-network references for the usage-ranked HSP model additions."""
+"""Cold small-network references for dynamic-model qualification."""
 import argparse
 import csv
 import json
 import math
 import os
+import re
 from pathlib import Path
 import shutil
 from tgov1_limit_probe import checked, sha
 
 
 def load_fixture(name):
-    return name.startswith('cmldblu1')
+    return name.startswith('cmldblu1') or name == 'cmldznu2'
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
-        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
+        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldznu2', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
     parser.add_argument('--profile', choices=['flat', 'fault', 'reference-step'], default='fault')
     parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01],default=.2)
     parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
     parser.add_argument('--clear-diagnostic-storage', action='store_true',
                         help='Clear allocated composite diagnostic storage before initialization; retain unmodified captures separately')
+    parser.add_argument('--constant', action='append', default=[], metavar='INDEX=VALUE',
+                        help='Controlled composite-load discriminator; preserve original and modified DYR inputs')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
@@ -35,9 +38,30 @@ def main():
     load = load_fixture(args.fixture)
     if args.clear_diagnostic_storage and not load:
         parser.error('--clear-diagnostic-storage is restricted to composite-load probes')
+    if args.constant and not args.fixture.startswith('cmldblu1'):
+        parser.error('--constant is restricted to legacy composite-load probes')
     relay = args.fixture.startswith('tiocr1')
     shutil.copy2(source / ('load-network.raw' if load else 'dual-network.raw' if args.fixture=='wsieg1-dual' else 'network.raw'), out / 'network.raw')
     shutil.copy2(source / (args.fixture + '.dyr'), out / 'dynamic.dyr')
+    if args.constant:
+        shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')
+        path = out / 'dynamic.dyr'
+        text = path.read_text()
+        match = re.search(r"(?ms)^\s*2\s+'USRLOD'\s+'1'\s+'CMLDBLU1'.*?/", text)
+        if match is None: parser.error('Expected the exact synthetic composite record')
+        fields = re.findall(r"'[^']*'|[^\s,]+", match.group()[:-1])
+        assert len(fields) == 143 and fields[7:11] == ['132', '27', '146', '48']
+        seen = set()
+        for item in args.constant:
+            index_text, value_text = item.split('=', 1)
+            index, value = int(index_text), float(value_text)
+            if not 0 <= index < 132 or index in seen or not math.isfinite(value):
+                parser.error('Constants require unique valid indices and finite values')
+            seen.add(index)
+            fields[11 + index] = format(value, '.17g')
+        replacement = ' '.join(fields[:11]) + '\n' + '\n'.join(
+            ' '.join(fields[i:i+8]) for i in range(11, len(fields), 8)) + ' /'
+        path.write_text(text[:match.start()] + replacement + text[match.end():])
     for file in ['hsp_model_reference_probe.py', 'tgov1_limit_probe.py']:
         shutil.copy2(root / 'tools' / file, out / file)
     import psse3607
@@ -66,7 +90,7 @@ def main():
     else:
         category = 'STAB' if args.fixture.startswith('pss') else 'GOV'
         index = lambda kind: checked('controller index', psspy.mdlind(1, '1', category, kind))
-    expected = [14,0,3,15] if relay else [132,27,146,0] if load else [23,17,4,6] if args.fixture.startswith('pss') else [34,6,8,0] if args.fixture.startswith('wsieg') else [36,9,5,2]
+    expected = [14,0,3,15] if relay else [133,27,146,2] if args.fixture=='cmldznu2' else [132,27,146,0] if load else [23,17,4,6] if args.fixture.startswith('pss') else [34,6,8,0] if args.fixture.startswith('wsieg') else [36,9,5,2]
     layout = {kind:index(kind) if count else 0 for kind,count in zip(['NCON','NSTATE','NVAR','NICON'],expected)}
     assert list(layout.values()) == expected, layout
     layout.update({kind:index(kind) if layout['N'+kind] else 0 for kind in ['CON','STATE','VAR','ICON']})

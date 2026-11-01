@@ -152,9 +152,12 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                     getFel(), data);
             if (!electronicLoadComponent.initStates()) return false;
         }
-        applyReactiveCompensation();
+        if (!distributionIncludesReactiveCompensation()) applyReactiveCompensation();
         return true;
     }
+
+    /** Whether the distribution hook already included all reactive compensation. */
+    protected boolean distributionIncludesReactiveCompensation() { return false; }
 
     private void applyReactiveCompensation() {
         double componentQ = initialQ(getInductionMotorA()) + initialQ(getInductionMotorB())

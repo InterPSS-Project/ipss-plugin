@@ -99,13 +99,26 @@ public class Cmldblu1StateConformanceTest {
             assertEquals(sourceClock[grid], reference.get(i).get("time_s"), 6e-13, "Declared accumulated binary32 source clock");
         }
         String[] names = {"V1", "V2", "V3", "P_PU", "Q_PU", "ANGLE_DEG", "SPEED"};
-        double[] bounds = fixture.endsWith("electronic") ? new double[] {.00043, .00032, .000057, .0007, .0025, .0047, 2.5e-6}
-                : fixture.endsWith("mixed") ? new double[] {.00055, .00104, .00017, .00073, .0039, .0016, 1.3e-6}
-                : new double[] {.00041, .00077, .000125, .0045, .0028, .0012, 1.4e-6};
+        double[] bounds = fixture.endsWith("electronic")
+                ? staggered ? new double[] {3e-6, 1.3e-6, 2.3e-7, 4.6e-6, 2e-5, 7e-5, 3.4e-8}
+                        : new double[] {.00033, .00013, .000022, .0001, .00295, .0001, 2.95e-6}
+                : fixture.endsWith("mixed") ? new double[] {.00013, .000165, .000027, .00014, .00086, .00032, 1.25e-6}
+                : new double[] {.00012, .00027, .000027, .004, .0011, .00043, 1.4e-6};
+        if (fixture.endsWith("electronic") && !staggered) {
+            // The ordinary method's one-stage fault-edge error halves with h.
+            // Keep this distinction explicit rather than weakening both methods.
+            for (int i = 0; i < bounds.length; i++) bounds[i] *= h / .0005;
+        } else if (!fixture.endsWith("electronic")) {
+            bounds[6] = (staggered ? fixture.endsWith("mixed") ? 3.3e-7 : 2.1e-7 : bounds[6]) * h / .0005;
+        }
         var boundaries = new LinkedHashMap<String, Error>();
+        var failures = new ArrayList<String>();
         for (int i = 0; i < names.length; i++) {
             var value = error(reference, recording.frames, names[i], names[i], 0); boundaries.put(names[i], value);
-            assertTrue(value.maximumAbsolute <= bounds[i], names[i] + " regression: " + value);
+            if (value.maximumAbsolute > bounds[i]) failures.add(names[i] + " regression: " + value);
+            if (names[i].startsWith("V") && (value.rangeNormalizedRmse == null || value.rangeNormalizedRmse >= .001))
+                failures.add(names[i] + " voltage NRMSE must be below 0.001: " + value);
+            if (names[i].equals("ANGLE_DEG") && value.rmse >= .01) failures.add("Rotor RMSE must be below 0.01 degrees: " + value);
         }
         var stateErrors = new LinkedHashMap<String, Error>();
         for (int motor = 0; motor < 3; motor++) {
@@ -133,5 +146,6 @@ public class Cmldblu1StateConformanceTest {
         recording.write(directory.resolve("actual.csv.gz"));
         System.out.println("Composite independent comparison " + directory.getFileName() + " " + fixture
                 + " " + (staggered ? "staggered" : "euler") + " h=" + h + " " + boundaries);
+        assertTrue(failures.isEmpty(), String.join("\n", failures));
     }
 }

@@ -6,6 +6,12 @@ The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-
 preserves implementation priorities, model-specific tasks and scoped verification
 status.
 
+The [composite-load initialization correction](dynamic-models/cmldblu1-shared-runtime.md)
+adds separate legacy distribution preparation, allocated reactive-demand matching
+and internal current-balance gates under both integration methods. Complete
+independent boundary comparisons satisfy the declared voltage and rotor-angle
+limits; internal motor, protection and feeder-floor qualification remain open.
+
 The [REGCC state-reset investigation](benchmarks/regcc-state-reset-2026-10-30.md)
 localizes the cross-coordinate anomaly to active-PI clipping/history, using
 natural faults and state/memory controls. No runtime reset rule is added;

@@ -35,6 +35,14 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     private IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
             "EPrimeQ", "EPrimeD", "Slip");
     private long staggeredEvaluationCount;
+    private boolean initialReactiveDemandMatching;
+
+    /** Retain a specified initial reactive demand through a physical parallel admittance. */
+    public void setInitialReactiveDemandMatching(boolean enabled) {
+        if (equivYSysBase != null && enabled != initialReactiveDemandMatching)
+            throw new IllegalStateException("Initial reactive matching must be selected before motor initialization");
+        initialReactiveDemandMatching = enabled;
+    }
 
     @Override public int staggeredStateCount() { return twoAxisModel ? 5 : 3; }
 
@@ -129,6 +137,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     /** Explicit value-only companion for configured and in-flight motor state. */
     public static final class ModelState extends com.interpss.state.net.NameTagState {
         public long staggeredEvaluationCount;
+        public boolean initialReactiveDemandMatching;
         public String scriptsValue, extendedId, deviceKind;
         public boolean protectionListAllocated;
         public double inheritedLoadFactor;
@@ -224,6 +233,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         public ModelState(InductionMotorImpl source){
             super(source);
             staggeredEvaluationCount = source.staggeredEvaluationCount;
+            initialReactiveDemandMatching = source.initialReactiveDemandMatching;
             if(source.getClass()!=InductionMotorImpl.class)throw new IllegalArgumentException("Unsupported induction motor subclass");
             if(source.motorProtectionList!=null&&!source.motorProtectionList.isEmpty())throw new IllegalArgumentException("External motor protection controls require explicit companions");
             protectionListAllocated=source.motorProtectionList!=null;
@@ -416,6 +426,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.mvaBase=mvaBase;
             target.resetIntegrationObservation();
             target.staggeredEvaluationCount = staggeredEvaluationCount;
+            target.initialReactiveDemandMatching = initialReactiveDemandMatching;
             return target;
         }
     }
@@ -2163,7 +2174,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 			  
 			}
 			  
-			while(Math.abs(Pcalc-P)>1.0E-6){
+            double initialPowerTolerance = initialReactiveDemandMatching ? 1.0e-12 : 1.0e-6;
+			while(Math.abs(Pcalc-P)>initialPowerTolerance){
 				 
 				 
 				  if (P>Pcalc){   // slip too small
@@ -2294,6 +2306,13 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    
 	    
 	    
+        equivY = equivYSysBase;
+        if (initialReactiveDemandMatching) {
+            compensateShuntY = new Complex(0, compensateVar / (V * V));
+            equivY = equivYSysBase.add(compensateShuntY);
+            setInitLoadPQ(motorTotalLoad);
+            setLoadPQ(new Complex(motorLoadP, motorTotalLoad.getImaginary() * sysMVABase / getMvaBase()));
+        }
 	    // initialization stage, Tm = Te;
 	    tm = te; 
 	    w = 1- slip;
@@ -2532,6 +2551,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 
 	@Override
 	public Complex getPosSeqEquivY() {
+        if (initialReactiveDemandMatching && equivY != null) return equivY;
 		if(equivYSysBase == null){
 			if(this.twoAxisModel){
 				 Complex Zpp = new Complex(ra,xpp).multiply(this.zMultiFactor);
@@ -2554,7 +2574,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		 Complex vt = this.getDStabBus().getVoltage();
 		 
-		 Complex iEquivYSysBase = vt.multiply(equivYSysBase);
+		 Complex iEquivYSysBase = vt.multiply(getPosSeqEquivY());
 	    // update the Norton current injection
  	    
  	   if(twoAxisModel){
@@ -2703,7 +2723,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		if(this.Fonline>0.0){
 			Complex vt = this.getDStabBus().getVoltage();
 			 
-			Complex iEquivYSysBase = vt.multiply(equivYSysBase);
+			Complex iEquivYSysBase = vt.multiply(getPosSeqEquivY());
 			
 			  //Calculate the actual current following into the motor. the current direction is positive when following into the motor, which is also reflected by the "subtract"
 		 	  // current on system base 
