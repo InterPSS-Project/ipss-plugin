@@ -44,7 +44,32 @@ scaling. All six SMIB checks and three new unit checks pass.
 Private reference archive SHA-256:
 `e9127105c27bd2f060155f3df301009b96e3c106fcb8d876c6d74b653edcc83d`.
 
-These controls qualify the isolated full-recovery electronic component in
-this scope. Mixed components, represented distribution, long-duration and
-production-step electronic controls remain open; the complete composite
-catalog status remains `LOADABLE`.
+## Represented-distribution extension
+
+Additional whole-electronic controls retain the transformer and feeder at
+their prepared settings. Both methods exercise a partial-voltage ramp and
+deep dropout, with repeated recovery. The tests verify the expanded topology
+and compare both internal load-bus and low-voltage-bus magnitudes against the
+independent measurements, as well as the existing terminal, machine and
+electronic P/Q channels. All raw fields repeat exactly across cold captures.
+
+| Metric over represented-distribution controls | Worst result |
+| --- | ---: |
+| External bus-voltage NRMSE | 0.00004356 |
+| Internal bus-voltage NRMSE | 0.000008518 |
+| Electronic P/Q NRMSE | 0.00004186 |
+| Rotor-angle RMSE, degrees | 0.00010132 |
+
+The same accuracy gates remain in force. The registered electronic regression
+now contains ten both-method controls; unavailable distribution evidence skips
+only its additional controls, preserving the original tests. With both
+archives present all ten execute. No production equations or integration
+settings changed for this extension.
+
+Private distribution reference archive SHA-256:
+`e8a6b99b00d4fd63465475fb134a00a83726ae940b1404974ccfb0775181c372`.
+
+These controls qualify the whole full-recovery electronic component with
+omitted or represented distribution in this scope. Mixed components,
+distribution tap-control actions, long-duration and production-step electronic
+controls remain open; the complete composite catalog status remains `LOADABLE`.
