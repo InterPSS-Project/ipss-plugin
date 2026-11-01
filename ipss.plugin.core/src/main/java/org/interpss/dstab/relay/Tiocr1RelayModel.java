@@ -13,15 +13,20 @@ import org.apache.commons.math3.complex.Complex;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
 
 /** Accepted-step line relay with explicit transfer trips; monitoring alone never opens a branch. */
-public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRelayModel, ICMLStateProvider {
+public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRelayModel, ICMLStateProvider, IntegrationStateAccess {
+    private static final IntegrationStateMonitor.Snapshot NO_DIFFERENTIAL_RATES =
+            new IntegrationStateMonitor.Snapshot(IntegrationStateMonitor.Stage.NOT_EVALUATED, Map.of(), Map.of());
     private final AclfBranch monitored;
     private final boolean fromEnd, operate;
     private final AclfBranch[] transfers;
     private final Tiocr1Data curve;
     private double position, breakerTimer;
     private boolean pickedUp, operated;
+    private long networkActionVersion;
     private final LoadPort loadPort;
     private final Hashtable<String,Object> output=new Hashtable<>();
     private static final class LoadPort extends AbstractStagedLoadSheddingRelayModel {
@@ -58,11 +63,17 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     public double currentMagnitude() {
         if(!monitored.isActive())return 0;
         var vf=monitored.getFromAclfBus().getVoltage();var vt=monitored.getToAclfBus().getVoltage();
-        return (fromEnd?monitored.yff().multiply(vf).add(monitored.yft().multiply(vt))
-                :monitored.ytf().multiply(vf).add(monitored.ytt().multiply(vt))).abs();
+        var yf=fromEnd?monitored.yff():monitored.ytf();
+        var yt=fromEnd?monitored.yft():monitored.ytt();
+        double real=(yf.getReal()*vf.getReal()-yf.getImaginary()*vf.getImaginary())
+                +(yt.getReal()*vt.getReal()-yt.getImaginary()*vt.getImaginary());
+        double imag=(yf.getReal()*vf.getImaginary()+yf.getImaginary()*vf.getReal())
+                +(yt.getReal()*vt.getImaginary()+yt.getImaginary()*vt.getReal());
+        return Math.hypot(real,imag);
     }
     @Override public boolean afterStep(double dt) {
         if(!Double.isFinite(dt)||dt<0)return false;
+        if(dt==0)return true;
         if(operated)return true;
         if(!pickedUp) {
             double rate=curve.rate(currentMagnitude());
@@ -74,6 +85,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         operated=true;
         if(!operate)return true;
         var network=(BaseDStabNetwork<?,?>)getDStabBus().getNetwork();
+        boolean networkChanged=false;
         for(var branch:transfers) if(branch!=null&&branch.isActive()) {
             // Remove only this branch stamp, preserving active fault and load-relay stamps.
             int f=branch.getFromAclfBus().getSortNumber(),t=branch.getToAclfBus().getSortNumber();
@@ -82,8 +94,14 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
             network.getYMatrix().addToA(branch.ytf().negate(),t,f);
             network.getYMatrix().addToA(branch.ytt().negate(),t,t);
             branch.setStatus(false);network.setYMatrixDirty(true);
+            networkChanged=true;
         }
-        if(loadPort!=null)loadPort.trigger();
+        if(loadPort!=null) {
+            double previousFraction=loadPort.getShedFraction();
+            loadPort.trigger();
+            networkChanged|=loadPort.getShedFraction()!=previousFraction;
+        }
+        if(networkChanged)networkActionVersion++;
         position=0; // An opened/de-energized relay clears its moving-element coordinate.
         return true;
     }
@@ -96,4 +114,14 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     public double getPosition() { return position; }
     public double getBreakerTimer() { return breakerTimer; }
     public boolean isOperated() { return operated; }
+    /** Monotonic accepted physical-action revision; monitoring and reads leave it unchanged. */
+    public long getNetworkActionVersion() { return networkActionVersion; }
+    /** Exact accepted-step devices supported without creating trial ODE coordinates. */
+    public static boolean isAcceptedStepDevice(Object device) {
+        return device instanceof Tiocr1RelayModel || device != null && device.getClass() == LoadPort.class;
+    }
+    /** Relay motion and breaker timing belong to accepted steps, not trial ODE coordinates. */
+    @Override public Map<String,Double> getIntegrationStates() { return Map.of(); }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return NO_DIFFERENTIAL_RATES; }
+    @Override public Map<String,Double> getIntegrationHistories() { return getNamedStates(); }
 }

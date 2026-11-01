@@ -65,7 +65,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
-- Qualify protection updates under both methods while keeping relay timers and physical actions out of trial derivative evaluations.
+- Retain the [accepted-step runtime](dynamic-models/tiocr1-accepted-runtime.md), explicit staggered support, zero-duration history guard, primitive current measurement and post-protection network-discontinuity handling. Base coupled boundary profiles pass under both methods; finish raw relay diagnostic observation-stage qualification while keeping timers and physical actions out of trial derivative evaluations.
 - Extend independent checks to protection coordination, reset/re-pickup and transfer-trip combinations.
 - Verify both monitored branch ends, remote load actions and breaker timing.
 - Preserve shed admittance across network rebuilds and refresh voltage-dependent current corrections during network iterations.

@@ -273,6 +273,9 @@ import org.interpss.core.dstab.dynLoad.CompositeStaticLowVoltageTest;
 import org.interpss.core.dstab.dynLoad.ElectronicFullRecoverySmibTest;
 import org.interpss.core.dstab.dynLoad.DistributedStaticPortLifecycleTest;
 import org.interpss.core.dstab.dynLoad.CompositeTapControlSmibTest;
+import org.interpss.core.dstab.Tiocr1AcceptedHistoryTest;
+import org.interpss.core.dstab.HspUsageRankedModelTest;
+import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -1214,6 +1217,9 @@ import org.junit.platform.suite.api.Suite;
     ElectronicFullRecoverySmibTest.class,
     DistributedStaticPortLifecycleTest.class,
     CompositeTapControlSmibTest.class,
+    Tiocr1AcceptedHistoryTest.class,
+    HspUsageRankedModelTest.class,
+    HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,

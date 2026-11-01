@@ -71,12 +71,20 @@ public class HspModelReferenceConformanceTest {
             "hyg3u1-asymmetric","hyg3u1-partial","wsieg1","wsieg1-curve","wsieg1-dual","wsieg1-unused-lp",
             "tiocr1-0","tiocr1-1","tiocr1-current","cmldblu1","cmldblu1-electronic"})
     void coupledFaultMatchesEveryReferenceBoundarySample(String fixture) throws Exception {
-        HspUsageRankedModelTest.run(fixture,false);
+        compareCoupledFault(fixture,false);
+    }
+    @ParameterizedTest
+    @ValueSource(strings={"tiocr1-0","tiocr1-1","tiocr1-current"})
+    void staggeredRelayFaultMatchesEveryReferenceBoundarySample(String fixture) throws Exception {
+        compareCoupledFault(fixture,true);
+    }
+    private static void compareCoupledFault(String fixture,boolean staggered) throws Exception {
+        HspUsageRankedModelTest.run(fixture,false,staggered);
         String profile=fixture+(fixture.startsWith("cmldblu1")?"-part0":"");
         var raw=csv(referenceBytes(profile));
         // Startup is a separate initialization convention; retain it in the artifact.
         var reference=raw.stream().filter(r->r.get("time_s")>=0).toList();
-        var actual=csv(Files.readAllBytes(Path.of("target/hsp-model-actual-20261030",fixture+"-fault.csv")));
+        var actual=csv(Files.readAllBytes(Path.of("target/hsp-model-actual-20261030",fixture+(staggered?"-staggered":"")+"-fault.csv")));
         assertEquals(reference.size(),actual.size(),fixture+" complete grid and event-side count");
         var bounds=new LinkedHashMap<String,Double>();
         boolean composite=fixture.startsWith("cmldblu1");
@@ -84,6 +92,12 @@ public class HspModelReferenceConformanceTest {
         bounds.put("P_PU",composite?.005:.00014);bounds.put("Q_PU",composite?.0031:.00185);
         bounds.put("ANGLE_DEG",fixture.equals("cmldblu1-electronic")?.0001:composite?.00043:fixture.equals("pss2b-remote")?.00072:.00025);bounds.put("PMECH",.00007);
         bounds.put("SPEED",fixture.equals("cmldblu1-electronic")?2.95e-6:composite?1.4e-6:1.6e-6);bounds.put("STABILIZER",.0009);
+        if(staggered) {
+            bounds.put("V1",4e-6);bounds.put("V2",9e-7);
+            bounds.put("P_PU",3.6e-6);bounds.put("Q_PU",2.6e-5);
+            bounds.put("ANGLE_DEG",9.5e-5);bounds.put("SPEED",4.2e-8);
+            bounds.put("PMECH",2e-8);bounds.put("STABILIZER",1e-12);
+        }
         if(fixture.equals("wsieg1-dual")) {bounds.put("PMECH_LP",.00001);bounds.put("SPEED_LP",1.6e-6);}
         if(fixture.startsWith("hyg3")) {
             String[] names={"Input filter","Integral","Derivative lag","Valve","Gate","Electrical power","Water flow","Double derivative 1","Double derivative 2"};

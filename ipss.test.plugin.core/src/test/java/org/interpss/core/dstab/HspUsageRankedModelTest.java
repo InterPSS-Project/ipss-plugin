@@ -37,6 +37,9 @@ public class HspUsageRankedModelTest {
         run(fixture,true);
     }
     static void run(String fixture,boolean flat) throws Exception {
+        run(fixture,flat,false);
+    }
+    static void run(String fixture,boolean flat,boolean staggered) throws Exception {
         var loader=new PSSEMultiFileLoader();
         var context=loader.loadDStab(CASE.resolve(fixture.startsWith("cmldblu1")?"load-network.raw":fixture.equals("wsieg1-dual")?"dual-network.raw":"network.raw").toString(),CASE.resolve(fixture+".dyr").toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete(),loader.getLastDynamicImportReport().failureSummary());
@@ -47,7 +50,7 @@ public class HspUsageRankedModelTest {
         double dt=.0005;algorithm.setSimuStepSec(dt);algorithm.setTotalSimuTimeSec(.5);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         var recording=new SmallNetworkRecorder(algorithm,flat);
-        algorithm.setSolver(recording);
+        algorithm.setSolver(staggered?new StaggeredNetworkRecorder(algorithm,recording):recording);
         if(!flat)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(fixture.startsWith("cmldblu1")?"Bus2":"Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,fixture.equals("cmldblu1-electronic")?.01:.2),null,.05,.05),"Fault");
         assertTrue(algorithm.initialization(),fixture+" initialization");
         var machine=net.getMachine("Bus1-mach1");
@@ -73,7 +76,7 @@ public class HspUsageRankedModelTest {
                     +","+frame.kind()+","+frame.time());
         }
         Path out=Path.of("target/hsp-model-actual-20261030");Files.createDirectories(out);
-        Files.write(out.resolve(fixture+(flat?"-flat":"-fault")+".csv"),rows);
+        Files.write(out.resolve(fixture+(staggered?"-staggered":"")+(flat?"-flat":"-fault")+".csv"),rows);
     }
 
     private record Captured(double time,String kind,SortedMap<String,Double> values) { }
@@ -82,13 +85,33 @@ public class HspUsageRankedModelTest {
         final List<Captured> rows=new ArrayList<>();final boolean flat;boolean enabled;
         SmallNetworkRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm,boolean flat) {super(algorithm);this.flat=flat;}
         @Override public void beforeStep(double t) throws com.interpss.dstab.common.DStabSimuException {
-            if(enabled&&((!flat&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9))||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty())))rows.add(new Captured(t,"EVENT_PRE",capture(dstabAlgo.getNetwork())));
+            captureBeforeStep(t);
             super.beforeStep(t);
+        }
+        void captureBeforeStep(double t) {
+            if(enabled&&((!flat&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9))||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty())))rows.add(new Captured(t,"EVENT_PRE",capture(dstabAlgo.getNetwork())));
         }
         @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
             boolean solved=super.networkSolutionStep();
             if(solved&&enabled&&"INITIAL".equals(networkSolutionStage))
                 rows.add(new Captured(dstabAlgo.getSimuTime(),"GRID",capture(dstabAlgo.getNetwork())));
+            return solved;
+        }
+    }
+
+    /** Same observation boundary for the staggered integration path. */
+    private static final class StaggeredNetworkRecorder extends org.interpss.dstab.algo.StaggeredEulerSolver {
+        private final SmallNetworkRecorder recording;
+        StaggeredNetworkRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm,SmallNetworkRecorder recording) {
+            super(algorithm);this.recording=recording;setReuseNetworkEndpoint(false);
+        }
+        @Override public void beforeStep(double t) throws com.interpss.dstab.common.DStabSimuException {
+            recording.captureBeforeStep(t);super.beforeStep(t);
+        }
+        @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+            boolean solved=super.networkSolutionStep();
+            if(solved&&recording.enabled&&"INITIAL".equals(networkSolutionStage))
+                recording.rows.add(new Captured(dstabAlgo.getSimuTime(),"GRID",capture(dstabAlgo.getNetwork())));
             return solved;
         }
     }
@@ -161,6 +184,8 @@ public class HspUsageRankedModelTest {
         net.getDStabBus("Bus1").setVoltage(new Complex(.8,0));
         for(int i=0;i<5;i++)assertTrue(relay.afterStep(.01));
         assertTrue(relay.isOperated());assertEquals(.1,relay.getShedFraction(),1e-12);
+        assertEquals(1,relay.getNetworkActionVersion());
+        assertTrue(relay.afterStep(.01));assertEquals(1,relay.getNetworkActionVersion(),"One revision per accepted physical action");
         int index=bus.getSortNumber();var expected=net.getYMatrix().getA(index,index);
         net.formYMatrix4DStab();
         org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(net);

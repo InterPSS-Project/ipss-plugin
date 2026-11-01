@@ -380,8 +380,23 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     /** Notify an externally applied discontinuous input without advancing time. */
     public void notifyDiscontinuity() { inputDiscontinuity = true; }
 
+    private final List<org.interpss.dstab.relay.Tiocr1RelayModel> acceptedRelays = new ArrayList<>();
+    private long[] acceptedRelayActions = new long[0];
+
+    @Override public void afterStep(double time) throws DStabSimuException {
+        super.afterStep(time);
+        for (int i=0;i<acceptedRelays.size();i++) {
+            long revision=acceptedRelays.get(i).getNetworkActionVersion();
+            if (revision!=acceptedRelayActions[i]) {
+                acceptedRelayActions[i]=revision;
+                notifyDiscontinuity();
+            }
+        }
+    }
+
     @Override public boolean initialization() {
         machines.clear();
+        acceptedRelays.clear();acceptedRelayActions=new long[0];
         electricalEndpointEligible.clear(); electricalEndpointPreparationCount=0; machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
         localSt1Controllers.clear();
         localExciters.clear();resolvedExciterSubsteps.clear();
@@ -402,6 +417,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         validateModels();
         dstabAlgo.getNetwork().setPolarCoordinate(false);
         bind();
+        acceptedRelayActions=new long[acceptedRelays.size()];
+        for(int i=0;i<acceptedRelays.size();i++)acceptedRelayActions[i]=acceptedRelays.get(i).getNetworkActionVersion();
         try {
             networkSolutionStep();
             evaluate(true);
@@ -463,7 +480,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex0);
             for (var device : bus.getDynamicBusDeviceList()) {
                 if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model)
-                        && !supportedLoad(device))
+                        && !supportedLoad(device)
+                        && !org.interpss.dstab.relay.Tiocr1RelayModel.isAcceptedStepDevice(device))
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
                 if (supportedLoad(device) && (bus.getDynLoadModelList() == null
                         || bus.getDynLoadModelList().stream().noneMatch(load -> load == device)))
@@ -716,6 +734,19 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 }
             }
 
+            if (bus.getDynamicBusDeviceList().stream().anyMatch(
+                    org.interpss.dstab.relay.Tiocr1RelayModel::isAcceptedStepDevice)) {
+                var membership = List.copyOf(bus.getDynamicBusDeviceList());
+                for(var device:membership)
+                    if(device instanceof org.interpss.dstab.relay.Tiocr1RelayModel relay)acceptedRelays.add(relay);
+                attachmentsUnchanged.add(() -> {
+                    var current = bus.getDynamicBusDeviceList();
+                    if (current.size() != membership.size()) return false;
+                    for (int i=0;i<current.size();i++)
+                        if (current.get(i) != membership.get(i) || current.get(i).getDStabBus() != bus) return false;
+                    return true;
+                });
+            }
             for (var device : bus.getDynamicBusDeviceList()) if (device instanceof Svsmo3t2Model model) {
                 var membership = List.copyOf(bus.getDynamicBusDeviceList());
                 attachmentsUnchanged.add(() -> {
