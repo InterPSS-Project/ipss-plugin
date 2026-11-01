@@ -115,3 +115,24 @@ including the unordered plateau points in the earlier baseline fixture. The
 restart minimum, recovery ramps and blocking/bypass overrides are not part of
 this normal-operation ceiling. Neither component is yet attached to a runnable
 Java DC-link device, so full CDC6T support remains unavailable.
+
+## Converter terminal boundary
+
+`Cdc6tConverterBoundary` prepares transformer/bridge coefficients and evaluates
+the non-capacitor-commutated electrical equations into caller-owned primitive
+buffers. It takes terminal AC magnitude, positive DC voltage and current; it
+returns signed terminal active power, reactive consumption and the firing or
+extinction angle. Evaluation does not change taps, controller modes or histories.
+Infeasible voltage/current combinations fail before modifying the output buffer.
+
+All samples of the retained control-mode and current-limiter captures verify both
+terminal powers and angles. Peak active-power error is below `1.2e-6` pu, reactive
+power below `1e-5` pu and angle below `0.0003` degrees. DC resistive loss is checked
+separately. These are measured-input electrical checks, not a coupled simulation.
+
+The overlap expression cancels the vanishing power-factor cosine analytically
+instead of multiplying zero active power by an unbounded tangent. Analytic tests
+cover zero current and continuity of reactive consumption at zero DC voltage.
+This does not establish bypass-event behavior. Converter active-set selection,
+protection/recovery and network injection ownership remain to be integrated and
+qualified before the full model can be attached.
