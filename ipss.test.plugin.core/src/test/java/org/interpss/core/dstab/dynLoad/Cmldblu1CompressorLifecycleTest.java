@@ -79,7 +79,22 @@ public class Cmldblu1CompressorLifecycleTest {
         // Published compressor boundary inputs, retained independently of its
         // distribution diagnostic and sensed-voltage differential state.
         model.getLoadBus().setVoltage(new Complex(row.get("VAR117"),0));
-        model.getDStabBus().setFreq(1+row.get("VAR118"));
+        // This published frequency is already absolute per unit and clipped.
+        // It is not the upstream phase-derived input of the frequency filter.
+        model.getDStabBus().setFreq(row.get("VAR118"));
+    }
+    @ParameterizedTest @ValueSource(doubles={.0005,.00025})
+    void publishedFrequencyUsesAbsoluteClippedCoordinates(double h) throws Exception {
+        var source=REFERENCES.get(h);var model=Cmldblu1SharedStateTest.model("cmldblu1-restart");
+        assertEquals(1,source.getFirst().get("VAR118"),1e-7);
+        boolean clipped=false;
+        for(var row:source) {
+            double absolute=1+row.get("STATE19");
+            assertEquals(Math.max(.95,Math.min(1.05,absolute)),row.get("VAR118"),1e-7);
+            clipped|=absolute<.95 || absolute>1.05;
+        }
+        assertTrue(clipped,"The independent profile must activate the observation limiter");
+        input(model,source.getFirst());assertEquals(1,model.getDStabBus().getFreq(),1e-7);
     }
     private record Transition(int grid,double value) { }
     private static List<Transition> transitions(List<Map<String,Double>> rows,String key,double h,boolean sourceClock) {
@@ -150,6 +165,9 @@ public class Cmldblu1CompressorLifecycleTest {
         for(int j=0;j<observed.length;j++)errors.put("STATE"+(18+j),error(source,actual,"STATE"+(18+j),observed[j],j==1?-1:0));
         var a=transitions(actual,"RunA",h,false);var b=transitions(actual,"RunB",h,false);
         var report=new LinkedHashMap<String,Object>();report.put("status","recorded-boundary-history-replay-continuous-state-and-network-parity-incomplete");
+        report.put("input_coordinates",Map.of("voltage","published VAR117; distribution VAR29 is retained separately",
+                "frequency","published VAR118 in absolute pu; clipped filter output, upstream phase-derived input unavailable"));
+        report.put("continuous_state_error_status","diagnostic only; published observations are not qualified upstream filter inputs");
         report.put("method",staggered?"staggered":"modified-euler");report.put("step_sec",h);report.put("unmasked_errors",errors);report.put("run_A_transitions",a);report.put("run_B_transitions",b);
         write(output,actual,report);
         if(enforce) {

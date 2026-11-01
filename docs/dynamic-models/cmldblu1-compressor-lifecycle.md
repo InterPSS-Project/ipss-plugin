@@ -36,8 +36,11 @@ its inputs and output remain retained as a rejected attempt.
 Cold pairs and channel parts preserve all allocated source states, diagnostics,
 startup samples and both sides of every event. The reference's accumulated
 binary32 clock is checked against the declared grid. The history replay uses
-the recorded compressor boundary channels `VAR117` and `VAR118`, with frequency
-converted explicitly from deviation to absolute per unit. The distribution
+the recorded compressor observation channels `VAR117` and `VAR118`. Frequency
+`VAR118` is already absolute per unit: every captured value matches one plus
+the source frequency state, clipped to 0.95–1.05 pu within storage precision.
+It is a filtered observation, rather than the upstream phase-derived input.
+The replay passes it without another nominal-frequency offset. The distribution
 voltage diagnostic `VAR29` remains a separate recorded quantity. Initial
 conditions come from the normal fixture initializer.
 
@@ -71,7 +74,9 @@ error is about 0.01038 pu and changes little when the interval is halved. The
 compressor's recorded voltage input differs from the distribution diagnostic
 during these faults. Input preparation, network coupling and remaining
 continuous-state discrepancies require investigation before accepting the
-complete trajectory.
+complete trajectory. Replaying published observations into the measurement
+filters does not independently qualify those filters. Their unmasked errors
+remain diagnostic, with this input-coordinate limitation recorded explicitly.
 
 The current coverage isolates stall/restart histories with inactive UV,
 contactor and thermal-trip actions. Extend independent checks to active
@@ -85,9 +90,13 @@ diagnostics. The runnable probe and exact raw captures, rejected attempt,
 frozen old/new replay executables, inputs and validation provenance remain in
 the private verification-artifact chain.
 
-Validation: all nine new lifecycle checks pass, alongside the maintained
-composite/motor checks in a 158-check focused reactor run. The core module
+Validation: all eleven lifecycle/coordinate checks pass, alongside the maintained
+composite/motor checks in a 160-check focused reactor run. The core module
 passes 458 checks with four existing skips; the three-phase motor gates pass
-15 checks. The registered suite executes 2,900 checks with the same four
+15 checks. The registered suite executes 2,902 checks with the same four
 baseline failures, zero errors and 13 skips. These results establish no new
 regressions and retain the qualification limits above.
+
+The corrected replay and frozen old/current compressor comparisons are retained
+separately from the earlier harness. The frequency-coordinate correction changes
+only the test harness and its diagnostics; production model bytecode is unchanged.

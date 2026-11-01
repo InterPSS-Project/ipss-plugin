@@ -176,9 +176,9 @@ Exact executable/source provenance, original and regenerated captures,
 pre/post recordings, manifests and test reports remain under the existing
 private verification-artifact directory.
 
-Validation of the maintained composite checks: 158 focused checks pass across the reactor; the core
+Validation of the maintained composite checks: 160 focused checks pass across the reactor; the core
 module passes 458 checks with four existing skips; 15 three-phase motor checks
-pass. The registered core suite executes 2,900 checks with zero errors, 13 skips
+pass. The registered core suite executes 2,902 checks with zero errors, 13 skips
 and the same four failures as the retained pre-change baseline. It therefore
 does not establish a completely green system gate. Neutral-language validation
 also passes. These results retain the incomplete model-qualification status above.
