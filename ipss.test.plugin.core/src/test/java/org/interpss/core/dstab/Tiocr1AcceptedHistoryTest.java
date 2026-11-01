@@ -71,6 +71,44 @@ public class Tiocr1AcceptedHistoryTest {
         assertEquals(0,relay.getNetworkActionVersion(),"Monitoring cannot request a network-history rebase");
     }
 
+    @ParameterizedTest
+    @CsvSource({"false,CONST_P","true,CONST_P","false,CONST_I","true,CONST_I","false,CONST_Z","true,CONST_Z"})
+    void remoteShedCurrentSurvivesRebuildAndRefreshesWithVoltage(boolean staggered,
+            com.interpss.dstab.StaticLoadModel model) throws Exception {
+        var a=setup(staggered);var net=a.getNetwork();var bus=net.getDStabBus("Bus2");
+        net.setStaticLoadIncludedInYMatrix(false);net.setStaticLoadModel(model);
+        net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_Z);
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+        var relay=new Tiocr1RelayModel(net.getBranchList().getFirst(),true,2,true,bus,"1",
+                new com.interpss.core.aclf.AclfBranch[3],curve);
+        assertTrue(a.initialization());
+        var port=bus.getDynamicBusDeviceList().stream()
+                .filter(d->d.getId().contains(relay.getId()+"_LOAD")).findFirst().orElseThrow();
+        var initialPower=bus.getContributeLoad("1").getLoad(bus.getVoltageMag());
+        double v0=bus.getInitVoltMag();int row=bus.getSortNumber();
+        var before=net.getYMatrix().getA(row,row);
+        assertTrue(relay.afterStep(.002));assertEquals(.25,relay.getShedFraction(),1e-12);
+        assertEquals(1,relay.getNetworkActionVersion());
+        var delta=net.getYMatrix().getA(row,row).subtract(before);
+        var accepted=net.getYMatrix().getA(row,row);
+        for(int rebuild=0;rebuild<3;rebuild++) {
+            if(rebuild>0)net.formYMatrix4DStab();
+            assertTrue(port.updateAttributes(true));assertTrue(port.updateAttributes(true));
+            assertEquals(0,accepted.subtract(net.getYMatrix().getA(row,row)).abs(),1e-12);
+            for(double magnitude:new double[]{.85,1.05,.95}) {
+                var voltage=new Complex(magnitude*Math.cos(.13),magnitude*Math.sin(.13));bus.setVoltage(voltage);
+                double ratio=magnitude/v0;
+                double active=model==com.interpss.dstab.StaticLoadModel.CONST_P?1:
+                        model==com.interpss.dstab.StaticLoadModel.CONST_I?ratio:ratio*ratio;
+                var removed=new Complex(initialPower.getReal()*active,initialPower.getImaginary()*ratio*ratio).multiply(.25);
+                var measured=((Complex)port.getOutputObject()).subtract(delta.multiply(voltage));
+                assertEquals(0,removed.subtract(voltage.multiply(measured.conjugate())).abs(),2e-12,
+                        "Matrix removal plus live correction must remove the requested physical power");
+                assertEquals(1,relay.getNetworkActionVersion());
+            }
+        }
+    }
+
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("network.raw").toString(),CASE.resolve("tiocr1-0.dyr").toString());

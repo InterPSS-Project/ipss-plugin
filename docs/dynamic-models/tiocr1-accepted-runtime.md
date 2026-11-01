@@ -79,6 +79,14 @@ production equations were changed for this qualification.
 
 ## Remaining qualification
 
+Remote static-load lifecycle checks now exercise constant-P, constant-I and
+constant-Z active loads with constant-Z reactive load under both methods. They
+verify physical removed power from the combined matrix change and live current
+correction at changing terminal voltages. Repeated network rebuilds and duplicate
+refresh calls preserve the accepted shed fraction exactly once. These checks
+cover normal-voltage operation; low-voltage curve transitions, dynamic-load
+targets and independent remote-action trajectories remain separate requirements.
+
 These results qualify the base coupled boundary profiles, not every relay
 configuration. Raw relay diagnostic current/position publication differs around
 trip-event samples and still needs an explicit observation-stage contract.

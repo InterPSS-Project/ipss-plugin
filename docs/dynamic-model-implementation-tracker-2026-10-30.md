@@ -68,7 +68,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Retain the [accepted-step runtime](dynamic-models/tiocr1-accepted-runtime.md), explicit staggered support, zero-duration history guard, primitive current measurement and post-protection network-discontinuity handling. Base coupled boundary profiles pass under both methods; finish raw relay diagnostic observation-stage qualification while keeping timers and physical actions out of trial derivative evaluations.
 - Retain the independently captured partial-reset/re-pickup checks under both methods; extend them to additional reset settings, protection coordination and transfer-trip combinations.
 - Verify both monitored branch ends, remote load actions and breaker timing.
-- Preserve shed admittance across network rebuilds and refresh voltage-dependent current corrections during network iterations.
+- Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2
 
