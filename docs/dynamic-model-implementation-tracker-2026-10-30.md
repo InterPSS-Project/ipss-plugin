@@ -37,7 +37,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
-- Retain the [independently checked low-voltage current and heating law](dynamic-models/cmldblu1-compressor-current.md), fresh trial-voltage currents and reusable numerical storage under both methods. Resolve complete coupled trajectories and the separately unqualified standalone import wrapper.
+- Retain the [independently checked low-voltage current and heating law](dynamic-models/cmldblu1-compressor-current.md), fresh trial-voltage currents and reusable numerical storage under both methods.
+- Retain the [strict standalone compressor import and coupled controls](dynamic-models/acmtblu1-shared-import.md), per-load ownership and explicit accepted-timer precision. Resolve frequency/continuous-state and active protection qualification, and the separate composite low-voltage static-admittance discrepancy.
 - Retain the [shared motor runtime](dynamic-models/cmldblu1-shared-runtime.md), direct leaf-state participation under both methods, reusable rate/current buffers and post-expansion ownership checks.
 - Retain the [compressor parameter and operating-point corrections](dynamic-models/cmldblu1-compressor-initialization.md), independently checked legacy characteristic and physical reactive compensation; finish zone internal-coordinate and thermal qualification.
 - Retain independently checked legacy tap/grid, reactive allocation and physical current-balance initialization under both methods. Resolve feeder-floor preparation, zero-step behavior and remaining motor-coordinate discrepancies; the complete model remains unqualified.

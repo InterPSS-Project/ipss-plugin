@@ -6,6 +6,13 @@ The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-
 preserves implementation priorities, model-specific tasks and scoped verification
 status.
 
+The [standalone compressor import correction](dynamic-models/acmtblu1-shared-import.md)
+binds the complete source load and all constants, reuses the shared motor
+equations and exposes accepted-timer precision explicitly. Independent
+preparation, flat and coupled controls pass through both integration methods.
+Frequency, full continuous-state and active protection qualification remain open;
+the separate severe composite/static-load discrepancy remains diagnostic.
+
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;
 every trial network voltage refreshes current through shared reusable numerical

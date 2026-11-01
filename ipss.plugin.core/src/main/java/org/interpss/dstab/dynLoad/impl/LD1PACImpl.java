@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
@@ -35,6 +36,33 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     private CharacteristicPolicy characteristicPolicy = CharacteristicPolicy.STANDALONE;
     private boolean legacyCompositeCharacteristic;
     private Complex electricalNortonY;
+    private AclfLoad parentLoad;
+    public enum AcceptedTimerPrecision { DOUBLE, BINARY32 }
+    private AcceptedTimerPrecision acceptedTimerPrecision = AcceptedTimerPrecision.DOUBLE;
+
+    /** Select the arithmetic of committed protection timers before initialization. */
+    public void setAcceptedTimerPrecision(AcceptedTimerPrecision precision) {
+        java.util.Objects.requireNonNull(precision);
+        if (PQmotor != null && precision != acceptedTimerPrecision)
+            throw new IllegalStateException("Timer precision must be selected before initialization");
+        acceptedTimerPrecision = precision;
+    }
+    public AcceptedTimerPrecision getAcceptedTimerPrecision() { return acceptedTimerPrecision; }
+    private double advanceAcceptedTimer(double timer, double interval) {
+        return acceptedTimerPrecision == AcceptedTimerPrecision.BINARY32
+                ? (double) ((float) timer + (float) interval) : timer + interval;
+    }
+
+    /** Bind a complete source load record before initialization; loading factor is not coverage. */
+    public void setParentLoad(AclfLoad load) {
+        java.util.Objects.requireNonNull(load);
+        if (PQmotor != null) throw new IllegalStateException("Source load must be bound before initialization");
+        if (getDStabBus() == null || getDStabBus().getContributeLoad(load.getId()) != load)
+            throw new IllegalArgumentException("Source load must belong to the compressor bus");
+        parentLoad = load;
+    }
+
+    public AclfLoad getParentLoad() { return parentLoad; }
 
     /** Select the compressor family's characteristic before initialization. */
     public void setCharacteristicPolicy(CharacteristicPolicy policy) {
@@ -1041,8 +1069,16 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		//TODO the initLoad is the total load at the bus ,include constant Z and I load
 		//In the future, this may need to be update to consider the constant P load only
         Complex busTotalLoad = this.getDStabBus().getInitLoad();
-        this.pac = busTotalLoad.getReal()*this.loadPercent/100.0d; // pu on system base
-        this.qac = this.pac*Math.tan(Math.acos(this.powerFactor));
+        if (parentLoad != null && !parentLoad.isActive()) return false;
+        Complex allocatedPower = parentLoad == null
+                ? new Complex(busTotalLoad.getReal()*this.loadPercent/100.0d,
+                        busTotalLoad.getReal()*this.loadPercent/100.0d*Math.tan(Math.acos(this.powerFactor)))
+                : parentLoad.getLoad(getDStabBus().getVoltageMag());
+        if (allocatedPower == null || !Double.isFinite(allocatedPower.getReal())
+                || !Double.isFinite(allocatedPower.getImaginary()) || allocatedPower.getReal() <= 0) return false;
+        this.pac = allocatedPower.getReal();
+        this.qac = allocatedPower.getImaginary();
+        if (parentLoad != null) setLoadPercent(100 * pac / busTotalLoad.getReal());
 		
 		
 		// pac and qac is the initial power
@@ -1525,13 +1561,13 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			*/
 			
 			if(this.vt_measured <this.getUVtr1() && this.fuvr >0.0){
-				this.uVRelayTimer1 = this.uVRelayTimer1 +dt;
+                this.uVRelayTimer1 = advanceAcceptedTimer(uVRelayTimer1, dt);
 			}
 			else
 				this.uVRelayTimer1 = 0.0;
 			
 			if(this.vt_measured <this.getUVtr2() && this.fuvr >0.0){
-				this.uVRelayTimer2 = this.uVRelayTimer2 +dt;
+                this.uVRelayTimer2 = advanceAcceptedTimer(uVRelayTimer2, dt);
 			}
 			else
 				this.uVRelayTimer2 = 0.0;
@@ -1581,9 +1617,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			double vmag = this.getDStabBus().getVoltage().abs();
 			
-            acStallTimer = statusA == 1 && vmag < vstall ? acStallTimer + dt : 0;
-            acStallTimerB = frst > 0 && statusB == 1 && vmag < vstall ? acStallTimerB + dt : 0;
-            acRestartTimer = frst > 0 && statusB == 0 && vmag > vrst ? acRestartTimer + dt : 0;
+            acStallTimer = statusA == 1 && vmag < vstall ? advanceAcceptedTimer(acStallTimer, dt) : 0;
+            acStallTimerB = frst > 0 && statusB == 1 && vmag < vstall ? advanceAcceptedTimer(acStallTimerB, dt) : 0;
+            acRestartTimer = frst > 0 && statusB == 0 && vmag > vrst ? advanceAcceptedTimer(acRestartTimer, dt) : 0;
 			
 			/*
 			 *  % update the status of the motor. transition from running to

@@ -73,8 +73,9 @@ before/after comparisons, executable dependencies and regression reports.
   faults. The severe repeated-fault comparison remains diagnostic.
 - Qualify active protection, bypasses, restoration, production integration
   intervals and longer runs under both integration methods.
-- Audit the standalone import wrapper separately: measurement-time-constant
-  decoding and loading-factor versus load-coverage ownership are not qualified
-  by using its native interface as a reference control.
+- Retain the [standalone import correction and coupled controls](acmtblu1-shared-import.md).
+  Those now check exact decoding, source-load ownership and accepted-timer
+  precision; frequency, full continuous-state and active protection qualification
+  remain separate from these constitutive-current controls.
 - Finish the distinct zone-policy reactive and thermal coordinates. The legacy
   loading-factor correction does not establish zone-model equivalence.

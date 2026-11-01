@@ -957,7 +957,7 @@ public class PSSEDStabDirectParser {
                 return procGeneratorTripRelay(type, record);
 
             case "ACMTBLU1":
-                return procAcmtblu1(busId, genId, fields);
+                return procAcmtblu1(record);
 
             case "REGCA1":
             case "REGCAU1":
@@ -1039,62 +1039,79 @@ public class PSSEDStabDirectParser {
         }
     }
 
-    // USRLOD/ACMTBLU1:
-    // IBUS, 'USRLOD', LID, 'ACMTBLU1', seven model-library fields,
-    // then the 35 LD1PAC parameters.
-    private boolean procAcmtblu1(String busId, String loadId, String[] f) {
-        if (f.length < 46) {
-            log.warn("Incomplete ACMTBLU1 record at bus {}: expected 46 fields, found {}", busId, f.length);
-            return false;
+    // One exact bus/load record: seven allocation fields followed by 35 constants.
+    private boolean procAcmtblu1(PsseDyrRecord record) {
+        if (!record.fields().get(1).equalsIgnoreCase("USRLOD") || record.parameterCount() != 42) return false;
+        int[] allocation = {12, 1, 0, 35, 9, 29, 16};
+        for (int i = 0; i < allocation.length; i++) if (record.intParameter(i) != allocation[i]) return false;
+        double[] c = new double[35];
+        for (int i = 0; i < c.length; i++) {
+            c[i] = record.doubleParameter(7 + i);
+            if (!Double.isFinite(c[i])) return false;
         }
-
-        BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
-        if (bus == null) {
-            log.warn("Cannot attach ACMTBLU1 model {}: bus {} was not found", loadId, busId);
-            return false;
+        if (c[4] == 0 || c[4] > 1) c[4] = 1;
+        if (!(c[4] > 0) || !(c[5] > 0 && c[5] <= 1)
+                || c[7] < 0 || c[8] < 0 || c[7] + c[8] == 0 || !(c[27] > 0)) return false;
+        var bus = builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX + record.busNumber());
+        var targets = new ArrayList<LoadTarget>();
+        boolean wildcard = record.deviceId().equals("*");
+        addMatchingLoads(targets, bus, record.deviceId(), wildcard);
+        if (targets.isEmpty()) return false;
+        for (var target : targets) {
+            Complex power = target.load().getLoad(bus.getVoltageMag());
+            if (power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary()) || power.getReal() <= 0) return false;
+            if (bus.getInfoOnlyDynModel() instanceof Cmldznu2Model composite && composite.getTargetLoadIds().contains(target.load().getId())) return false;
+            for (var existing : target.bus().getDynLoadModelList())
+                if (existing.isActive() && existing.getId().equals(target.load().getId())) return false;
         }
-
-        double compLf = getDouble(f, 15, 1.0);
-        if (compLf <= 0.0) {
-            compLf = 1.0;
+        double totalP = 0;
+        for (Object object : bus.getContributeLoadList()) {
+            var load = (AclfLoad) object;
+            if (load.isActive()) totalP += load.getLoad(bus.getVoltageMag()).getReal();
         }
-
-        LD1PAC acMotor = new LD1PACImpl(bus, trimQuote(loadId));
-        acMotor.setTstall(getDouble(f, 11, 0.0));
-        acMotor.setTrst(getDouble(f, 12, 0.0));
-        acMotor.setTv(getDouble(f, 13, 0.0));
-        acMotor.setLoadPercent(compLf * 100.0);
-        acMotor.setLoadFactor(compLf);
-        acMotor.setPowerFactor(getDouble(f, 16, 0.0));
-        acMotor.setVstall(getDouble(f, 17, 0.0));
-        acMotor.setRstall(getDouble(f, 18, 0.0));
-        acMotor.setXstall(getDouble(f, 19, 0.0));
-        acMotor.setLFadj(getDouble(f, 20, 0.0));
-        acMotor.setKp1(getDouble(f, 21, 0.0));
-        acMotor.setNp1(getDouble(f, 22, 0.0));
-        acMotor.setKq1(getDouble(f, 23, 0.0));
-        acMotor.setNq1(getDouble(f, 24, 0.0));
-        acMotor.setKp2(getDouble(f, 25, 0.0));
-        acMotor.setNp2(getDouble(f, 26, 0.0));
-        acMotor.setKq2(getDouble(f, 27, 0.0));
-        acMotor.setNq2(getDouble(f, 28, 0.0));
-        acMotor.setVbrk(getDouble(f, 29, 0.0));
-        acMotor.setFrst(getDouble(f, 30, 0.0));
-        acMotor.setVrst(getDouble(f, 31, 0.0));
-        acMotor.setCmpKpf(getDouble(f, 32, 0.0));
-        acMotor.setCmpKqf(getDouble(f, 33, 0.0));
-        acMotor.setVc1off(getDouble(f, 34, 0.0));
-        acMotor.setVc2off(getDouble(f, 35, 0.0));
-        acMotor.setVc1on(getDouble(f, 36, 0.0));
-        acMotor.setVc2on(getDouble(f, 37, 0.0));
-        acMotor.setTth(getDouble(f, 38, 0.0));
-        acMotor.setTh1t(getDouble(f, 39, 0.0));
-        acMotor.setTh2t(getDouble(f, 40, 0.0));
-        acMotor.setFuvr(getDouble(f, 41, 0.0));
-        acMotor.setUVtr1(getDouble(f, 42, 0.0));
-        acMotor.setTtr1(getDouble(f, 43, 0.0));
-        acMotor.setUVtr2(getDouble(f, 44, 0.0));
-        acMotor.setTtr2(getDouble(f, 45, 0.0));
+        if (!(totalP > 0)) return false;
+        for (var target : targets) {
+            var acMotor = new LD1PACImpl(target.bus(), target.load().getId());
+            acMotor.setParentLoad(target.load());
+            acMotor.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.LEGACY_COMPOSITE);
+            acMotor.setAcceptedTimerPrecision(LD1PACImpl.AcceptedTimerPrecision.BINARY32);
+            acMotor.setLoadPercent(100 * target.load().getLoad(bus.getVoltageMag()).getReal() / totalP);
+            acMotor.setTstall(c[0]);
+            acMotor.setTrst(c[1]);
+            acMotor.setTv(c[2]);
+            acMotor.setTf(c[3]);
+            acMotor.setLoadFactor(c[4]);
+            acMotor.setPowerFactor(c[5]);
+            acMotor.setVstall(c[6]);
+            acMotor.setRstall(c[7]);
+            acMotor.setXstall(c[8]);
+            acMotor.setLFadj(c[9]);
+            acMotor.setKp1(c[10]);
+            acMotor.setNp1(c[11]);
+            acMotor.setKq1(c[12]);
+            acMotor.setNq1(c[13]);
+            acMotor.setKp2(c[14]);
+            acMotor.setNp2(c[15]);
+            acMotor.setKq2(c[16]);
+            acMotor.setNq2(c[17]);
+            acMotor.setVbrk(c[18]);
+            acMotor.setFrst(c[19]);
+            acMotor.setVrst(c[20]);
+            acMotor.setCmpKpf(c[21]);
+            acMotor.setCmpKqf(c[22]);
+            acMotor.setVc1off(c[23]);
+            acMotor.setVc2off(c[24]);
+            acMotor.setVc1on(c[25]);
+            acMotor.setVc2on(c[26]);
+            acMotor.setTth(c[27]);
+            acMotor.setTh1t(c[28]);
+            acMotor.setTh2t(c[29]);
+            acMotor.setFuvr(c[30]);
+            acMotor.setUVtr1(c[31]);
+            acMotor.setTtr1(c[32]);
+            acMotor.setUVtr2(c[33]);
+            acMotor.setTtr2(c[34]);
+        }
         return true;
     }
 
@@ -4275,6 +4292,8 @@ public class PSSEDStabDirectParser {
         var targets=new ArrayList<LoadTarget>();
         addMatchingLoads(targets,bus,record.deviceId(),record.deviceId().equals("*")||record.deviceId().equals("#"));
         if(targets.isEmpty())return false;
+        for(var target:targets)for(var existing:bus.getDynLoadModelList())
+            if(existing.isActive()&&existing.getId().equals(target.load().getId()))return false;
         var ids=new java.util.LinkedHashSet<String>();Complex power=Complex.ZERO;
         for(var target:targets){ids.add(target.load().getId());power=power.add(target.load().getLoad(bus.getVoltageMag()));}
         double[] constants=new double[132];
