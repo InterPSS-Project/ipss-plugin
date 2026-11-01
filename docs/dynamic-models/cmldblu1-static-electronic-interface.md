@@ -114,3 +114,42 @@ and acceptance tolerances remain unchanged.
 
 Private diagnostic archive SHA-256:
 `1b19d241668c2037984ca15b633c134ae6de3d80552aeab80e08debd26271f15`.
+
+### Independent first-entry prototype
+
+The next isolated prototype removes the recorded-G/B input. It retains the
+accepted terminal current `I_previous` and reconstructs the preparation voltage
+from the first terminal iterate using the initialized transformer and feeder:
+
+```
+V_low = (V_terminal - Z_transformer * I_previous) * tap
+I_feeder = I_previous / tap - Y_low * V_low
+V_prepare = V_low - Z_feeder * I_feeder
+G = P_previous / |V_prepare|^2
+B = -Q_previous / |V_prepare|^2
+```
+
+Current history is refreshed only after an accepted network solve. Trial
+voltages do not overwrite it. The prototype cancels the low-side shunt's
+numerical stamp with a matching current term, retaining the physical shunt;
+this is additional to the far-end cancellation. Using the expanded load-bus
+iterate directly instead produces G of `0.432221057`, compared with reference
+`0.430018574`. The reconstructed boundary produces `0.430018587` under both
+methods without reference-fed constants.
+
+The moderate repeated-fault prototype completes under both methods with every
+sample retained. Modified Euler yields bus-voltage NRMSE `0.00000791`, static-P
+NRMSE `0.0001132` and angle RMSE `0.00007570` degrees. Staggered integration
+yields `0.000000844`, `0.00005937` and `0.00001195` degrees respectively.
+
+This remains an isolated prototype, not production support. The deep fault
+still exhausts the unchanged 50-iteration limit. Its numerical conditioning
+must be resolved before broadening selection; the reference physical-balance
+issue above remains separate. The diagnostic shunt port also required explicit
+registration for staggered integration: arbitrary algebraic subclasses must
+not be silently accepted. Production work must preserve owned-device discovery,
+reinitialization and commit/discard semantics, and validate omitted-element,
+tap and restoration cases before adopting the boundary calculation.
+
+Private independently prepared prototype archive SHA-256:
+`5b2e1d04c7cd9bb141eb27e63c5df53a603d48c7d5006b2710384bace7657e96`.
