@@ -34,12 +34,20 @@ public final class Cmldblu1Model extends Cmldznu2Model {
 
     @Override protected Cmldznu2AlgebraicLoadModel createStaticComponent(double assignedActivePower) {
         if (getLoadBus() == getDStabBus() && getFmA() == 0 && getFmB() == 0
-                && getFmC() == 0 && getFmD() == 0 && getFel() == 0
+                && getFmC() == 0 && getFmD() == 0
                 && getData().value(31) == 0 && getData().value(36) == 0)
             return new LegacyStaticLoadPort(getLoadBus(), getId() + "_S", getData(),
                     assignedActivePower, getCollapsedParentOwnedShunt());
         return new LegacyStaticLoadModel(getLoadBus(), getId() + "_S", getStaticFraction(),
                 getData(), assignedActivePower);
+    }
+
+    @Override protected void prepareAlgebraicNetworkInterface(Cmldznu2AlgebraicLoadModel staticComponent,
+            Cmldznu2AlgebraicLoadModel electronicComponent) {
+        // The static port cancels the owned shunt numerically. Its first-entry
+        // preparation also requires the electronic leaf to use a pure current interface.
+        if (staticComponent instanceof LegacyStaticLoadPort && electronicComponent != null)
+            electronicComponent.useCurrentSourceInterface();
     }
 
     @Override protected boolean initializeInductionMotor(InductionMotor motor) {

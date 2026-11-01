@@ -8,7 +8,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.device.NetworkIterationAware;
 
-/** Whole static composite current port with solve-scoped low-voltage preparation. */
+/** Static composite current port with solve-scoped low-voltage preparation. */
 final class LegacyStaticLoadPort extends LegacyStaticLoadModel implements NetworkIterationAware {
     private static final double SWITCH_VOLTAGE = .7;
     private final Complex ownedShunt;

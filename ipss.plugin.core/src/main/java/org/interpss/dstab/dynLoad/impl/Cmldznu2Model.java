@@ -269,6 +269,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                     getFel(), data, assignedActive * getFel());
             if (!electronicLoadComponent.initStates()) return false;
         }
+        prepareAlgebraicNetworkInterface(staticLoadComponent, electronicLoadComponent);
         if (!distributionIncludesReactiveCompensation()) applyReactiveCompensation();
         if (getLoadBus() == getDStabBus()) {
             var parent = getDStabBus(); Complex combined = collapsedParentRemainder.add(parent.getInitLoad());
@@ -282,6 +283,10 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         }
         return true;
     }
+
+    /** Prepare only this composite's owned leaves before the engine builds its dynamic matrix. */
+    protected void prepareAlgebraicNetworkInterface(Cmldznu2AlgebraicLoadModel staticComponent,
+            Cmldznu2AlgebraicLoadModel electronicComponent) { }
 
     protected Cmldznu2AlgebraicLoadModel createStaticComponent(double assignedActivePower) {
         return new Cmldznu2AlgebraicLoadModel(Cmldznu2AlgebraicLoadModel.Kind.STATIC,

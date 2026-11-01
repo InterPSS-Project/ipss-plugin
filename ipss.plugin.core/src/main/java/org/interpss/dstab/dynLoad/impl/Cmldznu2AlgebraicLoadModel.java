@@ -28,6 +28,7 @@ class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLStatePr
     private double minimumElectronicFraction = 1.0;
     private double electronicFraction = 1.0;
     private Complex initialAdmittance;
+    private boolean currentSourceInterface;
     private final double assignedInitialActivePower;
 
     Cmldznu2AlgebraicLoadModel(Kind kind, BaseDStabBus<?, ?> bus,
@@ -65,8 +66,15 @@ class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLStatePr
         setInitLoadPQ(initial);
         setLoadPQ(initial);
         initialAdmittance = initial.conjugate().divide(initialVoltage * initialVoltage);
-        setEquivY(initialAdmittance);
+        setEquivY(currentSourceInterface ? Complex.ZERO : initialAdmittance);
         return true;
+    }
+
+    /** Prepared numerical interface; preserve it if the engine initializes this leaf again. */
+    void useCurrentSourceInterface() {
+        if (kind != Kind.ELECTRONIC) throw new IllegalStateException("Electronic component required");
+        currentSourceInterface = true;
+        setEquivY(Complex.ZERO);
     }
 
     private static boolean impedancePolynomial(Cmldznu2Data data, int offset) {

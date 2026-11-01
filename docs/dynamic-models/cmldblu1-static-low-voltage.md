@@ -28,10 +28,13 @@ power-factor convention.
 
 ## Numerical port and physical current
 
-`Cmldblu1Model` selects `LegacyStaticLoadPort` automatically only when the whole
-owned composite is static, transformer and feeder are omitted, and both static
-frequency coefficients are zero. Other configurations retain their existing
-runtime; their low-voltage qualification remains open.
+`Cmldblu1Model` selects `LegacyStaticLoadPort` automatically for its static
+portion when transformer and feeder are omitted, no motor fractions are active,
+and both static frequency coefficients are zero. The owned composite may also
+contain the legacy full-recovery electronic portion, using the
+[mixed current interface](cmldblu1-static-electronic-interface.md).
+Other configurations retain their existing runtime; their low-voltage
+qualification remains open.
 
 The port retains the original physical component shunts. Let `Y_c` be only the
 composite's newly added shunt and `Y_aux = -Y_c` its numerical port stamp:

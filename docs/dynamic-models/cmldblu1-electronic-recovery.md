@@ -60,8 +60,8 @@ electronic P/Q channels. All raw fields repeat exactly across cold captures.
 | Electronic P/Q NRMSE | 0.00004186 |
 | Rotor-angle RMSE, degrees | 0.00010132 |
 
-The same accuracy gates remain in force. The registered electronic regression
-now contains ten both-method controls; unavailable distribution evidence skips
+The same accuracy gates remain in force. The whole-electronic coverage
+contains ten both-method controls; unavailable distribution evidence skips
 only its additional controls, preserving the original tests. With both
 archives present all ten execute. No production equations or integration
 settings changed for this extension.
@@ -70,6 +70,8 @@ Private distribution reference archive SHA-256:
 `e8a6b99b00d4fd63465475fb134a00a83726ae940b1404974ccfb0775181c372`.
 
 These controls qualify the whole full-recovery electronic component with
-omitted or represented distribution in this scope. Mixed components,
-distribution tap-control actions, long-duration and production-step electronic
-controls remain open; the complete composite catalog status remains `LOADABLE`.
+omitted or represented distribution in this scope. Additional
+[static/electronic mixture controls](cmldblu1-static-electronic-interface.md)
+cover omitted distribution. Motor mixtures, represented-distribution
+static/electronic mixtures, tap-control actions, long-duration and
+production-step controls remain open; the complete composite remains `LOADABLE`.

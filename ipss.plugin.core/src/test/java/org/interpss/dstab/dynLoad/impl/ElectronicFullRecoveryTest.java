@@ -51,4 +51,37 @@ class ElectronicFullRecoveryTest {
         assertEquals(p, m.getLoadPQ());
         assertEquals(.28, power(m, .9).getReal(), 1e-15);
     }
+
+    @Test void preparedCurrentInterfaceSurvivesRepeatedLeafInitialization() {
+        var m = model(1); m.useCurrentSourceInterface();
+        for (int i = 0; i < 2; i++) {
+            assertTrue(m.initStates()); assertEquals(Complex.ZERO, m.getEquivY());
+            var p = power(m, .66); var v = m.getDStabBus().getVoltage();
+            assertEquals(p.divide(v).conjugate().negate(), m.getNortonCurInj());
+        }
+    }
+
+    @Test void mixedPortOwnsOnlyItsLeavesAndRetainsUnrelatedParentShunts() {
+        for (boolean frequencyDependent : new boolean[]{false, true}) {
+            var net = DStabObjectFactory.createDStabilityNetwork(); net.setBaseKva(100000); net.setFrequency(60);
+            var bus = DStabObjectFactory.createDStabBus("B", net).orElseThrow();
+            bus.setLoadCode(com.interpss.core.aclf.AclfLoadCode.CONST_P);
+            bus.setLoadP(.6); bus.setLoadQ(.15); bus.setInitLoad(new Complex(.6, .15));
+            bus.setVoltage(Complex.ONE); bus.setFreq(1); var originalShunt = new Complex(0, .03); bus.setShuntY(originalShunt);
+            double[] c = new double[132]; c[22] = .5; c[23] = .96; c[24] = .72; c[25] = .6; c[26] = .94;
+            c[27] = c[32] = 2; c[28] = c[33] = 1; c[31] = frequencyDependent ? .5 : 0;
+            var composite = new Cmldblu1Model("M", bus, java.util.Set.of("1"), new Complex(.4, .1), c);
+            assertTrue(composite.initStates());
+            var s = bus.getDynLoadModelList().stream().filter(v -> v.getId().equals("M_S")).findFirst().orElseThrow();
+            var e = bus.getDynLoadModelList().stream().filter(v -> v.getId().equals("M_E")).findFirst().orElseThrow();
+            assertEquals(!frequencyDependent, s instanceof LegacyStaticLoadPort);
+            assertEquals(.2, s.getInitLoadPQ().getReal(), 1e-15); assertEquals(.2, e.getInitLoadPQ().getReal(), 1e-15);
+            assertEquals(100.0 / 3, s.getLoadPercent(), 1e-12); assertEquals(100.0 / 3, e.getLoadPercent(), 1e-12);
+            assertEquals(.6, bus.getInitLoad().getReal(), 1e-15);
+            if (!frequencyDependent) {
+                assertTrue(e.initStates()); assertEquals(Complex.ZERO, e.getEquivY());
+                assertEquals(0, bus.getShuntY().add(s.getEquivY()).add(e.getEquivY()).subtract(originalShunt).abs(), 1e-15);
+            } else assertTrue(e.getEquivY().abs() > 0);
+        }
+    }
 }

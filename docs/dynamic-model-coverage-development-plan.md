@@ -2,6 +2,12 @@
 
 ## Current checkpoint
 
+The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
+extends low-voltage static preparation to eligible motor-free composites with
+omitted distribution. The electronic numerical interface survives leaf
+reinitialization, while physical shunt current and unrelated load ownership
+remain intact. Represented-distribution mixed controls remain diagnostic.
+
 The [electronic full-recovery path](dynamic-models/cmldblu1-electronic-recovery.md)
 uses the present voltage fraction directly, avoiding unnecessary minimum-history
 updates. Whole-electronic coupled ramp, dropout and repeated-recovery controls

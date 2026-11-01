@@ -378,7 +378,8 @@
   },
   "ElectronicFullRecoverySmibTest": {
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-electronic-full-recovery-20261101/captures.zip",
-    "distribution.archive": "testData/private/verification-artifacts/cmldblu1-electronic-distribution-20261101/captures.zip"
+    "distribution.archive": "testData/private/verification-artifacts/cmldblu1-electronic-distribution-20261101/captures.zip",
+    "mixed.archive": "testData/private/verification-artifacts/cmldblu1-static-electronic-mix-20261101/captures.zip"
   },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
