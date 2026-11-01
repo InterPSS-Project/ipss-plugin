@@ -29,7 +29,9 @@ def main():
                         help='Finite positive fault reactance on system base')
     parser.add_argument('--second-fault-x-pu', type=float,
                         help='Optional separate reactance for a repeated-fault discriminator')
-    parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
+    parser.add_argument('--step', type=float, choices=[.0005, .00025, 1 / 240], default=.0005)
+    parser.add_argument('--end-time', type=float, default=.5,
+                        help='Final simulation time, from 0.5 through 10 seconds')
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
     parser.add_argument('--generator-states', action='store_true',
                         help='Record the coupled GENROU electrical and mechanical states in load-model diagnostics')
@@ -40,6 +42,8 @@ def main():
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
+    if not math.isfinite(args.end_time) or not .5 <= args.end_time <= 10:
+        parser.error('--end-time must be finite and between 0.5 and 10 seconds')
     if not math.isfinite(args.fault_x_pu) or args.fault_x_pu <= 0:
         parser.error('--fault-x-pu must be finite and positive')
     if args.second_fault_x_pu is not None and (
@@ -163,7 +167,7 @@ def main():
              *(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
         checked('second fault on', psspy.run(0, .25, 1000000, 1, 0))
         checked('second clear', psspy.dist_clear_fault(1))
-    checked('postfault', psspy.run(0, .5, 1000000, 1, 0))
+    checked('postfault', psspy.run(0, args.end_time, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
     assert all(math.isfinite(v) for k in ['time'] + keys for v in data[k])

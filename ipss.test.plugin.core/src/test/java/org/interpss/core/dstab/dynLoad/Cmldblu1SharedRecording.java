@@ -72,6 +72,10 @@ final class Cmldblu1SharedRecording {
             double faultX, double secondFaultX) throws Exception {
         return simulate("static-control", dynamicFile, staggered, false, h, faultX, secondFaultX);
     }
+    static Cmldblu1SharedRecording simulateStaticControl(Path dynamicFile, boolean staggered, double h,
+            double faultX, double secondFaultX, double endTime) throws Exception {
+        return simulate("static-control", dynamicFile, staggered, false, h, faultX, secondFaultX, endTime);
+    }
     private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered, boolean flat, double h) throws Exception {
         return simulate(fixture, dynamicFile, staggered, flat, h,
                 fixture.endsWith("electronic") || fixture.endsWith("-restart") ? .01 : .2,
@@ -79,6 +83,13 @@ final class Cmldblu1SharedRecording {
     }
     private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered,
             boolean flat, double h, double faultX, double secondFaultX) throws Exception {
+        return simulate(fixture, dynamicFile, staggered, flat, h, faultX, secondFaultX, .5);
+    }
+    private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered,
+            boolean flat, double h, double faultX, double secondFaultX, double endTime) throws Exception {
+        // Retain a reference's final clock-rounded overshoot instead of discarding its last sample.
+        if (!Double.isFinite(h) || h <= 0 || !Double.isFinite(endTime) || endTime < .5 || endTime > 10 + h)
+            throw new IllegalArgumentException("End time must be finite and within the ten-second recording plus one step");
         var loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
                 dynamicFile.toString());
@@ -86,7 +97,7 @@ final class Cmldblu1SharedRecording {
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(h); algorithm.setTotalSimuTimeSec(.5);
+        algorithm.setSimuStepSec(h); algorithm.setTotalSimuTimeSec(endTime);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         boolean repeated = secondFaultX > 0;
         var result = new Cmldblu1SharedRecording(algorithm, flat, repeated);
@@ -100,7 +111,7 @@ final class Cmldblu1SharedRecording {
         result.model = assertInstanceOf(Cmldblu1Model.class,
                 algorithm.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel());
         result.initial = result.capture(0, "INITIAL"); result.enabled = true;
-        while (algorithm.getSimuTime() < .5 - h / 2) assertTrue(algorithm.solveDEqnStep(true));
+        while (algorithm.getSimuTime() < endTime - h / 2) assertTrue(algorithm.solveDEqnStep(true));
         result.frames.add(result.capture(algorithm.getSimuTime(), "FINAL"));
         return result;
     }

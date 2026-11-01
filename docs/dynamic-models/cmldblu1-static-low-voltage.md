@@ -103,3 +103,35 @@ must be established independently before extending this port's eligibility.
 Relay-coordinated shedding and restoration of the component compensation also
 remain outside these trajectory controls; the unit checks cover load-factor
 arithmetic only.
+
+## Ten-second production-step diagnostic
+
+A separate whole-static, omitted-distribution SMIB run uses quarter-cycle
+steps (`1/240 s`) and repeated faults. Two cold reference captures are
+numerically identical across every recorded field. Both integration methods
+retain all samples, including the reference's final clock-rounded overshoot
+and both sides of each event. Comparison uses integration ordinal and event
+side, with every accumulated binary32 reference timestamp checked explicitly;
+raw timestamps are preserved without interpolation or offsets.
+
+| Error over the complete recording | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Worst bus-voltage NRMSE | 0.00021852 | 0.000018183 |
+| Static active-power NRMSE | 0.00091973 | 0.000075007 |
+| Static reactive-power NRMSE | 0.00091967 | 0.000075194 |
+| Rotor-angle RMSE, degrees | 0.00073550 | 0.00024159 |
+| Peak rotor-angle error, degrees | 0.0043661 | 0.0029371 |
+
+This extends diagnostic evidence, not the accepted model scope. Both angle
+RMSE values exceed the existing half-second gate of 0.0002 degrees. A paired
+fine-step, long-duration run is still required to separate integration-order
+and duration effects before setting a production-step acceptance gate. No
+equations, model parameters or existing accuracy thresholds changed.
+
+The probe accepts an explicit end time through ten seconds, preserving its
+half-second default. The shared recorder permits one additional terminal step
+to retain clock-rounded reference endpoints. The existing static-port and
+ownership regression selection passes all 109 checks.
+
+Private diagnostic archive SHA-256:
+`c9403da77b75d2665126b63dd5c7ae46375bd8d7ede9e97a07eae91b306e75d8`.
