@@ -263,6 +263,7 @@ import org.interpss.core.dstab.dynLoad.CompressorCurrentConformanceTest;
 import org.interpss.core.dstab.dynLoad.Acmtblu1SharedSmibTest;
 import org.interpss.core.dstab.dynLoad.CompressorFrequencyInputTest;
 import org.interpss.core.dstab.dynLoad.CompressorProtectionConformanceTest;
+import org.interpss.core.dstab.dynLoad.CompressorThermalConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -1194,6 +1195,7 @@ import org.junit.platform.suite.api.Suite;
     Acmtblu1SharedSmibTest.class,
     CompressorFrequencyInputTest.class,
     CompressorProtectionConformanceTest.class,
+    CompressorThermalConformanceTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,

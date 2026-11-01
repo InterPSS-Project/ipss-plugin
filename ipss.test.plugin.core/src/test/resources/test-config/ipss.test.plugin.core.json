@@ -339,6 +339,7 @@
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip"
   },
   "Acmtblu1SharedSmibTest": {
+    "network.tolerance": "1.0e-4",
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip",
     "reference.preparation.archive": "testData/private/verification-artifacts/cmldblu1-severe-boundary-audit-20261101/preparation.zip",
     "reference.frequency.archive": "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip",
@@ -350,6 +351,9 @@
     "reference.electrical.archive": "testData/private/verification-artifacts/acmtblu1-state-inputs-20261101/captures.zip"
   },
   "CompressorProtectionConformanceTest": {
+    "reference.archive": "testData/private/verification-artifacts/acmtblu1-protection-20261101/accepted.zip"
+  },
+  "CompressorThermalConformanceTest": {
     "reference.archive": "testData/private/verification-artifacts/acmtblu1-protection-20261101/accepted.zip"
   },
   "CgmesComparisonFixture": {

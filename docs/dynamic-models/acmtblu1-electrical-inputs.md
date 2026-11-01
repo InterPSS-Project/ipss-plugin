@@ -2,8 +2,9 @@
 
 Status: accepted electrical inputs, voltage/temperature replay and expanded
 coupled SMIB controls pass under modified Euler and staggered integration.
-Thermal protection, restoration and complete composite-load qualification remain
-open; the catalog status remains `LOADABLE`.
+Thermal protection has [separate qualification](acmtblu1-thermal.md).
+Restoration and complete composite-load qualification remain open; the catalog
+status remains `LOADABLE`.
 
 ## Measurement boundary
 
@@ -95,7 +96,7 @@ same strict replay gate applies after that correction.
 These checks qualify input sampling and the declared integration policies.
 Separate [UV/contactor qualification](acmtblu1-protection.md) now covers those
 active branches and all five timer coordinates. These electrical-input checks
-do not establish thermal actions, warm restoration,
+do not themselves establish thermal actions, warm restoration,
 production-step/long-duration behavior or complete composite trajectory parity.
 No whole-simulation timing claim follows from removing repeated current work
 inside the derivative callback.

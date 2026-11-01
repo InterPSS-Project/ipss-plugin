@@ -23,7 +23,11 @@ strict coupled staggered voltage/temperature gates pass. The
 five legacy timers as shared differential states, fixes raw-voltage pickup and
 contactor hysteresis, and independently qualifies UV shedding, opening and
 reclosure through replay and coupled controls under both methods. Thermal
-trip/reset, restoration and production-step/long-duration qualification remain open;
+actions now have [separate qualification](dynamic-models/acmtblu1-thermal.md),
+including initial shedding after operating-point compensation, irreversible
+fractions, complete-trip temperature projection and restart-pending behavior.
+Independent replay and paired coupled controls retain method-specific criteria;
+parameter validation, restoration and production-step/long-duration work remain open;
 the separate severe composite/static-load discrepancy remains diagnostic.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)

@@ -136,29 +136,44 @@ public class Acmtblu1SharedSmibTest {
         assertEquals(compositeFirst?0:1,bus.getDynLoadModelList().size());assertEquals(compositeFirst,bus.getInfoOnlyDynModel()!=null);
     }
     static Stream<Arguments> profiles() { Assumptions.assumeFalse(REFERENCES.isEmpty(),"Retain the private independent compressor captures");return REFERENCES.keySet().stream().flatMap(p->Stream.of(false,true).map(s->Arguments.of(p,s))); }
+    record RunSettings(int startupSteps,boolean holdInitialEndpoint,double networkTolerance,boolean generatorStates) {
+        RunSettings {if(startupSteps<0||!Double.isFinite(networkTolerance)||networkTolerance<=0)throw new IllegalArgumentException("Invalid compressor SMIB run settings");}
+    }
     private static final class Recorder {
-        final DynamicSimuAlgorithm a;final List<Map<String,Double>> rows=new ArrayList<>(),published=new ArrayList<>();final boolean events;boolean enabled;
-        Recorder(DynamicSimuAlgorithm a,boolean events){this.a=a;this.events=events;}
-        void before(double t){if(enabled&&event(t))capture(t);}
+        final DynamicSimuAlgorithm a;final List<Map<String,Double>> rows=new ArrayList<>(),published=new ArrayList<>();final boolean events;boolean enabled,holdInitialEndpoint;
+        final boolean generatorStatesEnabled;
+        Recorder(DynamicSimuAlgorithm a,boolean events,boolean generatorStates){this.a=a;this.events=events;generatorStatesEnabled=generatorStates;}
+        void before(double t){if(enabled&&(event(t)||holdInitialEndpoint))capture(t);}
         void capture(double t){rows.add(snapshot(t));}
         void commit(double t){published.add(snapshot(t));}
         // The flat control also retains the two pause/resume observations.
         boolean event(double t){return Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9||events&&(Math.abs(t-.2)<1e-9||Math.abs(t-.25)<1e-9);}
         Map<String,Double> snapshot(double t){var n=a.getNetwork();var r=new LinkedHashMap<String,Double>();r.put("time_s",t);for(int i=1;i<=3;i++){var v=n.getDStabBus("Bus"+i).getVoltage();r.put("V"+i,v.abs());r.put("A"+i,Math.toDegrees(v.getArgument()));}
             var m=n.getMachine("Bus1-mach1");var v=m.getDStabBus().getVoltage();var p=v.multiply(m.getIgen().subtract(v.multiply(m.getYgen())).conjugate());r.put("P_PU",p.getReal());r.put("Q_PU",p.getImaginary());r.put("ANGLE_DEG",Math.toDegrees(m.getAngle()));r.put("SPEED",m.getSpeed()-1);
+            if(generatorStatesEnabled){
+                var generatorStates=((org.interpss.dstab.mach.IeeeVcRoundRotorMachine)m).getNamedStates();
+                String[] keys={"E'q","E'd","Psi'd","Psi'q","Speed deviation","Angle"};
+                for(int i=0;i<keys.length;i++)r.put("GEN_STATE"+i,generatorStates.get(keys[i]));
+                r.put("GEN_EFD",m.getEfd());
+            }
             var motor=(LD1PACImpl)n.getDStabBus("Bus2").getDynLoadModelList().getFirst();r.putAll(motor.getNamedStates());var history=motor.getIntegrationHistories();r.putAll(history);r.put("MotorCurrentA",Math.sqrt(history.get("ElectricalHeatingSquaredA")));r.put("MotorCurrentB",Math.sqrt(history.get("ElectricalHeatingSquaredB")));return r;}
     }
     private static final class Ordinary extends DefaultDynamicSimulationSolver {
-        final Recorder r;Ordinary(DynamicSimuAlgorithm a,Recorder r){super(a);this.r=r;}
+        final Recorder r;Ordinary(DynamicSimuAlgorithm a,Recorder r,double tolerance){super(a);this.r=r;converge_tol=tolerance;}
         @Override public void beforeStep(double t)throws DStabSimuException{r.before(t);super.beforeStep(t);}
         @Override public boolean networkSolutionStep()throws DStabSimuException{boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage)){r.capture(dstabAlgo.getSimuTime());if(r.event(dstabAlgo.getSimuTime()))r.commit(dstabAlgo.getSimuTime());}return ok;}
         @Override public void afterStep(double t)throws DStabSimuException{super.afterStep(t);if(r.enabled)r.commit(t);}
     }
     private static final class Shared extends StaggeredEulerSolver {
-        final Recorder r;Shared(DynamicSimuAlgorithm a,Recorder r){super(a);this.r=r;setReuseNetworkEndpoint(false);}
+        final Recorder r;Shared(DynamicSimuAlgorithm a,Recorder r,boolean hold,double tolerance){super(a);this.r=r;r.holdInitialEndpoint=hold;setReuseNetworkEndpoint(hold);converge_tol=tolerance;}
         @Override public void beforeStep(double t)throws DStabSimuException{r.before(t);super.beforeStep(t);}
-        @Override public boolean networkSolutionStep()throws DStabSimuException{boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage)){r.capture(dstabAlgo.getSimuTime());if(r.event(dstabAlgo.getSimuTime()))r.commit(dstabAlgo.getSimuTime());}return ok;}
+        @Override public boolean networkSolutionStep()throws DStabSimuException{boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage)){if(!r.holdInitialEndpoint||r.event(dstabAlgo.getSimuTime()))r.capture(dstabAlgo.getSimuTime());if(r.event(dstabAlgo.getSimuTime()))r.commit(dstabAlgo.getSimuTime());}return ok;}
         @Override public void afterStep(double t)throws DStabSimuException{super.afterStep(t);if(r.enabled)r.commit(t);}
+    }
+    private static double networkTolerance() {
+        double value=Double.parseDouble(CONFIG.string("network.tolerance","1.0e-4"));
+        if(!Double.isFinite(value)||value<=0)throw new IllegalArgumentException("Invalid compressor SMIB network tolerance");
+        return value;
     }
     private static Map<String,Object> error(List<Map<String,Double>> source,List<Map<String,Double>> actual,String key,String observed,double offset){double sum=0,max=0,time=0,min=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;
         for(int i=0;i<source.size();i++){double expected=source.get(i).get(key),delta=actual.get(i).get(observed)+offset-expected;assertTrue(Double.isFinite(delta));sum+=delta*delta;min=Math.min(min,expected);high=Math.max(high,expected);if(Math.abs(delta)>max){max=Math.abs(delta);time=source.get(i).get("time_s");}}
@@ -167,15 +182,28 @@ public class Acmtblu1SharedSmibTest {
         runReference(name,REFERENCES.get(name),shared,out,enforce);
     }
     static Map<String,Object> runReference(String name,Reference reference,boolean shared,Path out,boolean enforce)throws Exception {
-        var loaded=load(reference.dyr,Files.readString(RAW));assertTrue(loaded.loader.getLastDynamicImportReport().isStrictlyComplete());var a=loaded.context.getDynSimuAlgorithm();assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuStepSec(reference.h);a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());var recorder=new Recorder(a,reference.fault>0);a.setSolver(shared?new Shared(a,recorder):new Ordinary(a,recorder));
+        return runReference(name,reference,shared,out,enforce,0);
+    }
+    static Map<String,Object> runReference(String name,Reference reference,boolean shared,Path out,boolean enforce,int startupSteps)throws Exception {
+        return runReference(name,reference,shared,out,enforce,startupSteps,false);
+    }
+    static Map<String,Object> runReference(String name,Reference reference,boolean shared,Path out,boolean enforce,int startupSteps,boolean holdInitialEndpoint)throws Exception {
+        return runReference(name,reference,shared,out,enforce,new RunSettings(startupSteps,holdInitialEndpoint,networkTolerance(),false));
+    }
+    static Map<String,Object> runReference(String name,Reference reference,boolean shared,Path out,boolean enforce,RunSettings settings)throws Exception {
+        int startupSteps=settings.startupSteps();boolean holdInitialEndpoint=settings.holdInitialEndpoint();
+        assertTrue(startupSteps>=0);double origin=-startupSteps*reference.h;
+        assertEquals(origin,reference.rows.getFirst().get("time_s"),1e-9,"Explicit startup configuration must match the retained reference history");
+        var loaded=load(reference.dyr,Files.readString(RAW));assertTrue(loaded.loader.getLastDynamicImportReport().isStrictlyComplete());var a=loaded.context.getDynSimuAlgorithm();assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuStepSec(reference.h);a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());var recorder=new Recorder(a,reference.fault>0,settings.generatorStates());a.setSolver(shared?new Shared(a,recorder,holdInitialEndpoint,settings.networkTolerance()):new Ordinary(a,recorder,settings.networkTolerance()));
         if(reference.fault>0)for(double t:new double[]{.05,.2})a.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",a.getNetwork(),SimpleFaultCode.GROUND_3P,new Complex(0,reference.fault),null,t,.05),"fault-"+t);
         assertTrue(a.initialization());var m=motor(loaded);var first=reference.rows.getFirst();assertEquals(reference.loading,m.getLoadFactor(),1e-7);assertEquals(first.get("VAR26"),m.getMvaBase(),1e-4);assertEquals(first.get("VAR24"),m.getNamedStates().get("RunningP0"),2e-7);assertEquals(first.get("VAR25"),m.getNamedStates().get("RunningQ0"),2e-7);assertEquals(first.get("VAR27"),m.getVstall(),1e-7);assertEquals(first.get("VAR28"),m.getVbrk(),1e-7);
-        recorder.commit(0);recorder.enabled=true;while(a.getSimuTime()<.5-reference.h/2)assertTrue(a.solveDEqnStep(true));recorder.capture(a.getSimuTime());assertEquals(reference.rows.size(),recorder.rows.size());assertEquals(reference.rows.size(),recorder.published.size());
+        a.setSimuTime(origin);recorder.commit(origin);recorder.enabled=true;while(a.getSimuTime()<.5-reference.h/2)assertTrue(a.solveDEqnStep(true));recorder.capture(a.getSimuTime());assertEquals(reference.rows.size(),recorder.rows.size());assertEquals(reference.rows.size(),recorder.published.size());
         var errors=new LinkedHashMap<String,Object>();var polished=new LinkedHashMap<String,Object>();for(String key:List.of("V1","V2","V3","P_PU","Q_PU","ANGLE_DEG","SPEED")){errors.put(key,error(reference.rows,recorder.published,key,key,0));polished.put(key,error(reference.rows,recorder.rows,key,key,0));}
         var stateErrors=new LinkedHashMap<String,Object>();String[] states={"Vmeas","Fmeas","TemperatureA","TemperatureB","UvTimer1","UvTimer2","StallTimer","StallTimerB","RestartTimer"};for(int i=0;i<states.length;i++)stateErrors.put(states[i],error(reference.rows,recorder.published,"STATE"+i,states[i],i==1?-1:0));stateErrors.put("FrequencyOutput",error(reference.rows,recorder.published,"VAR1","FrequencyOutput",0));
         for(var pair:Map.of("VAR13","ElectricalVoltage","VAR19","MotorCurrentA","VAR20","MotorCurrentB").entrySet())stateErrors.put(pair.getValue(),error(reference.rows,recorder.published,pair.getKey(),pair.getValue(),0));
         for(var pair:Map.of("VAR10","UvFraction","VAR11","ContactorFraction","VAR12","ContactorClosed","VAR14","ThermalFractionA","VAR18","ThermalFractionB").entrySet())stateErrors.put(pair.getValue(),error(reference.rows,recorder.published,pair.getKey(),pair.getValue(),0));
-        Files.createDirectories(out);var report=new LinkedHashMap<String,Object>();report.put("status","coupled-compressor-control-frequency-and-protection-qualification-incomplete");report.put("observation_boundary","accepted history commit, before the next network repolish; event-side solves retained at the same grid time");report.put("profile",name);report.put("method",shared?"staggered":"modified-euler");report.put("boundary_errors",errors);report.put("repolished_boundary_errors",polished);report.put("state_errors",stateErrors);
+        if(reference.rows.getFirst().containsKey("GEN_STATE0"))for(int i=0;i<6;i++)stateErrors.put("GEN_STATE"+i,error(reference.rows,recorder.published,"GEN_STATE"+i,"GEN_STATE"+i,0));
+        Files.createDirectories(out);var report=new LinkedHashMap<String,Object>();report.put("status","coupled-compressor-control-frequency-and-protection-qualification-incomplete");report.put("observation_boundary","accepted history commit, before the next network repolish; event-side solves retained at the same grid time");report.put("profile",name);report.put("method",shared?"staggered":"modified-euler");report.put("startup_steps",startupSteps);report.put("network_tolerance",settings.networkTolerance());report.put("reuse_initial_network_endpoint",shared&&holdInitialEndpoint);report.put("initial_network_observation",shared&&holdInitialEndpoint?"held accepted endpoint":"fresh INITIAL network solve");report.put("boundary_errors",errors);report.put("repolished_boundary_errors",polished);report.put("state_errors",stateErrors);
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),100000)){new GsonBuilder().setPrettyPrinting().create().toJson(report,w);}
         writeCsv(out.resolve("actual.csv"),recorder.published);writeCsv(out.resolve("repolished.csv"),recorder.rows);
         if(enforce)for(var e:errors.entrySet()){

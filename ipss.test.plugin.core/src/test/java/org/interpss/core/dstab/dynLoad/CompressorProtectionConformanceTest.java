@@ -84,7 +84,7 @@ public class CompressorProtectionConformanceTest {
             w.write(String.join(",",keys)+"\n");for(var r:rows){boolean first=true;for(String key:keys){if(!first)w.write(",");first=false;w.write(r.get(key).toString());}w.write("\n");}
         }
     }
-    private static LD1PACImpl motor(Acmtblu1SharedSmibTest.Reference ref)throws Exception {
+    static LD1PACImpl motor(Acmtblu1SharedSmibTest.Reference ref)throws Exception {
         Path dir=Files.createTempDirectory(Path.of("target"),"compressor-protection-input-");Files.writeString(dir.resolve("dynamic.dyr"),ref.dyr());
         var loader=new PSSEMultiFileLoader();var c=loader.loadDStab(RAW.toString(),dir.resolve("dynamic.dyr").toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());var a=c.getDynSimuAlgorithm();assertTrue(a.getAclfAlgorithm().loadflow());

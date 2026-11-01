@@ -284,12 +284,16 @@ public class PsseDStabSolver extends DStabSolverImpl {
      * timers here, after Y/compensation setup, never inside a trial integrator
      * stage. Zero-delay actions change the physical Y for the next solve; they
      * must not be absorbed into the operating-point compensation current. */
-    private static boolean acceptInitialPlantEndpoints(BaseDStabNetwork<?, ?> network) {
+    private boolean acceptInitialPlantEndpoints(BaseDStabNetwork<?, ?> network) {
+        boolean initialPhysicalAction = false;
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
             if (!bus.isActive()) continue;
             for (var device : bus.getDynamicBusDeviceList())
                 if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model statcom
                         && !statcom.acceptSwitchingEndpoint()) return false;
+            for (var device : bus.getDynamicBusDeviceList())
+                if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action)
+                    initialPhysicalAction |= action.acceptInitialEndpoint();
             for (DStabGen generator : bus.getContributeGenList()) {
                 if (!generator.isActive()) continue;
                 if (generator.getDynamicGenDevice() instanceof Machine machine && machine.isActive()
@@ -304,6 +308,23 @@ public class PsseDStabSolver extends DStabSolverImpl {
                         electrical.getHybridController().owner().acceptedEndpoint();
                 }
             }
+        }
+        if (initialPhysicalAction) {
+            // Resolve a physical zero-time action without incorporating its
+            // injection change into the fixed operating-point compensation.
+            String previousStage = networkSolutionStage;
+            networkSolutionStage = "INITIAL";
+            try {
+                org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(network);
+                if (!super.networkSolutionStep()) return false;
+                for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
+                    for (var device : bus.getDynamicBusDeviceList())
+                        if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action)
+                            action.acceptInitialNetworkEndpoint();
+                return true;
+            }
+            catch (DStabSimuException e) { return false; }
+            finally { networkSolutionStage = previousStage; }
         }
         return true;
     }

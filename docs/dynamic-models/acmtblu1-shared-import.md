@@ -6,9 +6,10 @@ controls pass under modified Euler and staggered integration. The
 current law have separate independent checks. The
 [electrical-input correction](acmtblu1-electrical-inputs.md) adds independent
 voltage/temperature integration and strict coupled staggered state gates. Complete
-thermal protection and restoration qualification remains open; independent
+restoration and complete composite qualification remain open. Independent
 [UV/contactor controls and nine-state timer integration](acmtblu1-protection.md)
-pass under both methods;
+pass under both methods. The [thermal controls](acmtblu1-thermal.md) add initial
+physical actions, temperature resets and method-specific trajectory gates;
 `ACMTBLU1` is cataloged as `LOADABLE`.
 
 ## Import and ownership

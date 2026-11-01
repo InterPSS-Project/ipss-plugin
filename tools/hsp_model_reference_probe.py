@@ -28,6 +28,8 @@ def main():
     parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01,.04,.06],default=.2)
     parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
+    parser.add_argument('--generator-states', action='store_true',
+                        help='Record the coupled GENROU electrical and mechanical states in load-model diagnostics')
     parser.add_argument('--clear-diagnostic-storage', action='store_true',
                         help='Clear allocated load diagnostic storage before initialization; retain unmodified captures separately')
     parser.add_argument('--constant', action='append', default=[], metavar='INDEX=VALUE',
@@ -47,6 +49,8 @@ def main():
         parser.error('--clear-diagnostic-storage is restricted to load-model probes')
     if args.constant and not load:
         parser.error('--constant is restricted to load-model probes')
+    if args.generator_states and not load:
+        parser.error('--generator-states is restricted to the reduced load-model fixture')
     relay = args.fixture.startswith('tiocr1')
     shutil.copy2(source / ('load-network.raw' if load else 'dual-network.raw' if args.fixture=='wsieg1-dual' else 'network.raw'), out / 'network.raw')
     dynamic_source = (root / 'ipss.test.plugin.core/testData/reference-fixtures/compressor-current/acmtblu1.dyr'
@@ -117,6 +121,15 @@ def main():
             checked('channel', fn([-1, layout[kind] + i], kind + str(i)))
     for code, name in [(1, 'ANGLE_DEG'), (2, 'P_PU'), (3, 'Q_PU'), (6, 'PMECH'), (7, 'SPEED'), (10,'STABILIZER')]:
         checked('machine', psspy.machine_array_channel([-1, code, 1], '1', name))
+    generator_layout = None
+    if args.generator_states:
+        generator_layout = {kind:checked('generator state allocation',psspy.mdlind(1, '1', 'GEN', kind))
+                            for kind in ['STATE', 'NSTATE']}
+        assert generator_layout['NSTATE'] == 6, generator_layout
+        for i in range(generator_layout['NSTATE']):
+            checked('generator state', psspy.state_channel([-1, generator_layout['STATE'] + i], 'GEN_STATE' + str(i)))
+        for code, name in [(5, 'GEN_EFD'), (8, 'GEN_XADIFD')]:
+            checked('generator field', psspy.machine_array_channel([-1, code, 1], '1', name))
     if args.fixture=='wsieg1-dual':
         for code,name in [(6,'PMECH_LP'),(7,'SPEED_LP')]:
             checked('secondary machine',psspy.machine_array_channel([-1,code,2],'1',name))
@@ -153,7 +166,7 @@ def main():
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and all(message not in log for message in ['Network not converged','Incomplete data record'])
     manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args),
-        layout=layout, entered_constants=entered, initialized_constants=initialized,
+        layout=layout, generator_layout=generator_layout, entered_constants=entered, initialized_constants=initialized,
         load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu], samples=len(data['time']), channels=len(keys), engine_module=psse3607.__name__,
         library_sha256=sha(library), source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
         files={p.name:sha(p) for p in Path('.').iterdir() if p.is_file()})

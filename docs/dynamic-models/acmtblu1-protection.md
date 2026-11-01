@@ -1,8 +1,9 @@
 # Compressor UV, contactor and timer integration
 
 Status: independent recorded-input and coupled SMIB UV/contactor controls pass
-under modified Euler and staggered integration. Thermal-trip equations,
-restoration, production-step/long-duration behavior and complete composite-load
+under modified Euler and staggered integration. Thermal actions now have
+[separate qualification](acmtblu1-thermal.md). Restoration,
+production-step/long-duration behavior and complete composite-load
 parity remain open. The catalog status remains `LOADABLE`.
 
 ## One numerical owner
@@ -92,12 +93,11 @@ zero-time purity, one timer owner and allocation-free warmed compressor RHS
 evaluation. These controls qualify the stated protection branches, not thermal
 trip/reset behavior or the full composite model.
 
-Thermal discriminator captures remain diagnostic. Open work includes instant
-and reversed thresholds, complete-trip temperature resets, irreversible
-partial shedding, restart-pending group behavior and zero-threshold
-initialization, including thermal shedding while a group is still running.
-They must be resolved through model equations and independent
-captures before thermal acceptance is claimed.
+The [thermal implementation](acmtblu1-thermal.md) now qualifies the retained
+instantaneous/reversed-threshold, complete-trip reset, irreversible shedding,
+restart-pending and zero-threshold controls. Its explicit initialization and
+method-specific criteria are separate from the UV/contactor gates above.
+Restoration, parameter-validation and production-step/long-duration work remain.
 
 Broader Maven discovery also exposes a historical typed-load allocation
 assertion before dynamic initialization. The retained parent executable
