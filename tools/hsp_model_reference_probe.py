@@ -18,8 +18,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', required=True, choices=[
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
-        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldznu2', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
-    parser.add_argument('--profile', choices=['flat', 'fault', 'reference-step'], default='fault')
+        'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
+    parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'reference-step'], default='fault')
     parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01],default=.2)
     parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
@@ -114,12 +114,19 @@ def main():
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
-    if args.profile == 'fault':
+    if args.profile in ['fault', 'repeated-faults']:
         checked('fault', psspy.dist_bus_fault(2 if load else 1, 3, 230.0 if load or args.fixture=='wsieg1-dual' else 100.0, [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
     if args.profile == 'reference-step':
         checked('reference', psspy.increment_gref(1, '1', .03))
     checked('during', psspy.run(0, .10, 1000000, 1, 0))
-    if args.profile == 'fault': checked('clear', psspy.dist_clear_fault(1))
+    if args.profile in ['fault', 'repeated-faults']: checked('clear', psspy.dist_clear_fault(1))
+    if args.profile == 'repeated-faults':
+        checked('recovery', psspy.run(0, .20, 1000000, 1, 0))
+        checked('second fault', psspy.dist_bus_fault(2 if load else 1, 3,
+            230.0 if load or args.fixture=='wsieg1-dual' else 100.0,
+            [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
+        checked('second fault on', psspy.run(0, .25, 1000000, 1, 0))
+        checked('second clear', psspy.dist_clear_fault(1))
     checked('postfault', psspy.run(0, .5, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))

@@ -89,11 +89,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return integrationMonitor.snapshot(); }
     @Override public Map<String, Double> getIntegrationHistories() {
-        return Map.of("UvTimer1", uVRelayTimer1, "UvTimer2", uVRelayTimer2,
-                "StallTimer", acStallTimer, "RestartTimer", acRestartTimer,
-                "ContactorFraction", kcon, "ContactorTripFraction", fcon_trip,
-                "UvFraction", kuv, "RunA", (double) statusA, "RunB", (double) statusB,
-                "AcceptedTime", timeCounter);
+        return Map.ofEntries(Map.entry("UvTimer1", uVRelayTimer1), Map.entry("UvTimer2", uVRelayTimer2),
+                Map.entry("StallTimer", acStallTimer), Map.entry("StallTimerB", acStallTimerB),
+                Map.entry("RestartTimer", acRestartTimer), Map.entry("ContactorFraction", kcon),
+                Map.entry("ContactorTripFraction", fcon_trip), Map.entry("UvFraction", kuv),
+                Map.entry("RunA", (double) statusA), Map.entry("RunB", (double) statusB),
+                Map.entry("AcceptedTime", timeCounter));
     }
     public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
     private static final Logger logger = LoggerFactory.getLogger(LD1PACImpl.class);
@@ -878,6 +879,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * @ordered
 	 */
 	protected double acStallTimer = AC_STALL_TIMER_EDEFAULT;
+    // Restartable motors can stall again after the non-restartable group has stopped.
+    protected double acStallTimerB;
 
 	/**
 	 * The default value of the '{@link #getAcRestartTimer() <em>Ac Restart Timer</em>}' attribute.
@@ -1006,6 +1009,11 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	@Override
 	public boolean initStates() {
         integrationMonitor.reset(); staggeredEvaluationCount = 0; timeCounter = 0;
+
+        acStallTimer = 0; acStallTimerB = 0; acRestartTimer = 0;
+        uVRelayTimer1 = 0; uVRelayTimer2 = 0;
+        statusA = 1; statusB = 1; fthA = 1; fthB = 1;
+        kuv = 1; kcon = 1; fcon_trip = 0;
 		boolean flag = true;
         this.stage = 1; // initialized to running state
         
@@ -1135,7 +1143,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * The thermal protection heating increase is modeled as 
 	 * differential equation, thus it must be represented with the nextStep();
 	 * 
-	 * The stall timer as well as the recovery timer are also counted and updated in this method
+     * Stall and restart histories are committed separately by afterStep.
 	 */
 	@Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
@@ -1456,6 +1464,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	
 	@Override
 	public boolean afterStep(double dt) {
+        if (!Double.isFinite(dt) || dt < 0)
+            throw new IllegalArgumentException("An accepted compressor interval must be finite and nonnegative");
 		/**
 		 *  to check whether AC motor stalls, restarts and the actions of the protections
 	      %  this should be perform after the network solution step
@@ -1527,22 +1537,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			double vmag = this.getDStabBus().getVoltage().abs();
 			
-			if (this.statusA ==1){
-				if(vmag < this.vstall){
-					this.acStallTimer = this.acStallTimer+ dt;
-				}
-				else
-					this.acStallTimer = 0.0;
-			}
-			
-			
-			if (this.statusB ==0){
-				if(vmag > this.vrst){
-					this.acRestartTimer = this.acRestartTimer+ dt;
-				}
-				else
-					this.acRestartTimer = 0.0;
-			}
+            acStallTimer = statusA == 1 && vmag < vstall ? acStallTimer + dt : 0;
+            acStallTimerB = frst > 0 && statusB == 1 && vmag < vstall ? acStallTimerB + dt : 0;
+            acRestartTimer = frst > 0 && statusB == 0 && vmag > vrst ? acRestartTimer + dt : 0;
 			
 			/*
 			 *  % update the status of the motor. transition from running to
@@ -1551,13 +1548,21 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			if(this.acStallTimer > this.tstall && this.statusA ==1){
 				this.statusA = 0;
-				this.statusB = 0;
+
+                acStallTimer = 0;
+                if (frst <= 0) statusB = 0;
 				this.stage = 0;
 			}
+
+            if (statusB == 1 && frst > 0 && acStallTimerB > tstall) {
+                statusB = 0; acStallTimerB = 0;
+                if (statusA == 0) stage = 0;
+            }
 			
 			// considering AC restarting 
 			if(this.frst >0.0 && this.statusB ==0 && this.acRestartTimer > this.trst){
 				this.statusB = 1;
+                acRestartTimer = 0; acStallTimerB = 0;
 				this.stage = 2;
 			}
 			
@@ -2119,6 +2124,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		named.put("UvTimer1", uVRelayTimer1);
 		named.put("UvTimer2", uVRelayTimer2);
 		named.put("StallTimer", acStallTimer);
+        named.put("StallTimerB", acStallTimerB);
 		named.put("RestartTimer", acRestartTimer);
 		return Map.copyOf(named);
 	}

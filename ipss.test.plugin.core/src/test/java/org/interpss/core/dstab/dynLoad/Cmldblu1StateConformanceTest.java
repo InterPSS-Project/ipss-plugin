@@ -128,7 +128,7 @@ public class Cmldblu1StateConformanceTest {
                 stateErrors.put("STATE" + (motor * 6 + state), error(reference, recording.frames,
                         "STATE" + (motor * 6 + state), prefix + states[state], 0));
         }
-        String[] compressorStates = {"Vmeas", "Fmeas", "TemperatureA", "TemperatureB", "UvTimer1", "UvTimer2", "StallTimer"};
+        String[] compressorStates = {"Vmeas", "Fmeas", "TemperatureA", "TemperatureB", "UvTimer1", "UvTimer2", "StallTimer", "StallTimerB"};
         for (int i = 0; i < compressorStates.length; i++) if (recording.initial.values().containsKey("MotorD." + compressorStates[i]))
             stateErrors.put("STATE" + (18 + i), error(reference, recording.frames, "STATE" + (18 + i), "MotorD." + compressorStates[i], i == 1 ? -1 : 0));
         if (recording.initial.values().containsKey("MotorD.RestartTimer")) stateErrors.put("STATE26",
@@ -137,7 +137,7 @@ public class Cmldblu1StateConformanceTest {
         result.put("status", "boundary-regression-only-component-qualification-incomplete");
         result.put("fixture", fixture); result.put("method", staggered ? "staggered" : "modified-euler"); result.put("step_sec", h);
         result.put("boundary_errors", boundaries); result.put("mapped_state_errors_without_acceptance", stateErrors);
-        result.put("unimplemented_allocated_coordinates", List.of("STATE5", "STATE11", "STATE17", "STATE25"));
+        result.put("unimplemented_allocated_coordinates", List.of("STATE5", "STATE11", "STATE17"));
         result.put("internal_load_voltage_error", error(reference, recording.frames, "VAR29", "Load.V", 0));
         Path directory = Files.createTempDirectory(Path.of("target"), "cmldblu1-independent-");
         try (var writer = BenchmarkOutputGuard.newWriter(directory.resolve("comparison.json"), 100000)) {

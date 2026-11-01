@@ -24,13 +24,14 @@ final class Cmldblu1SharedRecording {
     record Frame(double time, String kind, Map<String, Double> values) { }
     final DynamicSimuAlgorithm algorithm;
     final boolean flat;
+    final boolean repeated;
     final List<Frame> frames = new ArrayList<>();
     boolean enabled;
     Cmldblu1Model model;
     Frame initial;
 
-    private Cmldblu1SharedRecording(DynamicSimuAlgorithm algorithm, boolean flat) {
-        this.algorithm = algorithm; this.flat = flat;
+    private Cmldblu1SharedRecording(DynamicSimuAlgorithm algorithm, boolean flat, boolean repeated) {
+        this.algorithm = algorithm; this.flat = flat; this.repeated = repeated;
     }
     Frame capture(double time, String kind) {
         var net = algorithm.getNetwork();
@@ -46,13 +47,19 @@ final class Cmldblu1SharedRecording {
         values.put("SPEED", machine.getSpeed() - 1); values.put("PMECH", machine.getPm());
         values.put("P_PU", power.getReal()); values.put("Q_PU", power.getImaginary());
         values.putAll(model.getNamedStates());
+        if (model.get1PhaseACMotor() instanceof org.interpss.dstab.control.util.IntegrationStateAccess owner) {
+            var histories = owner.getIntegrationHistories();
+            values.put("MotorD.RunA", histories.get("RunA"));
+            values.put("MotorD.RunB", histories.get("RunB"));
+        }
         values.put("Load.V", model.getLoadBus().getVoltageMag());
         values.put("Load.A", model.getLoadBus().getVoltageAng());
         values.put("Low.V", model.getLowVoltBus().getVoltageMag());
         return new Frame(time, kind, Collections.unmodifiableMap(values));
     }
     void before(double time) {
-        if (enabled && !flat && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9))
+        if (enabled && !flat && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9
+                || repeated && (Math.abs(time - .2) < 1e-9 || Math.abs(time - .25) < 1e-9)))
             frames.add(capture(time, "EVENT_PRE"));
     }
     static Cmldblu1SharedRecording simulate(String fixture, boolean staggered, boolean flat, double h) throws Exception {
@@ -65,11 +72,14 @@ final class Cmldblu1SharedRecording {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(h); algorithm.setTotalSimuTimeSec(.5);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
-        var result = new Cmldblu1SharedRecording(algorithm, flat);
+        boolean repeated = fixture.endsWith("-restart");
+        var result = new Cmldblu1SharedRecording(algorithm, flat, repeated);
         algorithm.setSolver(staggered ? new SharedRecorder(algorithm, result) : new OrdinaryRecorder(algorithm, result));
         if (!flat) algorithm.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",
                 algorithm.getNetwork(), SimpleFaultCode.GROUND_3P,
-                new Complex(0, fixture.endsWith("electronic") ? .01 : .2), null, .05, .05), "fault");
+                new Complex(0, fixture.endsWith("electronic") || repeated ? .01 : .2), null, .05, .05), "fault");
+        if (!flat && repeated) algorithm.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",
+                algorithm.getNetwork(), SimpleFaultCode.GROUND_3P, new Complex(0,.01), null, .2, .05), "second-fault");
         assertTrue(algorithm.initialization());
         result.model = assertInstanceOf(Cmldblu1Model.class,
                 algorithm.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel());

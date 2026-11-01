@@ -22,7 +22,8 @@ integration vector. Existing named-state keys are retained.
 - A single-cage induction motor stores E-prime real/imaginary and slip. A
   double-cage motor also stores Ek real/imaginary; its Norton-source E-double-prime
   is an algebraic combination of E-prime and Ek.
-- The compressor stores sensed voltage/frequency and two temperatures.
+- The compressor stores sensed voltage/frequency and two temperatures, with
+  separate accepted stall histories for non-restartable and restartable groups.
 - Derivative evaluation refreshes algebraic current/torque and diagnostic rate
   buffers without advancing differential coordinates or committed timers.
 - The ordinary method retains its established predictor/corrector ordering,
@@ -146,9 +147,10 @@ zero-step behavior.
 - Extend accepted distribution initialization to additional base/ownership
   cases. Resolve the feeder-floor endpoint difference and zero-step semantics,
   and independently qualify the remaining motor initialization coordinates.
-- Implement/qualify the allocated motor angle-deviation observations and the
-  separate restartable-compressor stall timer. Their source slots remain
-  explicitly unmapped rather than filled with invented values.
+- Resolve the allocated motor angle-deviation observations. Their source slots
+  remain explicitly unmapped. The [restartable compressor history](cmldblu1-compressor-lifecycle.md)
+  now has a separate timer and independent action-time gates under both methods;
+  complete coupled and continuous-state parity remains open.
 - Qualify all remaining published diagnostics, zero-time-constant bypasses,
   active stall/thermal/UV/contactors, reclosure, full disconnection and load
   changes through the complete solver, not just isolated history callbacks.
@@ -174,9 +176,9 @@ Exact executable/source provenance, original and regenerated captures,
 pre/post recordings, manifests and test reports remain under the existing
 private verification-artifact directory.
 
-Validation of this slice: 149 focused checks pass across the reactor; the core
+Validation of the maintained composite checks: 158 focused checks pass across the reactor; the core
 module passes 458 checks with four existing skips; 15 three-phase motor checks
-pass. The registered core suite executes 2,891 checks with zero errors, 13 skips
+pass. The registered core suite executes 2,900 checks with zero errors, 13 skips
 and the same four failures as the retained pre-change baseline. It therefore
 does not establish a completely green system gate. Neutral-language validation
 also passes. These results retain the incomplete model-qualification status above.

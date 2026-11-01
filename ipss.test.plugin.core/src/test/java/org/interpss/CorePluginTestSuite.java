@@ -256,6 +256,7 @@ import org.interpss.core.dstab.dynLoad.Cmldblu1SharedStateTest;
 import org.interpss.core.dstab.dynLoad.Cmldblu1SharedSmibTest;
 import org.interpss.core.dstab.dynLoad.Cmldblu1StateConformanceTest;
 import org.interpss.core.dstab.dynLoad.Cmldblu1InitializationTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1CompressorLifecycleTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -1180,6 +1181,7 @@ import org.junit.platform.suite.api.Suite;
     Cmldblu1SharedSmibTest.class,
     Cmldblu1StateConformanceTest.class,
     Cmldblu1InitializationTest.class,
+    Cmldblu1CompressorLifecycleTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,

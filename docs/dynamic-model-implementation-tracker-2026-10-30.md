@@ -39,7 +39,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 - Retain the [shared motor runtime](dynamic-models/cmldblu1-shared-runtime.md), direct leaf-state participation under both methods, reusable rate/current buffers and post-expansion ownership checks.
 - Retain independently checked legacy tap/grid, reactive allocation and physical current-balance initialization under both methods. Resolve feeder-floor preparation, zero-step behavior and remaining motor-coordinate discrepancies; the complete model remains unqualified.
-- Complete the allocated angle-deviation observations, separate restartable-compressor stall timer, bypasses and accepted protection/reclosure lifecycle without advancing owned states twice.
+- Retain the [independently checked compressor stall/restart histories](dynamic-models/cmldblu1-compressor-lifecycle.md) under both methods. Resolve remaining coupled input preparation, allocated angle observations, bypasses, active protection/reclosure and warm restoration without advancing owned states twice.
 - Compare every internal state and published diagnostic against independent captures.
 - Investigate the remaining composite-load trajectory discrepancy and tighten the accuracy gates after it is resolved.
 - Preserve bus/load-specific ownership, explicit MVA-base handling and the legacy electronic-load recovery convention.

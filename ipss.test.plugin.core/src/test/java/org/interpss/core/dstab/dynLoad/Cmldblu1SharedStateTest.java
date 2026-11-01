@@ -26,9 +26,12 @@ public class Cmldblu1SharedStateTest {
     @BeforeAll static void setup() { IpssCorePlugin.init(); IpssCorePlugin.configureSparseSolver("java-klu"); }
 
     static Cmldblu1Model model() throws Exception {
+        return model("cmldblu1");
+    }
+    static Cmldblu1Model model(String fixture) throws Exception {
         var loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
-                Cmldblu1SharedSmibTest.CASE.resolve("cmldblu1.dyr").toString());
+                Cmldblu1SharedSmibTest.CASE.resolve(fixture + ".dyr").toString());
         var a = context.getDynSimuAlgorithm();
         assertTrue(a.getAclfAlgorithm().loadflow()); a.setSimuStepSec(.0005);
         a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
