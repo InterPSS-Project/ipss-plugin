@@ -24,6 +24,10 @@ initial operating point. In an elevated-voltage mixed control, the latter
 changes active power by approximately `0.001576 pu`; the observed legacy
 ratio characteristic differs from the capture by less than `6e-7 pu`.
 
+Legacy static reactive initialization uses the magnitude of `PFs`, preserving
+the original signed input. The [power-factor and low-voltage controls](cmldblu1-static-low-voltage.md)
+keep that dialect policy separate from the typed/zone signed-Q convention.
+
 The [generic WECC composite-load specification](https://www.wecc.org/sites/default/files/documents/meeting/2024/WECC%20Comp%20Load%20Model%20Specification_final.pdf)
 expresses an absolute-voltage normalization. Exact legacy captures establish
 the convention implemented here. That distinction must be retained when
@@ -97,8 +101,10 @@ Exact tool provenance, source/runtime hashes, cold outputs, rejected alternative
 normalization calculations and complete before/after streams remain in private
 verification artifacts.
 
-The earlier severe-fault controls still expose additional static admittance and
-inconsistent internal observations. This normalization audit rules out the
-proposed polynomial-convention change as their remedy. Their low-voltage
-switching, observation and internal-network semantics require further
-independent isolation before complete composite trajectory acceptance.
+The [whole static current port](cmldblu1-static-low-voltage.md) now implements
+the independently established low-voltage preparation for the qualified merged
+node configuration. Its preparation depends on the first network iterate, so
+that configuration uses a current port instead of this linear specialization.
+Other configurations retain this kernel. Severe-fault switching with mixed
+components or represented distribution, and inconsistent internal observations,
+still require separate qualification before complete composite acceptance.

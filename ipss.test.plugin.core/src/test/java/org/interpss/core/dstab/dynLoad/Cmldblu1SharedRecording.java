@@ -68,7 +68,17 @@ final class Cmldblu1SharedRecording {
     static Cmldblu1SharedRecording simulateStaticControl(Path dynamicFile, boolean staggered, double h) throws Exception {
         return simulate("static-control", dynamicFile, staggered, false, h);
     }
+    static Cmldblu1SharedRecording simulateStaticControl(Path dynamicFile, boolean staggered, double h,
+            double faultX, double secondFaultX) throws Exception {
+        return simulate("static-control", dynamicFile, staggered, false, h, faultX, secondFaultX);
+    }
     private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered, boolean flat, double h) throws Exception {
+        return simulate(fixture, dynamicFile, staggered, flat, h,
+                fixture.endsWith("electronic") || fixture.endsWith("-restart") ? .01 : .2,
+                fixture.endsWith("-restart") ? .01 : 0);
+    }
+    private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered,
+            boolean flat, double h, double faultX, double secondFaultX) throws Exception {
         var loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
                 dynamicFile.toString());
@@ -78,14 +88,14 @@ final class Cmldblu1SharedRecording {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(h); algorithm.setTotalSimuTimeSec(.5);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
-        boolean repeated = fixture.endsWith("-restart");
+        boolean repeated = secondFaultX > 0;
         var result = new Cmldblu1SharedRecording(algorithm, flat, repeated);
         algorithm.setSolver(staggered ? new SharedRecorder(algorithm, result) : new OrdinaryRecorder(algorithm, result));
         if (!flat) algorithm.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",
                 algorithm.getNetwork(), SimpleFaultCode.GROUND_3P,
-                new Complex(0, fixture.endsWith("electronic") || repeated ? .01 : .2), null, .05, .05), "fault");
+                new Complex(0, faultX), null, .05, .05), "fault");
         if (!flat && repeated) algorithm.getNetwork().addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",
-                algorithm.getNetwork(), SimpleFaultCode.GROUND_3P, new Complex(0,.01), null, .2, .05), "second-fault");
+                algorithm.getNetwork(), SimpleFaultCode.GROUND_3P, new Complex(0,secondFaultX), null, .2, .05), "second-fault");
         assertTrue(algorithm.initialization());
         result.model = assertInstanceOf(Cmldblu1Model.class,
                 algorithm.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel());

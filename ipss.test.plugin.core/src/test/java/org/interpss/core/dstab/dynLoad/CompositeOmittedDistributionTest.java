@@ -120,9 +120,10 @@ public class CompositeOmittedDistributionTest {
         var source = com.interpss.dstab.DStabObjectFactory.createDStabLoad("source"); bus.getContributeLoadList().add(source); var bound = new LD1PACImpl(); bound.setDStabBus(bus); bound.setParentLoad(source);
         assertThrows(IllegalStateException.class, () -> bound.setInitialLoadAllocation(assigned)); assertNull(bound.getInitialLoadAllocation());
     }
-    @ParameterizedTest @CsvSource({"false,false", "true,false", "false,true", "true,true"})
-    void mergedBusPreservesUnownedLoadShuntsAndColocatedGeneration(boolean shared, boolean colocated) throws Exception {
-        var ref = REFERENCES.get("both-compressor-h0.0005"); Path dir = Files.createTempDirectory(Path.of("target"), "composite-omitted-ownership-"); Files.writeString(dir.resolve("dynamic.dyr"), ref.dyr());
+    @ParameterizedTest @CsvSource({"false,false,false", "true,false,false", "false,true,false", "true,true,false",
+            "false,false,true", "true,false,true", "false,true,true", "true,true,true"})
+    void mergedBusPreservesUnownedLoadShuntsAndColocatedGeneration(boolean shared, boolean colocated, boolean allStatic) throws Exception {
+        var ref = REFERENCES.get((allStatic ? "both-static" : "both-compressor") + "-h0.0005"); Path dir = Files.createTempDirectory(Path.of("target"), "composite-omitted-ownership-"); Files.writeString(dir.resolve("dynamic.dyr"), ref.dyr());
         var c = new PSSEMultiFileLoader().loadDStab("testData/adpter/psse/v33/HspModels/load-network.raw", dir.resolve("dynamic.dyr").toString()); var net = c.getDStabilityNet(); var parent = net.getDStabBus("Bus2");
         var outside = com.interpss.dstab.DStabObjectFactory.createDStabLoad("outside"); outside.setCode(com.interpss.core.aclf.AclfLoadCode.CONST_P); outside.setLoadCP(new Complex(.2, .04)); outside.setStatus(true); parent.getContributeLoadList().add(outside); assertTrue(parent.initContributeLoad(false)); parent.setShuntY(new Complex(.003, .02));
         if (colocated) {
@@ -136,9 +137,11 @@ public class CompositeOmittedDistributionTest {
         assertEquals(.6, parent.getLoadP(), 1e-12); assertEquals(.2, parent.calNetLoadResults().getReal(), 1e-12); assertEquals(.04, parent.calNetLoadResults().getImaginary(), 1e-12); assertEquals(.003, parent.getShuntY().getReal(), 0);
         assertEquals(.2, parent.getInitConstIStaticLoad().getReal(), 1e-12); assertEquals(.04, parent.getInitConstZStaticLoad().getImaginary(), 1e-12);
         double ownedP = 0; for (var load : parent.getDynLoadModelList()) ownedP += load.getInitLoadPQ().getReal(); assertEquals(.4, ownedP, 1e-12);
-        var motor = assertInstanceOf(LD1PACImpl.class, model.get1PhaseACMotor()); assertEquals(.02, motor.getInitialLoadAllocation().getReal(), 1e-12); var assigned = motor.getInitialLoadAllocation(); motor.setInitialLoadAllocation(assigned); assertThrows(IllegalStateException.class, () -> motor.setInitialLoadAllocation(new Complex(.03, .01))); assertEquals(assigned, motor.getInitialLoadAllocation());
+        if (!allStatic) {
+            var motor = assertInstanceOf(LD1PACImpl.class, model.get1PhaseACMotor()); assertEquals(.02, motor.getInitialLoadAllocation().getReal(), 1e-12); var assigned = motor.getInitialLoadAllocation(); motor.setInitialLoadAllocation(assigned); assertThrows(IllegalStateException.class, () -> motor.setInitialLoadAllocation(new Complex(.03, .01))); assertEquals(assigned, motor.getInitialLoadAllocation());
+        } else { assertNull(model.get1PhaseACMotor()); assertEquals(0, model.getNamedStates().get("STATIC.LowVoltageG")); }
         assertEquals(0, net.getCustomBusCurrInjHashtable().getOrDefault(parent.getId(), Complex.ZERO).abs(), 1e-9, "Scope accounting must not rely on a fixed compensating current");
         var initial = parent.getVoltage(); for (int i = 0; i < 20; i++) assertTrue(a.solveDEqnStep(true)); assertEquals(0, parent.getVoltage().subtract(initial).abs(), 1e-9);
-        assertEquals(.02, motor.getInitLoadPQ().getReal(), 1e-12); assertEquals(.4, ownedP, 1e-12);
+        if (!allStatic) assertEquals(.02, model.get1PhaseACMotor().getInitLoadPQ().getReal(), 1e-12); assertEquals(.4, ownedP, 1e-12);
     }
 }

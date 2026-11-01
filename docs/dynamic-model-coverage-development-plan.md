@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The [legacy static current port](dynamic-models/cmldblu1-static-low-voltage.md)
+implements independently established low-voltage admittance preparation for
+whole static composites with omitted distribution and zero frequency
+coefficients. Both integration methods share the core network-iteration
+lifecycle and scalar current kernel. Numerical shunt cancellation preserves
+physical capacitor current and unrelated load ownership; mixed/distributed,
+frequency-dependent and restoration/production-duration qualification stay open.
+
 The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-2026-10-30.md)
 preserves implementation priorities, model-specific tasks and scoped verification
 status.

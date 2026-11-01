@@ -373,6 +373,9 @@
   "CompositeOmittedDistributionTest": {
     "reference.archive": "testData/private/verification-artifacts/cmldblu1-omitted-elements-20261101/captures-v2.zip"
   },
+  "CompositeStaticLowVoltageTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-low-voltage-static-20261101/captures-qualified.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

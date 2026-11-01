@@ -13,7 +13,7 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 
 /** Algebraic static or electronic component embedded in CMLDZNU2. */
-final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLStateProvider {
+class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLStateProvider {
     enum Kind { STATIC, ELECTRONIC }
 
     private static final double EPS = 1.0e-12;
@@ -58,7 +58,7 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
         Complex total = getDStabBus().getInitLoad();
         if (total == null || initialVoltage <= EPS) return false;
         p0 = Double.isNaN(assignedInitialActivePower) ? total.getReal() * fraction : assignedInitialActivePower;
-        double pf = kind == Kind.STATIC ? data.value(26) : data.value(23);
+        double pf = initialPowerFactor();
         q0 = reactiveFromPowerFactor(p0, pf);
         Complex initial = new Complex(p0, q0);
         setMvaBase(getDStabBus().getNetwork().getBaseMva());
@@ -76,6 +76,8 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
                 && (first == 0 || data.value(offset) == 2)
                 && (second == 0 || data.value(offset + 2) == 2);
     }
+
+    protected double initialPowerFactor() { return kind == Kind.STATIC ? data.value(26) : data.value(23); }
 
     Complex effectivePower() {
         double voltage = getDStabBus().getVoltageMag();

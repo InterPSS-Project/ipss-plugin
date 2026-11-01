@@ -25,7 +25,10 @@ def main():
         'pss2b', 'pss2b-remote', 'hyg3u1-0', 'hyg3u1-1', 'hyg3u1-deadband', 'hyg3u1-deadband-zero', 'hyg3u1-asymmetric', 'hyg3u1-partial',
         'wsieg1', 'wsieg1-curve', 'wsieg1-dual', 'wsieg1-unused-lp', 'cmldblu1', 'cmldblu1-mixed', 'cmldblu1-electronic', 'cmldblu1-restart', 'cmldznu2', 'acmtblu1', 'tiocr1-0', 'tiocr1-1', 'tiocr1-current'])
     parser.add_argument('--profile', choices=['flat', 'fault', 'repeated-faults', 'reference-step'], default='fault')
-    parser.add_argument('--fault-x-pu',type=float,choices=[.2,.01,.04,.06],default=.2)
+    parser.add_argument('--fault-x-pu', type=float, default=.2,
+                        help='Finite positive fault reactance on system base')
+    parser.add_argument('--second-fault-x-pu', type=float,
+                        help='Optional separate reactance for a repeated-fault discriminator')
     parser.add_argument('--step', type=float, choices=[.0005, .00025], default=.0005)
     parser.add_argument('--channel-part', type=int, choices=[0,1], default=0)
     parser.add_argument('--generator-states', action='store_true',
@@ -37,6 +40,12 @@ def main():
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
+    if not math.isfinite(args.fault_x_pu) or args.fault_x_pu <= 0:
+        parser.error('--fault-x-pu must be finite and positive')
+    if args.second_fault_x_pu is not None and (
+            args.profile != 'repeated-faults' or not math.isfinite(args.second_fault_x_pu)
+            or args.second_fault_x_pu <= 0):
+        parser.error('--second-fault-x-pu requires repeated-faults and a finite positive value')
     root = Path.cwd()
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/HspModels'
     out = root / 'target' / args.batch / (
@@ -150,7 +159,8 @@ def main():
         checked('recovery', psspy.run(0, .20, 1000000, 1, 0))
         checked('second fault', psspy.dist_bus_fault(2 if load else 1, 3,
             230.0 if load or args.fixture=='wsieg1-dual' else 100.0,
-            [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
+            [0., (args.second_fault_x_pu if args.second_fault_x_pu is not None else args.fault_x_pu)
+             *(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
         checked('second fault on', psspy.run(0, .25, 1000000, 1, 0))
         checked('second clear', psspy.dist_clear_fault(1))
     checked('postfault', psspy.run(0, .5, 1000000, 1, 0))
@@ -175,7 +185,10 @@ def main():
     manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args),
         input_consistency=input_consistency,
         layout=layout, generator_layout=generator_layout, entered_constants=entered, initialized_constants=initialized,
-        load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu], samples=len(data['time']), channels=len(keys), engine_module=psse3607.__name__,
+        load_conversion_percent=conversion, fault_impedance_pu=[0.0,args.fault_x_pu],
+        second_fault_impedance_pu=([0.0, args.second_fault_x_pu if args.second_fault_x_pu is not None else args.fault_x_pu]
+                                   if args.profile == 'repeated-faults' else None),
+        samples=len(data['time']), channels=len(keys), engine_module=psse3607.__name__,
         library_sha256=sha(library), source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
         files={p.name:sha(p) for p in Path('.').iterdir() if p.is_file()})
     Path('manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')

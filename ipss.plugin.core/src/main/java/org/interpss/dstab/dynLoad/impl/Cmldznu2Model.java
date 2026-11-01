@@ -30,6 +30,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private Cmldznu2AlgebraicLoadModel staticLoadComponent;
     private Cmldznu2AlgebraicLoadModel electronicLoadComponent;
     private Complex collapsedParentRemainder;
+    private Complex collapsedParentOriginalShunt;
 
     public Cmldznu2Model(String id, BaseDStabBus<?, ?> bus, Set<String> targetLoadIds,
             Complex targetPower, Cmldznu2Data data) {
@@ -142,7 +143,10 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         var parent = getDStabBus();
         lowBus = omitTransformer ? parent : internalBus("_lowBus");
         loadBus = omitFeeder ? lowBus : internalBus("_loadBus");
-        if (loadBus == parent) collapsedParentRemainder = new Complex(parent.getLoadP(), parent.getLoadQ());
+        if (loadBus == parent) {
+            collapsedParentRemainder = new Complex(parent.getLoadP(), parent.getLoadQ());
+            collapsedParentOriginalShunt = parent.getShuntY() == null ? Complex.ZERO : parent.getShuntY();
+        }
         loadBus.setLoadCode(AclfLoadCode.CONST_P);
         var network = (DStabilityNetwork) parent.getNetwork();
         try {
@@ -199,7 +203,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                 + (getFmB() > 1e-10 ? getFmB() * motorReactiveRatio(data.value(58)) : 0)
                 + (getFmC() > 1e-10 ? getFmC() * motorReactiveRatio(data.value(78)) : 0)
                 + getFmD() * reactiveRatio(data.value(102)) + getFel() * reactiveRatio(data.value(23))
-                + getStaticFraction() * reactiveRatio(data.value(26)) : 0;
+                + getStaticFraction() * staticReactiveDemandRatio() : 0;
         double fromCompensation = (legacyAllocation ? Math.max(0, Math.min(1, data.value(4))) : 0)
                 * (totalLoad.getReal() * initialReactiveDemandRatio - totalLoad.getImaginary())
                 / (lowVoltage.abs() * lowVoltage.abs());
@@ -232,6 +236,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     }
 
     private static double reactiveRatio(double powerFactor) { return Math.tan(Math.acos(powerFactor)); }
+    protected double staticReactiveDemandRatio() { return reactiveRatio(data.value(26)); }
     protected static double motorReactiveRatio(double loading) {
         if (!(loading > 0 && loading <= 1)) throw new IllegalArgumentException("Composite motor loading factor must be in (0,1]");
         return Math.sqrt(1 / (loading * loading) - 1);
@@ -255,9 +260,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         if (!super.initStates()) return false;
         double assignedActive = getLoadBus() == getDStabBus() ? getLoadBus().getInitLoad().getReal() : Double.NaN;
         if (staticFraction > EPS) {
-            staticLoadComponent = new Cmldznu2AlgebraicLoadModel(
-                    Cmldznu2AlgebraicLoadModel.Kind.STATIC, getLoadBus(), getId() + "_S",
-                    staticFraction, data, assignedActive * staticFraction);
+            staticLoadComponent = createStaticComponent(assignedActive * staticFraction);
             if (!staticLoadComponent.initStates()) return false;
         }
         if (getFel() > EPS) {
@@ -278,6 +281,17 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
             if (electronicLoadComponent != null) electronicLoadComponent.setLoadPercent(100 * electronicLoadComponent.getInitLoadPQ().getReal() / combined.getReal());
         }
         return true;
+    }
+
+    protected Cmldznu2AlgebraicLoadModel createStaticComponent(double assignedActivePower) {
+        return new Cmldznu2AlgebraicLoadModel(Cmldznu2AlgebraicLoadModel.Kind.STATIC,
+                getLoadBus(), getId() + "_S", staticFraction, data, assignedActivePower);
+    }
+
+    protected Complex getCollapsedParentOwnedShunt() {
+        if (getLoadBus() != getDStabBus() || collapsedParentOriginalShunt == null)
+            throw new IllegalStateException("An owned parent shunt requires omitted distribution elements");
+        return getDStabBus().getShuntY().subtract(collapsedParentOriginalShunt);
     }
 
     /** Whether the distribution hook already included all reactive compensation. */
@@ -357,7 +371,8 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
 
     /** Exact algebraic leaf type; the shared solver must not accept arbitrary custom loads. */
     public static boolean isAlgebraicComponent(Object model) {
-        return model != null && model.getClass() == Cmldznu2AlgebraicLoadModel.class;
+        return model != null && (model.getClass() == Cmldznu2AlgebraicLoadModel.class
+                || model.getClass() == LegacyStaticLoadModel.class || model.getClass() == LegacyStaticLoadPort.class);
     }
 
     /** Refreshes the algebraic components after a network-voltage or frequency change. */
