@@ -100,7 +100,7 @@ ieee-odm (external) ─────┘
 
 ## Conventions
 
-- Use neutral benchmark/reference-simulator language in all documentation and new Java files; do not name the proprietary native simulator or its release in prose. Existing Java files at policy baseline `f3b43863fd11e2da3c88195e5dbc5a2d30130ab2` are exempt. Preserve class names, packages, APIs, protocol identifiers, and resource paths. Keep exact tool/version provenance in the existing private evidence manifests rather than public prose.
+- Use neutral benchmark/reference-simulator language in all documentation and new Java files; do not name the proprietary native simulator or its release in prose. Existing Java files at policy baseline `ef2740df941448932e8e24f66ec2ba5b721575d0` are exempt. Preserve class names, packages, APIs, protocol identifiers, and resource paths. Keep exact tool/version provenance in the existing private evidence manifests rather than public prose.
 - Before delivering documentation or new Java files, run `python tools/check_neutral_benchmark_language.py`. Keep documentation-generator output neutral too. The separate wording CI check enforces this policy without requiring a simulator or Maven.
 
 - DistOPF uses static power-flow network model only — never include dynamic simulation Y-matrix contributions
