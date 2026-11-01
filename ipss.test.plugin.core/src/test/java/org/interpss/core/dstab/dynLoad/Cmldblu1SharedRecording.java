@@ -63,9 +63,15 @@ final class Cmldblu1SharedRecording {
             frames.add(capture(time, "EVENT_PRE"));
     }
     static Cmldblu1SharedRecording simulate(String fixture, boolean staggered, boolean flat, double h) throws Exception {
+        return simulate(fixture, Cmldblu1SharedSmibTest.CASE.resolve(fixture + ".dyr"), staggered, flat, h);
+    }
+    static Cmldblu1SharedRecording simulateStaticControl(Path dynamicFile, boolean staggered, double h) throws Exception {
+        return simulate("static-control", dynamicFile, staggered, false, h);
+    }
+    private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered, boolean flat, double h) throws Exception {
         var loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
-                Cmldblu1SharedSmibTest.CASE.resolve(fixture + ".dyr").toString());
+                dynamicFile.toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());

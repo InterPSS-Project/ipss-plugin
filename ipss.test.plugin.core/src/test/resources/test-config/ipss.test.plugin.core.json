@@ -367,6 +367,9 @@
   "CompressorShortLagTest": {
     "reference.archive": "testData/private/verification-artifacts/acmtblu1-short-lags-20261101/captures.zip"
   },
+  "CompositeStaticPolynomialSmibTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-static-normalization-20261101/captures.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,

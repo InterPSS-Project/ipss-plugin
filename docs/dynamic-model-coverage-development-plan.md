@@ -46,6 +46,12 @@ preinitialization discovery reaches standalone and unexpanded composite motors;
 raw constants and local-stage intervals remain separate. Both-method coupled
 controls retain method-specific state evidence; strict differential
 modified-Euler state parity and complete composite qualification stay open.
+The [static-component qualification](dynamic-models/cmldblu1-static-kernel.md)
+independently distinguishes the legacy mixed-polynomial normalization and
+qualifies a shared constant-admittance specialization under both integration
+methods. Fresh trial-voltage power and exact generic fallbacks remain intact;
+the severe low-voltage static-admittance and internal-observation discrepancy
+requires separate diagnosis.
 
 The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
 fixes the legacy running impedance branch, transition preparation and heating;

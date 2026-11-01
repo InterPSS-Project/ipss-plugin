@@ -20,18 +20,23 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
     private final Kind kind;
     private final Cmldznu2Data data;
     private final double fraction;
+    private final boolean staticImpedanceOnly;
     private final Hashtable<String, Object> states = new Hashtable<>();
     private double initialVoltage;
     private double p0;
     private double q0;
     private double minimumElectronicFraction = 1.0;
     private double electronicFraction = 1.0;
+    private Complex initialAdmittance;
 
     Cmldznu2AlgebraicLoadModel(Kind kind, BaseDStabBus<?, ?> bus,
             String id, double fraction, Cmldznu2Data data) {
         this.kind = kind;
         this.data = data;
         this.fraction = fraction;
+        staticImpedanceOnly = kind == Kind.STATIC
+                && impedancePolynomial(data, 27) && impedancePolynomial(data, 32)
+                && data.value(31) == 0 && data.value(36) == 0;
         setId(id);
         setDStabBus(bus);
         setExtendedDeviceId("CMLDZNU2_" + kind + "_" + id + "@" + bus.getId());
@@ -52,8 +57,17 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
         setMvaBase(getDStabBus().getNetwork().getBaseMva());
         setInitLoadPQ(initial);
         setLoadPQ(initial);
-        setEquivY(initial.conjugate().divide(initialVoltage * initialVoltage));
+        initialAdmittance = initial.conjugate().divide(initialVoltage * initialVoltage);
+        setEquivY(initialAdmittance);
         return true;
+    }
+
+    private static boolean impedancePolynomial(Cmldznu2Data data, int offset) {
+        double first = data.value(offset + 1), second = data.value(offset + 3);
+        return first >= 0 && first <= 1 && second >= 0 && second <= 1
+                && first + second == 1 && 1.0 - first - second == 0
+                && (first == 0 || data.value(offset) == 2)
+                && (second == 0 || data.value(offset + 2) == 2);
     }
 
     Complex effectivePower() {
@@ -82,8 +96,12 @@ final class Cmldznu2AlgebraicLoadModel extends DynLoadModelImpl implements ICMLS
         if (voltage.abs() <= EPS) return Complex.ZERO;
         Complex power = effectivePower();
         setLoadPQ(power);
-        Complex injection = getEquivY().multiply(voltage)
-                .subtract(power.divide(voltage).conjugate());
+        // The original stamp already supplies this complete physical current.
+        // Keep fresh power observations; mutable load factors or replacement stamps use the generic equation.
+        Complex injection = staticImpedanceOnly && accumulatedLoadChangeFactor == 0
+                && getEquivY() == initialAdmittance && !voltage.isNaN() && !voltage.isInfinite()
+                && !power.isNaN() && !power.isInfinite() && !initialAdmittance.isNaN() && !initialAdmittance.isInfinite()
+                ? Complex.ZERO : getEquivY().multiply(voltage).subtract(power.divide(voltage).conjugate());
         setNortonCurInj(injection);
         return injection;
     }
