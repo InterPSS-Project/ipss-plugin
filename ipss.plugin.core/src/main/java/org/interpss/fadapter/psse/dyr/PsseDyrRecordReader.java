@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 public final class PsseDyrRecordReader {
     // Recognize an exact named-device header, not an arbitrary quoted trailing
     // comment. Other model families retain their numeric target validation.
-    private static final Pattern NAMED_FACTS_HEADER = Pattern.compile(
-            "^'(?:''|[^'])+'[\\s,]+'SVSMO3T2'(?=[\\s,/]|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAMED_DEVICE_HEADER = Pattern.compile(
+            "^'(?:''|[^'])+'[\\s,]+'(?:SVSMO3T2|CDC6T)'(?=[\\s,/]|$)", Pattern.CASE_INSENSITIVE);
     private PsseDyrRecordReader() {
     }
 
@@ -51,7 +51,7 @@ public final class PsseDyrRecordReader {
                 if (!raw.isEmpty()) records.add(toRecord(raw, sourceName, startLine, lineNo));
                 String remainder = pending.toString().trim();
                 pending.setLength(0);
-                if (startsWithBusNumber(remainder) || isNamedFactsRecord(remainder)) {
+                if (startsWithBusNumber(remainder) || isNamedDeviceRecord(remainder)) {
                     pending.append(remainder);
                     startLine = lineNo;
                 } else {
@@ -98,7 +98,7 @@ public final class PsseDyrRecordReader {
             throw new IllegalArgumentException("DYR record has fewer than three fields at "
                     + source + ":" + startLine);
         }
-        if (isNamedFactsRecord(raw)) {
+        if (isNamedDeviceRecord(raw)) {
             String name = fields.get(0).trim();
             if (name.isEmpty()) {
                 throw new IllegalArgumentException("Blank DYR named-device target at "
@@ -151,8 +151,8 @@ public final class PsseDyrRecordReader {
                 || Character.isWhitespace(value.charAt(index)) || value.charAt(index) == ',');
     }
 
-    private static boolean isNamedFactsRecord(String value) {
-        return NAMED_FACTS_HEADER.matcher(value).find();
+    private static boolean isNamedDeviceRecord(String value) {
+        return NAMED_DEVICE_HEADER.matcher(value).find();
     }
 
     private static String stripDoubleSlashComment(String line) {

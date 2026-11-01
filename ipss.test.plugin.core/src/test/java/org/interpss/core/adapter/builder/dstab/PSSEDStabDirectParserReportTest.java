@@ -33,6 +33,21 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     Path tempDir;
 
     @Test
+    void namedDcRecordIsReportedUnsupportedWithoutLosingFollowingMachine() throws Exception {
+        var builder=DStabBuilderTestFixture.createBuilder();
+        Path dyr=tempDir.resolve("named-dc.dyr");
+        Files.writeString(dyr,"'North DC' 'CDC6T' "+"0 ".repeat(32)+"/ 1 'GENCLS' '1' 3 0 /\n");
+        var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+        assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+        var report=parser.getLastImportReport();
+        assertEquals(2,report.totalRecordCount());
+        assertEquals(1,report.count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
+        assertEquals("CDC6T",report.failures().getFirst().sourceModelName());
+        assertFalse(report.isStrictlyComplete());
+    }
+
+    @Test
     void directPssEDynamicParserRejectsPslfDydInput() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyd = tempDir.resolve("wrong-format.dyd");
