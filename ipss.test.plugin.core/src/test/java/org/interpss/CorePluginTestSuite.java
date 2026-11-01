@@ -278,6 +278,7 @@ import org.interpss.core.dstab.Tiocr1ResetReferenceTest;
 import org.interpss.core.dstab.Tiocr1LoadOnlyReferenceTest;
 import org.interpss.core.dstab.Cdc6tReferenceContractTest;
 import org.interpss.core.dstab.Cdc6tMeasurementsTest;
+import org.interpss.core.dstab.Cdc6tCurrentOrderTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1226,6 +1227,7 @@ import org.junit.platform.suite.api.Suite;
     Tiocr1LoadOnlyReferenceTest.class,
     Cdc6tReferenceContractTest.class,
     Cdc6tMeasurementsTest.class,
+    Cdc6tCurrentOrderTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,

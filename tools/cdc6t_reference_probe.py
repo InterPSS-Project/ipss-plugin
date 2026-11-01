@@ -13,13 +13,14 @@ from tgov1_limit_probe import checked, sha
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
-    parser.add_argument('--profile', choices=['flat', 'fault'], default='flat')
+    parser.add_argument('--profile', choices=['flat', 'fault', 'modulation'], default='flat')
+    parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
     root = Path.cwd()
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
-    out = root / 'target' / f'{args.batch}-{args.profile}-{args.repeat}'
+    out = root / 'target' / f'{args.batch}-{args.control}-{args.profile}-{args.repeat}'
     out.mkdir(exist_ok=False)
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_PsetOnInv.raw'
     shutil.copy2(source, out / 'network.raw')
@@ -37,6 +38,13 @@ def main():
             lines[index] = ','.join(fields)
             changed += 1
     assert changed == 1
+    dc_header=next(i for i,line in enumerate(lines) if line.startswith('"1           ",1,'))
+    dc_fields=lines[dc_header].split(',')
+    if args.control=='rectifier-power':
+        dc_fields[3]='505.0'
+    elif args.control=='current':
+        dc_fields[1]='2';dc_fields[3]='1000.0'
+    lines[dc_header]=','.join(dc_fields)
     (out / 'network.raw').write_text('\n'.join(lines)+'\n')
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
@@ -77,11 +85,15 @@ def main():
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(32)]
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
+    if args.profile == 'modulation':
+        checked('modulation', psspy.change_var(layout['VAR'], 10.0))
     if args.profile == 'fault':
         checked('fault', psspy.dist_bus_fault(7, 3, 230., [0., .2*230**2/100]))
     checked('fault interval', psspy.run(0, .1, 1000000, 1, 0))
     if args.profile == 'fault':
         checked('clear', psspy.dist_clear_fault(1))
+    if args.profile == 'modulation':
+        checked('release modulation', psspy.change_var(layout['VAR'], 0.0))
     checked('finish', psspy.run(0, .5, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
@@ -94,8 +106,14 @@ def main():
     checked('report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and 'Network not converged' not in log
+    stimulus_applied = True
+    if args.profile == 'modulation':
+        auxiliary = next(k for k in keys if labels[k] == 'VAR0')
+        stimulus_applied = max(abs(v) for v in data[auxiliary]) >= 9.9
+        quality = quality and stimulus_applied
     manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args),
                     layout=layout, entered_constants=constants, initialized_constants=initialized,
+                    stimulus_applied=stimulus_applied,
                     engine_module=psse3607.__name__, library_sha256=sha(library),
                     source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
                     files={p.name: sha(p) for p in Path('.').iterdir() if p.is_file()})

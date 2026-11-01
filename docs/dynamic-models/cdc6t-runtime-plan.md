@@ -71,3 +71,24 @@ Recorded-input replay also remains diagnostic: endpoint-sampled voltage inputs
 alone leave roughly 48 V of peak measured-voltage discrepancy around the fault.
 Resolve input sampling and event-stage sequencing in the coupled implementation
 before claiming state-trajectory parity. Do not tune time constants to this error.
+
+## Normal current order
+
+`Cdc6tCurrentOrder` implements normal-operation command conversion with prepared
+mode/setpoint data and no allocation during evaluation. Negative power setpoints
+select measured inverter voltage; positive power setpoints select measured
+rectifier voltage. Current mode retains its ampere setpoint. Voltage compensation
+subtracts the limited-current resistive drop from the scheduled voltage.
+
+Independent cold-paired fault captures now distinguish all three modes. Every
+current sample matches the selected measurement equation within `3.4e-5` A;
+substituting the other voltage exceeds 10 A error in the power-control profiles.
+The component remains upstream of voltage-dependent current limitation and
+blocking/recovery logic, which are not yet implemented.
+
+Auxiliary MW conversion and nonzero compensation have equation tests only.
+Direct writes to the auxiliary diagnostic VAR were reset by the reference
+runtime, so those attempted modulation profiles provide no response evidence.
+The probe now rejects a requested modulation unless the recorded input actually
+changes. Independent modulation qualification needs the proper auxiliary-signal
+model/interface; do not treat a successful API call as proof of an applied input.
