@@ -480,6 +480,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex0);
             for (var device : bus.getDynamicBusDeviceList()) {
                 if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model)
+                        && !(device instanceof org.interpss.dstab.hvdc.Cdc6tNormalTerminalPorts.Port)
                         && !supportedLoad(device)
                         && !org.interpss.dstab.relay.Tiocr1RelayModel.isAcceptedStepDevice(device))
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
@@ -768,6 +769,15 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 attachmentsUnchanged.add(() -> !participant.active.getAsBoolean() || participant.wasActive);
             }
 
+            for(var device:bus.getDynamicBusDeviceList()) if(device instanceof org.interpss.dstab.hvdc.Cdc6tNormalTerminalPorts.Port port) {
+                attachmentsUnchanged.add(port::attachmentIntact);
+                if(port.isStateOwner()) {
+                    extendedStack=true;
+                    var participant=new Participant(port,port::isOperational);
+                    participants.add(participant);busParticipants.add(participant);
+                    attachmentsUnchanged.add(()->!participant.active.getAsBoolean()||participant.wasActive);
+                }
+            }
             for (var gen:bus.getContributeGenList()) {
                 if (!bus.isActive() || !gen.isActive()) {
                     attachmentsUnchanged.add(()->!bus.isActive()||!gen.isActive());

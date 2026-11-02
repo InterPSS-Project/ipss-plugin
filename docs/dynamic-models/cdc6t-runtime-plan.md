@@ -325,3 +325,26 @@ it is not a generic numerical-current port. The tested registration uses the
 non-generator `DYNAMIC_LOAD` device classification, as existing numerical shunt
 devices do, without creating an ordinary static load. Staggered support must
 recognize the actual CDC6T port class and its single shared state owner explicitly.
+
+## Typed terminal-port attachment
+
+`Cdc6tNormalTerminalPorts` explicitly attaches a prepared conducting runtime to
+two distinct buses in one network. The rectifier port owns the three measurement
+states; the inverter port has no differential coordinates. Both obtain currents
+from the same runtime and refresh both terminal voltages before evaluation.
+Modified-Euler advancement runs only through the owner. The staggered solver
+recognizes both ports but registers only the rectifier state participant, with
+attachment and activation guards.
+
+Bus references are assigned only during explicit attachment, because the engine
+automatically maintains inverse device-list membership. Tests cover initialization
+in either terminal order, duplicate attachment, current signs, inverter-only
+no-op stepping, owner advancement, shared derivative evaluation, pair deactivation
+and loss of either terminal attachment. The adjacent numerical-shunt staggered
+binding tests are retained as regression coverage.
+
+This typed path currently supplies ordinary conduction only. Automatic named-link
+import remains unsupported, and full network trajectories, coordinated protection
+events, reinitialization after stopped integration and independent reference
+accuracy are not yet qualified. No full-model support claim follows from the
+terminal-port tests.
