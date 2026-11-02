@@ -181,7 +181,9 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## URGS3T
 
-- Preserve entered physical valve limits and independently checked [infeasible initialization diagnostics](dynamic-models/urgs3t-shared-runtime.md#initial-valve-limits-and-active-bound-release), including lead-lag feedthrough and non-unit rating. Both initializers retain nonzero residuals instead of expanding bounds. Resolve active-bound release histories and complete command trajectories; extend host disconnection/reconnection without treating rejected initial-condition controls as trajectory acceptance.
+- Retain the independently tested [machine-trip lifecycle](dynamic-models/urgs3t-shared-runtime.md#machine-trip-lifecycle-and-inactive-observations), both-method physical-state/history freeze and surviving-host controls. Preserve all inactive allocated-state observations separately from active-state acceptance; resolve the modified-Euler pre-trip command-state gates and extend hot reconnection before claiming complete lifecycle qualification.
+
+- Preserve entered physical valve limits and independently checked [infeasible initialization diagnostics](dynamic-models/urgs3t-shared-runtime.md#initial-valve-limits-and-active-bound-release), including lead-lag feedthrough and non-unit rating. Both initializers retain nonzero residuals instead of expanding bounds. Resolve active-bound release histories and complete command trajectories; extend hot reconnection without treating rejected initial-condition controls as trajectory acceptance.
 
 - Retain immutable coefficient preparation and nonmutating active-pole screening under both integration methods. The [ten-second production-step qualification](dynamic-models/urgs3t-shared-runtime.md#ten-second-production-step-qualification) retains complete recorded grids, event sides and both machines' state diagnostics. Resolve the modified-Euler command and slow valve-average state gates without fitting precision or relaxing thresholds; distinguish selected boundary acceptance from full observation-channel qualification.
 

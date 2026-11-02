@@ -44,6 +44,8 @@ def main():
     p.add_argument('--duration', type=float, default=.5)
     p.add_argument('--flat', action='store_true')
     p.add_argument('--reference-steps', action='store_true')
+    p.add_argument('--trip-bus', type=int, choices=[1, 2],
+                   help='Excite the governor at 0.05 s, then trip the selected machine at 0.15 s')
     p.add_argument('--network-tolerance', type=float,
                    help='Optional diagnostic network tolerance; omitted preserves the engine default')
     p.add_argument('--extra-pause', type=float,
@@ -60,7 +62,10 @@ def main():
     root = Path.cwd()
     if args.flat and args.reference_steps:
         p.error('Choose either flat or reference-step operation')
-    tag = f'{args.profile}-h{args.step:.12g}-t{args.duration:g}-{"command" if args.reference_steps else "flat" if args.flat else "fault"}-{args.repeat}'.replace('.', 'p')
+    if args.trip_bus is not None and (args.flat or args.reference_steps or args.duration <= .15):
+        p.error('Machine-trip operation requires a separate profile extending beyond 0.15 s')
+    mode = f'trip{args.trip_bus}' if args.trip_bus is not None else 'command' if args.reference_steps else 'flat' if args.flat else 'fault'
+    tag = f'{args.profile}-h{args.step:.12g}-t{args.duration:g}-{mode}-{args.repeat}'.replace('.', 'p')
     if args.network_tolerance is not None:
         tag = tag[:-1]+f'tol{args.network_tolerance:g}-'+args.repeat
     if args.extra_pause is not None:
@@ -123,7 +128,12 @@ def main():
     checked('step', psspy.dynamics_solution_param_2([di]*8, [df, tolerance, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(33)]
-    if args.reference_steps:
+    if args.trip_bus is not None:
+        checked('reference boundary', psspy.run(0, .05, 1000000, 1, 0))
+        checked('reference increment', psspy.increment_gref(1, '1', .2))
+        checked('pretrip', psspy.run(0, .15, 1000000, 1, 0))
+        checked('machine trip', psspy.dist_machine_trip(args.trip_bus, '1'))
+    elif args.reference_steps:
         for time, increment in [(.05, .2), (.25, -.4), (.4, .2)]:
             checked('reference boundary', psspy.run(0, time, 1000000, 1, 0))
             checked('reference increment', psspy.increment_gref(1, '1', increment))

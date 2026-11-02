@@ -160,15 +160,19 @@ public class Urgs3tReferenceTest {
     static void compareCompleteTrajectory(Path out,String tag,boolean shared)throws Exception {
         var metadata=JSON.readTree(out.resolve("manifest.json").toFile());var settings=metadata.path("settings");
         double h=settings.path("step").asDouble();
+        int tripBus=settings.path("trip_bus").asInt(0),inactiveSamples=0;
         var simulation=simulate(out,shared,1e-6);var initial=simulation.initial();var governor=simulation.governor();
         var reference=rows(out.resolve("native.csv"));var maximum=new TreeMap<String,Double>();var square=new TreeMap<String,Double>();
         var low=new TreeMap<String,Double>();var high=new TreeMap<String,Double>();var at=new TreeMap<String,Double>();
+        var activeStateMaximum=new TreeMap<String,Double>();for(int i=0;i<5;i++)activeStateMaximum.put("STATE"+i,0.);
         for(String key:reference.getFirst().keySet())if(!key.equals("time_s")){maximum.put(key,0.);square.put(key,0.);low.put(key,Double.POSITIVE_INFINITY);high.put(key,Double.NEGATIVE_INFINITY);at.put(key,0.);}
         int index=0,startup=0;float clock=0;long tick=0;
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("actual.csv"),BenchmarkOutputGuard.estimateCsvBytes(reference.size(),2+2*maximum.size()))) {
             w.write("source_time_s,actual_time_s,"+String.join(",",maximum.keySet()));for(String k:maximum.keySet())w.write(",REFERENCE."+k);w.write("\n");
             for(var s:reference) {
                 double time=s.get("time_s");var a=time<0?initial:simulation.frames().get(index++);
+                boolean inactive=tripBus==1&&s.get("EFD")==0.;if(inactive)inactiveSamples++;
+                if(tripBus>0)assertEquals(inactive?0.:1.,a.get("HOST_ACTIVE"),0.,"Reference event side and physical host status");
                 if(time<0)startup++;else {
                     long next=Math.round(a.get("time_s")/h);assertTrue(next>=tick&&next-tick<=1);
                     while(tick<next){clock+=(float)h;tick++;}assertEquals((double)clock,time,1e-10,"Reference clock and event side");
@@ -178,6 +182,7 @@ public class Urgs3tReferenceTest {
                     assertTrue(a.containsKey(k),k);double error=a.get(k)-s.get(k);assertTrue(Double.isFinite(error));
                     if(Math.abs(error)>maximum.get(k)){maximum.put(k,Math.abs(error));at.put(k,time);}
                     square.put(k,square.get(k)+error*error);low.put(k,Math.min(low.get(k),s.get(k)));high.put(k,Math.max(high.get(k),s.get(k)));w.write(","+a.get(k));
+                    if(!inactive&&activeStateMaximum.containsKey(k))activeStateMaximum.put(k,Math.max(activeStateMaximum.get(k),Math.abs(error)));
                 }
                 for(String k:maximum.keySet())w.write(","+s.get(k));w.write("\n");
             }
@@ -190,17 +195,18 @@ public class Urgs3tReferenceTest {
         }
         double angle=Math.sqrt(square.get("ANGLE_DEG")/reference.size());checks.add(()->assertTrue(angle<.01,"Rotor-angle RMSE "+angle));
         double stateBound=shared?5e-6:2e-4*h/.0005;
-        for(int i=0;i<5;i++){String k="STATE"+i;checks.add(()->assertTrue(maximum.get(k)<=stateBound,k+" maximum "+maximum.get(k)));}
+        for(int i=0;i<5;i++){String k="STATE"+i;checks.add(()->assertTrue(activeStateMaximum.get(k)<=stateBound,k+" active maximum "+activeStateMaximum.get(k)));}
         boolean parity=angle<.01&&nrmse.values().stream().allMatch(v->v<.001);
-        for(int i=0;i<5;i++)parity&=maximum.get("STATE"+i)<=stateBound;
-        var result=Map.of("profile",tag,"method",shared?"staggered":"modified-euler","maximum_absolute",maximum,"time_of_maximum",at,
+        for(int i=0;i<5;i++)parity&=activeStateMaximum.get("STATE"+i)<=stateBound;
+        var result=new LinkedHashMap<String,Object>(Map.of("profile",tag,"method",shared?"staggered":"modified-euler","maximum_absolute",maximum,"time_of_maximum",at,
                 "range_nrmse",nrmse,"rotor_angle_rmse_deg",angle,"state_bound",stateBound,"state_and_boundary_parity",parity,
-                "all_observation_channels_qualified",false,"runtime_convention",governor.getRuntimeConvention().name());
+                "all_observation_channels_qualified",false,"runtime_convention",governor.getRuntimeConvention().name()));
+        if(tripBus>0){result.put("active_state_maximum_for_gates",activeStateMaximum);result.put("inactive_host_samples",inactiveSamples);result.put("inactive_allocated_states_qualified",false);}
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),100000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,result);}
         System.out.println("URGS3T "+tag+" shared="+shared+" diagnostics="+out.getFileName()+" maxima="+maximum);
         assertAll(tag+" shared="+shared,checks);
     }
-    record Simulation(Map<String,Double> initial,List<Map<String,Double>> frames,Urgs3tGovernor governor) {}
+    record Simulation(Map<String,Double> initial,List<Map<String,Double>> frames,Urgs3tGovernor governor,Recording recording) {}
     static int referenceIntervals(Path csv,double h)throws Exception {
         int intervals=0;double previous=Double.NaN;float clock=0;
         try(var reader=Files.newBufferedReader(csv)) {
@@ -229,9 +235,11 @@ public class Urgs3tReferenceTest {
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());var algorithm=context.getDynSimuAlgorithm();var net=context.getDStabilityNet();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(h);algorithm.setTotalSimuTimeSec(duration);algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
-        boolean flat=settings.path("flat").asBoolean(),commands=settings.path("reference_steps").asBoolean();
-        if(!flat&&!commands)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"fault");
+        boolean flat=settings.path("flat").asBoolean(),commands=settings.path("reference_steps").asBoolean();int tripBus=settings.path("trip_bus").asInt(0);
+        if(tripBus>0)net.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent("Bus"+tripBus,"1",net,.15),"machine-trip");
+        else if(!flat&&!commands)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"fault");
         var recording=new Recording(algorithm,flat,commands);
+        recording.tripBus=tripBus;
         recording.extraPause=settings.path("extra_pause").asDouble(Double.NaN);
         algorithm.setSolver(factory==null?(shared?new Shared(algorithm,recording,tolerance):new Ordinary(algorithm,recording,tolerance)):factory.apply(algorithm,recording));
         assertTrue(algorithm.initialization());var initial=recording.capture(0);recording.enabled=true;
@@ -242,18 +250,21 @@ public class Urgs3tReferenceTest {
         assertEquals(tolerance,shared?((Shared)algorithm.getSolver()).getNetworkSolutionTolerance():((Ordinary)algorithm.getSolver()).tolerance(),0.);
         var governor=(Urgs3tGovernor)net.getMachine("Bus1-mach1").getGovernor();
         if(!governor.isActive())assertEquals(initialEvaluations,governor.getStaggeredEvaluationCount());
-        else if(shared)assertTrue(governor.getStaggeredEvaluationCount()>duration/h);else assertEquals(0,governor.getStaggeredEvaluationCount());
-        return new Simulation(initial,recording.frames,governor);
+        else if(shared)assertTrue(governor.getStaggeredEvaluationCount()>(tripBus==1?.14:duration)/h);else assertEquals(0,governor.getStaggeredEvaluationCount());
+        return new Simulation(initial,recording.frames,governor,recording);
     }
     static final class Recording {
         final DynamicSimuAlgorithm algorithm;final boolean flat,commands;boolean enabled;int nextCommand;
         double extraPause=Double.NaN;
+        int tripBus;Map<String,Double> historiesAtTrip;long evaluationsAtTrip;
         final List<Map<String,Double>> frames=new ArrayList<>();final double[] states=new double[5],vars=new double[5];
         Recording(DynamicSimuAlgorithm a,boolean f,boolean c){algorithm=a;flat=f;commands=c;}
         boolean before(double t){
             if(!enabled)return false;
-            boolean command=commands&&nextCommand<3&&Math.abs(t-new double[]{.05,.25,.4}[nextCommand])<1e-9;
-            boolean boundary=command||Math.abs(t-extraPause)<1e-9||(!flat&&!commands&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9));
+            boolean command=commands&&nextCommand<3&&Math.abs(t-new double[]{.05,.25,.4}[nextCommand])<1e-9
+                    ||tripBus>0&&nextCommand==0&&Math.abs(t-.05)<1e-9;
+            boolean boundary=command||Math.abs(t-extraPause)<1e-9||tripBus>0&&Math.abs(t-.15)<1e-9
+                    ||tripBus==0&&!flat&&!commands&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9);
             if(!boundary)return false;
             frames.add(capture(t));var machine=algorithm.getNetwork().getMachine("Bus1-mach1");
             var g=(Urgs3tGovernor)machine.getGovernor();
@@ -268,21 +279,24 @@ public class Urgs3tReferenceTest {
         }
         Map<String,Double> capture(double t) {
             var n=algorithm.getNetwork();var m=n.getMachine("Bus1-mach1");var g=(Urgs3tGovernor)m.getGovernor();var v=m.getDStabBus().getVoltage();
-            var power=v.multiply(m.getIgen().subtract(v.multiply(m.getYgen())).conjugate());var a=new LinkedHashMap<String,Double>();a.put("time_s",t);
+            boolean active=m.isActive()&&m.getParentGen().isActive()&&m.getDStabBus().isActive();
+            var power=active?v.multiply(m.getIgen().subtract(v.multiply(m.getYgen())).conjugate()):Complex.ZERO;var a=new LinkedHashMap<String,Double>();a.put("time_s",t);a.put("HOST_ACTIVE",active?1.:0.);
+            if(tripBus==1&&!active&&historiesAtTrip==null){historiesAtTrip=g.getIntegrationHistories();evaluationsAtTrip=g.getStaggeredEvaluationCount();}
             g.readStaggeredState(states,0);g.readPublishedVariables(vars,0);
             for(int i=0;i<5;i++){a.put("STATE"+i,states[i]);a.put("VAR"+i,vars[i]);}
             a.put("V1",v.abs());a.put("V2",n.getDStabBus("Bus2").getVoltageMag());a.put("A1",Math.toDegrees(v.getArgument()));a.put("A2",Math.toDegrees(n.getDStabBus("Bus2").getVoltage().getArgument()));
-            a.put("P_PU",power.getReal());a.put("Q_PU",power.getImaginary());a.put("ANGLE_DEG",Math.toDegrees(m.getAngle()));a.put("SPEED",m.getSpeed()-1);a.put("PMECH",m.getPm());a.put("EFD",m.getEfd());
+            a.put("P_PU",power.getReal());a.put("Q_PU",power.getImaginary());a.put("ANGLE_DEG",active?Math.toDegrees(m.getAngle()):0.);a.put("SPEED",active?m.getSpeed()-1:0.);a.put("PMECH",active?m.getPm():0.);a.put("EFD",active?m.getEfd():0.);
             var round=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)m;
             a.put("GEN1_STATE0",round.getEq1());a.put("GEN1_STATE1",round.getEd1());
             a.put("GEN1_STATE2",round.getPsikd());a.put("GEN1_STATE3",round.getPsikq());
             a.put("GEN1_STATE4",m.getSpeed()-1);a.put("GEN1_STATE5",m.getAngle());
             var second=n.getMachine("Bus2-mach1");var v2=second.getDStabBus().getVoltage();
-            var p2=v2.multiply(second.getIgen().subtract(v2.multiply(second.getYgen())).conjugate());
+            boolean secondActive=second.isActive()&&second.getParentGen().isActive()&&second.getDStabBus().isActive();
+            var p2=secondActive?v2.multiply(second.getIgen().subtract(v2.multiply(second.getYgen())).conjugate()):Complex.ZERO;
             a.put("GEN2_STATE0",second.getSpeed()-1);a.put("GEN2_STATE1",second.getAngle());
-            a.put("P_PU_2",p2.getReal());a.put("Q_PU_2",p2.getImaginary());a.put("SPEED_2",second.getSpeed()-1);
+            a.put("P_PU_2",p2.getReal());a.put("Q_PU_2",p2.getImaginary());a.put("SPEED_2",secondActive?second.getSpeed()-1:0.);
             // The classical source's excitation channel is its fixed internal emf.
-            a.put("ANGLE_DEG_2",Math.toDegrees(second.getAngle()));a.put("PMECH_2",second.getPm());a.put("EFD_2",((com.interpss.dstab.mach.EConstMachine)second).getE());return a;
+            a.put("ANGLE_DEG_2",secondActive?Math.toDegrees(second.getAngle()):0.);a.put("PMECH_2",secondActive?second.getPm():0.);a.put("EFD_2",secondActive?((com.interpss.dstab.mach.EConstMachine)second).getE():0.);return a;
         }
     }
     static class Ordinary extends DefaultDynamicSimulationSolver {

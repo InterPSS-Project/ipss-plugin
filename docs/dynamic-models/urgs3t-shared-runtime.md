@@ -321,7 +321,57 @@ unsupported option is absent from the maintained probe.
 The immutable private `valve-limit-captures.zip` retains all paired accepted and
 rejected diagnostic runs, with SHA-256
 `9ce0fbb8bcd04e0611b800fd7477ff85ac1365393b0f04ccdc16b478a7992cd0`.
-Host-machine disconnection and reconnection remain separate open work.
+Host-machine disconnection is exercised below; hot reconnection remains open.
+
+## Machine-trip lifecycle and inactive observations
+
+The independent trip controls excite the governor at 0.05 seconds and disconnect
+a machine at 0.15 seconds. Standard, lead-lag and deadband variants cover host
+trips at 0.5 ms and 0.25 ms intervals. A companion control trips the other source
+while the governor's host remains connected. Paired cold captures retain both
+machines' allocated states and output channels, controller states/variables,
+bus voltages/angles and both event sides.
+
+Both integrators stop updating the disconnected host's physical controller
+states and accepted histories. The shared evaluator count stops increasing.
+The surviving source supplies the connected load; tripping that other source
+instead leaves the governor active and responding. All fourteen physical
+lifecycle checks pass through the actual simulation solver. This qualifies
+disconnection, not hot reconnection or arbitrary ownership replacement.
+
+Inactive reference observations require explicit interpretation. Machine power,
+speed, angle and excitation channels become zero, and all controller allocated
+variables hold. Its allocated continuous states nevertheless drift nearly
+linearly, consistent with held derivative history: the standard valve coordinate changes by about
+0.253 pu after disconnection despite no further controller output updates.
+An independent recurrence discriminator checks this distinction. Production
+does not integrate inactive devices merely to reproduce those unused array
+values.
+
+Comparisons retain every raw sample and report full raw maximum errors. For
+these declared host-trip profiles only, controller-state acceptance covers
+samples while the reference host is active, including the pre-trip event side;
+the reference excitation channel and actual host status must agree on every
+sample. Full bus voltage, machine P/Q and published rotor-angle gates still
+cover the complete run, including both trip sides. The reports explicitly mark
+inactive allocated-state parity as unqualified, separately record active-state
+maxima, and count inactive samples. Other profiles retain their existing full
+state gates unchanged.
+
+| Method | Active-state and boundary comparisons passed | Worst voltage NRMSE | Worst P/Q NRMSE | Worst rotor-angle RMSE |
+|---|---:|---:|---:|---:|
+| Staggered | 7 of 7 | `0.000572252` | `0.0000783309` | `0.000321361` degrees |
+| Modified Euler | 0 of 7 | `0.000533591` | `0.0000866592` | `0.00713927` degrees |
+
+All modified-Euler voltage, P/Q and angle checks pass. Its seven failures are
+the unchanged active-state gates at the earlier reference-command step: valve
+errors reach `2.47481e-4` at 0.5 ms and `1.24389e-4` at 0.25 ms; the lead-lag
+variant instead fails its governor compensation-state gate. These are separate
+from the passing physical trip lifecycle and remain visible in the registered
+suite. No integration formula or numerical precision was changed.
+
+The immutable private `machine-trip-captures.zip` is pinned to SHA-256
+`234757579e724636ba4d24514a98902db21ffe7bffcd00c20ffde34f9dfc09d9`.
 
 ## Validation checkpoint
 
@@ -380,6 +430,19 @@ and their numerical summaries unchanged. The private `valve-validation.zip`
 retains the new state/boundary evidence, previous trajectory identity checks,
 failed derivative-access probe, regression reports and changed runtime classes
 over `production-step-validation.zip`.
+
+With machine-trip coverage registered, the suite executes 4,239 tests with
+50 failures, no errors and 13 skips. All 43 preceding failure identities are
+preserved; the seven added failures are the modified-Euler command-state checks
+listed above. Fourteen physical lifecycle checks and seven staggered trip
+trajectory comparisons pass. The core plugin module passes 486 tests with four
+skips and no failures or errors. All ninety-four previous complete trajectory
+CSVs remain byte-identical, with unchanged numerical summaries, and the
+production governor class is byte-identical to the preceding checkpoint.
+The private `machine-trip-validation.zip` retains the new complete comparisons,
+lifecycle results, regression reports and test classes over `valve-validation.zip`.
+Hash-identical raw reference files are linked to their immutable capture archives
+in the manifest rather than duplicated; every comparison sample is retained.
 
 Private immutable capture archives retain the complete cold-run evidence; the
 current fixture is `urgs3t-initial-20261102/captures-v3.zip`, pinned by the test to
