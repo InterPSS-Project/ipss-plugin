@@ -100,7 +100,11 @@ public class Pss2bInputLagPreparationTest {
                 .put("event","fault").put("variant","standard");
         Path output=Files.createTempDirectory(Path.of("target"),"pss2b-input-lag-");
         System.out.println("PSS2B input lag diagnostic "+output.getFileName());
-        Pss2bCoupledBoundaryConformanceTest.run(refs.stage(name), profile, output, staggered);
+        Object result=Pss2bCoupledBoundaryConformanceTest.run(refs.stage(name), profile, output, staggered);
+        var diagnostic=new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(result);
+        double peak=diagnostic.get("maximum_error").get("VOTHSG").asDouble();
+        assertTrue(peak < (staggered ? .001 : .01),
+                "Qualified short-lag sampled output, peak="+peak+", staggered="+staggered);
     }
 
     private static String tag(String grid,int slot,String ratio,String repeat) {

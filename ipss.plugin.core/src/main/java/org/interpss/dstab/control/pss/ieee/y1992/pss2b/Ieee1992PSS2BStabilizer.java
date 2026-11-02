@@ -25,6 +25,9 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         implements IntegrationStepAware, org.interpss.dstab.control.util.AcceptedVoltageMeasurement,
         org.interpss.dstab.control.util.StaggeredEulerParticipant {
     private transient Pss2bCompiledStage compiledSignals;
+    private transient Pss2bCompiledStage sampledObservationPlan;
+    private final Pss2bAcceptedPathHistory pathHistory = new Pss2bAcceptedPathHistory();
+    private boolean sampledPathPolicy;
     private transient Pss2bCompiledStage sharedStage;
     private boolean initialized, sharedStageInvalidated, sharedEvaluationActive, predictorPending;
     private long staggeredEvaluations;
@@ -34,6 +37,7 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     @Override
     protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
         compiledSignals = null;
+        sampledObservationPlan = null;
         if (getClass() != Ieee1992PSS2BStabilizer.class) return null;
         try { return compiledSignals = new Pss2bCompiledStage(this); }
         catch (IllegalArgumentException unsupportedGraph) { return null; }
@@ -42,6 +46,7 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     @Override public void invalidateRuntimePlan() {
         super.invalidateRuntimePlan();
         compiledSignals = null;
+        sampledObservationPlan = null;
         if (sharedStage != null) sharedStageInvalidated = true;
     }
 
@@ -242,9 +247,11 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         initialized = false; sharedStage = null; sharedStageInvalidated = sharedEvaluationActive = predictorPending = false;
+        sampledObservationPlan = null; pathHistory.initialize(0., 0.);
         staggeredEvaluations = 0;
         compiledSignals = null;
         Ieee1992PSS2BStabilizerData d = getData();
+        sampledPathPolicy = d.isSampledInputPathOutputs();
         tw1 = d.getTw1(); tw2 = d.getTw2(); t6 = d.getT6();
         tw3 = d.getTw3(); tw4 = d.getTw4(); t7 = d.getT7();
         ks2 = d.getKs2(); ks3 = d.getKs3(); t8 = d.getT8(); t9 = d.getT9();
@@ -277,6 +284,10 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         inputPath1 = new InputPath(tw1, tw2, 1.0, t6);
         inputPath2 = new InputPath(tw3, tw4, ks2, t7);
         initialized = super.initStates(bus, machine);
+        if (initialized && sampledPathPolicy) {
+            var plan = prepareCurrentInputPaths();
+            pathHistory.initialize(plan.signal(2), plan.signal(5));
+        }
         return initialized;
     }
 
@@ -306,7 +317,10 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     /** Both ordinary calls and prepared-stage dispatch share the same pending-history guard. */
     void acceptCompatibleStage(boolean predictor, double dt) {
         sharedEvaluationActive = false;
-        if (dt > 0) predictorPending = predictor;
+        if (dt > 0) {
+            predictorPending = predictor;
+            if (sampledPathPolicy) pathHistory.beginStep(dt);
+        }
     }
 
     private Pss2bCompiledStage sharedStage() {
@@ -353,11 +367,46 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     }
     public long getStaggeredEvaluationCount() { return staggeredEvaluations; }
     @Override public double getOutput(Machine machine) {
+        if (initialized && sampledPathPolicy) {
+            var plan = sampledPlan();
+            plan.refreshSampledAlgebraic();
+            return plan.signal(10);
+        }
+        return getInstantaneousOutput(machine);
+    }
+
+    /** Algebraic observation at the current inputs/states, without accepting history. */
+    public double getInstantaneousOutput(Machine machine) {
         var shared = sharedObservation();
         return shared == null ? super.getOutput(machine) : shared.signal(10);
     }
 
+    private Pss2bCompiledStage sampledPlan() {
+        if (sharedEvaluationActive) sharedStage();
+        if (sampledObservationPlan == null)
+            sampledObservationPlan = compiledSignals != null ? compiledSignals : new Pss2bCompiledStage(this);
+        return sampledObservationPlan;
+    }
+
+    private Pss2bCompiledStage prepareCurrentInputPaths() {
+        refreshInputSignals(getMachine());
+        var plan = sampledPlan();
+        plan.refreshSharedAlgebraic();
+        return plan;
+    }
+
+    double sampledPath(int child, double current) {
+        if (!sampledPathPolicy || (child == 0 ? t6 : t7) != 0.) return current;
+        return child == 0 ? pathHistory.firstOutput() : pathHistory.secondOutput();
+    }
+
+    @Override public void completeStaggeredStep(double stepSec) {
+        if (sampledPathPolicy) pathHistory.beginStep(stepSec);
+    }
+
     @Override public void acceptVoltageDerivativeEndpoint(double time, double step) {
+        requireAcceptedPathBoundary();
+        boolean acceptPaths = initialized && sampledPathPolicy && pathHistory.needsAcceptance(time, step);
         if (getData().getIcs1() == 6) {
             derivative1.accept(time, input1Bus.getVoltageMag(), step);
             input1Signal = clamp(derivative1.getDerivative(), vsi1max, vsi1min);
@@ -366,11 +415,25 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
             derivative2.accept(time, input2Bus.getVoltageMag(), step);
             input2Signal = clamp(derivative2.getDerivative(), vsi2max, vsi2min);
         }
+        if (acceptPaths) {
+            var plan = prepareCurrentInputPaths();
+            pathHistory.accept(time, step, plan.signal(2), plan.signal(5));
+        }
     }
 
     @Override public void synchronizeVoltageDerivativeMemory() {
+        requireAcceptedPathBoundary();
         if (getData().getIcs1() == 6) derivative1.synchronizeVoltage(input1Bus.getVoltageMag());
         if (getData().getIcs2() == 6) derivative2.synchronizeVoltage(input2Bus.getVoltageMag());
+        if (initialized && sampledPathPolicy) {
+            var plan = prepareCurrentInputPaths();
+            pathHistory.synchronize(plan.signal(2), plan.signal(5));
+        }
+    }
+
+    private void requireAcceptedPathBoundary() {
+        if (initialized && sampledPathPolicy && predictorPending)
+            throw new IllegalStateException("Finish the PSS2B corrector before accepting an input-path endpoint");
     }
 
     public double getInput1VoltageMemory() { return derivative1.getVoltage(); }
@@ -384,6 +447,13 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         states.put("input1VoltageDerivative", derivative1.getDerivative());
         states.put("input2VoltageMemory", derivative2.getVoltage());
         states.put("input2VoltageDerivative", derivative2.getDerivative());
+        if (sampledPathPolicy) {
+            states.put("input1AcceptedPath", pathHistory.firstAccepted());
+            states.put("input2AcceptedPath", pathHistory.secondAccepted());
+            states.put("input1PreviousPath", pathHistory.firstPrevious());
+            states.put("input2PreviousPath", pathHistory.secondPrevious());
+            states.put("inputPathAcceptedTime", pathHistory.acceptedTime());
+        }
         return java.util.Collections.unmodifiableMap(states);
     }
 

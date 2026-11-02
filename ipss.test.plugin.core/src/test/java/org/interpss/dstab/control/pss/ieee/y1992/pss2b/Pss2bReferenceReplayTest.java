@@ -100,7 +100,7 @@ public class Pss2bReferenceReplayTest {
                         "Sampled output retains the preceding stage, including event duplicates");
                 expected = bypassedOutput(pss, row);
             }
-            double algebraicOutput = pss.getOutput(machine);
+            double algebraicOutput = pss.getInstantaneousOutput(machine);
             if (previous != null && row.get("time_s").equals(previous.get("time_s")) && pss.n != 0) {
                 // A zero-duration network refresh can update bypassed coordinates while
                 // the sampled output still represents the preceding accepted evaluation.

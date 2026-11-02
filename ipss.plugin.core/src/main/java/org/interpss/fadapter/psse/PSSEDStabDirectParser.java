@@ -2595,6 +2595,7 @@ public class PSSEDStabDirectParser {
                     getDouble(f,30,0),getDouble(f,31,0),1.0,0.0,0.0,1.0);
             if (pss == null) return false;
             pss.getData().setStandardInputLagPreparation(true);
+            pss.getData().setSampledInputPathOutputs(true);
             pss.setInputSignalBuses(b1, b2);
             return true;
         }

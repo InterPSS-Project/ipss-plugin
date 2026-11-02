@@ -33,6 +33,9 @@ public class Pss2bCompiledStageTest {
         var machine = context.getDStabilityNet().getMachine("Bus1-mach1");
         var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
         var data = pss.getData();
+        // This fixture exercises arbitrary typed-extension equations/stages. The
+        // standard record's accepted-output lifecycle has separate coverage.
+        data.setSampledInputPathOutputs(false);
         data.setM(m); data.setN(n);
         data.setTw2(bypass ? 0. : .3); data.setTw4(bypass ? 0. : .4);
         data.setT6(bypass ? 0. : .07); data.setT7(bypass ? 0. : .09);

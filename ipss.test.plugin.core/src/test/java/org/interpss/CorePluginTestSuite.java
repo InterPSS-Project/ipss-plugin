@@ -83,6 +83,7 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledBoundaryConfo
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bLongRunConformanceTest;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledPlaybackTest;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bInputLagPreparationTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bAcceptedPathHistoryTest;
 import org.interpss.core.adapter.builder.dstab.Pss2bImportValidationTest;
 import org.interpss.core.dstab.Pss3cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss5cIndependentSmibConformanceTest;
@@ -772,6 +773,7 @@ import org.junit.platform.suite.api.Suite;
     Pss2bLongRunConformanceTest.class,
     Pss2bCoupledPlaybackTest.class,
     Pss2bInputLagPreparationTest.class,
+    Pss2bAcceptedPathHistoryTest.class,
     Pss2bImportValidationTest.class,
 	Pss3cPsseSmibConformanceTest.class,
     Pss4cIndependentSmibConformanceTest.class,

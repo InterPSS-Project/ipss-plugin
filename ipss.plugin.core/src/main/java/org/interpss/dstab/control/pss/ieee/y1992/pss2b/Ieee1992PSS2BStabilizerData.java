@@ -5,6 +5,7 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizerDa
 /** Complete PSS/E/PowerWorld PSS2B parameter set. */
 public class Ieee1992PSS2BStabilizerData extends Ieee1992PSS2AStabilizerData {
     private boolean standardInputLagPreparation;
+    private boolean sampledInputPathOutputs;
     private double t10;
     private double t11;
     private double vsi1max = 999.0;
@@ -15,6 +16,9 @@ public class Ieee1992PSS2BStabilizerData extends Ieee1992PSS2AStabilizerData {
     /** Standard records bypass input transducers at or below two outer intervals. */
     public boolean isStandardInputLagPreparation() { return standardInputLagPreparation; }
     public void setStandardInputLagPreparation(boolean enabled) { standardInputLagPreparation = enabled; }
+    /** Select accepted-interval bypass observations before initializing the controller. */
+    public boolean isSampledInputPathOutputs() { return sampledInputPathOutputs; }
+    public void setSampledInputPathOutputs(boolean enabled) { sampledInputPathOutputs = enabled; }
 
     public double getT10() { return t10; }
     public void setT10(double t10) { this.t10 = t10; }

@@ -351,12 +351,68 @@ the current-path reconstruction to fail the output gate in the profiles that
 distinguish these policies. The standalone reconstruction also prepares the
 model using the captured outer interval before injecting its recorded states.
 
-This is a diagnostic use of recorded internal coordinates, not a replacement
-for physical inputs during simulation. Production integration and output
-equations remain unchanged. An isolated candidate that cached bypass values
+This reconstruction test uses recorded internal coordinates to identify the
+observation rule. An isolated candidate that cached bypass values
 during ordinary evaluations did not improve the coupled errors. In particular,
 the staggered solver evaluates derivatives again after state and network updates;
 a cache overwritten by those evaluations cannot represent accepted history.
-Do not promote that candidate. A runtime change needs an explicit accepted-step
-sampling contract, including zero-duration events, trial/rollback behavior and
-both integration methods, followed by complete coupled qualification.
+That candidate remains rejected. The accepted-endpoint implementation below
+stores this history separately from evaluation work.
+
+## Accepted input-path publication
+
+Standard records now select accepted input-path publication automatically.
+`Pss2bAcceptedPathHistory` stores the two accepted coordinates, their preceding
+values and the accepted endpoint clock in primitive fields. Differential
+equations continue to use current physical inputs. Published outputs use the
+preceding bypass coordinates with current differential states, through the
+same compiled equation kernels. Active transducers continue to expose their
+current states. No separate set of numerical equations or per-step arrays is
+introduced.
+
+Positive integration stages mark an output evaluation as pending; they do not
+commit accepted coordinates. The existing accepted-network callback advances
+history once, after convergence. Duplicate and zero-duration callbacks do not
+advance it. A settled network event refreshes the next interval's accepted
+input while retaining the published sample. An unfinished modified-Euler
+predictor cannot accept an endpoint or event. Pure state trials, restoration,
+derivative evaluations and getters leave accepted history unchanged.
+
+The imported-network default solver and the staggered solver both dispatch
+these callbacks. A manually constructed algorithm must install the documented
+[default solver](../dynamic-solver-selection.md) or provide the same accepted
+endpoint/event lifecycle. Typed extensions retain algebraic publication by
+default; `setSampledInputPathOutputs` selects the policy before initialization.
+`getInstantaneousOutput` exposes the current-input algebraic observation for
+equation diagnostics. Named states expose the accepted and preceding path
+values and their clock.
+
+Across the independently captured short-lag fault profiles:
+
+| Method | Previous peak output error (pu) | Accepted-history peak output error (pu) | Previous worst angle RMSE (degrees) | Accepted-history worst angle RMSE (degrees) |
+|---|---:|---:|---:|---:|
+| Modified Euler | 0.11310 | 0.00661 | 0.002543 | 0.000346 |
+| Staggered | 0.10588 | 0.000878 | 0.002510 | 0.000269 |
+
+The short-lag tests now enforce peak sampled-output errors below 0.01 pu for
+modified Euler and 0.001 pu for staggered integration, in addition to their
+unchanged voltage and angle gates. Separate checks cover import defaults,
+generic/compiled parity, event publication, invalid and duplicate callbacks,
+trial restoration and reinitialization. The warmed accepted-history path
+allocates zero bytes over the measured loop of 100,000 steps.
+
+The production traces match the isolated candidate across the retained short
+and long profiles. Against the preceding checkpoint, the long-run network,
+machine, exciter, stabilizer output and differential-state samples remain
+identical. Two algebraic observations can change: `PSS_STATE_2` reads the first
+transducer output, and `PSS_STATE_4` reads the bypassed second-path washout
+output. The new publication preparation refreshes their inputs. These are
+recorded `getY()` observations, not evidence of changed integrated states;
+the complete traces and their differences are retained in private validation
+artifacts. The long traces are therefore not byte-identical to the preceding
+checkpoint.
+
+This qualifies the sampled-output improvement for the retained profiles. Full
+controller-state qualification remains open. The earlier ten-second
+modified-Euler rotor-angle RMSE remains 0.017025 degrees against the unchanged
+0.01-degree limit; this publication change does not resolve it.

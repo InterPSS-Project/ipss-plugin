@@ -226,13 +226,22 @@ final class Pss2bCompiledStage implements CmlCompiledStage {
 
     /** The graph is acyclic: resolve its algebraic feedthrough in signal order once. */
     void refreshSharedAlgebraic() {
+        refreshAlgebraic(false);
+    }
+
+    /** Reuse the equation kernels with accepted bypass coordinates for publication. */
+    void refreshSampledAlgebraic() {
+        refreshAlgebraic(true);
+    }
+
+    private void refreshAlgebraic(boolean sampled) {
         checkSharedOwners();
         firstOwner.setRuntimeInputValue(0. + model.input1Signal);
         for (int i = 0; i < 3; i++) prepare(nodes[i], false);
-        firstOwner.setRuntimeOutputValue(y(2));
+        firstOwner.setRuntimeOutputValue(sampled ? model.sampledPath(0, y(2)) : y(2));
         secondOwner.setRuntimeInputValue(0. + model.input2Signal);
         for (int i = 3; i < 6; i++) prepare(nodes[i], false);
-        secondOwner.setRuntimeOutputValue(y(5));
+        secondOwner.setRuntimeOutputValue(sampled ? model.sampledPath(1, y(5)) : y(5));
         for (int i = 6; i < nodes.length; i++) prepare(nodes[i], false);
     }
 

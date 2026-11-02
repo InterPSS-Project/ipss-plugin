@@ -16,6 +16,20 @@ import com.interpss.common.exp.InterpssException;
 public class Pss2bImportValidationTest {
     @BeforeAll static void setup() { IpssCorePlugin.init(); }
 
+    @Test void standardRecordSelectsAcceptedSamplingWhileTypedDataRemainsAlgebraic(@TempDir Path folder) throws Exception {
+        String record = Files.readAllLines(Path.of("testData/adpter/psse/v33/HspModels/pss2b.dyr"))
+                .stream().filter(line -> line.contains("'PSS2B'")).findFirst().orElseThrow();
+        Path file=folder.resolve("standard.dyr");Files.writeString(file,record+"\n");
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        assertNotNull(new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(file.toString()));
+        var model=assertInstanceOf(org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer.class,
+                builder.getDStabNetwork().getMachine("Bus1-mach1").getStabilizer());
+        assertTrue(model.getData().isSampledInputPathOutputs());
+        assertTrue(model.getData().isStandardInputLagPreparation());
+        assertFalse(new org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizerData()
+                .isSampledInputPathOutputs());
+    }
+
     @Test void rejectMalformedStandardRecordsAndUnrealizableParameters(@TempDir Path folder) throws Exception {
         String record = Files.readAllLines(Path.of("testData/adpter/psse/v33/HspModels/pss2b.dyr"))
                 .stream().filter(line -> line.contains("'PSS2B'")).findFirst().orElseThrow();
