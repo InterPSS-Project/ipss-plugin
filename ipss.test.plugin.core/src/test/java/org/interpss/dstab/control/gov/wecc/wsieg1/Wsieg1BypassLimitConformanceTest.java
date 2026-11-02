@@ -105,13 +105,21 @@ public class Wsieg1BypassLimitConformanceTest {
             var run=Wsieg1SharedSmibTest.simulate(input.resolve("network.raw"),input.resolve("dynamic.dyr"),staggered,entry.path("event").asText(),step,duration,events,algorithm->{},startupSteps);
             var maximum=new LinkedHashMap<String,Double>();var squares=new LinkedHashMap<String,Double>();var times=new LinkedHashMap<String,Double>();
             for(String key:expected.getFirst().keySet())if(!key.equals("time_s")&&!key.equals("VAR2")){maximum.put(key,0.);squares.put(key,0.);times.put(key,0.);}
-            int frame=0,startups=0;float clock=0f;long tick=0;
+            int frame=0,startups=0,unchangedRunBoundaries=0;float clock=0f;long tick=0;
+            Map<String,Double> previousReference=null;
+            Wsieg1SharedSmibTest.Frame previousFrame=null;
             try(var stream=new GZIPOutputStream(BenchmarkOutputGuard.newOutputStream(output.resolve(tag+".csv.gz"),16L*1024*1024));var writer=new BufferedWriter(new OutputStreamWriter(stream,StandardCharsets.UTF_8))) {
                 writer.write("reference_time_s,actual_time_s,sample_kind,"+String.join(",",run.initial.values().keySet()));
                 for(String key:expected.getFirst().keySet())writer.write(",REFERENCE."+key);writer.write("\n");
                 for(var ref:expected) {
                     double time=ref.get("time_s");boolean held=time<0&&startupSteps==0;
-                    var row=held?run.initial:run.frames.get(frame++);if(held)startups++;
+                    // A flat reference capture still stops/restarts RUN at the diagnostic
+                    // boundaries. Retain both identical observations of the same state;
+                    // restarting recording must not advance the numerical solution.
+                    boolean repeatedFlatBoundary=!held&&entry.path("event").asText().equals("flat")
+                            &&previousReference!=null&&time==previousReference.get("time_s");
+                    if(repeatedFlatBoundary){assertEquals(previousReference,ref,"Flat RUN boundary changes no measurements");unchangedRunBoundaries++;}
+                    var row=held?run.initial:repeatedFlatBoundary?previousFrame:run.frames.get(frame++);if(held)startups++;
                     else if(time<0) {
                         long negativeTick=Math.round(row.time()/step);
                         assertTrue(negativeTick<0&&negativeTick>=-startupSteps);
@@ -126,26 +134,37 @@ public class Wsieg1BypassLimitConformanceTest {
                         if(Math.abs(error)>maximum.get(key)){maximum.put(key,Math.abs(error));times.put(key,time);}
                         squares.put(key,squares.get(key)+error*error);
                     }
+                    previousReference=ref;previousFrame=row;
                 }
             }
-            assertEquals(expected.size(),run.frames.size()+startups);var normalized=new LinkedHashMap<String,Double>();var ranges=new LinkedHashMap<String,Double>();
-            for(String key:List.of("V1","V2","P_PU","Q_PU")) {
+            assertEquals(expected.size(),run.frames.size()+startups+unchangedRunBoundaries);var normalized=new LinkedHashMap<String,Double>();var ranges=new LinkedHashMap<String,Double>();
+            for(String key:expected.getFirst().keySet())if(key.matches("V[0-9]+")||key.startsWith("P_PU")||key.startsWith("Q_PU")) {
                 double low=expected.stream().mapToDouble(r->r.get(key)).min().orElseThrow(),high=expected.stream().mapToDouble(r->r.get(key)).max().orElseThrow();
                 double rmse=Math.sqrt(squares.get(key)/expected.size());ranges.put(key,high-low);
                 if(high>low) {
                     double nrmse=rmse/(high-low);normalized.put(key,nrmse);
-                    gates.add(()->assertTrue(nrmse<.001,tag+" "+key+" range NRMSE "+nrmse));
+                    if(entry.path("event").asText().equals("flat"))
+                        gates.add(()->assertTrue(maximum.get(key)<1e-6,tag+" "+key+" flat-run absolute error "+maximum.get(key)));
+                    else gates.add(()->assertTrue(nrmse<.001,tag+" "+key+" range NRMSE "+nrmse));
                 } else {
                     normalized.put(key,null);
                     gates.add(()->assertTrue(maximum.get(key)<1e-6,tag+" "+key+" constant-reference absolute error "+maximum.get(key)));
                 }
             }
-            double rotor=Math.sqrt(squares.get("ANGLE_DEG")/expected.size());gates.add(()->assertTrue(rotor<.01,tag+" rotor RMSE "+rotor));
+            var rotorByChannel=new LinkedHashMap<String,Double>();
+            for(String key:expected.getFirst().keySet())if(key.startsWith("ANGLE_DEG")) {
+                double rmse=Math.sqrt(squares.get(key)/expected.size());rotorByChannel.put(key,rmse);
+                gates.add(()->assertTrue(rmse<.01,tag+" "+key+" rotor RMSE "+rmse));
+            }
+            double rotor=rotorByChannel.get("ANGLE_DEG");
             var result=new LinkedHashMap<String,Object>();result.put("tag",tag);result.put("staggered",staggered);result.put("samples",expected.size());
             result.put("maximum_absolute_error",maximum);result.put("time_of_maximum_error",times);result.put("range_nrmse",normalized);result.put("reference_ranges",ranges);result.put("rotor_rmse_deg",rotor);
             result.put("unmapped_reference_diagnostics",List.of("VAR2"));
             result.put("integrated_startup_steps",startupSteps);
             result.put("constant_reference_maximum_absolute_error_limit",1e-6);
+            result.put("rotor_rmse_by_channel",rotorByChannel);
+            result.put("flat_run_uses_absolute_error",entry.path("event").asText().equals("flat"));
+            result.put("retained_unchanged_run_boundary_duplicates",unchangedRunBoundaries);
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve(tag+".json").toFile(),result);
         }
         assertEquals(gateCount,gates.size());assertAll("Independent boundary accuracy, including small-response ranges",gates);

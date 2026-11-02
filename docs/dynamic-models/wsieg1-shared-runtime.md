@@ -18,7 +18,7 @@ Zero-duration ordinary refresh now exposes rates for state checking while
 preserving states and committed histories.
 
 The primary governor owns every turbine coordinate. Its secondary-shaft
-companion owns a power-output binding and base conversion, with zero additional
+companion owns a power-output binding and prepared initial-power normalization, with zero additional
 differential states. Both machine updates can therefore observe shaft power
 without integrating the turbine twice. A second companion attachment is
 rejected. Shared access rejects invalid buffers/steps, nonfinite trials before
@@ -49,7 +49,7 @@ parameters remain double precision; recurrence reconstruction uses the reference
 run's executed coefficients.
 
 The initialized reference is exposed separately from subsequent live reference
-changes. Secondary base conversion, active deadband output, physical valve
+changes. Secondary initial-power normalization, active deadband output, physical valve
 output and accepted backlash-input history have explicit read-only accessors.
 The reference's allocated `VAR2` remains unused in these captures; its complete
 raw values are retained separately from the semantic speed-deadband mode. The
@@ -397,3 +397,84 @@ newly registered modified-Euler non-flat initialization trajectory gate. The
 suite remains failing. Private evidence retains both executable controls,
 the complete comparisons, cold-reference hashes, runtime/dependency provenance
 and the focused/module/registered reports.
+
+## Solved shaft-power normalization
+
+The secondary turbine output must match its own initialized mechanical power.
+A machine-rating ratio alone is insufficient when the solved shaft loading
+does not match the turbine fractions. The shared owner now prepares:
+
+```text
+turbine_initial = primary_initial_mechanical_power / sum(primary_fractions)
+secondary_scale = secondary_initial_mechanical_power
+                  / (turbine_initial * sum(secondary_fractions))
+secondary_output = secondary_scale * sum(secondary_fraction[i] * turbine_state[i])
+```
+
+Each initial mechanical power is already on its machine's own base. Fresh
+independent captures vary both machine ratings, shaft loading, turbine fractions
+and network base. An independently loaded secondary requires a scale of three
+where the former rating-only implementation gives two. An isolated previous
+executable reproduces two; the new executable produces three and the correct
+initial secondary power. A zero-loaded secondary can have zero scale.
+
+Machines initialize sequentially, so each governor captures its own freshly
+initialized mechanical power. The scale becomes available only after both
+shafts have supplied their operating points, in either traversal order.
+Reinitialization invalidates the previous scale. Repeated preparation retains
+the latest fresh value, and shared integration rejects an incomplete pair.
+The scale is not recomputed from moving turbine states. Undefined zero-primary
+allocation and nonfinite normalization fail initialization rather than exposing
+the previous run's scale. Independent zero-over-zero, initially inactive
+companion and reconnection behavior still require qualification.
+
+Both integration methods retain the same state arrays and passive companion.
+Warmed paired-shaft update/output checks measure zero allocated bytes under
+both methods. The earlier ordinary flat/fault regression trajectories remain
+bit-identical, including dual-shaft states and outputs.
+
+The independent network-base control doubles system base while preserving
+physical branches and the fault impedance in ohms. Electrical P/Q channels
+therefore halve; mechanical powers, controller coordinates, voltages, angles
+and timestamps remain unchanged within export precision. The synthetic fault
+driver now converts the same physical fault to the actual system base.
+
+Complete comparisons include both rotors, all bus voltages and both machines'
+electrical and mechanical powers. Flat reference runs still stop and restart
+recording at diagnostic boundaries. The comparison retains those duplicate
+samples against the same simulated state, requires their measurements to be
+identical and never advances or shifts the integration clock to absorb them.
+For flat runs, the report retains the actual reference range and NRMSE, while
+acceptance uses a 1e-6 pu maximum absolute error to avoid dividing by incidental
+flat-run rounding noise. Fault gates retain 0.001 range NRMSE and 0.01-degree
+rotor RMSE without range floors or channel offsets.
+
+| New shaft/base controls | Worst fault voltage/P/Q NRMSE | Worst rotor RMSE, degrees |
+| --- | --- | --- |
+| Modified Euler | 0.00178160 | 0.00217975 |
+| Staggered Euler | 0.00053308 | 0.00184393 |
+
+Staggered fault boundaries pass at both tested intervals. Modified Euler passes
+the fine-step fault controls but fails several quarter-cycle active-power gates.
+All flat voltage errors remain below 1.10e-7 pu. Flat reactive-power gates still
+fail: the largest doubled-base difference is 2.425e-5 pu, already present at
+initialization. An isolated tighter-load-flow control removes that discrepancy;
+it leaves a separate 2.321e-6 pu reactive-power difference in the higher-rated
+secondary profile. Neither diagnostic changes production defaults or the
+registered acceptance limits. Initial-power and state agreement does not imply
+full trajectory qualification.
+
+The focused group runs 108 tests with six failed accuracy invocations, no
+errors and no skips. The five shaft-initialization/lifecycle/allocation tests
+pass, as do independent cold-repeat, initial-coordinate and physical-base
+controls. The core-plugin module runs 486 tests with no failures and four
+skips. These results extend the model's coverage; unresolved precision,
+modified-Euler transient, internal-state and lifecycle gates remain explicit.
+
+The complete registered suite executes 4,058 tests with 13 failures, no errors
+and 13 skips. Its failing test identities preserve all eleven prior failures
+and add only the two new shaft/base trajectory invocations described above.
+The private validation capsule retains the cold captures, complete trajectories,
+previous/current executable discriminator, tighter-flow control, allocation
+checks and focused/module/registered reports. The suite is still failing;
+these new controls do not establish full model acceptance.

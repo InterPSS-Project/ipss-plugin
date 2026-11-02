@@ -38,6 +38,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private boolean referenceJumpPending;
     private double initialReference, backlashInputMemory, initialValveLimitMismatch;
     private double secondaryScale=1;
+    private double initialTurbinePower, secondaryInitialPower;
+    private boolean primaryInitializationPending, secondaryInitializationPending, secondaryScaleReady;
     private Machine secondaryMachine;
     public void attachSecondaryShaft(Machine machine) {
         if(secondaryMachine!=null || machine==null || machine==getMachine() || machine.getGovernor()!=null)
@@ -52,18 +54,19 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         private Machine initializedMachine;
         SecondaryShaft(Wsieg1Governor owner) {super(owner.getId()+"_LP","WSIEG1_LP","WECC");this.owner=owner;}
         @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine) {
-            double base=bus.getNetwork().getBaseKva();
-            owner.secondaryScale=owner.getMachine().getRating(org.interpss.numeric.datatype.Unit.UnitType.mVA,base)
-                    /machine.getRating(org.interpss.numeric.datatype.Unit.UnitType.mVA,base);
-            boolean valid=Double.isFinite(owner.secondaryScale)&&owner.secondaryScale>0;
+            owner.secondaryScaleReady=false;owner.secondaryInitializationPending=false;initializedMachine=null;
+            if(machine==null||machine!=getMachine()||!Double.isFinite(machine.getPm()))return false;
+            owner.secondaryInitialPower=machine.getPm();owner.secondaryInitializationPending=true;
+            boolean valid=owner.finishSecondaryInitialization();
             initializedMachine=valid?machine:null;
             return valid;
         }
         @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag) {
             // The shared turbine is integrated by its high-pressure owner exactly once per stage.
-            return Double.isFinite(dt)&&dt>=0&&method==DynamicSimuMethod.MODIFIED_EULER&&(flag==0||flag==1);
+            return initializedMachine==machine&&owner.secondaryScaleReady&&Double.isFinite(dt)&&dt>=0
+                    &&method==DynamicSimuMethod.MODIFIED_EULER&&(flag==0||flag==1);
         }
-        @Override public double getOutput(Machine machine) { return owner.secondaryScale*owner.shaftOutput(1); }
+        @Override public double getOutput(Machine machine) { return owner.getSecondaryBaseScale()*owner.shaftOutput(1); }
         @Override public Map<String,Double> getNamedStates() {return Map.of("Shared turbine output",getOutput(getMachine()));}
         @Override public int staggeredStateCount() { return 0; }
         private void requireBuffer(double[] values,int offset) {
@@ -115,6 +118,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine machine) {
         initialized=false;predicted=false;monitor.reset();staggeredEvaluationCount=0;referenceRevision=0;referenceJumpPending=false;
+        if(secondaryMachine!=null){secondaryScaleReady=false;primaryInitializationPending=false;}
         if(machine==null || machine!=getMachine() || !Double.isFinite(machine.getPm()) || !Double.isFinite(machine.getSpeed()))return false;
         double sum=c[9]+c[12]+c[15]+c[18];
         if(!Double.isFinite(sum)||sum<=0) return false;
@@ -134,10 +138,27 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         initializedMachine=machine;initialReference=gate;backlashInputMemory=x[1];
         synchronizeBypasses(x);System.arraycopy(x,0,old,0,6);Arrays.fill(d0,0);
         derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.INITIALIZATION);
+        initialTurbinePower=p;
+        if(secondaryMachine!=null) {
+            primaryInitializationPending=true;
+            if(!finishSecondaryInitialization()){initialized=false;return false;}
+        }
         return true;
     }
+    private boolean finishSecondaryInitialization() {
+        // Both machines initialize their own mechanical power before their
+        // governors. Pair the fresh values, irrespective of traversal order;
+        // never normalize from a previous run's power or from moving states.
+        if(!primaryInitializationPending||!secondaryInitializationPending)return true;
+        double allocated=initialTurbinePower*(c[10]+c[13]+c[16]+c[19]);
+        if(!Double.isFinite(allocated)||allocated==0.)return false;
+        double scale=secondaryInitialPower/allocated;
+        if(!Double.isFinite(scale))return false;
+        secondaryScale=scale;secondaryScaleReady=true;
+        primaryInitializationPending=false;secondaryInitializationPending=false;return true;
+    }
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag) {
-        if(!initialized || !Double.isFinite(dt)||dt<0 || method!=DynamicSimuMethod.MODIFIED_EULER
+        if(!initialized || secondaryMachine!=null&&!secondaryScaleReady || !Double.isFinite(dt)||dt<0 || method!=DynamicSimuMethod.MODIFIED_EULER
                 || (flag!=0&&flag!=1) || (flag==1&&!predicted)) return false;
         if(dt==0) {
             derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.PREDICTOR);
@@ -172,6 +193,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private void requireSharedState() {
         if(!initialized||initializedMachine!=getMachine()||getMachine().getGovernor()!=this)
             throw new IllegalStateException("Initialize the governor with its current machine owner before shared integration");
+        if(secondaryMachine!=null&&!secondaryScaleReady)throw new IllegalStateException("Initialize both shafts before shared integration");
         if(predicted)throw new IllegalStateException("Finish the modified-Euler predictor before shared integration");
     }
     private void requireBuffer(double[] values,int offset) {requireSharedState();java.util.Objects.checkFromIndexSize(offset,6,values.length);}
@@ -276,7 +298,12 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         if(!initialized)throw new IllegalStateException("Initialize before reading the valve-limit residual");
         return initialValveLimitMismatch;
     }
-    public double getSecondaryBaseScale() { return secondaryMachine==null?0.:secondaryScale; }
+    /** Initial-power normalization, including the secondary machine's own per-unit base. */
+    public double getSecondaryBaseScale() {
+        if(secondaryMachine==null)return 0.;
+        if(!secondaryScaleReady)throw new IllegalStateException("Initialize both shaft operating points before reading their normalization");
+        return secondaryScale;
+    }
     public double getSpeedDeadbandOutput() { return speedInput(getMachine().getSpeed()-1.); }
     public double getValveOutput() { return backlash(x[1]); }
     public double getBacklashInputHistory() { return backlashInputMemory; }

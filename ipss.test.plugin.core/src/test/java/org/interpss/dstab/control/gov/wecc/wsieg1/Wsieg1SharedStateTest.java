@@ -30,7 +30,8 @@ public class Wsieg1SharedStateTest {
         }
         machine.setPm(.4);machine.setPe(.4);machine.setSpeed(1.);assertTrue(g.initStates(machine.getDStabBus(),machine));
         if(fixture.equals("dual")) {
-            var secondary=context.getDStabilityNet().getMachine("Bus2-mach1");assertTrue(secondary.getGovernor().initStates(secondary.getDStabBus(),secondary));
+            var secondary=context.getDStabilityNet().getMachine("Bus2-mach1");secondary.setPm(.4);
+            assertTrue(secondary.getGovernor().initStates(secondary.getDStabBus(),secondary));
         }
         return g;
     }

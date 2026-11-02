@@ -142,6 +142,10 @@
     "referenceArchive": "testData/private/verification-artifacts/wsieg1-time-preparation-20261102/captures.zip",
     "archiveSha256": "8f85327ce5f9be6fd75967d23ca0532ae0674aecfbe951c08d3de6834d02f2cf"
   },
+  "Wsieg1BaseConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-base-allocation-20261102/captures.zip",
+    "archiveSha256": "85c23b5c33744923eae120a85df881a32834a5a30610b6506989bfb573b75451"
+  },
   "Wsieg1InitialReferenceTest": {
     "referenceArchive": "testData/private/verification-artifacts/wsieg1-initial-limits-20261102/captures.zip",
     "archiveSha256": "411480cb603b20aa017940204a83cdd987e75d5dd57c6eb55c8e8390fe33e8bc"

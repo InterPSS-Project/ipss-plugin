@@ -112,7 +112,7 @@ public class Wsieg1SharedSmibTest {
         assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(duration);
         a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());var recording=new Recording(a,event,references);
         a.setSolver(staggered?new SharedRecorder(a,recording):new OrdinaryRecorder(a,recording));
-        if(event.equals("fault"))net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"fault");
+        if(event.equals("fault"))net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2*net.getBaseKva()/100000.),null,.05,.05),"fault");
         if(event.endsWith("-trip"))net.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent(event.equals("primary-trip")?"Bus1":"Bus2","1",net,.05),"shaft-trip");
         configure.accept(a);
         assertTrue(a.initialization());recording.initial=recording.capture(0.,"INITIAL");a.setSimuTime(-startupSteps*h);recording.enabled=true;

@@ -50,6 +50,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', choices=['standard', 'curve', 'dual', 'unused-lp'], required=True)
     parser.add_argument('--profile', choices=[*PROFILES, *STEP_PROFILES], default='base')
+    parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary'], default='entered')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], required=True)
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
@@ -59,6 +60,8 @@ def main():
     args = parser.parse_args()
     if args.event == 'secondary-trip' and args.fixture != 'dual':
         parser.error('A secondary trip requires the dual-shaft fixture')
+    if args.base_profile != 'entered' and (args.fixture != 'dual' or args.profile != 'base'):
+        parser.error('Base controls require the unmodified dual-shaft fixture')
     if args.event == 'reference-reversals' and args.duration < 1.:
         parser.error('The complete reference-reversal program requires at least one second')
     if args.pretrip_reference and not args.event.endswith('-trip'):
@@ -69,6 +72,8 @@ def main():
     tag = f'{args.fixture}-{args.event}{excitation}-h{args.step:.12g}-t{args.duration:g}-{args.repeat}'.replace('.', 'p')
     if args.profile != 'base':
         tag = args.profile + '-' + tag
+    if args.base_profile != 'entered':
+        tag = args.base_profile + '-' + tag
     out = root / 'target' / args.batch / tag
     if shutil.disk_usage(out.parent.parent).free < 2*1024**3 + 64*1024**2:
         raise OSError('Capture requires the free-space reserve and bounded export budget')
@@ -76,6 +81,35 @@ def main():
     fixture = 'wsieg1' if args.fixture == 'standard' else 'wsieg1-' + args.fixture
     shutil.copy2(source / ('dual-network.raw' if args.fixture == 'dual' else 'network.raw'), out / 'network.raw')
     shutil.copy2(source / (fixture + '.dyr'), out / 'dynamic.dyr')
+    if args.base_profile != 'entered':
+        lines = (out/'network.raw').read_text().splitlines(); section = 'header'
+        for i,line in enumerate(lines):
+            if 'BEGIN GENERATOR DATA' in line: section = 'generator'; continue
+            if 'BEGIN BRANCH DATA' in line: section = 'branch'; continue
+            if line.startswith('0 /'): section = 'other'; continue
+            if i == 0 and args.base_profile == 'system-double':
+                fields = line.split(','); fields[1] = ' 200.00'; lines[i] = ','.join(fields)
+            elif section == 'generator':
+                fields = line.split(','); bus = int(fields[0])
+                ratings = {'primary-high': {1:200.,2:50.}, 'secondary-high': {1:50.,2:200.}, 'split-fractions': {1:80.,2:120.}}.get(args.base_profile,{})
+                if bus in ratings: fields[8] = str(ratings[bus])
+                if args.base_profile == 'split-fractions' and bus == 2: fields[2] = '16.0'
+                if args.base_profile == 'independent-secondary' and bus == 2: fields[2] = '18.0'
+                if args.base_profile == 'zero-secondary' and bus == 2: fields[2] = '0.0'
+                lines[i] = ','.join(fields)
+            elif section == 'branch' and args.base_profile == 'system-double':
+                fields = line.split(',')
+                for k in [3,4]: fields[k] = str(2.*float(fields[k]))
+                for k in [5,9,10,11,12]: fields[k] = str(float(fields[k])/2.)
+                lines[i] = ','.join(fields)
+        (out/'network.raw').write_text('\n'.join(lines)+'\n')
+        if args.base_profile == 'split-fractions':
+            lines = (out/'dynamic.dyr').read_text().splitlines()
+            i = next(i for i,line in enumerate(lines) if "'WSIEG1'" in line); tokens = lines[i].split()
+            values = [float(v) for v in tokens[5:-1]]
+            for k,v in {9:.2,12:.15,15:.25,18:0.,10:.05,13:.25,16:.1,19:0.}.items(): values[k] = v
+            lines[i] = ' '.join(tokens[:5])+' '+' '.join(format(v,'.17g') for v in values)+' /'
+            (out/'dynamic.dyr').write_text('\n'.join(lines)+'\n')
     if args.profile != 'base':
         lines = (out / 'dynamic.dyr').read_text().splitlines()
         index = next(i for i, line in enumerate(lines) if "'WSIEG1'" in line)
