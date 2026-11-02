@@ -182,3 +182,27 @@ below `5e-7`. Unequal rates and nonmonotonic trial calls have analytic checks on
 independent captures currently exercise equal rates and restart fractions.
 These checks do not qualify Java protection timers or event ownership: those,
 bypass recovery, mode switching and coupled trajectories remain unfinished.
+
+## Rectifier protection history
+
+`Cdc6tRectifierProtection` separates read-only trial evaluation from accepted
+event observations. It implements strict instantaneous/delayed undervoltage
+pickup, interruption reset, strict recovery pickup and the minimum blocking
+duration. Reusable primitive buffers carry the blocked flag, pickup deadline,
+minimum-block deadline, recovery deadline and last restart time. Failed inputs
+cannot publish partial history. A new electrical observation at the same time
+may reblock after an unblock; a repeated integration trial cannot commit history.
+
+Analytic checks exercise interrupted pickup/recovery, equality boundaries,
+zero delays, rejected trials and repeated blocking. Recorded terminal-voltage
+replay reproduces the first delayed pickup within one output interval. This
+does not qualify complete protection trajectories: instantaneous blocking can
+occur at intermediate network voltages absent from exported boundary samples.
+The final runtime must check protection against those electrical observations
+and resolve any resulting discontinuity before recording the accepted output.
+
+The component currently requires explicit nonnegative delays. Interpretation of
+negative source sentinel delays, inverter-origin blocking, bypass, concurrent
+protection causes and full event ownership remain to be qualified before import
+and attachment can use it. Its API is shared by integration methods; complete
+coupled verification under both methods remains outstanding.

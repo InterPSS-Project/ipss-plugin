@@ -125,7 +125,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 - Retain exact named DC-link record decoding, quoted identifiers and adjacent-record handling. The reader preserves all 32 constants; strict import still reports the runtime unsupported. Bind the decoded name to the static DC-link owner before implementing dynamics.
 - Implement the dynamic HVDC controller and network coupling; static DC power-flow support does not establish dynamic support.
-- Reuse the shared measurement and normal-current-order components in the [runtime contract](dynamic-models/cdc6t-runtime-plan.md). Complete current limiting, protection/recovery histories and physical network attachment; the full model remains unsupported.
+- Reuse the shared measurement, normal-current-order, voltage-dependent ceiling, conducting-link, recovery-factor and rectifier-protection components in the [runtime contract](dynamic-models/cdc6t-runtime-plan.md). Complete protection/event ownership, bypass and mode switching, source sentinel handling and physical network attachment; the full model remains unsupported.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 
 ## CHVDC2U1
