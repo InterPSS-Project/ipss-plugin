@@ -246,9 +246,19 @@ strict DC pickup, sustained AC pickup, minimum bypass duration and sustained
 AC recovery. Analytic reset/atomicity checks and first-cycle reference timing
 checks qualify these components, not complete coupled operation.
 
-Recovery needs an additional interlock: the high DC pickup threshold used in
-the discriminator does not immediately re-trigger while voltage ramps upward
-from its lower restart value. The ordinary pickup component alone would do so.
-Resolve the exact recovery-mode pickup rules and combine them with blocking,
-current-order ownership and network observations before attaching the model.
-Full post-unbypass event trajectories remain unqualified.
+The bypass component now retains an explicit recovering mode after unbypass.
+While the voltage recovery factor is below unity, DC-voltage pickup is inhibited;
+delayed AC-voltage pickup remains active. Completing the voltage ramp restores
+normal DC pickup. The caller supplies the recovery factor from the shared ramp,
+without committing history during trial evaluation.
+
+Three cold-paired second-fault discriminators establish this distinction:
+a severe fault during recovery does not trigger DC bypass even below a scaled
+pickup threshold; sustained AC undervoltage during recovery does trigger bypass;
+and a fault after recovery restores DC pickup. Recorded internal mode snapshots
+independently identify normal, bypassed and recovering operation. Tests retain
+every sample, compare bypass status throughout, and explicitly confine endpoint
+replay discrepancies to the recorded transition neighborhoods. This is not
+exact event-stage parity or full coupled trajectory qualification. Combine these
+rules with concurrent blocking, current-order ownership and internal network
+observations before attaching the model.

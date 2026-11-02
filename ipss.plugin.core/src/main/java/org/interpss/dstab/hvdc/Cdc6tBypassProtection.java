@@ -14,35 +14,41 @@ public final class Cdc6tBypassProtection {
         this.dcThreshold=dcThreshold;this.acThreshold=acThreshold;this.pickupDelay=pickupDelay;
         this.recoveryVoltage=recoveryVoltage;this.recoveryDelay=recoveryDelay;this.minimumDuration=minimumDuration;
     }
-    /** Writes bypass flag, AC pickup deadline, minimum duration deadline, recovery deadline and unbypass time. */
-    public void preview(double time,double inverterAcPu,double inverterDcVolts,double[] output,int offset) {
+    /** Writes mode (0 normal, 1 bypassed, 2 recovering), AC pickup deadline, minimum duration deadline,
+     * recovery deadline and unbypass time. The event owner supplies the current voltage recovery factor. */
+    public void preview(double time,double inverterAcPu,double inverterDcVolts,double voltageRecoveryFactor,double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,5,output.length);
         finite(time);nonnegative(inverterAcPu);nonnegative(inverterDcVolts);
+        nonnegative(voltageRecoveryFactor);
+        if(voltageRecoveryFactor>1)throw new IllegalArgumentException("Voltage recovery factor must not exceed unity");
         if(time<acceptedTime)throw new IllegalArgumentException("Protection cannot precede accepted time");
         double bypass=accepted[0],pickup=accepted[1],minimum=accepted[2],recovery=accepted[3],restart=accepted[4];
-        if(bypass==0) {
+        if(bypass!=1) {
+            if(bypass==2&&voltageRecoveryFactor==1)bypass=0;
             if(inverterAcPu<acThreshold) {
                 if(Double.isNaN(pickup))pickup=deadline(time,pickupDelay);
             } else pickup=Double.NaN;
-            if(inverterDcVolts<dcThreshold||!Double.isNaN(pickup)&&time>=pickup) {
+            // Recovery inhibits only DC-voltage pickup; sustained AC undervoltage can still re-bypass.
+            if(bypass==0&&inverterDcVolts<dcThreshold||!Double.isNaN(pickup)&&time>=pickup) {
                 bypass=1;pickup=Double.NaN;minimum=deadline(time,minimumDuration);recovery=Double.NaN;
             }
         } else {
             if(inverterAcPu>recoveryVoltage) {
                 if(Double.isNaN(recovery))recovery=deadline(time,recoveryDelay);
                 if(time>=minimum&&time>=recovery) {
-                    bypass=0;minimum=Double.NaN;recovery=Double.NaN;restart=time;
+                    bypass=2;minimum=Double.NaN;recovery=Double.NaN;restart=time;
                 }
             } else recovery=Double.NaN;
         }
         output[offset]=bypass;output[offset+1]=pickup;output[offset+2]=minimum;
         output[offset+3]=recovery;output[offset+4]=restart;
     }
-    public void accept(double time,double inverterAcPu,double inverterDcVolts) {
-        preview(time,inverterAcPu,inverterDcVolts,trial,0);
+    public void accept(double time,double inverterAcPu,double inverterDcVolts,double voltageRecoveryFactor) {
+        preview(time,inverterAcPu,inverterDcVolts,voltageRecoveryFactor,trial,0);
         System.arraycopy(trial,0,accepted,0,5);acceptedTime=time;
     }
-    public boolean isBypassed() {return accepted[0]!=0;}
+    public boolean isBypassed() {return accepted[0]==1;}
+    public boolean isRecovering() {return accepted[0]==2;}
     public double lastUnbypassTime() {return accepted[4];}
     public void readHistory(double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,5,output.length);System.arraycopy(accepted,0,output,offset,5);

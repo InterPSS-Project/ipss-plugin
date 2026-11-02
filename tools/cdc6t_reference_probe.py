@@ -20,12 +20,22 @@ def main():
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass'], default='default')
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
+    parser.add_argument('--second-fault-at', type=float)
+    parser.add_argument('--second-fault-clear', type=float)
+    parser.add_argument('--second-fault-reactance', type=float, default=.02)
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
     if not math.isfinite(args.fault_clear) or not .05 < args.fault_clear < .5:
         parser.error('Fault clearing must be strictly between application and end time')
     if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
         parser.error('Inverter recovery delay must be finite and nonnegative')
+    if args.second_fault_at is not None or args.second_fault_clear is not None:
+        if args.profile != 'fault' or args.second_fault_at is None or args.second_fault_clear is None:
+            parser.error('Second fault requires the fault profile and both event times')
+        if not args.fault_clear < args.second_fault_at < args.second_fault_clear < .5:
+            parser.error('Second fault must follow first clearing and finish before end time')
+        if not math.isfinite(args.second_fault_reactance) or args.second_fault_reactance <= 0:
+            parser.error('Second fault reactance must be finite and positive')
     root = Path.cwd()
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
@@ -118,6 +128,12 @@ def main():
     checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, .0005]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(32)]
+    snapshots = []
+    def snapshot(stage):
+        snapshots.append(dict(stage=stage,
+            icons=[checked('flag', psspy.dsival('ICON', layout['ICON']+i)) for i in range(3)],
+            variables=[checked('variable', psspy.dsrval('VAR', layout['VAR']+i)) for i in range(18)]))
+    snapshot('initialized')
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
     if args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.0))
@@ -129,7 +145,18 @@ def main():
         checked('clear', psspy.dist_clear_fault(1))
     if args.profile == 'modulation':
         checked('release modulation', psspy.change_var(layout['VAR'], 0.0))
+    snapshot('first-cleared')
+    if args.second_fault_at is not None:
+        checked('recovery interval', psspy.run(0, args.second_fault_at, 1000000, 1, 0))
+        snapshot('before-second-fault')
+        checked('second fault', psspy.dist_bus_fault(7 if args.fault_terminal == 'rectifier' else 9,
+                3, 230., [0., args.second_fault_reactance*230**2/100]))
+        checked('second fault interval', psspy.run(0, args.second_fault_clear, 1000000, 1, 0))
+        snapshot('before-second-clearing')
+        checked('second clear', psspy.dist_clear_fault(1))
     checked('finish', psspy.run(0, .5, 1000000, 1, 0))
+    snapshot('finished')
+    Path('snapshots.json').write_text(json.dumps(snapshots, indent=2)+'\n')
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
     assert all(math.isfinite(v) for k in ['time']+keys for v in data[k])
