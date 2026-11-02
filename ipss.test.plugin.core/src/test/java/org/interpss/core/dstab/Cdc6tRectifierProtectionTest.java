@@ -13,6 +13,24 @@ public class Cdc6tRectifierProtectionTest {
     private static Cdc6tRectifierProtection model() {
         return new Cdc6tRectifierProtection(.2,.9,.01,.94,.01,.02);
     }
+    @Test void sourceSentinelPreservesMinimumBlockingVoltageConditionAndRollback(){
+        var sentinel=Cdc6tRectifierProtection.fromSource(.9,-999,999,1.05,-999,.02);
+        var explicit=Cdc6tRectifierProtection.fromSource(.9,-999,999,1.05,0,.02);
+        double[] a=new double[5],b=new double[5],trial=new double[5];
+        double[][] samples={{0,1},{.05,.8},{.051,1.1},{.069,1.1},{.07,1.05},{.071,1.051},{.071,.8},{.08,1.1},{.092,1.1}};
+        for(int i=0;i<samples.length;i++){
+            sentinel.accept(samples[i][0],samples[i][1]);explicit.accept(samples[i][0],samples[i][1]);
+            sentinel.readHistory(a,0);explicit.readHistory(b,0);assertArrayEquals(b,a);
+            if(i==2||i==3)assertTrue(sentinel.isBlocked(),"Minimum duration remains active");
+            if(i==4)assertTrue(sentinel.isBlocked(),"Equality cannot satisfy strict recovery voltage");
+            if(i==5||i==8)assertFalse(sentinel.isBlocked());
+            sentinel.preview(samples[i][0]+.001,.1,trial,0);sentinel.readHistory(b,0);assertArrayEquals(a,b);
+        }
+        for(double delay:new double[]{-1,-998,Double.NaN,Double.NEGATIVE_INFINITY})
+            assertThrows(IllegalArgumentException.class,()->Cdc6tRectifierProtection.fromSource(.9,-999,999,1.05,delay,.02));
+        assertThrows(IllegalArgumentException.class,()->new Cdc6tRectifierProtection(.9,-999,999,1.05,-999,.02),
+                "Typed runtime API still requires explicit nonnegative delays");
+    }
     @Test void previewsDoNotStartTimersAndRejectedTrialsLeaveHistoryUnchanged() {
         var model=model();double[] before=new double[5],after=new double[5],trial=new double[5];
         model.accept(0,1);model.readHistory(before,0);

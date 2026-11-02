@@ -201,11 +201,11 @@ occur at intermediate network voltages absent from exported boundary samples.
 The final runtime must check protection against those electrical observations
 and resolve any resulting discontinuity before recording the accepted output.
 
-The component currently requires explicit nonnegative delays. Interpretation of
-negative source sentinel delays, inverter-origin blocking, bypass, concurrent
-protection causes and full event ownership remain to be qualified before import
-and attachment can use it. Its API is shared by integration methods; complete
-coupled verification under both methods remains outstanding.
+The typed component constructor requires explicit nonnegative delays. Source
+preparation now handles the qualified legacy recovery-delay sentinel described
+below. Inverter-origin blocking, bypass and transactional ownership have their
+separate gates below; concurrent protection causes and complete protected
+trajectory acceptance remain open before automatic import can use the full model.
 
 ## Inverter-origin blocking
 
@@ -591,3 +591,34 @@ need qualification.
 Private clock captures:
 `verification-artifacts/cdc6t-protection-clock-20261101/captures.zip`, SHA-256
 `609104596f3293090e3e35e92302f05b765f701ea4ef1e82cdd8e8bcc6c93369`.
+
+## Legacy rectifier recovery-delay sentinel
+
+`Cdc6tRectifierProtection.fromSource` interprets the documented `TREBLK = -999`
+source default as zero additional recovery delay. It still requires voltage
+strictly above the rectifier recovery threshold and completion of the minimum
+blocking duration. The existing typed constructor remains explicit and rejects
+negative delays; the source factory also rejects unqualified negative values
+other than this exact sentinel. Preparation occurs once and does not alter the
+source record or add work to the event loop.
+
+The discriminator raises the recovery-voltage threshold so that a blocked line
+cannot recover while the fault remains. Separate negative-sentinel and explicit
+zero-delay controls are each regenerated twice. All four reference CSV files and
+state/flag/clock snapshots are identical; the initialized source constant remains
+`-999` in the sentinel control. Complete Java traces are also identical between
+the two settings within each integration method. Analytic checks independently
+exercise the minimum duration, strict voltage equality, repeated blocking and
+read-only preview behavior.
+
+The focused CDC6T, adjacent LCC and staggered regression passes 180 tests with
+no failures or skips, including the four new coupled sentinel/zero controls.
+Their independent full-trajectory differences remain diagnostic; equivalence of
+the two delay settings does not establish complete protected trajectory accuracy.
+
+Private reference archive:
+`verification-artifacts/cdc6t-recovery-sentinel-20261101/captures.zip`, SHA-256
+`1655d2dda780170d4a48bafa5abaabde4c2fb68d991ece298ce9ec52bfce9aef`.
+Validation reports and complete comparison exports:
+`verification-artifacts/cdc6t-recovery-sentinel-20261101/validation.zip`, SHA-256
+`6d8ff11380eee0bfce5d29bb7528042745bf43e3781581badc704e4a18022e56`.

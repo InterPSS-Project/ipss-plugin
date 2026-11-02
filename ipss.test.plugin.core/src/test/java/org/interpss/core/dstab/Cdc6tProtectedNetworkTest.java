@@ -23,25 +23,28 @@ import com.interpss.dstab.cache.StateMonitor;
 /** Complete protected network lifecycle. Full independent state/trajectory acceptance remains a separate gate. */
 public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
     @TempDir Path folder;
-    static java.util.stream.Stream<Arguments> profiles(){return java.util.stream.Stream.of("inverter","delay","rectifier","inverter-half","floor200","floor400")
+    static java.util.stream.Stream<Arguments> profiles(){return java.util.stream.Stream.of("inverter","delay","rectifier","inverter-half","floor200","floor400","negative-recovery","zero-recovery")
             .flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));}
     @ParameterizedTest @MethodSource("profiles")
     void protectedFaultCompletesWithOneAcceptedClock(String profile,boolean staggered)throws Exception {
         boolean half=profile.endsWith("-half");double step=half?.00025:.0005;
         boolean floor=profile.startsWith("floor");double minimum=profile.equals("floor200")?200:400;
-        var archive=Path.of("testData/private/verification-artifacts/cdc6t-"+(floor?"minimum-current":"coordination"+(half?"-halfstep":""))+"-20261101/captures.zip");
+        boolean sentinel=profile.endsWith("-recovery"),rectifierFault=profile.equals("rectifier")||sentinel;
+        var archive=Path.of("testData/private/verification-artifacts/cdc6t-"+(sentinel?"recovery-sentinel":floor?"minimum-current":"coordination"+(half?"-halfstep":""))+"-20261101/captures.zip");
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent coordinated network inputs");
-        assertEquals(floor?"9634c30bc479897165d89e1bf97a9fba3c11881614dd7f6d3035eec6258c0639":half?"8137239dd9529a6a9e8d34661ba7050a82e4f9b63b5106bf7bf187d1447a8d29":"40a91608fe41d356c3c6c108da7d548e1d9e530e1d32af70ee47700ee518f6f9",
+        assertEquals(sentinel?"1655d2dda780170d4a48bafa5abaabde4c2fb68d991ece298ce9ec52bfce9aef":floor?"9634c30bc479897165d89e1bf97a9fba3c11881614dd7f6d3035eec6258c0639":half?"8137239dd9529a6a9e8d34661ba7050a82e4f9b63b5106bf7bf187d1447a8d29":"40a91608fe41d356c3c6c108da7d548e1d9e530e1d32af70ee47700ee518f6f9",
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         List<String> raw;List<Map<String,Double>> reference;
         try(var z=new ZipFile(archive.toFile())){
-            String prefix=half?"a/":profile+"/a/";
+            String prefix=half?"a/":profile.replace("-recovery","")+"/a/";
             raw=new ArrayList<>(new String(z.getInputStream(z.getEntry(prefix+"network.raw")).readAllBytes(),java.nio.charset.StandardCharsets.UTF_8).lines().toList());
             reference=Tiocr1ResetReferenceTest.csv(z.getInputStream(z.getEntry(prefix+"native.csv")).readAllBytes());
         }
-        var coordinator=new Cdc6tProtectionCoordinator(new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02),
-                new Cdc6tInverterProtection(.9,.02,profile.equals("rectifier")?.99:.92,profile.equals("delay")?.04:.01,.02),
-                new Cdc6tBypassProtection(490000,.9,.01,profile.equals("rectifier")?.99:.92,.01,.02),
+        var rectifier=sentinel?Cdc6tRectifierProtection.fromSource(.9,-999,999,1.05,profile.startsWith("negative")?-999:0,.02)
+                :new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02);
+        var coordinator=new Cdc6tProtectionCoordinator(rectifier,
+                sentinel?new Cdc6tInverterProtection(0,0,.3,0,.02):new Cdc6tInverterProtection(.9,.02,profile.equals("rectifier")?.99:.92,profile.equals("delay")?.04:.01,.02),
+                sentinel?new Cdc6tBypassProtection(200,999,999,.3,999,.02):new Cdc6tBypassProtection(490000,.9,.01,profile.equals("rectifier")?.99:.92,.01,.02),
                 new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,floor?100:500,1000,2,2));
         var f=Cdc6tCoupledNetworkTest.load(folder,raw,Cdc6tCurrentOrder.Mode.POWER,-500,
                 Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000),coordinator,minimum);
@@ -49,7 +52,7 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(step);a.setTotalSimuTimeSec(.5);a.setSimuOutputHandler(new StateMonitor());
         var recorder=new Cdc6tCoupledReferenceTest.Recorder(f);
         a.setSolver(staggered?new Cdc6tCoupledReferenceTest.Shared(recorder):new Cdc6tCoupledReferenceTest.Ordinary(recorder));
-        n.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(profile.equals("rectifier")?"Bus7":"Bus9",n,
+        n.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(rectifierFault?"Bus7":"Bus9",n,
                 SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"TerminalFault");
         assertTrue(a.initialization());a.setSimuTime(-2*step);recorder.enabled=true;
         var out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-protected-network")),profile+"-"+(staggered?"staggered-":"euler-"));
@@ -66,7 +69,7 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
                 if(mode==OperatingMode.BYPASSED&&Double.isNaN(firstBypass))firstBypass=t;
                 if(mode==OperatingMode.RECOVERING&&Double.isNaN(firstRecovery))firstRecovery=t;
                 f.ports().rectifierPort().getOutputObject();f.runtime().readStaggeredState(states,0);f.runtime().readBoundary(boundary,0);
-                if(staggered&&!profile.equals("rectifier")&&Math.abs(t-firstBlock-step)<1e-10)
+                if(staggered&&!rectifierFault&&Math.abs(t-firstBlock-step)<1e-10)
                     assertEquals(1000*(1-.75*step/.05),states[1],1e-6,"Internal blocking uses the independently observed discontinuity treatment once");
                 for(double value:states)assertTrue(Double.isFinite(value));for(double value:boundary)assertTrue(Double.isFinite(value));
                 if(mode==OperatingMode.BLOCKED){assertEquals(0,boundary[0],0);assertEquals(0,boundary[3],0);}
@@ -79,8 +82,8 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
         recorder.capture(a.getSimuTime());
         writeComparison(out,reference,recorder.rows,step);
         System.out.println("CDC6T protected "+profile+" staggered="+staggered+" bypass/block/recovery="+firstBypass+"/"+firstBlock+"/"+firstRecovery);
-        assertEquals(profile.equals("rectifier")?.05:.07,firstBlock,2.2*step);
-        if(!profile.equals("rectifier"))assertEquals(.05,firstBypass,2.2*step);
+        assertEquals(rectifierFault?.05:.07,firstBlock,2.2*step);
+        if(!rectifierFault)assertEquals(.05,firstBypass,2.2*step);
         // A release attempt can reblock at the same time while retaining ramp factors.
         // Require conducting power as well as a partial ramp to identify actual recovery.
         double referenceRecovery=reference.stream().filter(row->row.get("VAR2")<1&&row.get("VAR2")>0&&row.get("VAR5")>0&&row.get("VAR7")!=0)

@@ -7,6 +7,15 @@ public final class Cdc6tRectifierProtection {
     private final double[] trial=new double[5];
     private double acceptedTime=Double.NEGATIVE_INFINITY;
 
+    /** Prepare the source record's legacy -999 recovery-delay sentinel as zero additional delay.
+     * Minimum blocking time and the strict recovery-voltage condition remain active.
+     * Other negative delay values are not inferred from this sentinel. */
+    public static Cdc6tRectifierProtection fromSource(double instantVoltage,double delayedVoltage,double blockDelay,
+            double recoveryVoltage,double recoveryDelay,double minimumBlockTime){
+        return new Cdc6tRectifierProtection(instantVoltage,delayedVoltage,blockDelay,recoveryVoltage,
+                recoveryDelay==-999?0:recoveryDelay,minimumBlockTime);
+    }
+
     /** Delays are seconds; explicit nonnegative delays are required by this qualified component. */
     public Cdc6tRectifierProtection(double instantVoltage,double delayedVoltage,double blockDelay,
             double recoveryVoltage,double recoveryDelay,double minimumBlockTime) {

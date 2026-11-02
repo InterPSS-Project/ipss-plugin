@@ -24,6 +24,8 @@ def main():
     parser.add_argument('--minimum-current', type=float, default=400.)
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
+    parser.add_argument('--rectifier-recovery-delay', type=float)
+    parser.add_argument('--rectifier-recovery-voltage', type=float)
     parser.add_argument('--inverter-recovery-voltage', type=float)
     parser.add_argument('--second-fault-at', type=float)
     parser.add_argument('--second-fault-clear', type=float)
@@ -43,6 +45,10 @@ def main():
         parser.error('Fault clearing must be strictly between application and end time')
     if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
         parser.error('Inverter recovery delay must be finite and nonnegative')
+    if args.rectifier_recovery_delay is not None and not math.isfinite(args.rectifier_recovery_delay):
+        parser.error('Rectifier recovery delay must be finite')
+    if args.rectifier_recovery_voltage is not None and (not math.isfinite(args.rectifier_recovery_voltage) or args.rectifier_recovery_voltage < 0):
+        parser.error('Rectifier recovery voltage must be finite and nonnegative')
     if args.inverter_recovery_voltage is not None and (not math.isfinite(args.inverter_recovery_voltage) or args.inverter_recovery_voltage < 0):
         parser.error('Inverter recovery voltage must be finite and nonnegative')
     if args.second_fault_at is not None or args.second_fault_clear is not None:
@@ -116,6 +122,10 @@ def main():
         constants[15:21] = [480, 800, 490, 980, 500, 1200]
     if args.inverter_recovery_voltage is not None:
         constants[8] = args.inverter_recovery_voltage
+    if args.rectifier_recovery_delay is not None:
+        constants[24] = args.rectifier_recovery_delay
+    if args.rectifier_recovery_voltage is not None:
+        constants[5] = args.rectifier_recovery_voltage
     constants[11] = args.restart_current
     constants[14] = args.minimum_current
     if constants[14] >= constants[16]:
