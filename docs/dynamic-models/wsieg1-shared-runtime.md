@@ -544,3 +544,57 @@ The complete registered suite executes 4,065 tests with the same thirteen
 failing test identities as the previous capsule, no errors and thirteen skips.
 The new inactive-secondary checks introduce no failures. Full model acceptance
 remains open because the earlier accuracy and lifecycle gaps are unresolved.
+
+## Localizing the modified-Euler power error
+
+The largest active-power error in the dual-shaft base controls occurs one step
+after fault clearing. Mechanical-power error is much smaller. A diagnostic
+therefore supplies the independent reference mechanical powers directly to both
+machines while retaining the ordinary machine/network solver. The governors
+initialize normally, then remain inactive with held controller coordinates;
+these replay runs do not qualify governor trajectories.
+
+`Wsieg1BoundaryPlaybackTest` prescribes the left-endpoint powers before each
+predictor and the right-endpoint powers before each corrector. It checks the
+actual mechanical speed increments against the imported round-rotor swing
+equation, including power-to-torque conversion at actual speed. Merely replacing
+a displayed governor output would not prove which power the mechanical equations
+consumed. All positive-time machine-power samples match the reference exactly.
+A deliberately stale-corrector executable fails the diagnostic's input checks.
+
+A second control also prescribes reference rotor angle and speed before every
+network evaluation. Its Norton current calculation reads those rotor coordinates;
+the machine electrical coordinates and network solution remain computed. The
+diagnostic retains the original initialized negative-time observations, every
+positive-time reference sample and both event sides. No offsets, interpolation,
+range floors or changed governor parameters are used.
+
+For the highest-error shaft-rating profile at quarter-cycle intervals:
+
+| Control | Primary electrical-power NRMSE | Secondary electrical-power NRMSE |
+| --- | --- | --- |
+| Complete coupled model | 0.00124007 | 0.00178159 |
+| Prescribed mechanical powers | 0.00123967 | 0.00178119 |
+| Prescribed powers, rotor angles and speeds | 0.00099579 | 0.00141626 |
+
+The unchanged power gate is 0.001. The fine-step controls pass it, but prescribing
+the mechanical and rotor boundaries does not remove the coarse-step secondary
+power failure. The terminal-voltage discrepancy also changes very little.
+For this profile, the remaining discrepancy is downstream of the governor and
+includes the machine electrical/network integration. This does not by itself
+establish an equation defect: integration formulas and event handling still need
+to be distinguished through electrical-state comparisons and step refinement.
+
+The registered diagnostic tests assert input delivery, the mechanical stage
+equations, finite observations and complete clock/event alignment. Their reports
+retain every state and boundary error and the outcomes of the original coupled
+gates, including failures. Passing the diagnostic tests means the replay was
+executed correctly; it does not turn those failed accuracy gates into passes.
+Production equations, defaults and the independent coupled acceptance tests are
+unchanged.
+
+The two boundary-delivery tests pass. The complete registered suite executes
+4,067 tests with the same thirteen prior failing test identities, no errors
+and thirteen skips. Private evidence retains the stage-aware and stale-input
+executables, complete comparison samples, reference hashes and held-coordinate
+checks. No production model or solver file changes in this diagnostic slice.
