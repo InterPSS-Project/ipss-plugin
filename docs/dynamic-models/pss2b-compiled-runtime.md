@@ -330,3 +330,33 @@ Full independent captures are pinned by SHA-256
 in the private evidence archive. The runnable capture helper accepts an
 explicit input-lag override; it continues to reject changed or incorrectly
 loaded constants rather than silently adjusting the reference inputs.
+
+## Sampled bypass-path output
+
+The input-lag captures now provide an output-stage discriminator. Reconstructing
+the output with current differential states and current bypass-path values fails
+when the second transducer is bypassed. Substituting only the preceding bus
+voltage is also insufficient because the washout states have advanced. Using
+the preceding published bypass-path coordinate with the current differential
+states reconstructs every retained profile within the existing 0.000015 pu
+output gate. In the affected profiles, the largest reconstruction error is
+below 0.000006 pu, compared with an approximately 0.106 pu discrepancy using
+the current path value.
+
+At a duplicate event timestamp, bypass coordinates can refresh while the
+published stabilizer output remains the preceding accepted output. The
+reconstruction checks both observations explicitly. It preserves every row and
+timestamp; it does not shift the simulated trajectory. Negative controls require
+the current-path reconstruction to fail the output gate in the profiles that
+distinguish these policies. The standalone reconstruction also prepares the
+model using the captured outer interval before injecting its recorded states.
+
+This is a diagnostic use of recorded internal coordinates, not a replacement
+for physical inputs during simulation. Production integration and output
+equations remain unchanged. An isolated candidate that cached bypass values
+during ordinary evaluations did not improve the coupled errors. In particular,
+the staggered solver evaluates derivatives again after state and network updates;
+a cache overwritten by those evaluations cannot represent accepted history.
+Do not promote that candidate. A runtime change needs an explicit accepted-step
+sampling contract, including zero-duration events, trial/rollback behavior and
+both integration methods, followed by complete coupled qualification.

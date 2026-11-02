@@ -72,6 +72,25 @@ public class Pss2bInputLagPreparationTest {
                 java.util.stream.Stream.of(false,true).map(shared->Arguments.of(grid,slot,ratio,shared)))));
     }
 
+    static java.util.stream.Stream<Arguments> sourceProfiles() {
+        return java.util.stream.Stream.of("0p0005","0p00025").flatMap(grid->
+                java.util.stream.Stream.of(1,2).flatMap(slot->
+                java.util.stream.Stream.of("0","2","2p1").map(ratio->Arguments.of(grid,slot,ratio))));
+    }
+
+    @ParameterizedTest(name="output reconstruction {0}, input={1}, ratio={2}") @MethodSource("sourceProfiles")
+    void independentStatesReconstructTheSampledOutput(String grid,int slot,String ratio) throws Exception {
+        IpssCorePlugin.init();
+        Path root=references().stage(tag(grid,slot,ratio,"a"));
+        Pss2bReferenceReplayTest.reconstructPublishedOutput(root, true);
+        if (slot == 2 && !ratio.equals("2p1")) {
+            var rejected=assertThrows(AssertionError.class,
+                    () -> Pss2bReferenceReplayTest.reconstructPublishedOutput(root));
+            assertTrue(rejected.getMessage().contains("algebraic output at"),
+                    "Current-input reconstruction must fail its output gate, not fixture loading");
+        }
+    }
+
     @ParameterizedTest(name="{0}, input={1}, ratio={2}, staggered={3}") @MethodSource("profiles")
     void completeFaultBoundaryTrajectories(String grid,int slot,String ratio,boolean staggered) throws Exception {
         IpssCorePlugin.init(); IpssCorePlugin.configureSparseSolver("java-klu");

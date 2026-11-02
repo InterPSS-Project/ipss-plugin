@@ -54,6 +54,10 @@ public class Pss2bReferenceReplayTest {
     }
 
     static void reconstructPublishedOutput(Path root) throws Exception {
+        reconstructPublishedOutput(root, false);
+    }
+
+    static void reconstructPublishedOutput(Path root, boolean precedingBypassCoordinates) throws Exception {
         assertTrue(Files.isRegularFile(root.resolve("manifest.json")), "Missing required capture " + root.getFileName());
         var manifest = new com.fasterxml.jackson.databind.ObjectMapper().readTree(root.resolve("manifest.json").toFile());
         var icons = manifest.get("components").get("STAB").get("actual_icons");
@@ -63,15 +67,30 @@ public class Pss2bReferenceReplayTest {
         var machine = context.getDStabilityNet().getMachine("Bus1-mach1");
         var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
         useCapturedCoefficients(pss, manifest);
+        pss.configureIntegrationStep(manifest.get("step_s").asDouble());
         assertTrue(pss.initStates(machine.getDStabBus(), machine)); pss.compileRuntimePlan();
         assertTrue(pss.hasCompiledStageEvaluator());
+        if (precedingBypassCoordinates) {
+            assertTrue(pss.tw1 > 0. && pss.tw3 > 0.,
+                    "The retained sampled-path discriminator uses active first washouts");
+        }
         Map<String, Double> previous = null;
+        double previousAlgebraicOutput = 0.;
         for (var row : rows(root.resolve("native.csv"))) {
             impose(machine, row);
             pss.input1Signal = selected(pss.getData().getIcs1(), machine, row, 1,
                     icons.get(1).asInt() == 0 ? 1 : 2, pss.vsi1max, pss.vsi1min);
             pss.input2Signal = selected(pss.getData().getIcs2(), machine, row, 2,
                     icons.get(3).asInt() == 0 ? 1 : 2, pss.vsi2max, pss.vsi2min);
+            if (precedingBypassCoordinates && previous != null) {
+                // Reconstruct the prior published algebraic path value using current
+                // differential storage. This is an observation discriminator, not a
+                // fitted physical input or a production integration policy.
+                if (pss.t6 == 0.) pss.input1Signal = previous.get("PSS_STATE_2")
+                        + row.get("PSS_STATE_0") + (pss.tw2 > 0. ? row.get("PSS_STATE_1") : 0.);
+                if (pss.t7 == 0.) pss.input2Signal = previous.get("PSS_STATE_5")
+                        + row.get("PSS_STATE_3") + (pss.tw4 > 0. ? row.get("PSS_STATE_4") : 0.);
+            }
             injectPublishedStates(pss, row);
             double expected = row.get("VOTHSG");
             if (pss.n == 0) {
@@ -81,8 +100,18 @@ public class Pss2bReferenceReplayTest {
                         "Sampled output retains the preceding stage, including event duplicates");
                 expected = bypassedOutput(pss, row);
             }
-            assertEquals(expected, pss.getOutput(machine), 1.5e-5,
-                    root.getFileName() + " algebraic output at " + row.get("time_s"));
+            double algebraicOutput = pss.getOutput(machine);
+            if (previous != null && row.get("time_s").equals(previous.get("time_s")) && pss.n != 0) {
+                // A zero-duration network refresh can update bypassed coordinates while
+                // the sampled output still represents the preceding accepted evaluation.
+                assertEquals(previous.get("VOTHSG"), row.get("VOTHSG"), 0., "Event-side published output is held");
+                assertEquals(row.get("VOTHSG"), previousAlgebraicOutput, 1.5e-5,
+                        "Event-side sample retains the preceding reconstructed output");
+            } else {
+                assertEquals(expected, algebraicOutput, 1.5e-5,
+                        root.getFileName() + " algebraic output at " + row.get("time_s"));
+            }
+            previousAlgebraicOutput = algebraicOutput;
             previous = row;
         }
     }
