@@ -62,7 +62,7 @@ public class Wsieg1SharedSmibTest {
                 var point=references.get(nextReference);
                 if(Math.abs(point.time-time)<1e-9) {
                     frames.add(capture(time,"REFERENCE_PRE"));var g=(Wsieg1Governor)algorithm.getNetwork().getMachine("Bus1-mach1").getGovernor();
-                    g.setRefPoint(g.getRefPoint()+point.increment);nextReference++;return true;
+                    g.applyReferenceEvent(g.getRefPoint()+point.increment);nextReference++;return true;
                 }
                 if(time>point.time+1e-9)throw new IllegalStateException("Reference event missed its physical grid point");
             }
@@ -135,7 +135,7 @@ public class Wsieg1SharedSmibTest {
     private static final class SharedRecorder extends StaggeredEulerSolver {
         final Recording recording;
         SharedRecorder(DynamicSimuAlgorithm a,Recording r){super(a);recording=r;setNetworkSolutionTolerance(TOLERANCE);setReuseNetworkEndpoint(false);}
-        @Override public void beforeStep(double time)throws DStabSimuException{if(recording.before(time))notifyDiscontinuity();super.beforeStep(time);}
+        @Override public void beforeStep(double time)throws DStabSimuException{recording.before(time);super.beforeStep(time);}
         @Override public boolean networkSolutionStep()throws DStabSimuException {
             boolean solved=super.networkSolutionStep();if(solved&&recording.enabled&&"INITIAL".equals(networkSolutionStage))
                 recording.frames.add(recording.capture(dstabAlgo.getSimuTime(),"GRID"));return solved;

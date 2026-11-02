@@ -44,6 +44,20 @@ public class Wsieg1InitialReferenceTest {
                     assertTrue(current==lower||current==upper);
                     assertNotEquals(previous,current,"Conflicting effective limits alternate after the command reversal");
                 }
+                // The last command changes the valve derivative but no turbine
+                // derivative. Their recurrence retains its history across it.
+                int boundary=-1;
+                for(int i=2;i<rows.size()-1;i++)if(rows.get(i).get("time_s").equals(rows.get(i-1).get("time_s"))
+                        &&Math.abs(rows.get(i).get("time_s")-.6)<entry.path("step_s").asDouble()/2.)boundary=i;
+                assertTrue(boundary>1);var previous=rows.get(boundary-2);var current=rows.get(boundary);var next=rows.get(boundary+1);
+                var c=m.path("initialized_constants");double slope=(c.get(28).asDouble()-c.get(26).asDouble())/(c.get(27).asDouble()-c.get(25).asDouble());
+                java.util.function.ToDoubleFunction<Map<String,Double>> rate=r->
+                        (c.get(26).asDouble()+slope*(r.get("VAR7")-c.get(25).asDouble())-r.get("STATE2"))/c.get(8).asDouble();
+                double h=entry.path("step_s").asDouble(),now=rate.applyAsDouble(current),before=rate.applyAsDouble(previous);
+                double retained=current.get("STATE2")+h*(1.5*now-.5*before);
+                double smoothed=current.get("STATE2")+h*(.75*now+.25*before);
+                assertEquals(retained,next.get("STATE2"),2e-7,"Unchanged derivative input preserves turbine integration history");
+                assertTrue(Math.abs(smoothed-next.get("STATE2"))>1e-4,"Discriminate an unconditional event reset");
             }
             if(status.equals("rejected-quality")){assertTrue(Math.abs(reference-initial.get("STATE1"))>.1);rejected++;}
         }
@@ -79,5 +93,29 @@ public class Wsieg1InitialReferenceTest {
     @ParameterizedTest @ValueSource(booleans={false,true})
     void acceptedReferenceRunsRetainCompleteCoupledDiagnostics(boolean staggered,@TempDir Path staged)throws Exception {
         Wsieg1BypassLimitConformanceTest.compareCoupledTrajectories(new Wsieg1ReferenceFixture(staged,CONFIG),staggered,"wsieg1-initial-startup-",60,2);
+    }
+
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void conflictingLimitValveAndBacklashFollowEveryIndependentSample(boolean staggered,@TempDir Path staged)throws Exception {
+        var fixture=new Wsieg1ReferenceFixture(staged,CONFIG);int profiles=0;
+        for(var entry:fixture.matrix()) {
+            if(!entry.path("repeat").asText().equals("a")||!entry.path("profile").asText().equals("initial-upper-block-conflict"))continue;
+            String tag=entry.path("tag").asText();Path root=fixture.stage(tag);double h=entry.path("step_s").asDouble();
+            var reference=Wsieg1StateConformanceTest.rows(Files.readAllBytes(root.resolve("native.csv")));
+            var m=new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+            var events=new ArrayList<Wsieg1SharedSmibTest.ReferenceEvent>();
+            for(var event:m.path("reference_events"))events.add(new Wsieg1SharedSmibTest.ReferenceEvent(event.get(0).asDouble(),event.get(1).asDouble()));
+            var actual=Wsieg1SharedSmibTest.simulate(root.resolve("network.raw"),root.resolve("dynamic.dyr"),staggered,"reference-reversals",h,1.,events,a->{},2);
+            assertEquals(reference.size(),actual.frames.size());
+            if(staggered)assertEquals(3,((Wsieg1Governor)actual.algorithm.getNetwork().getMachine("Bus1-mach1").getGovernor()).staggeredInputDiscontinuityVersion());
+            for(int i=0;i<reference.size();i++) {
+                var expected=reference.get(i);var row=actual.frames.get(i);
+                assertEquals(expected.get("STATE1"),row.values().get("PUBLISHED1"),8e-8,tag+" valve at "+i);
+                assertEquals(expected.get("VAR6"),row.values().get("VAR6"),8e-8,tag+" backlash input at "+i);
+                assertEquals(expected.get("VAR7"),row.values().get("VAR7"),8e-8,tag+" backlash output at "+i);
+            }
+            profiles++;
+        }
+        assertEquals(2,profiles);
     }
 }

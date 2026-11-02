@@ -157,6 +157,7 @@ public class Wsieg1SharedStateTest {
     private static void run(Wsieg1Governor g,boolean shared,double[] values,double[] rates,double[] published,int count) {
         var m=g.getMachine();for(int tick=0;tick<count;tick++) {
             m.setSpeed(1.+.0004*Math.sin(tick*.017));
+            if(tick%127==0)g.applyReferenceEvent(tick%254==0?.56:.54);
             if(shared){g.readStaggeredState(values,0);g.evaluateStaggered(H,rates,0);for(int i=0;i<6;i++)values[i]+=H*rates[i];g.applyStaggeredState(values,0,H);g.completeStaggeredStep(H);}
             else {g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,m,0);g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,m,1);}
             g.readPublishedState(published,0);sink=published[1]+g.getOutput(m);

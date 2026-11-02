@@ -300,12 +300,12 @@ a separate 1e-6 pu maximum-absolute-error gate and reports range NRMSE as
 undefined. Every positive reference range, however small, retains the original
 0.001 range-NRMSE limit; rotor-angle RMSE remains below 0.01 degrees.
 
-Conflicting effective limits remain **unqualified**. The observed initial
+At this checkpoint, conflicting effective limits remained **unqualified**. The observed initial
 projection gives the upper bound priority, but a later reference command
-reversal causes alternating lower/upper valve values. The current runtime's
+reversal causes alternating lower/upper valve values. The earlier runtime's
 projection holds the upper bound and does not reproduce that inconsistent-limit
 trajectory. The cold-capture test explicitly detects this alternation, and the
-full coupled gate continues to fail under both methods. Initialization evidence
+full coupled gate failed under both methods. Initialization evidence
 must not be generalized into a claim that this runtime branch is correct.
 
 All 84 previously retained bypass/limiter and fast-time coupled traces remain
@@ -322,3 +322,78 @@ broader registered-suite result recorded in the preceding section predates this
 slice; it is not reclassified as passing. Private evidence retains the original
 and matched-startup comparisons, cold captures, exact runtime overlay, negative
 control, invariance checks and test reports.
+
+## Ordered limit projection and local reference events
+
+The reversed-limit runtime branch is now independently checked. When `Iblock`
+produces overlapping limit conditions, the upper branch has priority in the
+valve derivative check. A decreasing command can leave that branch. An unchanged
+trial holds its valve position; an advancing trial checks the upper bound and
+then the lower bound. This differs from simultaneous minimum/maximum clipping.
+Both methods now reproduce every recorded valve, backlash-input and
+backlash-output sample within 8e-8 pu at both tested intervals. Consistent
+effective bounds retain their previous projection and non-windup behavior,
+including the zero derivative at equal bounds. Entered parameters are unchanged.
+
+The initial limiter-only experiment exposed a separate event-history error.
+At a later command, the valve derivative changes but the turbine derivatives
+do not. A global discontinuity notification nonetheless averaged the turbine
+rates with older integration history. The independent first-turbine recurrence
+discriminates that averaging from the observed retained-history update. Changing
+the limiter equations alone therefore did not complete this comparison.
+
+`Wsieg1Governor.applyReferenceEvent(value)` now represents an accepted discrete
+command through the common model-local event contract. It saves the current
+left-side derivative vector in a reusable buffer and advances a revision.
+The shared solver observes that revision once and averages each new derivative
+with its actual left endpoint. Unchanged turbine derivatives remain unchanged;
+other devices keep their histories. Several writes before the next advance
+retain the first left endpoint. Observations and trial evaluations do not consume
+the event; accepted completion clears it, and reinitialization resets it.
+Calls during an unfinished predictor or through a replaced owner are rejected.
+
+Continuous upstream control still uses `setRefPoint(value)` at its normal
+predictor/corrector stages. That setter does not manufacture discrete events.
+This distinction preserves upstream-controller compatibility and avoids
+restarting numerical history on every continuously changing setpoint. The
+synthetic reference-command driver now uses the explicit event method under
+both integration schemes and no longer sends a global notification.
+
+| Reversed-limit command profiles | Worst rotor-angle RMSE, degrees | Worst voltage/P/Q range NRMSE |
+| --- | --- | --- |
+| Modified Euler | 0.0003662 | 0.0002200 |
+| Staggered Euler | 0.0000143 | 0.00011292 |
+
+Both methods pass the unchanged 0.01-degree rotor-angle and 0.001 range-NRMSE
+boundary gates for these profiles. This also removes unrelated machine-history
+rebasing from the clipped, fully bypassed-turbine starts: their worst staggered
+rotor-angle RMSE across the tested intervals falls from 0.003062 to 0.00003273
+degrees. Modified-Euler bypass-start accuracy remains unresolved. Full internal
+turbine-state qualification is separate from boundary acceptance; in particular,
+the reversed-limit modified-Euler mechanical-power peak difference remains
+about 0.001615 pu at quarter cycle.
+
+The hot numerical path retains primitive arrays and shared state storage.
+Warmed allocation checks, now including discrete commands, report zero bytes
+allocated in all four active/bypassed and ordinary/shared update loops. The
+focused model/import group runs 97 tests: 93 pass, four coupled-accuracy
+invocations fail, with no errors or skips. The core-plugin module runs 486 tests
+with no failures and four skips. Remaining precision, modified-Euler transient,
+base/reconnection and extended-duration tasks stay open; this is not full model
+or system acceptance.
+
+An isolated previous-runtime control fails the new limiter-order check. A
+separate compatibility run uses the previous command driver with the new
+production kernel: all 84 retained bypass/limit and fast-time traces remain
+exactly identical, including every state, history, physical channel and event
+duplicate. The improved reference-command comparisons use the new explicit
+local-event API; the compatibility result does not substitute for their
+independent boundary checks.
+
+The complete registered core suite executes 4,047 tests with 11 failures, no
+errors and 13 skips. Comparing the exact failing test identities with the
+retained earlier suite preserves all ten earlier failures and adds only the
+newly registered modified-Euler non-flat initialization trajectory gate. The
+suite remains failing. Private evidence retains both executable controls,
+the complete comparisons, cold-reference hashes, runtime/dependency provenance
+and the focused/module/registered reports.

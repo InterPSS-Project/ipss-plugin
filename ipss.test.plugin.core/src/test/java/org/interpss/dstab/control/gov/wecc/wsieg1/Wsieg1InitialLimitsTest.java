@@ -55,10 +55,77 @@ public class Wsieg1InitialLimitsTest {
             double upper=lowerBlock?.2:g.getInitialReference(),lower=lowerBlock?g.getInitialReference():.7;
             assertTrue(lower>upper);assertEquals(upper,g.getEffectiveMaximum(),0.);assertEquals(lower,g.getEffectiveMinimum(),0.);
             assertEquals(upper,g.getValvePosition(),0.);
-            // This establishes initialization only. The independent runtime
-            // alternates between reversed bounds after a command reversal;
-            // that behavior remains covered by the failing coupled gate.
+            // Initial projection and advancing-trial projection are distinct.
         }
+    }
+
+    @Test void reversedLimitsHoldAnUnchangedTrialAndAlternateOnlyWhenAdvancing()throws Exception {
+        var g=model(c->{c[6]=0.;c[7]=.7;c[33]=2.;});
+        double upper=g.getEffectiveMaximum(),lower=g.getEffectiveMinimum();
+        double[] state=new double[6],rates=new double[6];
+        var history=g.getIntegrationHistories();g.setRefPoint(upper+.1);
+        g.evaluateStaggered(H,rates,0);assertEquals(0.,rates[1],0.);
+        for(int i=0;i<3;i++){g.readStaggeredState(state,0);g.applyStaggeredState(state,0,H);assertEquals(upper,g.getValvePosition(),0.);}
+        assertEquals(history,g.getIntegrationHistories());
+        g.setRefPoint(upper-.1);
+        for(int tick=0;tick<6;tick++) {
+            double previous=g.getValvePosition();g.readStaggeredState(state,0);g.evaluateStaggered(H,rates,0);
+            assertEquals(g.getConstants()[5],rates[1],0.);
+            state[1]+=H*rates[1];g.applyStaggeredState(state,0,H);
+            assertEquals(previous==upper?lower:upper,g.getValvePosition(),0.);
+            g.completeStaggeredStep(H);
+        }
+    }
+
+    @Test void equalEffectiveLimitsKeepTheOrdinaryZeroRateRule()throws Exception {
+        var g=model(c->{c[6]=0.;c[7]=0.;c[33]=3.;});double initial=g.getValvePosition();
+        double[] rates=new double[6];
+        for(double reference:new double[]{initial-.1,initial+.1}) {
+            g.setRefPoint(reference);g.evaluateStaggered(H,rates,0);assertEquals(0.,rates[1],0.);
+            assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0));
+            assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1));
+            assertEquals(initial,g.getValvePosition(),0.);
+        }
+    }
+
+    @Test void referenceChangesPublishLocalLeftRatesWithoutRebasingUnchangedTurbines()throws Exception {
+        var g=model(c->{});double[] state=new double[6],before=new double[6],after=new double[6],left=new double[8];
+        g.readStaggeredState(state,0);state[2]-=.05;g.applyStaggeredState(state,0,H);g.evaluateStaggered(H,before,0);
+        assertFalse(g.readStaggeredInputDiscontinuityLeftRates(left,1));double reference=g.getRefPoint();
+        g.applyReferenceEvent(reference+.1);assertEquals(1,g.staggeredInputDiscontinuityVersion());
+        assertTrue(g.readStaggeredInputDiscontinuityLeftRates(left,1));assertArrayEquals(before,Arrays.copyOfRange(left,1,7),0.);
+        g.evaluateStaggered(H,after,0);assertNotEquals(before[1],after[1]);
+        for(int i:new int[]{0,2,3,4,5})assertEquals(before[i],after[i],0.);
+        g.applyReferenceEvent(reference-.1);assertEquals(2,g.staggeredInputDiscontinuityVersion());
+        g.applyReferenceEvent(reference-.1);assertEquals(2,g.staggeredInputDiscontinuityVersion());
+        for(int i=0;i<3;i++) {
+            g.evaluateStaggered(H,after,0);g.readStaggeredState(state,0);g.applyStaggeredState(state,0,H);
+            assertTrue(g.readStaggeredInputDiscontinuityLeftRates(left,1));assertArrayEquals(before,Arrays.copyOfRange(left,1,7),0.);
+        }
+        g.completeStaggeredStep(H);assertFalse(g.readStaggeredInputDiscontinuityLeftRates(left,1));assertEquals(2,g.staggeredInputDiscontinuityVersion());
+        g.evaluateStaggered(H,before,0);g.applyReferenceEvent(reference);
+        assertTrue(g.readStaggeredInputDiscontinuityLeftRates(left,1));assertArrayEquals(before,Arrays.copyOfRange(left,1,7),0.);
+    }
+
+    @Test void referenceWritesRejectPredictorAndNonfiniteInputsWithoutChangingTheAcceptedEvent()throws Exception {
+        var g=model(c->{});double reference=g.getRefPoint();g.applyReferenceEvent(reference+.01);
+        double[] left=new double[6],unchanged=new double[6];assertTrue(g.readStaggeredInputDiscontinuityLeftRates(left,0));
+        assertThrows(IllegalArgumentException.class,()->g.applyReferenceEvent(Double.NaN));assertEquals(1,g.staggeredInputDiscontinuityVersion());
+        assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0));
+        assertThrows(IllegalStateException.class,()->g.applyReferenceEvent(reference+.02));assertEquals(reference+.01,g.getRefPoint(),0.);
+        assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1));assertFalse(g.readStaggeredInputDiscontinuityLeftRates(unchanged,0));
+        assertThrows(IndexOutOfBoundsException.class,()->g.readStaggeredInputDiscontinuityLeftRates(unchanged,1));
+        g.applyReferenceEvent(reference);assertTrue(g.initStates(g.getMachine().getDStabBus(),g.getMachine()));
+        assertEquals(0,g.staggeredInputDiscontinuityVersion());assertFalse(g.readStaggeredInputDiscontinuityLeftRates(unchanged,0));
+    }
+
+    @Test void continuousReferenceUpdatesRemainAvailableAtBothModifiedEulerStages()throws Exception {
+        var g=model(c->{});double reference=g.getRefPoint();g.setRefPoint(reference+.01);
+        assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0));
+        g.setRefPoint(reference+.02);
+        assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1));
+        assertEquals(reference+.02,g.getRefPoint(),0.);assertEquals(0,g.staggeredInputDiscontinuityVersion());
+        assertFalse(g.readStaggeredInputDiscontinuityLeftRates(new double[6],0));
     }
 
     @Test void bypassedTurbinesExposeTheClippedAlgebraicPowerImmediately()throws Exception {

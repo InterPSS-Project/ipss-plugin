@@ -24,6 +24,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
             "Gv3","Pgv3","Gv4","Pgv4","Gv5","Pgv5","Iblock");
     private final double[] c;
     private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6];
+    private final double[] referenceLeftRates = new double[6];
     private final double[] curveX = new double[5], curveY = new double[5];
     private final double[] turbineTimes = new double[4];
     private double integrationStep, speedTime;
@@ -33,6 +34,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private boolean initialized, predicted;
     private Machine initializedMachine;
     private long staggeredEvaluationCount;
+    private long referenceRevision;
+    private boolean referenceJumpPending;
     private double initialReference, backlashInputMemory, initialValveLimitMismatch;
     private double secondaryScale=1;
     private Machine secondaryMachine;
@@ -111,7 +114,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private double preparedLag(double entered) {return entered<=2.*integrationStep?0.:entered;}
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine machine) {
-        initialized=false;predicted=false;monitor.reset();staggeredEvaluationCount=0;
+        initialized=false;predicted=false;monitor.reset();staggeredEvaluationCount=0;referenceRevision=0;referenceJumpPending=false;
         if(machine==null || machine!=getMachine() || !Double.isFinite(machine.getPm()) || !Double.isFinite(machine.getSpeed()))return false;
         double sum=c[9]+c[12]+c[15]+c[18];
         if(!Double.isFinite(sum)||sum<=0) return false;
@@ -152,7 +155,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
             for(int i=0;i<6;i++) x[i]=old[i]+.5*dt*(d0[i]+d1[i]);
             predicted=false;
         }
-        x[1]=projectValve(x[1]);
+        x[1]=projectTrialValve(x[1],old[1]);
         synchronizeBypasses(x);
         if(flag==1) commitHistories();
         return true;
@@ -161,6 +164,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private void commitHistories() {
         double output=backlash(x[1]);if(c[22]>0. && output!=gateMemory)backlashInputMemory=x[1];
         gateMemory=output;mode=deadbandMode(getMachine().getSpeed()-1);
+        referenceJumpPending=false;
     }
     private static void requireStep(double step) {
         if(!Double.isFinite(step)||step<=0.)throw new IllegalArgumentException("Shared integration step must be finite and positive");
@@ -180,7 +184,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     @Override public void applyStaggeredState(double[] values,int offset,double step) {
         requireBuffer(values,offset);requireStep(step);
         for(int i=0;i<6;i++)if(!Double.isFinite(values[offset+i]))throw new IllegalArgumentException("Trial states must be finite");
-        System.arraycopy(values,offset,x,0,6);x[1]=projectValve(x[1]);synchronizeBypasses(x);
+        double previous=x[1];
+        System.arraycopy(values,offset,x,0,6);x[1]=projectTrialValve(x[1],previous);synchronizeBypasses(x);
     }
     @Override public void completeStaggeredStep(double step) {requireSharedState();requireStep(step);commitHistories();}
     public long getStaggeredEvaluationCount() {return staggeredEvaluationCount;}
@@ -216,7 +221,13 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         double feedback=speedTime>0?s[0]+c[2]/speedTime*(u-s[0]):u;
         d[0]=speedTime>0?(u-s[0])/speedTime:0;
         double rate=clamp((reference-feedback-backlash(s[1]))/c[3],c[5],c[4]);
-        d[1]=(s[1]>=upper&&rate>0)||(s[1]<=lower&&rate<0)?0:rate;
+        // With reversed Iblock bounds, the upper branch owns an overlapping
+        // region. A negative command can leave it; testing both bounds at once
+        // would incorrectly freeze the valve. Consistent bounds keep the
+        // ordinary non-windup rule, including equal limits.
+        d[1]=lower>upper
+                ? (s[1]>=upper?Math.min(0.,rate):s[1]<=lower?Math.max(0.,rate):rate)
+                : (s[1]>=upper&&rate>0)||(s[1]<=lower&&rate<0)?0:rate;
         double input=interpolate(backlash(s[1]),curveX,curveY);
         for(int i=0;i<4;i++) {
             double t=turbineTimes[i];
@@ -234,7 +245,30 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         for(int i=0;i<4;i++) { if(turbineTimes[i]>0) input=x[2+i];output+=c[9+3*i+shaft]*input; }
         return output;
     }
-    @Override public void setRefPoint(double value) { if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite reference");reference=value; }
+    @Override public void setRefPoint(double value) {
+        if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite reference");
+        reference=value;
+    }
+    /** Apply a discrete external command at an accepted endpoint. Continuous
+     * upstream controls retain {@link #setRefPoint(double)} and its stage semantics. */
+    public void applyReferenceEvent(double value) {
+        if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite reference event");
+        if(value==reference)return;
+        if(initialized) {
+            requireSharedState();
+            // Several accepted writes before the next advance form one jump.
+            // Capture its first left endpoint; observation/trial calls do not consume it.
+            if(!referenceJumpPending)derivatives(x,referenceLeftRates,getMachine().getSpeed()-1.);
+            referenceJumpPending=true;referenceRevision++;
+        }
+        reference=value;
+    }
+    @Override public long staggeredInputDiscontinuityVersion() {return referenceRevision;}
+    @Override public boolean readStaggeredInputDiscontinuityLeftRates(double[] rates,int offset) {
+        requireBuffer(rates,offset);
+        if(!referenceJumpPending)return false;
+        System.arraycopy(referenceLeftRates,0,rates,offset,6);return true;
+    }
     public double getRefPoint() { return reference; }
     public double getInitialReference() { return initialReference; }
     /** Signed initial reference minus the projected valve; nonzero exposes a non-equilibrium start. */
@@ -263,7 +297,15 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         return b[i-1]+(value-a[i-1])*(b[i]-b[i-1])/(a[i]-a[i-1]);
     }
     private static double clamp(double value,double low,double high) { return Math.max(low,Math.min(high,value)); }
-    // Iblock can produce reversed effective limits. The upper bound has priority;
-    // retain both reported bounds rather than sorting or expanding them.
+    // Initial projection gives the upper bound priority. Reversed bounds are
+    // retained for diagnostics and must not be sorted or silently expanded.
     private double projectValve(double value) {return Math.min(upper,Math.max(lower,value));}
+    private double projectTrialValve(double value,double previous) {
+        if(lower<=upper)return projectValve(value);
+        // Do not move a held valve simply by evaluating/projecting its state.
+        // An advancing trial follows the ordered upper/lower checks, which
+        // differ from simultaneous clipping when the effective interval is empty.
+        if(value==previous)return previous;
+        return value>upper?upper:value<lower?lower:value;
+    }
 }
