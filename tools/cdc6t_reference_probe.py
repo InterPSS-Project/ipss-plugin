@@ -23,8 +23,11 @@ def main():
     parser.add_argument('--second-fault-at', type=float)
     parser.add_argument('--second-fault-clear', type=float)
     parser.add_argument('--second-fault-reactance', type=float, default=.02)
+    parser.add_argument('--mode-threshold-kv', type=float, default=0.)
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
+    if not math.isfinite(args.mode_threshold_kv) or args.mode_threshold_kv < 0:
+        parser.error('Mode threshold must be finite and nonnegative')
     if not math.isfinite(args.fault_clear) or not .05 < args.fault_clear < .5:
         parser.error('Fault clearing must be strictly between application and end time')
     if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
@@ -59,6 +62,7 @@ def main():
     assert changed == 1
     dc_header=next(i for i,line in enumerate(lines) if line.startswith('"1           ",1,'))
     dc_fields=lines[dc_header].split(',')
+    dc_fields[5]=str(args.mode_threshold_kv)
     if args.control=='rectifier-power':
         dc_fields[3]='505.0'
     elif args.control=='current':

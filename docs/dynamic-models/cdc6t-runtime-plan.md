@@ -262,3 +262,20 @@ replay discrepancies to the recorded transition neighborhoods. This is not
 exact event-stage parity or full coupled trajectory qualification. Combine these
 rules with concurrent blocking, current-order ownership and internal network
 observations before attaching the model.
+
+## Low-voltage mode switching
+
+`Cdc6tModeSwitch` transfers power control to scheduled current when actual
+inverter DC voltage falls below the configured threshold. A deadline measured
+from the initial transfer enforces the minimum switched duration. Return to
+power control requires voltage strictly above the threshold and expiration of
+that deadline; it does not require an additional sustained-recovery timer.
+Preview uses caller storage, and only accepted observations change history.
+
+Cold-paired long and short faults distinguish those timing rules and show that
+switched operation holds the original scheduled current. Recorded-input tests
+compare mode and current order across every sample, with differences permitted
+only in explicit event neighborhoods. Separate checks cover strict equality,
+rejected trials and inhibition in current control or while blocked/bypassed.
+These are component checks; concurrent protection transitions, auxiliary input
+conversion in switched mode and coupled integration remain unqualified.
