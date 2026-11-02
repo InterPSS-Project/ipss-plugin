@@ -123,6 +123,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CDC6T
 
+- Retain the [recovery-completion history contract](dynamic-models/cdc6t-runtime-plan.md#recovery-completion-preserves-derivative-history), independently discriminated normal two-step handoff, both-method nearby-rate controls and rollback-safe electrical re-solves. Preserve the explicit clock-boundary controls and their raw errors; do not hide the remaining timing discrepancy with derivative averaging or shifted samples.
+
 - Retain the [governed classical-source and internal network-boundary contract](dynamic-models/cdc6t-runtime-plan.md#governed-classical-sources-and-internal-network-boundaries): settled TGOV1 initialization, final compiled bindings, shared staggered states and rollback-safe classical acceleration sampling. Preserve independent both-method source/governor gates; resolve remaining power-recovery and converter-state trajectory errors before generalizing source controls or enabling automatic attachment.
 
 - Retain [initial source balance and long-run terminal qualification](dynamic-models/cdc6t-runtime-plan.md#initial-source-balance-and-ten-second-terminal-qualification): settle startup control transfers before reconciling qualified fixed-emf source power, then apply physical initial actions without rebasing sources. Preserve both-method complete terminal/PQ gates, independent source-power and angle-precision diagnostics, and explicit rejection of unqualified source controls. Extend source families and active-controller preparation, strict state trajectories and remaining protection variants before automatic attachment.

@@ -30,13 +30,17 @@ public class Cdc6tGovernedSourceTest extends CorePluginTestSetup {
     private record Reference(List<String> raw,String sources,Cdc6tParameters parameters,
             List<Map<String,Double>> rows,double step,double fault,double clear,double end) { }
     static java.util.stream.Stream<Arguments> profiles(){
-        return java.util.stream.Stream.of("fine/current","fine/inverter-power","quarter/current","quarter/inverter-power")
+        return java.util.stream.Stream.of("fine/current","fine/inverter-power","quarter/current","quarter/inverter-power",
+                "fine/inverter-power-slower","quarter/inverter-power-slower",
+                "fine/inverter-power-faster","quarter/inverter-power-faster")
                 .flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));
     }
     private static Reference reference(String profile)throws Exception {
-        Path archive=Path.of("testData/private/verification-artifacts/cdc6t-governed-20261102/captures.zip");
+        boolean rateVariant=profile.endsWith("-slower")||profile.endsWith("-faster");
+        Path archive=Path.of("testData/private/verification-artifacts/cdc6t-governed"+(rateVariant?"-ramp":"")+"-20261102/captures.zip");
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent governed-source captures");
-        assertEquals("d23ec47224466c084a37cb8ba9ceead9d22656f7f789e277a35cf030096ad9c1",
+        assertEquals(rateVariant?"8a27303c2a1f54b1ceb78cc02541c71ddb5dfd25f497e807346d95c4f2149c7f"
+                        :"d23ec47224466c084a37cb8ba9ceead9d22656f7f789e277a35cf030096ad9c1",
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         try(var z=new ZipFile(archive.toFile())){
             String prefix=profile+"/a/";
@@ -61,6 +65,31 @@ public class Cdc6tGovernedSourceTest extends CorePluginTestSetup {
             assertTrue(fault>0&&clear>fault);
             return new Reference(raw,sources,parameters,rows,h,fault,clear,Math.rint(rows.getLast().get("time_s")/h)*h);
         }
+    }
+    static java.util.stream.Stream<String> recoveryReplayProfiles(){
+        return java.util.stream.Stream.of("fine/inverter-power-slower","quarter/inverter-power-slower");
+    }
+    @ParameterizedTest @MethodSource("recoveryReplayProfiles")
+    void independentRecoveryHandoffRetainsNormalMeasurementDerivativeHistory(String profile)throws Exception {
+        var r=reference(profile);int completion=-1;
+        for(int i=1;i<r.rows().size()-1;i++){
+            var row=r.rows().get(i);var prior=r.rows().get(i-1);
+            if(row.get("time_s")>.2&&row.get("VAR2")==1&&row.get("VAR3")==1
+                    &&(prior.get("VAR2")<1||prior.get("VAR3")<1)){completion=i;break;}
+        }
+        assertTrue(completion>0);
+        var prior=r.rows().get(completion-1);var current=r.rows().get(completion);var next=r.rows().get(completion+1);
+        double tau=r.parameters().copySourceConstants()[3];
+        double previousRate=(prior.get("VAR11")-prior.get("STATE1"))/tau;
+        double rightRate=(current.get("VAR11")-current.get("STATE1"))/tau;
+        double normal=current.get("STATE1")+r.step()*(1.5*rightRate-.5*previousRate);
+        assertEquals(next.get("STATE1"),normal,.0001,"Raw recorded state follows the unaveraged two-step equation");
+        // The preceding recovery current is a conservative left-boundary
+        // discriminator. Even this underestimates the completed ramp's jump.
+        double leftRate=(prior.get("VAR11")-current.get("STATE1"))/tau;
+        double averaged=current.get("STATE1")+r.step()*(.75*(rightRate+leftRate)-.5*previousRate);
+        assertTrue(Math.abs(averaged-next.get("STATE1"))>.2,
+                "Discontinuity averaging must be visibly distinguished by the independent capture");
     }
     @ParameterizedTest @MethodSource("profiles")
     void governedSourcesUseSettledPowerAndSharedControllerEquations(String profile,boolean staggered)throws Exception {
@@ -134,8 +163,13 @@ public class Cdc6tGovernedSourceTest extends CorePluginTestSetup {
             assertEquals(r.rows().getFirst().get("M"+(i+1)+"_PMECH"),machines[i].getPm(),6e-5);
         }
         Map<Long,double[]> samples=new LinkedHashMap<>();capture(samples,machines,governors,a.getSimuTime(),r.step());
+        double recoveryCompletion=Double.NaN;
         while(a.getSimuTime()<r.end()-r.step()/2){
+            var previousMode=f.protection().operatingMode();
             assertTrue(a.solveDEqnStep(true));assertTrue(solver.getLastNetworkSolutionDiagnostics().iterations()<=50);
+            if(previousMode==org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode.RECOVERING
+                    &&f.protection().operatingMode()==org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode.NORMAL)
+                recoveryCompletion=a.getSimuTime();
             capture(samples,machines,governors,a.getSimuTime(),r.step());
         }
         recorder.capture(a.getSimuTime());
@@ -174,10 +208,40 @@ public class Cdc6tGovernedSourceTest extends CorePluginTestSetup {
         // Separate finite-step envelopes; these do not establish full CDC6T
         // state acceptance. In particular the power-control angle discrepancy
         // remains visible and must not be hidden by time or angle offsets.
-        boolean fine=profile.startsWith("fine/"),power=profile.endsWith("inverter-power");
+        boolean fine=profile.startsWith("fine/"),power=profile.contains("inverter-power");
+        boolean slower=profile.endsWith("-slower");
+        if(power){
+            int completion=-1;
+            for(int i=1;i<r.rows().size();i++){
+                var row=r.rows().get(i);var prior=r.rows().get(i-1);
+                if(row.get("time_s")>.2&&row.get("VAR2")==1&&row.get("VAR3")==1
+                        &&(prior.get("VAR2")<1||prior.get("VAR3")<1)){completion=i;break;}
+            }
+            assertTrue(completion>0&&Double.isFinite(recoveryCompletion));
+            long referenceTick=Math.round(r.rows().get(completion).get("time_s")/r.step());
+            try(var writer=BenchmarkOutputGuard.newWriter(out.resolve("recovery-completion.csv"),4096)){
+                writer.write("reference_time,local_time,reference_tick,local_tick,left_reference_voltage_factor,left_reference_current_factor\n");
+                writer.write(r.rows().get(completion).get("time_s")+","+recoveryCompletion+","+referenceTick+","+Math.round(recoveryCompletion/r.step())
+                        +","+r.rows().get(completion-1).get("VAR2")+","+r.rows().get(completion-1).get("VAR3")+"\n");
+            }
+            assertEquals(slower?0:1,referenceTick-Math.round(recoveryCompletion/r.step()),
+                    "Off-grid recovery agrees; the retained grid-boundary controls differ by exactly one interval");
+            if(!slower){
+                var left=r.rows().get(completion-1);
+                assertTrue(left.get("VAR3")<=1&&left.get("VAR3")>1-1e-5);
+                assertTrue(left.get("VAR2")<1&&left.get("VAR2")>1-1e-5,
+                        "The reference voltage ramp must lie just below its endpoint, without time shifting");
+            }
+        }
         double[] bounds=fine
                 ?new double[]{power?.008:.002,staggered?1.1e-6:4.5e-6,5.8e-5,5.9e-5,1.8e-5}
                 :new double[]{power?.075:staggered?.007:.012,staggered?9e-6:3.8e-5,8.5e-5,1.25e-4,2.4e-5};
+        if(power&&slower)bounds=fine
+                ?new double[]{staggered?.002:.011,staggered?1e-7:4.5e-6,2.9e-5,2.9e-5,9e-6}
+                :new double[]{staggered?.007:.065,staggered?1.1e-6:3.8e-5,5.2e-5,1.05e-4,1.1e-5};
+        else if(power&&staggered)bounds=fine
+                ?new double[]{.017,2.1e-6,4e-5,4.7e-5,1.2e-5}
+                :new double[]{.145,1.8e-5,1.45e-4,2.05e-4,4e-5};
         for(int i=0;i<20;i++)assertTrue(peak[i]<bounds[i%5],
                 profile+" "+method+" M"+(i/5+1)+" "+SOURCE_KEYS[i%5]+" error "+peak[i]);
         if(staggered&&!fine){

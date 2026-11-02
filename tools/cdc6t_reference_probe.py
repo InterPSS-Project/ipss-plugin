@@ -32,6 +32,7 @@ def main():
     parser.add_argument('--current-margin', type=float, default=0.)
     parser.add_argument('--measurement-times', type=float, nargs=3, default=[.05,.05,.05])
     parser.add_argument('--restart-current', type=float, default=500.)
+    parser.add_argument('--recovery-rates', type=float, nargs=2, metavar=('VOLTAGE', 'CURRENT'))
     parser.add_argument('--minimum-current', type=float, default=400.)
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
@@ -60,6 +61,8 @@ def main():
         parser.error('Measurement times must be finite and nonnegative')
     if any(not math.isfinite(v) or v < 0 for v in [args.restart_current,args.minimum_current]):
         parser.error('Restart and minimum currents must be finite and nonnegative')
+    if args.recovery_rates is not None and any(not math.isfinite(v) or v < 0 for v in args.recovery_rates):
+        parser.error('Recovery rates must be finite and nonnegative')
     if any(not math.isfinite(t) or not 0 < t < args.duration for t in args.inspect_at):
         parser.error('Inspection times must be finite and strictly inside the run')
     if not math.isfinite(args.mode_threshold_kv) or args.mode_threshold_kv < 0:
@@ -161,6 +164,8 @@ def main():
     if args.rectifier_recovery_voltage is not None:
         constants[5] = args.rectifier_recovery_voltage
     constants[11] = args.restart_current
+    if args.recovery_rates is not None:
+        constants[12:14] = args.recovery_rates
     constants[14] = args.minimum_current
     if constants[14] >= constants[16]:
         parser.error('Minimum current must be below the first current-limit ordinate')

@@ -1743,3 +1743,77 @@ Complete comparisons, before-change controls, failure and final logs, scoped
 reports, source snapshots and an integrity manifest are retained in
 `verification-artifacts/cdc6t-governed-20261102/validation.zip`, SHA-256
 `e0abe94f2ed527116a5b20f02951d062a3e261893ce048cd1f292049363012a7`.
+
+## Recovery completion preserves derivative history
+
+Independent recovery-rate controls separate two effects: a floating-clock
+boundary and an incorrect derivative-history reset. The probe now accepts
+explicit voltage/current recovery rates without changing its existing defaults.
+Paired captures retain the original source/governor setup and change only the
+current ramp from 2.0 to 1.9 or 2.1 per second. Both integration intervals and
+all reference samples are retained.
+
+At 1.9 per second, recovery completes between grid points and both solvers
+change mode on the same integration ordinal. Replaying the independently
+recorded current-transducer state at that handoff reproduces the next state with
+the ordinary two-step formula to 0.000003 A at 0.5 ms and 0.000039 A at quarter
+cycle. Averaging the left and right derivatives instead creates an error above
+0.2 A. This distinguishes a completed recovery program from blocking or release.
+
+`ConvergedNetworkAction.requiresIntegrationInputDiscontinuity()` now separates
+electrical equation changes from derivative-history changes. Unknown actions
+retain the conservative default. A qualified CDC6T `RECOVERING` to `NORMAL`
+handoff still requests a network solve, records both sides and commits or
+discards transactionally, but preserves transducer and classical-machine
+derivative history. Blocking, release and other mode changes retain their
+previous discontinuity handling. The implementation reuses existing states and
+buffers and adds no per-iteration allocation.
+
+| Slower-current recovery | Modified-Euler peak source-angle error, degrees | Staggered before, degrees | Staggered after, degrees |
+| --- | ---: | ---: | ---: |
+| 0.5 ms | 0.009110 | 0.009054 | 0.001652 |
+| Quarter cycle | 0.059928 | 0.056871 | 0.005710 |
+
+This correction does not remove the separate clock discrepancy. The reference
+uses an accumulated single-precision clock; at the original grid-aligned
+endpoint its voltage factor is slightly below one. The local double-precision
+clock completes that ramp one ordinal earlier. Increasing only the current rate
+to 2.1 leaves the voltage ramp as the same limiting boundary and reproduces this
+behavior. The test explicitly requires the one-ordinal difference and the raw
+near-one reference factors. It does not shift, interpolate away or omit samples.
+
+The earlier incorrect averaging partially cancelled that timing difference.
+Correcting history therefore increases the original staggered power-control
+angle peak from 0.006656 to 0.014069 degrees at 0.5 ms and from 0.067451 to
+0.129181 degrees at quarter cycle. These boundary-aligned profiles remain
+diagnostic controls, not strict full-model trajectory acceptance. Their raw
+regression envelopes are updated explicitly:
+
+| Source channel | Previous 0.5 ms bound | New 0.5 ms bound | Previous quarter-cycle bound | New quarter-cycle bound |
+| --- | ---: | ---: | ---: | ---: |
+| Rotor angle, degrees | 0.008 | 0.017 | 0.075 | 0.145 |
+| Speed deviation, pu | 1.1e-6 | 2.1e-6 | 9e-6 | 1.8e-5 |
+| Mechanical power, pu | 5.8e-5 | 4e-5 | 8.5e-5 | 1.45e-4 |
+| Governor valve state, pu | 5.9e-5 | 4.7e-5 | 1.25e-4 | 2.05e-4 |
+| Governor reheater storage, pu | 1.8e-5 | 1.2e-5 | 2.4e-5 | 4e-5 |
+
+The slower-current staggered profiles instead require source-angle peaks below
+0.002/0.007 degrees and speed peaks below 1e-7/1.1e-6 pu. All original
+modified-Euler bounds remain unchanged; its 32 retained comparison exports are
+byte-identical to the preceding checkpoint. New modified-Euler rate variants
+retain their separate finite-stage envelopes.
+
+Validation passes 502 scoped plugin/model tests and 17 core lifecycle tests,
+including independent recurrence discrimination, paired complete trajectories,
+generic/compiled equality, unchanged states at handoff, rollback and fresh
+electrical solves without derivative reset. Full repository/system suites were
+not rerun. Core contract commit: `ff422a744`. Full CDC6T state accuracy, other
+protected variants and automatic attachment remain open.
+
+Private paired captures: `verification-artifacts/cdc6t-governed-ramp-20261102/captures.zip`,
+SHA-256 `8a27303c2a1f54b1ceb78cc02541c71ddb5dfd25f497e807346d95c4f2149c7f`.
+
+Complete final comparisons, before-handoff controls, clock diagnostics, failed
+and passing test logs, source snapshots and integrity manifest:
+`verification-artifacts/cdc6t-governed-ramp-20261102/validation.zip`, SHA-256
+`d162c97d924172648cace04e13b7609895a1bd09f8a631828c2d025abd65c775`.

@@ -90,6 +90,27 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         assertFalse(inv.readStaggeredInputDiscontinuityLeftRates(new double[0],0));
     }
 
+    @Test void completedRecoveryChangesElectricalModeWithoutResettingIntegrationHistory(){
+        var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();
+        solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
+        solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
+        inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);solve(p,"INITIAL",.12,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,f.coordinator().operatingMode());
+        long version=p.staggeredInputDiscontinuityVersion();double[] state=new double[3],after=new double[3];
+        p.readStaggeredState(state,0);double[] committed=history(f.coordinator());
+        p.beginNetworkSolution(new Context("CORRECTOR",.37,.371,50,1e-6));p.beforeNetworkIteration(0);
+        assertTrue(p.applyConvergedNetworkAction());assertFalse(p.requiresIntegrationInputDiscontinuity());
+        p.endNetworkSolution(false);
+        assertArrayEquals(committed,history(f.coordinator()),0);assertEquals(version,p.staggeredInputDiscontinuityVersion());
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,f.coordinator().operatingMode());
+        p.beginNetworkSolution(new Context("CORRECTOR",.37,.371,50,1e-6));p.beforeNetworkIteration(0);
+        assertTrue(p.applyConvergedNetworkAction());assertFalse(p.requiresIntegrationInputDiscontinuity());
+        p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.NORMAL,f.coordinator().operatingMode());
+        assertEquals(version,p.staggeredInputDiscontinuityVersion(),"Normal control resumes with existing derivative history");
+        p.readStaggeredState(after,0);assertArrayEquals(state,after,0,"The handoff cannot advance continuous states");
+    }
+
     @Test void transitionObserverPublishesBothSidesOnlyAfterSuccessfulCommit(){
         var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();
         var events=new java.util.ArrayList<Cdc6tNetworkTransition>();f.ports().setTransitionObserver(events::add);

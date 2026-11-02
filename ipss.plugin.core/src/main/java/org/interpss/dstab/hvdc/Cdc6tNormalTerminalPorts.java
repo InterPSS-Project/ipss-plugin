@@ -27,6 +27,7 @@ public final class Cdc6tNormalTerminalPorts {
     private long inputDiscontinuityVersion;
     private final double[] pendingLocalLeftRates=new double[3],acceptedLocalLeftRates=new double[3];
     private boolean pendingLocalLeft,acceptedLocalLeft;
+    private boolean actionInputDiscontinuity;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
     private java.util.function.Consumer<Cdc6tNetworkTransition> transitionObserver;
     private java.util.ArrayList<Cdc6tNetworkTransition> transitions;
@@ -186,6 +187,7 @@ public final class Cdc6tNormalTerminalPorts {
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
         }
         @Override public boolean applyConvergedNetworkAction(){
+            actionInputDiscontinuity=false;
             if(!owner||!networkTrial||initialNetworkPending||predictorNetworkTrial)return false;
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
             Cdc6tNetworkTransition.Boundary sharedBoundary=null;
@@ -198,7 +200,8 @@ public final class Cdc6tNormalTerminalPorts {
             double voltageFactor=protection.voltageFactor(),currentFactor=protection.currentFactor();
             protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
             var after=protection.operatingMode();
-            if(before!=after&&!pendingLocalLeft){
+            actionInputDiscontinuity=requiresInputDiscontinuity(before,after);
+            if(actionInputDiscontinuity&&!pendingLocalLeft){
                 // Inputs still describe the converged left regime. Preserve its
                 // endpoint derivative before another network pass refreshes them.
                 runtime.readBoundaryRates(pendingLocalLeftRates,0);pendingLocalLeft=true;
@@ -210,6 +213,7 @@ public final class Cdc6tNormalTerminalPorts {
             }
             return changed;
         }
+        @Override public boolean requiresIntegrationInputDiscontinuity(){return owner&&actionInputDiscontinuity;}
         @Override public void afterNetworkConvergence(){
             if(!owner||!boundaryTrial)return;
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
@@ -224,8 +228,11 @@ public final class Cdc6tNormalTerminalPorts {
                     protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;
                     var mode=protection.operatingMode();
                     if(mode!=acceptedMode){
-                        inputDiscontinuityVersion++;acceptedMode=mode;acceptedLocalLeft=pendingLocalLeft;
-                        if(pendingLocalLeft)System.arraycopy(pendingLocalLeftRates,0,acceptedLocalLeftRates,0,3);
+                        if(requiresInputDiscontinuity(acceptedMode,mode)) {
+                            inputDiscontinuityVersion++;acceptedLocalLeft=pendingLocalLeft;
+                            if(pendingLocalLeft)System.arraycopy(pendingLocalLeftRates,0,acceptedLocalLeftRates,0,3);
+                        }
+                        acceptedMode=mode;
                     }
                     if(transitionObserver!=null)for(var transition:transitions)transitionObserver.accept(transition);
                 }
@@ -273,5 +280,13 @@ public final class Cdc6tNormalTerminalPorts {
             if(protection==null)return;
             staggeredEndpoint=endpointTime;staggeredInterval=h;staggeredEndpointPending=true;
         }
+    }
+    private static boolean requiresInputDiscontinuity(Cdc6tNormalRuntime.OperatingMode before,
+            Cdc6tNormalRuntime.OperatingMode after){
+        // Completion of the prepared recovery program resumes ordinary control
+        // with continuous integration history. Blocking/release and other mode
+        // events retain their explicitly qualified input-discontinuity policy.
+        return before!=after&&!(before==Cdc6tNormalRuntime.OperatingMode.RECOVERING
+                &&after==Cdc6tNormalRuntime.OperatingMode.NORMAL);
     }
 }
