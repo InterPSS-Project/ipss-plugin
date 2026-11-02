@@ -10,6 +10,14 @@ now initialize and cold-repeat successfully; the original coupled startup
 failure remains diagnostic. Complete controller, protection, network and SMIB
 qualification is still required.
 
+The [shared CHVDC2 current-controller component](dynamic-models/chvdc2-named-link.md#shared-current-controller-component)
+adds direct PI/angle equations, the bounded PI output, reusable numerical
+storage and both-method lifecycle checks. Cold-repeated active-limit captures
+expose rectifier-state discrepancies under the unchanged strict replay gate.
+A separate binary32 sub-update diagnostic localizes the PI discrepancy to
+reference stepping/precision; production precision remains unchanged and
+complete model qualification remains open.
+
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
 omitted distribution, fully represented transformer/feeder boundaries, and

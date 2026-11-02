@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--form', choices=['standard', 'legacy'], required=True)
     parser.add_argument('--control', choices=['inverter-power', 'current'], default='inverter-power')
     parser.add_argument('--network', choices=['coupled', 'stiff'], default='coupled')
+    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited'], default='nominal')
     parser.add_argument('--static-gamma', type=float)
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
@@ -56,6 +57,8 @@ def main():
         tag = tag[:-1]+args.control+'-'+args.repeat
     if args.network == 'stiff':
         tag = 'stiff-'+tag
+    if args.controller_profile != 'nominal':
+        tag = tag[:-1]+args.controller_profile+'-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -84,8 +87,13 @@ def main():
         lines[i+2] = ','.join(fields)
     (out/'network.raw').write_text('\n'.join(lines)+'\n')
     header = "'1' 'CHVDC2' " if args.form == 'standard' else "'1' 'USRDCL' 'CHVDC2U1' 18 1 3 48 18 24 "
+    constants = CONSTANTS.copy()
+    if args.controller_profile == 'angle-limited':
+        constants[2], constants[3] = 32.74, 32.70
+    elif args.controller_profile == 'rate-limited':
+        constants[18], constants[19] = .0002, -.0002
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
-                                 header+' '.join(map(str, args.flags+CONSTANTS))+' /\n')
+                                 header+' '.join(map(str, args.flags+constants))+' /\n')
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:
         shutil.copy2(root/'tools'/name, out/name)
     import psse3607
@@ -150,14 +158,23 @@ def main():
     checked('report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and 'Network not converged' not in log
-    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout,
+    excitation = True
+    if args.profile == 'modulation':
+        channel = next(k for k in keys if labels[k] == 'VAR0')
+        excitation = any(abs(v) > 1e-6 for v in data[channel])
+    elif args.profile.endswith('fault'):
+        channel = next(k for k in keys if labels[k] == ('V7' if args.profile.startswith('rectifier') else 'V9'))
+        excitation = max(abs(v-data[channel][0]) for v in data[channel]) > 1e-5
+    status = 'rejected-quality' if not quality else 'complete' if excitation else 'rejected-excitation'
+    manifest = dict(status=status, initialization_and_network_valid=quality, excitation_observed=excitation,
+                    settings=vars(args), layout=layout,
                     entered_constants=entered, initialized_constants=initialized, samples=len(data['time']), channels=len(keys),
                     engine_module=psse3607.__name__, library_sha256=sha(library),
                     source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
                     files={p.name: sha(p) for p in Path('.').iterdir() if p.is_file()})
     Path('manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     print(json.dumps(dict(tag=out.name, status=manifest['status'])), flush=True)
-    assert quality
+    assert quality and excitation
 
 
 if __name__ == '__main__':

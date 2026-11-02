@@ -333,6 +333,8 @@ import org.interpss.core.dstab.Cdc6tMinimumCurrentTest;
 import org.interpss.core.dstab.Cdc6tParametersTest;
 import org.interpss.core.dstab.Chvdc2ParametersTest;
 import org.interpss.core.dstab.Chvdc2DcLineTest;
+import org.interpss.core.dstab.Chvdc2CurrentControlsTest;
+import org.interpss.core.dstab.Chvdc2CurrentControlsReferenceTest;
 import org.interpss.core.dstab.Cdc6tNetworkPreparationTest;
 import org.interpss.core.dstab.Cdc6tConstantGammaTest;
 import org.interpss.core.dstab.Cdc6tLimitedGammaTest;
@@ -1341,6 +1343,8 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tParametersTest.class,
     Chvdc2ParametersTest.class,
     Chvdc2DcLineTest.class,
+    Chvdc2CurrentControlsTest.class,
+    Chvdc2CurrentControlsReferenceTest.class,
     Cdc6tNetworkPreparationTest.class,
     Cdc6tConstantGammaTest.class,
     Cdc6tLimitedGammaTest.class,

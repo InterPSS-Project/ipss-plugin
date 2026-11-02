@@ -67,6 +67,8 @@ public final class Chvdc2Parameters {
     public double value(Constant constant) { return constants[constant.ordinal()]; }
     public int[] copySourceFlags() { return flags.clone(); }
     public double[] copySourceConstants() { return constants.clone(); }
+    /** Independently owned PI/angle storage; outer measurements, angle-bound logic and attachment remain separate. */
+    public Chvdc2CurrentControls prepareCurrentControls() { return new Chvdc2CurrentControls(this); }
     /** Prepare physical line coefficients once. Reactances are per bridge in ohms at the supplied Hz.
      * Any source-specific capacitance suppression must be established separately, not inferred from a local step. */
     public Chvdc2DcLine prepareDcLine(double lineOhms,int bridges,double rectifierCommutationOhms,
