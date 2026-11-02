@@ -302,3 +302,26 @@ protection events. The staggered solver currently validates device types
 explicitly; both terminal ports and their shared integration owner must be
 registered together. Complete attachment, coordinated event behavior and
 independent full-solver trajectory acceptance remain outstanding.
+
+## Network ownership established before attachment
+
+The current engine's `BaseAclfBusImpl.powerIntoNet` uses
+`externalPowerIntoNet` for the static outer-loop contribution, including DC
+terminal power. `BaseDStabBusImpl.calNetLoadResults` and `processInitLoad`
+convert ordinary load separately; they do not automatically convert that
+external power into a dynamic load. The dynamic current path likewise does not
+inject the external-power field. A registered non-generator bus-device port
+adds its current explicitly.
+
+`Cdc6tNetworkOwnershipTest` checks these engine behaviors with both signs of
+external power, retained ordinary load, explicit current-port addition and
+deactivation. Therefore attachment must add each physical terminal injection
+once; subtracting the static external power from ordinary load would create
+an incorrect compensating contribution. This is an engine ownership check,
+not proof that the full named-link importer and dynamic solver are attached.
+
+The engine's script-device classification requires its script-specific interface;
+it is not a generic numerical-current port. The tested registration uses the
+non-generator `DYNAMIC_LOAD` device classification, as existing numerical shunt
+devices do, without creating an ordinary static load. Staggered support must
+recognize the actual CDC6T port class and its single shared state owner explicitly.

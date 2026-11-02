@@ -288,6 +288,7 @@ import org.interpss.core.dstab.Cdc6tInverterProtectionTest;
 import org.interpss.core.dstab.Cdc6tBypassTest;
 import org.interpss.core.dstab.Cdc6tModeSwitchTest;
 import org.interpss.core.dstab.Cdc6tNormalRuntimeTest;
+import org.interpss.core.dstab.Cdc6tNetworkOwnershipTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1246,6 +1247,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tBypassTest.class,
     Cdc6tModeSwitchTest.class,
     Cdc6tNormalRuntimeTest.class,
+    Cdc6tNetworkOwnershipTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,
