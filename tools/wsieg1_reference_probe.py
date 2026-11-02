@@ -17,12 +17,30 @@ PROFILES = {
     'valve-rates': {4: .003, 5: -.002},
     'valve-position': {6: .505, 7: .495},
 }
+STEP_PROFILES = {
+    'speed-one-step': {1: 1., 2: .25},
+    'speed-half-step': {1: .5, 2: .125},
+    'speed-two-steps': {1: 2., 2: .5},
+    'speed-four-steps': {1: 4., 2: 1.},
+    'speed-above-one-step': {1: 1.01, 2: .2525},
+    'speed-above-two-steps': {1: 2.01, 2: .5025},
+    'speed-fast-lag-slow-lead': {1: 1.},
+    'speed-short-no-lead': {1: 1., 2: 0.},
+    'valve-one-step': {3: 1.},
+    'valve-half-step': {3: .5},
+    'turbine-one-step': {8: 1.},
+    'turbine-half-step': {8: .5},
+    'turbine-two-steps': {8: 2.},
+    'turbine-four-steps': {8: 4.},
+    'all-turbines-two-steps': {8: 2., 11: 2., 14: 2., 17: 2.},
+    'all-turbines-above-two-steps': {8: 2.01, 11: 2.01, 14: 2.01, 17: 2.01},
+}
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', choices=['standard', 'curve', 'dual', 'unused-lp'], required=True)
-    parser.add_argument('--profile', choices=PROFILES, default='base')
+    parser.add_argument('--profile', choices=[*PROFILES, *STEP_PROFILES], default='base')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], required=True)
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
@@ -55,7 +73,9 @@ def main():
         tokens = lines[index].split()
         values = [float(v) for v in tokens[5:-1]]
         assert len(values) == 34 and tokens[-1] == '/'
-        for parameter, value in PROFILES[args.profile].items():
+        changes = PROFILES[args.profile] if args.profile in PROFILES else {
+            parameter: multiple * args.step for parameter, multiple in STEP_PROFILES[args.profile].items()}
+        for parameter, value in changes.items():
             values[parameter] = value
         lines[index] = ' '.join(tokens[:5]) + ' ' + ' '.join(format(v, '.17g') for v in values) + ' /'
         (out / 'dynamic.dyr').write_text('\n'.join(lines) + '\n')
@@ -122,16 +142,17 @@ def main():
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
     assert 0 < len(data['time']) < 30000
-    assert all(math.isfinite(v) for k in ['time']+keys for v in data[k])
+    finite = all(math.isfinite(v) for k in ['time']+keys for v in data[k])
     assert all(a <= b for a, b in zip(data['time'], data['time'][1:]))
-    with Path('native.csv').open('w', newline='') as stream:
-        writer = csv.writer(stream, lineterminator='\n'); writer.writerow(['time_s']+[labels[k] for k in keys])
-        for i, time in enumerate(data['time']):
-            writer.writerow([format(time, '.12g')]+[format(data[k][i], '.12g') for k in keys])
+    if finite:
+        with Path('native.csv').open('w', newline='') as stream:
+            writer = csv.writer(stream, lineterminator='\n'); writer.writerow(['time_s']+[labels[k] for k in keys])
+            for i, time in enumerate(data['time']):
+                writer.writerow([format(time, '.12g')]+[format(data[k][i], '.12g') for k in keys])
     checked('model report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and all(message not in log for message in ['Network not converged', 'Incomplete data record'])
-    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout,
+    manifest = dict(status=('complete' if quality else 'rejected-quality') if finite else 'rejected-nonfinite', settings=vars(args), layout=layout,
         entered_constants=entered, initialized_constants=initialized, initial_reference=initial_reference,
         reference_events=reference_events, load_conversion_percent=[0., 100., 0., 100.], samples=len(data['time']),
         diagnostic_storage_initialization='All VAR slots zeroed before STRT; model initialization then owns their values',

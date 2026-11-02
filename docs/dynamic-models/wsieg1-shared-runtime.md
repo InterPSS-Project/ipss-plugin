@@ -189,3 +189,63 @@ executes 490 tests with no failures and four existing skips. The model
 remains `LOADABLE`; extended precision/coupling, short positive times,
 initialization/base boundaries, reconnection and longer-duration qualification
 remain open.
+
+## Preparation of short positive lags
+
+The shared runtime now prepares `T1` and `T4`–`T7` as algebraic bypasses when
+their entered values are at most twice the outer network interval. The
+independent boundary controls include half, one and two intervals, values just
+above the boundary, and four intervals. Short speed lags with a much longer
+lead term also collapse to the bypass. Every measured channel matches the
+corresponding explicit-bypass reference exactly for the collapsed profiles;
+the above-boundary controls retain distinguishable lag responses.
+
+Preparation leaves entered constants unchanged. The valve's rate-limited
+integrator retains `T3`, including small positive values: it is not an
+ordinary lag and does not inherit this bypass rule. Both production solvers
+provide the outer interval through `IntegrationStepAware` before initialization.
+The prepared times live in scalar/reusable array storage. Local evaluations
+cannot reprepare them; a changed outer interval takes effect on reinitialization.
+Direct typed use without an outer interval retains its entered positive lags.
+
+The common parameter report identifies prepared bypasses, warns about short
+servo times and rejects nonpositive primary turbine allocation before either
+solver initializes. Inactive primary governors remain checked; passive
+secondary shafts are explicitly reported as sharing the primary state owner.
+Validation neither changes constants nor initializes controller state.
+
+This corrects an actual stability defect. Before preparation, the staggered
+half-interval lag profiles failed at the fine step, and quarter-cycle turbine
+states grew catastrophically. After preparation, every fast-time profile
+completes under both methods. The short-lag and explicit-bypass runs have
+identical complete physical/state/history trajectories in the actual solver
+path; the former executable fails that regression.
+
+| Fast-time matrix | Worst voltage range NRMSE | Worst P range NRMSE | Worst rotor-angle RMSE, degrees |
+| --- | --- | --- | --- |
+| Modified Euler | 0.0006685 | 0.001230 | 0.002567 |
+| Staggered Euler | 0.0000661 | 0.0003633 | 0.000939 |
+
+Staggered boundary gates pass throughout this matrix. Modified Euler still
+fails the existing 0.001 power gate in quarter-cycle profiles; voltage, Q and
+rotor-angle gates pass. Fast valve-servo state discrepancies remain separate
+from this boundary acceptance: worst valve-coordinate differences are about
+0.00134 pu for modified Euler and 0.00103 pu for staggered Euler. These are
+retained diagnostics, not a claim of complete internal-state qualification.
+
+All reference profiles reproduce in independent cold pairs. Every startup row,
+event-side duplicate and named state/output is retained, with explicit reference
+clock checks, per-channel errors and times of maximum error. The twenty earlier
+bypass/limiter trajectories remain identical, and the existing ordinary-method
+retained-state regression still passes. Full model acceptance, short-servo
+state parity, initialization/base boundaries, reconnection and longer-duration
+qualification remain open.
+
+Final validation runs 50 focused WSIEG1/adjacent-validator tests: 47 pass and
+three coupled-accuracy methods retain their failures, with no errors or skips.
+The complete core-plugin module runs 490 tests with no failures and four
+existing skips. The registered core integration suite runs 4,029 tests with
+10 failures, no errors and 13 skips, including the retained fast-time
+modified-Euler power gate and other outstanding reference/system checks.
+It is not a passing system-acceptance result. Private evidence retains the
+exact runtime overlay, prior executable, complete comparisons and test reports.

@@ -164,6 +164,8 @@ import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedStateTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedSmibTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1StateConformanceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BypassLimitConformanceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1TimePreparationTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1TimeReferenceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1MeasurementDependenciesTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
 import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
@@ -1143,6 +1145,8 @@ import org.junit.platform.suite.api.Suite;
     Wsieg1SharedSmibTest.class,
     Wsieg1StateConformanceTest.class,
     Wsieg1BypassLimitConformanceTest.class,
+    Wsieg1TimePreparationTest.class,
+    Wsieg1TimeReferenceTest.class,
     Wsieg1MeasurementDependenciesTest.class,
 	PsseHygovrGovernorTest.class,
 	Lcfb1PrefControllerTest.class,

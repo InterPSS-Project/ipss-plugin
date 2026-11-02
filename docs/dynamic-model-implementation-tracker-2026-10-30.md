@@ -38,6 +38,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## WSIEG1
 
+- Retain [short-positive-lag preparation](dynamic-models/wsieg1-shared-runtime.md#preparation-of-short-positive-lags), the independently established inclusive two-outer-interval boundary, unchanged entered constants and shared prepared storage under both methods. Keep the rate-limited servo separate. Staggered fast-time boundary gates pass; resolve modified-Euler power and fast-servo internal-state differences without weakening thresholds, and extend initialization/base, reconnection and longer-duration qualification.
+
 - Retain the independently checked [bypass observations and active actuator limits](dynamic-models/wsieg1-shared-runtime.md#bypass-observations-and-active-actuator-limits), live algebraic compensation observation, pure state/history access and unchanged physical trajectories under both methods. Resolve the extended small-response normalized gates and quarter-cycle modified-Euler power gate without changing equations to match reference precision; extend short positive times, initialization/base boundaries, reconnection and long-duration qualification.
 
 - Retain the [direct shared-state contract](dynamic-models/wsieg1-shared-runtime.md), reusable numerical storage, audited measurement/preparation eligibility and one coherent turbine owner under both integration methods.

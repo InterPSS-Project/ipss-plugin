@@ -325,6 +325,24 @@ public final class DynamicParameterValidator {
                 add(Severity.INFO,"initialization policy",h,"HYG3 prepares water/turbine coefficients and initial limits separately; validation does not initialize states or change imported data");
                 return true;
             }
+            if(controller instanceof org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor c) {
+                double[] d=c.getConstants();
+                for(int i=0;i<d.length;i++)finite(org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.CONSTANT_NAMES.get(i),d[i]);
+                for(int index:new int[]{1,8,11,14,17}) {
+                    String name=org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.CONSTANT_NAMES.get(index);
+                    if(d[index]>0.&&d[index]<=2.*h)
+                        add(Severity.INFO,name+" preparation",d[index],"Lag is bypassed at initialization when its entered time is at most two outer intervals; entered constants remain unchanged");
+                    else time(name,d[index],true);
+                }
+                time("T3",d[3],false);
+                positive("primary turbine fraction sum",d[9]+d[12]+d[15]+d[18],false);
+                add(Severity.INFO,"initialization policy",h,"WSIEG1 prepares lag bypasses and initial valve bounds before either integrator; the rate-limited servo time is not bypassed or floored");
+                return true;
+            }
+            if(org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.isSecondaryShaft(controller)) {
+                add(Severity.INFO,"shared turbine owner",h,"Passive secondary shaft has no independent states or time constants; its primary governor is validated separately");
+                return true;
+            }
             if(controller instanceof PsseGgov1Governor c) {
                 var d=c.getData();finiteData(d);
                 time("Tpelec",d.getTpelec(),true);time("Tact",d.getTact(),false);time("Tdgov",d.getTdgov(),true);

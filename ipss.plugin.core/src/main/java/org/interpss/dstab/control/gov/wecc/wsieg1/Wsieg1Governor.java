@@ -14,7 +14,8 @@ import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
 /** Extended WECC steam governor: two deadbands, valve curve and four turbine stages. */
-public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess {
+public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess,
+        org.interpss.dstab.control.util.IntegrationStepAware {
     private static final String[] STATE_NAMES={"Speed lag","Valve","Turbine 1","Turbine 2","Turbine 3","Turbine 4"};
     /** Constant order after the secondary bus and machine identifier. */
     public static final java.util.List<String> CONSTANT_NAMES=java.util.List.of(
@@ -24,6 +25,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private final double[] c;
     private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6];
     private final double[] curveX = new double[5], curveY = new double[5];
+    private final double[] turbineTimes = new double[4];
+    private double integrationStep, speedTime;
     private final IntegrationStateMonitor monitor=new IntegrationStateMonitor(STATE_NAMES);
     private int points, mode;
     private double reference, lower, upper, gateMemory;
@@ -92,6 +95,21 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         if (points<2) { points=2;curveX[0]=curveY[0]=0;curveX[1]=curveY[1]=1; }
     }
 
+    /** The outer interval is prepared at initialization, never inferred from a trial/local step. */
+    @Override public void configureIntegrationStep(double seconds) {
+        if(!Double.isFinite(seconds)||seconds<0.)throw new IllegalArgumentException("WSIEG1 outer interval must be finite and nonnegative");
+        integrationStep=seconds;
+    }
+    /** Entered constants remain immutable; zero means an algebraic prepared lag. */
+    public double getPreparedTimeConstant(int constantIndex) {
+        if(!initialized)throw new IllegalStateException("Initialize before reading prepared time constants");
+        if(constantIndex==1)return speedTime;
+        if(constantIndex==3)return c[3];
+        if(constantIndex>=8&&constantIndex<=17&&(constantIndex-8)%3==0)return turbineTimes[(constantIndex-8)/3];
+        throw new IllegalArgumentException("Not a WSIEG1 lag or servo time index");
+    }
+    private double preparedLag(double entered) {return entered<=2.*integrationStep?0.:entered;}
+
     @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine machine) {
         initialized=false;predicted=false;monitor.reset();staggeredEvaluationCount=0;
         if(machine==null || machine!=getMachine() || !Double.isFinite(machine.getPm()) || !Double.isFinite(machine.getSpeed()))return false;
@@ -99,6 +117,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         if(!Double.isFinite(sum)||sum<=0) return false;
         double p=machine.getPm()/sum, gate=interpolate(p,curveY,curveX);
         if(!Double.isFinite(p)||!Double.isFinite(gate))return false;
+        speedTime=preparedLag(c[1]);
+        for(int i=0;i<4;i++)turbineTimes[i]=preparedLag(c[8+3*i]);
         upper=c[6];lower=c[7];
         int block=(int)c[33];
         if((block==1||block==3)&&lower==0) lower=gate;
@@ -166,7 +186,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     /** Published compensation coordinate; bypassed slots expose their algebraic input. */
     public void readPublishedState(double[] values,int offset) {
         requireBuffer(values,offset);
-        values[offset]=c[1]>0?(1.-c[2]/c[1])*x[0]:c[0]*speedInput(getMachine().getSpeed()-1.);
+        values[offset]=speedTime>0?(1.-c[2]/speedTime)*x[0]:c[0]*speedInput(getMachine().getSpeed()-1.);
         System.arraycopy(x,1,values,offset+1,5);
     }
     private void retainRates(double[] state,double[] rates,Stage stage) {
@@ -192,25 +212,25 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private double backlash(double u) { return clamp(gateMemory,u-c[22],u+c[22]); }
     private void derivatives(double[] s,double[] d,double speed) {
         double u=c[0]*speedInput(speed);
-        double feedback=c[1]>0?s[0]+c[2]/c[1]*(u-s[0]):u;
-        d[0]=c[1]>0?(u-s[0])/c[1]:0;
+        double feedback=speedTime>0?s[0]+c[2]/speedTime*(u-s[0]):u;
+        d[0]=speedTime>0?(u-s[0])/speedTime:0;
         double rate=clamp((reference-feedback-backlash(s[1]))/c[3],c[5],c[4]);
         d[1]=(s[1]>=upper&&rate>0)||(s[1]<=lower&&rate<0)?0:rate;
         double input=interpolate(backlash(s[1]),curveX,curveY);
         for(int i=0;i<4;i++) {
-            double t=c[8+3*i];
+            double t=turbineTimes[i];
             d[2+i]=t>0?(input-s[2+i])/t:0;
             input=t>0?s[2+i]:input;
         }
     }
     private void synchronizeBypasses(double[] s) {
         double input=interpolate(backlash(s[1]),curveX,curveY);
-        for(int i=0;i<4;i++) { if(c[8+3*i]==0)s[2+i]=input;input=s[2+i]; }
+        for(int i=0;i<4;i++) { if(turbineTimes[i]==0)s[2+i]=input;input=s[2+i]; }
     }
     @Override public double getOutput(Machine machine) { return shaftOutput(0); }
     private double shaftOutput(int shaft) {
         double input=interpolate(backlash(x[1]),curveX,curveY),output=0;
-        for(int i=0;i<4;i++) { if(c[8+3*i]>0) input=x[2+i];output+=c[9+3*i+shaft]*input; }
+        for(int i=0;i<4;i++) { if(turbineTimes[i]>0) input=x[2+i];output+=c[9+3*i+shaft]*input; }
         return output;
     }
     @Override public void setRefPoint(double value) { if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite reference");reference=value; }

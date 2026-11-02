@@ -84,7 +84,11 @@ public class Wsieg1BypassLimitConformanceTest {
     @ParameterizedTest @ValueSource(booleans={false,true})
     void completeCoupledTrajectoriesRetainStrictBoundaryGates(boolean staggered,@TempDir Path staged)throws Exception {
         var fixture=new Wsieg1ReferenceFixture(staged,CONFIG);
-        Path output=Files.createTempDirectory(Path.of("target"),staggered?"wsieg1-bypass-staggered-":"wsieg1-bypass-euler-");
+        compareCoupledTrajectories(fixture,staggered,"wsieg1-bypass-",50);
+    }
+
+    static void compareCoupledTrajectories(Wsieg1ReferenceFixture fixture,boolean staggered,String prefix,int gateCount)throws Exception {
+        Path output=Files.createTempDirectory(Path.of("target"),prefix+(staggered?"staggered-":"euler-"));
         System.out.println("WSIEG1 bypass/limit comparison "+output.getFileName());var gates=new ArrayList<Executable>();
         for(var entry:fixture.matrix()) {
             if(!entry.path("repeat").asText().equals("a"))continue;
@@ -95,8 +99,8 @@ public class Wsieg1BypassLimitConformanceTest {
             for(var point:manifest.path("reference_events"))events.add(new Wsieg1SharedSmibTest.ReferenceEvent(point.get(0).asDouble(),point.get(1).asDouble()));
             double duration=Math.round(expected.getLast().get("time_s")/step)*step;
             var run=Wsieg1SharedSmibTest.simulate(input.resolve("network.raw"),input.resolve("dynamic.dyr"),staggered,entry.path("event").asText(),step,duration,events);
-            var maximum=new LinkedHashMap<String,Double>();var squares=new LinkedHashMap<String,Double>();
-            for(String key:expected.getFirst().keySet())if(!key.equals("time_s")&&!key.equals("VAR2")){maximum.put(key,0.);squares.put(key,0.);}
+            var maximum=new LinkedHashMap<String,Double>();var squares=new LinkedHashMap<String,Double>();var times=new LinkedHashMap<String,Double>();
+            for(String key:expected.getFirst().keySet())if(!key.equals("time_s")&&!key.equals("VAR2")){maximum.put(key,0.);squares.put(key,0.);times.put(key,0.);}
             int frame=0,startups=0;float clock=0f;long tick=0;
             try(var stream=new GZIPOutputStream(BenchmarkOutputGuard.newOutputStream(output.resolve(tag+".csv.gz"),16L*1024*1024));var writer=new BufferedWriter(new OutputStreamWriter(stream,StandardCharsets.UTF_8))) {
                 writer.write("reference_time_s,actual_time_s,sample_kind,"+String.join(",",run.initial.values().keySet()));
@@ -110,7 +114,8 @@ public class Wsieg1BypassLimitConformanceTest {
                     writer.write(time+","+row.time()+","+(time<0?"STARTUP_HELD_INITIAL":row.kind()));for(double v:row.values().values())writer.write(","+v);for(double v:ref.values())writer.write(","+v);writer.write("\n");
                     for(String key:maximum.keySet()) {
                         String observed=key.startsWith("STATE")?"PUBLISHED"+key.substring(5):key;double error=row.values().get(observed)-ref.get(key);assertTrue(Double.isFinite(error));
-                        maximum.put(key,Math.max(maximum.get(key),Math.abs(error)));squares.put(key,squares.get(key)+error*error);
+                        if(Math.abs(error)>maximum.get(key)){maximum.put(key,Math.abs(error));times.put(key,time);}
+                        squares.put(key,squares.get(key)+error*error);
                     }
                 }
             }
@@ -122,10 +127,10 @@ public class Wsieg1BypassLimitConformanceTest {
             }
             double rotor=Math.sqrt(squares.get("ANGLE_DEG")/expected.size());gates.add(()->assertTrue(rotor<.01,tag+" rotor RMSE "+rotor));
             var result=new LinkedHashMap<String,Object>();result.put("tag",tag);result.put("staggered",staggered);result.put("samples",expected.size());
-            result.put("maximum_absolute_error",maximum);result.put("range_nrmse",normalized);result.put("reference_ranges",ranges);result.put("rotor_rmse_deg",rotor);
+            result.put("maximum_absolute_error",maximum);result.put("time_of_maximum_error",times);result.put("range_nrmse",normalized);result.put("reference_ranges",ranges);result.put("rotor_rmse_deg",rotor);
             result.put("unmapped_reference_diagnostics",List.of("VAR2"));
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve(tag+".json").toFile(),result);
         }
-        assertEquals(50,gates.size());assertAll("Independent boundary accuracy, including small-response ranges",gates);
+        assertEquals(gateCount,gates.size());assertAll("Independent boundary accuracy, including small-response ranges",gates);
     }
 }

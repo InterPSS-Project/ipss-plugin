@@ -138,6 +138,10 @@
     "referenceArchive": "testData/private/verification-artifacts/hyg3-fast-feedback-20261102/captures.zip",
     "archiveSha256": "feab110e4cea07232d1b04f7182f6ea048c7c5c6b7acc7f94efb325d24822fa7"
   },
+  "Wsieg1TimeReferenceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-time-preparation-20261102/captures.zip",
+    "archiveSha256": "8f85327ce5f9be6fd75967d23ca0532ae0674aecfbe951c08d3de6834d02f2cf"
+  },
   "Wsieg1BypassLimitConformanceTest": {
     "referenceArchive": "testData/private/verification-artifacts/wsieg1-bypass-limits-20261102/captures.zip",
     "archiveSha256": "bdc28471d412fade189ccc46dc81a2c7cfd85f8af6f6ec07aefff2f28576025e"
