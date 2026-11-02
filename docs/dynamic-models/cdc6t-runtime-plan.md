@@ -765,4 +765,55 @@ No source metadata lookup was added to the per-step numerical runtime.
 
 Private complete trajectories, reports and dependency hash:
 `verification-artifacts/cdc6t-source-controls-20261101/validation.zip`, SHA-256
-`12c24c074ea7628ee0185ee0eb3a6e3cd109d3e609e2147aa3e5aaaa11cd0b9e`.
+`b27ed7af773bcb16a5c551b8170c39dd7a48ff4ca9ed2ee4537612f2fdb6353b`.
+
+
+## Half-step protection-release discriminators
+
+Paired cold captures now cover DC bypass, delayed AC bypass and short-duration
+power-to-current switching at 0.25 ms, in addition to their existing 0.5 ms
+controls. Each pair has identical complete CSV output and state/flag snapshots;
+all recorded samples and internal-transition duplicates are retained. The
+coupled test executes each profile under modified Euler and staggered integration.
+
+The exposed timer coordinates rule out one universal clock offset. Pickup
+uses the preceding midpoint: the short switch deadline is fault time minus
+half the interval plus its minimum duration. Bypass recovery is first observable
+at the endpoint after clearing, and its deadline starts at the following
+midpoint. In the ordinary bypass controls, the reference returns at 0.1105 s
+with a 0.5 ms step and at 0.11025 s with a 0.25 ms step. Our accepted-endpoint
+policy returns at 0.1100 s in both runs. These assertions describe the retained
+reference observation schedule; they do not alter the production clock.
+
+For the DC-bypass profile, the filtered inverter-voltage state errors shrink
+approximately in proportion to the interval:
+
+| Method | Interval | Maximum state error (V) | State RMSE (V) | Bus-voltage peak (pu) | Bus-voltage RMSE (pu) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Modified Euler | 0.5 ms | 4317.15 | 1000.03 | 0.122279 | 0.005544 |
+| Modified Euler | 0.25 ms | 2172.83 | 496.98 | 0.122278 | 0.003871 |
+| Staggered | 0.5 ms | 3089.61 | 730.81 | 0.122279 | 0.005534 |
+| Staggered | 0.25 ms | 1553.45 | 363.77 | 0.122278 | 0.003867 |
+
+The bus-voltage figures refer to the rectifier terminal and include every
+reference row. The fixed peak occurs at the release discontinuity; halving the
+step shrinks its time contribution, not its amplitude. The short mode-return
+peak likewise remains near 0.002306 pu at an internal transition with duplicate
+reference observations. Our recorder does not yet expose both observations of
+that internally generated transition. This is distinct from the bypass's
+one-interval release difference. No duplicate rows, event windows, or channels
+are removed to obtain these metrics, and no trajectory is shifted.
+
+The focused CDC6T suite passes 143 tests without failures, errors or skips.
+These additional checks constrain the diagnosis; complete protected trajectory
+acceptance remains unresolved. A production correction must define separate
+pickup/recovery observation stages, preserve transactional histories under both
+methods and failed solves, and record actual internal transition observations.
+The protection diagram alone does not justify adding a fitted half-step delay.
+
+Private paired reference captures:
+`verification-artifacts/cdc6t-release-half-20261101/captures.zip`, SHA-256
+`c213f1d75cfd32f46652fabe6490e1d08e65ad61e05572670c742d9a575bd078`.
+Private complete comparisons, all-channel metrics and focused reports:
+`verification-artifacts/cdc6t-release-half-20261101/validation.zip`, SHA-256
+`600856a7708a0d1cd7be56c20b9a44d08b8a303a9a6100d184852ed6771a9b16`.

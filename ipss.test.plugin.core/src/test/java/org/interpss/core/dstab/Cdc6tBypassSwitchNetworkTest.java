@@ -26,17 +26,19 @@ import com.interpss.dstab.cache.StateMonitor;
 public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
     @TempDir Path folder;
     static java.util.stream.Stream<Arguments> profiles(){
-        return java.util.stream.Stream.of("dc","ac","long","short")
+        return java.util.stream.Stream.of("dc","ac","long","short","dc-half","ac-half","short-half")
                 .flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));
     }
     @ParameterizedTest @MethodSource("profiles")
-    void sourcePreparedProtectionControlsTheCoupledNetwork(String profile,boolean staggered)throws Exception{
+    void sourcePreparedProtectionControlsTheCoupledNetwork(String profileName,boolean staggered)throws Exception{
+        boolean half=profileName.endsWith("-half");
+        String profile=half?profileName.substring(0,profileName.length()-5):profileName;
         boolean switching=profile.equals("long")||profile.equals("short");
-        double step=.0005,clear,modeThreshold;
-        String group=switching?"mode-switch":"bypass";
+        double step=half?.00025:.0005,clear,modeThreshold;
+        String group=half?"release-half":switching?"mode-switch":"bypass";
         Path archive=Path.of("testData/private/verification-artifacts/cdc6t-"+group+"-20261101/captures.zip");
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent bypass and mode-switch controls");
-        assertEquals(switching?"28b4d06ee2aa18d3d052a7240032a6ec3f804dbbb4849a39d32e2d84c87b7ad8"
+        assertEquals(half?"c213f1d75cfd32f46652fabe6490e1d08e65ad61e05572670c742d9a575bd078":switching?"28b4d06ee2aa18d3d052a7240032a6ec3f804dbbb4849a39d32e2d84c87b7ad8"
                 :"4af03eff4e7d3699b4eba5bce4088e796625179c81a460ab40362d9eaae2fda7",
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         List<String> raw;List<Map<String,Double>> reference;Cdc6tParameters parameters;
@@ -45,10 +47,14 @@ public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
             var settings=new com.fasterxml.jackson.databind.ObjectMapper().readTree(z.getInputStream(z.getEntry(prefix+"manifest.json"))).get("settings");
             // The earlier immutable bypass probe disables mode transfer and has no threshold setting.
             clear=settings.get("fault_clear").doubleValue();
+            if(settings.has("step"))assertEquals(step,settings.get("step").doubleValue(),0);
+            else assertFalse(half,"Half-step evidence must declare its interval");
             modeThreshold=switching?settings.get("mode_threshold_kv").doubleValue():0;
             assertTrue(clear>.05&&clear<.5);assertEquals("inverter",settings.get("fault_terminal").textValue());
             raw=new ArrayList<>(new String(z.getInputStream(z.getEntry(prefix+"network.raw")).readAllBytes(),StandardCharsets.UTF_8).lines().toList());
-            reference=Tiocr1ResetReferenceTest.csv(z.getInputStream(z.getEntry(prefix+"native.csv")).readAllBytes());
+            var rawCapture=z.getInputStream(z.getEntry(prefix+"native.csv")).readAllBytes();
+            assertArrayEquals(rawCapture,z.getInputStream(z.getEntry(profile+"/b/native.csv")).readAllBytes());
+            reference=Tiocr1ResetReferenceTest.csv(rawCapture);
             var records=PsseDyrRecordReader.read(new java.io.InputStreamReader(z.getInputStream(z.getEntry(prefix+"dynamic.dyr")),StandardCharsets.UTF_8),"reference/dynamic.dyr");
             var dc=records.stream().filter(r->r.canonicalModelName().equals("CDC6T")).toList();assertEquals(1,dc.size());
             parameters=Cdc6tRecordMapper.prepare(dc.get(0));
@@ -80,7 +86,7 @@ public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
             if(mode==OperatingMode.RECOVERING){assertFalse(switching);assertEquals(1,f.protection().currentFactor(),0,"Bypass recovery ramps voltage only");}
         }
         recorder.capture(a.getSimuTime());
-        var out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-bypass-switch-network")),profile+"-"+(staggered?"staggered-":"euler-"));
+        var out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-bypass-switch-network")),profileName+"-"+(staggered?"staggered-":"euler-"));
         double[] maxima=Cdc6tProtectedNetworkTest.writeComparison(out,reference,recorder.rows,step);
         if(profile.equals("long")){
             assertEquals(reference.size(),recorder.rows.size(),"Complete samples and both scheduled event sides");
@@ -92,10 +98,24 @@ public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
         }
         double expectedActive=reference.stream().filter(r->isActive(r,switching)).mapToDouble(r->r.get("time_s")).min().orElseThrow();
         double expectedReturn=reference.stream().filter(r->r.get("time_s")>expectedActive&&!isActive(r,switching)).mapToDouble(r->r.get("time_s")).min().orElseThrow();
+        if(switching){
+            double deadline=reference.stream().filter(r->r.get("VAR14")<90000)
+                    .findFirst().orElseThrow().get("VAR14");
+            assertEquals(.05-.5*step+.02,deadline,1e-6,
+                    "Independent pickup timer uses the preceding midpoint, not a universal positive clock offset");
+        }else{
+            var recoveryObservation=reference.stream().filter(r->r.get("time_s")>clear&&r.get("VAR17")<90000)
+                    .findFirst().orElseThrow();
+            assertEquals(clear+step,recoveryObservation.get("time_s"),1e-6,
+                    "Independent recovery timer is first visible at the following endpoint");
+            assertEquals(clear+.5*step+.01,recoveryObservation.get("VAR17"),1e-6,
+                    "Independent recovery deadline starts at the following midpoint");
+            assertEquals(clear+.01+step,expectedReturn,1e-6);
+        }
         assertEquals(expectedActive,firstActive,2.2*step,"First protected transition");
         assertEquals(expectedReturn,firstReturn,2.2*step,"Return from protected operation");
         assertTrue(activeSamples>=35);assertEquals(OperatingMode.NORMAL,f.protection().operatingMode());
-        System.out.println("CDC6T coupled "+profile+" staggered="+staggered+" active/return="+firstActive+"/"+firstReturn);
+        System.out.println("CDC6T coupled "+profileName+" staggered="+staggered+" active/return="+firstActive+"/"+firstReturn);
     }
     private static boolean isActive(Map<String,Double> row,boolean switching){
         return switching?row.get("VAR14")<90000:row.get("VAR7")==0&&row.get("VAR5")>0;
