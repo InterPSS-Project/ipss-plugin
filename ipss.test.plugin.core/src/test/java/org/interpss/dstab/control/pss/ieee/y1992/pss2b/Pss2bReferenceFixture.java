@@ -20,6 +20,12 @@ final class Pss2bReferenceFixture {
         this.staged=staged;this.referenceArchive=archive;this.archiveHash=hash;
     }
 
+    static Pss2bReferenceFixture longRun(Path staged) {
+        return new Pss2bReferenceFixture(staged,
+                Path.of("testData/private/verification-artifacts/pss2b-long-20261102/captures.zip"),
+                "1fc652f56497f1d6620a47fda67481c204bab4298210164704083285ec653475");
+    }
+
     Path archive() throws Exception {
         Path path = referenceArchive;
         assumeTrue(Files.isRegularFile(path), "Retained private PSS2B qualification archive is unavailable");

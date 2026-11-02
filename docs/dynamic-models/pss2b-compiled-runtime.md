@@ -246,8 +246,51 @@ comparison writes diagnostics before checking acceptance so a failed gate
 cannot erase its full trace or error report. Public files contain synthetic
 model work only, without source-case inventories.
 
-Focused validation executes 69 tests: 68 pass, and the quarter-cycle
+Initial long-run validation executes 69 tests: 68 pass, and the quarter-cycle
 modified-Euler rotor-angle gate above fails. Import, compiled/generic
 equivalence, shared-state ownership/allocation, prior coupled boundaries,
 host-exciter, measurement and artifact checks pass. This run does not claim
 full-repository or system acceptance.
+
+## Localizing the modified-Euler controller-chain error
+
+`Pss2bCoupledPlaybackTest` replaces selected output boundaries with unmodified
+reference samples in a synthetic network. The original machine and network
+still run through modified Euler; the exciter also runs unless its field
+output is prescribed. These are diagnostic interventions, not complete-model
+acceptance tests. The ordinary coupled PSS2B gate remains separate and enabled.
+
+The playback clock preserves every integration ordinal and both event-side
+samples. It rejects missing ordinals or distinct event-side source outputs
+that this fixture cannot represent. Predictor/corrector counts and exact
+published source outputs are checked. Negative-time rows explicitly use the
+initialized snapshot, and full diagnostic traces retain both clocks.
+
+| Controller-chain experiment | Angle RMSE at 1/240 s (degrees) | Angle RMSE at 1/480 s (degrees) |
+|---|---:|---:|
+| Ordinary coupled model | 0.017025 | 0.006506 |
+| Prescribed stabilizer, endpoint updates | 0.010592 | 0.005162 |
+| Prescribed stabilizer, held through both stages | 0.002017 | 0.000914 |
+| Prescribed stabilizer and field voltage | 0.000680 | 0.000174 |
+
+The field-voltage intervention passes a separate 0.001-degree downstream
+machine/network RMSE guard. It localizes the larger error to the controller
+chain. It does not prove an exciter equation defect, and differences between
+rows cannot be subtracted as independent error contributions because the
+interventions change feedback.
+
+Two isolated implementation candidates were rejected. Using the predictor
+stabilizer value during exciter correction increased the quarter-cycle angle
+RMSE to 0.019217 degrees. Holding the live stabilizer input throughout both
+exciter stages increased it to 0.129624 degrees (0.065769 at the half interval),
+despite the improvement with prescribed stabilizer samples. This demonstrates
+why playback alone cannot authorize a controller-coupling change. Neither
+candidate changed production source, installed dependencies or normal runtime
+defaults. Reconcile the complete state and sampled-input lifecycle before
+changing that coupling; the strict quarter-cycle gate is still unresolved.
+
+The subsequent focused run includes the registered playback checks: 74 of 75
+tests pass, with only the same ordinary quarter-cycle modified-Euler gate
+failing. Production equations and runtime settings are unchanged. Preserve the
+unmodified coupled traces alongside the intervention evidence when evaluating
+the next controller-stage change.

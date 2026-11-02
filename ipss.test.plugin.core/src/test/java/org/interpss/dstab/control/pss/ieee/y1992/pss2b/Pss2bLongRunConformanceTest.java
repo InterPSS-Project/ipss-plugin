@@ -14,9 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class Pss2bLongRunConformanceTest {
     @TempDir Path staged;
     private Pss2bReferenceFixture references() {
-        return new Pss2bReferenceFixture(staged,
-                Path.of("testData/private/verification-artifacts/pss2b-long-20261102/captures.zip"),
-                "1fc652f56497f1d6620a47fda67481c204bab4298210164704083285ec653475");
+        return Pss2bReferenceFixture.longRun(staged);
     }
 
     @Test void publishedLongRunStatesReconstructEveryOutput() throws Exception {
