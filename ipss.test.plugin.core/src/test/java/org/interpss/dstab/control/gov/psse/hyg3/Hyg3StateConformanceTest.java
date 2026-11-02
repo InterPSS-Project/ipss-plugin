@@ -96,6 +96,16 @@ public class Hyg3StateConformanceTest {
         org.interpss.IpssCorePlugin.init(); org.interpss.IpssCorePlugin.configureSparseSolver("java-klu");
         var fixture = new Hyg3ReferenceFixture(staged);
         Path output = Files.createTempDirectory(Path.of("target"), staggered ? "hyg3-state-staggered-" : "hyg3-state-euler-");
+        compare(fixture, staggered, output, manifest -> {
+            double duration = manifest.path("settings").path("duration").asDouble();
+            return new ComparisonLimits(stateTolerances(staggered, duration), boundaryTolerances(staggered, duration));
+        });
+    }
+
+    record ComparisonLimits(double[] states, double[] boundaries) { }
+
+    static void compare(Hyg3ReferenceFixture fixture, boolean staggered, Path output,
+            java.util.function.Function<JsonNode, ComparisonLimits> limits) throws Exception {
         System.out.println("HYG3 state comparison "+output.getFileName());
         var diagnostics = new LinkedHashMap<String, Object>();
         var failures = new ArrayList<String>();
@@ -159,7 +169,8 @@ public class Hyg3StateConformanceTest {
             result.put("coordinate_policy","Published compensation coordinates compared explicitly; stored integration coordinates also retained");
             result.put("inactive_reference_history",Map.of("VAR2",reference.getFirst().get("VAR2")));
             result.put("backlash_input_policy","Compare accepted input history VAR2 and output VAR3 separately from the live BACKLASH_INPUT");
-            double[] stateTolerance = stateTolerances(staggered,duration);
+            var bounds = limits.apply(manifest);
+            double[] stateTolerance = bounds.states();
             var stateBounds = new LinkedHashMap<String,Double>();
             for (int i = 0; i < stateTolerance.length; i++) {
                 String key = "STATE"+i; stateBounds.put(key,stateTolerance[i]);
@@ -167,7 +178,7 @@ public class Hyg3StateConformanceTest {
             }
             result.put("state_absolute_tolerance",stateBounds);
             String[] boundaryKeys = {"P_PU","Q_PU","PMECH","SPEED","A1","A2","VAR0","VAR1","VAR2","VAR3","VAR4"};
-            double[] boundaryTolerance = boundaryTolerances(staggered,duration); var boundaryBounds = new LinkedHashMap<String,Double>();
+            double[] boundaryTolerance = bounds.boundaries(); var boundaryBounds = new LinkedHashMap<String,Double>();
             for (int i = 0; i < boundaryKeys.length; i++) {
                 String key = boundaryKeys[i]; boundaryBounds.put(key,boundaryTolerance[i]);
                 if (!(maximum.get(key) < boundaryTolerance[i])) failures.add(tag+" "+key+" maximum "+maximum.get(key)+" exceeds "+boundaryTolerance[i]);

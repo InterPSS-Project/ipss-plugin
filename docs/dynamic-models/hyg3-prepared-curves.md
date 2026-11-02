@@ -301,3 +301,58 @@ converter-conformance and disturbance-smoke failures remain unresolved; the
 suite is not reported as fully passing. The private evidence capsules retain
 the tested source/classes, core library, dependency hashes, complete comparisons,
 negative controls and test reports.
+
+## Zero-time filter and servo observations
+
+Independent synthetic captures now exercise zero `Tt`, `Td` and `Tp` separately
+in both control modes, at 0.5 ms and quarter-cycle intervals. Cold repeats have
+identical numerical exports, and the reference leaves the entered constants
+unchanged. The [governor diagram](https://www.powerworld.com/WebHelp/Content/TransientModels_PDF/Generator/Governor/Governor%20HYG3.pdf)
+identifies the corresponding power filter, input filter and servo; their
+source-specific published coordinates are checked against these captures.
+
+`readPublishedState()` now reports the algebraic filter/servo output when its
+time constant is zero. Previously it returned dormant integration storage.
+The existing stored-state accessors, physical equations and integration
+coordinates retain their meanings. The getter reuses the model's algebraic
+buffer and commits neither backlash nor deadband history. Allocation checks
+include bypassed models under both methods and measure zero bytes in the
+warmed update/observation loops.
+
+The recorded power-filter coordinate agrees with electrical power within
+0.00000004 pu; the bypassed servo agrees with its clipped proportional command
+within 0.0000000001 pu. In double-derivative mode the bypassed input coordinate
+equals the deadband output. The PID algebraic-feedback reconstruction retains
+a finite-stage residual up to 0.00000220 pu at the quarter-cycle interval;
+that residual is reported separately from the exact direct-path identities.
+
+Worst published-coordinate errors in the 0.5 ms comparisons are:
+
+| Bypassed coordinate | Before (pu) | Modified Euler after (pu) | Staggered after (pu) |
+|---|---:|---:|---:|
+| Input filter | 0.0004623 | 0.000001372 | 0.000000315 |
+| Servo | 0.012267 | 0.000008926 | 0.000008926 |
+| Power filter | 0.120337 | 0.000119579 | 0.000002368 |
+
+All complete before/after comparisons preserve every physical output,
+differential coordinate, stored history, timestamp and event-side sample
+exactly. Only the corrected published coordinates differ. An isolated frozen
+pre-change executable fails the new bypass-observation regression.
+
+`Hyg3BypassConformanceTest` retains the complete reference and actual traces,
+per-channel errors, state envelopes and the existing 0.001 range-normalized
+boundary limits. State envelopes, voltage gates and the 0.01-degree rotor-angle
+gate pass under both methods. The new quarter-cycle modified-Euler comparisons
+expose an existing active-power NRMSE of 0.001128–0.001131, which exceeds 0.001;
+the frozen executable reproduces it. Fine-step modified Euler and both
+staggered resolutions pass the power gate. This failure remains enabled, so
+the focused run reports 47 of 48 tests passing, with no skips or errors. The
+observation correction does not qualify complete model accuracy.
+
+The immutable synthetic capture archive is
+`testData/private/verification-artifacts/hyg3-bypass-qualification-20261102/captures.zip`,
+SHA-256 `09899d9ed070291f2e27fcbe403ef844fe6b95983c3c2ede7db16664b7ec7711`.
+Its private manifests retain exact source provenance and executable identity.
+Remaining work includes the quarter-cycle power gate, the PID feedback
+observation residual, additional bypass/preparation boundaries, tuning changes
+and longer active-limit trajectories.

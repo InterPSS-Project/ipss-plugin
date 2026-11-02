@@ -23,6 +23,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
+- Retain the independently checked [zero-time filter/servo observations](dynamic-models/hyg3-prepared-curves.md#zero-time-filter-and-servo-observations), unchanged physical trajectories and allocation-free published-state access under both methods. Resolve the existing quarter-cycle modified-Euler power NRMSE gate and finite-stage PID feedback observation residual; extend the remaining bypass/preparation boundaries without changing integration storage to match displayed states.
 - Retain the direct shared-state contract, reusable numerical storage and accepted backlash/hysteresis histories.
 - Retain the independently qualified compensation coordinates, direct-speed feedback correction and both-method state/boundary gates through five seconds at quarter-cycle steps.
 - Retain independent active valve/gate-limit and recorded-gate backlash/history checks under both methods, with separate input-jump and scheduled-network-event integration policies.

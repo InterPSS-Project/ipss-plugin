@@ -17,6 +17,9 @@ PROFILES = {
     'gate-limits': {10: .1, 11: -.1, 12: .518, 13: .515},
     'backlash-small': {14: .02},
     'backlash-large': {14: 2.},
+    'power-filter-bypass': {2: 0.},
+    'input-filter-bypass': {3: 0.},
+    'servo-bypass': {9: 0.},
 }
 REFERENCE_PROFILES = {'valve-limits', 'gate-limits', 'backlash-small', 'backlash-large'}
 REFERENCE_PROGRAM = [( .05, .2), (.3, -.4), (.6, .2)]

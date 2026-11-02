@@ -180,7 +180,10 @@ public class Hyg3SharedStateTest {
                 data.setK2(gain); data.setK1(gain/3.);
                 governor.readPublishedState(published, 2);
                 assertEquals(79., published[0]); assertEquals(79., published[12]);
-                for (int i : new int[]{0, 1, 3, 4, 5, 6}) assertEquals(state[i], published[i+2], 0.);
+                for (int i : new int[]{1, 4, 6}) assertEquals(state[i], published[i+2], 0.);
+                assertEquals(bypass ? 0. : state[0], published[2], 1e-15);
+                assertEquals(bypass ? 0. : state[3], published[5], 1e-15);
+                assertEquals(bypass ? governor.getMeasuredElectricalPower() : state[5], published[7], 0.);
                 double tf = data.getTf();
                 assertEquals(bypass ? 0. : data.getK1()/tf*state[2], published[4], 0.);
                 assertEquals(bypass ? 0. : gain/tf*state[7], published[9], 0.);
@@ -207,6 +210,40 @@ public class Hyg3SharedStateTest {
         assertEquals(expected, rates[1], 1e-15, "The diagram sums direct speed and both derivative paths");
         governor.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, machine, 0);
         assertEquals(expected, governor.getStateDerivativeSnapshot().rates().get("Integral"), 1e-15);
+    }
+
+    @Test void publishedBypassesUseAlgebraicOutputsWithoutChangingStoredStatesOrHistory() throws Exception {
+        for (int mode : new int[]{0, 1}) for (boolean shared : new boolean[]{false, true}) {
+            var governor = model(mode, false); var data = governor.getData(); var machine = governor.getMachine();
+            data.setTd(0.); data.setTp(0.); data.setTt(0.);
+            assertTrue(governor.initStates(machine.getDStabBus(), machine));
+            machine.setSpeed(1.002); machine.setPe(.44);
+            if (shared) governor.evaluateStaggered(H, new double[9], 0);
+            else {
+                governor.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, machine, 0);
+                governor.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, machine, 1);
+            }
+            var states = governor.getIntegrationStates(); var history = governor.getIntegrationHistories();
+            var rates = governor.getStateDerivativeSnapshot(); double[] published = new double[9];
+            double speed = machine.getSpeed()-1., measured = governor.getMeasuredElectricalPower();
+            double input = mode == 0 ? speed :
+                    (governor.getRefPoint()-speed-data.getRelec()*measured
+                            -data.getRgate()*(governor.getIntegralState()-governor.getDerivativeCompensationState()))
+                            /(1.+data.getRgate()*(data.getK2()+data.getK1()/data.getTf()));
+            double valve = Math.max(data.getVelclose(), Math.min(data.getVelopen(),
+                    data.getKg()*(governor.getControlValveCommand()-governor.getGateOutput())));
+            for (int repeat=0; repeat<4; repeat++) {
+                governor.readPublishedState(published, 0);
+                assertEquals(input, published[0], 1e-15);
+                assertEquals(valve, published[3], 1e-15);
+                assertEquals(measured, published[5], 0.);
+                assertNotEquals(states.get("Input filter"), published[0]);
+                assertNotEquals(states.get("Electrical power"), published[5]);
+                assertEquals(states, governor.getIntegrationStates());
+                assertEquals(history, governor.getIntegrationHistories());
+                assertEquals(rates, governor.getStateDerivativeSnapshot());
+            }
+        }
     }
 
     @Test void gatePositionBoundsDoNotClipGovernorIntegralOrCommand() throws Exception {
@@ -256,13 +293,14 @@ public class Hyg3SharedStateTest {
         var allocations = (com.sun.management.ThreadMXBean) bean;
         org.junit.jupiter.api.Assumptions.assumeTrue(allocations.isThreadAllocatedMemorySupported());
         allocations.setThreadAllocatedMemoryEnabled(true);
-        for (boolean staggered : new boolean[]{false, true}) for (int mode : new int[]{0, 1}) {
-            var governor = model(mode, false); double[] states = new double[9], rates = new double[9];
+        for (boolean staggered : new boolean[]{false, true}) for (int mode : new int[]{0, 1})
+                for (boolean bypass : new boolean[]{false, true}) {
+            var governor = model(mode, bypass); double[] states = new double[9], rates = new double[9];
             for (int i = 0; i < 80000; i++) update(governor, staggered, states, rates);
             long thread = Thread.currentThread().threadId(), start = allocations.getThreadAllocatedBytes(thread);
             for (int i = 0; i < 100000; i++) update(governor, staggered, states, rates);
             long bytes = allocations.getThreadAllocatedBytes(thread)-start;
-            System.out.println("HYG3 reusable updates mode="+mode+" staggered="+staggered+" allocated="+bytes);
+            System.out.println("HYG3 reusable updates mode="+mode+" staggered="+staggered+" bypass="+bypass+" allocated="+bytes);
             assertTrue(bytes <= 1024, "Reusable numerical loop allocated "+bytes);
             assertTrue(Double.isFinite(sink));
         }

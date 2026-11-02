@@ -285,15 +285,22 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
      * Published diagram order: input filter, integral, derivative compensation,
      * valve, gate, electrical-power filter, water flow and the two double-derivative
      * compensations. These observation coordinates do not replace integration storage
-     * or the existing typed canonical-state accessors. Reading commits no history.
+     * or the existing typed canonical-state accessors. Bypassed input/power filters
+     * and the servo report their algebraic outputs rather than dormant storage.
+     * Reading commits no history.
      */
     public void readPublishedState(double[] values, int offset) {
         if (!initialized) throw new IllegalStateException("Initialize HYG3 before observing published states");
         java.util.Objects.checkFromIndexSize(offset, 9, values.length);
-        values[offset] = state.tdLag; values[offset+1] = state.integrator;
+        PsseHyg3GovernorData data = getData();
+        Algebraic current = data.getTd() <= SMALL || data.getTp() <= SMALL
+                ? algebraic(state, committedGateOutput, committedDeadbandMode) : null;
+        values[offset] = data.getTd() > SMALL ? state.tdLag : current.tdSignal;
+        values[offset+1] = state.integrator;
         values[offset+2] = getDerivativeCompensationState();
-        values[offset+3] = state.valve; values[offset+4] = state.gate;
-        values[offset+5] = state.peMeasured; values[offset+6] = state.flow;
+        values[offset+3] = data.getTp() > SMALL ? state.valve : current.valve;
+        values[offset+4] = state.gate;
+        values[offset+5] = measuredPower(state); values[offset+6] = state.flow;
         values[offset+7] = getDoubleDerivativeFirstCompensationState();
         values[offset+8] = getDoubleDerivativeSecondCompensationState();
     }
