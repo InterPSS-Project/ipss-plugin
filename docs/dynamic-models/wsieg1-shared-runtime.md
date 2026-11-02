@@ -425,8 +425,9 @@ Reinitialization invalidates the previous scale. Repeated preparation retains
 the latest fresh value, and shared integration rejects an incomplete pair.
 The scale is not recomputed from moving turbine states. Undefined zero-primary
 allocation and nonfinite normalization fail initialization rather than exposing
-the previous run's scale. Independent zero-over-zero, initially inactive
-companion and reconnection behavior still require qualification.
+the previous run's scale. Independent zero-over-zero and hot reconnection
+behavior still require qualification. Initially inactive companions are covered
+by the separate controls below.
 
 Both integration methods retain the same state arrays and passive companion.
 Warmed paired-shaft update/output checks measure zero allocated bytes under
@@ -478,3 +479,68 @@ The private validation capsule retains the cold captures, complete trajectories,
 previous/current executable discriminator, tighter-flow control, allocation
 checks and focused/module/registered reports. The suite is still failing;
 these new controls do not establish full model acceptance.
+
+## Initially inactive secondary shafts
+
+The independent inactive-secondary controls initialize the active primary
+governor, retain its turbine coordinates and set the secondary contribution to
+zero. The network does not execute the inactive machine's initializer. Waiting
+for its fresh mechanical power therefore prevented shared initialization and
+caused the ordinary solver's first device update to fail. An isolated executable
+of the previous kernel reproduces that defect.
+
+The primary initializer now prepares a zero secondary scale when the companion
+machine, its generator or its bus is inactive. It ignores stale secondary
+mechanical power, including nonfinite uninitialized storage. It clears pending
+pairing flags and permits the active turbine to use the existing shared arrays
+and numerical equations. Active companions continue to require both fresh
+shaft operating points. There is no new per-step status scan or allocation.
+
+The tests cover all three inactive ownership flags and subsequent fresh
+initialization in either machine order. Merely enabling an uninitialized
+companion does not authorize its numerical updates: ordinary updates reject
+it and shared state access throws until initialization. This establishes
+fresh-run behavior, not hot reconnection or synchronization to a live grid.
+The comparison recorder also avoids reading electrical states from a machine
+that was never initialized; its inactive physical channels are recorded as zero.
+
+Cold-repeated synthetic flat and fault captures preserve the original
+coefficients, complete states and all event-side samples at fine and quarter-cycle
+network intervals. Every inactive mechanical/electrical output and the reference
+secondary scale remain exactly zero. The same strict boundary gates pass under
+both methods:
+
+| Inactive-secondary controls | Worst fault voltage/P/Q NRMSE | Worst rotor RMSE, degrees |
+| --- | --- | --- |
+| Modified Euler | 0.00080884 | 0.00130446 |
+| Staggered Euler | 0.00021821 | 0.00046338 |
+
+Flat voltage/P/Q maximum absolute error stays below 2.81e-7 pu. Both methods
+match initial published coordinates within 1e-7 pu and have zero owned
+initialization derivatives within 1e-12. Complete transient coordinate errors
+remain in the private diagnostics; this profile's boundary acceptance does not
+qualify every previously unresolved internal-state branch.
+
+Separate cold-repeated nominal-zero controls, including a balanced network,
+still record small positive primary mechanical powers at initialization. The
+reference normalizes by those recorded powers, producing a very large scale
+when the secondary is loaded. They do not establish an exact zero-over-zero
+rule. The implementation retains its explicit undefined-normalization failure
+instead of adding an arbitrary power floor or fallback rating ratio. These
+diagnostics remain separately classified and are not substituted for coupled
+zero-primary acceptance tests.
+
+The focused model/import suite executes 115 tests with the same six unresolved
+accuracy failures, no errors and no skips; all newly added inactive-shaft tests
+pass. Warmed shared/ordinary and paired-output allocation checks remain at zero
+bytes. The core-plugin module executes 486 tests with no failures and four skips.
+
+Every retained active-shaft/base trajectory remains bit-identical to the prior
+validation capsule under both methods, including all states, histories, physical
+channels and duplicate samples. The inactive-machine recording guard therefore
+does not change the earlier active-shaft comparisons.
+
+The complete registered suite executes 4,065 tests with the same thirteen
+failing test identities as the previous capsule, no errors and thirteen skips.
+The new inactive-secondary checks introduce no failures. Full model acceptance
+remains open because the earlier accuracy and lifecycle gaps are unresolved.

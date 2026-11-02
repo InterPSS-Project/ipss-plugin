@@ -140,8 +140,16 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.INITIALIZATION);
         initialTurbinePower=p;
         if(secondaryMachine!=null) {
-            primaryInitializationPending=true;
-            if(!finishSecondaryInitialization()){initialized=false;return false;}
+            if(!secondaryMachine.isActive() || !secondaryMachine.getDStabBus().isActive()
+                    || !secondaryMachine.getParentGen().isActive()) {
+                // The network does not initialize an out-of-service machine.
+                // Its stale mechanical power cannot normalize the active owner.
+                secondaryScale=0.;secondaryScaleReady=true;
+                primaryInitializationPending=false;secondaryInitializationPending=false;
+            } else {
+                primaryInitializationPending=true;
+                if(!finishSecondaryInitialization()){initialized=false;return false;}
+            }
         }
         return true;
     }

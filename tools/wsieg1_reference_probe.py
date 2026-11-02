@@ -50,7 +50,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', choices=['standard', 'curve', 'dual', 'unused-lp'], required=True)
     parser.add_argument('--profile', choices=[*PROFILES, *STEP_PROFILES], default='base')
-    parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary'], default='entered')
+    parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary','zero-primary','zero-both','secondary-off','balanced-zero-primary','balanced-zero-both'], default='entered')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], required=True)
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
@@ -84,11 +84,17 @@ def main():
     if args.base_profile != 'entered':
         lines = (out/'network.raw').read_text().splitlines(); section = 'header'
         for i,line in enumerate(lines):
+            if i == 2: section = 'bus'; continue
+            if 'BEGIN LOAD DATA' in line: section = 'load'; continue
             if 'BEGIN GENERATOR DATA' in line: section = 'generator'; continue
             if 'BEGIN BRANCH DATA' in line: section = 'branch'; continue
             if line.startswith('0 /'): section = 'other'; continue
             if i == 0 and args.base_profile == 'system-double':
                 fields = line.split(','); fields[1] = ' 200.00'; lines[i] = ','.join(fields)
+            elif section == 'bus' and args.base_profile.startswith('balanced-zero-'):
+                fields = line.split(','); fields[7] = '1.0'; fields[8] = '0.0'; lines[i] = ','.join(fields)
+            elif section == 'load' and args.base_profile.startswith('balanced-zero-'):
+                fields = line.split(','); fields[5] = '12.0' if args.base_profile == 'balanced-zero-primary' else '0.0'; fields[6] = '0.0'; lines[i] = ','.join(fields)
             elif section == 'generator':
                 fields = line.split(','); bus = int(fields[0])
                 ratings = {'primary-high': {1:200.,2:50.}, 'secondary-high': {1:50.,2:200.}, 'split-fractions': {1:80.,2:120.}}.get(args.base_profile,{})
@@ -96,6 +102,12 @@ def main():
                 if args.base_profile == 'split-fractions' and bus == 2: fields[2] = '16.0'
                 if args.base_profile == 'independent-secondary' and bus == 2: fields[2] = '18.0'
                 if args.base_profile == 'zero-secondary' and bus == 2: fields[2] = '0.0'
+                if args.base_profile == 'zero-primary' and bus == 1: fields[2] = '0.0'
+                if args.base_profile == 'zero-both' and bus in [1,2]: fields[2] = '0.0'
+                if args.base_profile == 'secondary-off' and bus == 2: fields[14] = '0'
+                if args.base_profile.startswith('balanced-zero-'):
+                    fields[2] = '12.0' if bus == 2 and args.base_profile == 'balanced-zero-primary' else '0.0'
+                    fields[3] = '0.0'; fields[6] = '1.0'
                 lines[i] = ','.join(fields)
             elif section == 'branch' and args.base_profile == 'system-double':
                 fields = line.split(',')

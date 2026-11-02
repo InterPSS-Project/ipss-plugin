@@ -79,7 +79,7 @@ public class Wsieg1SharedSmibTest {
             for(int bus=1;bus<=2;bus++) {
                 var m=net.getMachine("Bus"+bus+"-mach1");if(m==null||bus==2&&!Wsieg1Governor.isSecondaryShaft(m.getGovernor()))continue;
                 String suffix=bus==1?"":"_LP";boolean active=m.isActive()&&m.getDStabBus().isActive()&&m.getDStabBus().getContributeGen("1").isActive();var voltage=m.getDStabBus().getVoltage();
-                var power=voltage.multiply(m.getIgen().subtract(voltage.multiply(m.getYgen())).conjugate());
+                var power=active?voltage.multiply(m.getIgen().subtract(voltage.multiply(m.getYgen())).conjugate()):Complex.ZERO;
                 values.put("ANGLE_DEG"+suffix,active?Math.toDegrees(m.getAngle()):0.);
                 values.put("P_PU"+suffix,active?power.getReal():0.);values.put("Q_PU"+suffix,active?power.getImaginary():0.);
                 values.put("PMECH"+suffix,active?m.getPm():0.);values.put("SPEED"+suffix,active?m.getSpeed()-1.:0.);

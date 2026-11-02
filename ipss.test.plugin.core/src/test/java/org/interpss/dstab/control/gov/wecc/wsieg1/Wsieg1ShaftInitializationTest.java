@@ -82,6 +82,30 @@ public class Wsieg1ShaftInitializationTest {
         }
     }
 
+    @Test void inactiveSecondaryDoesNotRequireUnexecutedMachineInitialization()throws Exception {
+        for(int inactiveOwner=0;inactiveOwner<3;inactiveOwner++)for(boolean secondaryFirst:new boolean[]{false,true}) {
+            var p=pair();p.secondary.setPm(Double.NaN);
+            if(inactiveOwner==0)p.secondary.setStatus(false);
+            else if(inactiveOwner==1)p.secondary.getParentGen().setStatus(false);
+            else p.secondary.getDStabBus().setStatus(false);
+            assertTrue(initialize(p.primary));assertEquals(0.,p.owner.getSecondaryBaseScale(),0.);
+            assertEquals(.24,p.owner.getOutput(p.primary),1e-15);
+            assertEquals(0.,p.secondary.getGovernor().getOutput(p.secondary),0.);
+            double[] state=new double[6],rates=new double[6];p.owner.readStaggeredState(state,0);
+            p.owner.evaluateStaggered(.0005,rates,0);for(double rate:rates)assertEquals(0.,rate,1e-14);
+            p.owner.applyStaggeredState(state,0,.0005);p.owner.completeStaggeredStep(.0005);
+            assertTrue(p.owner.nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.primary,0));
+            assertTrue(p.owner.nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.primary,1));
+            // A fresh initialization after enabling the device must replace the
+            // zero scale; this does not claim hot reconnection support.
+            p.secondary.setStatus(true);p.secondary.getParentGen().setStatus(true);p.secondary.getDStabBus().setStatus(true);
+            assertFalse(p.secondary.getGovernor().nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.secondary,0));
+            assertThrows(IllegalStateException.class,()->((StaggeredEulerParticipant)p.secondary.getGovernor()).readStaggeredState(new double[0],0));
+            p.secondary.setPm(.36);initializePair(p,secondaryFirst);
+            assertEquals(3.,p.owner.getSecondaryBaseScale(),1e-14);
+        }
+    }
+
     private static void updateBoth(Pair p,boolean shared,double[] state,double[] rates) {
         for(int tick=0;tick<20000;tick++) {
             p.primary.setSpeed(1.+.0001*Math.sin(tick*.01));

@@ -170,6 +170,7 @@ import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InitialLimitsTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InitialReferenceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1ShaftInitializationTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BaseConformanceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InactiveReferenceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1MeasurementDependenciesTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
 import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
@@ -1155,6 +1156,7 @@ import org.junit.platform.suite.api.Suite;
     Wsieg1InitialReferenceTest.class,
     Wsieg1ShaftInitializationTest.class,
     Wsieg1BaseConformanceTest.class,
+    Wsieg1InactiveReferenceTest.class,
     Wsieg1MeasurementDependenciesTest.class,
 	PsseHygovrGovernorTest.class,
 	Lcfb1PrefControllerTest.class,
