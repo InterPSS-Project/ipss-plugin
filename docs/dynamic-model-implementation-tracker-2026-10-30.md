@@ -23,6 +23,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
+- Retain the [zero derivative-filter preparation](dynamic-models/hyg3-prepared-curves.md#zero-derivative-filter-preparation): imported zero `Tf` uses four prepared outer intervals in both integrators, with typed bypass kept separate, unchanged entered constants and cold independent controls. Resolve the remaining quarter-cycle modified-Euler power gate downstream of the governor boundary; extend short positive times, combined bypasses, invalid water-time handling and longer-duration qualification without fitting the governor to integration error.
+
 - Retain the independently checked [zero-time filter/servo observations](dynamic-models/hyg3-prepared-curves.md#zero-time-filter-and-servo-observations), unchanged physical trajectories and allocation-free published-state access under both methods. Resolve the existing quarter-cycle modified-Euler power NRMSE gate and finite-stage PID feedback observation residual; extend the remaining bypass/preparation boundaries without changing integration storage to match displayed states.
 - Retain the direct shared-state contract, reusable numerical storage and accepted backlash/hysteresis histories.
 - Retain the independently qualified compensation coordinates, direct-speed feedback correction and both-method state/boundary gates through five seconds at quarter-cycle steps.

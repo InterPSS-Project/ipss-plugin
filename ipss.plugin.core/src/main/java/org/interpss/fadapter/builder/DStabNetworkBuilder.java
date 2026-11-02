@@ -2725,6 +2725,7 @@ public class DStabNetworkBuilder {
         target.setControlFlag(source.getControlFlag());
         target.setFrequencyDeadbandConvention(source.getFrequencyDeadbandConvention());
         target.setBacklashConvention(source.getBacklashConvention());
+        target.setZeroDerivativeFilterConvention(source.getZeroDerivativeFilterConvention());
         target.setRgate(source.getRgate()); target.setRelec(source.getRelec());
         target.setTt(source.getTt()); target.setTd(source.getTd());
         target.setK2(source.getK2()); target.setKi(source.getKi());

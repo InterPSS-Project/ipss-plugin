@@ -130,6 +130,10 @@
     "referenceArchive": "testData/private/verification-artifacts/hyg3-bypass-qualification-20261102/captures.zip",
     "archiveSha256": "09899d9ed070291f2e27fcbe403ef844fe6b95983c3c2ede7db16664b7ec7711"
   },
+  "Hyg3DerivativePreparationConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-derivative-preparation-20261102/captures.zip",
+    "archiveSha256": "0d46fcac218ec495737f9156af95a5d9b104c1db9d8da0d3a9f4f4804fa63ea5"
+  },
   "Wsieg1StateConformanceTest": {
     "referenceArchive": "testData/private/verification-artifacts/wsieg1-shared-state-20261031/captures.zip",
     "archiveSha256": "ae6ffd32654e18910161eb0df94001164d312cfff07f5455ef2d947f470db89c",

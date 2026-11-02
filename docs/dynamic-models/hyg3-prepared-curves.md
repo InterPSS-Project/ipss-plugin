@@ -356,3 +356,62 @@ Its private manifests retain exact source provenance and executable identity.
 Remaining work includes the quarter-cycle power gate, the PID feedback
 observation residual, additional bypass/preparation boundaries, tuning changes
 and longer active-limit trajectories.
+
+## Zero derivative-filter preparation
+
+The imported HYG3U1 zero `Tf` setting keeps the derivative branches active with
+an effective time constant of four outer integration intervals. It is not a
+derivative-disable switch. Independent zero/explicit-time controls establish
+this behavior in both control modes at 0.25 ms, 0.5 ms and quarter-cycle steps.
+All cold repeats reproduce their complete numerical exports. At the two fine
+steps, zero and explicit `4H` exports match exactly; at the quarter-cycle step,
+physical outputs match exactly and internal-state differences are below
+0.0000001 pu. Explicit `2H` and fixed-time controls distinguish the rule.
+The entered constants remain unchanged in every accepted capture.
+
+The reader selects `FOUR_OUTER_INTERVALS` and the builder preserves it.
+Initialization prepares the zero-setting replacement from the configured outer
+interval. Both integration methods, derivative-compensation observations and
+the zero-input-filter feedback calculation use the same effective time.
+Local stage intervals do not alter it. Reinitialization prepares a new value;
+positive entered `Tf` values remain live and are not floored by this rule.
+The typed `BYPASS` convention remains available separately. An imported zero
+setting requires a positive configured outer interval before initialization.
+
+For the double-derivative fault control at 0.5 ms, rotor-angle RMSE changes from
+0.0305103 to 0.0000234 degree under modified Euler and from 0.0304968 to
+0.0000187 degree under staggered integration. Every state, boundary channel,
+timestamp and event-side duplicate remains in the comparisons. The separate
+state envelopes retain the fast compensation-state truncation differences;
+these are not described as exact internal-state parity.
+
+`Hyg3DerivativePreparationConformanceTest` retains the cold controls and complete
+zero-setting comparisons under both methods. All voltage and angle gates pass.
+The quarter-cycle modified-Euler active-power NRMSE remains 0.001127–0.001130,
+above the unchanged 0.001 gate. Fine-step modified Euler and all staggered power
+comparisons pass. The new test leaves this failure enabled alongside the
+existing bypass-profile power failure. Shared-update tests cover local-step
+changes, reinitialization, import/builder propagation, typed bypass and live
+positive parameters. Warmed update/observation loops include the prepared-zero
+path and allocate zero bytes under both methods.
+
+The independent capture archive is
+`testData/private/verification-artifacts/hyg3-derivative-preparation-20261102/captures.zip`,
+SHA-256 `0d46fcac218ec495737f9156af95a5d9b104c1db9d8da0d3a9f4f4804fa63ea5`.
+Private validation evidence also retains the pre-correction executable control,
+complete comparison traces, rejected nonfinite reference probes and test reports.
+Zero water time and a fixed small derivative time at a coarse outer interval
+produced nonfinite reference results; they are excluded from accepted reference
+fixtures and remain separate validation work.
+
+### Localizing the remaining power gate
+
+A diagnostic-only playback supplies the reference's exact mechanical-power
+samples to the machine while retaining the ordinary machine/network solver.
+The prescribed output matches every positive-time reference sample exactly;
+the retained initial machine output differs by 0.000000014 pu.
+Across the original bypass profiles, quarter-cycle active-power NRMSE remains
+0.00112–0.00114. This localizes the remaining gate downstream of the governor
+output; it does not qualify the complete governor or justify changing its
+equations to compensate for machine/network integration differences. Production
+code contains no playback override and the accuracy threshold is unchanged.

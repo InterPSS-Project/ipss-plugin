@@ -25,6 +25,13 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     private BacklashConvention backlashConvention = BacklashConvention.MW_ON_GOVERNOR_BASE;
     public BacklashConvention getBacklashConvention() { return backlashConvention; }
     public void setBacklashConvention(BacklashConvention value) { backlashConvention = java.util.Objects.requireNonNull(value); }
+    /** Typed bypass and imported zero-time preparation are distinct model contracts. */
+    public enum ZeroDerivativeFilterConvention { BYPASS, FOUR_OUTER_INTERVALS }
+    private ZeroDerivativeFilterConvention zeroDerivativeFilterConvention = ZeroDerivativeFilterConvention.BYPASS;
+    public ZeroDerivativeFilterConvention getZeroDerivativeFilterConvention() { return zeroDerivativeFilterConvention; }
+    public void setZeroDerivativeFilterConvention(ZeroDerivativeFilterConvention value) {
+        zeroDerivativeFilterConvention = java.util.Objects.requireNonNull(value);
+    }
     private int controlFlag = PID_CONTROL;
     private double rgate = 0.05;
     private double relec;

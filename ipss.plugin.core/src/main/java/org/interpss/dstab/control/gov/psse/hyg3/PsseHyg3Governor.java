@@ -37,6 +37,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             "Electrical power", "Water flow", "Double derivative 1", "Double derivative 2");
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
+    private double preparedZeroDerivativeTime;
     private double effectiveTw;
     private double effectiveAt;
     private double effectivePmax;
@@ -92,6 +93,10 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         staggeredEvaluationCount = 0;
         if (!validateParameters()) return false;
         PsseHyg3GovernorData d = getData();
+        if (d.getZeroDerivativeFilterConvention()
+                == PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS
+                && d.getTf() == 0. && integrationStep <= 0.) return false;
+        preparedZeroDerivativeTime = 4. * integrationStep;
         double minimum = Math.max(SMALL, integrationStep * minimumTimeConstantMultiplier);
         effectiveAt = d.getAt() <= 0.0 ? minimum : d.getAt();
         effectiveTw = d.getTw() > 0.0 && d.getTw() < minimum ? minimum : d.getTw();
@@ -265,20 +270,27 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
     public double getAuxiliaryInput() { return auxiliaryInput; }
     public double getInputFilterState() { return state.tdLag; }
+    /** Zero imported Tf uses the initialization-time outer interval, never a local stage interval. */
+    public double getEffectiveDerivativeFilterTime() {
+        PsseHyg3GovernorData data = getData();
+        return data.getTf() == 0. && data.getZeroDerivativeFilterConvention()
+                == PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS
+                ? preparedZeroDerivativeTime : data.getTf();
+    }
     public double getK1FilterState() { return state.k1Lag; }
     /** Positive compensation coordinate of the first derivative block. */
     public double getDerivativeCompensationState() {
-        double tf = getData().getTf();
+        double tf = getEffectiveDerivativeFilterTime();
         return tf > SMALL ? getData().getK1() / tf * state.k1Lag : 0.;
     }
     /** Positive compensation coordinate of the first section of the double derivative. */
     public double getDoubleDerivativeFirstCompensationState() {
-        double tf = getData().getTf();
+        double tf = getEffectiveDerivativeFilterTime();
         return tf > SMALL ? getData().getK2() / tf * state.k2First : 0.;
     }
     /** Positive compensation coordinate of the second section of the double derivative. */
     public double getDoubleDerivativeSecondCompensationState() {
-        double tf = getData().getTf();
+        double tf = getEffectiveDerivativeFilterTime();
         return tf > SMALL ? getData().getK2() / tf * state.k2Second : 0.;
     }
     /**
@@ -306,7 +318,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
     public double getK1Output() {
         double tdSignal = algebraic(state, currentGateOutput, committedDeadbandMode).tdSignal;
-        return washoutOutput(tdSignal, state.k1Lag, getData().getK1(), getData().getTf());
+        return washoutOutput(tdSignal, state.k1Lag, getData().getK1(), getEffectiveDerivativeFilterTime());
     }
     public double getIntegralState() { return state.integrator; }
     public double getValveState() { return state.valve; }
@@ -327,12 +339,12 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     public double getK2SecondState() { return state.k2Second; }
     public double getK2FirstOutput() {
         double tdSignal = algebraic(state, currentGateOutput, committedDeadbandMode).tdSignal;
-        return getData().getTf() > SMALL
-                ? (tdSignal - state.k2First) / getData().getTf() : 0.0;
+        return getEffectiveDerivativeFilterTime() > SMALL
+                ? (tdSignal - state.k2First) / getEffectiveDerivativeFilterTime() : 0.0;
     }
     /** Canonical first state reported by PowerWorld for the double-derivative block. */
     public double getK2FirstCanonicalState() {
-        double tf = getData().getTf();
+        double tf = getEffectiveDerivativeFilterTime();
         return tf > SMALL ? -getData().getK2() * state.k2Second / (tf * tf) : 0.0;
     }
     public double getK2SecondOutput() {
@@ -388,27 +400,27 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         DeadbandResult frequency = deadband(getMachine().getSpeed() - 1.0, priorMode);
         double pe = measuredPower(s);
         double tdSignal = s.tdLag;
-        double k1Output = washoutOutput(tdSignal, s.k1Lag, d.getK1(), d.getTf());
+        double k1Output = washoutOutput(tdSignal, s.k1Lag, d.getK1(), getEffectiveDerivativeFilterTime());
         double k2DoubleOutput = doubleDerivativeOutput(s, tdSignal);
         double cv;
         double tdInput;
         if (d.getControlFlag() == PsseHyg3GovernorData.PID_CONTROL) {
             if (d.getTd() <= SMALL) {
-                double derivativeGain = d.getTf() > SMALL ? d.getK1() / d.getTf() : 0.0;
+                double derivativeGain = getEffectiveDerivativeFilterTime() > SMALL ? d.getK1() / getEffectiveDerivativeFilterTime() : 0.0;
                 double dynamicGain = d.getK2() + derivativeGain;
                 double fixedOutput = s.integrator - derivativeGain * s.k1Lag;
                 double inputWithoutGateFeedback = pref + auxiliaryInput
                         - frequency.output - d.getRelec() * pe;
                 tdSignal = (inputWithoutGateFeedback - d.getRgate() * fixedOutput)
                         / (1.0 + d.getRgate() * dynamicGain);
-                k1Output = washoutOutput(tdSignal, s.k1Lag, d.getK1(), d.getTf());
+                k1Output = washoutOutput(tdSignal, s.k1Lag, d.getK1(), getEffectiveDerivativeFilterTime());
             }
             cv = s.integrator + d.getK2() * tdSignal + k1Output;
             tdInput = pref + auxiliaryInput - frequency.output
                     - d.getRgate() * cv - d.getRelec() * pe;
         } else {
             if (d.getTd() <= SMALL) tdSignal = frequency.output;
-            k1Output = washoutOutput(tdSignal, s.k1Lag, d.getK1(), d.getTf());
+            k1Output = washoutOutput(tdSignal, s.k1Lag, d.getK1(), getEffectiveDerivativeFilterTime());
             k2DoubleOutput = doubleDerivativeOutput(s, tdSignal);
             cv = s.integrator;
             tdInput = frequency.output;
@@ -435,7 +447,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     private Derivatives derivatives(State s, Algebraic a) {
         PsseHyg3GovernorData d = getData();
         double tdDot = d.getTd() > SMALL ? (a.tdInput - s.tdLag) / d.getTd() : 0.0;
-        double k1Dot = d.getTf() > SMALL ? (a.tdSignal - s.k1Lag) / d.getTf() : 0.0;
+        double k1Dot = getEffectiveDerivativeFilterTime() > SMALL ? (a.tdSignal - s.k1Lag) / getEffectiveDerivativeFilterTime() : 0.0;
         double integralDot = d.getKi() * a.integralError;
         double valveDot = d.getTp() > SMALL
                 ? (d.getKg() * (a.cv - a.gateOutput) - s.valve) / d.getTp() : 0.0;
@@ -452,10 +464,10 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double k2FirstDot = 0.0;
         double k2SecondDot = 0.0;
         if (d.getControlFlag() == PsseHyg3GovernorData.DOUBLE_DERIVATIVE_CONTROL
-                && d.getTf() > SMALL) {
-            double firstWashout = (a.tdSignal - s.k2First) / d.getTf();
+                && getEffectiveDerivativeFilterTime() > SMALL) {
+            double firstWashout = (a.tdSignal - s.k2First) / getEffectiveDerivativeFilterTime();
             k2FirstDot = firstWashout;
-            k2SecondDot = (firstWashout - s.k2Second) / d.getTf();
+            k2SecondDot = (firstWashout - s.k2Second) / getEffectiveDerivativeFilterTime();
         }
         currentDerivatives.set(tdDot, k1Dot, integralDot, valveDot, gateDot,
                 flowDot, peDot, k2FirstDot, k2SecondDot);
@@ -474,9 +486,9 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
 
     private double doubleDerivativeOutput(State s, double tdSignal) {
         PsseHyg3GovernorData d = getData();
-        if (d.getTf() <= SMALL) return 0.0;
-        double firstWashout = (tdSignal - s.k2First) / d.getTf();
-        return d.getK2() * (firstWashout - s.k2Second) / d.getTf();
+        if (getEffectiveDerivativeFilterTime() <= SMALL) return 0.0;
+        double firstWashout = (tdSignal - s.k2First) / getEffectiveDerivativeFilterTime();
+        return d.getK2() * (firstWashout - s.k2Second) / getEffectiveDerivativeFilterTime();
     }
 
     private static double washoutOutput(double input, double lagState, double gain, double time) {

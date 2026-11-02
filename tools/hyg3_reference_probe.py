@@ -20,6 +20,11 @@ PROFILES = {
     'power-filter-bypass': {2: 0.},
     'input-filter-bypass': {3: 0.},
     'servo-bypass': {9: 0.},
+    'water-flow-bypass': {29: 0.},
+    'derivative-filter-zero': {7: 0.},
+    'derivative-filter-fixed-small': {7: .002},
+    'derivative-filter-two-steps': {},
+    'derivative-filter-four-steps': {},
 }
 REFERENCE_PROFILES = {'valve-limits', 'gate-limits', 'backlash-small', 'backlash-large'}
 REFERENCE_PROGRAM = [( .05, .2), (.3, -.4), (.6, .2)]
@@ -51,6 +56,10 @@ def main():
     values = [float(v) for v in tokens[12:-1]]
     for index, value in PROFILES[args.profile].items():
         values[index] = value
+    if args.profile == 'derivative-filter-two-steps':
+        values[7] = 2 * args.step
+    elif args.profile == 'derivative-filter-four-steps':
+        values[7] = 4 * args.step
     lines[1] = f"1 'USRMDL' '1' 'HYG3U1' 5 0 2 36 9 5 {args.mode} 0 " + ' '.join(format(v, '.17g') for v in values) + ' /'
     (out / 'dynamic.dyr').write_text('\n'.join(lines) + '\n')
     for name in ['hyg3_reference_probe.py', 'tgov1_limit_probe.py']:

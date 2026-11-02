@@ -3117,6 +3117,7 @@ public class PSSEDStabDirectParser {
         PsseHyg3GovernorData d = new PsseHyg3GovernorData();
         d.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR);
         d.setBacklashConvention(PsseHyg3GovernorData.BacklashConvention.PER_UNIT_GATE);
+        d.setZeroDerivativeFilterConvention(PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS);
         d.setControlFlag(getInt(f, 3, 0));
         d.setRgate(getDouble(f, 4, 0)); d.setRelec(getDouble(f, 5, 0));
         d.setTt(getDouble(f, 6, 0)); d.setTd(getDouble(f, 7, 0));

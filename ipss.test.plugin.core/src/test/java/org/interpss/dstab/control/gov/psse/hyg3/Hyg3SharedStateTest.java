@@ -27,12 +27,58 @@ public class Hyg3SharedStateTest {
         machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1.);
         var governor = (PsseHyg3Governor) machine.getGovernor();
         if (bypass) {
+            governor.getData().setZeroDerivativeFilterConvention(PsseHyg3GovernorData.ZeroDerivativeFilterConvention.BYPASS);
             governor.getData().setTd(0.); governor.getData().setTf(0.);
             governor.getData().setTp(0.); governor.getData().setTt(0.); governor.getData().setTw(0.);
         }
         governor.configureIntegrationStep(H);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
         return governor;
+    }
+
+    @Test void importedZeroDerivativeTimeUsesOuterIntervalAcrossBothMethodsAndLocalSteps() throws Exception {
+        for (int mode : new int[]{0, 1}) for (boolean shared : new boolean[]{false, true}) {
+            var zero = model(mode, false); var explicit = model(mode, false);
+            assertEquals(PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS,
+                    zero.getData().getZeroDerivativeFilterConvention(), "Import and builder must preserve preparation policy");
+            zero.getData().setTf(0.); explicit.getData().setTf(4*H);
+            assertTrue(zero.initStates(zero.getMachine().getDStabBus(), zero.getMachine()));
+            assertTrue(explicit.initStates(explicit.getMachine().getDStabBus(), explicit.getMachine()));
+            double[] z = new double[9], e = new double[9], rates = new double[9], published = new double[9];
+            for (int tick = 0; tick < 40; tick++) {
+                double local = tick < 20 ? H/2 : H/4;
+                for (var governor : List.of(zero, explicit)) {
+                    governor.getMachine().setSpeed(1.+.0002*Math.sin(.1*tick));
+                    governor.getMachine().setPe(.4+.001*Math.cos(.1*tick));
+                    if (shared) {
+                        governor.readStaggeredState(e, 0); governor.evaluateStaggered(local, rates, 0);
+                        for (int i=0;i<9;i++) e[i] += local*rates[i];
+                        governor.applyStaggeredState(e, 0, local); governor.completeStaggeredStep(local);
+                    } else {
+                        governor.nextStep(local, DynamicSimuMethod.MODIFIED_EULER, governor.getMachine(), 0);
+                        governor.nextStep(local, DynamicSimuMethod.MODIFIED_EULER, governor.getMachine(), 1);
+                    }
+                }
+                zero.readStaggeredState(z,0); explicit.readStaggeredState(e,0); assertArrayEquals(e,z,0.);
+                zero.readPublishedState(z,0); explicit.readPublishedState(published,0); assertArrayEquals(published,z,0.);
+                assertEquals(explicit.getOutput(explicit.getMachine()),zero.getOutput(zero.getMachine()),0.);
+                assertEquals(4*H,zero.getEffectiveDerivativeFilterTime(),0.);
+                assertEquals(0.,zero.getData().getTf(),0.,"Preparation leaves entered constants unchanged");
+            }
+            assertTrue(Math.abs(z[2])>1e-6,"Derivative branch must remain active");
+            zero.configureIntegrationStep(H/2); assertEquals(4*H,zero.getEffectiveDerivativeFilterTime(),0.);
+            assertTrue(zero.initStates(zero.getMachine().getDStabBus(),zero.getMachine()));
+            assertEquals(2*H,zero.getEffectiveDerivativeFilterTime(),0.);
+            zero.getData().setTf(H); assertEquals(H,zero.getEffectiveDerivativeFilterTime(),0.,"Positive Tf is not floored");
+        }
+    }
+
+    @Test void importedZeroDerivativeTimeRequiresOuterIntervalButTypedBypassRemainsAvailable() throws Exception {
+        var governor=model(0,false); governor.getData().setTf(0.); governor.configureIntegrationStep(0.);
+        assertFalse(governor.initStates(governor.getMachine().getDStabBus(),governor.getMachine()));
+        governor.getData().setZeroDerivativeFilterConvention(PsseHyg3GovernorData.ZeroDerivativeFilterConvention.BYPASS);
+        assertTrue(governor.initStates(governor.getMachine().getDStabBus(),governor.getMachine()));
+        assertEquals(0.,governor.getEffectiveDerivativeFilterTime(),0.);
     }
 
     @Test void pureRhsMatchesOrdinaryEquationsAndPreservesHistoryAcrossBothModesAndBypasses() throws Exception {
@@ -294,13 +340,18 @@ public class Hyg3SharedStateTest {
         org.junit.jupiter.api.Assumptions.assumeTrue(allocations.isThreadAllocatedMemorySupported());
         allocations.setThreadAllocatedMemoryEnabled(true);
         for (boolean staggered : new boolean[]{false, true}) for (int mode : new int[]{0, 1})
-                for (boolean bypass : new boolean[]{false, true}) {
+                for (int profile : new int[]{0, 1, 2}) {
+            boolean bypass = profile == 1;
             var governor = model(mode, bypass); double[] states = new double[9], rates = new double[9];
+            if (profile == 2) {
+                governor.getData().setTf(0.);
+                assertTrue(governor.initStates(governor.getMachine().getDStabBus(), governor.getMachine()));
+            }
             for (int i = 0; i < 80000; i++) update(governor, staggered, states, rates);
             long thread = Thread.currentThread().threadId(), start = allocations.getThreadAllocatedBytes(thread);
             for (int i = 0; i < 100000; i++) update(governor, staggered, states, rates);
             long bytes = allocations.getThreadAllocatedBytes(thread)-start;
-            System.out.println("HYG3 reusable updates mode="+mode+" staggered="+staggered+" bypass="+bypass+" allocated="+bytes);
+            System.out.println("HYG3 reusable updates mode="+mode+" staggered="+staggered+" profile="+profile+" allocated="+bytes);
             assertTrue(bytes <= 1024, "Reusable numerical loop allocated "+bytes);
             assertTrue(Double.isFinite(sink));
         }

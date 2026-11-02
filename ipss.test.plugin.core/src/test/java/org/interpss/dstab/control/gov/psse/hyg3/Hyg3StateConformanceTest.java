@@ -106,11 +106,18 @@ public class Hyg3StateConformanceTest {
 
     static void compare(Hyg3ReferenceFixture fixture, boolean staggered, Path output,
             java.util.function.Function<JsonNode, ComparisonLimits> limits) throws Exception {
+        compare(fixture, staggered, output, limits, entry -> true);
+    }
+
+    static void compare(Hyg3ReferenceFixture fixture, boolean staggered, Path output,
+            java.util.function.Function<JsonNode, ComparisonLimits> limits,
+            java.util.function.Predicate<JsonNode> include) throws Exception {
         System.out.println("HYG3 state comparison "+output.getFileName());
         var diagnostics = new LinkedHashMap<String, Object>();
         var failures = new ArrayList<String>();
         for (var entry : fixture.matrix()) {
             if (!entry.path("repeat").asText().equals("a")) continue;
+            if (!include.test(entry)) continue;
             String tag = entry.path("tag").asText(); Path root = fixture.stage(tag);
             var manifest = new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
             double step = manifest.path("settings").path("step").asDouble(), duration = manifest.path("settings").path("duration").asDouble();
@@ -189,6 +196,7 @@ public class Hyg3StateConformanceTest {
             for (var value : normalized.entrySet()) if (!(value.getValue() < .001)) failures.add(tag+" "+value.getKey()+" NRMSE "+value.getValue());
             if (!((double) result.get("rotor_rmse_deg") < .01)) failures.add(tag+" rotor RMSE "+result.get("rotor_rmse_deg"));
         }
+        assertFalse(diagnostics.isEmpty(), "A trajectory gate must exercise at least one complete capture");
         assertEquals(List.of(), failures);
     }
 
