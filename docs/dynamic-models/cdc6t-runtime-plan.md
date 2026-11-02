@@ -279,3 +279,26 @@ only in explicit event neighborhoods. Separate checks cover strict equality,
 rejected trials and inhibition in current control or while blocked/bypassed.
 These are component checks; concurrent protection transitions, auxiliary input
 conversion in switched mode and coupled integration remain unqualified.
+
+## Assembled conducting runtime
+
+`Cdc6tNormalRuntime` combines the shared measurement states, current command,
+voltage-dependent ceiling and conducting electrical boundary. Each network
+trial refreshes voltage-dependent terminal currents and transducer inputs using
+primitive reusable buffers. Rectifier and inverter power signs are converted
+to network-base current injections using their own complex terminal voltages.
+No measurement state advances during current evaluation.
+
+The runtime delegates modified-Euler predictor/corrector and staggered state/
+derivative operations to one measurement owner. State updates invalidate the
+electrical boundary; subsequent integration must refresh it. Predictor rollback
+restores the same state owner. Tests check equilibrium under both lifecycles,
+disturbed-state refinement, rotating-phasor power conservation, fresh voltage
+inputs and failed/stale trial behavior.
+
+This component is restricted to ordinary conduction. It is not yet registered
+as a network device, does not replace the static DC injection, and does not own
+protection events. The staggered solver currently validates device types
+explicitly; both terminal ports and their shared integration owner must be
+registered together. Complete attachment, coordinated event behavior and
+independent full-solver trajectory acceptance remain outstanding.
