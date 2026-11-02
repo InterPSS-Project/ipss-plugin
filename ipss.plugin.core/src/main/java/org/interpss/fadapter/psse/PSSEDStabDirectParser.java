@@ -853,6 +853,11 @@ public class PSSEDStabDirectParser {
                 return procGovTgov1d(busId, genId, fields);
             case "GAST":
                 return procGovGast(busId, genId, fields);
+            case "URGS3T":
+                if (fields.length != 36 || !"URGS3T".equalsIgnoreCase(fields[1])) return false;
+                double[] urgs3t = new double[33];
+                for (int i = 0; i < urgs3t.length; i++) urgs3t[i] = getDouble(fields, i+3, Double.NaN);
+                return builder.addGovUrgs3t(busId, genId, urgs3t) != null;
             case "GASTD":
             case "GASTDU":
                 return procGovGastd(busId, genId, fields);

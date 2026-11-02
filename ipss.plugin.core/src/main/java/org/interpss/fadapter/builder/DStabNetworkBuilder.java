@@ -2720,6 +2720,17 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /** Attach the exact standard-record WECC gas governor. */
+    public org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor addGovUrgs3t(
+            String busId, String genId, double[] constants) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) return null;
+        var governor = new org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor(machine.getId()+"_Gov", constants,
+                org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor.RuntimeConvention.SOURCE_RECORD);
+        governor.setMachine(machine);
+        return governor;
+    }
+
     private static void copyHyg3Data(PsseHyg3GovernorData source,
             PsseHyg3GovernorData target) {
         target.setControlFlag(source.getControlFlag());

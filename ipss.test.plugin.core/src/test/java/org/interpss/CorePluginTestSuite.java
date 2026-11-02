@@ -161,6 +161,8 @@ import org.interpss.dstab.control.gov.psse.hyg3.Hyg3DerivativePreparationConform
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3ParameterValidationTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3FastFeedbackReferenceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedStateTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tSharedStateTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReferenceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedSmibTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1StateConformanceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BypassLimitConformanceTest;
@@ -1149,6 +1151,8 @@ import org.junit.platform.suite.api.Suite;
     Hyg3ParameterValidationTest.class,
     Hyg3FastFeedbackReferenceTest.class,
     Wsieg1SharedStateTest.class,
+    Urgs3tSharedStateTest.class,
+    Urgs3tReferenceTest.class,
     Wsieg1SharedSmibTest.class,
     Wsieg1StateConformanceTest.class,
     Wsieg1BypassLimitConformanceTest.class,
