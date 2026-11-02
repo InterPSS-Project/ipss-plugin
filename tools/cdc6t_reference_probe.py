@@ -17,9 +17,15 @@ def main():
     parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
     parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope'], default='default')
     parser.add_argument('--fault-terminal', choices=['rectifier', 'inverter'], default='rectifier')
-    parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block'], default='default')
+    parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block'], default='default')
+    parser.add_argument('--fault-clear', type=float, default=.1)
+    parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
+    if not math.isfinite(args.fault_clear) or not .05 < args.fault_clear < .5:
+        parser.error('Fault clearing must be strictly between application and end time')
+    if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
+        parser.error('Inverter recovery delay must be finite and nonnegative')
     root = Path.cwd()
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
@@ -52,7 +58,12 @@ def main():
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
-    if args.protection != 'default':
+    if args.protection == 'inverter-block':
+        constants[8] = .92
+        constants[12:14] = [2., 2.]
+        constants[25:27] = [.90, .02]
+        constants[29] = args.inverter_recovery_delay
+    elif args.protection != 'default':
         constants[5] = .94
         constants[12:14] = [2., 2.]
         constants[24] = .01
@@ -105,7 +116,7 @@ def main():
     if args.profile == 'fault':
         checked('fault', psspy.dist_bus_fault(7 if args.fault_terminal == 'rectifier' else 9,
                 3, 230., [0., .2*230**2/100]))
-    checked('fault interval', psspy.run(0, .1, 1000000, 1, 0))
+    checked('fault interval', psspy.run(0, args.fault_clear, 1000000, 1, 0))
     if args.profile == 'fault':
         checked('clear', psspy.dist_clear_fault(1))
     if args.profile == 'modulation':

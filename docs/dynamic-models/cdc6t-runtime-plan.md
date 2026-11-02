@@ -206,3 +206,22 @@ negative source sentinel delays, inverter-origin blocking, bypass, concurrent
 protection causes and full event ownership remain to be qualified before import
 and attachment can use it. Its API is shared by integration methods; complete
 coupled verification under both methods remains outstanding.
+
+## Inverter-origin blocking
+
+`Cdc6tInverterProtection` uses a latched communication request. Independent
+short-fault captures demonstrate that voltage recovery before the communication
+deadline does not cancel the pending block. Reusing the resettable rectifier
+undervoltage pickup would therefore give incorrect behavior. Once blocked,
+unblocking requires sustained voltage above the recovery threshold and expiration
+of the minimum blocking interval. Preview and accepted-history ownership follow
+the same primitive-buffer contract as rectifier protection.
+
+Cold-paired short and long inverter-fault captures distinguish communication,
+minimum blocking duration and recovery delays. Endpoint-voltage replay checks the
+first block and first unblock within one recorded interval. Analytic checks cover
+latched requests, interrupted recovery, equality boundaries and rejected trials.
+All capture rows remain in the tests, but later full event trajectories are not
+qualified: intermediate network observations can trigger further requests absent
+from exported samples. Concurrent rectifier/inverter causes require coordinated
+ownership before these components can drive a runnable DC-link device.
