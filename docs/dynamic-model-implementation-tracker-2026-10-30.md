@@ -123,6 +123,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CDC6T
 
+- Retain [sampled blocking timers with physical endpoint ownership](dynamic-models/cdc6t-runtime-plan.md#sampled-blocking-timers-with-physical-endpoint-ownership), outer-interval preparation, rollback and complete severe-fault terminal gates under both methods. Resolve remaining measurement-state errors and independently establish bypass/temporary-current observation phases; their timing must not be inferred from blocking alone.
+
 - Retain the [explicit external-event protection boundary](dynamic-models/cdc6t-runtime-plan.md#explicit-external-event-protection-before-conducting-evaluation), failed-solve rollback and both-method severe repeated-fault checks. Do not treat frozen-injection event voltages as converged internal observations. Resolve the remaining recovery voltage/state errors and qualify other severe-fault protection paths, production intervals and long runs before claiming full trajectory support.
 
 - Retain exact named DC-link record decoding, quoted identifiers and adjacent-record handling. The reader preserves all 32 constants; strict import still reports the runtime unsupported. Preserve explicit exact-name static-owner preparation and reject missing or ambiguous owners before attachment.

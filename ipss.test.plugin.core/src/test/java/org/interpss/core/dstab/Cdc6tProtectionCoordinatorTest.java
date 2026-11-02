@@ -15,13 +15,43 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Transaction and independent event controls; complete solver attachment is a separate gate. */
 public class Cdc6tProtectionCoordinatorTest {
     private static Cdc6tProtectionCoordinator coordinator(double inverterDelay,double inverterRecovery){
+        return coordinator(inverterDelay,inverterRecovery,Cdc6tProtectionCoordinator.TimerSampling.ENDPOINT);
+    }
+    private static Cdc6tProtectionCoordinator coordinator(double inverterDelay,double inverterRecovery,Cdc6tProtectionCoordinator.TimerSampling sampling){
         return new Cdc6tProtectionCoordinator(new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02),
                 new Cdc6tInverterProtection(.9,.02,inverterRecovery,inverterDelay,.02),
                 new Cdc6tBypassProtection(490000,.9,.01,inverterRecovery,.01,.02),
-                new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,500,1000,2,2));
+                new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,500,1000,2,2),sampling);
     }
     private static void accept(Cdc6tProtectionCoordinator c,double t,double vr,double vi,double dc){c.beginTrial(t);c.observe(vr,vi,dc);c.acceptTrial();}
     private static double[] history(Cdc6tProtectionCoordinator c){double[] h=new double[23];c.readAcceptedHistory(h,0);return h;}
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void sampledBlockingSeparatesImmediatePickupRecoveryObservationAndPhysicalCommit(boolean inverterCause){
+        var c=new Cdc6tProtectionCoordinator(new Cdc6tRectifierProtection(inverterCause?0:.9,-999,999,.94,.01,.02),
+                new Cdc6tInverterProtection(inverterCause?.9:0,0,.94,.01,.02),
+                new Cdc6tBypassProtection(0,0,0,.94,0,.02),new Cdc6tModeSwitch(false,0,0),
+                new Cdc6tRecoveryRamp(250000,500000,500,1000,2,2),Cdc6tProtectionCoordinator.TimerSampling.BLOCK_INTERVAL_MIDPOINT);
+        for(double invalid:new double[]{0,-1,Double.NaN,Double.POSITIVE_INFINITY})
+            assertThrows(IllegalArgumentException.class,()->c.configureIntegrationStep(invalid));
+        c.configureIntegrationStep(.0005);
+        c.beginTrial(.2,false);c.observe(inverterCause?1:.8,inverterCause?.8:1,500000);
+        assertThrows(IllegalStateException.class,()->c.configureIntegrationStep(.001));c.acceptTrial();
+        int offset=inverterCause?11:6;
+        assertEquals(.21975,history(c)[offset+2],1e-15,"Immediate block uses the preceding midpoint for its minimum deadline");
+        assertEquals(.2,history(c)[0],0,"Accepted history keeps the physical event time");
+        c.beginTrial(.25,false);c.observe(1,1,0);c.observe(1,1,0);c.acceptTrial();
+        assertTrue(Double.isNaN(history(c)[offset+3]),"Repeated zero-duration event observations cannot start recovery");
+        var before=history(c);
+        c.beginTrial(.2505,true);c.observe(1,1,0);c.discardTrial();assertArrayEquals(before,history(c));
+        c.beginTrial(.2505,true);c.observe(1,1,0);c.acceptTrial();
+        assertEquals(.26025,history(c)[offset+3],1e-15,"First completed interval samples the following midpoint after clearing");
+        accept(c,.26,1,1,0);assertEquals(OperatingMode.BLOCKED,c.operatingMode());
+        accept(c,.2605,1,1,0);assertEquals(OperatingMode.RECOVERING,c.operatingMode());
+        assertEquals(.2605,history(c)[3],0,"Recovery ramps start at physical release, not at the timer origin");
+        assertEquals(.5,c.currentFactor(),0);assertEquals(.5,c.voltageFactor(),0);
+        c.reset();c.beginTrial(.2,false);c.observe(inverterCause?1:.8,inverterCause?.8:1,500000);c.acceptTrial();
+        assertEquals(.21975,history(c)[offset+2],1e-15,"Reinitialization retains the prepared network interval");
+    }
     @Test void failedTrialAndItsPendingCommunicationDoNotLeakIntoAcceptedHistory(){
         var c=coordinator(.01,.92);accept(c,0,1,1,500000);double[] before=history(c);
         c.beginTrial(.05);c.observe(1,.8,480000);assertEquals(OperatingMode.BYPASSED,c.operatingMode());
@@ -141,10 +171,11 @@ public class Cdc6tProtectionCoordinatorTest {
             r.readStaggeredState(states,0);assertTrue(states[0]<500000);assertTrue(states[1]<1000);assertTrue(states[2]<505000);
         }
     }
-    @Test void warmedNormalTrialsAndRollbacksReuseHistoryBuffers(){
+    @ParameterizedTest @org.junit.jupiter.params.provider.EnumSource(Cdc6tProtectionCoordinator.TimerSampling.class)
+    void warmedNormalTrialsAndRollbacksReuseHistoryBuffers(Cdc6tProtectionCoordinator.TimerSampling sampling){
         var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();
         Assumptions.assumeTrue(bean.isThreadAllocatedMemorySupported());bean.setThreadAllocatedMemoryEnabled(true);
-        var c=coordinator(.01,.92);accept(c,0,1,1,500000);
+        var c=coordinator(.01,.92,sampling);c.configureIntegrationStep(.0005);accept(c,0,1,1,500000);
         for(int i=0;i<30000;i++){c.beginTrial(1);c.observe(1,1,500000);c.discardTrial();}
         long thread=Thread.currentThread().threadId(),before=bean.getThreadAllocatedBytes(thread);
         for(int i=0;i<100000;i++){c.beginTrial(1);c.observe(1,1,500000);c.discardTrial();}

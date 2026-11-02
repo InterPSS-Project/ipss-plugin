@@ -6,6 +6,12 @@ import org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode;
  * The enclosing solver must accept only a successful, accepted physical-time boundary;
  * successful predictor-network convergence alone is not permission to commit history. */
 public final class Cdc6tProtectionCoordinator {
+    /** Blocking timer origin is separate from the physical accepted-history clock.
+     * Bypass and temporary-current controls retain their own observation semantics. */
+    public enum TimerSampling { ENDPOINT, BLOCK_INTERVAL_MIDPOINT }
+    private final TimerSampling timerSampling;
+    private double outerInterval,timerTime;
+    private boolean sampleRecovery;
     private final Cdc6tRectifierProtection rectifier,workingRectifier;
     private final Cdc6tInverterProtection inverter,workingInverter;
     private final Cdc6tBypassProtection bypass,workingBypass;
@@ -20,6 +26,11 @@ public final class Cdc6tProtectionCoordinator {
     /** Takes independent copies so caller-owned protection objects cannot mutate this owner. */
     public Cdc6tProtectionCoordinator(Cdc6tRectifierProtection rectifier,Cdc6tInverterProtection inverter,
             Cdc6tBypassProtection bypass,Cdc6tModeSwitch modeSwitch,Cdc6tRecoveryRamp ramp){
+        this(rectifier,inverter,bypass,modeSwitch,ramp,TimerSampling.ENDPOINT);
+    }
+    public Cdc6tProtectionCoordinator(Cdc6tRectifierProtection rectifier,Cdc6tInverterProtection inverter,
+            Cdc6tBypassProtection bypass,Cdc6tModeSwitch modeSwitch,Cdc6tRecoveryRamp ramp,TimerSampling timerSampling){
+        this.timerSampling=java.util.Objects.requireNonNull(timerSampling);
         this.rectifier=java.util.Objects.requireNonNull(rectifier).workingCopy();
         this.inverter=java.util.Objects.requireNonNull(inverter).workingCopy();
         this.bypass=java.util.Objects.requireNonNull(bypass).workingCopy();
@@ -37,11 +48,26 @@ public final class Cdc6tProtectionCoordinator {
         acceptedTime=Double.NEGATIVE_INFINITY;failed=false;observed=false;
     }
     public void beginTrial(double physicalTime){
+        beginTrial(physicalTime,true);
+    }
+    /** Prepare once from the network interval, never from a controller substep. */
+    public void configureIntegrationStep(double interval){
+        if(open)throw new IllegalStateException("Cannot change protection sampling during a trial");
+        if(!Double.isFinite(interval)||interval<=0)throw new IllegalArgumentException("Positive finite protection interval required");
+        outerInterval=interval;
+    }
+    /** Initial/event solves may pick up protection but cannot start sampled recovery.
+     * A completed integration interval evaluates timers at its preceding midpoint;
+     * decisions and recovery ramps retain the physical endpoint time. */
+    public void beginTrial(double physicalTime,boolean completedInterval){
         if(open)throw new IllegalStateException("Protection trial already open");
         if(!Double.isFinite(physicalTime)||physicalTime<acceptedTime)throw new IllegalArgumentException("Finite nondecreasing physical time required");
         workingRectifier.copyHistoryFrom(rectifier);workingInverter.copyHistoryFrom(inverter);
         workingBypass.copyHistoryFrom(bypass);workingModeSwitch.copyHistoryFrom(modeSwitch);
         System.arraycopy(accepted,0,working,0,5);trialTime=physicalTime;
+        boolean midpoint=timerSampling==TimerSampling.BLOCK_INTERVAL_MIDPOINT&&outerInterval>0;
+        timerTime=midpoint?physicalTime-outerInterval/2:physicalTime;
+        sampleRecovery=!midpoint||completedInterval;
         if(working[1]!=0){
             double elapsed=physicalTime-working[2];
             working[3]=ramp.voltageFactor(elapsed);
@@ -62,16 +88,16 @@ public final class Cdc6tProtectionCoordinator {
             if(working[1]!=0&&working[3]==1&&working[4]==1)working[1]=0;
             boolean wasBlocked=working[0]!=0;
             if(working[0]==1){
-                workingRectifier.accept(trialTime,rectifierAcPu);
+                workingRectifier.accept(trialTime,rectifierAcPu,timerTime,sampleRecovery);
                 if(!workingRectifier.isBlocked())unblock();
             } else if(working[0]==2){
-                workingInverter.accept(trialTime,inverterAcPu);
+                workingInverter.accept(trialTime,inverterAcPu,timerTime,sampleRecovery);
                 if(!workingInverter.isBlocked())unblock();
             } else {
-                workingRectifier.accept(trialTime,rectifierAcPu);
+                workingRectifier.accept(trialTime,rectifierAcPu,timerTime,sampleRecovery);
                 if(workingRectifier.isBlocked())block(1);
                 else {
-                    workingInverter.accept(trialTime,inverterAcPu);
+                    workingInverter.accept(trialTime,inverterAcPu,timerTime,sampleRecovery);
                     if(workingInverter.isBlocked())block(2);
                 }
             }

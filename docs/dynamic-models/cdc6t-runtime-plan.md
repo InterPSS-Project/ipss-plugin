@@ -1457,3 +1457,60 @@ checks, and their complete trajectories remain byte-identical to the preceding
 validation. Private report, source and integrity manifest:
 `verification-artifacts/cdc6t-recovery-clock-20261102/validation.zip`, SHA-256
 `d12fbb020be79aefadc072b2f2cb97416b07df658ea2e5e4cbf89bad48de0115`.
+
+## Sampled blocking timers with physical endpoint ownership
+
+Source preparation now selects `BLOCK_INTERVAL_MIDPOINT` for rectifier- and
+inverter-origin blocking timers. The owner prepares the outer network interval
+once through `IntegrationStepAware`. Timer origins use the preceding midpoint;
+physical accepted-history times, event timestamps and recovery ramps continue
+to use the actual endpoint. Controller substeps do not redefine the interval.
+The explicit typed coordinator constructor retains its endpoint-observation
+contract, including standalone replay without a configured network interval.
+
+An INITIAL event solve can immediately block the link, but cannot start a
+sampled recovery timer. Recovery observation begins with the next completed
+interval. Predictor preparation cannot commit history; a corrector or accepted
+staggered endpoint owns the observation and commit. Repeated zero-duration
+staggered completions do not start recovery. Rejected trials discard pending
+deadlines. Reinitialization resets histories and retains the prepared interval.
+The runtime continues to use scalar coordinates and reusable history buffers;
+the sampled-clock allocation check reports zero bytes over warmed trials.
+
+The severe repeated-fault terminal trajectories now pass across every reference
+row and event side under both integration methods. Across the two fault depths:
+
+| Maximum absolute error | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Rectifier voltage (pu) | 0.00002876 | 0.00001546 |
+| Inverter voltage (pu) | 0.00001523 | 0.00001121 |
+| Rectifier angle (degrees) | 0.001658 | 0.001061 |
+| Inverter angle (degrees) | 0.003240 | 0.002483 |
+| Voltage measurement states (V) | 1367.96 | 29.49 |
+| Current measurement state (A) | 2.45 | 0.05053 |
+
+The former approximately 0.09325 pu voltage peak is removed without changing
+source delays, shifting traces or discarding samples. Full measurement-state
+and converter-output qualification remains open; the terminal gates do not
+establish complete model acceptance.
+
+Do not apply the same sampling rule automatically to bypass or temporary-current
+control. An all-timer experiment regressed a previously accepted bypass profile.
+Its reference publishes the recovery timer at clearing with a preceding-midpoint
+origin, whereas other bypass captures first publish it at the following endpoint.
+Those controls retain their existing behavior pending a separate investigation
+of electrical-input observation and network stages. The unsuccessful experiment
+and failing reports are retained in private evidence.
+
+The scoped model/adjacent matrix passes 356 tests; the final coordinator test
+expansion passes 12 tests, giving 357 distinct passing results with no failures,
+errors or skips. All existing strict gates remain unchanged, and complete
+terminal gates were added for the severe repeated faults. Of 134 prior trajectory
+exports, 102 are byte-identical and 32 change only in the blocking profiles;
+all bypass and temporary-current exports are unchanged. Other protected-profile
+diagnostics retain unresolved event-side/trajectory errors. Full repository
+validation, production intervals, long runs and automatic attachment remain open.
+
+Private complete trajectories, reports, source snapshots, prior comparisons and
+integrity manifest: `verification-artifacts/cdc6t-block-midpoint-20261102/validation.zip`,
+SHA-256 `cac20a8c03224c1e994721765e0a3649aea813b89fdcca5b16306a4d643b4802`.

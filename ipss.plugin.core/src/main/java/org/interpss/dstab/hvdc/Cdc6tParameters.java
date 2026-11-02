@@ -65,7 +65,8 @@ public final class Cdc6tParameters {
         runtime.initialize(point.inverterVolts(),point.currentAmperes(),point.rectifierVolts());
         var protection=new Cdc6tProtectionCoordinator(rectifier(),inverter(),bypass(),
                 new Cdc6tModeSwitch(point.mode()==Cdc6tCurrentOrder.Mode.POWER,point.modeThresholdKilovolts()*1000,source[21]),
-                new Cdc6tRecoveryRamp(source[10]*1000,point.scheduledKilovolts()*1000,source[11],command.recoveryBaseAmperes(),source[12],source[13]));
+                new Cdc6tRecoveryRamp(source[10]*1000,point.scheduledKilovolts()*1000,source[11],command.recoveryBaseAmperes(),source[12],source[13]),
+                Cdc6tProtectionCoordinator.TimerSampling.BLOCK_INTERVAL_MIDPOINT);
         return new Prepared(runtime,protection);
     }
     private Cdc6tRectifierProtection rectifier(){

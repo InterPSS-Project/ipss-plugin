@@ -28,21 +28,24 @@ public final class Cdc6tRectifierProtection {
     /** Writes blocked flag, pickup deadline, minimum-block deadline, recovery deadline and last restart time.
      * NaN denotes an inactive deadline. No internal history changes, even on repeated or rejected trials. */
     public void preview(double time,double acVoltage,double[] output,int offset) {
+        preview(time,acVoltage,time,true,output,offset);
+    }
+    private void preview(double time,double acVoltage,double timerTime,boolean sampleRecovery,double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,5,output.length);
-        finite(time);nonnegative(acVoltage);
+        finite(time);finite(timerTime);nonnegative(acVoltage);
         if(time<acceptedTime)throw new IllegalArgumentException("Protection cannot precede accepted time");
         double blocked=accepted[0],pickup=accepted[1],minimum=accepted[2],recovery=accepted[3],restart=accepted[4];
         if(blocked==0) {
             if(acVoltage<delayedVoltage) {
-                if(Double.isNaN(pickup))pickup=deadline(time,blockDelay);
+                if(Double.isNaN(pickup))pickup=deadline(timerTime,blockDelay);
             } else pickup=Double.NaN;
             if(acVoltage<instantVoltage||!Double.isNaN(pickup)&&time>=pickup) {
-                blocked=1;minimum=deadline(time,minimumBlockTime);pickup=Double.NaN;recovery=Double.NaN;
+                blocked=1;minimum=deadline(timerTime,minimumBlockTime);pickup=Double.NaN;recovery=Double.NaN;
             }
         } else {
             if(acVoltage>recoveryVoltage) {
-                if(Double.isNaN(recovery))recovery=deadline(time,recoveryDelay);
-                if(time>=minimum&&time>=recovery) {
+                if(sampleRecovery&&Double.isNaN(recovery))recovery=deadline(timerTime,recoveryDelay);
+                if(sampleRecovery&&time>=minimum&&time>=recovery) {
                     blocked=0;minimum=Double.NaN;recovery=Double.NaN;restart=time;
                 }
             } else recovery=Double.NaN;
@@ -53,7 +56,10 @@ public final class Cdc6tRectifierProtection {
 
     /** Accept one electrical/event observation; a second observation at the same time may resolve a discontinuity. */
     public void accept(double time,double acVoltage) {
-        preview(time,acVoltage,trial,0);
+        accept(time,acVoltage,time,true);
+    }
+    void accept(double time,double acVoltage,double timerTime,boolean sampleRecovery) {
+        preview(time,acVoltage,timerTime,sampleRecovery,trial,0);
         System.arraycopy(trial,0,accepted,0,5);acceptedTime=time;
     }
     public boolean isBlocked() {return accepted[0]!=0;}

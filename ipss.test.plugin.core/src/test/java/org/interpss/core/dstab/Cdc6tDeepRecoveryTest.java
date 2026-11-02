@@ -80,7 +80,12 @@ public class Cdc6tDeepRecoveryTest extends CorePluginTestSetup {
         assertTrue(blockedSamples>80);if(profile.equals("nearzero"))assertTrue(lowestVoltage<.01);
         assertEquals(OperatingMode.RECOVERING,f.protection().operatingMode());recorder.capture(a.getSimuTime());
         Path out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-deep-recovery")),profile+"-"+(staggered?"staggered-":"euler-"));
-        Cdc6tProtectedNetworkTest.writeComparison(out,reference,recorder.rows,step);
+        double[] maximum=Cdc6tProtectedNetworkTest.writeComparison(out,reference,recorder.rows,step);
+        // Gate complete terminal trajectories, including both sides of every event.
+        assertTrue(maximum[0]<(staggered?1.7e-5:3.2e-5),"Full rectifier voltage error "+maximum[0]);
+        assertTrue(maximum[1]<(staggered?.0012:.0018),"Full rectifier angle error "+maximum[1]);
+        assertTrue(maximum[2]<(staggered?1.3e-5:1.7e-5),"Full inverter voltage error "+maximum[2]);
+        assertTrue(maximum[3]<(staggered?.0027:.0035),"Full inverter angle error "+maximum[3]);
         int checked=0;
         for(var error:Tiocr1ResetReferenceTest.csv(Files.readAllBytes(out.resolve("reference-row-errors.csv")))){
             double time=error.get("reference_time");
@@ -92,7 +97,7 @@ public class Cdc6tDeepRecoveryTest extends CorePluginTestSetup {
             assertTrue(Math.abs(error.get("STATE1"))<(staggered?.003:.06));
         }
         assertTrue(checked>=90,"Independent fault-on samples must remain present");
-        // Full recovery trajectories remain diagnostic beyond these fault-on gates.
+        // Full measurement-state and converter-output qualification remains open.
     }
 
     /** Independent timer channels distinguish observation phase from accumulated clock roundoff. */

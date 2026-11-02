@@ -23,7 +23,7 @@ public final class Cdc6tNormalTerminalPorts {
     private final double[] electrical=new double[8];
     private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending,boundaryTrial,predictorNetworkTrial;
     private boolean externalEventPending;
-    private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
+    private double staggeredEndpoint,staggeredInterval,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
     private long inputDiscontinuityVersion;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
     private java.util.function.Consumer<Cdc6tNetworkTransition> transitionObserver;
@@ -104,7 +104,10 @@ public final class Cdc6tNormalTerminalPorts {
             this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
         }
         public boolean isStateOwner(){return owner;}
-        @Override public void configureIntegrationStep(double outerStep){if(owner)runtime.configureIntegrationStep(outerStep);}
+        @Override public void configureIntegrationStep(double outerStep){if(owner){
+            runtime.configureIntegrationStep(outerStep);
+            if(protection!=null)protection.configureIntegrationStep(outerStep);
+        }}
         public boolean attachmentIntact() {
             return rectifierPort.getDStabBus()==rectifier&&inverterPort.getDStabBus()==inverter
                 &&rectifier.getDynamicBusDeviceList().contains(rectifierPort)&&inverter.getDynamicBusDeviceList().contains(inverterPort);
@@ -155,7 +158,7 @@ public final class Cdc6tNormalTerminalPorts {
                 networkTrial=true;commitNetworkTrial=true;return;
             }
             if(coordinatorTrial){protection.discardTrial();coordinatorTrial=false;}
-            protection.beginTrial(evaluationTime);protectionTrialTime=evaluationTime;
+            protection.beginTrial(evaluationTime,directEndpoint?staggeredInterval>0:!"INITIAL".equals(context.stage()));protectionTrialTime=evaluationTime;
             coordinatorTrial=true;networkTrial=true;commitNetworkTrial=!"PREDICTOR".equals(context.stage());
             trialDcVoltage=acceptedDcVoltage;
         }
@@ -248,7 +251,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(!Double.isFinite(endpointTime)||!Double.isFinite(h)||h<0)throw new IllegalArgumentException("Finite CDC6T endpoint and nonnegative interval required");
             if(h>0)runtime.sampleCommandMeasurements();
             if(protection==null)return;
-            staggeredEndpoint=endpointTime;staggeredEndpointPending=true;
+            staggeredEndpoint=endpointTime;staggeredInterval=h;staggeredEndpointPending=true;
         }
     }
 }
