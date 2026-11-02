@@ -30,7 +30,7 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
     }
     private static double[] history(Cdc6tProtectionCoordinator c){double[] result=new double[23];c.readAcceptedHistory(result,0);return result;}
 
-    @Test void predictorAndCorrectorShareProvisionalRecoveryButFailureDiscardsIt(){
+    @Test void predictorDefersRecoveryAndFailedCorrectorDiscardsIt(){
         var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();var c=f.coordinator();
         solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
         solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
@@ -40,16 +40,15 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
         double[] committed=history(c);
         solve(p,"PREDICTOR",.12,true);
-        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,c.operatingMode());
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,c.operatingMode(),"Predictor retains the interval's discrete regime");
         assertEquals(blockedVersion,p.staggeredInputDiscontinuityVersion(),"Predictor cannot publish an event");
         assertArrayEquals(committed,history(c));
-        // Recovered-link voltage can be below the blocked-link release threshold.
-        inv.getDStabBus().setVoltage(new Complex(.915,0));
+        // The corrector can release at this endpoint, but a failed solve discards it.
         solve(p,"CORRECTOR",.12,false);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,c.operatingMode());assertArrayEquals(committed,history(c));
         assertEquals(blockedVersion,p.staggeredInputDiscontinuityVersion(),"Rejected recovery cannot notify integration");
         inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"PREDICTOR",.12,true);
-        inv.getDStabBus().setVoltage(new Complex(.915,0));solve(p,"CORRECTOR",.12,true);
+        solve(p,"CORRECTOR",.12,true);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,c.operatingMode());assertEquals(.12,history(c)[0],0);
         assertEquals(blockedVersion+1,p.staggeredInputDiscontinuityVersion());
         committed=history(c);
@@ -58,6 +57,26 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         assertTrue(p.initStates(p.getDStabBus()));assertEquals(Double.NEGATIVE_INFINITY,history(c)[0]);
         assertEquals(0,p.staggeredInputDiscontinuityVersion());
         assertEquals(Cdc6tNormalRuntime.OperatingMode.NORMAL,c.operatingMode());
+    }
+
+    @Test void endpointRecoveryCannotEnterThePrecedingModifiedEulerInterval(){
+        var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();
+        solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
+        solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
+        inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,f.coordinator().operatingMode());
+        double[] initial=new double[3],corrected=new double[3],afterAction=new double[3];
+        p.readStaggeredState(initial,0);
+        double h=.02,lag=.05,decay=1-h/lag+.5*h*h/(lag*lag);
+        p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0);
+        solve(p,"PREDICTOR",.12,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,f.coordinator().operatingMode());
+        p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);
+        p.readStaggeredState(corrected,0);
+        for(int i=0;i<3;i++)assertEquals(initial[i]*decay,corrected[i],1e-9,"Heun decay toward zero throughout the blocked interval");
+        solve(p,"CORRECTOR",.12,true);p.readStaggeredState(afterAction,0);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,f.coordinator().operatingMode());
+        assertArrayEquals(corrected,afterAction,0,"Endpoint action changes inputs, not the continuous states");
     }
 
     @Test void staggeredEndpointCommitsOnlyAfterConvergenceAndDirectProbesKeepClock(){

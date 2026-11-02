@@ -54,6 +54,18 @@ public class Cdc6tProtectionCoordinatorTest {
         c.discardTrial();assertArrayEquals(before,history(c));
         accept(c,.071,.98,.932,0);assertEquals(OperatingMode.RECOVERING,c.operatingMode());
     }
+    @Test void predictedRampCompletionKeepsTheRecoveryRegimeUntilObservation(){
+        var c=coordinator(.01,.92);accept(c,0,1,1,500000);
+        accept(c,.05,.8,1,500000);accept(c,.051,1,1,0);accept(c,.071,1,1,0);
+        assertEquals(OperatingMode.RECOVERING,c.operatingMode());
+        double[] committed=history(c);
+        c.beginTrial(.4);
+        assertEquals(1,c.voltageFactor(),0);assertEquals(1,c.currentFactor(),0);
+        assertEquals(OperatingMode.RECOVERING,c.operatingMode(),"Predictor can reach the ramp limit without changing the current-control regime");
+        assertArrayEquals(committed,history(c));c.discardTrial();assertArrayEquals(committed,history(c));
+        c.beginTrial(.4);c.observe(1,1,500000);
+        assertEquals(OperatingMode.NORMAL,c.operatingMode());c.acceptTrial();assertEquals(.4,history(c)[0],0);
+    }
     @ParameterizedTest @ValueSource(strings={"inverter","delay"})
     void independentOverlappingBypassAndBlockingRetainCauseSpecificRelease(String profile)throws Exception{
         var archive=Path.of("testData/private/verification-artifacts/cdc6t-coordination-20261101/captures.zip");

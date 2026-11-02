@@ -1269,3 +1269,53 @@ Private paired captures:
 Private complete comparisons, test reports, source snapshots and rejected-profile evidence:
 `verification-artifacts/cdc6t-transferred-modes-20261102/validation.zip`, SHA-256
 `9dd702c22258adf8f742baae309483ab19619f541a2211e2ac0fd8c305134ca9`.
+
+## Modified-Euler endpoint discontinuities
+
+The predictor network previously applied a protection transition at its future
+endpoint. The differential corrector then used the new regime's input over the
+interval ending at that endpoint. This mixed a right-hand discontinuous input
+into integration of the preceding interval, even though committing protection
+history itself waited for final convergence.
+
+The predictor now prepares continuous recovery factors without observing or
+applying discrete protection changes. The differential corrector uses this
+left-hand regime; the accepted endpoint network observes protection and applies
+the new input. Reaching a recovery-ramp limit similarly preserves recovery
+control until explicit endpoint observation. The same transactional coordinator
+and reusable numerical buffers remain in use. No equation, time constant,
+network tolerance, integration interval or reference timestamp was changed.
+
+An analytic regression blocks the link for a complete modified-Euler interval
+ending exactly at release. Each transducer must obey the zero-input Heun update
+`x_next = x * (1 - h/T + h*h/(2*T*T))`. Applying endpoint recovery must leave
+those continuous states unchanged. Separate lifecycle checks cover deferred
+release, failed corrector rollback, ramp completion, and unchanged accepted
+clocks. These replace the former test expectation that the predictor already
+select recovery before differential correction.
+
+Independent comparisons show a material improvement without establishing full
+protected-trajectory acceptance. In the transferred bypass profiles, the worst
+modified-Euler inverter-voltage-state error falls from approximately 3,534 V to
+1,360.2 V. In transferred block recovery it falls from approximately 4,078 V to
+1,364.94 V. In the earlier AC-bypass profile, the remaining error falls from
+3,094.06 V to 1,554.83 V when halving the interval from 0.5 ms to 0.25 ms.
+Finite-step and internal-event differences remain; they are not fitted away.
+
+The adjacent matrix passes 335 tests. Across 120 retained preceding complete
+trajectories, 92 are byte-identical. Only modified-Euler protected trajectories
+change; all staggered trajectories remain byte-identical. Recorded modes,
+physical timestamps and accepted clocks are unchanged. Existing strict
+conducting and temporary-current trajectory gates pass unchanged. A subsequent
+focused lifecycle run additionally checks deferred ramp completion. No core
+code changed, and complete repository suites were not rerun.
+
+The large reported bus-voltage peaks at internal recovery transitions remain:
+the reference contains pre/post observations at the same timestamp while the
+local recorder currently exposes only the post-transition observation there.
+All raw reference samples remain retained. This observation gap and the remaining
+state errors must be resolved before claiming complete protection accuracy.
+
+Private complete comparisons, analytic/lifecycle reports, source snapshots and integrity manifest:
+`verification-artifacts/cdc6t-left-limit-20261102/validation.zip`, SHA-256
+`9608c608941b91f4f78ed0285117ba4f4c5846442f0ba4fca86657296bbcf055`.

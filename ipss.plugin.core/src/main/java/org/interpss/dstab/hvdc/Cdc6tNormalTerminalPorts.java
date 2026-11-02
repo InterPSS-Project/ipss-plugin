@@ -21,7 +21,7 @@ public final class Cdc6tNormalTerminalPorts {
     private final double[] currents=new double[4];
     private final Port rectifierPort,inverterPort;
     private final double[] electrical=new double[8];
-    private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending,boundaryTrial;
+    private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending,boundaryTrial,predictorNetworkTrial;
     private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
     private long inputDiscontinuityVersion;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
@@ -108,6 +108,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner||!isOperational())return;
             if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
             boundaryTrial=true;
+            predictorNetworkTrial="PREDICTOR".equals(context.stage());
             // Initial settling has no simulation-clock history; callers may
             // still choose negative-time startup after initialization returns.
             if(protection==null||initialNetworkPending)return;
@@ -121,9 +122,9 @@ public final class Cdc6tNormalTerminalPorts {
                     protection.discardTrial();coordinatorTrial=false;
                     throw new IllegalStateException("Corrector must finish the pending CDC6T endpoint");
                 }
-                // The predictor's electrical regime and voltage form one provisional endpoint.
-                // Restoring old protection while retaining predicted voltage can reset a valid
-                // recovery deadline indefinitely. Keep the trial; commit only on final convergence.
+                // Retain continuous recovery factors predicted at this endpoint.
+                // Discrete protection is first observed after the differential corrector,
+                // so its right-hand input cannot leak into the interval just completed.
                 networkTrial=true;commitNetworkTrial=true;return;
             }
             if(coordinatorTrial){protection.discardTrial();coordinatorTrial=false;}
@@ -138,11 +139,13 @@ public final class Cdc6tNormalTerminalPorts {
             // The first pass starts from the preceding accepted boundary. Later
             // passes start from the converged boundary that requested an action.
             // Never latch protection from an intermediate voltage iterate.
-            if(iteration==0)protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            // A predictor also retains the interval's left-hand discrete regime;
+            // the corrector uses that boundary before accepting endpoint actions.
+            if(iteration==0&&!predictorNetworkTrial)protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
         }
         @Override public boolean applyConvergedNetworkAction(){
-            if(!owner||!networkTrial||initialNetworkPending)return false;
+            if(!owner||!networkTrial||initialNetworkPending||predictorNetworkTrial)return false;
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
             var before=protection.operatingMode();
             double voltageFactor=protection.voltageFactor(),currentFactor=protection.currentFactor();

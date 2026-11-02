@@ -46,7 +46,9 @@ public final class Cdc6tProtectionCoordinator {
             double elapsed=physicalTime-working[2];
             working[3]=ramp.voltageFactor(elapsed);
             working[4]=working[1]==1?ramp.currentFactor(elapsed):1;
-            if(working[3]==1&&working[4]==1)working[1]=0;
+            // Completion changes the discrete control regime. A predictor may
+            // prepare endpoint factors but must retain the left-hand regime
+            // until the accepted network owner explicitly observes this time.
         }
         open=true;failed=false;observed=false;
     }
@@ -57,6 +59,7 @@ public final class Cdc6tProtectionCoordinator {
         requireTrial();
         try{
             nonnegative(rectifierAcPu);nonnegative(inverterAcPu);nonnegative(inverterDcVolts);
+            if(working[1]!=0&&working[3]==1&&working[4]==1)working[1]=0;
             boolean wasBlocked=working[0]!=0;
             if(working[0]==1){
                 workingRectifier.accept(trialTime,rectifierAcPu);
