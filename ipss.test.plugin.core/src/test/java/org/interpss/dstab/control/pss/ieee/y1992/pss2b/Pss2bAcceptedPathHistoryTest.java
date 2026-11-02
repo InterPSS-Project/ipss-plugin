@@ -108,6 +108,44 @@ public class Pss2bAcceptedPathHistoryTest {
         assertEquals(step,model.getNamedState("inputPathAcceptedTime"));
     }
 
+    @Test void sampledDerivativeIsHeldThroughBothEulerStagesDespiteTrialVoltageChanges() throws Exception {
+        for (boolean compiled : new boolean[]{false, true}) {
+            var model = Pss2bCompiledStageTest.model(false, 2, 1);
+            model.getData().setIcs1(6); model.getData().setIcs2(6);
+            model.getData().setSampledInputPathOutputs(true);
+            var machine = model.getMachine(); var bus = machine.getDStabBus();
+            bus.setVoltage(Complex.ONE); assertTrue(model.initStates(bus, machine));
+            model.invalidateRuntimePlan();
+            if (compiled) { model.compileRuntimePlan(); assertTrue(model.hasCompiledStageEvaluator()); }
+            double h = .0005, acceptedVoltage = .99999;
+            bus.setVoltage(new Complex(acceptedVoltage, 0.));
+            model.acceptVoltageDerivativeEndpoint(h, h);
+            double held = .2 * (acceptedVoltage - 1.) / h;
+            var washout = (com.interpss.dstab.controller.cml.field.block.WashoutControlBlock)
+                    model.inputPath1.getFieldWrapperList().stream()
+                            .filter(w -> w.getFieldName().equals("firstWashout"))
+                            .findFirst().orElseThrow().getField();
+            double initial = washout.getStateX();
+            double input = held - model.inputPath1.getRefPoint();
+            double firstRate = (washout.getK() * input - initial) / washout.getT();
+            double predicted = initial + h * firstRate;
+            double secondRate = (washout.getK() * input - predicted) / washout.getT();
+            bus.setVoltage(new Complex(.9998, 0.));
+            assertTrue(model.nextStep(h, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertEquals(predicted, washout.getStateX(), 1e-14);
+            bus.setVoltage(new Complex(1.0001, 0.));
+            assertTrue(model.nextStep(h, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            assertEquals(initial + .5 * h * (firstRate + secondRate), washout.getStateX(), 1e-14);
+            assertEquals(held, model.input1Signal, 1e-14);
+            assertEquals(held, model.input2Signal, 1e-14);
+            assertEquals(held, model.getInput1VoltageDerivative(), 1e-14);
+            assertEquals(acceptedVoltage, model.getInput1VoltageMemory(), 0.);
+            model.acceptVoltageDerivativeEndpoint(2. * h, h);
+            assertEquals(.8 * held + .2 * (1.0001 - acceptedVoltage) / h,
+                    model.getInput1VoltageDerivative(), 1e-14);
+        }
+    }
+
     @Test void warmedAcceptedSamplingDoesNotAllocatePerStep() throws Exception {
         var model=model();int count=model.staggeredStateCount();var states=new double[count];var rates=new double[count];
         for(int i=1;i<=20000;i++)cycle(model,states,rates,i*.0005);

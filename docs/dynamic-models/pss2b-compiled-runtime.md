@@ -289,6 +289,35 @@ candidate changed production source, installed dependencies or normal runtime
 defaults. Reconcile the complete state and sampled-input lifecycle before
 changing that coupling; the strict quarter-cycle gate is still unresolved.
 
+Two further isolated diagnostics used the accepted-publication implementation
+and the same complete derivative-input captures. Local modified-Euler
+refinement reused the shared PSS2B equations, restored the interval's initial
+states for correction, and interpolated only the outer stage inputs. Prepared
+coefficients, network intervals and host-exciter settings stayed fixed.
+
+| Local PSS2B steps | Angle RMSE at 1/240 s (degrees) | Angle RMSE at 1/480 s (degrees) |
+|---|---:|---:|
+| 1, production control | 0.017025 | 0.006505 |
+| 2 | 0.019953 | 0.007186 |
+| 4 | 0.020682 | 0.007348 |
+| 10 | 0.020896 | 0.007393 |
+
+Refining PSS2B alone does not recover the reference trajectory. This is an
+isolated controller-refinement diagnostic, not a claim about the convergence
+of the complete network/controller integration. The candidate is rejected.
+
+A separate diagnostic previewed the next sampled voltage derivative during
+the corrector, without committing its history. Angle RMSE worsened to
+0.145377 degrees at the quarter-cycle interval and 0.069483 degrees at half
+that interval; voltage NRMSE also exceeded 0.001 at both intervals. Thus a
+trial measurement preview cannot replace the held-input contract. Production
+continues to update the sampled derivative only at accepted endpoints.
+`Pss2bAcceptedPathHistoryTest` independently checks the washout's predictor and
+trapezoidal correction for a held derivative while trial bus voltage changes,
+under both generic and compiled execution. Shared-stage history coverage is
+retained separately. These diagnostics do not resolve the open long-run gate
+or justify changing any controller parameter or acceptance threshold.
+
 The subsequent focused run includes the registered playback checks: 74 of 75
 tests pass, with only the same ordinary quarter-cycle modified-Euler gate
 failing. Production equations and runtime settings are unchanged. Preserve the
