@@ -25,6 +25,7 @@ def main():
     parser.add_argument('--dynamic-gamma', type=float, default=20.)
     parser.add_argument('--dc-tap-adjustment', type=int, choices=[0, 1], default=1)
     parser.add_argument('--scheduled-kv', type=float, default=500.)
+    parser.add_argument('--current-margin', type=float, default=0.)
     parser.add_argument('--measurement-times', type=float, nargs=3, default=[.05,.05,.05])
     parser.add_argument('--restart-current', type=float, default=500.)
     parser.add_argument('--minimum-current', type=float, default=400.)
@@ -43,6 +44,8 @@ def main():
         parser.error('Network step must be between 0.1 and 5 ms')
     if not math.isfinite(args.scheduled_kv) or args.scheduled_kv<=0:
         parser.error('Scheduled DC voltage must be finite and positive')
+    if not math.isfinite(args.current_margin) or not 0 <= args.current_margin < 1:
+        parser.error('Current margin must be finite in [0,1)')
     if any(not math.isfinite(v) or not 0 <= v < 90 for v in [args.dynamic_gamma,args.static_alpha_min]+([] if args.static_gamma is None else [args.static_gamma])):
         parser.error('Gamma angles must be finite in [0,90) degrees')
     if any(not math.isfinite(v) or v < 0 for v in args.measurement_times):
@@ -95,6 +98,7 @@ def main():
     dc_fields=lines[dc_header].split(',')
     dc_fields[5]=str(args.mode_threshold_kv)
     dc_fields[4]=str(args.scheduled_kv)
+    dc_fields[7]=str(args.current_margin)
     if args.control=='rectifier-power':
         dc_fields[3]='505.0'
     elif args.control=='current':

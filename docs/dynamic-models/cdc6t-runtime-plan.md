@@ -1053,3 +1053,77 @@ The earlier fixed-current reference archive retains both terminal faults.
 Private complete comparisons, reports, diagnostics and source snapshots:
 `verification-artifacts/cdc6t-gamma-transfer-20261101/validation.zip`, SHA-256
 `8f943506398640b59f30c901d9a70f968ab29445658388aa63514f056efbc604`.
+
+## Power-order and current-margin startup transfer
+
+Explicit constant-gamma preparation now accepts rectifier-limited power orders
+at either metering end with zero current margin, and current orders with a
+consistent nonnegative static margin below one. The core static calculation
+and reduced network equations preserve the scheduled power after transfer.
+They solve the positive, nonsingular branch of the converter power equation;
+analytical voltage, power-order, firing-angle and tap derivatives are checked
+against finite differences. Unequal inverter angle limits and nonzero-margin
+power orders retain their previous handling.
+
+A separate static bug applied the current margin at the rectifier without
+publishing that reduced current to the inverter. A later calculation could
+therefore undo it. Both terminals now receive the reduced current together.
+Tests exercise zero and nonzero margins with tap adjustment enabled and
+disabled, including a second calculation to check that the margin is not
+applied twice. Existing imposed-current fixtures explicitly select current
+control rather than inheriting an unrelated sample power schedule.
+
+Independent startup captures distinguish static and dynamic control. For the
+current-order discriminator, the static margin reduces 1,000 A to 900 A, while
+the dynamic controller starts at its original 1,000 A order. Power-controlled
+startup also changes the solved current. During the initial network solve,
+the single owning port equilibrates all three measurements against each fresh
+electrical boundary. Final acceptance retains that current and those voltages;
+it no longer reinstates the stale static current. These zero-time operations
+do not advance protection history. Current getters remain read-only, and both
+integrators use the same state storage and equations. The added work occurs
+only during initialization and uses the existing numerical buffers.
+
+Paired independent inverter-fault captures cover current margin and both
+power-metering ends at 0.5 ms, plus inverter-metered power at 0.25 ms. Runs last
+0.5 seconds, with fault application at 0.05 seconds and clearing at 0.10 seconds.
+Every channel and both scheduled event sides are retained. The inverter-power
+comparison gives these maximum absolute errors:
+
+| Quantity | Modified Euler, 0.5 ms | Modified Euler, 0.25 ms | Staggered, 0.5 ms | Staggered, 0.25 ms |
+| --- | ---: | ---: | ---: | ---: |
+| Bus voltage, pu | 0.00005833 | 0.00002984 | 0.000002342 | 0.000002175 |
+| Bus angle, degrees | 0.004874 | 0.002841 | 0.000970 | 0.001105 |
+| Voltage measurement state, V | 181.063 | 91.023 | 2.313 | 1.397 |
+| Current measurement state, A | 0.012281 | 0.004289 | 0.002287 | 0.001921 |
+| Converter P/Q, pu | 0.001948 | 0.000985 | 0.00002536 | 0.00002697 |
+| DC boundary voltage, V | 7.497 | 3.696 | 1.268 | 1.188 |
+
+The modified-Euler event error decreases with the smaller interval. Staggered
+bus-angle error does not decrease monotonically: an initial absolute residual
+of approximately 0.000748 degrees remains. Neither method subtracts that
+residual. The half-step reference's binary32 clock accumulates 9.36 microseconds
+of departure; comparison retains both original times, checks the same interval
+index and event side, and bounds the clock departure separately. It does not
+shift or interpolate trajectories. New profiles have individual channel gates;
+all preceding trajectory gates remain unchanged.
+
+Validation passes 123 isolated core tests and 306 plugin/model/adjacent tests,
+without failures, errors or skips. All 93 preceding complete trajectories are
+byte-identical. Initial-state checks also reject retention of the old static
+current and verify that reading the boundary cannot change state. Complete
+repository suites were not rerun for this slice.
+
+Protected recovery after these startup transfers remains unqualified: its
+prepared ramp target still originates from the static operating point and
+needs an independent discriminator before any change. Nonzero-margin power
+transfer, initially active current ceilings, other equipment variants,
+production-step/long-duration acceptance and automatic attachment remain open.
+This slice does not establish complete CDC6T support.
+
+Private paired captures:
+`verification-artifacts/cdc6t-transfer-orders-20261101/captures-v2.zip`, SHA-256
+`22d3a04e2db17d59cc8dfac64c2b3e472029a7e7c1b0d29f2d36346ccde5a543`.
+Private complete comparisons, reports, source snapshots and integrity manifest:
+`verification-artifacts/cdc6t-transfer-orders-20261101/validation.zip`, SHA-256
+`c0989f391ea944fda364c0253788d9133720d7756dbf4361b8e6d77c98c49f36`.

@@ -55,10 +55,10 @@ public final class Cdc6tNetworkPreparation {
         if(inverter.getFiringAngLimit()==null)throw new IllegalArgumentException("Explicit inverter angle limits required");
         boolean constantGamma=inverter.getFiringAngLimit().getMin()==inverter.getFiringAngLimit().getMax();
         boolean transferredGamma=constantGamma
-                &&owner.getDcLineControlMode()==HvdcControlMode.DC_CURRENT
                 &&owner.getRectifierControlMode()==HvdcControlMode.FIRING_ANGLE
                 &&owner.getInverterControlMode()==HvdcControlMode.DC_CURRENT
-                &&owner.getPowerCurrentMargin()==0;
+                &&Double.isFinite(owner.getPowerCurrentMargin())&&owner.getPowerCurrentMargin()>=0&&owner.getPowerCurrentMargin()<1
+                &&(owner.getDcLineControlMode()==HvdcControlMode.DC_CURRENT||owner.getPowerCurrentMargin()==0);
         if(owner.getRectifierControlMode()!=HvdcControlMode.DC_CURRENT&&!transferredGamma)
             throw new IllegalArgumentException("Rectifier-current control or qualified constant-gamma current transfer required");
         if(!transferredGamma&&owner.getInverterControlMode()!=(constantGamma?HvdcControlMode.FIRING_ANGLE:HvdcControlMode.DC_VOLTAGE))
@@ -81,8 +81,9 @@ public final class Cdc6tNetworkPreparation {
                 ||!Double.isFinite(rectifier.getFiringAng())
                 ||!Double.isFinite(rectifier.getFiringAngLimit().getMin())
                 ||Math.abs(rectifier.getFiringAng()-rectifier.getFiringAngLimit().getMin())>1e-7
-                ||Math.abs(current-owner.getCurrentDemand())>1e-7*Math.max(1,Math.abs(current))))
-            throw new IllegalArgumentException("Constant-gamma transfer requires the solved rectifier minimum and unchanged current order");
+                ||command==Cdc6tCurrentOrder.Mode.CURRENT
+                    &&Math.abs(current-owner.getCurrentDemand()*(1-owner.getPowerCurrentMargin()))>1e-7*Math.max(1,Math.abs(current))))
+            throw new IllegalArgumentException("Constant-gamma transfer requires the solved rectifier minimum and consistent static current order");
         if(!Double.isFinite(current)||!Double.isFinite(vr)||!Double.isFinite(vi)||!Double.isFinite(resistance)||resistance<0
                 ||Math.abs(current-inverter.getIdc())>1e-7*Math.max(1,Math.abs(current))
                 ||!Double.isFinite(inverter.getIdc())||Math.abs(vr-vi-current*resistance)>1e-7*Math.max(1,Math.max(Math.abs(vr),Math.abs(vi))))

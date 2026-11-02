@@ -101,7 +101,7 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public void acceptInitialNetworkEndpoint() {
             if(!owner||!initialNetworkPending)return;
             refresh();runtime.readBoundary(electrical,0);
-            runtime.initialize(electrical[7],initialCurrent,electrical[6]);
+            runtime.initializeFromBoundary();
             acceptedDcVoltage=electrical[7];initialNetworkPending=false;
         }
         @Override public void beginNetworkSolution(NetworkIterationAware.Context context){
@@ -132,7 +132,9 @@ public final class Cdc6tNormalTerminalPorts {
             trialDcVoltage=acceptedDcVoltage;
         }
         @Override public void beforeNetworkIteration(int iteration){
-            if(!owner||!networkTrial)return;
+            if(!owner)return;
+            if(initialNetworkPending){refresh();runtime.initializeFromBoundary();return;}
+            if(!networkTrial)return;
             // Observe AC pickup before a deep-voltage conducting evaluation can become infeasible.
             protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];

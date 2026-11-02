@@ -14,6 +14,7 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
     private final Cdc6tVoltageCurrentLimit limit;
     private final Cdc6tConductingLink link;
     private final double minimumCurrentAmperes;
+    private double boundaryAmperes;
     private final double[] states=new double[3],boundary=new double[8],currents=new double[4];
     private boolean boundaryReady;
     private double scheduledAmperes;
@@ -84,7 +85,13 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
             injection(boundary[3],boundary[4],inverterReal,inverterImag,vi,currents,2);
         }
         measurements.setInput(boundary[7],current,boundary[6]);
+        boundaryAmperes=current;
         System.arraycopy(currents,0,output,offset,4);boundaryReady=true;
+    }
+    /** Zero-time initialization only: equilibrate measurements and current against
+     * the freshly evaluated electrical boundary, without advancing a history. */
+    void initializeFromBoundary(){
+        ready();initialize(boundary[7],boundaryAmperes,boundary[6]);
     }
     private static void injection(double p,double q,double real,double imag,double magnitude,double[] output,int offset) {
         double cosine=real/magnitude,sine=imag/magnitude;
