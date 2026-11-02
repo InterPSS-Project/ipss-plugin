@@ -339,6 +339,15 @@ public final class DynamicParameterValidator {
                 add(Severity.INFO,"initialization policy",h,"WSIEG1 prepares lag bypasses and Iblock-dependent bounds before either integrator; other bounds are retained and initial valve/turbine residuals remain observable. The rate-limited servo time is not bypassed or floored");
                 return true;
             }
+            if(controller instanceof org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor c) {
+                double[] d=c.getConstants();
+                time("T1",d[1],false);time("B*T2",d[15]*d[2],false);time("Tltr",d[12],false);
+                if(c.getRuntimeConvention()==org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor.RuntimeConvention.PUBLISHED_DIAGRAM)
+                    time("T3",d[3],false);
+                if(d[29]>0)time("T5",d[31],false);
+                add(Severity.INFO,"preparation policy",h,"URGS3T prepares immutable lead-lag coefficients without changing entered constants or integration intervals; a source-record exhaust coordinate is held and the disabled governor lead-lag has no active pole");
+                return true;
+            }
             if(org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.isSecondaryShaft(controller)) {
                 add(Severity.INFO,"shared turbine owner",h,"Passive secondary shaft has no independent states or time constants; its primary governor is validated separately");
                 return true;

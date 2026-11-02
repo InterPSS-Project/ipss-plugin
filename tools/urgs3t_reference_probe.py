@@ -27,13 +27,14 @@ PROFILES = {
     'temperature-limits': {4: .501},
     'temperature-fast': {3: .05, 4: .501},
     'temperature-slow': {3: 5., 4: .501},
+    'fast-engine': {1: .5, 2: .02, 3: 3., 4: .95, 6: 1., 7: .05, 12: 99.},
 }
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--profile', choices=PROFILES, required=True)
-    p.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], required=True)
+    p.add_argument('--step', type=float, choices=[.0005, .00025, 1/240, 1/480], required=True)
     p.add_argument('--repeat', choices=['a', 'b'], required=True)
     p.add_argument('--duration', type=float, default=.5)
     p.add_argument('--flat', action='store_true')

@@ -166,6 +166,7 @@ import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReferenceTest;
 import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tCommandBoundaryTest;
 import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tPowerBoundaryTest;
 import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tRunBoundaryTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tProductionStepTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedSmibTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1StateConformanceTest;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BypassLimitConformanceTest;
@@ -1159,6 +1160,7 @@ import org.junit.platform.suite.api.Suite;
     Urgs3tCommandBoundaryTest.class,
     Urgs3tPowerBoundaryTest.class,
     Urgs3tRunBoundaryTest.class,
+    Urgs3tProductionStepTest.class,
     Wsieg1SharedSmibTest.class,
     Wsieg1StateConformanceTest.class,
     Wsieg1BypassLimitConformanceTest.class,

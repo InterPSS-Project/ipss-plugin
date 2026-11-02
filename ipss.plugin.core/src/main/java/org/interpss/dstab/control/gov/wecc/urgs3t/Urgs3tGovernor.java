@@ -30,6 +30,8 @@ public final class Urgs3tGovernor extends AbstractGovernor
             "Valve average", "Governor lead lag"};
     private final double[] c;
     private final RuntimeConvention runtimeConvention;
+    private final double engineRatio, engineLagFraction, engineTime;
+    private final double governorLagFraction, governorFeedthrough, governorLagGain;
     private final double[] x = new double[5], old = new double[5], d0 = new double[5], d1 = new double[5];
     private final double[] referenceLeftRates = new double[5];
     private final double[] curveX = new double[5], curveY = new double[5];
@@ -58,6 +60,17 @@ public final class Urgs3tGovernor extends AbstractGovernor
                 || c[18] < 0 || c[29] < 0 || c[30] < 0 || c[31] < 0 || c[32] <= 0
                 || (c[29] > 0 && c[31] <= 0))
             throw new IllegalArgumentException("Invalid URGS3T time, rating, droop, deadband or limit settings");
+        // Preserve the equation's arithmetic order while preparing immutable
+        // coefficients once, outside either integrator's numerical stages.
+        engineRatio = c[14]/c[15]; engineLagFraction = 1-engineRatio; engineTime = c[15]*c[2];
+        governorLagFraction = c[29] > 0 ? 1-c[30]/c[31] : 0;
+        governorFeedthrough = c[29] > 0 ? c[29]*c[30]/c[31] : 0;
+        governorLagGain = c[29]*governorLagFraction;
+        if (!(engineTime > 0) || !Double.isFinite(engineTime)
+                || !Double.isFinite(engineRatio) || !Double.isFinite(engineLagFraction)
+                || !Double.isFinite(governorLagFraction) || !Double.isFinite(governorFeedthrough)
+                || !Double.isFinite(governorLagGain))
+            throw new IllegalArgumentException("URGS3T prepared time and lead-lag coefficients must be finite and representable");
         for (int i = 0; i < 5; i++) {
             double a = c[19 + 2*i], b = c[20 + 2*i];
             if (points > 0 && a == 0 && b == 0) continue;
@@ -84,9 +97,9 @@ public final class Urgs3tGovernor extends AbstractGovernor
         double power = machine.getPm()/scale;
         double engine = interpolate(power, curveY, curveX);
         double valve = engine + c[9];
-        x[0] = valve; x[1] = (1 - c[14]/c[15])*engine;
+        x[0] = valve; x[1] = engineLagFraction*engine;
         x[2] = engine; x[3] = valve;
-        x[4] = c[29] > 0 ? (1 - c[30]/c[31])*valve : 0;
+        x[4] = c[29] > 0 ? governorLagFraction*valve : 0;
         lower = Math.min(c[7], valve); upper = Math.max(c[6], valve);
         reference = c[29] > 0 ? valve/c[29] : valve;
         initialReference = reference; referenceJumpPending = false; referenceRevision = 0;
@@ -164,7 +177,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
         int m = deadbandMode(u);
         return m > 0 ? u - c[17] : m < 0 ? u + c[17] : 0;
     }
-    private double engine(double[] s) { return s[1] + c[14]/c[15]*(s[0] - c[9]); }
+    private double engine(double[] s) { return s[1] + engineRatio*(s[0] - c[9]); }
     private double curvePower(double[] s) { return interpolate(engine(s), curveX, curveY); }
     private double backlash(double power) {
         if (runtimeConvention == RuntimeConvention.SOURCE_RECORD)
@@ -182,15 +195,15 @@ public final class Urgs3tGovernor extends AbstractGovernor
     private void derivatives(double[] s, double[] rates) {
         // The droop path acts directly on speed deviation; rating conversion is at the output.
         double input = reference - speedInput()/c[0];
-        double demand = c[29] > 0 ? s[4] + c[29]*c[30]/c[31]*input : input;
+        double demand = c[29] > 0 ? s[4] + governorFeedthrough*input : input;
         double temperatureLimit = c[9] + c[4] + c[5]*(c[4]-s[2]);
         double upperRate = s[0]-s[3] > c[11] ? c[13] : c[10];
         double rate = Math.min(upperRate, Math.min(demand, temperatureLimit)-s[0])/c[1];
         rates[0] = (s[0] >= upper && rate > 0) || (s[0] <= lower && rate < 0) ? 0 : rate;
-        rates[1] = ((1-c[14]/c[15])*(s[0]-c[9])-s[1])/(c[15]*c[2]);
+        rates[1] = (engineLagFraction*(s[0]-c[9])-s[1])/engineTime;
         rates[2] = runtimeConvention == RuntimeConvention.SOURCE_RECORD ? 0 : (engine(s)-s[2])/c[3];
         rates[3] = (s[0]-s[3])/c[12];
-        rates[4] = c[29] > 0 ? (c[29]*(1-c[30]/c[31])*input-s[4])/c[31] : 0;
+        rates[4] = c[29] > 0 ? (governorLagGain*input-s[4])/c[31] : 0;
     }
     private double interpolate(double value, double[] abscissa, double[] ordinate) {
         int hi = 1;

@@ -155,14 +155,17 @@ public class Urgs3tReferenceTest {
     }
     @ParameterizedTest @MethodSource("profiles")
     void completeTrajectoriesRetainAllStatesAndEventSides(String tag,boolean shared)throws Exception {
-        Path out=stage(tag);var metadata=JSON.readTree(out.resolve("manifest.json").toFile());var settings=metadata.path("settings");
-        double h=settings.path("step").asDouble(),duration=settings.path("duration").asDouble();
+        compareCompleteTrajectory(stage(tag),tag,shared);
+    }
+    static void compareCompleteTrajectory(Path out,String tag,boolean shared)throws Exception {
+        var metadata=JSON.readTree(out.resolve("manifest.json").toFile());var settings=metadata.path("settings");
+        double h=settings.path("step").asDouble();
         var simulation=simulate(out,shared,1e-6);var initial=simulation.initial();var governor=simulation.governor();
         var reference=rows(out.resolve("native.csv"));var maximum=new TreeMap<String,Double>();var square=new TreeMap<String,Double>();
         var low=new TreeMap<String,Double>();var high=new TreeMap<String,Double>();var at=new TreeMap<String,Double>();
         for(String key:reference.getFirst().keySet())if(!key.equals("time_s")){maximum.put(key,0.);square.put(key,0.);low.put(key,Double.POSITIVE_INFINITY);high.put(key,Double.NEGATIVE_INFINITY);at.put(key,0.);}
         int index=0,startup=0;float clock=0;long tick=0;
-        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("actual.csv"),BenchmarkOutputGuard.estimateCsvBytes(reference.size(),42))) {
+        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("actual.csv"),BenchmarkOutputGuard.estimateCsvBytes(reference.size(),2+2*maximum.size()))) {
             w.write("source_time_s,actual_time_s,"+String.join(",",maximum.keySet()));for(String k:maximum.keySet())w.write(",REFERENCE."+k);w.write("\n");
             for(var s:reference) {
                 double time=s.get("time_s");var a=time<0?initial:simulation.frames().get(index++);
@@ -198,6 +201,20 @@ public class Urgs3tReferenceTest {
         assertAll(tag+" shared="+shared,checks);
     }
     record Simulation(Map<String,Double> initial,List<Map<String,Double>> frames,Urgs3tGovernor governor) {}
+    static int referenceIntervals(Path csv,double h)throws Exception {
+        int intervals=0;double previous=Double.NaN;float clock=0;
+        try(var reader=Files.newBufferedReader(csv)) {
+            assertNotNull(reader.readLine());String line;
+            while((line=reader.readLine())!=null) {
+                double time=Double.parseDouble(line.substring(0,line.indexOf(',')));
+                assertTrue(Double.isFinite(time));if(time<0)continue;
+                if(Double.isNaN(previous))assertEquals(0.,time,0.);
+                else if(time!=previous){assertTrue(time>previous);clock+=(float)h;intervals++;}
+                assertEquals((double)clock,time,1e-10,"Retain the complete serialized reference grid, including its final interval");previous=time;
+            }
+        }
+        assertTrue(intervals>0);return intervals;
+    }
     static Simulation simulate(Path out,boolean shared,double tolerance)throws Exception {
         return simulate(out,shared,tolerance,null);
     }
@@ -205,7 +222,9 @@ public class Urgs3tReferenceTest {
             java.util.function.BiFunction<DynamicSimuAlgorithm,Recording,com.interpss.dstab.algo.IDStabSolver> factory)throws Exception {
         if(!Double.isFinite(tolerance)||tolerance<=0)throw new IllegalArgumentException("Positive finite network tolerance required");
         var settings=JSON.readTree(out.resolve("manifest.json").toFile()).path("settings");
-        double h=settings.path("step").asDouble(),duration=settings.path("duration").asDouble();
+        double h=settings.path("step").asDouble(),requestedDuration=settings.path("duration").asDouble();
+        double duration=referenceIntervals(out.resolve("native.csv"),h)*h;
+        assertTrue(Math.abs(duration-requestedDuration)<=h+1e-9,"Recorded endpoint must remain within one interval of the requested stop");
         var loader=new PSSEMultiFileLoader();var context=loader.loadDStab(out.resolve("network.raw").toString(),out.resolve("dynamic.dyr").toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());var algorithm=context.getDynSimuAlgorithm();var net=context.getDStabilityNet();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

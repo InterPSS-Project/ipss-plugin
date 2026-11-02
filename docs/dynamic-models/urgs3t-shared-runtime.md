@@ -197,6 +197,81 @@ The voltage and command-state acceptance failures remain. This change corrects
 the independently observed publication and event lifecycle; it does not claim
 complete trajectory qualification or alter existing acceptance thresholds.
 
+## Prepared coefficients and active-pole screening
+
+The constructor prepares the immutable engine ratio, engine pole `B*T2`, and
+enabled governor lead-lag coefficients once. Both integrators reuse these
+scalars and the same primitive state/derivative arrays. Arithmetic grouping is
+preserved; all seventy existing short trajectory CSVs remain byte-identical to
+the explicit-resume checkpoint, with identical numerical comparison summaries.
+This removes repeated coefficient calculations without claiming a measured
+whole-simulation speedup. The numerical-stage allocation checks still apply.
+
+Construction rejects overflow, underflow to a zero engine time, and other
+nonrepresentable prepared coefficients. Parameter screening checks `T1`,
+`B*T2`, and `Tltr`; it checks `T5` only when the governor lead-lag is enabled and
+`T3` only under the diagram convention. The source-record exhaust coordinate
+is held. Screening neither changes entered constants nor selects a different
+integration interval or local-step count. The tests check both conventions,
+inactive poles, and unchanged states/history/data.
+
+## Ten-second production-step qualification
+
+`Urgs3tProductionStepTest` registers independent ten-second SMIB comparisons
+under both methods. The standard profile includes flat, fault and reference
+commands at quarter-cycle and half-quarter-cycle network intervals. Additional
+lead-lag and fast-engine profiles cover flat/fault runs at the quarter-cycle
+interval. Each reference was generated twice from a cold start; all twenty
+captures are complete, finite and byte-identical to their paired repeat.
+Entered and initialized constants agree. Both machines' recorded states and
+all event-side samples are retained, although the acceptance gates do not yet
+qualify every additional observation channel.
+
+The reference's serialized clock requires 2,401 intervals for the quarter-cycle
+request and 4,800 for the half-quarter-cycle request. Its last times are
+10.0040569305 and 10.0003261566 seconds respectively. The comparison follows
+the complete recorded grid, preserving the extra quarter-cycle endpoint rather
+than discarding it. `intervals.json` records requested duration, interval count,
+physical integration duration and serialized reference endpoint separately.
+
+Fifteen of twenty method/profile comparisons pass the unchanged gates. All flat
+controls and the lead-lag/fast-engine fault controls pass under both methods.
+The remaining standard-profile failures are:
+
+| Profile | Method | Interval | Unmet gates |
+|---|---|---|---|
+| Commands | Modified Euler | Quarter cycle | Voltage NRMSE up to `0.00201419`, P `0.00220585`, Q `0.00183239`; valve maximum error `0.00373930` |
+| Commands | Modified Euler | Half quarter cycle | Voltage NRMSE `0.00100254`, P `0.00105326`; valve maximum error `0.00195266` |
+| Commands | Staggered | Quarter cycle | Valve-average maximum error `6.86163e-6` |
+| Commands | Staggered | Half quarter cycle | Valve-average maximum error `1.37736e-5` |
+| Fault | Staggered | Half quarter cycle | Valve-average maximum error `1.22902e-5` |
+
+Every rotor-angle comparison passes the `0.01` degree RMSE gate; the largest is
+`0.00734883` degrees for quarter-cycle modified-Euler commands. Voltage and
+power use the existing `0.001` range-normalized gate. The existing state limits
+remain method-specific: `5e-6` for staggered and `2e-4*h/0.0005` for modified
+Euler. A passing modified-Euler state check therefore does not prove that its
+state error is smaller than the staggered result.
+
+The slow valve-average discrepancy needs further investigation. In the standard
+half-quarter fault reference, 2,534 unchanged adjacent state samples have a
+nonzero increment predicted from the recorded valve input and the published
+first-order lag. Recorded values lie within `5e-13` of binary32 values; the
+maximum local two-step recurrence residual is `7.09e-8`. This is consistent
+with finite-precision accumulation, but does not prove the full accumulated
+error is solely quantization. A separate double-precision two-step replay driven
+by the reference's own recorded valve input produces maximum valve-average
+errors of `1.13231e-5` for the half-quarter fault, `1.28832e-5` for half-quarter
+commands, and `6.50942e-6` for quarter-cycle commands. These reproduce most of
+the coupled staggered discrepancy without using Java machine or valve inputs,
+localizing further work to the lag's numerical update and stored history.
+No rounding was added to production states and
+no accuracy gate was relaxed. Modified-Euler command errors and the remaining
+internal-state discrepancies remain open qualification work.
+
+The immutable private `production-step-captures.zip` is pinned to SHA-256
+`d685c38c70655969f38851008c47e43c5f214266443cda808ecdd8dc86e8a047`.
+
 ## Validation checkpoint
 
 The initial runtime checkpoint's registered suite executes 4,159 tests, with 36 failures, no errors
@@ -232,6 +307,16 @@ acceptance outcomes are unchanged: fifty pass, and twenty command-response
 comparisons remain open. The adjacent `resume-validation.zip` retains the
 changed production classes, complete trajectories and test reports over the
 boundary-localization checkpoint. The original immutable references are reused.
+
+With prepared coefficients, active-pole screening and registered ten-second
+comparisons, the suite executes 4,202 tests with 41 failures, no errors and
+13 skips. All 36 preceding failure identities are preserved; the five additional
+failures are precisely the long-run gates listed above. The core plugin module
+passes 486 tests with four skips and no failures or errors. All seventy original
+trajectory CSVs remain byte-identical and their numerical summaries unchanged.
+The adjacent private `production-step-validation.zip` retains complete short
+and long trajectories, recorded-input diagnostics, reports, source and compiled
+classes over `resume-validation.zip`. Full model qualification remains open.
 
 Private immutable capture archives retain the complete cold-run evidence; the
 current fixture is `urgs3t-initial-20261102/captures-v3.zip`, pinned by the test to

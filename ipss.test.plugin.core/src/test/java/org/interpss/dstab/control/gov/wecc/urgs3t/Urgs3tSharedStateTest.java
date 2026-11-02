@@ -44,6 +44,33 @@ public class Urgs3tSharedStateTest {
         for(int index:new int[]{0,1,2,3,12,15,32}) {double[] bad=c.clone();bad[index]=0.;assertThrows(IllegalArgumentException.class,()->new Urgs3tGovernor("invalid",bad));}
         double[] bad=c.clone();bad[7]=Double.NaN;assertThrows(IllegalArgumentException.class,()->new Urgs3tGovernor("nonfinite",bad));
     }
+    @Test void preparedCoefficientsRejectUnrepresentableProductsBeforeInitialization() {
+        for(double value:new double[]{Double.MIN_NORMAL,Double.MAX_VALUE}) {
+            double[] c=BASE.clone();c[2]=value;c[15]=value;
+            assertThrows(IllegalArgumentException.class,()->new Urgs3tGovernor("engine-time",c));
+        }
+        double[] c=BASE.clone();c[14]=Double.MAX_VALUE;c[15]=Double.MIN_NORMAL;
+        assertThrows(IllegalArgumentException.class,()->new Urgs3tGovernor("engine-ratio",c));
+        double[] d=BASE.clone();d[29]=Double.MAX_VALUE;d[30]=Double.MAX_VALUE;d[31]=1.;
+        assertThrows(IllegalArgumentException.class,()->new Urgs3tGovernor("governor-gain",d));
+    }
+    @Test void parameterScreenUsesActivePolesAndPreservesEnteredDataAndStates() throws Exception {
+        double[] c=BASE.clone();c[15]=.001;c[3]=1e-6;c[31]=1e-6;
+        var g=model(c);var m=g.getMachine();
+        var before=g.getIntegrationStates();var history=g.getIntegrationHistories();
+        var report=org.interpss.dstab.validation.DynamicParameterValidator.validate((com.interpss.dstab.BaseDStabNetwork<?,?>)m.getDStabBus().getNetwork(),1./240.,2.,ignored->1);
+        assertEquals(1,report.checkedModels().get("Urgs3tGovernor"));assertFalse(report.uncoveredModels().containsKey("Urgs3tGovernor"));
+        assertEquals(java.util.Set.of("B*T2"),report.issues().stream().filter(i->i.model().equals("Urgs3tGovernor")&&i.severity()==org.interpss.dstab.validation.DynamicParameterValidator.Severity.WARNING).map(i->i.parameter()).collect(java.util.stream.Collectors.toSet()));
+        assertArrayEquals(c,g.getConstants(),0.);assertEquals(before,g.getIntegrationStates());assertEquals(history,g.getIntegrationHistories());
+        m.getControllerList().remove(g);
+        var diagram=new Urgs3tGovernor("diagram",c,Urgs3tGovernor.RuntimeConvention.PUBLISHED_DIAGRAM);diagram.setMachine(m);assertTrue(diagram.initStates(m.getDStabBus(),m));
+        report=org.interpss.dstab.validation.DynamicParameterValidator.validate((com.interpss.dstab.BaseDStabNetwork<?,?>)m.getDStabBus().getNetwork(),1./240.,2.,ignored->1);
+        assertEquals(java.util.Set.of("B*T2","T3"),report.issues().stream().filter(i->i.model().equals("Urgs3tGovernor")&&i.severity()==org.interpss.dstab.validation.DynamicParameterValidator.Severity.WARNING).map(i->i.parameter()).collect(java.util.stream.Collectors.toSet()));
+        m.getControllerList().remove(diagram);c[29]=1.;
+        var leadLag=new Urgs3tGovernor("lead-lag",c,Urgs3tGovernor.RuntimeConvention.SOURCE_RECORD);leadLag.setMachine(m);assertTrue(leadLag.initStates(m.getDStabBus(),m));
+        report=org.interpss.dstab.validation.DynamicParameterValidator.validate((com.interpss.dstab.BaseDStabNetwork<?,?>)m.getDStabBus().getNetwork(),1./240.,2.,ignored->1);
+        assertEquals(java.util.Set.of("B*T2","T5"),report.issues().stream().filter(i->i.model().equals("Urgs3tGovernor")&&i.severity()==org.interpss.dstab.validation.DynamicParameterValidator.Severity.WARNING).map(i->i.parameter()).collect(java.util.stream.Collectors.toSet()));
+    }
     @Test void sharedAndModifiedEulerUseTheSameEquationsWithoutTrialHistoryCommit() throws Exception {
         double[] c=BASE.clone();c[16]=.0002;c[17]=.00005;c[18]=.001;
         var g=model(c);var other=model(c);double h=.0005;
