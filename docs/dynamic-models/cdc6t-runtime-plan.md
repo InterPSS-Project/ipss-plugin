@@ -364,3 +364,32 @@ bus interface while preserving converter IDs, and each port exports its recordin
 identifier. The focused gate passes 77 tests without failures or skips, including
 existing LCC load-flow and JSON round-trip tests. Automatic controller import and the
 coordinated fault/protection runtime remain unfinished.
+
+## Coupled conducting-fault comparison
+
+The typed ports now pass fourteen independent coupled comparisons: both methods
+for the original rectifier fault, three current/power command modes, two active
+current-ceiling curves and an inverter fault. Each run uses the retained source
+network, a 0.5 ms step and `1e-6` network voltage-correction tolerance. All 1,005
+samples are compared in grid order, including negative-time startup and both
+event-side duplicates. No angle offsets or event-window exclusions are applied.
+
+The comparison checks both terminal voltage magnitudes/angles, all three
+measurement states, converter P/Q, firing/extinction angles and DC voltages.
+At every observation, the electrical boundary is refreshed using the solved
+terminal voltages without advancing state or protection history. Complete actual
+trajectories and per-channel errors use bounded output writers.
+
+Across these profiles, maximum terminal-voltage errors are `1.215e-4` pu for
+modified Euler and `3.73e-6` pu for staggered integration. Maximum measured DC
+voltage-state errors are 113.82 V and 1.60 V, respectively; current-state errors
+are 0.02780 A and 0.00749 A. Maximum terminal active/reactive-power errors are
+0.003578/0.002059 pu for modified Euler and 0.000100/0.000069 pu for staggered
+integration, on the 100 MVA network base. Tests enforce separate channel-specific
+envelopes close to these observed values. The largest modified-Euler differences
+occur at the first endpoint after fault clearing; the equations and parameters
+are shared, without fitted corrections.
+
+This qualifies only the declared conducting profiles on the small LCC network.
+Complete protected SMIB behavior, shorter-step convergence, production intervals,
+longer runs, automatic named-link import and coordinated protection remain open.
