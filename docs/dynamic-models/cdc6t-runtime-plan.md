@@ -1432,3 +1432,28 @@ Private immutable paired captures:
 Complete comparisons, prior-trajectory parity, failure evidence, reports and
 source snapshots: `verification-artifacts/cdc6t-external-event-20261102/validation.zip`,
 SHA-256 `875ad10b8f03b793e7f54b1841b9bc79e08d5bd1d7f6daf49282377ba121eeb7`.
+
+### Recovery timer phase discriminator
+
+The recorded timer channels localize the repeated-fault recovery peak to an
+observation-phase difference, beyond accumulated floating-clock roundoff. The
+reference's minimum blocking deadline starts at the preceding midpoint. Its
+recovery deadline starts at the following midpoint after clearing and is first
+published at the next endpoint. In this profile, clearing is recorded at
+0.249998554587 s, the recovery deadline at 0.260248541832 s, and release at
+0.260498434305 s. The local endpoint-timer implementation releases at 0.260 s.
+
+The reference regression checks both timer formulas against the imported source
+delays, using 30 ns for serialized timer/clock arithmetic. It also checks the
+first eligible release endpoint, both actual event sides and unchanged
+differential storage between them. This distinguishes phase behavior from a
+universal time offset; neither trajectories nor event samples are shifted.
+Production timer-phase semantics still need implementation and independent
+qualification across pickup, recovery, bypass and temporary-current controls
+under both integration methods. Existing full-recovery error gates remain open.
+
+All four coupled profile/method tests pass with these additional reference
+checks, and their complete trajectories remain byte-identical to the preceding
+validation. Private report, source and integrity manifest:
+`verification-artifacts/cdc6t-recovery-clock-20261102/validation.zip`, SHA-256
+`d12fbb020be79aefadc072b2f2cb97416b07df658ea2e5e4cbf89bad48de0115`.
