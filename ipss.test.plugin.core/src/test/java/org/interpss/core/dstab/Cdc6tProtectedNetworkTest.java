@@ -10,6 +10,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.dstab.hvdc.*;
 import org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode;
+import org.interpss.fadapter.psse.dyr.Cdc6tRecordMapper;
+import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,20 +36,16 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent coordinated network inputs");
         assertEquals(sentinel?"1655d2dda780170d4a48bafa5abaabde4c2fb68d991ece298ce9ec52bfce9aef":floor?"9634c30bc479897165d89e1bf97a9fba3c11881614dd7f6d3035eec6258c0639":half?"8137239dd9529a6a9e8d34661ba7050a82e4f9b63b5106bf7bf187d1447a8d29":"40a91608fe41d356c3c6c108da7d548e1d9e530e1d32af70ee47700ee518f6f9",
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
-        List<String> raw;List<Map<String,Double>> reference;
+        List<String> raw;List<Map<String,Double>> reference;Cdc6tParameters parameters;
         try(var z=new ZipFile(archive.toFile())){
             String prefix=half?"a/":profile.replace("-recovery","")+"/a/";
             raw=new ArrayList<>(new String(z.getInputStream(z.getEntry(prefix+"network.raw")).readAllBytes(),java.nio.charset.StandardCharsets.UTF_8).lines().toList());
             reference=Tiocr1ResetReferenceTest.csv(z.getInputStream(z.getEntry(prefix+"native.csv")).readAllBytes());
+            var records=PsseDyrRecordReader.read(new java.io.InputStreamReader(z.getInputStream(z.getEntry(prefix+"dynamic.dyr")),java.nio.charset.StandardCharsets.UTF_8),"reference/dynamic.dyr");
+            var dc=records.stream().filter(r->r.canonicalModelName().equals("CDC6T")).toList();assertEquals(1,dc.size());
+            parameters=Cdc6tRecordMapper.prepare(dc.get(0));
         }
-        var rectifier=sentinel?Cdc6tRectifierProtection.fromSource(.9,-999,999,1.05,profile.startsWith("negative")?-999:0,.02)
-                :new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02);
-        var coordinator=new Cdc6tProtectionCoordinator(rectifier,
-                sentinel?new Cdc6tInverterProtection(0,0,.3,0,.02):new Cdc6tInverterProtection(.9,.02,profile.equals("rectifier")?.99:.92,profile.equals("delay")?.04:.01,.02),
-                sentinel?new Cdc6tBypassProtection(200,999,999,.3,999,.02):new Cdc6tBypassProtection(490000,.9,.01,profile.equals("rectifier")?.99:.92,.01,.02),
-                new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,floor?100:500,1000,2,2));
-        var f=Cdc6tCoupledNetworkTest.load(folder,raw,Cdc6tCurrentOrder.Mode.POWER,-500,
-                Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000),coordinator,minimum);
+        var f=Cdc6tCoupledNetworkTest.load(folder,raw,parameters);var coordinator=f.protection();
         var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(step);a.setTotalSimuTimeSec(.5);a.setSimuOutputHandler(new StateMonitor());
         var recorder=new Cdc6tCoupledReferenceTest.Recorder(f);

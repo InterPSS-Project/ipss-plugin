@@ -37,7 +37,10 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
         assertTrue(worst<1e-5,"Initial network mismatch or drift "+worst);
         assertArrayEquals(new double[]{500000,1000,505000},states,.01);
     }
-    record Fixture(com.interpss.simu.SimuContext context,Cdc6tNormalRuntime runtime,Cdc6tNormalTerminalPorts ports) {}
+    record Fixture(com.interpss.simu.SimuContext context,Cdc6tNormalRuntime runtime,Cdc6tNormalTerminalPorts ports,Cdc6tProtectionCoordinator protection) {}
+    static Fixture load(Path folder,java.util.List<String> lines,Cdc6tParameters parameters)throws Exception{
+        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,null,null,0,parameters);
+    }
     static Fixture load(Path folder) throws Exception {
         var lines=Files.readAllLines(Path.of("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_PsetOnInv.raw"));
         return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000));
@@ -52,6 +55,10 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
             Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent) throws Exception {
+        return load(folder,lines,mode,setpoint,limit,protection,minimumCurrent,null);
+    }
+    private static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
+            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters) throws Exception {
         for(int n=3;n<lines.size();n++) {
             if(lines.get(n).strip().startsWith("0 /"))break;
             String[] fields=lines.get(n).split(",",-1);
@@ -70,12 +77,18 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
         algorithm.getAclfAlgorithm().setTolerance(1e-10);algorithm.getAclfAlgorithm().setMaxIterations(80);
         algorithm.getAclfAlgorithm().getLfAdjAlgo().setApplyAdjustAlgo(false);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
-        var runtime=new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
+        var rectifierBoundary=new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8);
+        var inverterBoundary=new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8);
+        Cdc6tNormalRuntime runtime;
+        if(parameters!=null){
+            var prepared=parameters.prepare(rectifierBoundary,inverterBoundary,5,
+                    new Cdc6tParameters.OperatingPoint(mode,setpoint,500,0,0,500000,1000,505000));
+            runtime=prepared.runtime();protection=prepared.protection();
+        }else runtime=new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
             new Cdc6tCurrentOrder(mode,setpoint,500,0),limit,
-            new Cdc6tConductingLink(new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8),
-                new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8),5,Math.toRadians(5),Math.toRadians(20)),minimumCurrent);
-        var pair=new Cdc6tNormalTerminalPorts("1",net.getBus("Bus7"),net.getBus("Bus9"),runtime,500000,1000,505000,protection);
+            new Cdc6tConductingLink(rectifierBoundary,inverterBoundary,5,Math.toRadians(5),Math.toRadians(20)),minimumCurrent);
+        var pair=new Cdc6tNormalTerminalPorts(parameters==null?"1":parameters.linkName(),net.getBus("Bus7"),net.getBus("Bus9"),runtime,500000,1000,505000,protection);
         pair.attach();
-        return new Fixture(context,runtime,pair);
+        return new Fixture(context,runtime,pair,protection);
     }
 }

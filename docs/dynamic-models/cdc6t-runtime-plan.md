@@ -622,3 +622,33 @@ Private reference archive:
 Validation reports and complete comparison exports:
 `verification-artifacts/cdc6t-recovery-sentinel-20261101/validation.zip`, SHA-256
 `6d8ff11380eee0bfce5d29bb7528042745bf43e3781581badc704e4a18022e56`.
+
+## Immutable source preparation
+
+`Cdc6tRecordMapper` prepares a named record with exactly 32 constants into
+`Cdc6tParameters`. It preserves source units, record identity and sentinel values
+in an immutable copy, and rejects invalid identity, cardinality and coefficients
+with source-location diagnostics. Preparation converts angles and voltage units
+once, outside the integration loop. Each prepared link owns its measurement
+states, numerical buffers and protection histories; only immutable coefficients
+can be shared. The implementation uses the existing shared equations under both
+modified Euler and staggered integration.
+
+The protected network fixtures now read their actual archived dynamic records
+instead of duplicating the parameter wiring. All 48 complete diagnostic exports
+across 16 runs are byte-identical to the preceding manually assembled runs.
+Focused tests also check distinct transducer time constants, both integration
+interfaces, recovery units, minimum current, dynamic angle bounds and independent
+state/history ownership. The model, adjacent LCC, staggered and parser checks
+pass 216 tests with no failures, errors or skips.
+
+This is an explicit preparation API for the qualified fixed-tap, ordinary
+dynamic-angle path. The caller still supplies static equipment and its solved
+operating point. Static named-owner lookup, automatic attachment, constant-gamma
+variants and complete protected trajectory acceptance remain open. Strict
+automatic import continues to reject the incomplete runtime. Exact preservation
+of earlier outputs does not resolve their documented reference discrepancies.
+
+Private validation archive, including complete exports and test reports:
+`verification-artifacts/cdc6t-source-preparation-20261101/validation.zip`, SHA-256
+`6e30959216b6ffe3ba2090c5c75a6bb6784b60d0da74bd0255dc6fa3e0144d6b`.
