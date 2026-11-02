@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--fault-terminal', choices=['rectifier', 'inverter'], default='rectifier')
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
+    parser.add_argument('--step', type=float, default=.0005)
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
     parser.add_argument('--inverter-recovery-voltage', type=float)
@@ -28,6 +29,8 @@ def main():
     parser.add_argument('--mode-threshold-kv', type=float, default=0.)
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
+    if not math.isfinite(args.step) or not .0001 <= args.step <= .005:
+        parser.error('Network step must be between 0.1 and 5 ms')
     if any(not math.isfinite(t) or not 0 < t < .5 for t in args.inspect_at):
         parser.error('Inspection times must be finite and strictly inside the run')
     if not math.isfinite(args.mode_threshold_kv) or args.mode_threshold_kv < 0:
@@ -141,7 +144,7 @@ def main():
     for bus in [7, 9]:
         checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
-    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, .0005]+[df]*5))
+    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(32)]
     snapshots = []

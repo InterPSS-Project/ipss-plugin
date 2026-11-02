@@ -306,8 +306,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         final BooleanSupplier active;
         final double[] values, rates, history, trial, eventLeftRates;
         boolean wasActive, hasEventLeftRates;
+        long appliedInputDiscontinuityVersion;
         Participant(StaggeredEulerParticipant model, BooleanSupplier active) {
             this.model=model;this.active=active;
+            appliedInputDiscontinuityVersion=model.staggeredInputDiscontinuityVersion();
             int size=model.staggeredStateCount();
             values=new double[size];rates=new double[size];history=new double[size];trial=new double[size];
             eventLeftRates=model.useAcceptedEndpointRateAtInputDiscontinuity()
@@ -1051,10 +1053,13 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             boolean active=p.active.getAsBoolean();
             if (active&&!p.wasActive) System.arraycopy(p.rates,0,p.history,0,p.rates.length);
             p.wasActive=active;
-            if (discontinuity)
+            long inputVersion=p.model.staggeredInputDiscontinuityVersion();
+            boolean localDiscontinuity=inputVersion!=p.appliedInputDiscontinuityVersion;
+            if (discontinuity||localDiscontinuity)
                 for (int i=0;i<p.rates.length;i++)
                     if (p.model.averageStaggeredRateAtDiscontinuity(i))
-                        p.rates[i]=.5*(p.rates[i]+(p.hasEventLeftRates?p.eventLeftRates[i]:p.history[i]));
+                        p.rates[i]=.5*(p.rates[i]+(discontinuity&&p.hasEventLeftRates?p.eventLeftRates[i]:p.history[i]));
+            p.appliedInputDiscontinuityVersion=inputVersion;
         }
         // Advance ST1 while its physical and upstream controller inputs still
         // belong to the old endpoint. Global machine rates are already captured.

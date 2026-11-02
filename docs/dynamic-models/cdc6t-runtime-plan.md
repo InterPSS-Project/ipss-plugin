@@ -497,3 +497,44 @@ Complete protected coupled trajectories, simultaneous fresh blocking
 requests, cross-cause requests during blocking, remaining recovery interactions
 and automatic import still require qualification. The complete model remains
 unsupported by strict automatic import.
+
+## Internally accepted input discontinuities
+
+Internal blocking, bypass and recovery transitions now publish a monotonic
+`staggeredInputDiscontinuityVersion` from the state-owning terminal. Predictor
+trials and discarded solves cannot publish a revision. The shared staggered
+solver consumes each revision once, applying the existing per-coordinate
+discontinuity policy to that participant alone. It does not notify unrelated
+controllers or change their retained rates. Existing participants default to a
+constant revision and keep their previous execution. This adds one primitive
+revision per participant and no per-step buffers or allocations.
+
+This closes a concrete coupling omission: after inverter-origin blocking,
+the first 0.5 ms staggered current-measurement update used to fall from 1,000 A
+to 985 A. The independent capture gives 992.5 A, reproduced by the accepted
+internal-event notification. At 0.25 ms the same treatment gives 996.25 A.
+Tests verify those updates, provisional-versus-accepted revision ownership,
+discarded recovery, monitoring and reinitialization.
+
+For the rectifier-origin profile, the largest staggered voltage-measurement
+state error decreases from approximately 1.884 kV to 19.05 V. For the ordinary
+inverter-origin profile it decreases from 4.347 kV to 3.110 kV. A separate
+cold-repeated 0.25 ms reference reduces the corresponding inverter-voltage state
+error from 3.082 kV at 0.5 ms to 1.552 kV. This is consistent with the remaining
+finite-step transition timing discrepancy; it does not establish full protected
+trajectory accuracy. Modified-Euler equations and integration stages are
+unchanged. The original and half-step diagnostic comparisons retain all reference
+rows, internal-transition duplicates and original timestamps. The half-step
+reference's single-precision clock drifts by up to 9.36 microseconds; comparison
+checks the same integration index and a 10-microsecond clock bound without
+shifting either trajectory.
+
+The CDC6T, adjacent LCC and all staggered-named test classes pass 168 tests with
+no failures or skips. Both cold half-step captures have identical CSV and
+snapshot files. Their private archive is
+`verification-artifacts/cdc6t-coordination-halfstep-20261101/captures.zip`, SHA-256
+`8137239dd9529a6a9e8d34661ba7050a82e4f9b63b5106bf7bf187d1447a8d29`.
+The validation log, focused reports and complete original/half-step comparison
+exports are retained in
+`verification-artifacts/cdc6t-local-events-20261101/validation.zip`, SHA-256
+`425c4d688f95ebb4a3c74be7af1301294c2bf502f1cde9145ba7d3e06d43b13a`.

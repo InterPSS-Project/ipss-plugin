@@ -32,22 +32,28 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
         solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,c.operatingMode());
+        long blockedVersion=p.staggeredInputDiscontinuityVersion();assertEquals(1,blockedVersion);
+        assertEquals(0,inv.staggeredInputDiscontinuityVersion());
         inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
         double[] committed=history(c);
         solve(p,"PREDICTOR",.12,true);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,c.operatingMode());
+        assertEquals(blockedVersion,p.staggeredInputDiscontinuityVersion(),"Predictor cannot publish an event");
         assertArrayEquals(committed,history(c));
         // Recovered-link voltage can be below the blocked-link release threshold.
         inv.getDStabBus().setVoltage(new Complex(.915,0));
         solve(p,"CORRECTOR",.12,false);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,c.operatingMode());assertArrayEquals(committed,history(c));
+        assertEquals(blockedVersion,p.staggeredInputDiscontinuityVersion(),"Rejected recovery cannot notify integration");
         inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"PREDICTOR",.12,true);
         inv.getDStabBus().setVoltage(new Complex(.915,0));solve(p,"CORRECTOR",.12,true);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,c.operatingMode());assertEquals(.12,history(c)[0],0);
+        assertEquals(blockedVersion+1,p.staggeredInputDiscontinuityVersion());
         committed=history(c);
         for(int j=0;j<20;j++){p.getOutputObject();inv.getOutputObject();p.getStates(null);}
         solve(inv,"INITIAL",.13,true);assertArrayEquals(committed,history(c),"Only the owner can accept history");
         assertTrue(p.initStates(p.getDStabBus()));assertEquals(Double.NEGATIVE_INFINITY,history(c)[0]);
+        assertEquals(0,p.staggeredInputDiscontinuityVersion());
         assertEquals(Cdc6tNormalRuntime.OperatingMode.NORMAL,c.operatingMode());
     }
 

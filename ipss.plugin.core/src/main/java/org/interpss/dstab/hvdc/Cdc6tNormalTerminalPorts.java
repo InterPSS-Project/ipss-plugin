@@ -20,6 +20,8 @@ public final class Cdc6tNormalTerminalPorts {
     private final double[] electrical=new double[8];
     private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending;
     private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
+    private long inputDiscontinuityVersion;
+    private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
 
     public Cdc6tNormalTerminalPorts(String id,BaseDStabBus<?,?> rectifier,BaseDStabBus<?,?> inverter,
             Cdc6tNormalRuntime runtime,double initialVi,double initialCurrent,double initialVr) {
@@ -76,6 +78,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(bus!=getDStabBus()||!attachmentIntact())return false;
             if(protection!=null){if(coordinatorTrial)protection.discardTrial();protection.reset();}
             coordinatorTrial=false;networkTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
+            inputDiscontinuityVersion=0;acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
             runtime.initialize(initialVi,initialCurrent,initialVr);return true;
         }
         @Override public void beginNetworkSolution(NetworkIterationAware.Context context){
@@ -118,7 +121,11 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner||!networkTrial)return;
             try{
                 if(!converged){protection.discardTrial();coordinatorTrial=false;}
-                else if(commitNetworkTrial){protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;}
+                else if(commitNetworkTrial){
+                    protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;
+                    var mode=protection.operatingMode();
+                    if(mode!=acceptedMode){inputDiscontinuityVersion++;acceptedMode=mode;}
+                }
                 // A successful predictor retains provisional history through the same endpoint's
                 // corrector. A failed corrector discards it; a different solve starts a fresh trial.
             } finally {networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
@@ -140,6 +147,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(owner)result.putAll(runtime.getIntegrationStates());return result;
         }
         @Override public int staggeredStateCount(){return owner?3:0;}
+        @Override public long staggeredInputDiscontinuityVersion(){return owner?inputDiscontinuityVersion:0;}
         @Override public void readStaggeredState(double[] values,int offset){if(owner)runtime.readStaggeredState(values,offset);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void evaluateStaggered(double h,double[] values,int offset){if(owner){refresh();runtime.evaluateStaggered(h,values,offset);}else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void applyStaggeredState(double[] values,int offset,double h){if(owner)runtime.applyStaggeredState(values,offset,h);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}

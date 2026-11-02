@@ -13,6 +13,11 @@ public interface StaggeredEulerParticipant {
     void applyStaggeredState(double[] values, int offset, double stepSec);
     /** Some sampled-input models rebase measurement memory instead of averaging slopes. */
     default boolean averageStaggeredRatesAtDiscontinuity() { return true; }
+    /** Monotonic revision for an internally accepted discontinuous input/regime change.
+     * Publish only after accepting the event, never during a trial or getter evaluation.
+     * The solver applies the existing per-coordinate discontinuity policy once for
+     * this participant without rebasing unrelated models. Reset only on reinitialization. */
+    default long staggeredInputDiscontinuityVersion() { return 0; }
     /** Per-coordinate event policy; existing participants retain their whole-vector selection. */
     default boolean averageStaggeredRateAtDiscontinuity(int stateIndex) {
         return averageStaggeredRatesAtDiscontinuity();
