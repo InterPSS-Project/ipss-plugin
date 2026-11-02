@@ -131,7 +131,9 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             len(spec['constants']), len(spec['icons']) + reserved_icons, len(spec['states']), spec.get('variable_count', len(spec.get('variables', ())))), allocation
         constants = [checked('constant ' + kind, psspy.dsrval('CON', allocation['CON'] + i)) for i in range(allocation['NCON'])]
         icons = [checked('selector ' + kind, psspy.dsival('ICON', allocation['ICON'] + i)) for i in range(allocation['NICON'])]
-        assert constants == [f32(v) for v in spec['constants']] and icons[:len(spec['icons'])] == list(spec['icons'])
+        assert constants == [f32(v) for v in spec['constants']], (spec['model'], 'loaded constants', constants,
+                                                                 'expected', [f32(v) for v in spec['constants']])
+        assert icons[:len(spec['icons'])] == list(spec['icons']), (spec['model'], 'loaded selectors', icons)
         components[kind] = dict(model=spec['model'], layout=allocation, actual_constants=constants, actual_icons=icons[:len(spec['icons'])])
         if spec.get('initialize_diagnostic_variables', False):
             assert spec['model'] == 'PSS2B'

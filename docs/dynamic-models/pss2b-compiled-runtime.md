@@ -294,3 +294,39 @@ tests pass, with only the same ordinary quarter-cycle modified-Euler gate
 failing. Production equations and runtime settings are unchanged. Preserve the
 unmodified coupled traces alongside the intervention evidence when evaluating
 the next controller-stage change.
+
+## Input-transducer preparation
+
+Independent synthetic SMIB controls distinguish the standard record's input-lag
+preparation from the existing typed extension. At outer intervals of 0.5 ms and
+0.25 ms, each input transducer with a time constant equal to twice that interval
+produces exactly the same complete reference trace as a zero-time-constant
+transducer. A time constant of 2.1 intervals produces a clearly active lag.
+Both input paths and independent cold repeats are checked. Earlier exploratory
+controls also exercise speed input and values below the boundary.
+
+The standard importer now selects this preparation rule for T6 and T7. The
+comparison uses the source coefficient precision; the runtime retains the
+entered constant whenever the transducer remains active. Preparation occurs
+once at initialization, using the outer interval. It adds no per-stage work,
+and both integration methods use the same prepared block/state storage.
+Reinitialization with a smaller interval recomputes the effective constants
+from the unchanged data. Typed extensions retain their existing half-step
+preparation rule. This evidence does not authorize applying the input-lag rule
+to washouts, lead-lags or the ramp filter.
+
+`Pss2bInputLagPreparationTest` retains complete event-side trajectories and
+checks the imported policy, unchanged raw data, reinitialization, typed
+compatibility, cold-repeat identity and both-method SMIB boundary gates. The
+largest short-lag rotor-angle RMSE is approximately 0.00255 degrees and the
+largest voltage range-normalized RMSE is below 0.000287. Controller-state and
+sampled-output errors remain diagnostic: fast transitions still show output
+differences above 0.1 pu. Passing the network boundary gates does not establish
+complete internal-state qualification or resolve the earlier long-run
+modified-Euler failure.
+
+Full independent captures are pinned by SHA-256
+`db881e29663911b21a2b0b569f6be3734d831069aa4f3efde05d10694e413eee`
+in the private evidence archive. The runnable capture helper accepts an
+explicit input-lag override; it continues to reject changed or incorrectly
+loaded constants rather than silently adjusting the reference inputs.

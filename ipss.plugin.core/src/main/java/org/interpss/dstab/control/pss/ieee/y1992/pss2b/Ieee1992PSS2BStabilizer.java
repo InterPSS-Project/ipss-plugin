@@ -263,7 +263,7 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
                 || java.util.stream.DoubleStream.of(tw1,tw2,t6,tw3,tw4,t7,t8,t9,t2,t4,t11,tb)
                         .anyMatch(value -> value < 0.)
                 || (n > 0 && t9 == 0. && t8 != 0.) || (tb == 0. && ta != 0.)) return false;
-        applyPowerWorldCorrections();
+        prepareParameters();
 
         if (input1Bus == null) input1Bus = bus;
         if (input2Bus == null) input2Bus = bus;
@@ -387,14 +387,14 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         return java.util.Collections.unmodifiableMap(states);
     }
 
-    private void applyPowerWorldCorrections() {
+    private void prepareParameters() {
         double minimum = minimumTimeConstantMultiplier * integrationStep;
         tw1 = minimumPositive(tw1, minimum);
         tw3 = minimumPositive(tw3, minimum);
         tw2 = halfStepBypass(tw2, minimum);
         tw4 = halfStepBypass(tw4, minimum);
-        t6 = halfStepBypass(t6, minimum);
-        t7 = halfStepBypass(t7, minimum);
+        t6 = prepareInputLag(t6, minimum);
+        t7 = prepareInputLag(t7, minimum);
         t9 = halfStepBypass(t9, minimum);
         tb = halfStepBypass(tb, minimum);
         t2 = quarterStepBypass(t2, minimum);
@@ -406,6 +406,14 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         vsi1max = input1Limits[0]; vsi1min = input1Limits[1];
         double[] input2Limits = orderedLimits(vsi2max, vsi2min);
         vsi2max = input2Limits[0]; vsi2min = input2Limits[1];
+    }
+
+    private double prepareInputLag(double value, double minimum) {
+        if (!getData().isStandardInputLagPreparation()) return halfStepBypass(value, minimum);
+        if (minimum == 0.0) return value;
+        // Only the source record's preparation comparison uses binary32 precision.
+        // Preserve entered constants and use the outer interval, never a local substep.
+        return (float) value <= 2.0f * (float) minimum ? 0.0 : value;
     }
 
     private static double limitedInput(int code, BaseDStabBus<?, ?> bus, Machine machine,

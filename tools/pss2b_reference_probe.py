@@ -1,12 +1,14 @@
 """Independent PSS2B SMIB selectors, limits, bypasses and event-memory discriminators."""
 import argparse
+import math
 from pathlib import Path
 
 from genrou_native_probe import run_case
 from ieeest_input_probe import configuration as exciter_configuration
 
 
-def configuration(raw, selector, slot, remote, event, limits=False, bypass=False, ramp_m=5, ramp_n=1):
+def configuration(raw, selector, slot, remote, event, limits=False, bypass=False, ramp_m=5, ramp_n=1,
+                  input_lag=None):
     if selector not in range(1, 7) or slot not in (1, 2) or remote not in (0, 2):
         raise ValueError('Unsupported selector, input slot or signal bus')
     if remote and selector not in (2, 5, 6):
@@ -29,6 +31,10 @@ def configuration(raw, selector, slot, remote, event, limits=False, bypass=False
         bounds = (1.005, .95) if selector == 5 else (.001, -.001)
         constants[17+(slot-1)*2:19+(slot-1)*2] = bounds
         constants[-2:] = [.00001, -.000015]
+    if input_lag is not None:
+        if not math.isfinite(input_lag) or input_lag < 0 or bypass:
+            raise ValueError('Input-lag control requires a finite nonnegative value and no bypass profile')
+        constants[2 + (slot - 1) * 3] = input_lag
     lines = cfg['dynamic'].splitlines()
     lines[-1] = "1 'PSS2B' '1' " + ' '.join(map(str, icons + constants)) + ' /'
     cfg['dynamic'] = '\n'.join(lines) + '\n'
@@ -56,11 +62,14 @@ def main():
     parser.add_argument('--duration', type=float, choices=(.5, 10.), default=.5)
     parser.add_argument('--ramp-m', type=int, default=5)
     parser.add_argument('--ramp-n', type=int, default=1)
+    parser.add_argument('--input-lag', type=float, help='Override the selected input transducer for preparation controls')
     args = parser.parse_args()
     raw = Path('ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw').read_text(encoding='utf8')
-    cfg = configuration(raw, args.selector, args.slot, args.remote, args.event, args.limits, args.bypass, args.ramp_m, args.ramp_n)
+    cfg = configuration(raw, args.selector, args.slot, args.remote, args.event, args.limits, args.bypass, args.ramp_m, args.ramp_n, args.input_lag)
     cfg['end_s'] = args.duration
     profile = f'selector-{args.selector}-slot-{args.slot}-bus-{args.remote}-{args.event}'
+    if args.input_lag is not None:
+        profile += f'-input-lag-{args.input_lag}'
     run_case(args.tag, str(args.step), profile, cfg, directory_prefix='pss2b-native-',
              probe_source=__file__, record_phasors=True,
              extra_machine_channels=((8, 'XAD_IFD'), (9, 'ECOMP'), (10, 'VOTHSG'), (11, 'VREF')),
