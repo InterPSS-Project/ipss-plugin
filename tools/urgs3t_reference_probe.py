@@ -38,14 +38,29 @@ def main():
     p.add_argument('--duration', type=float, default=.5)
     p.add_argument('--flat', action='store_true')
     p.add_argument('--reference-steps', action='store_true')
+    p.add_argument('--network-tolerance', type=float,
+                   help='Optional diagnostic network tolerance; omitted preserves the engine default')
+    p.add_argument('--extra-pause', type=float,
+                   help='Optional no-command pause during a reference-step diagnostic')
+    p.add_argument('--machine-states', action='store_true')
     p.add_argument('--batch', default='urgs3t-initial-20261102')
     args = p.parse_args()
     if not 0.1 < args.duration <= 10:
         p.error('Duration must exceed clearing time and remain within ten seconds')
+    if args.network_tolerance is not None and not 0 < args.network_tolerance <= .01:
+        p.error('Network tolerance must be positive and at most 0.01')
+    if args.extra_pause is not None and (not args.reference_steps or not .05 < args.extra_pause < .25):
+        p.error('The extra pause requires reference steps and must lie between the first two commands')
     root = Path.cwd()
     if args.flat and args.reference_steps:
         p.error('Choose either flat or reference-step operation')
     tag = f'{args.profile}-h{args.step:.12g}-t{args.duration:g}-{"command" if args.reference_steps else "flat" if args.flat else "fault"}-{args.repeat}'.replace('.', 'p')
+    if args.network_tolerance is not None:
+        tag = tag[:-1]+f'tol{args.network_tolerance:g}-'+args.repeat
+    if args.extra_pause is not None:
+        tag = tag[:-1]+f'pause{args.extra_pause:g}-'+args.repeat
+    if args.machine_states:
+        tag = tag[:-1]+'machines-'+args.repeat
     out = root/'target'/args.batch/tag
     if shutil.disk_usage(root/'target').free < 2*1024**3 + 64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -85,16 +100,29 @@ def main():
             checked('channel', fn([-1, layout[kind]+i], kind+str(i)))
     for code, name in [(1, 'ANGLE_DEG'), (2, 'P_PU'), (3, 'Q_PU'), (6, 'PMECH'), (7, 'SPEED'), (5, 'EFD')]:
         checked('machine', psspy.machine_array_channel([-1, code, 1], '1', name))
+    machine_layouts = {}
+    if args.machine_states:
+        for bus in [1, 2]:
+            machine_layouts[str(bus)] = {k: checked('machine layout', psspy.mdlind(bus, '1', 'GEN', k))
+                                         for k in ['STATE', 'NSTATE']}
+            allocation = machine_layouts[str(bus)]
+            for i in range(allocation['NSTATE']):
+                checked('machine state', psspy.state_channel([-1, allocation['STATE']+i], f'GEN{bus}_STATE{i}'))
+        for code, name in [(1, 'ANGLE_DEG_2'), (2, 'P_PU_2'), (3, 'Q_PU_2'), (6, 'PMECH_2'), (7, 'SPEED_2'), (5, 'EFD_2')]:
+            checked('machine 2', psspy.machine_array_channel([-1, code, 2], '1', name))
     for bus in [1, 2]:
         checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
-    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, df, args.step]+[df]*5))
+    tolerance = df if args.network_tolerance is None else args.network_tolerance
+    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, tolerance, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(33)]
     if args.reference_steps:
         for time, increment in [(.05, .2), (.25, -.4), (.4, .2)]:
             checked('reference boundary', psspy.run(0, time, 1000000, 1, 0))
             checked('reference increment', psspy.increment_gref(1, '1', increment))
+            if time == .05 and args.extra_pause is not None:
+                checked('no-command pause', psspy.run(0, args.extra_pause, 1000000, 1, 0))
     elif not args.flat:
         checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
         checked('fault', psspy.dist_bus_fault(1, 3, 100., [0., .2*100.**2/100.]))
@@ -114,7 +142,7 @@ def main():
     checked('model report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and all(t not in log for t in ['Network not converged', 'Incomplete data record'])
-    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout,
+    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout, machine_layouts=machine_layouts,
             entered_constants=entered, initialized_constants=initialized, samples=len(data['time']), channels=len(keys),
             engine_module=psse3607.__name__, library_sha256=sha(library),
             source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),

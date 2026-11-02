@@ -140,6 +140,23 @@ public class Urgs3tSharedStateTest {
             g.applyStaggeredState(states,0,.001);g.readPublishedVariables(vars,0);assertEquals(.5,vars[4],1e-14);
         }
     }
+    @Test void modifiedEulerCommandStepMatchesIndependentHeunEquations() throws Exception {
+        for(double h:new double[]{.0005,.00025}) {
+            var g=model(BASE);double[] states=new double[5];double initial=.5,increment=.2;
+            g.applyReferenceEvent(initial+increment);
+            g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0);
+            g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1);g.readStaggeredState(states,0);
+            double initialRate=increment/BASE[1];
+            assertEquals(initial+h*initialRate*(1-h/(2*BASE[1])),states[0],1e-14);
+            assertEquals(initial+h*h*initialRate/(2*BASE[2]),states[1],1e-14);
+            assertEquals(initial,states[2],0.);
+            assertEquals(initial+h*h*initialRate/(2*BASE[12]),states[3],1e-14);
+            assertEquals(0.,states[4],0.);
+            assertEquals(initial,g.getOutput(g.getMachine()),0.,"Accepted turbine publication remains separate from state advancement");
+            assertTrue(Math.abs(states[0]-(initial+.75*h*initialRate))>.45*h,
+                    "Modified Euler must not silently become the staggered event formula");
+        }
+    }
     @Test void warmedNumericalStagesAllocateNoPerStepObjects() throws Exception {
         var bean=(com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();
         org.junit.jupiter.api.Assumptions.assumeTrue(bean.isThreadAllocatedMemorySupported());bean.setThreadAllocatedMemoryEnabled(true);

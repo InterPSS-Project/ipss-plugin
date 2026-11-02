@@ -98,9 +98,59 @@ continues to use double-precision integration. Small terminal-voltage responses
 also fail the unchanged range-normalized gate despite micro-pu absolute errors.
 These observations localize remaining work; they do not waive those gates.
 
+## Command and downstream boundary localization
+
+Independent cold controls tighten only the reference network tolerance from its
+default to `1e-6` and `1e-8`. Every recorded sample remains byte-identical.
+Java runs at `1e-6`, `1e-8` and `1e-10` likewise retain identical complete
+trajectories under each integration method. These particular command errors
+cannot be corrected by tightening network tolerance alone.
+
+A separate no-command pause at 0.2 seconds distinguishes run-resume publication
+from a reference command. On resumption, mechanical power changes to the current
+accepted turbine output while all recorded governor and machine states remain
+unchanged. The first subsequent speed increment uses the average of the fresh
+left and right mechanical derivatives, retaining the older multistep history.
+This reconstruction agrees within `1.2e-11`; an unblended increment differs by
+more than `7e-9`. A command-only output refresh would miss the no-command control.
+The existing production event/publication lifecycle is unchanged pending an
+explicit, independently qualified resume contract.
+
+The diagnostic replay retains both mechanical-power values at duplicate event
+timestamps. Modified Euler consumes the left interval's post-event input in its
+predictor and the right endpoint's pre-event input in its corrector. Assertions
+check the actual mechanical increment, not just the recorded power value. The
+staggered power replay checks its existing unblended two-step mechanical update;
+it does not claim to reproduce the independently observed resume treatment.
+
+| Diagnostic | Worst bus-1 voltage error | Implication |
+|---|---:|---|
+| Exact recorded mechanical power, machine states integrated | `1.96e-6` pu | The small-response voltage discrepancy persists downstream of the governor |
+| Exact recorded mechanical power and machine states at network stages | `2.46e-7` pu | Most of that discrepancy comes from the machine trajectory |
+
+Both diagnostics cover the active opening-rate and temperature-limit profiles
+under both methods. The full-state replay prescribes machine states and
+excitation at each network stage and checks that the network solve preserves
+those coordinates. It is a localization experiment, not acceptance of machine
+integration or the governor. The classical source's excitation observation is
+its fixed internal emf; it has no dynamic exciter state. All channel samples,
+startup rows and event sides are retained.
+
+The unchanged coupled comparisons still enforce their original limits. In
+particular, small voltage ranges amplify these absolute errors in NRMSE; the
+replay results do not relax or replace those gates. The separate Heun equation
+test confirms the modified-Euler command update, while independent coarse/fine
+controls distinguish the reference's staggered command-event weighting.
+
+The new private archives are `network-captures.zip` (SHA-256
+`1a4a503a0aa3c9b2d423570019e574d97eae891d480d506aa8cec7c021b13196`)
+and `machine-command-captures.zip` (SHA-256
+`a2c4fbc8b9f7d38bcc4a562c70d3ca875c52430d3ca63df319c39743ef07fdec`).
+Their tests verify hashes, complete manifests and cold-repeat identity.
+
 ## Validation checkpoint
 
-The final registered suite executes 4,159 tests, with 36 failures, no errors
+The initial runtime checkpoint's registered suite executes 4,159 tests, with 36 failures, no errors
 and 13 skips. The 16 pre-existing failure identities are unchanged; the other
 20 are the explicitly registered URGS3T command-response comparisons. The core
 plugin module passes 486 tests with four skips and no failures or errors.
@@ -110,6 +160,20 @@ independent equation discriminators pass. Fifty of seventy coupled comparisons
 pass the declared state and voltage/power/angle gates, including every flat and
 fault comparison. Command failures remain visible in the registered suite.
 This checkpoint is not `VERIFIED` or system acceptance.
+
+The boundary-localization focused run executes 100 tests with the same 20
+command-response failures and no errors or skips. All 70 coupled trajectory
+files and comparison summaries are byte-identical to the initial runtime
+checkpoint. The additional boundary tests and the independent Heun test pass;
+production equations, numerical precision and acceptance thresholds are
+unchanged.
+
+The subsequent registered run executes 4,177 tests with the same 36 failure
+identities, no errors and 13 skips. All 18 added tests pass. The private
+`boundary-validation.zip` retains that run's reports, complete coupled and
+diagnostic traces, test sources/classes and reference-archive hashes over the
+initial `validation.zip` runtime checkpoint. Retention verifies byte identity
+of the original coupled results and the frozen production classes.
 
 Private immutable capture archives retain the complete cold-run evidence; the
 current fixture is `urgs3t-initial-20261102/captures-v3.zip`, pinned by the test to

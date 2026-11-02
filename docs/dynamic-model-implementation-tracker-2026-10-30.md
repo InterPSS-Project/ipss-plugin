@@ -181,5 +181,6 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## URGS3T
 
+- Use the [command and downstream boundary controls](dynamic-models/urgs3t-shared-runtime.md#command-and-downstream-boundary-localization) to separate run-resume power publication, integration-event weighting and machine-trajectory errors. Tightening network tolerance does not resolve these controls. Preserve both event sides and establish an explicit resume contract before changing production publication or derivative history.
 - Retain the [shared governor runtime](dynamic-models/urgs3t-shared-runtime.md), exact source schema, reusable state storage, named derivatives and accepted-event histories under modified Euler and staggered integration. Preserve the explicit source/diagram convention and independently distinguish exhaust feedback, mechanical-power publication and damping base.
 - Resolve isolated/combined power-deadband and command-response parity using complete independent state and boundary captures; retain strict gates and cold-repeat provenance. Extend bypass/time preparation, position-limit initialization, reconnection, longer-duration and production-step coverage before claiming trajectory acceptance.
