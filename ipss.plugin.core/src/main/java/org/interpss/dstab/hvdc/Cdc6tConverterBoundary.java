@@ -13,6 +13,14 @@ public final class Cdc6tConverterBoundary {
         commutatingOhms=3/Math.PI*bridges*reactanceOhms;finite(commutatingOhms);
         this.reactanceOhms=reactanceOhms;baseVA=networkBaseVA;powerSign=rectifier?1:-1;
     }
+    /** Maximum conducting DC voltage at the supplied minimum angle, with taps held fixed. */
+    public double maximumDcVoltage(double acVoltagePu,double amperes,double minimumAngleRadians) {
+        positive(acVoltagePu);finite(amperes);finite(minimumAngleRadians);
+        if(amperes<0||minimumAngleRadians<0||minimumAngleRadians>=Math.PI/2)
+            throw new IllegalArgumentException("Nonnegative current and an angle below pi/2 required");
+        double result=noLoadDcVoltsPerPu*acVoltagePu*Math.cos(minimumAngleRadians)-commutatingOhms*amperes;
+        finite(result);return result;
+    }
     /** Writes P into converter, Q into converter (both pu), and firing/extinction angle (radians).
      * Input DC voltage is positive at each terminal. Controllers must enforce feasible orders first.
      * Invalid trials leave the caller's output buffer unchanged. */

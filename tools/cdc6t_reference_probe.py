@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--profile', choices=['flat', 'fault', 'modulation'], default='flat')
     parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
     parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope'], default='default')
+    parser.add_argument('--fault-terminal', choices=['rectifier', 'inverter'], default='rectifier')
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
     root = Path.cwd()
@@ -93,7 +94,8 @@ def main():
     if args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.0))
     if args.profile == 'fault':
-        checked('fault', psspy.dist_bus_fault(7, 3, 230., [0., .2*230**2/100]))
+        checked('fault', psspy.dist_bus_fault(7 if args.fault_terminal == 'rectifier' else 9,
+                3, 230., [0., .2*230**2/100]))
     checked('fault interval', psspy.run(0, .1, 1000000, 1, 0))
     if args.profile == 'fault':
         checked('clear', psspy.dist_clear_fault(1))

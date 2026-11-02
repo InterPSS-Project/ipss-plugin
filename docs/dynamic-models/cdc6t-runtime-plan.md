@@ -136,3 +136,27 @@ cover zero current and continuity of reactive consumption at zero DC voltage.
 This does not establish bypass-event behavior. Converter active-set selection,
 protection/recovery and network injection ownership remain to be integrated and
 qualified before the full model can be attached.
+
+## Conducting-link algebra
+
+`Cdc6tConductingLink` combines the prepared terminal equations with line loss
+and minimum firing/extinction angles. For a supplied current order, the inverter
+voltage is the minimum of its voltage order, its own angle-limited voltage, and
+the rectifier angle-limited voltage minus the resistive line drop. Both terminal
+powers, angles and DC voltages are evaluated into reusable storage and published
+only after the complete trial succeeds. No taps, modes, timers or accepted
+integration history change during evaluation.
+
+Independent captures exercise rectifier-side and inverter-side faults, both
+power-order conventions, current control and active voltage-dependent current
+limits. Tests derive the current order from recorded measurement states using
+the Java command/limiter components; reference terminal current and DC voltage
+are not inputs to the calculation. All startup and event-side samples remain.
+Observed maximum errors are below 0.207 V DC, 2.64e-6 pu active power,
+8.08e-6 pu reactive power and 0.000062 degrees. Both minimum-angle branches
+are explicitly exercised, with separate resistive-loss and failed-trial checks.
+
+The focused CDC6T gate passes 29 tests without skips. This establishes
+measured-state conducting algebra, not full trajectory acceptance. Current-margin
+transfer, protection/recovery, network ownership and coupled integration under
+both methods still require implementation and independent qualification.
