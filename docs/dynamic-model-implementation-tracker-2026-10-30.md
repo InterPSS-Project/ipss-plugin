@@ -11,7 +11,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 ## PSS2B
 
 - Retain direct shared-state staggered participation, the existing modified-Euler execution, sampled measurement histories and audited ownership/predictor guards.
-- Extend the accepted coupled voltage/angle matrix to production-quarter-cycle and longer-duration runs.
+- Retain the [ten-second production-step SMIB qualification](dynamic-models/pss2b-compiled-runtime.md#ten-second-production-step-qualification), independent exciter substep discriminator and complete state/output diagnostics. Staggered boundaries pass with the independently established host-exciter setting; modified Euler passes at half the network interval but still fails the quarter-cycle derivative-input rotor-angle gate. Resolve that gate without relaxing its threshold or changing the default local-step setting.
 - Finish strict independent controller-state and sampled-output lifecycle qualification across selectors and limiter combinations.
 - Preserve separate mappings for the standard record and the existing typed extension.
 - Resolve sampled-output lifecycle and finite-step trajectory differences against complete independent captures.

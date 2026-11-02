@@ -52,12 +52,14 @@ def main():
     parser.add_argument('--event', choices=('flat', 'fault', 'reference'), default='fault')
     parser.add_argument('--limits', action='store_true')
     parser.add_argument('--bypass', action='store_true')
-    parser.add_argument('--step', type=float, choices=(.0005, .00025), default=.0005)
+    parser.add_argument('--step', type=float, choices=(.0005, .00025, 1/240, 1/480), default=.0005)
+    parser.add_argument('--duration', type=float, choices=(.5, 10.), default=.5)
     parser.add_argument('--ramp-m', type=int, default=5)
     parser.add_argument('--ramp-n', type=int, default=1)
     args = parser.parse_args()
     raw = Path('ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw').read_text(encoding='utf8')
     cfg = configuration(raw, args.selector, args.slot, args.remote, args.event, args.limits, args.bypass, args.ramp_m, args.ramp_n)
+    cfg['end_s'] = args.duration
     profile = f'selector-{args.selector}-slot-{args.slot}-bus-{args.remote}-{args.event}'
     run_case(args.tag, str(args.step), profile, cfg, directory_prefix='pss2b-native-',
              probe_source=__file__, record_phasors=True,

@@ -53,12 +53,14 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     root = Path.cwd()
     step = float(entered_step)
     permitted_steps = (.0005, .00025)
+    if directory_prefix == 'pss2b-native-':
+        permitted_steps += (1/240, 1/480)
     if cfg.get('pss5c_observation_diagnostic', False):
         assert directory_prefix == 'pss5c-native-', 'Fine steps are an explicit PSS5C diagnostic only'
         permitted_steps += (.00005, .000025)
     assert step in permitted_steps
     end = cfg.get('end_s', .5)
-    assert end in (.5, 3.)
+    assert end in (.5, 3.) or directory_prefix == 'pss2b-native-' and end == 10.
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
     assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-', 'esst1a-bypass-', 'ieeest-input-', 'pss5c-native-', 'pss2b-native-')
     out = root / 'target' / (directory_prefix + tag)

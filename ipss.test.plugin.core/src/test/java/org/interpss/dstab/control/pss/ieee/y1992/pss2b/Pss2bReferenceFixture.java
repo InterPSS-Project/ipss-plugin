@@ -11,12 +11,17 @@ import org.interpss.test.TestConfig;
 final class Pss2bReferenceFixture {
     private static final TestConfig CONFIG = TestConfig.load("/test-config/ipss.test.plugin.core.json", "Pss2bReferenceReplayTest");
     private final Path staged;
+    private final Path referenceArchive;
+    private final String archiveHash;
     private boolean checked;
 
-    Pss2bReferenceFixture(Path staged) { this.staged = staged; }
+    Pss2bReferenceFixture(Path staged) { this(staged,Path.of(CONFIG.string("referenceArchive")),CONFIG.string("archiveSha256")); }
+    Pss2bReferenceFixture(Path staged,Path archive,String hash) {
+        this.staged=staged;this.referenceArchive=archive;this.archiveHash=hash;
+    }
 
     Path archive() throws Exception {
-        Path path = Path.of(CONFIG.string("referenceArchive"));
+        Path path = referenceArchive;
         assumeTrue(Files.isRegularFile(path), "Retained private PSS2B qualification archive is unavailable");
         if (!checked) {
             var hash = java.security.MessageDigest.getInstance("SHA-256");
@@ -24,7 +29,7 @@ final class Pss2bReferenceFixture {
                 byte[] buffer = new byte[65536]; int size;
                 while ((size = stream.read(buffer)) >= 0) hash.update(buffer, 0, size);
             }
-            assertEquals(CONFIG.string("archiveSha256"), java.util.HexFormat.of().formatHex(hash.digest()));
+            assertEquals(archiveHash, java.util.HexFormat.of().formatHex(hash.digest()));
             checked = true;
         }
         return path;

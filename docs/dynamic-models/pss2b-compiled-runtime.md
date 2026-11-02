@@ -184,3 +184,70 @@ an all-green system-acceptance result.
 The [public model description](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2B.htm)
 provides an additional schema and parameter-correction reference; it does not
 replace exact-version independent captures.
+
+## Ten-second production-step qualification
+
+`Pss2bLongRunConformanceTest` extends the synthetic coupled SMIB matrix to ten
+seconds at network intervals of 1/240 and 1/480 second. It exercises speed,
+voltage derivative, remote frequency and active voltage/output limits under
+both integration methods. Cold reference repeats are byte-identical. Every
+sample, startup row, event-side duplicate and final reference overshoot is
+retained; actual and reference timestamps remain separate. Alignment follows
+integration ordinals, with a timestamp bound smaller than half an interval.
+Machine and exciter states are recorded alongside all stabilizer coordinates
+to localize upstream discrepancies.
+
+The first extended comparison exposed a host-exciter integration difference.
+At fault application, the reference transducer starts from equilibrium and
+holds the new terminal voltage during its local update. The staggered
+two-history recurrence with ten local steps reproduces its first accepted
+state within 0.00000008 pu in every retained long profile. One local step
+differs by more than 0.002 pu. This discriminator uses the recorded voltage
+and executed transducer time constant; it does not fit a coefficient or shift
+a sample. The test explicitly configures ten ST1-family exciter steps for
+staggered comparisons. Production defaults remain one step. PSS2B still
+advances once per network interval through its shared numerical storage.
+
+For the quarter-cycle derivative profile, matching this host setting reduces
+staggered voltage NRMSE from 0.006032 to 0.0000347 and rotor-angle RMSE from
+0.150281 to 0.000985 degrees. The retained first-postfault power-path state
+gate also passes. Worst boundary errors across the extended profiles are:
+
+| Integration | Network interval | Voltage range NRMSE | Rotor-angle RMSE (degrees) |
+|---|---:|---:|---:|
+| Modified Euler | 1/240 s | 0.000691 | 0.017025 |
+| Modified Euler | 1/480 s | 0.000266 | 0.006506 |
+| Staggered, ten exciter steps | 1/240 s | 0.0000347 | 0.000986 |
+| Staggered, ten exciter steps | 1/480 s | 0.0000147 | 0.000390 |
+
+All staggered long boundary profiles and all half-interval modified-Euler
+profiles pass the unchanged voltage NRMSE <0.001 and rotor-angle RMSE <0.01
+degree gates. The quarter-cycle modified-Euler voltage-derivative profile
+**fails the rotor-angle gate**. Its registered test deliberately retains that
+failure; this is a qualification checkpoint, not an all-green milestone.
+The speed, remote-frequency and voltage-limit quarter-cycle profiles pass.
+
+Independent reported states reconstruct every long-run stabilizer output
+within the existing 0.000015 pu equation gate. Recorded-boundary modified-Euler
+replay also reduces every state/output maximum error when the interval is
+halved. These checks separate output equations and step convergence from
+coupled trajectory acceptance. Full controller-state and sampled-output
+parity remain open: peak output errors in the quarter-cycle coupled profiles
+reach 0.126022 pu with modified Euler and 0.002604 pu with staggered integration.
+Neither limit was relaxed, and no controller equation, parameter, production
+integration setting or optimization default changed for this qualification.
+
+The immutable references are retained at
+`testData/private/verification-artifacts/pss2b-long-20261102/captures.zip`
+with SHA-256
+`1fc652f56497f1d6620a47fda67481c204bab4298210164704083285ec653475`.
+Their manifests preserve runnable probes and exact source provenance. The
+comparison writes diagnostics before checking acceptance so a failed gate
+cannot erase its full trace or error report. Public files contain synthetic
+model work only, without source-case inventories.
+
+Focused validation executes 69 tests: 68 pass, and the quarter-cycle
+modified-Euler rotor-angle gate above fails. Import, compiled/generic
+equivalence, shared-state ownership/allocation, prior coupled boundaries,
+host-exciter, measurement and artifact checks pass. This run does not claim
+full-repository or system acceptance.

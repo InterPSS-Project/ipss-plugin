@@ -49,37 +49,41 @@ public class Pss2bReferenceReplayTest {
         for (var entry : matrix) {
             if (!entry.get("repeat").asText().equals("a")) continue;
             Path root = caseDirectory("pss2b-native-" + entry.get("tag").asText());
-            assertTrue(Files.isRegularFile(root.resolve("manifest.json")), "Missing required capture " + root.getFileName());
-            var manifest = new com.fasterxml.jackson.databind.ObjectMapper().readTree(root.resolve("manifest.json").toFile());
-            var icons = manifest.get("components").get("STAB").get("actual_icons");
-            var context = new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(), root.resolve("dynamic.dyr").toString());
-            var algorithm = context.getDynSimuAlgorithm();
-            algorithm.getAclfAlgorithm().setTolerance(1e-10); assertTrue(algorithm.getAclfAlgorithm().loadflow());
-            var machine = context.getDStabilityNet().getMachine("Bus1-mach1");
-            var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
-            useCapturedCoefficients(pss, manifest);
-            assertTrue(pss.initStates(machine.getDStabBus(), machine)); pss.compileRuntimePlan();
-            assertTrue(pss.hasCompiledStageEvaluator());
-            Map<String, Double> previous = null;
-            for (var row : rows(root.resolve("native.csv"))) {
-                impose(machine, row);
-                pss.input1Signal = selected(pss.getData().getIcs1(), machine, row, 1,
-                        icons.get(1).asInt() == 0 ? 1 : 2, pss.vsi1max, pss.vsi1min);
-                pss.input2Signal = selected(pss.getData().getIcs2(), machine, row, 2,
-                        icons.get(3).asInt() == 0 ? 1 : 2, pss.vsi2max, pss.vsi2min);
-                injectPublishedStates(pss, row);
-                double expected = row.get("VOTHSG");
-                if (pss.n == 0) {
-                    // Fully bypassed profiles publish the preceding controller-stage output,
-                    // while their allocated algebraic coordinates describe the current boundary.
-                    assertEquals(bypassedOutput(pss, previous == null ? row : previous), expected, 1e-7,
-                            "Sampled output retains the preceding stage, including event duplicates");
-                    expected = bypassedOutput(pss, row);
-                }
-                assertEquals(expected, pss.getOutput(machine), 1.5e-5,
-                        root.getFileName() + " algebraic output at " + row.get("time_s"));
-                previous = row;
+            reconstructPublishedOutput(root);
+        }
+    }
+
+    static void reconstructPublishedOutput(Path root) throws Exception {
+        assertTrue(Files.isRegularFile(root.resolve("manifest.json")), "Missing required capture " + root.getFileName());
+        var manifest = new com.fasterxml.jackson.databind.ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+        var icons = manifest.get("components").get("STAB").get("actual_icons");
+        var context = new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(), root.resolve("dynamic.dyr").toString());
+        var algorithm = context.getDynSimuAlgorithm();
+        algorithm.getAclfAlgorithm().setTolerance(1e-10); assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        var machine = context.getDStabilityNet().getMachine("Bus1-mach1");
+        var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
+        useCapturedCoefficients(pss, manifest);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine)); pss.compileRuntimePlan();
+        assertTrue(pss.hasCompiledStageEvaluator());
+        Map<String, Double> previous = null;
+        for (var row : rows(root.resolve("native.csv"))) {
+            impose(machine, row);
+            pss.input1Signal = selected(pss.getData().getIcs1(), machine, row, 1,
+                    icons.get(1).asInt() == 0 ? 1 : 2, pss.vsi1max, pss.vsi1min);
+            pss.input2Signal = selected(pss.getData().getIcs2(), machine, row, 2,
+                    icons.get(3).asInt() == 0 ? 1 : 2, pss.vsi2max, pss.vsi2min);
+            injectPublishedStates(pss, row);
+            double expected = row.get("VOTHSG");
+            if (pss.n == 0) {
+                // Fully bypassed profiles publish the preceding controller-stage output,
+                // while their allocated algebraic coordinates describe the current boundary.
+                assertEquals(bypassedOutput(pss, previous == null ? row : previous), expected, 1e-7,
+                        "Sampled output retains the preceding stage, including event duplicates");
+                expected = bypassedOutput(pss, row);
             }
+            assertEquals(expected, pss.getOutput(machine), 1.5e-5,
+                    root.getFileName() + " algebraic output at " + row.get("time_s"));
+            previous = row;
         }
     }
 
@@ -177,7 +181,7 @@ public class Pss2bReferenceReplayTest {
         }
     }
 
-    private static double[] replay(Path root) throws Exception {
+    static double[] replay(Path root) throws Exception {
         var manifest = new com.fasterxml.jackson.databind.ObjectMapper().readTree(root.resolve("manifest.json").toFile());
         double step = manifest.get("step_s").asDouble();
         var icons = manifest.get("components").get("STAB").get("actual_icons");

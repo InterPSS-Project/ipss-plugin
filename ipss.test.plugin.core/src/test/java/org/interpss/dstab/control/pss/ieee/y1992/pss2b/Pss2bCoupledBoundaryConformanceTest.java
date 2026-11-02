@@ -53,7 +53,11 @@ public class Pss2bCoupledBoundaryConformanceTest {
         }
     }
 
-    private static Object run(Path root, JsonNode profile, Path output, boolean staggered) throws Exception {
+    static Object run(Path root, JsonNode profile, Path output, boolean staggered) throws Exception {
+        return run(root, profile, output, staggered, 1);
+    }
+
+    static Object run(Path root, JsonNode profile, Path output, boolean staggered, int exciterSubsteps) throws Exception {
         var manifest = new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
         var expected = Pss2bReferenceReplayTest.rows(root.resolve("native.csv"));
         var context = new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(), root.resolve("dynamic.dyr").toString());
@@ -73,19 +77,27 @@ public class Pss2bCoupledBoundaryConformanceTest {
         Pss2bReferenceReplayTest.useCapturedCoefficients(pss, manifest);
         algorithm.getAclfAlgorithm().setTolerance(1e-10); assertTrue(algorithm.getAclfAlgorithm().loadflow());
         double step = manifest.get("step_s").asDouble();
+        double end = Math.round(expected.getLast().get("time_s")/step)*step;
+        assertTrue(end>=manifest.get("end_s").asDouble()-step/2,
+                "Retain the reference's complete final integration interval");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER); algorithm.setSimuStepSec(step);
+        algorithm.setTotalSimuTimeSec(end);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         String event = profile.get("event").asText();
         if (event.equals("fault")) net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net,
                 com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P, new Complex(0., .2), null, .05, .05), "fault");
         var recorder = new Recording(algorithm, event.equals("reference"));
-        algorithm.setSolver(staggered ? new StaggeredRecorder(algorithm, recorder) : new Recorder(algorithm, recorder));
+        if (staggered) {
+            var solver = new StaggeredRecorder(algorithm, recorder);
+            solver.setSt1Substeps(exciterSubsteps);
+            algorithm.setSolver(solver);
+        } else algorithm.setSolver(new Recorder(algorithm, recorder));
         assertTrue(algorithm.initialization());
         if (!staggered) assertTrue(pss.hasCompiledStageEvaluator(), "Automatic typed-stage coverage");
         recorder.coordinates = Pss2bReferenceReplayTest.coordinates(pss);
         var initial = recorder.capture(0., "INITIAL");
         recorder.enabled = true;
-        while (algorithm.getSimuTime() < .5 - step / 2.) assertTrue(algorithm.solveDEqnStep(true));
+        while (algorithm.getSimuTime() < end - step / 2.) assertTrue(algorithm.solveDEqnStep(true));
         recorder.frames.add(recorder.capture(algorithm.getSimuTime(), "FINAL"));
         assertEquals(NETWORK_TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
                 .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
@@ -114,7 +126,8 @@ public class Pss2bCoupledBoundaryConformanceTest {
                     firstEventPowerStateError = Math.max(firstEventPowerStateError,
                             Math.abs(actual.values.get("PSS_STATE_3") - row.get("PSS_STATE_3")));
                 }
-                if (time >= 0.) assertEquals(time, actual.time, 2e-5, "Accumulated independent single-precision clock");
+                if (time >= 0.) assertEquals(time, actual.time, end>.5?step/3:2e-5,
+                        "Retain physical timestamps and distinguish adjacent integration ordinals");
                 if (time < .05) prefaultAngleMaximum = Math.max(prefaultAngleMaximum,
                         Math.abs(actual.values.get("MACH_ANGLE") - row.get("MACH_ANGLE")));
                 double y = actual.values.get("VOTHSG");
@@ -135,20 +148,37 @@ public class Pss2bCoupledBoundaryConformanceTest {
         var rmse = new LinkedHashMap<String, Double>();
         sumSquares.forEach((key, value) -> rmse.put(key, Math.sqrt(value / expected.size())));
         var normalizedVoltage = new LinkedHashMap<String, Double>();
+        var constantVoltage = new java.util.HashSet<String>();
         for (String channel : List.of("V_BUS1", "V_BUS2")) {
             double minimum = expected.stream().mapToDouble(row -> row.get(channel)).min().orElseThrow();
             double maximumReference = expected.stream().mapToDouble(row -> row.get(channel)).max().orElseThrow();
             double range = maximumReference - minimum;
             if (range == 0.) {
-                assertEquals(0., rmse.get(channel), 1e-12, "Constant reference channel uses an absolute roundoff check");
+                constantVoltage.add(channel);
                 normalizedVoltage.put(channel, 0.);
             } else {
                 double nrmse = rmse.get(channel) / range;
-                assertTrue(nrmse < .001, root.getFileName() + " " + channel + " NRMSE=" + nrmse);
                 normalizedVoltage.put(channel, nrmse);
             }
         }
-        assertTrue(rmse.get("MACH_ANGLE") < .01, "Rotor-angle RMSE in degrees");
+        var result = new LinkedHashMap<String, Object>();
+        result.putAll(Map.of("status", "diagnostic-pending-gates", "maximum_error", maximum,
+                "maximum_time_s", at, "rmse", rmse, "samples", expected.size(),
+                "startup_policy", "Compare retained negative-time rows to the initialized snapshot; no negative-time integration",
+                "voltage_range_nrmse", normalizedVoltage, "bus_frequency_filter_s", .04,
+                "trace", trace.getFileName().toString(), "integration_method", staggered ? "STAGGERED_EULER" : "MODIFIED_EULER"));
+        result.put("first_event_power_state_samples", firstEventSamples);
+        result.put("prefault_angle_maximum_degrees", prefaultAngleMaximum);
+        result.put("exciter_local_substeps", staggered ? exciterSubsteps : 1);
+        result.put("first_event_power_state_maximum", firstEventPowerStateError);
+        Path diagnostic=output.resolve(root.getFileName()+".json");
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(diagnostic.toFile(),result);
+        for(var entry:normalizedVoltage.entrySet()) {
+            if(constantVoltage.contains(entry.getKey()))
+                assertEquals(0.,rmse.get(entry.getKey()),1e-12,"Constant reference channel uses an absolute roundoff check");
+            else assertTrue(entry.getValue()<.001,root.getFileName()+" "+entry.getKey()+" NRMSE="+entry.getValue());
+        }
+        assertTrue(rmse.get("MACH_ANGLE") < .01, "Rotor-angle RMSE="+rmse.get("MACH_ANGLE")+" degrees; required <0.01");
         assertTrue(prefaultAngleMaximum < .002, "Prefault maximum rotor-angle error in degrees");
         if (staggered && event.equals("fault") && pss.getData().getIcs1() == 6 && pss.getData().getIcs2() == 3) {
             assertEquals(1, firstEventSamples, "Retain the first postfault sample for the independent input-history gate");
@@ -160,14 +190,8 @@ public class Pss2bCoupledBoundaryConformanceTest {
         }
         System.out.println("PSS2B coupled " + root.getFileName() + " max V=" + maximum.get("V_BUS1")
                 + " angle=" + maximum.get("MACH_ANGLE") + " output=" + maximum.get("VOTHSG"));
-        var result = new LinkedHashMap<String, Object>();
-        result.putAll(Map.of("status", "boundary-accepted-controller-states-diagnostic", "maximum_error", maximum,
-                "maximum_time_s", at, "rmse", rmse, "samples", expected.size(),
-                "startup_policy", "Compare retained negative-time rows to the initialized snapshot; no negative-time integration",
-                "voltage_range_nrmse", normalizedVoltage, "bus_frequency_filter_s", .04,
-                "trace", trace.getFileName().toString(), "integration_method", staggered ? "STAGGERED_EULER" : "MODIFIED_EULER"));
-        result.put("first_event_power_state_samples", firstEventSamples);
-        result.put("first_event_power_state_maximum", firstEventPowerStateError);
+        result.put("status","boundary-accepted-controller-states-diagnostic");
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(diagnostic.toFile(),result);
         return result;
     }
 
@@ -238,6 +262,14 @@ public class Pss2bCoupledBoundaryConformanceTest {
             values.put("P_PU", power.getReal()); values.put("Q_PU", power.getImaginary());
             values.put("MACH_ANGLE", Math.toDegrees(machine.getAngle())); values.put("MACH_SPEED", machine.getSpeed() - 1.);
             values.put("EFD", machine.getEfd()); values.put("PMECH", machine.getPm());
+            var rotor = (org.interpss.dstab.mach.IeeeVcRoundRotorMachine) machine;
+            values.put("EP_Q", rotor.getEq1()); values.put("EP_D", rotor.getEd1());
+            values.put("PSIK_D", rotor.getPsikd()); values.put("PSIK_Q", rotor.getPsikq());
+            var exciter = (org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter) machine.getExciter();
+            var exciterStates = exciter.getNativeStateSnapshot();
+            String[] exciterKeys = {"Measured voltage", "First lead-lag", "Second lead-lag", "Regulator output", "Feedback"};
+            String[] exciterChannels = {"EXC_VMEAS", "EXC_LL1", "EXC_LL2", "EXC_VA", "EXC_FEEDBACK"};
+            for (int i = 0; i < exciterKeys.length; i++) values.put(exciterChannels[i], exciterStates.get(exciterKeys[i]));
             values.put("VOTHSG", pss.getOutput(machine));
             for (int i = 0; i < coordinates.length; i++) values.put("PSS_STATE_" + i, coordinates[i].getAsDouble());
             values.put("PSS_MEMORY_1", pss.getInput1VoltageMemory()); values.put("PSS_DVDT_1", pss.getInput1VoltageDerivative());
