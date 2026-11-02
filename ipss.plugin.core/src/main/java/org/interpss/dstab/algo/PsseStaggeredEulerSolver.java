@@ -1055,10 +1055,15 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             p.wasActive=active;
             long inputVersion=p.model.staggeredInputDiscontinuityVersion();
             boolean localDiscontinuity=inputVersion!=p.appliedInputDiscontinuityVersion;
+            // Trial storage is unused until state advancement below. Reuse it for
+            // an explicitly committed local event's left endpoint, without
+            // replacing the two-step integration history or allocating a buffer.
+            boolean localLeft=!discontinuity&&localDiscontinuity
+                    &&p.model.readStaggeredInputDiscontinuityLeftRates(p.trial,0);
             if (discontinuity||localDiscontinuity)
                 for (int i=0;i<p.rates.length;i++)
                     if (p.model.averageStaggeredRateAtDiscontinuity(i))
-                        p.rates[i]=.5*(p.rates[i]+(discontinuity&&p.hasEventLeftRates?p.eventLeftRates[i]:p.history[i]));
+                        p.rates[i]=.5*(p.rates[i]+(discontinuity&&p.hasEventLeftRates?p.eventLeftRates[i]:localLeft?p.trial[i]:p.history[i]));
             p.appliedInputDiscontinuityVersion=inputVersion;
         }
         // Advance ST1 while its physical and upstream controller inputs still

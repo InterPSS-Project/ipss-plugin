@@ -49,6 +49,13 @@ public final class Cdc6tMeasurements implements StaggeredEulerParticipant, Integ
         readStaggeredState(values,offset);
         if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])values[offset+i]=input[i];
     }
+    /** Pure endpoint derivative observation, separate from retained integration rates. */
+    public void readBoundaryRates(double[] values,int offset){
+        ready();buffer(values,offset);
+        for(int i=0;i<3;i++){
+            double value=algebraic[i]?0:(input[i]-state[i])/time[i];finite(value);values[offset+i]=value;
+        }
+    }
     /** Sample bypassed measurements once at the next integration interval's command boundary. */
     public void sampleCommandMeasurements(){
         ready();if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])commandState[i]=state[i];

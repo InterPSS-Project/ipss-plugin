@@ -123,6 +123,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CDC6T
 
+- Retain [transactional local-event derivatives and interval qualification](dynamic-models/cdc6t-runtime-plan.md#converged-local-event-derivatives-and-interval-qualification), separate event observations and two-step history, complete both-method terminal gates and staggered state gates from half-step through quarter-cycle intervals. Preserve the independently checked modified-Euler event formula; extend duration and protection coverage and resolve remaining state/electrical-boundary differences before full qualification.
+
 - Retain [sampled blocking timers with physical endpoint ownership](dynamic-models/cdc6t-runtime-plan.md#sampled-blocking-timers-with-physical-endpoint-ownership), outer-interval preparation, rollback and complete severe-fault terminal gates under both methods. Resolve remaining measurement-state errors and independently establish bypass/temporary-current observation phases; their timing must not be inferred from blocking alone.
 
 - Retain the [explicit external-event protection boundary](dynamic-models/cdc6t-runtime-plan.md#explicit-external-event-protection-before-conducting-evaluation), failed-solve rollback and both-method severe repeated-fault checks. Do not treat frozen-injection event voltages as converged internal observations. Resolve the remaining recovery voltage/state errors and qualify other severe-fault protection paths, production intervals and long runs before claiming full trajectory support.

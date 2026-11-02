@@ -1514,3 +1514,65 @@ validation, production intervals, long runs and automatic attachment remain open
 Private complete trajectories, reports, source snapshots, prior comparisons and
 integrity manifest: `verification-artifacts/cdc6t-block-midpoint-20261102/validation.zip`,
 SHA-256 `cac20a8c03224c1e994721765e0a3649aea813b89fdcca5b16306a4d643b4802`.
+
+## Converged local-event derivatives and interval qualification
+
+The staggered solver previously averaged a newly accepted local input with its
+preceding-interval derivative. An internal unblock instead requires the
+converged left-endpoint derivative for that event observation. That derivative
+is distinct from the two-step integration history, which must remain unchanged
+until the next state update.
+
+`StaggeredEulerParticipant.readStaggeredInputDiscontinuityLeftRates` supplies this
+optional, read-only contract. CDC6T captures the first converged left regime in
+reusable provisional storage and publishes it only after the network action
+commits. Rejected actions do not replace the accepted rates; right-side getters
+cannot overwrite them; reinitialization clears them. No left-side nonlinear
+convergence is inferred for an external frozen-injection boundary.
+
+The solver reads the snapshot only for a changed local revision outside a
+scheduled/global discontinuity. It reuses the participant's trial buffer for
+the copy, averages the observed event derivative and retains its separate
+two-step history. Models that return false keep their existing behavior.
+Scheduled events retain their existing qualified policy. Modified-Euler
+equations and event treatment are unchanged.
+
+Paired independent captures now also cover a half interval and the quarter-cycle
+network interval. Cold repetitions are byte-identical. Complete terminal-voltage
+and angle gates pass for both integration methods at all three intervals;
+complete staggered measurement-state gates also enforce the recorded bounds.
+Both sides of external and internal events and every reference row are retained.
+
+| Network interval | Worst voltage-state error, modified Euler | Worst voltage-state error, staggered |
+| --- | ---: | ---: |
+| 0.25 ms | 688.86 V | 4.73 V |
+| 0.5 ms | 1367.96 V | 15.47 V |
+| Quarter cycle at 60 Hz | 11081.83 V | 1036.78 V |
+
+These are half-second repeated-fault profiles, not long-duration qualification.
+The first blocked interval independently distinguishes the integration methods.
+For a current transducer initially at `x0`, with `r = h / T`, modified Euler
+produces `x0 * (1 - r + r*r/2)`. The recorded event-averaged two-step response is
+`x0 * (1 - 0.75*r)`. Tests verify both formulas against actual coupled samples.
+Their event-step differences must not be removed by changing the selected
+integration method or adjusting source parameters. The remaining state errors,
+initial electrical-boundary differences and wider protection matrix still need
+qualification before declaring the full model supported.
+
+Validation passes 361 scoped model/adjacent tests, followed by eight coupled
+interval tests with tightened state gates. No failures, errors or skips remain.
+All 64 preceding modified-Euler trajectory exports are byte-identical; across
+all methods, 101 prior exports are unchanged and 33 staggered exports change.
+Existing strict acceptance gates remain in place. Complete repository suites
+were not rerun, and no core source changed in this slice.
+
+Private immutable paired interval captures:
+
+- `verification-artifacts/cdc6t-nearzero-half-20261102/captures.zip`, SHA-256
+  `52f57bc31e8a3ff661a2f75e7a6b44ad5fe5d472b6c6601b3b962f325cc2f547`.
+- `verification-artifacts/cdc6t-nearzero-quarter-20261102/captures.zip`, SHA-256
+  `0fbc19b9f7e6d9c65c732ae523ff36da680c872d4b4fed9e725772ed55f003b1`.
+
+Complete comparisons, lifecycle reports, source snapshots and integrity manifest:
+`verification-artifacts/cdc6t-local-left-20261102/validation.zip`, SHA-256
+`dc8a8d8b494e8a89f262741cd0d3a149c77f83edd82a1ce170f1c21f27bd793d`.

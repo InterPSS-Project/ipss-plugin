@@ -82,6 +82,12 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         solve(p,"CORRECTOR",.12,true);p.readStaggeredState(afterAction,0);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,f.coordinator().operatingMode());
         assertArrayEquals(corrected,afterAction,0,"Endpoint action changes inputs, not the continuous states");
+        double[] left=new double[3];assertTrue(p.readStaggeredInputDiscontinuityLeftRates(left,0));
+        for(int i=0;i<3;i++)assertEquals(-corrected[i]/lag,left[i],1e-9,
+                "Local discontinuity retains the corrected left endpoint, not the preceding integration rate");
+        p.getOutputObject();double[] again=new double[3];assertTrue(p.readStaggeredInputDiscontinuityLeftRates(again,0));
+        assertArrayEquals(left,again,0,"Refreshing right-side electrical output cannot overwrite accepted left rates");
+        assertFalse(inv.readStaggeredInputDiscontinuityLeftRates(new double[0],0));
     }
 
     @Test void transitionObserverPublishesBothSidesOnlyAfterSuccessfulCommit(){
@@ -95,10 +101,14 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         assertTrue(block.before().rectifierP()>0);assertEquals(0,block.after().rectifierP(),0);
         assertEquals(block.before().measuredInverterVolts(),block.after().measuredInverterVolts(),0);
         inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
+        double[] acceptedLeft=new double[3],observedLeft=new double[3];
+        assertTrue(p.readStaggeredInputDiscontinuityLeftRates(acceptedLeft,0));
         p.beginNetworkSolution(new Context("CORRECTOR",.1,.12,50,1e-6));p.beforeNetworkIteration(0);
         assertThrows(IllegalStateException.class,()->f.ports().setTransitionObserver(null));
         assertTrue(p.applyConvergedNetworkAction());assertEquals(1,events.size());
+        assertTrue(p.readStaggeredInputDiscontinuityLeftRates(observedLeft,0));assertArrayEquals(acceptedLeft,observedLeft,0);
         p.endNetworkSolution(false);assertEquals(1,events.size(),"Rejected action publishes neither side");
+        assertTrue(p.readStaggeredInputDiscontinuityLeftRates(observedLeft,0));assertArrayEquals(acceptedLeft,observedLeft,0);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,f.coordinator().operatingMode());
         solve(p,"INITIAL",.12,true);assertEquals(2,events.size());
         var recovery=events.get(1);assertEquals(.12,recovery.time(),0);
@@ -107,6 +117,7 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         solve(p,"INITIAL",.12,true);p.getOutputObject();inv.getOutputObject();assertEquals(2,events.size());
         f.ports().setTransitionObserver(null);assertTrue(p.initStates(p.getDStabBus()));
         assertEquals(2,events.size(),"Reinitialization and disabled recording publish nothing");
+        assertFalse(p.readStaggeredInputDiscontinuityLeftRates(observedLeft,0));
     }
     @Test void transitionSnapshotsEvaluateAlgebraicMeasurementsOnTheirOwnSide(){
         var runtime=runtime(new Cdc6tMeasurements(0,0,0));var f=protectedPair(runtime);var p=f.ports().rectifierPort();

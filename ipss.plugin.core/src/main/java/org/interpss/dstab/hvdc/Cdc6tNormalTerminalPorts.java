@@ -25,6 +25,8 @@ public final class Cdc6tNormalTerminalPorts {
     private boolean externalEventPending;
     private double staggeredEndpoint,staggeredInterval,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
     private long inputDiscontinuityVersion;
+    private final double[] pendingLocalLeftRates=new double[3],acceptedLocalLeftRates=new double[3];
+    private boolean pendingLocalLeft,acceptedLocalLeft;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
     private java.util.function.Consumer<Cdc6tNetworkTransition> transitionObserver;
     private java.util.ArrayList<Cdc6tNetworkTransition> transitions;
@@ -118,6 +120,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(protection!=null){if(coordinatorTrial)protection.discardTrial();protection.reset();}
             coordinatorTrial=false;networkTrial=false;boundaryTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
             inputDiscontinuityVersion=0;acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
+            pendingLocalLeft=false;acceptedLocalLeft=false;
             clearTransitions();
             initialInjectionPending=initialRectifierInjection!=null;initialNetworkPending=false;
             runtime.initialize(initialVi,initialCurrent,initialVr);return true;
@@ -136,6 +139,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner||!isOperational())return;
             if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
             boundaryTrial=true;
+            pendingLocalLeft=false;
             clearTransitions();
             externalEventPending=context.externalEventBoundary()&&"INITIAL".equals(context.stage());
             predictorNetworkTrial="PREDICTOR".equals(context.stage());
@@ -191,6 +195,11 @@ public final class Cdc6tNormalTerminalPorts {
             double voltageFactor=protection.voltageFactor(),currentFactor=protection.currentFactor();
             protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
             var after=protection.operatingMode();
+            if(before!=after&&!pendingLocalLeft){
+                // Inputs still describe the converged left regime. Preserve its
+                // endpoint derivative before another network pass refreshes them.
+                runtime.readBoundaryRates(pendingLocalLeftRates,0);pendingLocalLeft=true;
+            }
             boolean changed=before!=after||voltageFactor!=protection.voltageFactor()||currentFactor!=protection.currentFactor();
             if(changed&&transitionObserver!=null){
                 pendingTransitionLeft=sharedBoundary!=null?sharedBoundary:transitionBoundary();
@@ -211,12 +220,15 @@ public final class Cdc6tNormalTerminalPorts {
                 else if(commitNetworkTrial){
                     protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;
                     var mode=protection.operatingMode();
-                    if(mode!=acceptedMode){inputDiscontinuityVersion++;acceptedMode=mode;}
+                    if(mode!=acceptedMode){
+                        inputDiscontinuityVersion++;acceptedMode=mode;acceptedLocalLeft=pendingLocalLeft;
+                        if(pendingLocalLeft)System.arraycopy(pendingLocalLeftRates,0,acceptedLocalLeftRates,0,3);
+                    }
                     if(transitionObserver!=null)for(var transition:transitions)transitionObserver.accept(transition);
                 }
                 // A successful predictor retains provisional history through the same endpoint's
                 // corrector. A failed corrector discards it; a different solve starts a fresh trial.
-            } finally {clearTransitions();boundaryTrial=false;networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
+            } finally {clearTransitions();pendingLocalLeft=false;boundaryTrial=false;networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
         }
         @Override public Object getOutputObject() {
             if(!isOperational())return Complex.ZERO;
@@ -239,6 +251,11 @@ public final class Cdc6tNormalTerminalPorts {
         }
         @Override public int staggeredStateCount(){return owner?3:0;}
         @Override public long staggeredInputDiscontinuityVersion(){return owner?inputDiscontinuityVersion:0;}
+        @Override public boolean readStaggeredInputDiscontinuityLeftRates(double[] values,int offset){
+            java.util.Objects.checkFromIndexSize(offset,owner?3:0,values.length);
+            if(!owner||!acceptedLocalLeft)return false;
+            System.arraycopy(acceptedLocalLeftRates,0,values,offset,3);return true;
+        }
         @Override public void readStaggeredState(double[] values,int offset){if(owner)runtime.readStaggeredState(values,offset);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void evaluateStaggered(double h,double[] values,int offset){if(owner){requireInitialEndpoint();refresh();runtime.evaluateStaggered(h,values,offset);}else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         private void requireInitialEndpoint(){

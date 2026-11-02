@@ -25,13 +25,19 @@ import com.interpss.dstab.cache.StateMonitor;
 public class Cdc6tDeepRecoveryTest extends CorePluginTestSetup {
     @TempDir Path folder;
     static java.util.stream.Stream<Arguments> profiles(){
-        return java.util.stream.Stream.of("deep","nearzero").flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));
+        return java.util.stream.Stream.of("deep","nearzero","nearzero-half","nearzero-quarter").flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));
     }
     @ParameterizedTest @MethodSource("profiles")
     void secondFaultDuringRecoveryBlocksAndRestartsWithinTheOriginalNetworkBudget(String profile,boolean staggered)throws Exception {
-        Path archive=Path.of("testData/private/verification-artifacts/cdc6t-"+profile+"-recovery-20261102/captures.zip");
+        boolean intervalStudy=profile.contains("-");
+        Path archive=Path.of("testData/private/verification-artifacts/cdc6t-"+profile+(intervalStudy?"":"-recovery")+"-20261102/captures.zip");
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent repeated-fault captures");
-        assertEquals(profile.equals("deep")?"9249ae52bd557f2e4f4f8262d1111f825adbaf5aac2c7617e92e1860c33bd0fb":"eaca1970bb56dd385bb18ba4722694448d5173ddaebff83da6aba34d59dcf242",
+        assertEquals(switch(profile){
+            case "deep"->"9249ae52bd557f2e4f4f8262d1111f825adbaf5aac2c7617e92e1860c33bd0fb";
+            case "nearzero"->"eaca1970bb56dd385bb18ba4722694448d5173ddaebff83da6aba34d59dcf242";
+            case "nearzero-half"->"52f57bc31e8a3ff661a2f75e7a6b44ad5fe5d472b6c6601b3b962f325cc2f547";
+            case "nearzero-quarter"->"0fbc19b9f7e6d9c65c732ae523ff36da680c872d4b4fed9e725772ed55f003b1";
+            default->throw new IllegalArgumentException(profile);},
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         List<String> raw;List<Map<String,Double>> reference;Cdc6tParameters parameters;
         double step,reactance;double[] events=new double[4],referenceEvents=new double[4];
@@ -77,27 +83,58 @@ public class Cdc6tDeepRecoveryTest extends CorePluginTestSetup {
                 lowestVoltage=Math.min(lowestVoltage,n.getBus("Bus7").getVoltageMag());
             }
         }
-        assertTrue(blockedSamples>80);if(profile.equals("nearzero"))assertTrue(lowestVoltage<.01);
+        assertTrue(blockedSamples>=Math.floor((events[3]-events[2])/step)-4);if(profile.startsWith("nearzero"))assertTrue(lowestVoltage<.01);
         assertEquals(OperatingMode.RECOVERING,f.protection().operatingMode());recorder.capture(a.getSimuTime());
         Path out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-deep-recovery")),profile+"-"+(staggered?"staggered-":"euler-"));
         double[] maximum=Cdc6tProtectedNetworkTest.writeComparison(out,reference,recorder.rows,step);
-        // Gate complete terminal trajectories, including both sides of every event.
+        // Gate established complete terminal trajectories, including both sides of every event.
+        if(!intervalStudy){
         assertTrue(maximum[0]<(staggered?1.7e-5:3.2e-5),"Full rectifier voltage error "+maximum[0]);
         assertTrue(maximum[1]<(staggered?.0012:.0018),"Full rectifier angle error "+maximum[1]);
         assertTrue(maximum[2]<(staggered?1.3e-5:1.7e-5),"Full inverter voltage error "+maximum[2]);
         assertTrue(maximum[3]<(staggered?.0027:.0035),"Full inverter angle error "+maximum[3]);
+        }else{
+            double[] terminalBounds=profile.endsWith("half")
+                    ?new double[]{staggered?3.5e-6:9e-6,.0024,9.5e-6,.0023}
+                    :new double[]{2e-6,.00026,8e-6,.0020};
+            for(int i=0;i<4;i++)assertTrue(maximum[i]<terminalBounds[i],"Full interval-study terminal error "+i+": "+maximum[i]);
+        }
+        verifyFirstBlockingIntegration(reference,recorder.rows,referenceEvents[0],events[0],step,parameters.copySourceConstants()[3],staggered);
+        if(staggered){
+            double voltageStateBound=profile.endsWith("quarter")?1100:profile.endsWith("half")?5.2:17;
+            double currentStateBound=profile.endsWith("quarter")?1.5:.021;
+            assertTrue(maximum[4]<voltageStateBound&&maximum[6]<voltageStateBound,
+                    "Complete staggered voltage-state response must retain the corrected local-event history");
+            assertTrue(maximum[5]<currentStateBound,"Complete staggered current-state response");
+        }
         int checked=0;
         for(var error:Tiocr1ResetReferenceTest.csv(Files.readAllBytes(out.resolve("reference-row-errors.csv")))){
             double time=error.get("reference_time");
             if(time<=events[2]+2*step||time>=events[3]-2*step)continue;
             checked++;
-            assertTrue(Math.abs(error.get("V7"))<1.2e-8);assertTrue(Math.abs(error.get("V9"))<8e-6);
+            if(!intervalStudy){assertTrue(Math.abs(error.get("V7"))<1.2e-8);assertTrue(Math.abs(error.get("V9"))<8e-6);}
             assertEquals(0,error.get("VAR5"),0);assertEquals(0,error.get("VAR7"),0);
-            assertTrue(Math.abs(error.get("STATE0"))<(staggered?3:42));
-            assertTrue(Math.abs(error.get("STATE1"))<(staggered?.003:.06));
+            if(!intervalStudy){assertTrue(Math.abs(error.get("STATE0"))<(staggered?3:42));
+            assertTrue(Math.abs(error.get("STATE1"))<(staggered?.003:.06));}
         }
-        assertTrue(checked>=90,"Independent fault-on samples must remain present");
+        assertTrue(checked>=Math.floor((events[3]-events[2])/step)-5,"Independent fault-on samples must remain present");
         // Full measurement-state and converter-output qualification remains open.
+    }
+
+    /** Independent first-event discriminator: the same lag has different event-step integration formulas. */
+    private static void verifyFirstBlockingIntegration(List<Map<String,Double>> reference,List<double[]> actual,
+            double referenceEvent,double event,double h,double lag,boolean staggered){
+        var left=reference.stream().filter(r->Math.abs(r.get("time_s")-referenceEvent)<1e-10).findFirst().orElseThrow();
+        var right=reference.stream().filter(r->r.get("time_s")>referenceEvent+h/2).findFirst().orElseThrow();
+        assertEquals(0,right.get("VAR11"),0,"First completed fault interval remains blocked");
+        double ratio=h/lag,initial=left.get("STATE1");
+        assertEquals(initial*(1-.75*ratio),right.get("STATE1"),.0002,
+                "Recorded event averaging followed by the two-step update uses three quarters of the new derivative");
+        var localLeft=actual.stream().filter(r->Math.abs(r[0]-event)<h/4).findFirst().orElseThrow();
+        var localRight=actual.stream().filter(r->r[0]>event+h/2).findFirst().orElseThrow();
+        double factor=staggered?1-.75*ratio:1-ratio+.5*ratio*ratio;
+        assertEquals(localLeft[6]*factor,localRight[6],1e-9,
+                "Keep the selected integration method instead of fitting the event step to another method");
     }
 
     /** Independent timer channels distinguish observation phase from accumulated clock roundoff. */

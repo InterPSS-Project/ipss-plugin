@@ -18,6 +18,12 @@ public interface StaggeredEulerParticipant {
      * The solver applies the existing per-coordinate discontinuity policy once for
      * this participant without rebasing unrelated models. Reset only on reinitialization. */
     default long staggeredInputDiscontinuityVersion() { return 0; }
+    /** Copy the converged left-side derivatives of the latest committed local input
+     * discontinuity. Called only when its revision changes, outside a scheduled
+     * network event. Do not evaluate inputs or advance history here. Returning false
+     * preserves the preceding-interval fallback. The solver keeps its two-step
+     * integration history separate from these event-observation derivatives. */
+    default boolean readStaggeredInputDiscontinuityLeftRates(double[] derivatives,int offset) { return false; }
     /** Per-coordinate event policy; existing participants retain their whole-vector selection. */
     default boolean averageStaggeredRateAtDiscontinuity(int stateIndex) {
         return averageStaggeredRatesAtDiscontinuity();
