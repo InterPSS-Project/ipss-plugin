@@ -37,19 +37,32 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
     static final class Recorder {
         final Cdc6tCoupledNetworkTest.Fixture f;
         final List<double[]> rows=new ArrayList<>();
+        final List<double[]> regularRows=new ArrayList<>();
         final double[] eventTimes;
         boolean enabled;
         Recorder(Cdc6tCoupledNetworkTest.Fixture f){this(f,.05,.1);}
         Recorder(Cdc6tCoupledNetworkTest.Fixture f,double... eventTimes){this.f=f;this.eventTimes=eventTimes.clone();}
+        void recordInternalTransitions(){
+            f.ports().setTransitionObserver(event->{
+                if(enabled){capture(event.time(),event.before());capture(event.time(),event.after());}
+            });
+        }
+        private void capture(double t,org.interpss.dstab.hvdc.Cdc6tNetworkTransition.Boundary b){
+            rows.add(new double[]{t,Math.hypot(b.rectifierReal(),b.rectifierImaginary()),Math.toDegrees(Math.atan2(b.rectifierImaginary(),b.rectifierReal())),
+                    Math.hypot(b.inverterReal(),b.inverterImaginary()),Math.toDegrees(Math.atan2(b.inverterImaginary(),b.inverterReal())),
+                    b.measuredInverterVolts(),b.measuredAmperes(),b.measuredRectifierVolts(),b.rectifierP(),b.rectifierQ(),Math.toDegrees(b.alphaRadians()),
+                    b.inverterP(),b.inverterQ(),Math.toDegrees(b.gammaRadians()),b.rectifierVolts(),b.inverterVolts()});
+        }
         void before(double t){if(enabled)for(double event:eventTimes)if(Math.abs(t-event)<1e-9){capture(t);break;}}
         void capture(double t){
             var n=f.context().getDStabilityNet();var vr=n.getBus("Bus7").getVoltage();var vi=n.getBus("Bus9").getVoltage();
             double[] state=new double[3],boundary=new double[8];
             f.ports().rectifierPort().getOutputObject();
             f.runtime().readStaggeredState(state,0);f.runtime().readBoundary(boundary,0);
-            rows.add(new double[]{t,vr.abs(),Math.toDegrees(vr.getArgument()),vi.abs(),Math.toDegrees(vi.getArgument()),
+            double[] row=new double[]{t,vr.abs(),Math.toDegrees(vr.getArgument()),vi.abs(),Math.toDegrees(vi.getArgument()),
                     state[0],state[1],state[2],boundary[0],boundary[1],Math.toDegrees(boundary[2]),
-                    boundary[3],boundary[4],Math.toDegrees(boundary[5]),boundary[6],boundary[7]});
+                    boundary[3],boundary[4],Math.toDegrees(boundary[5]),boundary[6],boundary[7]};
+            rows.add(row);regularRows.add(row);
         }
     }
     static final class Ordinary extends DefaultDynamicSimulationSolver {

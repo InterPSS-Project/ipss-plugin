@@ -83,8 +83,19 @@ public class Cdc6tTransferredModeBaseTest extends CorePluginTestSetup {
 
     @ParameterizedTest @MethodSource("coupledProfiles")
     void bothMethodsRetainSourceBaseAfterStartupSettling(String profile,boolean staggered)throws Exception {
+        runCoupled(profile,staggered,false);
+    }
+    @ParameterizedTest @MethodSource("coupledProfiles")
+    void internalTransitionObservationsRetainBothConvergedSides(String profile,boolean staggered)throws Exception {
+        var baseline=runCoupled(profile,staggered,false);
+        var observed=runCoupled(profile,staggered,true);
+        assertEquals(baseline.size(),observed.size());
+        for(int i=0;i<baseline.size();i++)assertArrayEquals(baseline.get(i),observed.get(i),0,"Event recording must leave every ordinary sample unchanged");
+    }
+    private List<double[]> runCoupled(String profile,boolean staggered,boolean eventSides)throws Exception {
         var capture=load(profile);var f=capture.fixture();var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
         var recorder=new Cdc6tCoupledReferenceTest.Recorder(f);double step=.0005;
+        if(eventSides)recorder.recordInternalTransitions();
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(step);a.setTotalSimuTimeSec(.5);a.setSimuOutputHandler(new StateMonitor());
         var solver=staggered?new Cdc6tCoupledReferenceTest.Shared(recorder):new Cdc6tCoupledReferenceTest.Ordinary(recorder);
         a.setSolver(solver);
@@ -104,10 +115,16 @@ public class Cdc6tTransferredModeBaseTest extends CorePluginTestSetup {
         }
         assertTrue(activeSamples>=90);assertEquals(OperatingMode.NORMAL,f.protection().operatingMode());
         recorder.capture(a.getSimuTime());
-        Path out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-transferred-modes")),profile.replace('/','-')+"-"+(staggered?"staggered-":"euler-"));
+        Path out=Files.createTempDirectory(Files.createDirectories(Path.of(eventSides?"target/cdc6t-transition-sides":"target/cdc6t-transferred-modes")),profile.replace('/','-')+"-"+(staggered?"staggered-":"euler-"));
         double[] maximum=Cdc6tProtectedNetworkTest.writeComparison(out,capture.rows(),recorder.rows,step);
+        if(eventSides){
+            assertTrue(recorder.rows.size()>recorder.regularRows.size(),"Capture actual internal transition sides");
+            if(profile.equals("bypass/current")){
+                assertTrue(maximum[0]<3.4e-5);assertTrue(maximum[2]<1.8e-5);
+            }
+        }
         if(profile.startsWith("switch/")){
-            assertEquals(capture.rows().size(),recorder.rows.size(),"Complete trajectory and scheduled event sides");
+            if(!eventSides)assertEquals(capture.rows().size(),recorder.rows.size(),"Complete trajectory and scheduled event sides");
             double[] limits=staggered
                     ?new double[]{1.6e-6,.00006,2.6e-6,.0011,2.6,.0038,2.6,.000018,.000029,.00058,.000018,.000012,1e-10,1.4,1.4}
                     :new double[]{.000056,.0048,.0000095,.0054,205,.28,205,.0022,.000047,.016,.0022,.00115,1e-10,2.9,4.8};
@@ -115,5 +132,6 @@ public class Cdc6tTransferredModeBaseTest extends CorePluginTestSetup {
         }
         // Bypass/recovery trajectories remain diagnostic pending internal-event
         // observations and voltage-state qualification; source-base checks above pass.
+        return recorder.regularRows;
     }
 }

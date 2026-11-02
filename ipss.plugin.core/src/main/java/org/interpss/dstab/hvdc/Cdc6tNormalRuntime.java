@@ -42,6 +42,9 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
     public void configureIntegrationStep(double outerStep){measurements.configureIntegrationStep(outerStep);}
     public void sampleCommandMeasurements(){measurements.sampleCommandMeasurements();}
     public void acceptAlgebraicMeasurements(){ready();measurements.acceptAlgebraicInputs();}
+    /** Observation only: evaluate algebraic measurement coordinates at a refreshed,
+     * converged boundary while retaining differential states and committed storage. */
+    public void readConvergedBoundaryState(double[] values,int offset){ready();measurements.readConvergedBoundaryState(values,offset);}
     /** Recompute voltage-dependent injections and transducer inputs for each network trial.
      * Returns rectifier real/imaginary injection then inverter real/imaginary injection on network base. */
     public void evaluateBoundary(double rectifierReal,double rectifierImag,double inverterReal,double inverterImag,

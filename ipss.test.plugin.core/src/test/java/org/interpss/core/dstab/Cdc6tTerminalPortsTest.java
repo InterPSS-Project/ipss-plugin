@@ -26,7 +26,12 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
     }
     private static void solve(Cdc6tNormalTerminalPorts.Port port,String stage,double t,boolean success){
         port.beginNetworkSolution(new Context(stage,t,t,50,1e-6));port.beforeNetworkIteration(0);
-        if(success)port.afterNetworkConvergence();port.endNetworkSolution(success);
+        if(success){
+            int passes=0;
+            while(port.applyConvergedNetworkAction()){assertTrue(++passes<50);port.beforeNetworkIteration(0);}
+            port.afterNetworkConvergence();
+        }
+        port.endNetworkSolution(success);
     }
     private static double[] history(Cdc6tProtectionCoordinator c){double[] result=new double[23];c.readAcceptedHistory(result,0);return result;}
 
@@ -77,6 +82,53 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         solve(p,"CORRECTOR",.12,true);p.readStaggeredState(afterAction,0);
         assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,f.coordinator().operatingMode());
         assertArrayEquals(corrected,afterAction,0,"Endpoint action changes inputs, not the continuous states");
+    }
+
+    @Test void transitionObserverPublishesBothSidesOnlyAfterSuccessfulCommit(){
+        var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();
+        var events=new java.util.ArrayList<Cdc6tNetworkTransition>();f.ports().setTransitionObserver(events::add);
+        solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
+        solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
+        assertEquals(1,events.size());var block=events.get(0);
+        assertEquals(.071,block.time(),0);assertEquals(Cdc6tNormalRuntime.OperatingMode.NORMAL,block.beforeMode());
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,block.afterMode());
+        assertTrue(block.before().rectifierP()>0);assertEquals(0,block.after().rectifierP(),0);
+        assertEquals(block.before().measuredInverterVolts(),block.after().measuredInverterVolts(),0);
+        inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
+        p.beginNetworkSolution(new Context("CORRECTOR",.1,.12,50,1e-6));p.beforeNetworkIteration(0);
+        assertThrows(IllegalStateException.class,()->f.ports().setTransitionObserver(null));
+        assertTrue(p.applyConvergedNetworkAction());assertEquals(1,events.size());
+        p.endNetworkSolution(false);assertEquals(1,events.size(),"Rejected action publishes neither side");
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,f.coordinator().operatingMode());
+        solve(p,"INITIAL",.12,true);assertEquals(2,events.size());
+        var recovery=events.get(1);assertEquals(.12,recovery.time(),0);
+        assertEquals(0,recovery.before().rectifierP(),0);assertTrue(recovery.after().rectifierP()>0);
+        assertEquals(recovery.before().measuredAmperes(),recovery.after().measuredAmperes(),0);
+        solve(p,"INITIAL",.12,true);p.getOutputObject();inv.getOutputObject();assertEquals(2,events.size());
+        f.ports().setTransitionObserver(null);assertTrue(p.initStates(p.getDStabBus()));
+        assertEquals(2,events.size(),"Reinitialization and disabled recording publish nothing");
+    }
+    @Test void transitionSnapshotsEvaluateAlgebraicMeasurementsOnTheirOwnSide(){
+        var runtime=runtime(new Cdc6tMeasurements(0,0,0));var f=protectedPair(runtime);var p=f.ports().rectifierPort();
+        var events=new java.util.ArrayList<Cdc6tNetworkTransition>();f.ports().setTransitionObserver(events::add);
+        p.configureIntegrationStep(.0005);solve(p,"INITIAL",0,true);
+        p.getDStabBus().setVoltage(new Complex(.8,0));solve(p,"INITIAL",.05,true);
+        assertEquals(1,events.size());var event=events.get(0);
+        assertEquals(event.before().inverterVolts(),event.before().measuredInverterVolts(),0);
+        assertEquals(event.before().rectifierVolts(),event.before().measuredRectifierVolts(),0);
+        assertTrue(event.before().measuredAmperes()>0);
+        assertEquals(0,event.after().measuredInverterVolts(),0);assertEquals(0,event.after().measuredAmperes(),0);
+        double[] state=new double[3];runtime.readStaggeredState(state,0);assertArrayEquals(new double[]{0,0,0},state,0);
+    }
+    @Test void recordingFailurePropagatesAfterCommitAndClearsPendingSnapshots(){
+        var f=protectedPair();var p=f.ports().rectifierPort();int[] calls={0};
+        f.ports().setTransitionObserver(event->{calls[0]++;throw new IllegalStateException("Recorder failure");});
+        solve(p,"INITIAL",0,true);p.getDStabBus().setVoltage(new Complex(.8,0));
+        assertThrows(IllegalStateException.class,()->solve(p,"INITIAL",.05,true));
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,f.coordinator().operatingMode());
+        assertEquals(.05,history(f.coordinator())[0],0);assertEquals(1,calls[0]);
+        solve(p,"INITIAL",.05,true);assertEquals(1,calls[0],"A failed recorder must not duplicate an already committed action");
+        f.ports().setTransitionObserver(null);
     }
 
     @Test void staggeredEndpointCommitsOnlyAfterConvergenceAndDirectProbesKeepClock(){

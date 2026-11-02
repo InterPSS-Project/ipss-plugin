@@ -1319,3 +1319,64 @@ state errors must be resolved before claiming complete protection accuracy.
 Private complete comparisons, analytic/lifecycle reports, source snapshots and integrity manifest:
 `verification-artifacts/cdc6t-left-limit-20261102/validation.zip`, SHA-256
 `9608c608941b91f4f78ed0285117ba4f4c5846442f0ba4fca86657296bbcf055`.
+
+## Transactional two-sided network observations
+
+Protection decisions now run only after the current left-side network boundary
+converges. They no longer act on the previous endpoint's voltage before the
+first network pass. A changed electrical regime triggers another pass within
+the existing shared iteration budget. This provides actual converged boundaries
+on both sides of an internal transition at the same physical time.
+
+`Cdc6tNormalTerminalPorts.setTransitionObserver` optionally publishes immutable
+`Cdc6tNetworkTransition` observations. Recording is disabled by default. Snapshot
+objects are allocated only at transitions when enabled; pending-list and state
+buffers are reused. Output getters do not publish or advance history. A failed
+network action discards both sides, and a successful accepted-history commit
+publishes the completed transition. A recorder exception propagates after that
+commit, clears pending observations and does not replay the event on the next
+solve. Configure the observer outside a trial.
+
+Differential measurement states do not advance between the two observations.
+Algebraic measurement coordinates are evaluated separately on each converged
+side through a read-only projection; the observer cannot change committed
+storage or command sampling. Tests exercise ordinary and algebraic measurements,
+discarded transitions, disabled recording, reinitialization and recorder failure.
+
+The coupled recorder retains both snapshots alongside every ordinary sample.
+The recorded physical times are unchanged, and no reference rows or duplicate
+event samples are removed. Each new profile runs with recording both disabled
+and enabled under both integration methods; all ordinary samples are exactly
+equal, including states, outputs and timestamps.
+
+This resolves the missing-side explanation for the large transferred-bypass
+voltage peaks. With complete sides, current-controlled bypass has maximum
+terminal-voltage error 0.00003026 pu for modified Euler and 0.00002150 pu for
+staggered integration. The separate terminal-voltage gates pass across all
+reference rows. Full-state qualification remains open: voltage-state errors
+remain approximately 1,357 V and 26.34 V respectively.
+
+Power-controlled bypass still reaches 0.013983 pu maximum voltage error at
+recovery completion. The reference's accumulated single-precision time is just
+below the ramp endpoint on that sample and it changes control on the following
+recorded interval; the local double-precision clock reaches the endpoint sooner.
+Both original clocks and all observations are retained. No timing offset or
+precision emulation was introduced to conceal the difference. These profiles
+remain diagnostic rather than fully trajectory-qualified.
+
+Validation passes 349 plugin/model/adjacent tests without failures, errors or
+skips. Of 120 preceding complete trajectories, 70 remain byte-identical; the
+extra convergence before actions changes voltage by at most 0.000000057 pu
+and voltage states by at most 0.0000000041 V. Current states, recorded modes
+and timestamps are unchanged. Earlier strict trajectory gates remain unchanged.
+Recording itself causes no numerical differences. Complete repository suites
+were not rerun and no core source changed in this slice.
+
+Event-side recording still needs extension across the remaining protected
+profiles. Severe faults that cannot form a feasible conducting left-side
+boundary, wider source settings, production-step/long-duration behavior and
+automatic attachment remain unqualified. The model is not yet fully supported.
+
+Private complete comparisons, recording parity/lifecycle reports, source snapshots and integrity manifest:
+`verification-artifacts/cdc6t-transition-sides-20261102/validation.zip`, SHA-256
+`42febbc4ef22bb5dfc3153353bebbdc20c9ee60eade11c2bf425f641230e8e14`.

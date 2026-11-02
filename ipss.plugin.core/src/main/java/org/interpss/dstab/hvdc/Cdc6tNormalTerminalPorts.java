@@ -25,6 +25,11 @@ public final class Cdc6tNormalTerminalPorts {
     private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
     private long inputDiscontinuityVersion;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
+    private java.util.function.Consumer<Cdc6tNetworkTransition> transitionObserver;
+    private java.util.ArrayList<Cdc6tNetworkTransition> transitions;
+    private Cdc6tNetworkTransition.Boundary pendingTransitionLeft;
+    private Cdc6tNormalRuntime.OperatingMode pendingBeforeMode,pendingAfterMode;
+    private double[] transitionStates;
 
     public Cdc6tNormalTerminalPorts(String id,BaseDStabBus<?,?> rectifier,BaseDStabBus<?,?> inverter,
             Cdc6tNormalRuntime runtime,double initialVi,double initialCurrent,double initialVr) {
@@ -55,6 +60,24 @@ public final class Cdc6tNormalTerminalPorts {
     }
     public Port rectifierPort(){return rectifierPort;}
     public Port inverterPort(){return inverterPort;}
+    /** Optional event recording; disabled by default and allocates snapshots only
+     * when a transition occurs. Configure outside a network/integration trial.
+     * Notifications occur after successful accepted-history commit. A recorder
+     * exception propagates after that commit, like an output-export failure. */
+    public void setTransitionObserver(java.util.function.Consumer<Cdc6tNetworkTransition> observer){
+        if(boundaryTrial||coordinatorTrial)throw new IllegalStateException("Configure transition recording outside a trial");
+        transitionObserver=observer;
+        if(observer!=null&&transitions==null){transitions=new java.util.ArrayList<>(2);transitionStates=new double[3];}
+        clearTransitions();
+    }
+    private void clearTransitions(){pendingTransitionLeft=null;if(transitions!=null)transitions.clear();}
+    private Cdc6tNetworkTransition.Boundary transitionBoundary(){
+        runtime.readConvergedBoundaryState(transitionStates,0);
+        var vr=rectifier.getVoltage();var vi=inverter.getVoltage();
+        return new Cdc6tNetworkTransition.Boundary(vr.getReal(),vr.getImaginary(),vi.getReal(),vi.getImaginary(),
+                transitionStates[0],transitionStates[1],transitionStates[2],electrical[0],electrical[1],electrical[2],
+                electrical[3],electrical[4],electrical[5],electrical[6],electrical[7]);
+    }
     /** Preserve the solved static injection while the solver captures representation
      * compensation. The dynamic control change is applied at the initial endpoint. */
     void prepareInitialControlTransfer(Complex rectifierPower,Complex inverterPower) {
@@ -91,6 +114,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(protection!=null){if(coordinatorTrial)protection.discardTrial();protection.reset();}
             coordinatorTrial=false;networkTrial=false;boundaryTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
             inputDiscontinuityVersion=0;acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
+            clearTransitions();
             initialInjectionPending=initialRectifierInjection!=null;initialNetworkPending=false;
             runtime.initialize(initialVi,initialCurrent,initialVr);return true;
         }
@@ -108,6 +132,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner||!isOperational())return;
             if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
             boundaryTrial=true;
+            clearTransitions();
             predictorNetworkTrial="PREDICTOR".equals(context.stage());
             // Initial settling has no simulation-clock history; callers may
             // still choose negative-time startup after initialization returns.
@@ -136,21 +161,29 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner)return;
             if(initialNetworkPending){refresh();runtime.initializeFromBoundary();return;}
             if(!networkTrial)return;
-            // The first pass starts from the preceding accepted boundary. Later
-            // passes start from the converged boundary that requested an action.
-            // Never latch protection from an intermediate voltage iterate.
-            // A predictor also retains the interval's left-hand discrete regime;
-            // the corrector uses that boundary before accepting endpoint actions.
-            if(iteration==0&&!predictorNetworkTrial)protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            // Protection acts on the freshly converged left-hand boundary, never
+            // on the preceding endpoint or an unconverged voltage iterate.
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
         }
         @Override public boolean applyConvergedNetworkAction(){
             if(!owner||!networkTrial||initialNetworkPending||predictorNetworkTrial)return false;
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
+            Cdc6tNetworkTransition.Boundary sharedBoundary=null;
+            if(pendingTransitionLeft!=null){
+                sharedBoundary=transitionBoundary();
+                transitions.add(new Cdc6tNetworkTransition(protectionTrialTime,pendingBeforeMode,pendingAfterMode,pendingTransitionLeft,sharedBoundary));
+                pendingTransitionLeft=null;
+            }
             var before=protection.operatingMode();
             double voltageFactor=protection.voltageFactor(),currentFactor=protection.currentFactor();
             protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
-            return before!=protection.operatingMode()||voltageFactor!=protection.voltageFactor()||currentFactor!=protection.currentFactor();
+            var after=protection.operatingMode();
+            boolean changed=before!=after||voltageFactor!=protection.voltageFactor()||currentFactor!=protection.currentFactor();
+            if(changed&&transitionObserver!=null){
+                pendingTransitionLeft=sharedBoundary!=null?sharedBoundary:transitionBoundary();
+                pendingBeforeMode=before;pendingAfterMode=after;
+            }
+            return changed;
         }
         @Override public void afterNetworkConvergence(){
             if(!owner||!boundaryTrial)return;
@@ -166,10 +199,11 @@ public final class Cdc6tNormalTerminalPorts {
                     protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;
                     var mode=protection.operatingMode();
                     if(mode!=acceptedMode){inputDiscontinuityVersion++;acceptedMode=mode;}
+                    if(transitionObserver!=null)for(var transition:transitions)transitionObserver.accept(transition);
                 }
                 // A successful predictor retains provisional history through the same endpoint's
                 // corrector. A failed corrector discards it; a different solve starts a fresh trial.
-            } finally {boundaryTrial=false;networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
+            } finally {clearTransitions();boundaryTrial=false;networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
         }
         @Override public Object getOutputObject() {
             if(!isOperational())return Complex.ZERO;

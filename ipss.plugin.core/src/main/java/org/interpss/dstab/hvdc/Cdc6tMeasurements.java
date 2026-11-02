@@ -43,6 +43,12 @@ public final class Cdc6tMeasurements implements StaggeredEulerParticipant, Integ
     public void acceptAlgebraicInputs(){
         ready();if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])state[i]=input[i];
     }
+    /** Read the converged boundary's state coordinates without committing them.
+     * Differential states retain storage; algebraic coordinates use current inputs. */
+    public void readConvergedBoundaryState(double[] values,int offset){
+        readStaggeredState(values,offset);
+        if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])values[offset+i]=input[i];
+    }
     /** Sample bypassed measurements once at the next integration interval's command boundary. */
     public void sampleCommandMeasurements(){
         ready();if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])commandState[i]=state[i];
