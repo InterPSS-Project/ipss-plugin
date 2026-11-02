@@ -646,7 +646,7 @@ pass 216 tests with no failures, errors or skips.
 This is an explicit preparation API for the qualified fixed-tap, ordinary
 dynamic-angle path. It accepts static equipment and a solved operating point;
 the network preparation described below obtains these from the static owner.
-Automatic attachment, constant-gamma variants and complete protected trajectory
+Automatic attachment, complete constant-gamma variants and protected trajectory
 acceptance remain open. Strict
 automatic import continues to reject the incomplete runtime. Exact preservation
 of earlier outputs does not resolve their documented reference discrepancies.
@@ -746,8 +746,9 @@ unrecognized metadata fails instead of silently disabling mode transfer. A
 separate explicit-threshold overload remains available for programmatic
 networks and controlled experiments. Both paths reject retained capacitor
 commutation and negative mode-transfer settings pending qualification. Equal
-inverter angle limits select constant-gamma control; this variant is rejected
-because it must not silently use the ordinary dynamic inverter angle.
+inverter angle limits select constant-gamma control. This variant was initially
+rejected; the conducting implementation and remaining static-preparation limits
+are described in [constant-gamma control](#constant-gamma-control).
 
 Moving the metadata into core fixes a regression found by adjacent network-copy
 tests: plugin-only extension data was previously lost on copying. Older
@@ -869,3 +870,75 @@ Private paired reference captures:
 Private complete comparisons, reports and implementation snapshots:
 `verification-artifacts/cdc6t-short-transducers-20261101/validation.zip`, SHA-256
 `7f2725dc01e9da2096b41c1d1bc9b750d83413dc6a14f5b913f0717f4d27b0f5`.
+
+## Constant-gamma control
+
+Equal static inverter angle limits select a prepared constant-gamma conducting
+kernel. The static gamma supersedes the dynamic gamma constant without changing
+the source record. This branch excludes the scheduled DC-voltage ceiling and
+retains the rectifier's minimum-angle capability: when that capability binds,
+the DC voltage drops and inverter gamma can exceed its static target. The
+ordinary scheduled-voltage constructor retains its existing behavior.
+
+Both integration methods use the same numerical kernel, measurements and
+reusable buffers. Selection and angle conversion occur during preparation;
+the network iteration adds no allocations, source lookups or separate state
+implementation. Protection ownership and accepted-history policies are unchanged.
+
+Independent paired power-controlled captures with dynamic gamma set below and
+above the static target produce identical trajectories. Measured-input replay
+using independently solved equipment passes all converter P/Q, firing-angle
+and DC-voltage gates, including active rectifier limitation. Maximum DC-voltage
+error is 0.234 V and maximum converter-angle error is 0.000037 degrees. These
+replays qualify conducting algebra, not the local static power-flow solution.
+
+The coupled fixed-tap, current-controlled controls use matching static/dynamic
+rectifier limits to avoid an initial static limiter transfer. Faults at either
+terminal run for 0.5 seconds with 0.5 ms network steps under both integration
+methods. Every reference row and both scheduled event-side duplicates are
+retained. Observed maxima are:
+
+| Quantity | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Bus voltage | 0.00000804 pu | 0.00000804 pu |
+| Bus angle | 0.000589 degrees | 0.000589 degrees |
+| Voltage transducer state | 184.25 V | 3.32 V |
+| DC boundary voltage | 5.05 V | 5.05 V |
+| Converter P/Q | 0.0000981 pu | 0.0000976 pu |
+
+The larger modified-Euler transducer error occurs at an event-side update;
+the test declares separate state envelopes for the two methods, retains the
+same timestamps and gates every channel. It does not establish general gamma
+protection/recovery or production-step qualification.
+
+Static constant-gamma power-controlled preparation remains unresolved. The
+original power-controlled input leaves the local static solver at its original
+tap and current, producing approximately 549 kV rather than the independently
+solved 499 kV. Enabling the DC tap adjustment flag alone does not resolve it.
+The static gamma tap-control branch uses its evolving voltage for the voltage
+band, and the coupled fixed-angle path retains current rather than enforcing
+the scheduled power equation. Rectifier-limited initialization is another
+distinct control case. These require static-solver fixes and independent
+coupled requalification; dynamic states are not fitted to mask them.
+
+Explicit preparation now rejects a constant-gamma power point whose solved
+terminal V-times-I differs from its power schedule by more than one part per
+million. This prevents silent initialization from the known inconsistent
+operating point while allowing consistent solved equipment. Automatic dynamic
+attachment remains disabled and complete CDC6T qualification remains open.
+
+Validation passes 259 focused model, parser and adjacent integration tests,
+with no failures, errors or skips. All 70 retained trajectory files from the
+preceding checkpoint are byte-identical. The new test is registered in the
+core plugin suite; the complete repository suite was not rerun for this slice.
+
+Private paired power-controlled captures:
+`verification-artifacts/cdc6t-constant-gamma-20261101/captures.zip`, SHA-256
+`b5398197ab827c04b1d955482fa99acedc6e5227c56ea5a0395b68e82b2b41cf`.
+Private paired current-controlled captures:
+`verification-artifacts/cdc6t-constant-gamma-fixed-v2-20261101/captures.zip`, SHA-256
+`1fe186a87d766575bfa7bdda495cf85d6f9b88f760a00014cdf0102cc381df68`.
+Private complete comparisons, reports, implementation snapshots and static
+preparation diagnostics:
+`verification-artifacts/cdc6t-constant-gamma-20261101/validation.zip`, SHA-256
+`d9242920a91b5583cfe75d31add9a5dcadb22c404cee4138fb709934aa5549de`.

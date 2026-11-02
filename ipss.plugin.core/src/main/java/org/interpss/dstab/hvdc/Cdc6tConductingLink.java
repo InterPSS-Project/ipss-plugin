@@ -2,12 +2,19 @@ package org.interpss.dstab.hvdc;
 
 /** Fixed-current, fixed-tap conducting equations. Protection, recovery and current-margin history are external. */
 public final class Cdc6tConductingLink {
+    public enum InverterControl { SCHEDULED_VOLTAGE, CONSTANT_GAMMA }
     private final Cdc6tConverterBoundary rectifier,inverter;
     private final double resistance,alphaMinimum,gammaMinimum;
+    private final InverterControl inverterControl;
     private final double[] trial=new double[8];
     public Cdc6tConductingLink(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
             double lineOhms,double alphaMinimumRadians,double gammaMinimumRadians) {
+        this(rectifier,inverter,lineOhms,alphaMinimumRadians,gammaMinimumRadians,InverterControl.SCHEDULED_VOLTAGE);
+    }
+    public Cdc6tConductingLink(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
+            double lineOhms,double alphaMinimumRadians,double gammaMinimumRadians,InverterControl inverterControl) {
         this.rectifier=java.util.Objects.requireNonNull(rectifier);this.inverter=java.util.Objects.requireNonNull(inverter);
+        this.inverterControl=java.util.Objects.requireNonNull(inverterControl);
         if(!Double.isFinite(lineOhms)||lineOhms<0)throw new IllegalArgumentException("Nonnegative finite line resistance required");
         for(double angle:new double[]{alphaMinimumRadians,gammaMinimumRadians})
             if(!Double.isFinite(angle)||angle<0||angle>=Math.PI/2)throw new IllegalArgumentException("Valid conducting minimum angle required");
@@ -24,7 +31,8 @@ public final class Cdc6tConductingLink {
         double drop=resistance*currentOrderAmperes;
         double rectifierCeiling=rectifier.maximumDcVoltage(rectifierAcPu,currentOrderAmperes,alphaMinimum);
         double inverterCeiling=inverter.maximumDcVoltage(inverterAcPu,currentOrderAmperes,gammaMinimum);
-        double vi=Math.min(inverterVoltageOrder,Math.min(rectifierCeiling-drop,inverterCeiling));
+        double vi=Math.min(rectifierCeiling-drop,inverterCeiling);
+        if(inverterControl==InverterControl.SCHEDULED_VOLTAGE)vi=Math.min(inverterVoltageOrder,vi);
         double vr=vi+drop;
         if(!Double.isFinite(vi)||!Double.isFinite(vr)||vi<0||vr<0)
             throw new IllegalArgumentException("Current order is infeasible in the conducting regime");

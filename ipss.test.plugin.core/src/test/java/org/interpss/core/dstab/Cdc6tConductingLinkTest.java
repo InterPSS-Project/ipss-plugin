@@ -65,4 +65,19 @@ public class Cdc6tConductingLinkTest {
         model.evaluate(1,1,1000,500000,output,0);
         assertEquals(500000,output[7],1e-9);assertEquals(505000,output[6],1e-9);
     }
+    @Test void constantGammaIgnoresScheduledVoltageButRetainsRectifierCapability(){
+        var rectifier=new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8);
+        var inverter=new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8);
+        var gamma=new Cdc6tConductingLink(rectifier,inverter,5,Math.toRadians(5),Math.toRadians(15),
+                Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA);
+        double[] first=new double[8],second=new double[8];
+        gamma.evaluate(1,1,1000,100000,first,0);
+        gamma.evaluate(1,1,1000,900000,second,0);assertArrayEquals(first,second);
+        assertEquals(15,Math.toDegrees(first[5]),1e-10);
+        assertEquals(inverter.maximumDcVoltage(1,1000,Math.toRadians(15)),first[7],1e-9);
+        gamma.evaluate(.8,1,1000,100000,first,0);
+        assertEquals(5,Math.toDegrees(first[2]),1e-10);assertTrue(Math.toDegrees(first[5])>15);
+        assertEquals(5000,first[6]-first[7],1e-9);
+        assertThrows(NullPointerException.class,()->new Cdc6tConductingLink(rectifier,inverter,5,0,0,null));
+    }
 }

@@ -8,7 +8,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 /** One-time preparation from a solved static link for explicit CDC6T attachment.
  * Supports ordinary single rectifier/inverter equipment with fixed dynamic taps.
  * Source controls select the voltage threshold and reject unqualified capacitor
- * commutation; equal inverter angle limits are rejected as constant-gamma control.
+ * commutation; equal inverter angle limits select prepared constant-gamma control.
  * This API does not enable automatic source import or mutate the solved network. */
 public final class Cdc6tNetworkPreparation {
     private Cdc6tNetworkPreparation() {}
@@ -49,13 +49,15 @@ public final class Cdc6tNetworkPreparation {
             throw new IllegalArgumentException("Active solved DC-link owner required");
         if(owner.getOperationMode()!=HvdcOperationMode.REC1_INV1||owner.getRectifier2()!=null||owner.getInverter2()!=null||owner.isPuBasedPowerFlowAlgo())
             throw new IllegalArgumentException("CDC6T preparation requires a single converter pair solved in physical units");
-        if(owner.getRectifierControlMode()!=HvdcControlMode.DC_CURRENT||owner.getInverterControlMode()!=HvdcControlMode.DC_VOLTAGE)
-            throw new IllegalArgumentException("Ordinary rectifier-current and inverter-voltage controls required");
+        if(owner.getRectifierControlMode()!=HvdcControlMode.DC_CURRENT)
+            throw new IllegalArgumentException("Rectifier-current control required");
         var rectifier=owner.getRectifier();var inverter=owner.getInverter();
         if(rectifier==null||inverter==null||rectifier.getConverterType()!=ConverterType.RECTIFIER||inverter.getConverterType()!=ConverterType.INVERTER)
             throw new IllegalArgumentException("Oriented rectifier/inverter equipment required");
-        if(inverter.getFiringAngLimit()==null||inverter.getFiringAngLimit().getMin()==inverter.getFiringAngLimit().getMax())
-            throw new IllegalArgumentException("Constant-gamma converter control is not yet qualified");
+        if(inverter.getFiringAngLimit()==null)throw new IllegalArgumentException("Explicit inverter angle limits required");
+        boolean constantGamma=inverter.getFiringAngLimit().getMin()==inverter.getFiringAngLimit().getMax();
+        if(owner.getInverterControlMode()!=(constantGamma?HvdcControlMode.FIRING_ANGLE:HvdcControlMode.DC_VOLTAGE))
+            throw new IllegalArgumentException("Solved inverter mode must agree with the source angle limits");
         if(!(rectifier.getBus() instanceof BaseDStabBus<?,?> rb)||!(inverter.getBus() instanceof BaseDStabBus<?,?> ib)
                 ||rb==ib||!rb.isActive()||!ib.isActive()||rb.getNetwork()!=network||ib.getNetwork()!=network
                 ||owner.getFromBus()!=rb||owner.getToBus()!=ib)
@@ -74,10 +76,18 @@ public final class Cdc6tNetworkPreparation {
                 ||Math.abs(current-inverter.getIdc())>1e-7*Math.max(1,Math.abs(current))
                 ||!Double.isFinite(inverter.getIdc())||Math.abs(vr-vi-current*resistance)>1e-7*Math.max(1,Math.max(Math.abs(vr),Math.abs(vi))))
             throw new IllegalArgumentException("Consistent solved DC current and voltage drop required");
+        if(constantGamma&&command==Cdc6tCurrentOrder.Mode.POWER){
+            double scheduledWatts=Math.abs(setpoint)*1e6;
+            double solvedWatts=current*(setpoint<0?vi:vr);
+            if(Math.abs(solvedWatts-scheduledWatts)>1e-6*Math.max(1,scheduledWatts))
+                throw new IllegalArgumentException("Solved constant-gamma power must match the DC power schedule before dynamic preparation");
+        }
         var point=new Cdc6tParameters.OperatingPoint(command,setpoint,owner.getScheduledDCVoltage(UnitType.kV),
                 owner.getCompondR(UnitType.Ohm),modeThresholdKilovolts,vi,current,vr);
-        var prepared=parameters.prepare(boundary(rectifier,true,network.getBaseKva()*1000),
-                boundary(inverter,false,network.getBaseKva()*1000),resistance,point);
+        var rectifierBoundary=boundary(rectifier,true,network.getBaseKva()*1000);
+        var inverterBoundary=boundary(inverter,false,network.getBaseKva()*1000);
+        var prepared=constantGamma?parameters.prepareConstantGamma(rectifierBoundary,inverterBoundary,resistance,point,inverter.getFiringAngLimit().getMin())
+                :parameters.prepare(rectifierBoundary,inverterBoundary,resistance,point);
         var ports=new Cdc6tNormalTerminalPorts(parameters.linkName(),rb,ib,prepared.runtime(),vi,current,vr,prepared.protection());
         return new Binding(owner,point,prepared.runtime(),prepared.protection(),ports);
     }

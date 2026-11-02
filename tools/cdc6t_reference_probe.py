@@ -20,6 +20,10 @@ def main():
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
     parser.add_argument('--step', type=float, default=.0005)
+    parser.add_argument('--static-gamma', type=float)
+    parser.add_argument('--static-alpha-min', type=float, default=15.)
+    parser.add_argument('--dynamic-gamma', type=float, default=20.)
+    parser.add_argument('--dc-tap-adjustment', type=int, choices=[0, 1], default=1)
     parser.add_argument('--measurement-times', type=float, nargs=3, default=[.05,.05,.05])
     parser.add_argument('--restart-current', type=float, default=500.)
     parser.add_argument('--minimum-current', type=float, default=400.)
@@ -36,6 +40,8 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.step) or not .0001 <= args.step <= .005:
         parser.error('Network step must be between 0.1 and 5 ms')
+    if any(not math.isfinite(v) or not 0 <= v < 90 for v in [args.dynamic_gamma,args.static_alpha_min]+([] if args.static_gamma is None else [args.static_gamma])):
+        parser.error('Gamma angles must be finite in [0,90) degrees')
     if any(not math.isfinite(v) or v < 0 for v in args.measurement_times):
         parser.error('Measurement times must be finite and nonnegative')
     if any(not math.isfinite(v) or v < 0 for v in [args.restart_current,args.minimum_current]):
@@ -90,11 +96,19 @@ def main():
     elif args.control=='current':
         dc_fields[1]='2';dc_fields[3]='1000.0'
     lines[dc_header]=','.join(dc_fields)
+    rectifier_fields=lines[dc_header+1].split(',')
+    rectifier_fields[3]=str(args.static_alpha_min)
+    lines[dc_header+1]=','.join(rectifier_fields)
+    if args.static_gamma is not None:
+        inverter_fields=lines[dc_header+2].split(',')
+        inverter_fields[2]=inverter_fields[3]=str(args.static_gamma)
+        lines[dc_header+2]=','.join(inverter_fields)
     (out / 'network.raw').write_text('\n'.join(lines)+'\n')
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
     constants[2],constants[3],constants[31] = args.measurement_times
+    constants[1] = args.dynamic_gamma
     if args.protection == 'coordinated':
         constants[4:10] = [.90, .94, .02, 490., .92, .02]
         constants[12:14] = [2., 2.]
@@ -148,8 +162,11 @@ def main():
     library = Path(psspy.__file__).resolve().parents[1] / 'PSSBIN/DSMDL.DLL'
     checked('library', psspy.addmodellibrary(str(library)))
     checked('read', psspy.read(0, 'network.raw'))
-    checked('flow', psspy.fnsl([0, 0, 0, 1, 0, 0, 99, 0]))
+    checked('flow', psspy.fnsl([0, 0, 0, args.dc_tap_adjustment, 0, 0, 99, 0]))
     assert psspy.solved() == 0
+    equipment={str(bus): {key: checked('solved equipment', psspy.dc2dat_2('1',bus,key))
+                for key in ['TAP','TR','EBASE','XC','ANGLE','ANGMIN','ANGMAX','KVDC','DCCUR']} for bus in [7,9]}
+    Path('solved-equipment.json').write_text(json.dumps(equipment,indent=2)+'\n')
     checked('generators', psspy.cong(0))
     for stage in [1, 2, 3]:
         checked('loads', psspy.conl(0, 1, stage, [0, 0], [0., 100., 0., 100.]))

@@ -76,4 +76,21 @@ public class Cdc6tParametersTest {
         runtime.evaluateBoundary(.7,0,1,0,0,output,0);runtime.readBoundary(boundary,0);
         assertEquals(40,Math.toDegrees(boundary[2]),1e-10);
     }
+    @Test void staticGammaOverridesDynamicGammaWithoutChangingSourceConstants(){
+        var rectifier=new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8);
+        var inverter=new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8);
+        var point=new Cdc6tParameters.OperatingPoint(Cdc6tCurrentOrder.Mode.CURRENT,1000,500,0,0,500000,1000,505000);
+        double[] expected=null;
+        for(double dynamicGamma:new double[]{5,35,55}){
+            var source=constants();source[1]=dynamicGamma;var p=new Cdc6tParameters("link",source);
+            var runtime=p.prepareConstantGamma(rectifier,inverter,5,point,15).runtime();
+            double[] output=new double[4],boundary=new double[8];
+            runtime.evaluateBoundary(1,0,1,0,0,output,0);runtime.readBoundary(boundary,0);
+            assertEquals(15,Math.toDegrees(boundary[5]),1e-10);
+            if(expected==null)expected=boundary;else assertArrayEquals(expected,boundary);
+            assertArrayEquals(source,p.copySourceConstants());
+            for(double invalid:new double[]{-1,90,Double.NaN,Double.POSITIVE_INFINITY})
+                assertThrows(IllegalArgumentException.class,()->p.prepareConstantGamma(rectifier,inverter,5,point,invalid));
+        }
+    }
 }
