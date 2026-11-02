@@ -282,6 +282,7 @@ import org.interpss.core.dstab.Cdc6tCurrentOrderTest;
 import org.interpss.core.dstab.Cdc6tVoltageCurrentLimitTest;
 import org.interpss.core.dstab.Cdc6tConverterBoundaryTest;
 import org.interpss.core.dstab.Cdc6tConductingLinkTest;
+import org.interpss.core.dstab.Cdc6tRecoveryRampTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1234,6 +1235,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tVoltageCurrentLimitTest.class,
     Cdc6tConverterBoundaryTest.class,
     Cdc6tConductingLinkTest.class,
+    Cdc6tRecoveryRampTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,

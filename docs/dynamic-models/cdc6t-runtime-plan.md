@@ -160,3 +160,25 @@ The focused CDC6T gate passes 29 tests without skips. This establishes
 measured-state conducting algebra, not full trajectory acceptance. Current-margin
 transfer, protection/recovery, network ownership and coupled integration under
 both methods still require implementation and independent qualification.
+
+## Blocking evidence and recovery factors
+
+Cold-paired captures now exercise instantaneous and delayed rectifier blocking.
+Both initialize normally. During the fault, blocking raises terminal AC voltage
+enough to permit unblocking; renewed conduction lowers it and can block again.
+The event implementation must preserve this feedback rather than assuming one
+block followed by one recovery. A preliminary capture whose threshold blocked
+the initial operating point failed the quality gate and is not acceptance evidence.
+
+`Cdc6tRecoveryRamp` prepares voltage/current restart fractions and separate
+per-unit recovery rates. Evaluation takes elapsed time from an externally owned,
+accepted restart, clamps each factor to unity and mutates no history. Both
+integration methods can evaluate the same equations repeatedly without advancing
+the ramp. Voltage-dependent current limitation still applies downstream.
+
+Reference tests use recorded restart events, retain every sample, and distinguish
+blocked, normal and recovering intervals. Recovery-factor discrepancies remain
+below `5e-7`. Unequal rates and nonmonotonic trial calls have analytic checks only;
+independent captures currently exercise equal rates and restart fractions.
+These checks do not qualify Java protection timers or event ownership: those,
+bypass recovery, mode switching and coupled trajectories remain unfinished.
