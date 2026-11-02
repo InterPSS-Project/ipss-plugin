@@ -95,6 +95,28 @@ public class Wsieg1SharedStateTest {
         assertThrows(IllegalStateException.class,()->g.readStaggeredState(values,0));
     }
 
+    @Test void bypassedCompensationPublishesLiveInputWithoutAdvancingHistory()throws Exception {
+        for(boolean shared:new boolean[]{false,true}) {
+            var g=model("standard",true);double[] published=new double[8],rates=new double[6];
+            for(double speed:new double[]{1.0004,.9997,1.}) {
+                g.getMachine().setSpeed(speed);
+                if(shared)g.evaluateStaggered(H,rates,0);
+                else assertTrue(g.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0));
+                var states=g.getIntegrationStates();var histories=g.getIntegrationHistories();
+                var derivatives=g.getStateDerivativeSnapshot();Arrays.fill(published,79.);
+                for(int repeat=0;repeat<5;repeat++) {
+                    g.readPublishedState(published,1);
+                    assertEquals(20.*(speed-1.),published[1],1e-15);
+                    assertEquals(states,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+                    assertEquals(derivatives,g.getStateDerivativeSnapshot());
+                }
+                assertEquals(0.,states.get(NAMES[0]),0.);
+                assertEquals(0.,derivatives.rates().get(NAMES[0]),0.);
+                assertEquals(79.,published[0]);assertEquals(79.,published[7]);
+            }
+        }
+    }
+
     @Test void publishedCompensationAndBypassedDiagnosticsDoNotChangeStoredCoordinates()throws Exception {
         var g=model("standard",false);double[] values=new double[6],published=new double[10];g.readStaggeredState(values,0);double initial=values[5];
         values[0]=.003;values[4]+=.02;g.applyStaggeredState(values,0,H);var states=g.getIntegrationStates();var history=g.getIntegrationHistories();
@@ -125,11 +147,11 @@ public class Wsieg1SharedStateTest {
 
     @Test void warmedNumericalUpdatesReuseAllStateRateAndObservationBuffers()throws Exception {
         var bean=(com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();assertTrue(bean.isThreadAllocatedMemorySupported());bean.setThreadAllocatedMemoryEnabled(true);
-        for(boolean staggered:new boolean[]{false,true}) {
-            var g=model("curve",false);double[] x=new double[6],rates=new double[6],published=new double[6];
+        for(boolean staggered:new boolean[]{false,true})for(boolean bypass:new boolean[]{false,true}) {
+            var g=model("curve",bypass);double[] x=new double[6],rates=new double[6],published=new double[6];
             run(g,staggered,x,rates,published,20000);long id=Thread.currentThread().threadId(),before=bean.getThreadAllocatedBytes(id);
             run(g,staggered,x,rates,published,20000);long allocated=bean.getThreadAllocatedBytes(id)-before;
-            System.out.println("WSIEG1 warmed numerical allocation staggered="+staggered+" bytes="+allocated);assertTrue(allocated<1024,"No per-step numerical allocation: "+allocated);
+            System.out.println("WSIEG1 warmed numerical allocation staggered="+staggered+" bypass="+bypass+" bytes="+allocated);assertTrue(allocated<1024,"No per-step numerical allocation: "+allocated);
         }
     }
     private static void run(Wsieg1Governor g,boolean shared,double[] values,double[] rates,double[] published,int count) {

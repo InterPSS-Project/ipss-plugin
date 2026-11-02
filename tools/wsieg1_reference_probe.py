@@ -9,10 +9,20 @@ import shutil
 
 from tgov1_limit_probe import checked, sha
 
+PROFILES = {
+    'base': {},
+    'speed-bypass': {1: 0., 2: 0.},
+    'first-turbine-bypass': {8: 0.},
+    'all-turbines-bypass': {8: 0., 11: 0., 14: 0., 17: 0.},
+    'valve-rates': {4: .003, 5: -.002},
+    'valve-position': {6: .505, 7: .495},
+}
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', choices=['standard', 'curve', 'dual', 'unused-lp'], required=True)
+    parser.add_argument('--profile', choices=PROFILES, default='base')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], required=True)
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
@@ -30,6 +40,8 @@ def main():
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/HspModels'
     excitation = f'-r{args.pretrip_reference:g}' if args.pretrip_reference else ''
     tag = f'{args.fixture}-{args.event}{excitation}-h{args.step:.12g}-t{args.duration:g}-{args.repeat}'.replace('.', 'p')
+    if args.profile != 'base':
+        tag = args.profile + '-' + tag
     out = root / 'target' / args.batch / tag
     if shutil.disk_usage(out.parent.parent).free < 2*1024**3 + 64*1024**2:
         raise OSError('Capture requires the free-space reserve and bounded export budget')
@@ -37,6 +49,16 @@ def main():
     fixture = 'wsieg1' if args.fixture == 'standard' else 'wsieg1-' + args.fixture
     shutil.copy2(source / ('dual-network.raw' if args.fixture == 'dual' else 'network.raw'), out / 'network.raw')
     shutil.copy2(source / (fixture + '.dyr'), out / 'dynamic.dyr')
+    if args.profile != 'base':
+        lines = (out / 'dynamic.dyr').read_text().splitlines()
+        index = next(i for i, line in enumerate(lines) if "'WSIEG1'" in line)
+        tokens = lines[index].split()
+        values = [float(v) for v in tokens[5:-1]]
+        assert len(values) == 34 and tokens[-1] == '/'
+        for parameter, value in PROFILES[args.profile].items():
+            values[parameter] = value
+        lines[index] = ' '.join(tokens[:5]) + ' ' + ' '.join(format(v, '.17g') for v in values) + ' /'
+        (out / 'dynamic.dyr').write_text('\n'.join(lines) + '\n')
     for name in ['wsieg1_reference_probe.py', 'tgov1_limit_probe.py']:
         shutil.copy2(root / 'tools' / name, out / name)
 

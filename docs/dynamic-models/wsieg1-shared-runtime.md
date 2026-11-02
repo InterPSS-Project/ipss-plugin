@@ -142,3 +142,50 @@ skips. The registered core suite executes 2,810 tests with the same four failing
 methods as the retained baseline, no errors and 13 skips; it is not reported as
 fully passing. Private capsules retain the exact source, runtime overlays,
 dependency hashes, complete comparisons, negative control and validation reports.
+
+## Bypass observations and active actuator limits
+
+With both speed lead-lag times zero, the published compensation slot is the
+live gain-scaled deadband output, `K * deadband(speed - 1)`. It is not the
+dormant integrator coordinate. The observation now exposes this algebraic
+value; integration storage, zero derivative, controller equations and accepted
+history are unchanged. A recorded-input comparison establishes the identity
+within binary32 output rounding, and the previous executable fails the new
+regression. Reading the observation does not commit hysteresis or advance time.
+
+Independent cold pairs exercise speed compensation bypass, first-turbine and
+complete turbine bypass, and both actuator rate and position limits at 0.5 ms
+and quarter-cycle intervals. Entered constants remain unchanged at reference
+initialization. Bypassed turbine observations equal their algebraic inputs,
+both position bounds are reached, and the limited valve trajectories reproduce
+the reference's binary32 state accumulation on constant-rate intervals.
+That precision check characterizes the reference; production states remain
+double precision.
+
+All twenty coupled before/after traces preserve every physical output, stored
+state and history value. Only the speed-bypass observation changes. Its maximum
+error falls from approximately 0.00934 pu to 0.000250 pu with modified Euler and
+0.0000318 pu with staggered Euler at quarter cycle. At 0.5 ms the corresponding
+errors are 0.0000275 and 0.000000441 pu. Coupled residuals include differences in
+the actual speed input; the recorded-input observation test isolates the mapping.
+
+The extended trajectory matrix is **not fully accepted**. Both methods meet the
+0.01-degree rotor-angle RMSE limit, but strict voltage and P/Q range-normalized
+RMSE gates remain failing. Quarter-cycle modified Euler has power NRMSE of
+0.00113–0.00123 in the bypass faults. The fine-step rate-limit profile has worst
+voltage NRMSE about 0.247 with only 0.00000707 pu peak absolute voltage error:
+its reference voltage excursions are very small, and accumulated state
+rounding is observable. These diagnostics retain all samples and event-side
+duplicates, full reference ranges, individual state/output errors and the
+original thresholds. Neither small absolute error nor precision effects waive
+the outstanding normalized gates.
+
+The focused group has 31 tests: 29 pass and two extended coupled-trajectory
+methods fail their retained boundary assertions, with no errors or skips.
+Existing WSIEG1 tests remain passing. Numerical allocation checks include both
+integration methods and both active and bypassed compensation paths, with zero
+bytes allocated in all four measured loops. The complete core-plugin module
+executes 490 tests with no failures and four existing skips. The model
+remains `LOADABLE`; extended precision/coupling, short positive times,
+initialization/base boundaries, reconnection and longer-duration qualification
+remain open.

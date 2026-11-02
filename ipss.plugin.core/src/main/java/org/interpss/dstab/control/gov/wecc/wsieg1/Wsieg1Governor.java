@@ -163,9 +163,10 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     @Override public void completeStaggeredStep(double step) {requireSharedState();requireStep(step);commitHistories();}
     public long getStaggeredEvaluationCount() {return staggeredEvaluationCount;}
-    /** Published compensation coordinate; bypassed turbine slots expose their algebraic input. */
+    /** Published compensation coordinate; bypassed slots expose their algebraic input. */
     public void readPublishedState(double[] values,int offset) {
-        requireBuffer(values,offset);values[offset]=c[1]>0?(1.-c[2]/c[1])*x[0]:0.;values[offset+1]=x[1];
+        requireBuffer(values,offset);
+        values[offset]=c[1]>0?(1.-c[2]/c[1])*x[0]:c[0]*speedInput(getMachine().getSpeed()-1.);
         System.arraycopy(x,1,values,offset+1,5);
     }
     private void retainRates(double[] state,double[] rates,Stage stage) {

@@ -14,12 +14,13 @@ import org.interpss.test.TestConfig;
 /** Selective staging of immutable, hash-pinned synthetic model references. */
 final class Wsieg1ReferenceFixture {
     static final TestConfig CONFIG=TestConfig.load("/test-config/ipss.test.plugin.core.json","Wsieg1StateConformanceTest");
-    private final Path staged;private boolean checked;
-    Wsieg1ReferenceFixture(Path staged){this.staged=staged;}
+    private final Path staged;private final TestConfig config;private boolean checked;
+    Wsieg1ReferenceFixture(Path staged){this(staged,CONFIG);}
+    Wsieg1ReferenceFixture(Path staged,TestConfig config){this.staged=staged;this.config=config;}
     static String sha(byte[] bytes)throws Exception{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));}
     Path archive()throws Exception {
-        Path path=Path.of(CONFIG.string("referenceArchive"));assumeTrue(Files.isRegularFile(path),"Retained synthetic governor captures are unavailable");
-        if(!checked){assertEquals(CONFIG.string("archiveSha256"),sha(Files.readAllBytes(path)));checked=true;}return path;
+        Path path=Path.of(config.string("referenceArchive"));assumeTrue(Files.isRegularFile(path),"Retained synthetic governor captures are unavailable");
+        if(!checked){assertEquals(config.string("archiveSha256"),sha(Files.readAllBytes(path)));checked=true;}return path;
     }
     List<JsonNode> matrix()throws Exception {
         try(var zip=new ZipFile(archive().toFile());var stream=zip.getInputStream(zip.getEntry("capture-matrix.json"))) {
