@@ -460,11 +460,40 @@ independently checks release while the inverter threshold is unsatisfied;
 instantaneous pickup still cannot be inferred completely from exported endpoint
 voltages because intermediate network observations can trigger it.
 
-This coordinator is not yet connected to the terminal ports' solver callbacks.
-A successful predictor-network solve is not an accepted physical-time boundary:
-the attachment must explicitly distinguish predictor trials, final accepted
-steps and zero-time events, and must preserve or discard the working histories
-accordingly. Complete protected coupled trajectories, simultaneous fresh blocking
+The optional typed terminal attachment now connects this coordinator to network
+callbacks under both methods. Initial-boundary solves accept zero-time event
+observations. Modified Euler retains a provisional endpoint across its predictor
+and corrector; only final convergence accepts that endpoint's history. Discarding
+predictor history while keeping predictor voltage had repeatedly restarted the
+inverter recovery timer, preventing recovery. A failed corrector now discards the
+entire provisional history. Staggered completion supplies the endpoint clock to
+its final network solve; unrelated direct probes cannot advance that clock.
+Only the rectifier port owns history, and getters do not observe protection.
+
+The focused CDC6T and adjacent LCC/staggered gate passes 128 tests, with no
+failures or skips. It includes all three protected fault profiles under both
+methods, explicit failed-solve rollback, predictor/corrector ownership,
+reinitialization with a pending trial, and read-only monitoring. Sustained
+conducting recovery begins within two network intervals of each independent
+capture. Retained ramp factors alone cannot identify recovery: a release attempt
+may immediately reblock while retaining those factors.
+
+These lifecycle checks do **not** establish protected trajectory acceptance.
+The diagnostic export preserves every independent row and maps it to the same
+integration time, retaining scheduled event sides and inspection duplicates.
+Internal reference transitions without a corresponding recorded side in our run
+are reported rather than synthesized or discarded. Across the protected profiles,
+maximum differences reach 0.23390 pu terminal voltage and 4.355 kV measurement
+state; voltage and power differences also persist during recovery. Complete raw
+trajectories and per-reference-row errors are retained for diagnosis. No broad
+accuracy tolerance is used to turn these diagnostics into a passing trajectory
+gate. The ordinary conducting trajectory gates remain unchanged.
+
+The private `verification-artifacts/cdc6t-protected-network-20261101/validation.zip`
+retains the six complete diagnostic exports, validation log and focused reports;
+SHA-256: `a1d561f79d1aebbc24ec67d914f7b0500518f2503df6a572e48473e986f4819b`.
+
+Complete protected coupled trajectories, simultaneous fresh blocking
 requests, cross-cause requests during blocking, remaining recovery interactions
 and automatic import still require qualification. The complete model remains
 unsupported by strict automatic import.

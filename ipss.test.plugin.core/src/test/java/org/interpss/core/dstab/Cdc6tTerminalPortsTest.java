@@ -7,8 +7,59 @@ import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.device.NetworkIterationAware.Context;
 
 public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
+    private record ProtectedPair(Cdc6tNormalTerminalPorts ports,Cdc6tProtectionCoordinator coordinator) {}
+    private static ProtectedPair protectedPair(){
+        var net=DStabObjectFactory.createDStabilityNetwork();net.setBaseKva(100000);
+        var r=DStabObjectFactory.createDStabBus("R",net).orElseThrow();
+        var i=DStabObjectFactory.createDStabBus("I",net).orElseThrow();r.setVoltage(Complex.ONE);i.setVoltage(Complex.ONE);
+        var coordinator=new Cdc6tProtectionCoordinator(new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02),
+                new Cdc6tInverterProtection(.9,.02,.92,.01,.02),new Cdc6tBypassProtection(0,0,.01,.92,.01,.02),
+                new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,500,1000,2,2));
+        var pair=new Cdc6tNormalTerminalPorts("protected",r,i,runtime(),500000,1000,505000,coordinator);
+        pair.attach();assertTrue(pair.rectifierPort().initStates(r));return new ProtectedPair(pair,coordinator);
+    }
+    private static void solve(Cdc6tNormalTerminalPorts.Port port,String stage,double t,boolean success){
+        port.beginNetworkSolution(new Context(stage,t,t,50,1e-6));port.beforeNetworkIteration(0);
+        if(success)port.afterNetworkConvergence();port.endNetworkSolution(success);
+    }
+    private static double[] history(Cdc6tProtectionCoordinator c){double[] result=new double[23];c.readAcceptedHistory(result,0);return result;}
+
+    @Test void predictorAndCorrectorShareProvisionalRecoveryButFailureDiscardsIt(){
+        var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();var c=f.coordinator();
+        solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
+        solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,c.operatingMode());
+        inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
+        double[] committed=history(c);
+        solve(p,"PREDICTOR",.12,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,c.operatingMode());
+        assertArrayEquals(committed,history(c));
+        // Recovered-link voltage can be below the blocked-link release threshold.
+        inv.getDStabBus().setVoltage(new Complex(.915,0));
+        solve(p,"CORRECTOR",.12,false);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,c.operatingMode());assertArrayEquals(committed,history(c));
+        inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"PREDICTOR",.12,true);
+        inv.getDStabBus().setVoltage(new Complex(.915,0));solve(p,"CORRECTOR",.12,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,c.operatingMode());assertEquals(.12,history(c)[0],0);
+        committed=history(c);
+        for(int j=0;j<20;j++){p.getOutputObject();inv.getOutputObject();p.getStates(null);}
+        solve(inv,"INITIAL",.13,true);assertArrayEquals(committed,history(c),"Only the owner can accept history");
+        assertTrue(p.initStates(p.getDStabBus()));assertEquals(Double.NEGATIVE_INFINITY,history(c)[0]);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.NORMAL,c.operatingMode());
+    }
+
+    @Test void staggeredEndpointCommitsOnlyAfterConvergenceAndDirectProbesKeepClock(){
+        var f=protectedPair();var p=f.ports().rectifierPort();var c=f.coordinator();
+        solve(p,"INITIAL",0,true);double[] committed=history(c);
+        solve(p,"DIRECT",.01,true);assertArrayEquals(committed,history(c));
+        p.completeStaggeredStep(.01,.01);solve(p,"DIRECT",0,false);assertArrayEquals(committed,history(c));
+        p.completeStaggeredStep(.01,.01);solve(p,"DIRECT",0,true);assertEquals(.01,history(c)[0],0);
+        committed=history(c);solve(p,"PREDICTOR",.02,true);assertArrayEquals(committed,history(c));
+        assertTrue(p.initStates(p.getDStabBus()));assertEquals(Double.NEGATIVE_INFINITY,history(c)[0]);
+    }
     private static Cdc6tNormalRuntime runtime() {
         return new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
             new Cdc6tCurrentOrder(Cdc6tCurrentOrder.Mode.POWER,-500,500,0),

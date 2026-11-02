@@ -31,9 +31,9 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
         try{return Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-coupled-reference")),"run-");}
         catch(java.io.IOException failure){throw new java.io.UncheckedIOException(failure);}
     }
-    private static final String[] KEYS={"V7","A7","V9","A9","STATE0","STATE1","STATE2",
+    static final String[] KEYS={"V7","A7","V9","A9","STATE0","STATE1","STATE2",
             "VAR5","VAR6","VAR12","VAR7","VAR8","VAR13","VAR10","VAR9"};
-    private static final class Recorder {
+    static final class Recorder {
         final Cdc6tCoupledNetworkTest.Fixture f;
         final List<double[]> rows=new ArrayList<>();
         boolean enabled;
@@ -49,7 +49,7 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
                     boundary[3],boundary[4],Math.toDegrees(boundary[5]),boundary[6],boundary[7]});
         }
     }
-    private static final class Ordinary extends DefaultDynamicSimulationSolver {
+    static final class Ordinary extends DefaultDynamicSimulationSolver {
         final Recorder r;
         Ordinary(Recorder r){super(r.f.context().getDynSimuAlgorithm());this.r=r;converge_tol=1e-6;}
         @Override public void beforeStep(double t)throws DStabSimuException{r.before(t);super.beforeStep(t);}
@@ -57,7 +57,7 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
             boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage))r.capture(dstabAlgo.getSimuTime());return ok;
         }
     }
-    private static final class Shared extends StaggeredEulerSolver {
+    static final class Shared extends StaggeredEulerSolver {
         final Recorder r;
         Shared(Recorder r){super(r.f.context().getDynSimuAlgorithm());this.r=r;converge_tol=1e-6;setReuseNetworkEndpoint(false);}
         @Override public void beforeStep(double t)throws DStabSimuException{r.before(t);super.beforeStep(t);}

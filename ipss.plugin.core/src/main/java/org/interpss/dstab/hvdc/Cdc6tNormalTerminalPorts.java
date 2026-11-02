@@ -6,26 +6,37 @@ import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.DynamicBusDeviceType;
+import com.interpss.dstab.device.NetworkIterationAware;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
-/** Explicit typed attachment for ordinary conduction; not a complete CDC6T import path. */
+/** Explicit typed attachment with optional transactional protection; not a complete CDC6T import path. */
 public final class Cdc6tNormalTerminalPorts {
     private final BaseDStabBus<?,?> rectifier,inverter;
     private final Cdc6tNormalRuntime runtime;
+    private final Cdc6tProtectionCoordinator protection;
     private final double initialVi,initialCurrent,initialVr;
     private final double[] currents=new double[4];
     private final Port rectifierPort,inverterPort;
+    private final double[] electrical=new double[8];
+    private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending;
+    private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
 
     public Cdc6tNormalTerminalPorts(String id,BaseDStabBus<?,?> rectifier,BaseDStabBus<?,?> inverter,
             Cdc6tNormalRuntime runtime,double initialVi,double initialCurrent,double initialVr) {
+        this(id,rectifier,inverter,runtime,initialVi,initialCurrent,initialVr,null);
+    }
+    public Cdc6tNormalTerminalPorts(String id,BaseDStabBus<?,?> rectifier,BaseDStabBus<?,?> inverter,
+            Cdc6tNormalRuntime runtime,double initialVi,double initialCurrent,double initialVr,Cdc6tProtectionCoordinator protection) {
         this.rectifier=java.util.Objects.requireNonNull(rectifier);this.inverter=java.util.Objects.requireNonNull(inverter);
         this.runtime=java.util.Objects.requireNonNull(runtime);
+        this.protection=protection;
         if(rectifier==inverter||rectifier.getNetwork()==null||rectifier.getNetwork()!=inverter.getNetwork())
             throw new IllegalArgumentException("Distinct terminals in one network required");
         if(id==null||id.isBlank())throw new IllegalArgumentException("Named link required");
         for(double value:new double[]{initialVi,initialCurrent,initialVr})
             if(!Double.isFinite(value)||value<0)throw new IllegalArgumentException("Finite nonnegative solved DC boundary required");
         this.initialVi=initialVi;this.initialCurrent=initialCurrent;this.initialVr=initialVr;
+        acceptedDcVoltage=initialVi;
         rectifierPort=new Port(id+":rectifier",rectifier,true);inverterPort=new Port(id+":inverter",inverter,false);
     }
     /** Explicit registration; callers must not separately convert static external DC power into load. */
@@ -42,9 +53,15 @@ public final class Cdc6tNormalTerminalPorts {
     private void refresh() {
         if(!rectifierPort.attachmentIntact())throw new IllegalStateException("Both original DC terminal ports must remain attached");
         Complex vr=rectifier.getVoltage(),vi=inverter.getVoltage();
-        runtime.evaluateBoundary(vr.getReal(),vr.getImaginary(),vi.getReal(),vi.getImaginary(),0,currents,0);
+        if(protection==null)runtime.evaluateBoundary(vr.getReal(),vr.getImaginary(),vi.getReal(),vi.getImaginary(),0,currents,0);
+        else {
+            var mode=protection.operatingMode();
+            boolean recovery=mode==Cdc6tNormalRuntime.OperatingMode.RECOVERING;
+            runtime.evaluateBoundary(vr.getReal(),vr.getImaginary(),vi.getReal(),vi.getImaginary(),0,mode,
+                    recovery?protection.voltageFactor():1,recovery?protection.currentFactor():1,currents,0);
+        }
     }
-    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant {
+    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware {
         private final boolean owner;
         private Port(String id,BaseDStabBus<?,?> bus,boolean owner) {
             this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
@@ -57,7 +74,54 @@ public final class Cdc6tNormalTerminalPorts {
         public boolean isOperational(){return rectifier.isActive()&&inverter.isActive()&&rectifierPort.isActive()&&inverterPort.isActive();}
         @Override public boolean initStates(BaseDStabBus<?,?> bus) {
             if(bus!=getDStabBus()||!attachmentIntact())return false;
+            if(protection!=null){if(coordinatorTrial)protection.discardTrial();protection.reset();}
+            coordinatorTrial=false;networkTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
             runtime.initialize(initialVi,initialCurrent,initialVr);return true;
+        }
+        @Override public void beginNetworkSolution(NetworkIterationAware.Context context){
+            if(!owner||protection==null||!isOperational())return;
+            if(networkTrial)throw new IllegalStateException("Nested CDC6T network trial");
+            boolean directEndpoint="DIRECT".equals(context.stage())&&staggeredEndpointPending;
+            if("DIRECT".equals(context.stage())&&!directEndpoint)return; // Initialization/direct probes cannot commit a clock.
+            if(!directEndpoint&&!"INITIAL".equals(context.stage())&&!"PREDICTOR".equals(context.stage())&&!"CORRECTOR".equals(context.stage()))
+                throw new IllegalArgumentException("Unknown CDC6T network stage: "+context.stage());
+            double evaluationTime=directEndpoint?staggeredEndpoint:context.evaluationTime();
+            if(coordinatorTrial&&"CORRECTOR".equals(context.stage())){
+                if(evaluationTime!=protectionTrialTime){
+                    protection.discardTrial();coordinatorTrial=false;
+                    throw new IllegalStateException("Corrector must finish the pending CDC6T endpoint");
+                }
+                // The predictor's electrical regime and voltage form one provisional endpoint.
+                // Restoring old protection while retaining predicted voltage can reset a valid
+                // recovery deadline indefinitely. Keep the trial; commit only on final convergence.
+                networkTrial=true;commitNetworkTrial=true;return;
+            }
+            if(coordinatorTrial){protection.discardTrial();coordinatorTrial=false;}
+            protection.beginTrial(evaluationTime);protectionTrialTime=evaluationTime;
+            coordinatorTrial=true;networkTrial=true;commitNetworkTrial=!"PREDICTOR".equals(context.stage());
+            trialDcVoltage=acceptedDcVoltage;
+        }
+        @Override public void beforeNetworkIteration(int iteration){
+            if(!owner||!networkTrial)return;
+            // Observe AC pickup before a deep-voltage conducting evaluation can become infeasible.
+            protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
+            // Fresh DC pickup can select bypass at this same physical time, before the matrix solve.
+            protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
+        }
+        @Override public void afterNetworkConvergence(){
+            if(!owner||!networkTrial)return;
+            refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
+        }
+        @Override public void endNetworkSolution(boolean converged){
+            if(!owner||!networkTrial)return;
+            try{
+                if(!converged){protection.discardTrial();coordinatorTrial=false;}
+                else if(commitNetworkTrial){protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;}
+                // A successful predictor retains provisional history through the same endpoint's
+                // corrector. A failed corrector discards it; a different solve starts a fresh trial.
+            } finally {networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
         }
         @Override public Object getOutputObject() {
             if(!isOperational())return Complex.ZERO;
@@ -79,5 +143,10 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public void readStaggeredState(double[] values,int offset){if(owner)runtime.readStaggeredState(values,offset);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void evaluateStaggered(double h,double[] values,int offset){if(owner){refresh();runtime.evaluateStaggered(h,values,offset);}else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void applyStaggeredState(double[] values,int offset,double h){if(owner)runtime.applyStaggeredState(values,offset,h);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
+        @Override public void completeStaggeredStep(double h,double endpointTime){
+            if(!owner||protection==null||!isOperational())return;
+            if(!Double.isFinite(endpointTime))throw new IllegalArgumentException("Finite CDC6T endpoint required");
+            staggeredEndpoint=endpointTime;staggeredEndpointPending=true;
+        }
     }
 }

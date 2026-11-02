@@ -44,6 +44,10 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
             Cdc6tVoltageCurrentLimit limit) throws Exception {
+        return load(folder,lines,mode,setpoint,limit,null);
+    }
+    static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
+            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection) throws Exception {
         for(int n=3;n<lines.size();n++) {
             if(lines.get(n).strip().startsWith("0 /"))break;
             String[] fields=lines.get(n).split(",",-1);
@@ -66,7 +70,7 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
             new Cdc6tCurrentOrder(mode,setpoint,500,0),limit,
             new Cdc6tConductingLink(new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8),
                 new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8),5,Math.toRadians(5),Math.toRadians(20)));
-        var pair=new Cdc6tNormalTerminalPorts("1",net.getBus("Bus7"),net.getBus("Bus9"),runtime,500000,1000,505000);
+        var pair=new Cdc6tNormalTerminalPorts("1",net.getBus("Bus7"),net.getBus("Bus9"),runtime,500000,1000,505000,protection);
         pair.attach();
         return new Fixture(context,runtime,pair);
     }
