@@ -82,6 +82,60 @@ public class Wsieg1StateConformanceTest {
         }
     }
 
+    @Test void networkEventsUseAcceptedLeftRatesWithoutReplacingOlderIntegrationHistory(@TempDir Path staged)throws Exception {
+        var fixture=new Wsieg1ReferenceFixture(staged);int events=0;double staleMaximum=0.,actualMaximum=0.;
+        for(var entry:fixture.matrix()) {
+            if(!entry.path("repeat").asText().equals("a")||!entry.path("event").asText().equals("fault"))continue;
+            String tag=entry.path("tag").asText();Path root=fixture.stage(tag);double h=entry.path("step_s").asDouble();
+            var constants=new ObjectMapper().readTree(root.resolve("manifest.json").toFile()).path("initialized_constants");
+            double[] c=new double[constants.size()];for(int k=0;k<c.length;k++)c[k]=constants.get(k).asDouble();
+            var reference=rows(Files.readAllBytes(root.resolve("native.csv")));
+            var actual=Wsieg1SharedSmibTest.simulate(root.resolve("network.raw"),root.resolve("dynamic.dyr"),true,"fault",h,entry.path("duration_s").asDouble(),List.of());
+            int startup=(int)reference.stream().filter(row->row.get("time_s")<0.).count();
+            assertEquals(reference.size()-startup,actual.frames.size());
+            for(int j=2;j<reference.size()-1;j++) {
+                var post=reference.get(j);var pre=reference.get(j-1);
+                if(post.get("time_s")<=0.||!post.get("time_s").equals(pre.get("time_s")))continue;
+                events++;double[] right=publishedRates(post,c),left=publishedRates(pre,c),old=publishedRates(reference.get(j-2),c);
+                var actualPost=actual.frames.get(j-startup);var actualNext=actual.frames.get(j+1-startup);
+                assertEquals(Math.round(post.get("time_s")/h)*h,actualPost.time(),1e-10);
+                assertEquals(h,actualNext.time()-actualPost.time(),1e-10);
+                for(int k=0;k<6;k++) {
+                    if(k>=2&&c[8+3*(k-2)]==0.)continue; // Algebraic bypass observations are not integrated states.
+                    double increment=reference.get(j+1).get("STATE"+k)-post.get("STATE"+k);
+                    double expected=h*(.75*(right[k]+left[k])-.5*old[k]);
+                    assertEquals(increment,expected,1e-7,tag+" independent event recurrence STATE"+k);
+                    staleMaximum=Math.max(staleMaximum,Math.abs(increment-h*(.75*right[k]+.25*old[k])));
+                    double observed=actualNext.values().get("PUBLISHED"+k)-actualPost.values().get("PUBLISHED"+k);
+                    actualMaximum=Math.max(actualMaximum,Math.abs(observed-increment));
+                    assertEquals(increment,observed,1e-7,tag+" coupled first event increment STATE"+k);
+                }
+            }
+        }
+        assertEquals(16,events);assertTrue(staleMaximum>4e-6,"Older integration rates must be distinguishable from the accepted endpoint");
+        System.out.println("WSIEG1 event increment maximum error "+actualMaximum+"; stale-history counterexample "+staleMaximum);
+    }
+
+    /** Reconstruct the published differential coordinates from independently recorded inputs. */
+    private static double[] publishedRates(Map<String,Double> row,double[] c) {
+        double[] s=new double[6],d=new double[6];for(int k=0;k<6;k++)s[k]=row.get("STATE"+k);
+        double speed=row.get("VAR3"),alpha=1.-c[2]/c[1];
+        d[0]=(alpha*c[0]*speed-s[0])/c[1];
+        d[1]=Math.max(c[5],Math.min(c[4],(row.get("VAR0")-s[0]-c[0]*c[2]/c[1]*speed-row.get("VAR7"))/c[3]));
+        if((s[1]>=row.get("VAR4")&&d[1]>0.)||(s[1]<=row.get("VAR5")&&d[1]<0.))d[1]=0.;
+        var points=new ArrayList<double[]>();
+        for(int k=0;k<5;k++) {
+            double x=c[23+2*k],y=c[24+2*k];
+            if(!points.isEmpty()&&((x==0.&&y==0.)||(points.getLast()[0]==x&&points.getLast()[1]==y)))continue;
+            points.add(new double[]{x,y});
+        }
+        if(points.size()<2){points.clear();points.add(new double[]{0.,0.});points.add(new double[]{1.,1.});}
+        int segment=1;double valve=row.get("VAR7");while(segment<points.size()-1&&valve>points.get(segment)[0])segment++;
+        var a=points.get(segment-1);var b=points.get(segment);double input=a[1]+(valve-a[0])*(b[1]-a[1])/(b[0]-a[0]);
+        for(int k=0;k<4;k++) {double t=c[8+3*k];if(t!=0.){d[k+2]=(input-s[k+2])/t;input=s[k+2];}}
+        return d;
+    }
+
     @Test void everyRetainedOrdinaryStateAndBoundaryValueRemainsBitIdentical()throws Exception {
         Path path=Path.of(Wsieg1ReferenceFixture.CONFIG.string("beforeArchive"));assumeTrue(Files.isRegularFile(path),"Retained pre-change executable traces are unavailable");
         assertEquals(Wsieg1ReferenceFixture.CONFIG.string("beforeArchiveSha256"),Wsieg1ReferenceFixture.sha(Files.readAllBytes(path)));

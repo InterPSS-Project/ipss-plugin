@@ -314,15 +314,18 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         final StaggeredEulerParticipant model;
         final BooleanSupplier active;
         final double[] values, rates, history, trial, eventLeftRates;
+        final boolean captureAcceptedNetworkEventRates, captureAcceptedInputEventRates;
         boolean wasActive, hasEventLeftRates;
         long appliedInputDiscontinuityVersion;
         Participant(StaggeredEulerParticipant model, BooleanSupplier active) {
             this.model=model;this.active=active;
             appliedInputDiscontinuityVersion=model.staggeredInputDiscontinuityVersion();
             int size=model.staggeredStateCount();
+            captureAcceptedNetworkEventRates=model.useAcceptedEndpointRateAtNetworkDiscontinuity();
+            captureAcceptedInputEventRates=model.useAcceptedEndpointRateAtInputDiscontinuity()
+                    || model.providesNetworkEventLeftRates();
             values=new double[size];rates=new double[size];history=new double[size];trial=new double[size];
-            eventLeftRates=model.useAcceptedEndpointRateAtInputDiscontinuity()
-                    || model.providesNetworkEventLeftRates()?new double[size]:null;
+            eventLeftRates=captureAcceptedInputEventRates || captureAcceptedNetworkEventRates?new double[size]:null;
         }
     }
 
@@ -918,6 +921,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 if (machineEventValid[slot])
                     machineEventLeft[slot]=states.get(slot).derivative.getAsDouble();
             }
+        if (hasMachineEventLeft)
+            for (var p:participants)
+                if (p.captureAcceptedNetworkEventRates && p.wasActive && p.active.getAsBoolean())
+                    System.arraycopy(p.rates,0,p.eventLeftRates,0,p.rates.length);
         // The enclosing solve has already identified this event. Capture its
         // settled left endpoint before the event processor changes the network.
         if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
@@ -1079,9 +1086,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         timestep=dt;
         boolean discontinuity=eventBoundaryThisStep || inputDiscontinuity;
         if (discontinuity) for (var p:participants) {
-            p.hasEventLeftRates=inputDiscontinuity && !eventBoundaryThisStep
-                    && p.eventLeftRates!=null && p.wasActive && p.active.getAsBoolean();
-            if (p.hasEventLeftRates) System.arraycopy(p.rates,0,p.eventLeftRates,0,p.rates.length);
+            p.hasEventLeftRates=p.wasActive && p.active.getAsBoolean()
+                    && (eventBoundaryThisStep ? hasMachineEventLeft && p.captureAcceptedNetworkEventRates
+                            : inputDiscontinuity && p.captureAcceptedInputEventRates);
+            if (p.hasEventLeftRates && !eventBoundaryThisStep)
+                System.arraycopy(p.rates,0,p.eventLeftRates,0,p.rates.length);
         }
         boolean reuse = reuseNetworkEndpoint && networkEndpointAvailable && !discontinuity
                 && !dstabAlgo.getNetwork().isYMatrixDirty();

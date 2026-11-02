@@ -666,3 +666,47 @@ previous modified-Euler base trajectories and twelve staggered no-event base
 trajectories remain exactly identical. The correction stays on the working
 branch pending resolution of the additional internal-state discrepancies;
 it is not a system-accepted milestone or a claim that the whole work list passes.
+
+## Controller rates at scheduled network events
+
+The retained independent governor-state captures also distinguish accepted
+pre-event rates from older two-step history. Reconstructing the speed
+compensation, bounded valve and differential turbine coordinates directly from
+recorded states and inputs reproduces the first increments after application
+and clearing within 0.000000064 pu. Substituting the older rate into the event
+average misses by as much as 0.000005691 pu. Algebraic bypass observations are
+checked by the complete trajectory tests, not treated as integrated states.
+
+`StaggeredEulerParticipant.useAcceptedEndpointRateAtNetworkDiscontinuity()`
+allows a qualified model to request a snapshot of its latest accepted endpoint
+derivatives before a scheduled network event. WSIEG1 opts in because its final
+derivative evaluation already includes committed valve/backlash history. The
+solver copies the prepared primitive buffer only at the event; it retains the
+older integration history separately. There is no additional ordinary-step
+model evaluation or per-step allocation. Other models retain their existing
+policy, and explicit model-prepared network-event derivatives take precedence.
+External input notification and model-local reference-event policies remain
+separate from this new capability.
+
+The new regression checks all differential governor coordinates at both fault
+edges for standard, nonlinear-curve, dual-shaft and unused-secondary profiles at
+quarter-cycle and 0.5 ms intervals. Every first coupled increment must agree
+within 0.0000001 pu. The previous solver fails this test; the corrected maximum
+is 0.000000064 pu. Existing whole-trajectory thresholds are unchanged.
+
+The quarter-cycle nonlinear-curve backlash-input maximum error falls from
+0.0000039133 to 0.0000001783 pu, restoring its existing 0.0000038 pu gate. This
+resolves the WSIEG1 strict-state failure exposed by the machine event correction.
+It does not resolve the separate modified-Euler coarse-step power differences,
+flat reactive-power gates, HYG3 state checks or compressor temperature checks.
+
+The focused event/state group passes eighteen tests. The full WSIEG1 group runs
+eighty-five tests with the six prior accuracy failures still visible. The
+core-plugin module runs 486 tests with no failures or errors and four skips.
+The complete registered suite runs 4,071 tests with eighteen failures, no errors
+and thirteen skips: exactly the previous failing identities except the now
+passing WSIEG1 curve comparison. All twenty-four retained modified-Euler base
+trajectories and twelve staggered no-event trajectories remain identical across
+every sample and channel. Private evidence retains the full comparisons,
+negative-control executable, reference hashes and failure-identity audit.
+Broader model and system acceptance remains open.

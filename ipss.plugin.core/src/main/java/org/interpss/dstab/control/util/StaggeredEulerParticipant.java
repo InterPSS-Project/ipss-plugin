@@ -36,6 +36,14 @@ public interface StaggeredEulerParticipant {
      * Scheduled network-event boundaries retain their separate qualified policy.
      */
     default boolean useAcceptedEndpointRateAtInputDiscontinuity() { return false; }
+    /**
+     * Preserve the solver's latest accepted endpoint rates before a scheduled
+     * network event changes its inputs. Opt in only when the final endpoint
+     * evaluation includes all accepted history changes. The event average uses
+     * this snapshot while the two-step formula retains its older rate history.
+     * Model-prepared network-event rates, when provided, take precedence.
+     */
+    default boolean useAcceptedEndpointRateAtNetworkDiscontinuity() { return false; }
     /** Whether this owner prepares pre-event endpoint rates in its explicit network-event callback. */
     default boolean providesNetworkEventLeftRates() { return false; }
     /**

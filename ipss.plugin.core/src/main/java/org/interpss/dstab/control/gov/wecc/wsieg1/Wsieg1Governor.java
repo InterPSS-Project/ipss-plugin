@@ -206,6 +206,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     private void requireBuffer(double[] values,int offset) {requireSharedState();java.util.Objects.checkFromIndexSize(offset,6,values.length);}
     @Override public int staggeredStateCount() { return 6; }
+    @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity() { return true; }
     @Override public void readStaggeredState(double[] values,int offset) {requireBuffer(values,offset);System.arraycopy(x,0,values,offset,6);}
     @Override public void evaluateStaggered(double step,double[] rates,int offset) {
         requireBuffer(rates,offset);requireStep(step);derivatives(x,d1,getMachine().getSpeed()-1.);
