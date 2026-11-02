@@ -911,15 +911,10 @@ the test declares separate state envelopes for the two methods, retains the
 same timestamps and gates every channel. It does not establish general gamma
 protection/recovery or production-step qualification.
 
-Static constant-gamma power-controlled preparation remains unresolved. The
-original power-controlled input leaves the local static solver at its original
-tap and current, producing approximately 549 kV rather than the independently
-solved 499 kV. Enabling the DC tap adjustment flag alone does not resolve it.
-The static gamma tap-control branch uses its evolving voltage for the voltage
-band, and the coupled fixed-angle path retains current rather than enforcing
-the scheduled power equation. Rectifier-limited initialization is another
-distinct control case. These require static-solver fixes and independent
-coupled requalification; dynamic states are not fitted to mask them.
+The original static power-controlled preparation gap is resolved for the
+normal conducting profiles described below. Rectifier-limited initialization
+remains a distinct, unqualified control-transfer case; dynamic states are not
+fitted to mask it.
 
 Explicit preparation now rejects a constant-gamma power point whose solved
 terminal V-times-I differs from its power schedule by more than one part per
@@ -942,3 +937,51 @@ Private complete comparisons, reports, implementation snapshots and static
 preparation diagnostics:
 `verification-artifacts/cdc6t-constant-gamma-20261101/validation.zip`, SHA-256
 `d9242920a91b5583cfe75d31add9a5dcadb22c404cee4138fb709934aa5549de`.
+
+## Constant-gamma power and tap preparation
+
+Explicit equal inverter angle limits now retain the scheduled DC power in both
+the static converter calculation and reduced coupled network equations. With
+inverter source voltage `E`, commutation resistance `Rc`, and line resistance
+`Rd`, solve `P = I * (E + R * I)` using the stable low-current root
+`I = 2P / (E + sqrt(E*E + 4*R*P))`. Here `R = -Rc` for inverter metering and
+`R = Rd - Rc` for rectifier metering. Invalid or singular operating points are
+rejected. Unequal angle limits retain the existing transferred-current policy.
+
+For the single-rectifier/single-inverter configuration, enabled discrete taps
+regulate the scheduled compounded voltage. The scheduled voltage and current
+determine the target source voltage; the evolving solved DC voltage is not
+used as the target. Taps are rounded to the configured grid and bounded by the
+equipment limits. Reduced electrical equations continue to own terminal P/Q,
+while the outer control boundary permits this explicit gamma tap adjustment.
+Fixed-tap controls explicitly disable the DC tap flag in the test setup.
+
+Independent paired captures at scheduled 495, 500 and 505 kV reproduce the
+inverter tap settings and initial current/voltage, including power metering at
+either terminal. Initial converter checks require tap agreement within 1e-7,
+DC voltage within 0.5 V and current within 0.001 A. Core tests check the power
+equation, fixed-tap behavior, residuals and analytic bus/order/tap derivatives.
+The inconsistent-power preparation guard is retained and tested by corrupting
+an otherwise correctly solved schedule.
+
+The expanded coupled matrix covers fixed-current and power-controlled faults,
+both terminal disturbances, dynamic gamma above/below the static target,
+scheduled-voltage variation and both power-metering ends. Each runs under
+modified Euler and staggered integration with the shared runtime and unchanged
+state lifecycle. Complete 1,005-row comparisons retain both scheduled event
+sides. Every channel has an explicit gate; `maxima.csv` preserves measured
+maxima and limits. This preparation fix adds no per-step model work.
+
+Validation passes 121 isolated core tests and 293 plugin/model/adjacent tests
+with no failures, errors or skips. All 77 preceding complete trajectory files
+are byte-identical. The complete repository suites were not rerun for this
+slice. Protected gamma recovery, rectifier-limited initialization, additional
+equipment variants, production-step/long-duration acceptance and automatic
+attachment remain open; this is not full CDC6T qualification.
+
+Private paired additional reference captures:
+`verification-artifacts/cdc6t-gamma-power-preparation-20261101/captures-v2.zip`, SHA-256
+`002bef9babdc7f44cd5afc708d16e04d7b6f675d5dfb485feffd31265a61fd3e`.
+Private complete comparisons, reports, source snapshots and manifest:
+`verification-artifacts/cdc6t-gamma-power-preparation-20261101/validation.zip`, SHA-256
+`1567f9becdbac170043599ad1e5b3a3428dfc42100afc1b15b3a233423b8c157`.

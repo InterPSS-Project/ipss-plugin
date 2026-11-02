@@ -86,6 +86,7 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
         net.setStaticLoadIncludedInYMatrix(true);net.setStaticLoadModel(StaticLoadModel.CONST_Z);net.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
         algorithm.getAclfAlgorithm().setTolerance(1e-10);algorithm.getAclfAlgorithm().setMaxIterations(80);
         algorithm.getAclfAlgorithm().getLfAdjAlgo().setApplyAdjustAlgo(false);
+        algorithm.getAclfAlgorithm().getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(dcTapControl);
         if(dcTapControl){
             var adjustment=algorithm.getAclfAlgorithm().getLfAdjAlgo();
             adjustment.setApplyAdjustAlgo(true);
