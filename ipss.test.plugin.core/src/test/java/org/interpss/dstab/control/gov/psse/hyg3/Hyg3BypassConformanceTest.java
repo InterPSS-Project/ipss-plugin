@@ -83,4 +83,56 @@ public class Hyg3BypassConformanceTest {
             return new Hyg3StateConformanceTest.ComparisonLimits(states, boundaries);
         });
     }
+
+    @Test void recordedSpeedAndPowerLocalizeTheRemainingBypassStateErrors(@TempDir Path staged) throws Exception {
+        IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
+        var fixture=new Hyg3ReferenceFixture(staged,CONFIG);
+        Path output=Files.createTempDirectory(Path.of("target"),"hyg3-input-replay-");
+        System.out.println("HYG3 prescribed-input comparison "+output.getFileName());int profiles=0;
+        var diagnostics=new java.util.LinkedHashMap<String,Object>();
+        for(var entry:fixture.matrix()) {
+            if(!entry.path("repeat").asText().equals("a")||!entry.path("profile").asText().equals("power-filter-bypass"))continue;
+            String tag=entry.path("tag").asText();Path root=fixture.stage(tag);
+            var manifest=new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+            double h=manifest.path("settings").path("step").asDouble();boolean doubleDerivative=entry.path("mode").asInt()==0;
+            var context=new org.interpss.fadapter.psse.PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(),root.resolve("dynamic.dyr").toString());
+            var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
+            algorithm.setSimuStepSec(h);algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());assertTrue(algorithm.initialization());
+            var machine=context.getDStabilityNet().getMachine("Bus1-mach1");var governor=(PsseHyg3Governor)machine.getGovernor();
+            assertEquals(0.,governor.getData().getTt());assertEquals(0.,governor.getData().getDb2());
+            assertEquals(0.,machine.getRa());assertEquals(100.,governor.getGovernorBaseMva());
+            double[] state=new double[9],rates=new double[9],history=new double[9],left=new double[9],published=new double[9],maximum=new double[9];
+            governor.evaluateStaggered(h,history,0);
+            var reference=Hyg3StateConformanceTest.rows(root.resolve("native.csv"));int written=0,events=0;
+            try(var raw=org.interpss.core.dstab.reference.BenchmarkOutputGuard.newOutputStream(output.resolve(tag+".csv.gz"),
+                    org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(reference.size(),22));
+                    var writer=new java.io.BufferedWriter(new java.io.OutputStreamWriter(new java.util.zip.GZIPOutputStream(raw),java.nio.charset.StandardCharsets.UTF_8))) {
+                writer.write("time_s,sample_kind,speed_input,power_input");for(int k=0;k<9;k++)writer.write(",STATE"+k+",REFERENCE.STATE"+k);writer.write("\n");
+                for(int j=0;j<reference.size();j++) {
+                    var row=reference.get(j);double time=row.get("time_s");
+                    machine.setSpeed(1.+row.get("SPEED"));machine.setPe(row.get("P_PU"));
+                    var before=governor.getIntegrationStates();var committed=governor.getIntegrationHistories();
+                    governor.evaluateStaggered(h,rates,0);governor.readPublishedState(published,0);
+                    assertEquals(before,governor.getIntegrationStates());assertEquals(committed,governor.getIntegrationHistories());
+                    assertEquals(row.get("P_PU"),published[5],1e-15,"Prescribed terminal power reaches the bypass coordinate directly");
+                    boolean event=time>0.&&j>0&&row.get("time_s").equals(reference.get(j-1).get("time_s"));
+                    writer.write(time+","+(time<0.?"STARTUP_HELD_INITIAL":event?"EVENT_POST":"GRID")+","+row.get("SPEED")+","+row.get("P_PU"));
+                    for(int k=0;k<9;k++){maximum[k]=Math.max(maximum[k],Math.abs(published[k]-row.get("STATE"+k)));writer.write(","+published[k]+","+row.get("STATE"+k));}writer.write("\n");written++;
+                    if(time<0.||j+1==reference.size())continue;
+                    if(row.get("time_s").equals(reference.get(j+1).get("time_s"))){System.arraycopy(rates,0,left,0,9);continue;}
+                    if(event)events++;governor.readStaggeredState(state,0);
+                    for(int k=0;k<9;k++){double effective=event?.5*(rates[k]+left[k]):rates[k];state[k]+=h*(1.5*effective-.5*history[k]);history[k]=effective;}
+                    governor.applyStaggeredState(state,0,h);governor.completeStaggeredStep(h);
+                }
+            }
+            assertEquals(reference.size(),written);assertEquals(2,events);
+            diagnostics.put(tag,java.util.Map.of("maximum_state_error",maximum,"samples",written,
+                    "scope","Prescribed speed and power diagnostic; complete coupled gates remain separate"));
+            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(),diagnostics);
+            double[] bounds=doubleDerivative?new double[]{1.5e-10,1.1e-6,2.5e-10,6e-6,1.3e-6,3.1e-8,1.1e-6,1e-9,5e-9}
+                    :new double[]{5e-8,1.1e-6,8e-8,6e-6,1.3e-6,3.1e-8,1.1e-6,1e-15,1e-15};
+            for(int k=0;k<9;k++)assertTrue(maximum[k]<bounds[k],tag+" prescribed-input STATE"+k+" "+maximum[k]);profiles++;
+        }
+        assertEquals(4,profiles);
+    }
 }

@@ -16,6 +16,43 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 /** Independent gain/time discriminators qualify observation coordinates without changing physical storage. */
 public class Hyg3StateConformanceTest {
+    @Test void scheduledEventsKeepAcceptedCompensationRatesSeparateFromOlderHistory(@TempDir Path staged) throws Exception {
+        org.interpss.IpssCorePlugin.init(); org.interpss.IpssCorePlugin.configureSparseSolver("java-klu");
+        var fixture=new Hyg3ReferenceFixture(staged);int events=0;double staleMaximum=0.,coupledMaximum=0.;
+        for(var entry:fixture.matrix()) {
+            if(!entry.path("repeat").asText().equals("a"))continue;
+            String tag=entry.path("tag").asText();Path root=fixture.stage(tag);
+            var manifest=new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+            var c=manifest.path("initialized_constants");double h=manifest.path("settings").path("step").asDouble();
+            double kd=c.get(6).asDouble(),k2=c.get(4).asDouble(),tf=c.get(7).asDouble();assertTrue(tf>0.);
+            boolean doubleDerivative=manifest.path("settings").path("mode").asInt()==0;
+            var reference=rows(root.resolve("native.csv"));
+            var actual=Hyg3SharedSmibTest.simulate(root.resolve("network.raw"),root.resolve("dynamic.dyr"),true,false,h,
+                    manifest.path("settings").path("duration").asDouble());
+            int startup=(int)reference.stream().filter(row->row.get("time_s")<0.).count();
+            assertEquals(reference.size()-startup,actual.frames.size());
+            for(int j=2;j<reference.size()-1;j++) {
+                var post=reference.get(j);var pre=reference.get(j-1);
+                if(post.get("time_s")<=0.||!post.get("time_s").equals(pre.get("time_s")))continue;
+                events++;var observed=actual.frames.get(j-startup);var next=actual.frames.get(j+1-startup);
+                assertEquals(Math.round(post.get("time_s")/h)*h,observed.time(),1e-10);
+                assertEquals(h,next.time()-observed.time(),1e-10);
+                for(int section=0;section<(doubleDerivative?3:1);section++) {
+                    int coordinate=new int[]{2,7,8}[section];String name="STATE"+coordinate;
+                    double right=rate(post,section,kd,k2,tf),left=rate(pre,section,kd,k2,tf),old=rate(reference.get(j-2),section,kd,k2,tf);
+                    double increment=reference.get(j+1).get(name)-post.get(name);
+                    assertEquals(increment,h*(.75*(right+left)-.5*old),3e-10,tag+" independent event recurrence "+name);
+                    staleMaximum=Math.max(staleMaximum,Math.abs(increment-h*(.75*right+.25*old)));
+                    double actualIncrement=next.values().get("PUBLISHED"+coordinate)-observed.values().get("PUBLISHED"+coordinate);
+                    coupledMaximum=Math.max(coupledMaximum,Math.abs(actualIncrement-increment));
+                    assertEquals(increment,actualIncrement,1e-9,tag+" coupled event increment "+name);
+                }
+            }
+        }
+        assertEquals(36,events);assertTrue(staleMaximum>2e-5,"The capture must reject stale event-rate averaging");
+        System.out.println("HYG3 event increment maximum error "+coupledMaximum+"; stale-history counterexample "+staleMaximum);
+    }
+
     @Test void independentCompensationRecurrencesDistinguishScaledStatesAndGainPlacement(@TempDir Path staged) throws Exception {
         var fixture = new Hyg3ReferenceFixture(staged);
         boolean nonunitGain = false; int compared = 0;

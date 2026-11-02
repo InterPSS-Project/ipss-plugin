@@ -182,6 +182,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     @Override public int staggeredStateCount() { return 9; }
 
     @Override public boolean useAcceptedEndpointRateAtInputDiscontinuity() { return true; }
+    @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity() { return true; }
 
     private void requireSharedState() {
         if (!initialized || initializedMachine != getMachine() || initializedData != getData())

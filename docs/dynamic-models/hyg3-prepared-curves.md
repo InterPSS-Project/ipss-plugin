@@ -478,3 +478,64 @@ it does not claim coupled trajectory qualification. Private evidence retains
 all diagnostic comparisons and the frozen-runtime negative control. Remaining
 work includes fast-state integration accuracy, combined PID bypass qualification,
 the existing power gate and longer-duration state/limiter histories.
+
+## Accepted pre-event controller rates
+
+HYG3 now opts into the shared solver's accepted pre-event derivative snapshot.
+The final ordinary endpoint evaluation includes its committed gate/deadband
+histories, so those cached rates are valid immediately before the network event.
+The event average uses this snapshot, while the two-step integration formula
+keeps its older derivative history. The existing primitive event buffer is
+reused; the change adds no per-step allocation or controller evaluation.
+Modified-Euler equations and external reference-event handling are unchanged.
+
+Independent recorded states distinguish the two histories at fault clearing.
+For compensation coordinates, reconstructing the event increment with the
+accepted left rate agrees within 0.00000000018 pu; using the older integration
+rate misses by up to 0.000025762 pu. The maintained coupled regression covers
+both controller modes, altered gain/time profiles, both event sides and the
+available integration intervals. Its maximum first-increment error is
+0.00000000064 pu against a 0.000000001 pu limit. A frozen previous governor
+executable fails the same regression. A separate all-coordinate reconstruction
+also checks the input filter, integral, valve, gate, power filter and flow;
+its maximum residual is 0.000000059 pu.
+
+The correction restores the strict standard-state and zero-derivative-time
+staggered comparison groups. For example, the five-second, quarter-cycle PID
+standard profile's input-filter error falls from 0.0000008884 to 0.0000004139 pu,
+and its derivative-compensation error falls from 0.000001299 to
+0.0000007701 pu. All existing trajectory thresholds remain unchanged.
+
+The double-derivative power-filter-bypass profile still has a separate coupled
+discrepancy at 0.5 ms. Replaying its recorded speed and electrical power through
+the same controller equations gives the following maximum errors:
+
+| Published coordinate | Coupled (pu) | Prescribed-input replay (pu) |
+| --- | ---: | ---: |
+| Bypassed power | 0.0000034172 | 0.0000000299 |
+| First double-derivative compensation | 0.0000001708 | 0.00000000070 |
+| Second double-derivative compensation | 0.0000008760 | 0.00000000378 |
+
+This diagnostic preserves all samples, startup observations and both event sides.
+It verifies input delivery and read-only evaluation, integrates the shared
+states with separate accepted-event and two-step histories, and retains every
+published coordinate. It localizes these failures to the coupled speed/power
+inputs; it does not qualify the complete machine/network trajectory or replace
+the unchanged coupled bypass gate. The remaining controller integral, valve,
+gate and flow differences are retained as well. No model coefficients, state
+precision or accuracy limits are adjusted to compensate for the coupled error.
+
+The registered HYG3 tests run 62 tests with three existing failing comparisons:
+the coupled staggered bypass states and the two modified-Euler coarse-step
+power groups. The core-plugin module runs 486 tests with no failures or errors
+and four skips. The complete registered suite runs 4,073 tests with sixteen
+failures, no errors and thirteen skips, resolving exactly the two HYG3 staggered
+state groups without adding any new failing identities. All thirty-six retained
+modified-Euler state, bypass and derivative-preparation trajectories remain
+identical across every sample and channel. Warmed state/update/observation tests
+continue to report zero allocation under both integration methods.
+
+Private validation retains the executed source/classes, full paired samples,
+prescribed-input traces, independent all-state recurrence audit and old-model
+negative control. These qualify the event-history correction and input
+localization; they do not establish complete HYG3 or system acceptance.
