@@ -124,6 +124,23 @@ public class Urgs3tSharedStateTest {
         g.getMachine().setPm(.4);assertTrue(g.initStates(g.getMachine().getDStabBus(),g.getMachine()));
         assertEquals(.4,g.getOutput(g.getMachine()),1e-14);
     }
+    @Test void explicitRunBoundaryPublishesAcceptedPowerWithoutAdvancingAnyHistory() throws Exception {
+        var g=model(BASE);var m=g.getMachine();double[] x=new double[5];g.readStaggeredState(x,0);
+        x[1]+=.1;g.applyStaggeredState(x,0,.001);
+        assertThrows(IllegalStateException.class,g::publishAcceptedRunBoundary);
+        g.completeStaggeredStep(.001);
+        assertEquals(.5,g.getOutput(m),1e-14);var before=new java.util.HashMap<>(g.getIntegrationHistories());
+        var states=g.getIntegrationStates();long revision=g.staggeredInputDiscontinuityVersion();
+        g.publishAcceptedRunBoundary();assertEquals(.6,g.getOutput(m),1e-14);
+        before.put("Published turbine power",before.get("Accepted turbine power"));
+        assertEquals(before,g.getIntegrationHistories());assertEquals(states,g.getIntegrationStates());
+        assertEquals(revision,g.staggeredInputDiscontinuityVersion());
+        g.publishAcceptedRunBoundary();g.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,m,0);
+        assertEquals(before,g.getIntegrationHistories());
+        g.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,m,0);
+        assertThrows(IllegalStateException.class,g::publishAcceptedRunBoundary);
+        g.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,m,1);
+    }
     @Test void sourceDeadbandDirectionIsSeparateFromDiagramBacklashAndTrialsArePure() throws Exception {
         double[] c=BASE.clone();c[18]=.001;
         for(var convention:Urgs3tGovernor.RuntimeConvention.values()) {

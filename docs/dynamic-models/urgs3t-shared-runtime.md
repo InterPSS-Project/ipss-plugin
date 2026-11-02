@@ -21,6 +21,8 @@ per-step allocation in both paths.
 
 Deadband memory and turbine-output publication advance at accepted endpoints.
 Trial evaluations and zero-duration refreshes do not commit either history.
+An explicit segmented-run resume may publish the already accepted turbine
+output through `publishAcceptedRunBoundary`, without advancing either history.
 Discrete reference commands use `applyReferenceEvent`, which preserves the
 first accepted left derivative across multiple command writes. Continuous
 upstream reference updates use `setRefPoint`. Reinitialization resets the
@@ -38,7 +40,7 @@ represented by immutable `RuntimeConvention` values, not by fitted parameters:
 | Behavior | `PUBLISHED_DIAGRAM` | `SOURCE_RECORD` |
 |---|---|---|
 | Exhaust coordinate | First-order lag driven by engine output | Holds its initialized value |
-| Turbine output | Live algebraic output | Previous accepted turbine output |
+| Turbine output | Live algebraic output | Previous accepted turbine output during stepping; current accepted output at an explicit run resume |
 | Damping | On machine base after turbine rating conversion | Inside the turbine rating conversion, using current speed |
 | Power deadband | Ordinary backlash/play function | Direction relative to accepted output selects input minus/plus the entered width |
 
@@ -113,8 +115,8 @@ unchanged. The first subsequent speed increment uses the average of the fresh
 left and right mechanical derivatives, retaining the older multistep history.
 This reconstruction agrees within `1.2e-11`; an unblended increment differs by
 more than `7e-9`. A command-only output refresh would miss the no-command control.
-The existing production event/publication lifecycle is unchanged pending an
-explicit, independently qualified resume contract.
+The explicit production resume contract below implements this observation
+without making ordinary getters or zero-time integration stages commit history.
 
 The diagnostic replay retains both mechanical-power values at duplicate event
 timestamps. Modified Euler consumes the left interval's post-event input in its
@@ -148,6 +150,53 @@ and `machine-command-captures.zip` (SHA-256
 `a2c4fbc8b9f7d38bcc4a562c70d3ca875c52430d3ca63df319c39743ef07fdec`).
 Their tests verify hashes, complete manifests and cold-repeat identity.
 
+## Explicit accepted run boundaries
+
+For a segmented source-record run, the host records the pre-resume sample,
+notifies the staggered solver if selected, refreshes the governor's accepted
+output, and then applies any requested command:
+
+```java
+if (algorithm.getSolver() instanceof StaggeredEulerSolver solver) {
+    solver.notifyAcceptedEndpointDiscontinuity();
+}
+governor.publishAcceptedRunBoundary();
+machine.setPm(governor.getOutput(machine));
+// Apply a reference command here when the segment boundary includes one.
+```
+
+This is an explicit run boundary, not every `solveDEqnStep` call. The governor
+rejects publication during an unfinished modified-Euler predictor or shared
+state trial. Repeated publication is idempotent. It leaves continuous states,
+deadband memory, accepted turbine power and command revisions unchanged. The
+diagram convention already publishes live algebraic output and needs no change.
+
+`notifyAcceptedEndpointDiscontinuity` captures the first settled machine
+derivatives before inputs change. The subsequent event average uses those fresh
+left rates while retaining the older two-step history. Repeated notifications
+preserve the first snapshot, and the next accepted step consumes it once.
+The existing `notifyDiscontinuity` policy remains available and unchanged.
+The notification uses the solver's prepared arrays; it does not allocate new
+state storage or change the ordinary integration path.
+
+Modified Euler retains its predictor/corrector formula. It uses the explicit
+output refresh but does not adopt the staggered event weighting. Both methods
+are exercised through command boundaries and an independent pause with no
+command. Complete comparison samples retain the pre- and post-resume values.
+
+At a 0.5 ms network interval, maximum mechanical-power errors change as follows:
+
+| Profile | Method | Before explicit resume | After explicit resume |
+|---|---|---:|---:|
+| Temperature limit | Staggered | `2.4801e-4` pu | `6.6676e-7` pu |
+| Opening-rate limit | Staggered | `2.5664e-4` pu | `4.5495e-6` pu |
+| Temperature limit | Modified Euler | `2.4683e-4` pu | `2.5151e-6` pu |
+| Opening-rate limit | Modified Euler | `2.8830e-4` pu | `4.4805e-5` pu |
+
+The voltage and command-state acceptance failures remain. This change corrects
+the independently observed publication and event lifecycle; it does not claim
+complete trajectory qualification or alter existing acceptance thresholds.
+
 ## Validation checkpoint
 
 The initial runtime checkpoint's registered suite executes 4,159 tests, with 36 failures, no errors
@@ -174,6 +223,15 @@ identities, no errors and 13 skips. All 18 added tests pass. The private
 diagnostic traces, test sources/classes and reference-archive hashes over the
 initial `validation.zip` runtime checkpoint. Retention verifies byte identity
 of the original coupled results and the frozen production classes.
+
+With explicit run-resume publication, the registered suite executes 4,180 tests
+with the same 36 failure identities, no errors and 13 skips. The separate
+accepted-endpoint solver contract tests pass, and the core plugin module passes
+486 tests with four skips and no failures or errors. All seventy coupled
+acceptance outcomes are unchanged: fifty pass, and twenty command-response
+comparisons remain open. The adjacent `resume-validation.zip` retains the
+changed production classes, complete trajectories and test reports over the
+boundary-localization checkpoint. The original immutable references are reused.
 
 Private immutable capture archives retain the complete cold-run evidence; the
 current fixture is `urgs3t-initial-20261102/captures-v3.zip`, pinned by the test to

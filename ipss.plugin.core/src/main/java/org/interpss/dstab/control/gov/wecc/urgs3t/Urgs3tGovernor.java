@@ -38,7 +38,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
     private double scale, reference, initialReference, lower, upper, powerMemory, powerInputMemory, initialSpeed;
     private double acceptedTurbinePower, publishedTurbinePower;
     private Machine initializedMachine;
-    private boolean initialized, predicted, referenceJumpPending;
+    private boolean initialized, predicted, referenceJumpPending, sharedTrialPending;
     private long evaluations, referenceRevision;
 
     public Urgs3tGovernor(String id, double[] constants) {
@@ -74,7 +74,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
     public long getStaggeredEvaluationCount() { return evaluations; }
 
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
-        initialized = predicted = false; monitor.reset(); evaluations = 0;
+        initialized = predicted = sharedTrialPending = false; monitor.reset(); evaluations = 0;
         if (machine == null || machine != getMachine()) return false;
         double mva = machine.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
         if (!Double.isFinite(mva) || mva <= 0 || !Double.isFinite(machine.getPm())
@@ -143,11 +143,12 @@ public final class Urgs3tGovernor extends AbstractGovernor
         for (int i = 0; i < 5; i++) if (!Double.isFinite(values[offset+i]))
             throw new IllegalArgumentException("URGS3T states must be finite");
         System.arraycopy(values, offset, x, 0, 5); project();
+        if (h > 0) sharedTrialPending = true;
     }
     @Override public void completeStaggeredStep(double h) {
         requireState(); requireStep(h);
         if (predicted) throw new IllegalStateException("URGS3T predictor pending");
-        if (h > 0) commit();
+        if (h > 0) { commit(); sharedTrialPending = false; }
     }
     @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity() { return true; }
     @Override public boolean useAcceptedEndpointRateAtInputDiscontinuity() { return true; }
@@ -206,6 +207,19 @@ public final class Urgs3tGovernor extends AbstractGovernor
         return runtimeConvention == RuntimeConvention.SOURCE_RECORD
                 ? scale*(publishedTurbinePower-c[8]*(machine.getSpeed()-1))
                 : scale*backlash(curvePower(x)) - c[8]*(machine.getSpeed()-1);
+    }
+    /**
+     * Refresh source-record output when a host explicitly resumes a segmented
+     * run at an accepted endpoint. This is not an ordinary getter or zero-time
+     * integration stage: it publishes the already accepted turbine power without
+     * advancing states, deadbands, command revisions or integration history.
+     * Capture the solver's accepted left rates before calling this method.
+     */
+    public void publishAcceptedRunBoundary() {
+        requireState();
+        if (predicted || sharedTrialPending) throw new IllegalStateException("Accept the integration stage before resuming a run");
+        if (runtimeConvention == RuntimeConvention.SOURCE_RECORD)
+            publishedTurbinePower = acceptedTurbinePower;
     }
     @Override public void setRefPoint(double value) {
         if (!Double.isFinite(value)) throw new IllegalArgumentException("URGS3T reference must be finite");

@@ -394,6 +394,31 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     /** Notify an externally applied discontinuous input without advancing time. */
     public void notifyDiscontinuity() { inputDiscontinuity = true; }
 
+    /**
+     * Begin an explicit input/publication change at a settled accepted endpoint.
+     * Call before changing the inputs or refreshing outputs. Preserve the first
+     * accepted machine rates separately from the older two-step history, even
+     * when several changes are made at this boundary. This opt-in contract does
+     * not change the legacy {@link #notifyDiscontinuity()} history policy.
+     */
+    public void notifyAcceptedEndpointDiscontinuity() {
+        if (previous == null)
+            throw new IllegalStateException("Initialize the staggered solver before an accepted endpoint change");
+        captureAcceptedMachineEventRates();
+        inputDiscontinuity = true;
+        networkEndpointAvailable = false;
+    }
+
+    private void captureAcceptedMachineEventRates() {
+        if (hasMachineEventLeft) return;
+        for (int slot : machineEventStateSlots) {
+            machineEventValid[slot] = states.get(slot).active.getAsBoolean();
+            if (machineEventValid[slot])
+                machineEventLeft[slot] = states.get(slot).derivative.getAsDouble();
+        }
+        hasMachineEventLeft = true;
+    }
+
     private final List<org.interpss.dstab.relay.Tiocr1RelayModel> acceptedRelays = new ArrayList<>();
     private long[] acceptedRelayActions = new long[0];
 
@@ -915,14 +940,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         // The final zero-time evaluation has already sampled this accepted
         // endpoint. Keep its machine rates separate from the previous interval's
         // multistep history. Reading them must not advance controller histories.
-        hasMachineEventLeft=eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent();
-        if (hasMachineEventLeft)
-            for (int slot:machineEventStateSlots) {
-                machineEventValid[slot]=states.get(slot).active.getAsBoolean();
-                if (machineEventValid[slot])
-                    machineEventLeft[slot]=states.get(slot).derivative.getAsDouble();
-            }
-        if (hasMachineEventLeft)
+        boolean scheduledEvent=eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent();
+        if (scheduledEvent) captureAcceptedMachineEventRates();
+        if (scheduledEvent)
             for (var p:participants)
                 if (p.captureAcceptedNetworkEventRates && p.wasActive && p.active.getAsBoolean())
                     System.arraycopy(p.rates,0,p.eventLeftRates,0,p.rates.length);

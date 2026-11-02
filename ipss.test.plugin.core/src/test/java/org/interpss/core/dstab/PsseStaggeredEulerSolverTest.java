@@ -17,6 +17,31 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void acceptedEndpointInputChangeRetainsFirstLeftRateAndOlderHistory() throws Exception {
+        var algo=loadSubtransient("SMIB_v33_genrou.dyr");
+        var solver=(StaggeredEulerSolver)algo.getSolver();solver.setReuseNetworkEndpoint(true);
+        var machine=(com.interpss.dstab.mach.impl.MachineImpl)algo.getNetwork().getMachine("Bus1-mach1");
+        machine.setPm(machine.getPm()+.1);double older=0.;
+        for(int i=0;i<20;i++) {
+            older=machine.captureMechanicalIntegrationState().speedDerivative();
+            assertTrue(algo.solveDEqnStep(true));
+        }
+        double left=machine.captureMechanicalIntegrationState().speedDerivative(),speed=machine.getSpeed(),power=machine.getPm(),h=algo.getSimuStepSec();
+        solver.notifyAcceptedEndpointDiscontinuity();
+        machine.setPm(power+.04);assertTrue(machine.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0));
+        solver.notifyAcceptedEndpointDiscontinuity();machine.setPm(power+.1);
+        double right=left+.1/(2.*machine.getH()*speed);
+        double expected=speed+h*(.75*(left+right)-.5*older);
+        double previousOnly=speed+h*(.75*right+.25*older);
+        assertTrue(Math.abs(expected-previousOnly)>1e-12,"Moving endpoint distinguishes accepted rates from retained older history");
+        assertTrue(algo.solveDEqnStep(true));
+        assertEquals(expected,machine.getSpeed(),1e-12,"Repeated notification and beforeStep preserve the first accepted left rate");
+        double nextLeft=machine.captureMechanicalIntegrationState().speedDerivative();speed=machine.getSpeed();
+        assertTrue(algo.solveDEqnStep(true));
+        assertEquals(speed+h*(1.5*nextLeft-.25*(left+right)),machine.getSpeed(),1e-12,"Event blend is consumed once, retaining the averaged interval rate");
+        var uninitialized=new StaggeredEulerSolver(algo);
+        assertThrows(IllegalStateException.class,uninitialized::notifyAcceptedEndpointDiscontinuity);
+    }
     @Test void roundRotorRetainsLastInjectionMeasurementsWhenSelected() throws Exception {
         assertLastInjectionBoundary("SMIB_v33_genrou.dyr");
     }

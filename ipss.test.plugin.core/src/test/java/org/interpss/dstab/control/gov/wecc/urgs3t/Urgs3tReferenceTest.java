@@ -213,6 +213,7 @@ public class Urgs3tReferenceTest {
         boolean flat=settings.path("flat").asBoolean(),commands=settings.path("reference_steps").asBoolean();
         if(!flat&&!commands)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"fault");
         var recording=new Recording(algorithm,flat,commands);
+        recording.extraPause=settings.path("extra_pause").asDouble(Double.NaN);
         algorithm.setSolver(factory==null?(shared?new Shared(algorithm,recording,tolerance):new Ordinary(algorithm,recording,tolerance)):factory.apply(algorithm,recording));
         assertTrue(algorithm.initialization());var initial=recording.capture(0);recording.enabled=true;
         assertEquals(tolerance,shared?((Shared)algorithm.getSolver()).getNetworkSolutionTolerance():((Ordinary)algorithm.getSolver()).tolerance(),0.);
@@ -227,15 +228,24 @@ public class Urgs3tReferenceTest {
     }
     static final class Recording {
         final DynamicSimuAlgorithm algorithm;final boolean flat,commands;boolean enabled;int nextCommand;
+        double extraPause=Double.NaN;
         final List<Map<String,Double>> frames=new ArrayList<>();final double[] states=new double[5],vars=new double[5];
         Recording(DynamicSimuAlgorithm a,boolean f,boolean c){algorithm=a;flat=f;commands=c;}
         boolean before(double t){
             if(!enabled)return false;
-            if(commands&&nextCommand<3&&Math.abs(t-new double[]{.05,.25,.4}[nextCommand])<1e-9) {
-                frames.add(capture(t));var g=(Urgs3tGovernor)algorithm.getNetwork().getMachine("Bus1-mach1").getGovernor();
+            boolean command=commands&&nextCommand<3&&Math.abs(t-new double[]{.05,.25,.4}[nextCommand])<1e-9;
+            boolean boundary=command||Math.abs(t-extraPause)<1e-9||(!flat&&!commands&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9));
+            if(!boundary)return false;
+            frames.add(capture(t));var machine=algorithm.getNetwork().getMachine("Bus1-mach1");
+            var g=(Urgs3tGovernor)machine.getGovernor();
+            if(g.isActive()) {
+                if(algorithm.getSolver() instanceof StaggeredEulerSolver solver)solver.notifyAcceptedEndpointDiscontinuity();
+                g.publishAcceptedRunBoundary();machine.setPm(g.getOutput(machine));
+            }
+            if(command) {
                 g.applyReferenceEvent(g.getRefPoint()+new double[]{.2,-.4,.2}[nextCommand++]);return true;
             }
-            if(!flat&&!commands&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9))frames.add(capture(t));return false;
+            return true;
         }
         Map<String,Double> capture(double t) {
             var n=algorithm.getNetwork();var m=n.getMachine("Bus1-mach1");var g=(Urgs3tGovernor)m.getGovernor();var v=m.getDStabBus().getVoltage();

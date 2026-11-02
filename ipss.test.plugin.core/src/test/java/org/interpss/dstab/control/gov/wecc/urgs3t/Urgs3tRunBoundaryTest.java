@@ -39,6 +39,30 @@ public class Urgs3tRunBoundaryTest {
         return out;
     }
     private static double rate(Map<String,Double> r){return (r.get("PMECH")/(1+r.get("SPEED"))-r.get("P_PU"))/12.8;}
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void bothIntegratorsPublishOnlyAtExplicitRunBoundaries(boolean shared)throws Exception {
+        Urgs3tReferenceTest.setup();
+        for(String profile:List.of("temperature-limits","rate-limits")) {
+            Path input=stage(profile+"-h0p0005-t0p5-command-pause0.2-machines-a");
+            var reference=Urgs3tReferenceTest.rows(input.resolve("native.csv"));
+            var actual=Urgs3tReferenceTest.simulate(input,shared,1e-6);
+            int events=0;
+            for(int i=1;i<actual.frames().size();i++) {
+                var pre=actual.frames().get(i-1);var post=actual.frames().get(i);
+                if(!post.get("time_s").equals(pre.get("time_s")))continue;
+                events++;assertEquals(post.get("VAR4"),post.get("PMECH"),1e-14,"Explicit resume publishes accepted turbine output");
+                for(int state=0;state<5;state++)assertEquals(pre.get("STATE"+state),post.get("STATE"+state),0.,"Resume does not advance controller states");
+                for(int state=0;state<6;state++)assertEquals(pre.get("GEN1_STATE"+state),post.get("GEN1_STATE"+state),0.,"Resume does not advance machine states");
+                if(Math.abs(post.get("time_s")-.2)<1e-9)assertTrue(Math.abs(post.get("PMECH")-pre.get("PMECH"))>3e-6,"No-command pause activates the refresh");
+            }
+            assertEquals(4,events);
+            var result=new LinkedHashMap<String,Object>();result.put("profile",profile);result.put("method",shared?"staggered":"modified-euler");result.put("diagnostic_only",true);
+            result.putAll(Urgs3tCommandBoundaryTest.compare(input,"explicit-resume",actual,reference));
+            try(var writer=org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(input.resolve("diagnostic.json"),100000)) {
+                new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(writer,result);
+            }
+        }
+    }
     @ParameterizedTest @ValueSource(strings={"temperature-limits","rate-limits"})
     void noCommandPauseRefreshesPowerWithoutAdvancingStates(String profile)throws Exception {
         for(boolean pause:new boolean[]{false,true}) {
