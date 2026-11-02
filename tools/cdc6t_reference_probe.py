@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
     parser.add_argument('--step', type=float, default=.0005)
+    parser.add_argument('--measurement-times', type=float, nargs=3, default=[.05,.05,.05])
     parser.add_argument('--restart-current', type=float, default=500.)
     parser.add_argument('--minimum-current', type=float, default=400.)
     parser.add_argument('--fault-clear', type=float, default=.1)
@@ -35,6 +36,8 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.step) or not .0001 <= args.step <= .005:
         parser.error('Network step must be between 0.1 and 5 ms')
+    if any(not math.isfinite(v) or v < 0 for v in args.measurement_times):
+        parser.error('Measurement times must be finite and nonnegative')
     if any(not math.isfinite(v) or v < 0 for v in [args.restart_current,args.minimum_current]):
         parser.error('Restart and minimum currents must be finite and nonnegative')
     if any(not math.isfinite(t) or not 0 < t < .5 for t in args.inspect_at):
@@ -91,6 +94,7 @@ def main():
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
+    constants[2],constants[3],constants[31] = args.measurement_times
     if args.protection == 'coordinated':
         constants[4:10] = [.90, .94, .02, 490., .92, .02]
         constants[12:14] = [2., 2.]

@@ -58,12 +58,43 @@ public class Cdc6tMeasurementsTest {
         assertEquals(initial,model.getIntegrationStates());
     }
     @Test void unsupportedTimesAndNonfiniteIntervalsAreRejected() {
-        for(double t:new double[]{0,-1,Double.NaN,Double.POSITIVE_INFINITY})
+        for(double t:new double[]{-1,Double.NaN,Double.POSITIVE_INFINITY})
             assertThrows(IllegalArgumentException.class,()->new Cdc6tMeasurements(t,.05,.05));
         var model=new Cdc6tMeasurements(.05,.05,.05);model.initialize(1,2,3);
         var initial=model.getIntegrationStates();
         for(double dt:new double[]{-1,Double.NaN,Double.POSITIVE_INFINITY})
             assertThrows(IllegalArgumentException.class,()->model.step(dt,0));
         assertEquals(initial,model.getIntegrationStates());
+    }
+    @Test void outerIntervalBypassKeepsCommandSamplingSeparateFromAcceptedProjection(){
+        var model=new Cdc6tMeasurements(0,.000999,.001);
+        model.configureIntegrationStep(.0005);model.initialize(500000,1000,505000);
+        model.setInput(450000,1100,455000);
+        double[] state=new double[3],rates=new double[3],command=new double[3];
+        model.evaluateStaggered(.00001,rates,0);
+        assertArrayEquals(new double[]{0,0,-50000000},rates,0,"Local stage size must not change the prepared bypass mask");
+        model.readStaggeredState(state,0);assertArrayEquals(new double[]{500000,1000,505000},state);
+        model.acceptAlgebraicInputs();model.readStaggeredState(state,0);
+        assertArrayEquals(new double[]{450000,1100,505000},state);
+        model.readCommandMeasurements(command,0);assertArrayEquals(new double[]{500000,1000,505000},command);
+        model.sampleCommandMeasurements();model.readCommandMeasurements(command,0);assertArrayEquals(state,command);
+        model.applyStaggeredState(new double[]{123,456,500000},0,.0005);
+        model.readStaggeredState(state,0);assertArrayEquals(new double[]{450000,1100,500000},state);
+        model.step(.0005,0);
+        assertThrows(IllegalStateException.class,()->model.configureIntegrationStep(.001));
+        model.cancelPrediction();
+    }
+    @Test void equalityRetainsTheExplicitModifiedEulerEquation(){
+        var model=new Cdc6tMeasurements(.001,.001001,.05);
+        model.configureIntegrationStep(.0005);model.initialize(500000,1000,505000);
+        model.setInput(450000,1100,455000);model.acceptAlgebraicInputs();
+        double[] state=new double[3];model.readStaggeredState(state,0);
+        assertArrayEquals(new double[]{500000,1000,505000},state,"Equality must not bypass or floor source times");
+        model.step(.0005,0);model.step(.0005,1);model.readStaggeredState(state,0);
+        double[] initial={500000,1000,505000},input={450000,1100,455000},times={.001,.001001,.05};
+        for(int i=0;i<3;i++){
+            double ratio=.0005/times[i];
+            assertEquals(initial[i]+(input[i]-initial[i])*(ratio-.5*ratio*ratio),state[i],1e-9);
+        }
     }
 }

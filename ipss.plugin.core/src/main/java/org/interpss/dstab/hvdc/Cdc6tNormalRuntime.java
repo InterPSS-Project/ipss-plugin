@@ -39,6 +39,9 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
         if(!Double.isFinite(currentAmperes)||currentAmperes<=0)throw new IllegalArgumentException("Positive scheduled current required");
         measurements.initialize(inverterVolts,currentAmperes,rectifierVolts);scheduledAmperes=currentAmperes;boundaryReady=false;
     }
+    public void configureIntegrationStep(double outerStep){measurements.configureIntegrationStep(outerStep);}
+    public void sampleCommandMeasurements(){measurements.sampleCommandMeasurements();}
+    public void acceptAlgebraicMeasurements(){ready();measurements.acceptAlgebraicInputs();}
     /** Recompute voltage-dependent injections and transducer inputs for each network trial.
      * Returns rectifier real/imaginary injection then inverter real/imaginary injection on network base. */
     public void evaluateBoundary(double rectifierReal,double rectifierImag,double inverterReal,double inverterImag,
@@ -64,7 +67,7 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
         double vr=Math.hypot(rectifierReal,rectifierImag),vi=Math.hypot(inverterReal,inverterImag);
         if(!Double.isFinite(vr)||!Double.isFinite(vi)||mode!=OperatingMode.BLOCKED&&(vr<=0||mode!=OperatingMode.BYPASSED&&vi<=0))
             throw new IllegalArgumentException("Positive finite terminal voltage magnitudes required");
-        measurements.readStaggeredState(states,0);
+        measurements.readCommandMeasurements(states,0);
         double current;
         if(mode==OperatingMode.BLOCKED){
             current=0;java.util.Arrays.fill(boundary,0);boundary[2]=Math.PI/2;boundary[5]=Math.PI/2;

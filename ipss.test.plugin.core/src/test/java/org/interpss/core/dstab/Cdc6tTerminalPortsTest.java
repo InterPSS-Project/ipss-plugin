@@ -12,13 +12,16 @@ import com.interpss.dstab.device.NetworkIterationAware.Context;
 public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
     private record ProtectedPair(Cdc6tNormalTerminalPorts ports,Cdc6tProtectionCoordinator coordinator) {}
     private static ProtectedPair protectedPair(){
+        return protectedPair(runtime());
+    }
+    private static ProtectedPair protectedPair(Cdc6tNormalRuntime runtime){
         var net=DStabObjectFactory.createDStabilityNetwork();net.setBaseKva(100000);
         var r=DStabObjectFactory.createDStabBus("R",net).orElseThrow();
         var i=DStabObjectFactory.createDStabBus("I",net).orElseThrow();r.setVoltage(Complex.ONE);i.setVoltage(Complex.ONE);
         var coordinator=new Cdc6tProtectionCoordinator(new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02),
                 new Cdc6tInverterProtection(.9,.02,.92,.01,.02),new Cdc6tBypassProtection(0,0,.01,.92,.01,.02),
                 new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,500,1000,2,2));
-        var pair=new Cdc6tNormalTerminalPorts("protected",r,i,runtime(),500000,1000,505000,coordinator);
+        var pair=new Cdc6tNormalTerminalPorts("protected",r,i,runtime,500000,1000,505000,coordinator);
         pair.attach();assertTrue(pair.rectifierPort().initStates(r));return new ProtectedPair(pair,coordinator);
     }
     private static void solve(Cdc6tNormalTerminalPorts.Port port,String stage,double t,boolean success){
@@ -67,11 +70,35 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         assertTrue(p.initStates(p.getDStabBus()));assertEquals(Double.NEGATIVE_INFINITY,history(c)[0]);
     }
     private static Cdc6tNormalRuntime runtime() {
-        return new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
+        return runtime(new Cdc6tMeasurements(.05,.05,.05));
+    }
+    private static Cdc6tNormalRuntime runtime(Cdc6tMeasurements measurements) {
+        return new Cdc6tNormalRuntime(measurements,
             new Cdc6tCurrentOrder(Cdc6tCurrentOrder.Mode.POWER,-500,500,0),
             new Cdc6tVoltageCurrentLimit(250,450,425,2000,500,2000),
             new Cdc6tConductingLink(new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8),
                 new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8),5,Math.toRadians(5),Math.toRadians(20)));
+    }
+    @Test void algebraicProjectionRequiresConvergenceAndGettersCannotResampleCommands(){
+        for(boolean staggered:new boolean[]{false,true}){
+            var runtime=runtime(new Cdc6tMeasurements(0,0,0));
+            var f=protectedPair(runtime);var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();
+            p.configureIntegrationStep(.0005);
+            solve(p,"INITIAL",0,true);
+            double[] original=new double[3],actual=new double[3],boundary=new double[8];
+            runtime.readStaggeredState(original,0);
+            inv.getDStabBus().setVoltage(new Complex(.91,0));
+            solve(p,"INITIAL",.05,false);runtime.readStaggeredState(actual,0);assertArrayEquals(original,actual);
+            solve(p,"INITIAL",.05,true);runtime.readStaggeredState(actual,0);assertTrue(actual[0]<original[0]);
+            runtime.readBoundary(boundary,0);assertEquals(1000,boundary[0]*1e8/boundary[6],1e-8);
+            var output=p.getOutputObject();
+            for(int k=0;k<10;k++){assertEquals(output,p.getOutputObject());inv.getOutputObject();p.getStates(null);}
+            runtime.readBoundary(boundary,0);assertEquals(1000,boundary[0]*1e8/boundary[6],1e-8,"Projection does not change this endpoint's command");
+            if(staggered)p.completeStaggeredStep(.0005,.0505);
+            else {p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);}
+            p.getOutputObject();runtime.readBoundary(boundary,0);
+            assertTrue(boundary[0]*1e8/boundary[6]>1000,"The next integration command sees the projected measurement");
+        }
     }
     @Test void twoPortsRefreshBothVoltagesButOnlyRectifierIntegrates() {
         var net=DStabObjectFactory.createDStabilityNetwork();net.setBaseKva(100000);

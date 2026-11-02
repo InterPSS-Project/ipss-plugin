@@ -12,17 +12,44 @@ public final class Cdc6tMeasurements implements StaggeredEulerParticipant, Integ
     private final double[] time=new double[3],state=new double[3],input=new double[3],origin=new double[3],
             firstRate=new double[3],rate=new double[3],candidate=new double[3];
     private final IntegrationStateMonitor monitor=new IntegrationStateMonitor(NAMES);
+    private final boolean[] algebraic=new boolean[3];
+    private final double[] commandState=new double[3];
+    private boolean hasAlgebraic;
     private boolean initialized,pending;
     private double pendingStep;
 
     public Cdc6tMeasurements(double inverterVoltageTime,double currentTime,double rectifierVoltageTime) {
         time[0]=inverterVoltageTime;time[1]=currentTime;time[2]=rectifierVoltageTime;
-        for(double t:time)if(!Double.isFinite(t)||t<=0)
-            throw new IllegalArgumentException("CDC6T measurement times must be finite and positive");
+        for(int i=0;i<3;i++){
+            if(!Double.isFinite(time[i])||time[i]<0)
+                throw new IllegalArgumentException("CDC6T measurement times must be finite and nonnegative");
+            algebraic[i]=time[i]==0;hasAlgebraic|=algebraic[i];
+        }
+    }
+    /** Prepare from the outer network interval, never from a local integration stage.
+     * Strictly shorter than two intervals bypasses the lag; equality stays differential.
+     * Source time constants remain unchanged. Call before state initialization. */
+    public void configureIntegrationStep(double outerStep){
+        interval(outerStep);if(outerStep==0)throw new IllegalArgumentException("Positive outer interval required");
+        exclusive();hasAlgebraic=false;
+        for(int i=0;i<3;i++){algebraic[i]=time[i]<2*outerStep;hasAlgebraic|=algebraic[i];}
     }
     public void initialize(double inverterVoltage,double current,double rectifierVoltage) {
         setInput(inverterVoltage,current,rectifierVoltage);
-        System.arraycopy(input,0,state,0,3);initialized=true;pending=false;monitor.reset();
+        System.arraycopy(input,0,state,0,3);System.arraycopy(input,0,commandState,0,3);
+        initialized=true;pending=false;monitor.reset();
+    }
+    /** Project only a converged network boundary. No getters or trial-current calls project states. */
+    public void acceptAlgebraicInputs(){
+        ready();if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])state[i]=input[i];
+    }
+    /** Sample bypassed measurements once at the next integration interval's command boundary. */
+    public void sampleCommandMeasurements(){
+        ready();if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])commandState[i]=state[i];
+    }
+    public void readCommandMeasurements(double[] values,int offset){
+        readStaggeredState(values,offset);
+        if(hasAlgebraic)for(int i=0;i<3;i++)if(algebraic[i])values[offset+i]=commandState[i];
     }
     /** Refresh algebraic measurements without advancing state or committed integration history. */
     public void setInput(double inverterVoltage,double current,double rectifierVoltage) {
@@ -38,7 +65,7 @@ public final class Cdc6tMeasurements implements StaggeredEulerParticipant, Integ
             throw new IllegalStateException("Matching measurement predictor/corrector required");
         rates();
         for(int i=0;i<3;i++) {
-            candidate[i]=stage==0?state[i]+seconds*rate[i]:origin[i]+.5*seconds*(firstRate[i]+rate[i]);
+            candidate[i]=algebraic[i]?state[i]:stage==0?state[i]+seconds*rate[i]:origin[i]+.5*seconds*(firstRate[i]+rate[i]);
             finite(candidate[i]);
         }
         record(stage==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
@@ -61,13 +88,13 @@ public final class Cdc6tMeasurements implements StaggeredEulerParticipant, Integ
     @Override public void applyStaggeredState(double[] values,int offset,double seconds) {
         ready();interval(seconds);buffer(values,offset);exclusive();
         for(int i=0;i<3;i++)finite(values[offset+i]);
-        System.arraycopy(values,offset,state,0,3);
+        for(int i=0;i<3;i++)if(!algebraic[i])state[i]=values[offset+i];
     }
     @Override public Map<String,Double> getIntegrationStates() {
         ready();return Map.of(NAMES[0],state[0],NAMES[1],state[1],NAMES[2],state[2]);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){return monitor.snapshot();}
-    private void rates(){for(int i=0;i<3;i++){rate[i]=(input[i]-state[i])/time[i];finite(rate[i]);}}
+    private void rates(){for(int i=0;i<3;i++){rate[i]=algebraic[i]?0:(input[i]-state[i])/time[i];finite(rate[i]);}}
     private void record(IntegrationStateMonitor.Stage stage) {
         monitor.begin(stage);for(int i=0;i<3;i++)monitor.record(i,state[i],rate[i]);
     }

@@ -3,6 +3,7 @@ package org.interpss.dstab.hvdc;
 import java.util.Hashtable;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.DynamicBusDeviceType;
@@ -18,7 +19,7 @@ public final class Cdc6tNormalTerminalPorts {
     private final double[] currents=new double[4];
     private final Port rectifierPort,inverterPort;
     private final double[] electrical=new double[8];
-    private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending;
+    private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending,boundaryTrial;
     private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
     private long inputDiscontinuityVersion;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
@@ -63,12 +64,13 @@ public final class Cdc6tNormalTerminalPorts {
                     recovery?protection.voltageFactor():1,recovery?protection.currentFactor():1,currents,0);
         }
     }
-    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware {
+    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware {
         private final boolean owner;
         private Port(String id,BaseDStabBus<?,?> bus,boolean owner) {
             this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
         }
         public boolean isStateOwner(){return owner;}
+        @Override public void configureIntegrationStep(double outerStep){if(owner)runtime.configureIntegrationStep(outerStep);}
         public boolean attachmentIntact() {
             return rectifierPort.getDStabBus()==rectifier&&inverterPort.getDStabBus()==inverter
                 &&rectifier.getDynamicBusDeviceList().contains(rectifierPort)&&inverter.getDynamicBusDeviceList().contains(inverterPort);
@@ -77,13 +79,15 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public boolean initStates(BaseDStabBus<?,?> bus) {
             if(bus!=getDStabBus()||!attachmentIntact())return false;
             if(protection!=null){if(coordinatorTrial)protection.discardTrial();protection.reset();}
-            coordinatorTrial=false;networkTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
+            coordinatorTrial=false;networkTrial=false;boundaryTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
             inputDiscontinuityVersion=0;acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
             runtime.initialize(initialVi,initialCurrent,initialVr);return true;
         }
         @Override public void beginNetworkSolution(NetworkIterationAware.Context context){
-            if(!owner||protection==null||!isOperational())return;
-            if(networkTrial)throw new IllegalStateException("Nested CDC6T network trial");
+            if(!owner||!isOperational())return;
+            if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
+            boundaryTrial=true;
+            if(protection==null)return;
             boolean directEndpoint="DIRECT".equals(context.stage())&&staggeredEndpointPending;
             if("DIRECT".equals(context.stage())&&!directEndpoint)return; // Initialization/direct probes cannot commit a clock.
             if(!directEndpoint&&!"INITIAL".equals(context.stage())&&!"PREDICTOR".equals(context.stage())&&!"CORRECTOR".equals(context.stage()))
@@ -114,12 +118,14 @@ public final class Cdc6tNormalTerminalPorts {
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
         }
         @Override public void afterNetworkConvergence(){
-            if(!owner||!networkTrial)return;
+            if(!owner||!boundaryTrial)return;
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
         }
         @Override public void endNetworkSolution(boolean converged){
-            if(!owner||!networkTrial)return;
+            if(!owner||!boundaryTrial)return;
             try{
+                if(converged)runtime.acceptAlgebraicMeasurements();
+                if(!networkTrial)return;
                 if(!converged){protection.discardTrial();coordinatorTrial=false;}
                 else if(commitNetworkTrial){
                     protection.acceptTrial();coordinatorTrial=false;acceptedDcVoltage=trialDcVoltage;
@@ -128,7 +134,7 @@ public final class Cdc6tNormalTerminalPorts {
                 }
                 // A successful predictor retains provisional history through the same endpoint's
                 // corrector. A failed corrector discards it; a different solve starts a fresh trial.
-            } finally {networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
+            } finally {boundaryTrial=false;networkTrial=false;if(commitNetworkTrial)staggeredEndpointPending=false;}
         }
         @Override public Object getOutputObject() {
             if(!isOperational())return Complex.ZERO;
@@ -137,6 +143,7 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public boolean nextStep(double dt,DynamicSimuMethod method,int stage) {
             if(!owner||!isOperational())return true;
             if(method!=DynamicSimuMethod.MODIFIED_EULER)throw new IllegalArgumentException("Use modified Euler or the shared staggered participant");
+            if(stage==0&&dt>0)runtime.sampleCommandMeasurements();
             refresh();runtime.step(dt,stage);return true;
         }
         @Override public boolean afterStep(double dt){return true;}
@@ -152,8 +159,10 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public void evaluateStaggered(double h,double[] values,int offset){if(owner){refresh();runtime.evaluateStaggered(h,values,offset);}else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void applyStaggeredState(double[] values,int offset,double h){if(owner)runtime.applyStaggeredState(values,offset,h);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void completeStaggeredStep(double h,double endpointTime){
-            if(!owner||protection==null||!isOperational())return;
-            if(!Double.isFinite(endpointTime))throw new IllegalArgumentException("Finite CDC6T endpoint required");
+            if(!owner||!isOperational())return;
+            if(!Double.isFinite(endpointTime)||!Double.isFinite(h)||h<0)throw new IllegalArgumentException("Finite CDC6T endpoint and nonnegative interval required");
+            if(h>0)runtime.sampleCommandMeasurements();
+            if(protection==null)return;
             staggeredEndpoint=endpointTime;staggeredEndpointPending=true;
         }
     }

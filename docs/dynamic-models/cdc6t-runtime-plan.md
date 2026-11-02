@@ -64,8 +64,9 @@ changing stored coordinates. Mixed local/staggered trial ownership is rejected.
 Analytic exponential tests verify second-order convergence for local modified
 Euler and accepted two-step rates. The typed conducting runtime below owns this
 component; the measurements do not themselves implement blocking, bypass,
-recovery or command limits. Only positive measurement time constants are admitted at this
-stage; zero-time handling requires its own source and reference qualification.
+recovery or command limits. The original differential-only boundary admitted positive times. The prepared
+short-transducer path described below now covers zero and sufficiently short
+times without changing the raw source constants.
 
 Recorded-input replay also remains diagnostic: endpoint-sampled voltage inputs
 alone leave roughly 48 V of peak measured-voltage discrepancy around the fault.
@@ -817,3 +818,54 @@ Private paired reference captures:
 Private complete comparisons, all-channel metrics and focused reports:
 `verification-artifacts/cdc6t-release-half-20261101/validation.zip`, SHA-256
 `600856a7708a0d1cd7be56c20b9a44d08b8a303a9a6100d184852ed6771a9b16`.
+
+
+## Prepared zero/short transducers
+
+`Cdc6tMeasurements` now prepares a per-coordinate algebraic mask from the outer
+network interval H. Independent paired fault controls establish the strict
+rule T < 2H; equality stays differential. The source constants remain unchanged.
+Negative and nonfinite constants are rejected. A local derivative call's step
+size does not change the prepared mask. The terminal owner implements
+`IntegrationStepAware`, so both supported imported-network solvers prepare this
+mask before state initialization. Programmatic drivers must supply that same
+preinitialization contract when using positive short constants.
+
+Bypassing the lag alone is insufficient: it would otherwise create an immediate
+feedback loop through the current-order calculation. Bypassed measurements are
+projected from the converged network boundary, while command inputs retain their
+sample until the next integration command boundary. Modified Euler samples once
+at its predictor; the staggered owner samples once before its endpoint network
+solve. Differential measurements continue to use their live integration states.
+Current/output getters refresh electrical quantities but cannot project states
+or sample new commands. Failed network solves cannot accept the algebraic
+projection. Both numerical paths reuse the same arrays and equations; no
+reflection, parsing or per-step buffer allocation was added.
+
+The independent matrix includes zero constants, short unequal constants, values
+on both sides of one and two network intervals, and an excited equality control.
+Every profile is regenerated twice with identical complete CSV and state/flag
+snapshots. All algebraic profiles pass strict full-trajectory gates under both
+methods, preserving every sample and both scheduled event sides. Maximum bus
+voltage difference is below 3.5e-6 pu; voltage-state differences stay below
+0.22 V. Staggered integration also passes the strict differential equality and
+above-boundary controls. Modified Euler retains its own explicit Heun equation,
+checked analytically, and its differential-boundary accuracy remains separate:
+the equality control reaches about 0.002174 pu voltage and 5.223 kV state error.
+These errors have not been absorbed into wider trajectory-acceptance limits.
+
+Projection, rejected solves, repeated getters, command sampling, equality,
+local-step independence and predictor ownership have targeted lifecycle checks.
+The focused model, adjacent staggered and parser run passes 247 tests without
+failures, errors or skips. All 44 previously retained positive-lag conducting and
+protected trajectories are byte-identical to the preceding checkpoint. Full
+CDC6T qualification remains open, including protection-release timing, modified-
+Euler differential-boundary accuracy, other equipment variants and automatic
+attachment.
+
+Private paired reference captures:
+`verification-artifacts/cdc6t-short-transducers-20261101/captures.zip`, SHA-256
+`70102ccd87680e741dbb251ad9e9b08fb2d6994cc95a6dfc19e5316b0e6eedf1`.
+Private complete comparisons, reports and implementation snapshots:
+`verification-artifacts/cdc6t-short-transducers-20261101/validation.zip`, SHA-256
+`7f2725dc01e9da2096b41c1d1bc9b750d83413dc6a14f5b913f0717f4d27b0f5`.
