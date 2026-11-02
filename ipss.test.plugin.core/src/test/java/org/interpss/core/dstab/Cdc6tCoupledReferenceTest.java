@@ -10,8 +10,9 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
-import org.interpss.dstab.hvdc.Cdc6tCurrentOrder;
-import org.interpss.dstab.hvdc.Cdc6tVoltageCurrentLimit;
+import org.interpss.dstab.hvdc.Cdc6tParameters;
+import org.interpss.fadapter.psse.dyr.Cdc6tRecordMapper;
+import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -85,16 +86,16 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
         };
         assertEquals(hash,
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
-        List<Map<String,Double>> reference;List<String> raw;
+        List<Map<String,Double>> reference;List<String> raw;Cdc6tParameters parameters;
         try(var z=new ZipFile(archive.toFile())){
             String prefix=(group.equals("inverter-fault")?"":name+"/")+"a/";
             reference=Tiocr1ResetReferenceTest.csv(z.getInputStream(z.getEntry(prefix+"native.csv")).readAllBytes());
             raw=new ArrayList<>(new String(z.getInputStream(z.getEntry(prefix+"network.raw")).readAllBytes(),java.nio.charset.StandardCharsets.UTF_8).lines().toList());
+            var records=PsseDyrRecordReader.read(new java.io.InputStreamReader(z.getInputStream(z.getEntry(prefix+"dynamic.dyr")),java.nio.charset.StandardCharsets.UTF_8),"reference/dynamic.dyr");
+            var dc=records.stream().filter(r->r.canonicalModelName().equals("CDC6T")).toList();assertEquals(1,dc.size());
+            parameters=Cdc6tRecordMapper.prepare(dc.get(0));
         }
-        var limit=group.equals("vdcl")?new Cdc6tVoltageCurrentLimit(480,800,490,name.equals("two-slope-fault")?980:1000,500,1200)
-                :Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000);
-        var f=Cdc6tCoupledNetworkTest.load(folder,raw,name.equals("current")?Cdc6tCurrentOrder.Mode.CURRENT:Cdc6tCurrentOrder.Mode.POWER,
-                name.equals("current")?1000:name.equals("rectifier-power")?505:-500,limit);
+        var f=Cdc6tCoupledNetworkTest.load(folder,raw,parameters);
         var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
         var recorder=new Recorder(f);
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.5);a.setSimuOutputHandler(new StateMonitor());

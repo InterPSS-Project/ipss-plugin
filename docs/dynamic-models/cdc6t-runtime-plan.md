@@ -643,9 +643,10 @@ state/history ownership. The model, adjacent LCC, staggered and parser checks
 pass 216 tests with no failures, errors or skips.
 
 This is an explicit preparation API for the qualified fixed-tap, ordinary
-dynamic-angle path. The caller still supplies static equipment and its solved
-operating point. Static named-owner lookup, automatic attachment, constant-gamma
-variants and complete protected trajectory acceptance remain open. Strict
+dynamic-angle path. It accepts static equipment and a solved operating point;
+the network preparation described below obtains these from the static owner.
+Automatic attachment, constant-gamma variants and complete protected trajectory
+acceptance remain open. Strict
 automatic import continues to reject the incomplete runtime. Exact preservation
 of earlier outputs does not resolve their documented reference discrepancies.
 
@@ -690,3 +691,44 @@ automatic attachment remains disabled.
 Private complete exports, reports and test source:
 `verification-artifacts/cdc6t-bypass-switch-network-20261101/validation.zip`,
 SHA-256 `374b74ea0f00ae05a37ea6084c186eea514ada2167ebf44ad83f33f5df484c7f`.
+
+## Preparation from the solved static owner
+
+`Cdc6tNetworkPreparation.prepare` resolves the exact named static LCC link in a
+converged dynamic network. Missing or duplicate names fail before attachment.
+It obtains the power-control side or current demand, scheduled DC voltage,
+compensation resistance, solved terminal voltages/current, converter bridge
+counts, reactances, ratios and taps from that owner. Converter primary voltage
+base is kept distinct from the connected bus's nominal base. These values are
+prepared once into the existing numerical runtime; no network search or static
+equipment lookup enters the integration loop.
+
+Preparation rejects inactive/unsolved owners, inconsistent current or DC voltage
+drop, terminals outside the owning network, nonphysical coefficients and
+unqualified static equipment/control variants. It creates an unattached pair
+with independently owned states and histories, leaving the static network and
+its existing devices unchanged. Explicit attachment uses the established single
+injection per terminal. Later equipment changes require preparation again at a
+safe initialization boundary; prepared coefficients do not track mutable taps.
+
+All independent conducting and protected fixtures now use their archived
+dynamic constants and actual solved static owners. The 24 protected trajectories
+are byte-identical to the previous explicitly wired versions. The 14 conducting
+fault trajectories still pass their unchanged per-channel limits, including
+both power-control sides and current control. Additional checks verify initial
+zero derivatives and equilibrium under both methods, immutable preparation,
+independent ownership, command signs, compensation, equivalent primary-base
+specifications and invalid-owner rejection. The final focused model, adjacent
+LCC, staggered and parser regression passes 231 tests without failures or skips.
+
+Automatic import remains disabled. The current static importer does not retain
+all source controls, including the dynamic mode-transfer voltage threshold and
+some converter-variant selectors. The threshold must therefore be supplied
+explicitly, and callers must establish eligibility for this ordinary fixed-tap
+path. Preserve those source settings before enabling automatic preparation;
+never assume their absence means the corresponding feature was disabled.
+Protected release timing and complete trajectory qualification remain open.
+
+Private complete exports, reports and preparation source:
+`verification-artifacts/cdc6t-static-owner-20261101/validation.zip`, SHA-256
+`72f9a21d0e971b0ecb1a8e1aee40c930ce68cc623171455e4ae30946f34f4555`.

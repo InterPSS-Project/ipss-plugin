@@ -80,17 +80,17 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
         algorithm.getAclfAlgorithm().setTolerance(1e-10);algorithm.getAclfAlgorithm().setMaxIterations(80);
         algorithm.getAclfAlgorithm().getLfAdjAlgo().setApplyAdjustAlgo(false);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        if(parameters!=null){
+            var prepared=Cdc6tNetworkPreparation.prepare(net,parameters,modeThresholdKv);
+            prepared.ports().attach();
+            return new Fixture(context,prepared.runtime(),prepared.ports(),prepared.protection());
+        }
         var rectifierBoundary=new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8);
         var inverterBoundary=new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8);
-        Cdc6tNormalRuntime runtime;
-        if(parameters!=null){
-            var prepared=parameters.prepare(rectifierBoundary,inverterBoundary,5,
-                    new Cdc6tParameters.OperatingPoint(mode,setpoint,500,0,modeThresholdKv,500000,1000,505000));
-            runtime=prepared.runtime();protection=prepared.protection();
-        }else runtime=new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
+        var runtime=new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
             new Cdc6tCurrentOrder(mode,setpoint,500,0),limit,
             new Cdc6tConductingLink(rectifierBoundary,inverterBoundary,5,Math.toRadians(5),Math.toRadians(20)),minimumCurrent);
-        var pair=new Cdc6tNormalTerminalPorts(parameters==null?"1":parameters.linkName(),net.getBus("Bus7"),net.getBus("Bus9"),runtime,500000,1000,505000,protection);
+        var pair=new Cdc6tNormalTerminalPorts("1",net.getBus("Bus7"),net.getBus("Bus9"),runtime,500000,1000,505000,protection);
         pair.attach();
         return new Fixture(context,runtime,pair,protection);
     }
