@@ -146,6 +146,10 @@
     "referenceArchive": "testData/private/verification-artifacts/wsieg1-inactive-shaft-20261102/captures.zip",
     "archiveSha256": "6d8ac050aa345c0d59d40a6e4f50dd01fc25934125ae8e1fdee82c577a8fba33"
   },
+  "Wsieg1MachineEventConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-machine-events-20261102/captures.zip",
+    "archiveSha256": "4bc064e1dd292367cad4536cbc20915696ae44048c65c5882358787f8fab46ea"
+  },
   "Wsieg1BaseConformanceTest": {
     "referenceArchive": "testData/private/verification-artifacts/wsieg1-base-allocation-20261102/captures.zip",
     "archiveSha256": "85c23b5c33744923eae120a85df881a32834a5a30610b6506989bfb573b75451"

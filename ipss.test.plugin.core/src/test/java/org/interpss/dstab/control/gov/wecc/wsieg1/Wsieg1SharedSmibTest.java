@@ -53,7 +53,7 @@ public class Wsieg1SharedSmibTest {
     record Frame(double time,String kind,Map<String,Double> values){}
     static final class Recording {
         final DynamicSimuAlgorithm algorithm;final String event;final List<ReferenceEvent> references;
-        final List<Frame> frames=new ArrayList<>();boolean enabled;int nextReference;Frame initial;
+        final List<Frame> frames=new ArrayList<>();boolean enabled,recordMachineStates;int nextReference;Frame initial;
         final double[] published=new double[6];
         Recording(DynamicSimuAlgorithm a,String event,List<ReferenceEvent> references){algorithm=a;this.event=event;this.references=List.copyOf(references);}
         boolean before(double time) {
@@ -84,6 +84,13 @@ public class Wsieg1SharedSmibTest {
                 values.put("P_PU"+suffix,active?power.getReal():0.);values.put("Q_PU"+suffix,active?power.getImaginary():0.);
                 values.put("PMECH"+suffix,active?m.getPm():0.);values.put("SPEED"+suffix,active?m.getSpeed()-1.:0.);
                 values.put("ACTIVE"+suffix,active?1.:0.);
+                if(recordMachineStates) {
+                    var round=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)m;
+                    values.put("GEN_EP_Q"+suffix,round.getEq1());values.put("GEN_EP_D"+suffix,round.getEd1());
+                    values.put("GEN_PSIK_D"+suffix,round.getPsikd());values.put("GEN_PSIK_Q"+suffix,round.getPsikq());
+                    values.put("GEN_SPEED_DEV"+suffix,m.getSpeed()-1.);values.put("GEN_ANGLE"+suffix,m.getAngle());
+                    values.put("EFD"+suffix,m.getEfd());
+                }
             }
             var states=governor.getNamedStates();for(int i=0;i<NAMES.length;i++)values.put("STATE"+i,states.get(NAMES[i]));
             governor.readPublishedState(published,0);
@@ -106,11 +113,16 @@ public class Wsieg1SharedSmibTest {
     }
     static Recording simulate(Path raw,Path dynamic,boolean staggered,String event,double h,double duration,List<ReferenceEvent> references,
             java.util.function.Consumer<DynamicSimuAlgorithm> configure,int startupSteps) throws Exception {
+        return simulate(raw,dynamic,staggered,event,h,duration,references,configure,startupSteps,false);
+    }
+    static Recording simulate(Path raw,Path dynamic,boolean staggered,String event,double h,double duration,List<ReferenceEvent> references,
+            java.util.function.Consumer<DynamicSimuAlgorithm> configure,int startupSteps,boolean recordMachineStates) throws Exception {
         if(startupSteps<0)throw new IllegalArgumentException("Negative startup-step count");
         var loader=new PSSEMultiFileLoader();var context=loader.loadDStab(raw.toString(),dynamic.toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());var a=context.getDynSimuAlgorithm();var net=context.getDStabilityNet();
         assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(duration);
         a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());var recording=new Recording(a,event,references);
+        recording.recordMachineStates=recordMachineStates;
         a.setSolver(staggered?new SharedRecorder(a,recording):new OrdinaryRecorder(a,recording));
         if(event.equals("fault"))net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2*net.getBaseKva()/100000.),null,.05,.05),"fault");
         if(event.endsWith("-trip"))net.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent(event.equals("primary-trip")?"Bus1":"Bus2","1",net,.05),"shaft-trip");

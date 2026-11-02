@@ -52,7 +52,9 @@ def main():
     parser.add_argument('--profile', choices=[*PROFILES, *STEP_PROFILES], default='base')
     parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary','zero-primary','zero-both','secondary-off','balanced-zero-primary','balanced-zero-both'], default='entered')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
-    parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], required=True)
+    parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/480, 1/240], required=True)
+    parser.add_argument('--machine-states', action='store_true',
+                        help='Record both coupled machine state vectors and field voltages for integration diagnostics')
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     parser.add_argument('--pretrip-reference', type=float, choices=[0., .1], default=0.)
@@ -168,6 +170,16 @@ def main():
     for bus, suffix in [(1, '')] + ([(2, '_LP')] if args.fixture == 'dual' else []):
         for code, name in [(1, 'ANGLE_DEG'), (2, 'P_PU'), (3, 'Q_PU'), (6, 'PMECH'), (7, 'SPEED')]:
             checked('machine', psspy.machine_array_channel([-1, code, bus], '1', name+suffix))
+    machine_layouts = {}
+    if args.machine_states:
+        for bus, suffix in [(1, '')] + ([(2, '_LP')] if args.fixture == 'dual' else []):
+            allocation = {kind: checked('machine allocation', psspy.mdlind(bus, '1', 'GEN', kind))
+                          for kind in ['STATE', 'NSTATE']}
+            assert allocation['NSTATE'] == 6
+            machine_layouts[str(bus)] = allocation
+            for i, name in enumerate(['EP_Q', 'EP_D', 'PSIK_D', 'PSIK_Q', 'SPEED_DEV', 'ANGLE']):
+                checked('machine state', psspy.state_channel([-1, allocation['STATE']+i], 'GEN_'+name+suffix))
+            checked('field voltage', psspy.machine_array_channel([-1, 5, bus], '1', 'EFD'+suffix))
     for bus in ([1, 2, 3] if args.fixture == 'dual' else [1, 2]):
         checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
@@ -209,7 +221,8 @@ def main():
     quality = 'Initial conditions check O.K.' in log and all(message not in log for message in ['Network not converged', 'Incomplete data record'])
     manifest = dict(status=('complete' if quality else 'rejected-quality') if finite else 'rejected-nonfinite', settings=vars(args), layout=layout,
         entered_constants=entered, initialized_constants=initialized, initial_reference=initial_reference,
-        reference_events=reference_events, load_conversion_percent=[0., 100., 0., 100.], samples=len(data['time']),
+        reference_events=reference_events, machine_layouts=machine_layouts,
+        load_conversion_percent=[0., 100., 0., 100.], samples=len(data['time']),
         diagnostic_storage_initialization='All VAR slots zeroed before STRT; model initialization then owns their values',
         engine_module=psse3607.__name__, library_sha256=sha(library),
         source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'), source_pdf_pages=[522, 523, 524],

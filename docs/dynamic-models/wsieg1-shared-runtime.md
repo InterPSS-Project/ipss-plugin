@@ -598,3 +598,71 @@ The two boundary-delivery tests pass. The complete registered suite executes
 and thirteen skips. Private evidence retains the stage-aware and stale-input
 executables, complete comparison samples, reference hashes and held-coordinate
 checks. No production model or solver file changes in this diagnostic slice.
+
+## Machine event histories and integration refinement
+
+Additional independent captures record all six states of each round-rotor
+machine, field voltage, governor coordinates and network boundaries. Three
+integration intervals have identical cold-repeat captures: quarter cycle,
+half-quarter cycle and 0.5 ms. Adding the diagnostic channels leaves every
+previously recorded channel unchanged.
+
+These captures distinguish the immediate pre-event derivative from the older
+derivative retained by the staggered two-step formula. At a scheduled network
+event, let `f_left` and `f_right` be the derivatives on its two sides, and
+`f_previous` the prior integration history. The observed first increment is
+
+```text
+event_rate = (f_left + f_right) / 2
+x_next = x + h * (1.5 * event_rate - 0.5 * f_previous)
+```
+
+Independent reconstruction from recorded machine states, terminal P/Q, bus
+phasors and field voltages agrees within 0.00000015 for every machine coordinate
+at application and clearing. Substituting `f_previous` for `f_left` fails the
+clearing discriminator: these values agree before a flat-start fault but differ
+after the fault-on trajectory has evolved.
+
+The staggered solver now captures the already evaluated, accepted machine rates
+before the scheduled event changes the network. It keeps that snapshot separate
+from multistep history, respects machine activity, consumes it once and resets
+it at initialization. Indexed slots and reusable primitive buffers avoid another
+controller evaluation or ordinary-step machine traversal. Controller-specific
+event policies and modified-Euler integration are unchanged.
+
+| Quarter-cycle staggered comparison | Before | After |
+| --- | ---: | ---: |
+| Secondary active-power range NRMSE | 0.000533076 | 0.000003738 |
+| Primary d-axis damper-flux maximum error (pu) | 0.000449064 | 0.000000232 |
+
+Across all three intervals, the new regression requires machine-state errors
+below 0.000003 in their recorded units (pu for electrical/speed states, radians
+for rotor angle) and voltage/P/Q range NRMSE below 0.00001. Its deliberately old
+solver executable fails these checks. Complete paired samples, negative-time
+observations, both event sides and original reference hashes are retained.
+
+Modified Euler still has a different event-step formula. Its worst active-power
+range NRMSE in this profile falls from 0.00178159 at quarter cycle to 0.000565767
+at half-quarter cycle and 0.000061322 at 0.5 ms. Refined runs pass the existing
+0.001 gate; the quarter-cycle failure remains visible in the original coupled
+test and the new diagnostic report. This evidence does not justify changing
+governor equations, switching integration methods implicitly, relaxing the
+coarse-step gate or declaring complete WSIEG1 qualification.
+
+Broader qualification remains incomplete. The focused group passes seventeen
+tests; the core-plugin module passes 486 tests with four skips. The complete
+registered suite runs 4,070 tests with nineteen failures, no errors and thirteen
+skips. Thirteen failures predate this change. Six additional strict state-check
+failures affect three HYG3 comparisons, one WSIEG1 curve/backlash comparison and
+two compressor-startup comparisons. The WSIEG1 backlash-input maximum error is
+0.0000039133 against its unchanged 0.0000038 limit; compressor temperature errors
+reach 0.0000031836 against the unchanged 0.000003 limit. These are unresolved
+qualification failures, not newly accepted tolerances.
+
+Electrical-only and mechanical-only event-history controls fail the new machine
+state gates and increase other discrepancies. Their executables and complete
+diagnostics are retained alongside the combined correction. All twenty-four
+previous modified-Euler base trajectories and twelve staggered no-event base
+trajectories remain exactly identical. The correction stays on the working
+branch pending resolution of the additional internal-state discrepancies;
+it is not a system-accepted milestone or a claim that the whole work list passes.

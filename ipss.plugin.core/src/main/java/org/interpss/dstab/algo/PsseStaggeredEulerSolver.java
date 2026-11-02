@@ -197,6 +197,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private boolean st4EndpointReuseEnabled = true;
     private double[] start;
     private double[] derivative;
+    private int[] machineEventStateSlots = new int[0];
+    private double[] machineEventLeft = new double[0];
+    private boolean[] machineEventValid = new boolean[0];
+    private boolean hasMachineEventLeft;
     private final List<Integer> classicalMechanicalOffsets = new ArrayList<>();
     private final List<MachineImpl> classicalMachines = new ArrayList<>();
     private double[] trialMechanicalLeft = new double[0], acceptedMechanicalLeft = new double[0];
@@ -410,6 +414,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); busParticipants.clear(); extendedStack=false;
         upstreamPlants.clear();upstreamAuxiliaries.clear();upstreamOwners.clear();
         previous = null; wasActive = null; inputDiscontinuity = false;
+        machineEventStateSlots = new int[0];
+        machineEventLeft = new double[0]; machineEventValid = new boolean[0];
+        hasMachineEventLeft = false;
         classicalMechanicalOffsets.clear(); classicalMachines.clear();
         trialMechanicalBoundary = acceptedMechanicalBoundary = false;
         participantEndpointTime = 0;
@@ -740,6 +747,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     }
 
     private void bind() {
+        var machineSlots = new ArrayList<Integer>();
         var buses = List.copyOf(dstabAlgo.getNetwork().getBusList());
         boolean trackLoads = buses.stream().anyMatch(bus -> bus.getDynLoadModelList() != null
                 && !bus.getDynLoadModelList().isEmpty());
@@ -870,6 +878,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 if (m.getClass()==EConstMachineImpl.class || m.getClass()==IeeeVcEConstMachine.class) {
                     classicalMachines.add(m);classicalMechanicalOffsets.add(states.size());
                 }
+                int machineStart = states.size();
                 state(m::getSpeed,m::setSpeed,()->m.captureMechanicalIntegrationState().speedDerivative());
                 state(m::getAngle,m::setAngle,()->m.captureMechanicalIntegrationState().angleDerivative());
                 if (m instanceof RoundRotorMachineImpl r) {
@@ -883,12 +892,15 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     state(s::getPsikd,s::setPsikd,()->s.captureSalientElectricalState().dx4Psid1());
                     state(s::getPsiq11,s::setPsiq11,()->s.captureSalientElectricalState().dx5Psiq11());
                 }
+                for (int slot=machineStart;slot<states.size();slot++) machineSlots.add(slot);
                 controller(m.getExciter()); controller(m.getGovernor()); controller(m.getStabilizer());
                 electricalEndpointEligible.add(endpointEligibility(m,exciter,governor,stabilizer));
             }
         }
         previous=new double[states.size()];
         wasActive=new boolean[states.size()];
+        machineEventStateSlots=machineSlots.stream().mapToInt(Integer::intValue).toArray();
+        machineEventLeft=new double[states.size()]; machineEventValid=new boolean[states.size()];
         start=new double[states.size()]; derivative=new double[states.size()];
         trialMechanicalLeft=new double[2*classicalMachines.size()];
         acceptedMechanicalLeft=new double[trialMechanicalLeft.length];
@@ -896,6 +908,16 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
 
     @Override
     public void beforeStep(double time) throws DStabSimuException {
+        // The final zero-time evaluation has already sampled this accepted
+        // endpoint. Keep its machine rates separate from the previous interval's
+        // multistep history. Reading them must not advance controller histories.
+        hasMachineEventLeft=eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent();
+        if (hasMachineEventLeft)
+            for (int slot:machineEventStateSlots) {
+                machineEventValid[slot]=states.get(slot).active.getAsBoolean();
+                if (machineEventValid[slot])
+                    machineEventLeft[slot]=states.get(slot).derivative.getAsDouble();
+            }
         // The enclosing solve has already identified this event. Capture its
         // settled left endpoint before the event processor changes the network.
         if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
@@ -1091,7 +1113,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             boolean active = states.get(i).active.getAsBoolean();
             if (active && !wasActive[i]) previous[i]=derivative[i];
             wasActive[i]=active;
-            if (discontinuity) derivative[i]=.5*(derivative[i]+previous[i]);
+            if (discontinuity) derivative[i]=.5*(derivative[i]
+                    +(hasMachineEventLeft&&machineEventValid[i]?machineEventLeft[i]:previous[i]));
         }
         if (acceptedMechanicalBoundary && !discontinuity)
             for (int i=0;i<classicalMachines.size();i++) {
@@ -1163,6 +1186,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,1);
         inputDiscontinuity=false;
+        hasMachineEventLeft=false;
         networkEndpointAvailable = true;
     }
 }
