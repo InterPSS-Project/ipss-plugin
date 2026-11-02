@@ -32,6 +32,14 @@ The opening-rate limit is applied before division by `T1`; it does not impose
 a symmetric closing-rate limit. The load-limit branch changes the opening
 bound when the valve exceeds its filtered average by `Linc`.
 
+Initialization retains the entered `Vmin` and `Vmax` and projects only the
+initial valve into that interval. The reference and other coordinates still
+represent the solved operating point. If the point is infeasible, engine and
+valve-average derivatives expose the mismatch instead of silently expanding the
+physical bounds to manufacture equilibrium. When engine feedthrough is active,
+the initial turbine publication uses the curve output after valve projection.
+Reinitialization recomputes these coordinates and clears accepted command history.
+
 ## Explicit source and diagram conventions
 
 The independent executable and its published diagram differ. These are
@@ -85,7 +93,7 @@ explicitly verifies that each run uses the requested integration path.
 
 Qualification is incomplete. Resolve remaining source power-deadband and
 command-response state/boundary errors without changing acceptance
-limits. Extend bypass and time-preparation rules, bound expansion, reconnection,
+limits. Extend bypass and time-preparation rules, active-bound release, reconnection,
 longer duration and production-step coverage. Full-system tests without this
 model establish non-regression only. Raw allocated variables and published
 power are retained for diagnosis; passing selected state and boundary gates
@@ -272,6 +280,49 @@ internal-state discrepancies remain open qualification work.
 The immutable private `production-step-captures.zip` is pinned to SHA-256
 `d685c38c70655969f38851008c47e43c5f214266443cda808ecdd8dc86e8a047`.
 
+## Initial valve limits and active-bound release
+
+Independent upper/lower-limit controls disproved the former initial-bound
+expansion. The reference leaves entered constants unchanged, projects the valve,
+and reports suspect initial conditions with nonzero engine and valve-average
+derivatives. The same behavior is reproduced with engine/governor lead-lags and
+with a non-unit turbine rating plus idle fuel. Both integration methods match
+all initial controller states, variables and mechanical power within `8e-8`.
+These intentionally infeasible references remain `rejected-quality`; matching
+their diagnostic initialization does not qualify their complete trajectories.
+
+For example, the synthetic upper-limit control requires approximately `0.50001`
+initial valve but enters `Vmax=0.4`. Its stored valve is `0.4`; its engine and
+valve-average coordinates retain the operating-point values, producing nonzero
+initial derivatives. With engine ratio `A/B=0.25`, the initial mechanical output
+falls to approximately `0.475008` pu after projection. The old bound expansion
+incorrectly kept the initial valve and output at the unconstrained values.
+
+The tests exercise both runtime conventions, both integration interfaces,
+opposing commands, unchanged physical bounds and reinitialization into a
+feasible operating point. Independent cold pairs also cover feasible narrow
+position limits. Flat coupled runs pass under both methods. Complete command
+trajectories remain registered failures, with unchanged thresholds:
+
+| Method | Worst voltage NRMSE | Q NRMSE | Maximum valve error |
+|---|---:|---:|---:|
+| Modified Euler | `0.00315317` | `0.00290654` | `6.70313e-4` |
+| Staggered | `0.00250384` | `0.00267062` | `3.96237e-4` |
+
+The staggered command test additionally fails the engine and valve-average
+state gates. Its largest valve difference occurs on the first accepted interval
+after the upper-limit release command. This requires a separate limiter-history
+and integration-stage investigation; the initialization correction does not
+claim to resolve it. A direct stored-derivative query was rejected by the
+reference API, whose documented reader exposes time, interval, states,
+constants and variables. The failed probe is retained privately, and the
+unsupported option is absent from the maintained probe.
+
+The immutable private `valve-limit-captures.zip` retains all paired accepted and
+rejected diagnostic runs, with SHA-256
+`9ce0fbb8bcd04e0611b800fd7477ff85ac1365393b0f04ccdc16b478a7992cd0`.
+Host-machine disconnection and reconnection remain separate open work.
+
 ## Validation checkpoint
 
 The initial runtime checkpoint's registered suite executes 4,159 tests, with 36 failures, no errors
@@ -317,6 +368,18 @@ trajectory CSVs remain byte-identical and their numerical summaries unchanged.
 The adjacent private `production-step-validation.zip` retains complete short
 and long trajectories, recorded-input diagnostics, reports, source and compiled
 classes over `resume-validation.zip`. Full model qualification remains open.
+
+After the physical initial-valve correction, the registered suite executes
+4,210 tests with 43 failures, no errors and 13 skips. All 41 preceding failure
+identities are preserved; the two added failures are the feasible active-limit
+command comparisons described above. Initial-state comparisons, physical-bound
+retention, reinitialization and flat controls pass under both methods. The core
+plugin module passes 486 tests with four skips and no failures or errors.
+All ninety previously retained short/long trajectory CSVs are byte-identical
+and their numerical summaries unchanged. The private `valve-validation.zip`
+retains the new state/boundary evidence, previous trajectory identity checks,
+failed derivative-access probe, regression reports and changed runtime classes
+over `production-step-validation.zip`.
 
 Private immutable capture archives retain the complete cold-run evidence; the
 current fixture is `urgs3t-initial-20261102/captures-v3.zip`, pinned by the test to

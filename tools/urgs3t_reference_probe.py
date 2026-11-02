@@ -28,6 +28,11 @@ PROFILES = {
     'temperature-fast': {3: .05, 4: .501},
     'temperature-slow': {3: 5., 4: .501},
     'fast-engine': {1: .5, 2: .02, 3: 3., 4: .95, 6: 1., 7: .05, 12: 99.},
+    'initial-upper': {6: .4},
+    'initial-lower': {7: .6},
+    'position-limits': {6: .52, 7: .48},
+    'initial-upper-leadlag': {6: .4, 14: .3, 15: 1.2, 29: 1.3, 30: .03, 31: .12},
+    'initial-lower-rating': {7: .8, 8: .3, 9: .1, 32: 80.},
 }
 
 

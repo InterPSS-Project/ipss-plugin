@@ -100,11 +100,14 @@ public final class Urgs3tGovernor extends AbstractGovernor
         x[0] = valve; x[1] = engineLagFraction*engine;
         x[2] = engine; x[3] = valve;
         x[4] = c[29] > 0 ? governorLagFraction*valve : 0;
-        lower = Math.min(c[7], valve); upper = Math.max(c[6], valve);
+        // Keep the entered physical limits. Other coordinates and the reference
+        // retain the solved operating point so an infeasible initial valve
+        // remains visible through nonzero initialization derivatives.
+        lower = c[7]; upper = c[6]; project();
         reference = c[29] > 0 ? valve/c[29] : valve;
         initialReference = reference; referenceJumpPending = false; referenceRevision = 0;
         powerMemory = powerInputMemory = curvePower(x); mode = 0; initialSpeed = machine.getSpeed()-1;
-        acceptedTurbinePower = publishedTurbinePower = power;
+        acceptedTurbinePower = publishedTurbinePower = x[0] == valve ? power : powerMemory;
         if (!Double.isFinite(reference) || !Double.isFinite(power)) return false;
         for (double state : x) if (!Double.isFinite(state)) return false;
         initializedMachine = machine; initialized = true;
