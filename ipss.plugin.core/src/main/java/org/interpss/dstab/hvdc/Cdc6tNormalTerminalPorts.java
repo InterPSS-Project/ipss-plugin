@@ -22,6 +22,7 @@ public final class Cdc6tNormalTerminalPorts {
     private final Port rectifierPort,inverterPort;
     private final double[] electrical=new double[8];
     private boolean coordinatorTrial,networkTrial,commitNetworkTrial,staggeredEndpointPending,boundaryTrial,predictorNetworkTrial;
+    private boolean externalEventPending;
     private double staggeredEndpoint,acceptedDcVoltage,trialDcVoltage,protectionTrialTime;
     private long inputDiscontinuityVersion;
     private Cdc6tNormalRuntime.OperatingMode acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
@@ -133,6 +134,7 @@ public final class Cdc6tNormalTerminalPorts {
             if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
             boundaryTrial=true;
             clearTransitions();
+            externalEventPending=context.externalEventBoundary()&&"INITIAL".equals(context.stage());
             predictorNetworkTrial="PREDICTOR".equals(context.stage());
             // Initial settling has no simulation-clock history; callers may
             // still choose negative-time startup after initialization returns.
@@ -161,8 +163,16 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner)return;
             if(initialNetworkPending){refresh();runtime.initializeFromBoundary();return;}
             if(!networkTrial)return;
+            if(externalEventPending){
+                // The external event processor has already solved the changed
+                // network with frozen injections. Honor protection at that explicit
+                // event boundary before a now-infeasible conducting evaluation.
+                // This remains working history until the protected network converges.
+                externalEventPending=false;
+                protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            }
             // Protection acts on the freshly converged left-hand boundary, never
-            // on the preceding endpoint or an unconverged voltage iterate.
+            // on an ordinary preceding endpoint or numerical voltage iterate.
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
         }
         @Override public boolean applyConvergedNetworkAction(){

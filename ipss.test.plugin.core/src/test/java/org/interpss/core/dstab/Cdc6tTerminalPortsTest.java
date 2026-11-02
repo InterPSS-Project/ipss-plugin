@@ -130,6 +130,23 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
         solve(p,"INITIAL",.05,true);assertEquals(1,calls[0],"A failed recorder must not duplicate an already committed action");
         f.ports().setTransitionObserver(null);
     }
+    @Test void explicitExternalBoundaryCanBlockBeforeInfeasibleCurrentAndStillRollback(){
+        var f=protectedPair();var p=f.ports().rectifierPort();solve(p,"INITIAL",0,true);
+        double[] committed=history(f.coordinator());
+        p.getDStabBus().setVoltage(new Complex(.005,0));
+        p.beginNetworkSolution(new Context("INITIAL",.05,.05,50,1e-6));
+        assertThrows(IllegalArgumentException.class,()->p.beforeNetworkIteration(0),"An arbitrary unconverged voltage must not trigger a protection shortcut");
+        p.endNetworkSolution(false);assertArrayEquals(committed,history(f.coordinator()));
+        for(boolean accepted:new boolean[]{false,true}){
+            p.beginNetworkSolution(new Context("INITIAL",.05,.05,50,1e-6,true));p.beforeNetworkIteration(0);
+            assertEquals(Cdc6tNormalRuntime.OperatingMode.BLOCKED,f.coordinator().operatingMode());
+            assertEquals(Complex.ZERO,p.getOutputObject());assertArrayEquals(committed,history(f.coordinator()));
+            if(accepted){assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();}
+            p.endNetworkSolution(accepted);
+            if(!accepted){assertEquals(Cdc6tNormalRuntime.OperatingMode.NORMAL,f.coordinator().operatingMode());assertArrayEquals(committed,history(f.coordinator()));}
+        }
+        assertEquals(.05,history(f.coordinator())[0],0);assertEquals(1,p.staggeredInputDiscontinuityVersion());
+    }
 
     @Test void staggeredEndpointCommitsOnlyAfterConvergenceAndDirectProbesKeepClock(){
         var f=protectedPair();var p=f.ports().rectifierPort();var c=f.coordinator();

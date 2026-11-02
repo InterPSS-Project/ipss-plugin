@@ -1380,3 +1380,55 @@ automatic attachment remain unqualified. The model is not yet fully supported.
 Private complete comparisons, recording parity/lifecycle reports, source snapshots and integrity manifest:
 `verification-artifacts/cdc6t-transition-sides-20261102/validation.zip`, SHA-256
 `42febbc4ef22bb5dfc3153353bebbdc20c9ee60eade11c2bf425f641230e8e14`.
+
+## Explicit external-event protection before conducting evaluation
+
+A repeated severe rectifier fault during recovery exposed an ordering failure:
+the external event processor had updated the network and solved its frozen
+injections, but the first device callback attempted an infeasible conducting
+current before checking the blocking threshold. Both integration methods failed
+at the second fault before completing a numerical network iteration.
+
+`NetworkIterationAware.Context.externalEventBoundary` now identifies the INITIAL
+network solve following an enabled external event. Its compatibility constructor
+defaults to false, and predictor, corrector and direct numerical probes do not
+set it. This marker describes an external discontinuity; it does not certify
+nonlinear convergence or authorize committing device history.
+
+At that explicit boundary, CDC6T observes terminal AC voltages once before its
+conducting evaluation. Blocking stays in working history until the protected
+network converges. Failure discards the pending action. Ordinary numerical
+voltage iterates still cannot trigger this shortcut, and internal recovery
+decisions retain the converged-network lifecycle. The frozen-injection voltage
+is not published as a converged pre-transition observation. Scheduled-event
+recording retains the actual external event sides separately.
+
+Independent repeated-fault captures cover second-fault reactances of 0.02 and
+0.0002 pu. Both modified Euler and staggered integration complete the half-second
+runs at 0.5 ms intervals within the unchanged 50-iteration budget. The near-zero
+profile reaches approximately 0.00572 pu rectifier voltage. During the interior
+of the second fault, terminal-voltage maximum errors are below 1.2e-8 pu at the
+rectifier and 8e-6 pu at the inverter, with zero active power at both terminals.
+Voltage/current transducer errors remain below 42 V / 0.06 A for modified Euler
+and 3 V / 0.003 A for staggered integration. These are fault-on gates; the complete
+untrimmed recovery comparisons remain diagnostic. Near-zero recovery still has
+approximately 0.09325 pu maximum rectifier-voltage error and 6.8 kV voltage-state
+error, so full protected-trajectory acceptance is not established.
+
+Validation passes 150 focused core tests and 354 plugin/model/adjacent tests,
+without failures, errors or skips. All 130 preceding complete trajectories are
+byte-identical. Lifecycle tests cover enabled/disabled events, every solver
+stage, rejected trials and accepted-history commit. Complete repository suites,
+other severe-fault protection paths, production intervals and long runs remain
+outstanding.
+
+Private immutable paired captures:
+
+- `verification-artifacts/cdc6t-deep-recovery-20261102/captures.zip`, SHA-256
+  `9249ae52bd557f2e4f4f8262d1111f825adbaf5aac2c7617e92e1860c33bd0fb`.
+- `verification-artifacts/cdc6t-nearzero-recovery-20261102/captures.zip`, SHA-256
+  `eaca1970bb56dd385bb18ba4722694448d5173ddaebff83da6aba34d59dcf242`.
+
+Complete comparisons, prior-trajectory parity, failure evidence, reports and
+source snapshots: `verification-artifacts/cdc6t-external-event-20261102/validation.zip`,
+SHA-256 `875ad10b8f03b793e7f54b1841b9bc79e08d5bd1d7f6daf49282377ba121eeb7`.
