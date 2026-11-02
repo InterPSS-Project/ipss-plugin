@@ -422,3 +422,49 @@ Sorting those points produces the wrong slope and prematurely relaxes the ceilin
 constructor still requires increasing voltages, and other unordered source curves
 remain rejected. The normal coupled fixtures now use the exact source-order
 preparation. Full protection ownership and automatic import remain unfinished.
+
+## Transactional protection coordinator
+
+`Cdc6tProtectionCoordinator` owns independent accepted and working copies of the
+rectifier, inverter, bypass and mode-switch histories. `beginTrial` starts at a
+finite, nondecreasing physical time; explicit `observe` calls may update working
+timers and discover transitions as the electrical solution changes. Getters and
+differential/current evaluation never perform those observations. `acceptTrial`
+publishes the complete working history; `discardTrial` leaves every accepted
+coordinate unchanged, including a pending inverter communication request.
+Invalid observations poison the trial until it is discarded. Reinitialization
+is explicit and forbidden while a trial is open.
+
+Three cold-repeated independent controls establish the shared-mode rules:
+
+- Inverter-origin blocking supersedes and clears an active inverter bypass.
+- Release from that block uses the inverter recovery delay. Changing it from
+  0.01 to 0.04 seconds changes release from approximately 0.1105 to 0.1405 seconds.
+- Rectifier-origin blocking uses its own recovery conditions; the control
+  recovers while inverter voltage remains below its separately raised recovery
+  threshold. Recovery from blocking ramps both voltage and current and inhibits
+  DC-voltage bypass pickup until recovery completes.
+
+The coordinator retains the originating block cause and delegates its release
+to that component. Blocking clears the bypass history; release creates one shared
+restart epoch. Its primitive buffers are reused: the warmed normal trial/rollback
+gate observes 600 bytes total over 100,000 trials, below its 1 KiB limit.
+Both integration APIs can consume its electrical
+regime without accepting a protection event. The focused CDC6T and adjacent LCC/
+staggered regression gate passes 110 tests without failures or skips.
+
+All rows of the two inverter-origin captures are replayed. Four/two mode
+differences remain confined to explicit transition neighborhoods, with first
+transition times within one recording interval. The rectifier discriminator
+independently checks release while the inverter threshold is unsatisfied;
+instantaneous pickup still cannot be inferred completely from exported endpoint
+voltages because intermediate network observations can trigger it.
+
+This coordinator is not yet connected to the terminal ports' solver callbacks.
+A successful predictor-network solve is not an accepted physical-time boundary:
+the attachment must explicitly distinguish predictor trials, final accepted
+steps and zero-time events, and must preserve or discard the working histories
+accordingly. Complete protected coupled trajectories, simultaneous fresh blocking
+requests, cross-cause requests during blocking, remaining recovery interactions
+and automatic import still require qualification. The complete model remains
+unsupported by strict automatic import.

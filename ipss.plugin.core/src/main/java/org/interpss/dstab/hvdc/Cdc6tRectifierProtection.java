@@ -48,6 +48,12 @@ public final class Cdc6tRectifierProtection {
         System.arraycopy(trial,0,accepted,0,5);acceptedTime=time;
     }
     public boolean isBlocked() {return accepted[0]!=0;}
+    Cdc6tRectifierProtection workingCopy() {
+        var copy=new Cdc6tRectifierProtection(instantVoltage,delayedVoltage,blockDelay,recoveryVoltage,recoveryDelay,minimumBlockTime);
+        copy.copyHistoryFrom(this);return copy;
+    }
+    void copyHistoryFrom(Cdc6tRectifierProtection source){System.arraycopy(source.accepted,0,accepted,0,5);acceptedTime=source.acceptedTime;}
+    void resetHistory(){java.util.Arrays.fill(accepted,Double.NaN);accepted[0]=0;acceptedTime=Double.NEGATIVE_INFINITY;}
     public double lastRestartTime() {return accepted[4];}
     public void readHistory(double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,5,output.length);

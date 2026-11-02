@@ -17,21 +17,27 @@ def main():
     parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
     parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope'], default='default')
     parser.add_argument('--fault-terminal', choices=['rectifier', 'inverter'], default='rectifier')
-    parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass'], default='default')
+    parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
+    parser.add_argument('--inspect-at', type=float, action='append', default=[])
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
+    parser.add_argument('--inverter-recovery-voltage', type=float)
     parser.add_argument('--second-fault-at', type=float)
     parser.add_argument('--second-fault-clear', type=float)
     parser.add_argument('--second-fault-reactance', type=float, default=.02)
     parser.add_argument('--mode-threshold-kv', type=float, default=0.)
     parser.add_argument('--batch', default='cdc6t-reference-v2')
     args = parser.parse_args()
+    if any(not math.isfinite(t) or not 0 < t < .5 for t in args.inspect_at):
+        parser.error('Inspection times must be finite and strictly inside the run')
     if not math.isfinite(args.mode_threshold_kv) or args.mode_threshold_kv < 0:
         parser.error('Mode threshold must be finite and nonnegative')
     if not math.isfinite(args.fault_clear) or not .05 < args.fault_clear < .5:
         parser.error('Fault clearing must be strictly between application and end time')
     if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
         parser.error('Inverter recovery delay must be finite and nonnegative')
+    if args.inverter_recovery_voltage is not None and (not math.isfinite(args.inverter_recovery_voltage) or args.inverter_recovery_voltage < 0):
+        parser.error('Inverter recovery voltage must be finite and nonnegative')
     if args.second_fault_at is not None or args.second_fault_clear is not None:
         if args.profile != 'fault' or args.second_fault_at is None or args.second_fault_clear is None:
             parser.error('Second fault requires the fault profile and both event times')
@@ -72,7 +78,11 @@ def main():
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
-    if args.protection in ['dc-bypass', 'ac-bypass']:
+    if args.protection == 'coordinated':
+        constants[4:10] = [.90, .94, .02, 490., .92, .02]
+        constants[12:14] = [2., 2.]
+        constants[24:31] = [.01, .90, .02, .90, .01, args.inverter_recovery_delay, .01]
+    elif args.protection in ['dc-bypass', 'ac-bypass']:
         constants[8] = .92
         constants[12:14] = [2., 2.]
         constants[30] = .01
@@ -97,6 +107,8 @@ def main():
         constants[15:21] = [480, 800, 490, 1000, 500, 1200]
     elif args.limit_curve == 'two-slope':
         constants[15:21] = [480, 800, 490, 980, 500, 1200]
+    if args.inverter_recovery_voltage is not None:
+        constants[8] = args.inverter_recovery_voltage
     (out / 'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))
                                     + "'1' 'CDC6T' " + ' '.join(map(str, constants)) + ' /\n')
     for name in ['cdc6t_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -137,28 +149,37 @@ def main():
         snapshots.append(dict(stage=stage,
             icons=[checked('flag', psspy.dsival('ICON', layout['ICON']+i)) for i in range(3)],
             variables=[checked('variable', psspy.dsrval('VAR', layout['VAR']+i)) for i in range(18)]))
+    inspections = sorted(set(args.inspect_at))
+    def run_until(label, end):
+        while inspections and inspections[0] <= end:
+            t = inspections.pop(0)
+            checked(label + ' inspection', psspy.run(0, t, 1000000, 1, 0))
+            snapshot('inspection-' + format(t, '.12g'))
+            if t == end:
+                return
+        checked(label, psspy.run(0, end, 1000000, 1, 0))
     snapshot('initialized')
-    checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
+    run_until('prefault', .05)
     if args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.0))
     if args.profile == 'fault':
         checked('fault', psspy.dist_bus_fault(7 if args.fault_terminal == 'rectifier' else 9,
                 3, 230., [0., .2*230**2/100]))
-    checked('fault interval', psspy.run(0, args.fault_clear, 1000000, 1, 0))
+    run_until('fault interval', args.fault_clear)
     if args.profile == 'fault':
         checked('clear', psspy.dist_clear_fault(1))
     if args.profile == 'modulation':
         checked('release modulation', psspy.change_var(layout['VAR'], 0.0))
     snapshot('first-cleared')
     if args.second_fault_at is not None:
-        checked('recovery interval', psspy.run(0, args.second_fault_at, 1000000, 1, 0))
+        run_until('recovery interval', args.second_fault_at)
         snapshot('before-second-fault')
         checked('second fault', psspy.dist_bus_fault(7 if args.fault_terminal == 'rectifier' else 9,
                 3, 230., [0., args.second_fault_reactance*230**2/100]))
-        checked('second fault interval', psspy.run(0, args.second_fault_clear, 1000000, 1, 0))
+        run_until('second fault interval', args.second_fault_clear)
         snapshot('before-second-clearing')
         checked('second clear', psspy.dist_clear_fault(1))
-    checked('finish', psspy.run(0, .5, 1000000, 1, 0))
+    run_until('finish', .5)
     snapshot('finished')
     Path('snapshots.json').write_text(json.dumps(snapshots, indent=2)+'\n')
     _, labels, data = dyntools.CHNF('native.out').get_data()

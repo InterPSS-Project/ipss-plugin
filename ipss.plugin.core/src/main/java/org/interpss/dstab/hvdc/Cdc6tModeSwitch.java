@@ -29,6 +29,12 @@ public final class Cdc6tModeSwitch {
         System.arraycopy(trial,0,accepted,0,2);acceptedTime=time;
     }
     public boolean isSwitched() {return accepted[0]!=0;}
+    Cdc6tModeSwitch workingCopy() {
+        var copy=new Cdc6tModeSwitch(powerControl,thresholdVolts,minimumDuration);
+        copy.copyHistoryFrom(this);return copy;
+    }
+    void copyHistoryFrom(Cdc6tModeSwitch source){System.arraycopy(source.accepted,0,accepted,0,2);acceptedTime=source.acceptedTime;}
+    void resetHistory(){accepted[0]=0;accepted[1]=Double.NaN;acceptedTime=Double.NEGATIVE_INFINITY;}
     public void readHistory(double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,2,output.length);System.arraycopy(accepted,0,output,offset,2);
     }
