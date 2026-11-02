@@ -92,7 +92,7 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
 
     /** Diagnostic only: preserve every reference row, including internal transitions and inspection duplicates.
      * An internal reference transition has no synthetic pre-transition sample added to our integration grid. */
-    private static void writeComparison(Path out,List<Map<String,Double>> reference,List<double[]> actual,double step)throws Exception{
+    static double[] writeComparison(Path out,List<Map<String,Double>> reference,List<double[]> actual,double step)throws Exception{
         String[] keys=Cdc6tCoupledReferenceTest.KEYS;double[] maxima=new double[keys.length];
         try(var writer=BenchmarkOutputGuard.newWriter(out.resolve("trajectory.csv"),2*1024*1024)){
             writer.write("time_s,"+String.join(",",keys)+"\n");
@@ -121,5 +121,6 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
             }
         }
         System.out.println("CDC6T protected diagnostic maxima "+out.getFileName()+" "+Arrays.toString(maxima));
+        return maxima;
     }
 }

@@ -36,9 +36,11 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
     static final class Recorder {
         final Cdc6tCoupledNetworkTest.Fixture f;
         final List<double[]> rows=new ArrayList<>();
+        final double[] eventTimes;
         boolean enabled;
-        Recorder(Cdc6tCoupledNetworkTest.Fixture f){this.f=f;}
-        void before(double t){if(enabled&&(Math.abs(t-.05)<1e-9||Math.abs(t-.1)<1e-9))capture(t);}
+        Recorder(Cdc6tCoupledNetworkTest.Fixture f){this(f,.05,.1);}
+        Recorder(Cdc6tCoupledNetworkTest.Fixture f,double... eventTimes){this.f=f;this.eventTimes=eventTimes.clone();}
+        void before(double t){if(enabled)for(double event:eventTimes)if(Math.abs(t-event)<1e-9){capture(t);break;}}
         void capture(double t){
             var n=f.context().getDStabilityNet();var vr=n.getBus("Bus7").getVoltage();var vi=n.getBus("Bus9").getVoltage();
             double[] state=new double[3],boundary=new double[8];

@@ -39,7 +39,10 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     record Fixture(com.interpss.simu.SimuContext context,Cdc6tNormalRuntime runtime,Cdc6tNormalTerminalPorts ports,Cdc6tProtectionCoordinator protection) {}
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tParameters parameters)throws Exception{
-        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,null,null,0,parameters);
+        return load(folder,lines,parameters,0);
+    }
+    static Fixture load(Path folder,java.util.List<String> lines,Cdc6tParameters parameters,double modeThresholdKv)throws Exception{
+        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,null,null,0,parameters,modeThresholdKv);
     }
     static Fixture load(Path folder) throws Exception {
         var lines=Files.readAllLines(Path.of("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_PsetOnInv.raw"));
@@ -55,10 +58,10 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
             Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent) throws Exception {
-        return load(folder,lines,mode,setpoint,limit,protection,minimumCurrent,null);
+        return load(folder,lines,mode,setpoint,limit,protection,minimumCurrent,null,0);
     }
     private static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
-            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters) throws Exception {
+            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters,double modeThresholdKv) throws Exception {
         for(int n=3;n<lines.size();n++) {
             if(lines.get(n).strip().startsWith("0 /"))break;
             String[] fields=lines.get(n).split(",",-1);
@@ -82,7 +85,7 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
         Cdc6tNormalRuntime runtime;
         if(parameters!=null){
             var prepared=parameters.prepare(rectifierBoundary,inverterBoundary,5,
-                    new Cdc6tParameters.OperatingPoint(mode,setpoint,500,0,0,500000,1000,505000));
+                    new Cdc6tParameters.OperatingPoint(mode,setpoint,500,0,modeThresholdKv,500000,1000,505000));
             runtime=prepared.runtime();protection=prepared.protection();
         }else runtime=new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
             new Cdc6tCurrentOrder(mode,setpoint,500,0),limit,

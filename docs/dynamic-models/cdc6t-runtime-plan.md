@@ -652,3 +652,41 @@ of earlier outputs does not resolve their documented reference discrepancies.
 Private validation archive, including complete exports and test reports:
 `verification-artifacts/cdc6t-source-preparation-20261101/validation.zip`, SHA-256
 `6e30959216b6ffe3ba2090c5c75a6bb6784b60d0da74bd0255dc6fa3e0144d6b`.
+
+## Coupled bypass and temporary current control
+
+The independent DC-triggered bypass, AC-triggered bypass, long mode-switch and
+early-clearing mode-switch controls now run through the full network with the
+source-prepared coordinator under both integration methods. Each run checks
+accepted clock ownership, scheduled current during bypass/current control, zero
+inverter power during bypass, voltage-only bypass recovery and eventual return
+to normal operation. The early-clearing control clears its fault at 0.06 s;
+temporary current control must persist until its minimum duration ends near
+0.07 s. Event times come from the retained reference manifests. The recorder
+preserves both scheduled event sides, including early clearing.
+
+The long mode-switch control passes complete per-channel trajectory gates:
+
+| Maximum absolute difference | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Terminal voltage (pu) | 0.00004345 | 0.000003585 |
+| Terminal angle (degrees) | 0.004278 | 0.001520 |
+| Voltage measurement state (V) | 109.101 | 1.344 |
+| Current measurement state (A) | 0.141063 | 0.001022 |
+
+The gates also cover converter power, converter angles and DC boundary voltage,
+with separate measured bounds for each integration method. No reference rows
+are removed or shifted. The short mode-switch control remains diagnostic for
+complete trajectories: the return transition produces a maximum terminal
+voltage difference of approximately 0.0023062 pu at the transition sample.
+Bypass recovery remains diagnostic as well, reaching approximately 0.12228 pu
+terminal-voltage difference near release. Their lifecycle checks passing does
+not establish full trajectory accuracy or justify widening acceptance limits.
+
+The focused CDC6T, adjacent LCC and staggered regression passes 193 tests with
+no failures, errors or skips. The complete model remains unqualified, and
+automatic attachment remains disabled.
+
+Private complete exports, reports and test source:
+`verification-artifacts/cdc6t-bypass-switch-network-20261101/validation.zip`,
+SHA-256 `374b74ea0f00ae05a37ea6084c186eea514ada2167ebf44ad83f33f5df484c7f`.
