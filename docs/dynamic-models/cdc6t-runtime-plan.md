@@ -225,3 +225,30 @@ All capture rows remain in the tests, but later full event trajectories are not
 qualified: intermediate network observations can trigger further requests absent
 from exported samples. Concurrent rectifier/inverter causes require coordinated
 ownership before these components can drive a runnable DC-link device.
+
+## Bypass electrical boundary and first protection cycle
+
+`Cdc6tConductingLink.evaluateBypassed` represents a closed inverter bypass:
+inverter active/reactive power and DC voltage are zero, while the rectifier
+supplies the line's resistive loss at the supplied bypass current. Its reactive
+consumption and firing angle follow the same prepared bridge equations used
+for normal conduction. The reported inverter angle is 90 degrees. Infeasible
+rectifier current fails before modifying caller output.
+
+Cold-paired DC-voltage and delayed AC-voltage bypass captures independently
+verify this boundary. Bypass maintains scheduled current in these captures;
+ordinary power divided by the decaying voltage measurement would be incorrect.
+Every recorded bypass sample is checked against the Java electrical kernel.
+The measured rectifier reactive-power difference is below `2.5e-5` pu; this is
+a separate bypass bound and does not replace the tighter normal-conduction gate.
+`Cdc6tBypassProtection` separately provides trial/accepted timer history for
+strict DC pickup, sustained AC pickup, minimum bypass duration and sustained
+AC recovery. Analytic reset/atomicity checks and first-cycle reference timing
+checks qualify these components, not complete coupled operation.
+
+Recovery needs an additional interlock: the high DC pickup threshold used in
+the discriminator does not immediately re-trigger while voltage ramps upward
+from its lower restart value. The ordinary pickup component alone would do so.
+Resolve the exact recovery-mode pickup rules and combine them with blocking,
+current-order ownership and network observations before attaching the model.
+Full post-unbypass event trajectories remain unqualified.

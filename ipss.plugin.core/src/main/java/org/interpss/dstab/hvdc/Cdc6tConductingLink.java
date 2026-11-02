@@ -32,4 +32,17 @@ public final class Cdc6tConductingLink {
         inverter.evaluate(inverterAcPu,vi,currentOrderAmperes,trial,3);
         trial[6]=vr;trial[7]=vi;System.arraycopy(trial,0,output,offset,8);
     }
+
+    /** Closed inverter bypass: the rectifier maintains the supplied current through the line resistance.
+     * The event/controller owner supplies bypass current; ordinary power-order conversion is not applied here. */
+    public void evaluateBypassed(double rectifierAcPu,double currentAmperes,double[] output,int offset) {
+        java.util.Objects.checkFromIndexSize(offset,8,output.length);
+        double rectifierVolts=resistance*currentAmperes;
+        rectifier.evaluate(rectifierAcPu,rectifierVolts,currentAmperes,trial,0);
+        if(trial[2]<alphaMinimum-1e-12)
+            throw new IllegalArgumentException("Bypass current exceeds the rectifier minimum-angle capability");
+        trial[3]=0;trial[4]=0;trial[5]=Math.PI/2;
+        trial[6]=rectifierVolts;trial[7]=0;
+        System.arraycopy(trial,0,output,offset,8);
+    }
 }

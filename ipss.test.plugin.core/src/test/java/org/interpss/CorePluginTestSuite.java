@@ -285,6 +285,7 @@ import org.interpss.core.dstab.Cdc6tConductingLinkTest;
 import org.interpss.core.dstab.Cdc6tRecoveryRampTest;
 import org.interpss.core.dstab.Cdc6tRectifierProtectionTest;
 import org.interpss.core.dstab.Cdc6tInverterProtectionTest;
+import org.interpss.core.dstab.Cdc6tBypassTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1240,6 +1241,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tRecoveryRampTest.class,
     Cdc6tRectifierProtectionTest.class,
     Cdc6tInverterProtectionTest.class,
+    Cdc6tBypassTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,

@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
     parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope'], default='default')
     parser.add_argument('--fault-terminal', choices=['rectifier', 'inverter'], default='rectifier')
-    parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block'], default='default')
+    parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass'], default='default')
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
     parser.add_argument('--batch', default='cdc6t-reference-v2')
@@ -58,7 +58,15 @@ def main():
     constants = [5, 20, .05, .05, .2, .3, .02, .2, .3, .02,
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
-    if args.protection == 'inverter-block':
+    if args.protection in ['dc-bypass', 'ac-bypass']:
+        constants[8] = .92
+        constants[12:14] = [2., 2.]
+        constants[30] = .01
+        if args.protection == 'dc-bypass':
+            constants[7] = 490.
+        else:
+            constants[27:29] = [.90, .01]
+    elif args.protection == 'inverter-block':
         constants[8] = .92
         constants[12:14] = [2., 2.]
         constants[25:27] = [.90, .02]
