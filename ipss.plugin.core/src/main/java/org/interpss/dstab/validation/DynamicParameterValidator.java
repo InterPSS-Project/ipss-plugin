@@ -336,7 +336,7 @@ public final class DynamicParameterValidator {
                 }
                 time("T3",d[3],false);
                 positive("primary turbine fraction sum",d[9]+d[12]+d[15]+d[18],false);
-                add(Severity.INFO,"initialization policy",h,"WSIEG1 prepares lag bypasses and initial valve bounds before either integrator; the rate-limited servo time is not bypassed or floored");
+                add(Severity.INFO,"initialization policy",h,"WSIEG1 prepares lag bypasses and Iblock-dependent bounds before either integrator; other bounds are retained and initial valve/turbine residuals remain observable. The rate-limited servo time is not bypassed or floored");
                 return true;
             }
             if(org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.isSecondaryShaft(controller)) {

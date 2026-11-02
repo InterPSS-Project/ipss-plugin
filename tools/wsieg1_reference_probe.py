@@ -16,6 +16,15 @@ PROFILES = {
     'all-turbines-bypass': {8: 0., 11: 0., 14: 0., 17: 0.},
     'valve-rates': {4: .003, 5: -.002},
     'valve-position': {6: .505, 7: .495},
+    'initial-lower-block': {7: 0., 33: 1.},
+    'initial-upper-block': {6: 0., 33: 2.},
+    'initial-both-block': {6: 0., 7: 0., 33: 3.},
+    'initial-upper-expansion': {6: .2, 7: 0.},
+    'initial-lower-expansion': {6: 1.2, 7: .7},
+    'initial-lower-block-conflict': {6: .2, 7: 0., 33: 1.},
+    'initial-upper-block-conflict': {6: 0., 7: .7, 33: 2.},
+    'initial-upper-bypass': {6: .2, 7: 0., 8: 0., 11: 0., 14: 0., 17: 0.},
+    'initial-lower-bypass': {6: 1.2, 7: .7, 8: 0., 11: 0., 14: 0., 17: 0.},
 }
 STEP_PROFILES = {
     'speed-one-step': {1: 1., 2: .25},

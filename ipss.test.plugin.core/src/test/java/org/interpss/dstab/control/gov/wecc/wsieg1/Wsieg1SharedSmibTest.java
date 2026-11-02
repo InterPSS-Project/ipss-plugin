@@ -102,6 +102,11 @@ public class Wsieg1SharedSmibTest {
     }
     static Recording simulate(Path raw,Path dynamic,boolean staggered,String event,double h,double duration,List<ReferenceEvent> references,
             java.util.function.Consumer<DynamicSimuAlgorithm> configure) throws Exception {
+        return simulate(raw,dynamic,staggered,event,h,duration,references,configure,0);
+    }
+    static Recording simulate(Path raw,Path dynamic,boolean staggered,String event,double h,double duration,List<ReferenceEvent> references,
+            java.util.function.Consumer<DynamicSimuAlgorithm> configure,int startupSteps) throws Exception {
+        if(startupSteps<0)throw new IllegalArgumentException("Negative startup-step count");
         var loader=new PSSEMultiFileLoader();var context=loader.loadDStab(raw.toString(),dynamic.toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());var a=context.getDynSimuAlgorithm();var net=context.getDStabilityNet();
         assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(duration);
@@ -110,7 +115,7 @@ public class Wsieg1SharedSmibTest {
         if(event.equals("fault"))net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"fault");
         if(event.endsWith("-trip"))net.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent(event.equals("primary-trip")?"Bus1":"Bus2","1",net,.05),"shaft-trip");
         configure.accept(a);
-        assertTrue(a.initialization());recording.initial=recording.capture(0.,"INITIAL");recording.enabled=true;
+        assertTrue(a.initialization());recording.initial=recording.capture(0.,"INITIAL");a.setSimuTime(-startupSteps*h);recording.enabled=true;
         while(a.getSimuTime()<duration-h/2.)assertTrue(a.solveDEqnStep(true));
         recording.frames.add(recording.capture(a.getSimuTime(),"FINAL"));assertEquals(references.size(),recording.nextReference);
         var governor=(Wsieg1Governor)net.getMachine("Bus1-mach1").getGovernor();

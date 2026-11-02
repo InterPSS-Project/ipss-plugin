@@ -28,6 +28,11 @@ final class Wsieg1ReferenceFixture {
         }
     }
     Path stage(String tag)throws Exception {
+        return stage(tag,"complete");
+    }
+    /** Rejected captures can only be opened by an explicit diagnostic-status check. */
+    Path stage(String tag,String expectedStatus)throws Exception {
+        assertTrue(expectedStatus.equals("complete")||expectedStatus.equals("rejected-quality"));
         Path destination=staged.resolve(tag).normalize();assertTrue(destination.startsWith(staged.normalize()));Files.createDirectories(destination);
         try(var zip=new ZipFile(archive().toFile())) {
             for(String name:List.of("manifest.json","network.raw","dynamic.dyr","native.csv")) {
@@ -36,7 +41,7 @@ final class Wsieg1ReferenceFixture {
                 try(var stream=zip.getInputStream(entry)){Files.copy(stream,destination.resolve(name),StandardCopyOption.REPLACE_EXISTING);}
             }
         }
-        var manifest=new ObjectMapper().readTree(destination.resolve("manifest.json").toFile());assertEquals("complete",manifest.path("status").asText());
+        var manifest=new ObjectMapper().readTree(destination.resolve("manifest.json").toFile());assertEquals(expectedStatus,manifest.path("status").asText());
         for(String name:List.of("network.raw","dynamic.dyr","native.csv"))assertEquals(manifest.path("files").path(name).asText(),sha(Files.readAllBytes(destination.resolve(name))));
         assertEquals(List.of(0.,100.,0.,100.),new ObjectMapper().convertValue(manifest.path("load_conversion_percent"),List.class));
         return destination;

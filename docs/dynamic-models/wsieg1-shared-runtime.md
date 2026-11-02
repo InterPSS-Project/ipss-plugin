@@ -249,3 +249,76 @@ existing skips. The registered core integration suite runs 4,029 tests with
 modified-Euler power gate and other outstanding reference/system checks.
 It is not a passing system-acceptance result. Private evidence retains the
 exact runtime overlay, prior executable, complete comparisons and test reports.
+
+## Nonlinear valve initialization and startup qualification
+
+Initialization now preserves entered valve bounds. Only the documented `Iblock`
+zero-bound rule replaces a bound, using the initial valve position obtained by
+inverting the nonlinear valve-power curve. Mechanical power is not a substitute
+for that position. The previous implementation silently expanded ordinary bounds
+to contain the solved operating point; an executable negative control confirms
+that it fails the new bound-preservation regression.
+
+The valve is projected at initialization while the turbine's dynamic states
+retain the solved power. This exposes the actual turbine initialization
+derivatives when the initial valve cannot supply that power. Bypassed turbine
+slots instead take their algebraic inputs immediately. Consequently, an initial
+mechanical-power jump can coexist with zero controller derivatives; a zero-rate
+check alone does not establish machine/network equilibrium. The immutable
+`getInitialValveLimitMismatch()` diagnostic reports initial valve reference
+minus projected position, refreshes on reinitialization and is unavailable after
+failed initialization. Existing numerical state names remain unchanged.
+
+Independent cold pairs exercise nonlinear upper/lower clipping, each `Iblock`
+selection, conflicting effective limits and full turbine bypass at fine and
+quarter-cycle intervals. Both production initializers reproduce the published
+initial states, effective bounds, valve histories and mechanical output within
+8e-8 pu, without changing entered constants. Reference runs that report suspect
+initialization remain explicitly quality-rejected evidence; their coordinates
+are checked, but they are not used as successful trajectory references.
+
+The non-flat reference starts integrate two intervals before time zero. The new
+initialization trajectory test explicitly selects the same start time and records
+both negative-time network endpoints. It preserves every later sample and event
+duplicate, with an explicit binary32 reference-clock check. This is a test
+configuration, not a change to either production solver's startup default.
+The earlier comparison holding startup rows at their initial values is retained
+in the private evidence alongside the matched-startup result.
+
+| Clipped, fully bypassed turbine profiles | Worst rotor-angle RMSE without startup, degrees | With two integrated startup intervals, degrees |
+| --- | --- | --- |
+| Modified Euler, fine interval | 0.03973 | 0.01326 |
+| Modified Euler, quarter cycle | 0.3307 | 0.1118 |
+| Staggered Euler, fine interval | 0.02646 | 0.0000552 |
+| Staggered Euler, quarter cycle | 0.2192 | 0.003062 |
+
+Staggered boundary gates pass for these bypassed-turbine profiles after matching
+startup. Modified Euler still fails retained boundary gates; startup alignment
+does not establish complete trajectory parity. The ordinary, consistent
+`Iblock` profiles pass both methods. A strictly constant reference channel uses
+a separate 1e-6 pu maximum-absolute-error gate and reports range NRMSE as
+undefined. Every positive reference range, however small, retains the original
+0.001 range-NRMSE limit; rotor-angle RMSE remains below 0.01 degrees.
+
+Conflicting effective limits remain **unqualified**. The observed initial
+projection gives the upper bound priority, but a later reference command
+reversal causes alternating lower/upper valve values. The current runtime's
+projection holds the upper bound and does not reproduce that inconsistent-limit
+trajectory. The cold-capture test explicitly detects this alternation, and the
+full coupled gate continues to fail under both methods. Initialization evidence
+must not be generalized into a claim that this runtime branch is correct.
+
+All 84 previously retained bypass/limiter and fast-time coupled traces remain
+exactly identical across every sample, state, history and physical channel.
+The model remains partially qualified; reversed effective-limit handling,
+modified-Euler transient accuracy, base/reconnection boundaries and extended
+duration qualification remain open.
+
+Final initialization validation executes 90 focused model/import tests: 85 pass
+and five coupled-accuracy test invocations fail, with no errors or skips. The
+new component checks and both independent initializer checks pass. The complete
+core-plugin module executes 486 tests with no failures and four skips. The
+broader registered-suite result recorded in the preceding section predates this
+slice; it is not reclassified as passing. Private evidence retains the original
+and matched-startup comparisons, cold captures, exact runtime overlay, negative
+control, invariance checks and test reports.

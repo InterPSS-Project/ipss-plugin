@@ -33,7 +33,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private boolean initialized, predicted;
     private Machine initializedMachine;
     private long staggeredEvaluationCount;
-    private double initialReference, backlashInputMemory;
+    private double initialReference, backlashInputMemory, initialValveLimitMismatch;
     private double secondaryScale=1;
     private Machine secondaryMachine;
     public void attachSecondaryShaft(Machine machine) {
@@ -123,12 +123,13 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         int block=(int)c[33];
         if((block==1||block==3)&&lower==0) lower=gate;
         if((block==2||block==3)&&upper==0) upper=gate;
-        // Initialization accommodates the solved operating point without moving it.
-        lower=Math.min(lower,gate);upper=Math.max(upper,gate);
-        Arrays.fill(x,p);x[0]=0;x[1]=gate;
-        System.arraycopy(x,0,old,0,6);Arrays.fill(d0,0);
+        // Only Iblock replaces a bound. Preserve a non-equilibrium operating
+        // point as turbine residuals instead of silently expanding valve limits.
+        Arrays.fill(x,p);x[0]=0;x[1]=projectValve(gate);
+        initialValveLimitMismatch=gate-x[1];
         gateMemory=gate;reference=gate;mode=0;predicted=false;initialized=true;
-        initializedMachine=machine;initialReference=gate;backlashInputMemory=gate;
+        initializedMachine=machine;initialReference=gate;backlashInputMemory=x[1];
+        synchronizeBypasses(x);System.arraycopy(x,0,old,0,6);Arrays.fill(d0,0);
         derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.INITIALIZATION);
         return true;
     }
@@ -151,7 +152,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
             for(int i=0;i<6;i++) x[i]=old[i]+.5*dt*(d0[i]+d1[i]);
             predicted=false;
         }
-        x[1]=clamp(x[1],lower,upper);
+        x[1]=projectValve(x[1]);
         synchronizeBypasses(x);
         if(flag==1) commitHistories();
         return true;
@@ -179,7 +180,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     @Override public void applyStaggeredState(double[] values,int offset,double step) {
         requireBuffer(values,offset);requireStep(step);
         for(int i=0;i<6;i++)if(!Double.isFinite(values[offset+i]))throw new IllegalArgumentException("Trial states must be finite");
-        System.arraycopy(values,offset,x,0,6);x[1]=clamp(x[1],lower,upper);synchronizeBypasses(x);
+        System.arraycopy(values,offset,x,0,6);x[1]=projectValve(x[1]);synchronizeBypasses(x);
     }
     @Override public void completeStaggeredStep(double step) {requireSharedState();requireStep(step);commitHistories();}
     public long getStaggeredEvaluationCount() {return staggeredEvaluationCount;}
@@ -236,6 +237,11 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     @Override public void setRefPoint(double value) { if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite reference");reference=value; }
     public double getRefPoint() { return reference; }
     public double getInitialReference() { return initialReference; }
+    /** Signed initial reference minus the projected valve; nonzero exposes a non-equilibrium start. */
+    public double getInitialValveLimitMismatch() {
+        if(!initialized)throw new IllegalStateException("Initialize before reading the valve-limit residual");
+        return initialValveLimitMismatch;
+    }
     public double getSecondaryBaseScale() { return secondaryMachine==null?0.:secondaryScale; }
     public double getSpeedDeadbandOutput() { return speedInput(getMachine().getSpeed()-1.); }
     public double getValveOutput() { return backlash(x[1]); }
@@ -257,4 +263,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         return b[i-1]+(value-a[i-1])*(b[i]-b[i-1])/(a[i]-a[i-1]);
     }
     private static double clamp(double value,double low,double high) { return Math.max(low,Math.min(high,value)); }
+    // Iblock can produce reversed effective limits. The upper bound has priority;
+    // retain both reported bounds rather than sorting or expanding them.
+    private double projectValve(double value) {return Math.min(upper,Math.max(lower,value));}
 }
