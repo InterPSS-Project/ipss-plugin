@@ -5,14 +5,17 @@ import org.interpss.dstab.control.util.IntegrationStateAccess;
 import org.interpss.dstab.control.util.IntegrationStateMonitor;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
-/** Shared conducting runtime. Protection/event coordination and network attachment are separate owners. */
+/** Shared electrical/transducer runtime. Protection decisions and committed event history have a separate owner. */
 public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, IntegrationStateAccess {
+    /** The event owner selects a regime; evaluating it never changes protection history. */
+    public enum OperatingMode { NORMAL, BLOCKED, BYPASSED, RECOVERING, POWER_TO_CURRENT }
     private final Cdc6tMeasurements measurements;
     private final Cdc6tCurrentOrder command;
     private final Cdc6tVoltageCurrentLimit limit;
     private final Cdc6tConductingLink link;
     private final double[] states=new double[3],boundary=new double[8],currents=new double[4];
     private boolean boundaryReady;
+    private double scheduledAmperes;
 
     /** Takes exclusive ownership of the mutable measurements and link scratch buffers. */
     public Cdc6tNormalRuntime(Cdc6tMeasurements measurements,Cdc6tCurrentOrder command,
@@ -22,22 +25,50 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
         this.link=java.util.Objects.requireNonNull(link);
     }
     public void initialize(double inverterVolts,double currentAmperes,double rectifierVolts) {
-        measurements.initialize(inverterVolts,currentAmperes,rectifierVolts);boundaryReady=false;
+        if(!Double.isFinite(currentAmperes)||currentAmperes<=0)throw new IllegalArgumentException("Positive scheduled current required");
+        measurements.initialize(inverterVolts,currentAmperes,rectifierVolts);scheduledAmperes=currentAmperes;boundaryReady=false;
     }
     /** Recompute voltage-dependent injections and transducer inputs for each network trial.
      * Returns rectifier real/imaginary injection then inverter real/imaginary injection on network base. */
     public void evaluateBoundary(double rectifierReal,double rectifierImag,double inverterReal,double inverterImag,
             double auxiliaryMegawatts,double[] output,int offset) {
+        evaluateBoundary(rectifierReal,rectifierImag,inverterReal,inverterImag,auxiliaryMegawatts,
+                OperatingMode.NORMAL,1,1,output,offset);
+    }
+    /** Electrical evaluation with an externally selected mode and prepared recovery factors.
+     * This overload does not select transitions or commit timers. Auxiliary modulation
+     * outside normal operation remains unqualified and is rejected explicitly. */
+    public void evaluateBoundary(double rectifierReal,double rectifierImag,double inverterReal,double inverterImag,
+            double auxiliaryMegawatts,OperatingMode mode,double voltageFactor,double currentFactor,double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,4,output.length);
+        java.util.Objects.requireNonNull(mode);
         boundaryReady=false;
+        if(!Double.isFinite(voltageFactor)||voltageFactor<0||voltageFactor>1
+                ||!Double.isFinite(currentFactor)||currentFactor<0||currentFactor>1)
+            throw new IllegalArgumentException("Recovery factors must be in [0,1]");
+        if(mode!=OperatingMode.NORMAL&&auxiliaryMegawatts!=0)
+            throw new IllegalArgumentException("Auxiliary modulation outside normal operation is not yet qualified");
+        if(mode!=OperatingMode.RECOVERING&&mode!=OperatingMode.BLOCKED&&(voltageFactor!=1||currentFactor!=1))
+            throw new IllegalArgumentException("Recovery factors require the recovery regime");
         double vr=Math.hypot(rectifierReal,rectifierImag),vi=Math.hypot(inverterReal,inverterImag);
-        if(!Double.isFinite(vr)||!Double.isFinite(vi)||vr<=0||vi<=0)
+        if(!Double.isFinite(vr)||!Double.isFinite(vi)||mode!=OperatingMode.BLOCKED&&(vr<=0||mode!=OperatingMode.BYPASSED&&vi<=0))
             throw new IllegalArgumentException("Positive finite terminal voltage magnitudes required");
         measurements.readStaggeredState(states,0);
-        double current=limit.limit(command.amperes(states[0],states[2],auxiliaryMegawatts),states[0]);
-        link.evaluate(vr,vi,current,command.inverterVoltage(current),boundary,0);
-        injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);
-        injection(boundary[3],boundary[4],inverterReal,inverterImag,vi,currents,2);
+        double current;
+        if(mode==OperatingMode.BLOCKED){
+            current=0;java.util.Arrays.fill(boundary,0);boundary[2]=Math.PI/2;boundary[5]=Math.PI/2;
+            java.util.Arrays.fill(currents,0);
+        } else if(mode==OperatingMode.BYPASSED){
+            current=scheduledAmperes;link.evaluateBypassed(vr,current,boundary,0);
+            injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);currents[2]=0;currents[3]=0;
+        } else {
+            double desired=mode==OperatingMode.RECOVERING?scheduledAmperes*currentFactor
+                    :mode==OperatingMode.POWER_TO_CURRENT?scheduledAmperes:command.amperes(states[0],states[2],auxiliaryMegawatts);
+            current=limit.limit(desired,states[0]);
+            link.evaluate(vr,vi,current,command.inverterVoltage(current,voltageFactor),boundary,0);
+            injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);
+            injection(boundary[3],boundary[4],inverterReal,inverterImag,vi,currents,2);
+        }
         measurements.setInput(boundary[7],current,boundary[6]);
         System.arraycopy(currents,0,output,offset,4);boundaryReady=true;
     }

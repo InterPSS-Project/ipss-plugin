@@ -40,7 +40,7 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     record Fixture(com.interpss.simu.SimuContext context,Cdc6tNormalRuntime runtime,Cdc6tNormalTerminalPorts ports) {}
     static Fixture load(Path folder) throws Exception {
         var lines=Files.readAllLines(Path.of("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_PsetOnInv.raw"));
-        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,new Cdc6tVoltageCurrentLimit(250,450,425,2000,500,2000));
+        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000));
     }
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
             Cdc6tVoltageCurrentLimit limit) throws Exception {

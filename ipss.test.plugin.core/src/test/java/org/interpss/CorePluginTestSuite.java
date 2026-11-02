@@ -292,6 +292,7 @@ import org.interpss.core.dstab.Cdc6tNetworkOwnershipTest;
 import org.interpss.core.dstab.Cdc6tTerminalPortsTest;
 import org.interpss.core.dstab.Cdc6tCoupledNetworkTest;
 import org.interpss.core.dstab.Cdc6tCoupledReferenceTest;
+import org.interpss.core.dstab.Cdc6tOperatingBoundaryTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1254,6 +1255,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tTerminalPortsTest.class,
     Cdc6tCoupledNetworkTest.class,
     Cdc6tCoupledReferenceTest.class,
+    Cdc6tOperatingBoundaryTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,

@@ -26,6 +26,11 @@ import com.interpss.dstab.common.DStabSimuException;
 /** Independent normal-conduction fault comparison, retaining startup and both event sides. */
 public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
     @TempDir Path folder;
+    private static final Path OUTPUT=createOutput();
+    private static Path createOutput(){
+        try{return Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-coupled-reference")),"run-");}
+        catch(java.io.IOException failure){throw new java.io.UncheckedIOException(failure);}
+    }
     private static final String[] KEYS={"V7","A7","V9","A9","STATE0","STATE1","STATE2",
             "VAR5","VAR6","VAR12","VAR7","VAR8","VAR13","VAR10","VAR9"};
     private static final class Recorder {
@@ -85,7 +90,7 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
             raw=new ArrayList<>(new String(z.getInputStream(z.getEntry(prefix+"network.raw")).readAllBytes(),java.nio.charset.StandardCharsets.UTF_8).lines().toList());
         }
         var limit=group.equals("vdcl")?new Cdc6tVoltageCurrentLimit(480,800,490,name.equals("two-slope-fault")?980:1000,500,1200)
-                :new Cdc6tVoltageCurrentLimit(250,450,425,2000,500,2000);
+                :Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000);
         var f=Cdc6tCoupledNetworkTest.load(folder,raw,name.equals("current")?Cdc6tCurrentOrder.Mode.CURRENT:Cdc6tCurrentOrder.Mode.POWER,
                 name.equals("current")?1000:name.equals("rectifier-power")?505:-500,limit);
         var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
@@ -112,7 +117,7 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
         double[] tolerance=staggered
                 ?new double[]{4.2e-6,.00046,4e-6,.0017,1.8,.0085,1.7,.000115,.00006,.00052,.00011,.00008,.00082,2.9,2.9}
                 :new double[]{.00014,.0085,.000008,.0075,125,.031,125,.004,.0007,.022,.004,.0023,.004,10,10};
-        var out=Path.of("target/cdc6t-coupled-reference",profile.replace(':','-'),staggered?"staggered":"modified-euler");
+        var out=OUTPUT.resolve(profile.replace(':','-')).resolve(staggered?"staggered":"modified-euler");
         Files.createDirectories(out);
         try(var writer=BenchmarkOutputGuard.newWriter(out.resolve("actual.csv"),2*1024*1024)){
             writer.write("time_s,"+String.join(",",KEYS)+"\n");

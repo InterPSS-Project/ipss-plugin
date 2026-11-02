@@ -108,13 +108,13 @@ are active in the fault controls; the unequal-slope control prevents a single-li
 implementation from passing accidentally. Peak current error is below `3.9e-5` A.
 Breakpoint, plateau and smaller-order behavior have separate analytic checks.
 
-This component requires strictly increasing voltage coordinates and nondecreasing
-nonnegative current coordinates. Unordered or coincident input points are not
-silently reordered. Their source-specific interpretation remains to be qualified,
-including the unordered plateau points in the earlier baseline fixture. The
-restart minimum, recovery ramps and blocking/bypass overrides are not part of
-this normal-operation ceiling. Neither component is yet attached to a runnable
-Java DC-link device, so full CDC6T support remains unavailable.
+The ordinary constructor requires strictly increasing voltage coordinates and
+nondecreasing nonnegative current coordinates. Unordered points are never sorted.
+The source factory separately supports the independently checked redundant final
+plateau described below. Other unordered or ambiguous curves remain unqualified.
+Recovery and blocking/bypass overrides are supplied by the electrical runtime;
+they are not intrinsic properties of the ceiling. Complete CDC6T import and
+protected coupled trajectories remain unfinished.
 
 ## Converter terminal boundary
 
@@ -296,10 +296,10 @@ restores the same state owner. Tests check equilibrium under both lifecycles,
 disturbed-state refinement, rotating-phasor power conservation, fresh voltage
 inputs and failed/stale trial behavior.
 
-This component is restricted to ordinary conduction. The paired ports below
-register its dynamic injections and shared integration owner. It does not own
-protection events. Coordinated event behavior, complete automatic attachment
-and independent full-solver trajectory acceptance remain outstanding.
+The original API and paired ports below select ordinary conduction. The explicit
+regime overload described later also evaluates protected electrical boundaries
+through the same transducers and buffers. It does not own protection events.
+Coordinated event behavior and complete automatic attachment remain outstanding.
 
 ## Network ownership established before attachment
 
@@ -393,3 +393,32 @@ are shared, without fitted corrections.
 This qualifies only the declared conducting profiles on the small LCC network.
 Complete protected SMIB behavior, shorter-step convergence, production intervals,
 longer runs, automatic named-link import and coordinated protection remain open.
+
+## Electrical regimes and source-order current ceiling
+
+The shared electrical/transducer runtime now accepts explicit blocked, bypassed,
+recovering and power-to-current regimes from an external event owner. Evaluation
+does not select a transition or commit a timer. Blocking sets both terminal
+currents and DC voltages to zero while measurement derivatives continue to decay;
+it also supports a zero terminal voltage without division. Bypass retains the
+scheduled current and supplies only rectifier loss/reactive demand. Recovery uses
+scheduled current times its recovery factor before applying the current ceiling;
+the voltage factor scales the scheduled voltage. Power-to-current mode uses the
+scheduled current with the same ceiling. Auxiliary modulation in these additional
+regimes is explicitly rejected pending independent qualification.
+
+Six retained blocking/bypass profiles qualify every electrical sample using the
+recorded states, regimes and ramp factors, including transition duplicates. The
+largest observed terminal-power error is below `2.43e-5` pu, converter-angle error
+below `6.24e-5` degrees, and DC voltage error below `0.186` V. These are measured-input
+electrical checks, not proof of coupled timer decisions. Separate tests verify
+blocked-state decay through both integration methods and reusable numerical buffers.
+
+Recovery also established the source-order interpretation of the redundant final
+plateau in the retained current-limit data. The first segment runs from 250 kV/
+450 A to 500 kV/2,000 A; a subsequent 425 kV/2,000 A point does not move that knee.
+Sorting those points produces the wrong slope and prematurely relaxes the ceiling.
+`fromSourcePoints` preserves this qualified redundant-plateau case; the ordinary
+constructor still requires increasing voltages, and other unordered source curves
+remain rejected. The normal coupled fixtures now use the exact source-order
+preparation. Full protection ownership and automatic import remain unfinished.

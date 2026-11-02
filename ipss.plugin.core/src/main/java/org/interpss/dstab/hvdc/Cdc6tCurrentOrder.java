@@ -28,7 +28,13 @@ public final class Cdc6tCurrentOrder {
     }
     /** Apply after current limitation: scheduled volts minus the compensating resistive drop. */
     public double inverterVoltage(double limitedAmperes) {
-        finite(limitedAmperes);double result=scheduledVolts-compensationOhms*limitedAmperes;
+        return inverterVoltage(limitedAmperes,1);
+    }
+    /** Recovery scales the scheduled voltage before the compensating resistive drop. */
+    public double inverterVoltage(double limitedAmperes,double recoveryFactor) {
+        finite(recoveryFactor);
+        if(recoveryFactor<0||recoveryFactor>1)throw new IllegalArgumentException("Recovery factor must be in [0,1]");
+        finite(limitedAmperes);double result=scheduledVolts*recoveryFactor-compensationOhms*limitedAmperes;
         finite(result);return result;
     }
     private static void finite(double value) {
