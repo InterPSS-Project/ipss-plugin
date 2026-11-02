@@ -15,7 +15,7 @@ public final class PsseDyrRecordReader {
     // Recognize an exact named-device header, not an arbitrary quoted trailing
     // comment. Other model families retain their numeric target validation.
     private static final Pattern NAMED_DEVICE_HEADER = Pattern.compile(
-            "^'(?:''|[^'])+'[\\s,]+'(?:SVSMO3T2|CDC6T)'(?=[\\s,/]|$)", Pattern.CASE_INSENSITIVE);
+            "^'(?:''|[^'])+'[\\s,]+'(?:SVSMO3T2|CDC6T|CHVDC2|USRDCL)'(?=[\\s,/]|$)", Pattern.CASE_INSENSITIVE);
     private PsseDyrRecordReader() {
     }
 
@@ -104,9 +104,11 @@ public final class PsseDyrRecordReader {
                 throw new IllegalArgumentException("Blank DYR named-device target at "
                         + source + ":" + startLine);
             }
+            boolean userDcModel = fields.get(1).equalsIgnoreCase("USRDCL");
+            int modelIndex = userDcModel ? 2 : 1;
             return new PsseDyrRecord(source, startLine, endLine, raw, 0,
-                    fields.get(1), DynamicModelCatalog.canonicalName(fields.get(1)),
-                    name, fields, 2);
+                    fields.get(modelIndex), DynamicModelCatalog.canonicalName(fields.get(modelIndex)),
+                    name, fields, modelIndex + 1);
         }
         int bus;
         try {

@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The [CHVDC2 named-link foundation](dynamic-models/chvdc2-named-link.md) preserves
+standard/legacy source identity and exact allocation, validates immutable
+parameters, and provides a shared physical DC-line component for both integration
+methods. Automatic attachment remains unsupported. Stiff-source native controls
+now initialize and cold-repeat successfully; the original coupled startup
+failure remains diagnostic. Complete controller, protection, network and SMIB
+qualification is still required.
+
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
 omitted distribution, fully represented transformer/feeder boundaries, and

@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain [strict named-link decoding and the shared DC-line component](dynamic-models/chvdc2-named-link.md), distinct legacy/standard identities, immutable source coefficients and both-method physical equation gates. Use the valid cold-repeated stiff-source references to complete controller/protection equations, source-specific preparation, network attachment and full SMIB qualification; keep the original coupled startup failure diagnostic and decoded records explicitly unsupported for automatic attachment.
+
 - Add USRDCL named-link decoding and the exact allocation/schema.
 - Implement dynamic HVDC controls and verify equations before sharing an engine with another variant.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.

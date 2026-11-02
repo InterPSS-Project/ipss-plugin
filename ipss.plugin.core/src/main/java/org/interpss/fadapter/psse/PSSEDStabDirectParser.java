@@ -321,6 +321,21 @@ public class PSSEDStabDirectParser {
                 if(org.interpss.fadapter.psse.dyr.HplntdImporter.recognizes(record)){
                     hybridRecords.add(record);continue;
                 }
+                if (type.equals("CHVDC2") || type.equals("CHVDC2U1")) {
+                    try {
+                        org.interpss.fadapter.psse.dyr.Chvdc2RecordMapper.prepare(record);
+                        report.add(record, DynamicModelImportStatus.UNSUPPORTED,
+                                "Named-link schema decoded; CHVDC2 controller/network runtime attachment is not implemented");
+                    } catch (IllegalArgumentException invalid) {
+                        report.add(record, DynamicModelImportStatus.REJECTED, invalid.getMessage());
+                    }
+                    continue;
+                }
+                if (record.hasNamedTarget() && record.fields().get(1).equalsIgnoreCase("USRDCL")) {
+                    report.add(record, DynamicModelImportStatus.UNSUPPORTED,
+                            "User DC-link model requires an exact named-link runtime; generator aliases cannot be used");
+                    continue;
+                }
                 if (!hasExpectedParameterCount(record)) {
                     report.add(record, DynamicModelImportStatus.REJECTED,
                             rejectionMessage(type, record));

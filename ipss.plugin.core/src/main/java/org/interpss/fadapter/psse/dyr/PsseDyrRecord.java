@@ -37,7 +37,8 @@ public record PsseDyrRecord(
 
     /** A named device has no bus-number prefix; deviceId retains its exact name. */
     public boolean hasNamedTarget() {
-        return busNumber == 0 && parameterOffset == 2;
+        return busNumber == 0 && (parameterOffset == 2
+                || parameterOffset == 3 && fields.size() >= 3 && fields.get(1).equalsIgnoreCase("USRDCL"));
     }
 
     public List<String> parameters() {
