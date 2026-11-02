@@ -42,6 +42,9 @@ public class Cdc6tCurrentOrderTest {
         var rectifier=new Cdc6tCurrentOrder(Mode.POWER,505,500,5);
         var inverter=new Cdc6tCurrentOrder(Mode.POWER,-500,500,5);
         var current=new Cdc6tCurrentOrder(Mode.CURRENT,1000,500,5);
+        assertEquals(1010,rectifier.recoveryBaseAmperes(),0);
+        assertEquals(1000,inverter.recoveryBaseAmperes(),0);
+        assertEquals(1000,current.recoveryBaseAmperes(),0);
         assertEquals(515e6/505000,rectifier.amperes(500000,505000,10),1e-12);
         assertEquals(1020,inverter.amperes(500000,505000,10),1e-12);
         assertEquals(1000+10e6/505000,current.amperes(500000,505000,10),1e-12);

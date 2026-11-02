@@ -77,10 +77,10 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
             current=scheduledAmperes;link.evaluateBypassed(vr,current,boundary,0);
             injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);currents[2]=0;currents[3]=0;
         } else {
-            double desired=mode==OperatingMode.RECOVERING?scheduledAmperes*currentFactor
+            double desired=mode==OperatingMode.RECOVERING?command.recoveryBaseAmperes()*currentFactor
                     :mode==OperatingMode.POWER_TO_CURRENT?scheduledAmperes:command.amperes(states[0],states[2],auxiliaryMegawatts);
             current=limit.limit(Math.max(minimumCurrentAmperes,desired),states[0]);
-            link.evaluate(vr,vi,current,command.inverterVoltage(current,voltageFactor),boundary,0);
+            current=link.evaluateCurrent(vr,vi,current,command.inverterVoltage(current,voltageFactor),boundary,0);
             injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);
             injection(boundary[3],boundary[4],inverterReal,inverterImag,vi,currents,2);
         }

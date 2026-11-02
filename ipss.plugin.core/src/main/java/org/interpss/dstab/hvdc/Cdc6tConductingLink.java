@@ -1,10 +1,10 @@
 package org.interpss.dstab.hvdc;
 
-/** Fixed-current, fixed-tap conducting equations. Protection, recovery and current-margin history are external. */
+/** Fixed-tap conducting equations with algebraic current-margin transfer; protection history is external. */
 public final class Cdc6tConductingLink {
     public enum InverterControl { SCHEDULED_VOLTAGE, CONSTANT_GAMMA }
     private final Cdc6tConverterBoundary rectifier,inverter;
-    private final double resistance,alphaMinimum,gammaMinimum;
+    private final double resistance,alphaMinimum,gammaMinimum,currentMargin;
     private final InverterControl inverterControl;
     private final double[] trial=new double[8];
     public Cdc6tConductingLink(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
@@ -13,17 +13,32 @@ public final class Cdc6tConductingLink {
     }
     public Cdc6tConductingLink(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
             double lineOhms,double alphaMinimumRadians,double gammaMinimumRadians,InverterControl inverterControl) {
+        this(rectifier,inverter,lineOhms,alphaMinimumRadians,gammaMinimumRadians,inverterControl,0);
+    }
+    public Cdc6tConductingLink(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
+            double lineOhms,double alphaMinimumRadians,double gammaMinimumRadians,InverterControl inverterControl,double currentMargin) {
         this.rectifier=java.util.Objects.requireNonNull(rectifier);this.inverter=java.util.Objects.requireNonNull(inverter);
         this.inverterControl=java.util.Objects.requireNonNull(inverterControl);
         if(!Double.isFinite(lineOhms)||lineOhms<0)throw new IllegalArgumentException("Nonnegative finite line resistance required");
         for(double angle:new double[]{alphaMinimumRadians,gammaMinimumRadians})
             if(!Double.isFinite(angle)||angle<0||angle>=Math.PI/2)throw new IllegalArgumentException("Valid conducting minimum angle required");
         resistance=lineOhms;alphaMinimum=alphaMinimumRadians;gammaMinimum=gammaMinimumRadians;
+        if(!Double.isFinite(currentMargin)||currentMargin<0||currentMargin>=1)
+            throw new IllegalArgumentException("Current margin must be finite in [0,1)");
+        if(currentMargin!=0&&inverterControl!=InverterControl.CONSTANT_GAMMA)
+            throw new IllegalArgumentException("Nonzero dynamic margin currently requires constant-gamma control");
+        this.currentMargin=currentMargin;
     }
     /** Writes rectifier P,Q,angle; inverter P,Q,angle; rectifier volts; inverter volts.
      * All values are trial algebraic results; evaluation commits no control mode or timer.
      * This instance owns reusable scratch space and is not shared across concurrent solves. */
     public void evaluate(double rectifierAcPu,double inverterAcPu,double currentOrderAmperes,
+            double inverterVoltageOrder,double[] output,int offset) {
+        evaluateCurrent(rectifierAcPu,inverterAcPu,currentOrderAmperes,inverterVoltageOrder,output,offset);
+    }
+    /** Returns delivered current, including one margin reduction if the rectifier
+     * reaches its minimum angle. Repeated evaluations do not retain a reduction. */
+    public double evaluateCurrent(double rectifierAcPu,double inverterAcPu,double currentOrderAmperes,
             double inverterVoltageOrder,double[] output,int offset) {
         java.util.Objects.checkFromIndexSize(offset,8,output.length);
         if(!Double.isFinite(inverterVoltageOrder)||inverterVoltageOrder<0)
@@ -31,6 +46,13 @@ public final class Cdc6tConductingLink {
         double drop=resistance*currentOrderAmperes;
         double rectifierCeiling=rectifier.maximumDcVoltage(rectifierAcPu,currentOrderAmperes,alphaMinimum);
         double inverterCeiling=inverter.maximumDcVoltage(inverterAcPu,currentOrderAmperes,gammaMinimum);
+        if(currentMargin!=0&&rectifierCeiling-drop<(inverterControl==InverterControl.CONSTANT_GAMMA
+                ?inverterCeiling:Math.min(inverterVoltageOrder,inverterCeiling))){
+            currentOrderAmperes*=1-currentMargin;
+            drop=resistance*currentOrderAmperes;
+            rectifierCeiling=rectifier.maximumDcVoltage(rectifierAcPu,currentOrderAmperes,alphaMinimum);
+            inverterCeiling=inverter.maximumDcVoltage(inverterAcPu,currentOrderAmperes,gammaMinimum);
+        }
         double vi=Math.min(rectifierCeiling-drop,inverterCeiling);
         if(inverterControl==InverterControl.SCHEDULED_VOLTAGE)vi=Math.min(inverterVoltageOrder,vi);
         double vr=vi+drop;
@@ -39,6 +61,7 @@ public final class Cdc6tConductingLink {
         rectifier.evaluate(rectifierAcPu,vr,currentOrderAmperes,trial,0);
         inverter.evaluate(inverterAcPu,vi,currentOrderAmperes,trial,3);
         trial[6]=vr;trial[7]=vi;System.arraycopy(trial,0,output,offset,8);
+        return currentOrderAmperes;
     }
 
     /** Closed inverter bypass: the rectifier maintains the supplied current through the line resistance.

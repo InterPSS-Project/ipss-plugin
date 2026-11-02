@@ -44,23 +44,28 @@ public final class Cdc6tParameters {
     /** Assemble the qualified fixed-tap, ordinary dynamic-angle path. Static-network
      * ownership, constant-gamma controls and other converter variants are not inferred here. */
     public Prepared prepare(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,double lineOhms,OperatingPoint point){
-        return prepare(rectifier,inverter,lineOhms,point,Math.toRadians(source[1]),Cdc6tConductingLink.InverterControl.SCHEDULED_VOLTAGE);
+        return prepare(rectifier,inverter,lineOhms,point,Math.toRadians(source[1]),Cdc6tConductingLink.InverterControl.SCHEDULED_VOLTAGE,0);
     }
     /** Equal static inverter angle limits select gamma control and supersede the dynamic gamma minimum. */
     public Prepared prepareConstantGamma(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
             double lineOhms,OperatingPoint point,double staticGammaDegrees){
-        return prepare(rectifier,inverter,lineOhms,point,Math.toRadians(staticGammaDegrees),Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA);
+        return prepareConstantGamma(rectifier,inverter,lineOhms,point,staticGammaDegrees,0);
+    }
+    /** Constant-gamma current-margin transfer is prepared from the static owner. */
+    public Prepared prepareConstantGamma(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,
+            double lineOhms,OperatingPoint point,double staticGammaDegrees,double currentMargin){
+        return prepare(rectifier,inverter,lineOhms,point,Math.toRadians(staticGammaDegrees),Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA,currentMargin);
     }
     private Prepared prepare(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,double lineOhms,
-            OperatingPoint point,double gammaRadians,Cdc6tConductingLink.InverterControl inverterControl){
+            OperatingPoint point,double gammaRadians,Cdc6tConductingLink.InverterControl inverterControl,double currentMargin){
         java.util.Objects.requireNonNull(point);
         var command=new Cdc6tCurrentOrder(point.mode(),point.signedSetpoint(),point.scheduledKilovolts(),point.compensationOhms());
-        var link=new Cdc6tConductingLink(rectifier,inverter,lineOhms,Math.toRadians(source[0]),gammaRadians,inverterControl);
+        var link=new Cdc6tConductingLink(rectifier,inverter,lineOhms,Math.toRadians(source[0]),gammaRadians,inverterControl,currentMargin);
         var runtime=new Cdc6tNormalRuntime(new Cdc6tMeasurements(source[2],source[3],source[31]),command,ceiling,link,source[14]);
         runtime.initialize(point.inverterVolts(),point.currentAmperes(),point.rectifierVolts());
         var protection=new Cdc6tProtectionCoordinator(rectifier(),inverter(),bypass(),
                 new Cdc6tModeSwitch(point.mode()==Cdc6tCurrentOrder.Mode.POWER,point.modeThresholdKilovolts()*1000,source[21]),
-                new Cdc6tRecoveryRamp(source[10]*1000,point.scheduledKilovolts()*1000,source[11],point.currentAmperes(),source[12],source[13]));
+                new Cdc6tRecoveryRamp(source[10]*1000,point.scheduledKilovolts()*1000,source[11],command.recoveryBaseAmperes(),source[12],source[13]));
         return new Prepared(runtime,protection);
     }
     private Cdc6tRectifierProtection rectifier(){

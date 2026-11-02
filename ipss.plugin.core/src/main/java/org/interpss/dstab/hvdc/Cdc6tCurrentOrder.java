@@ -5,7 +5,7 @@ public final class Cdc6tCurrentOrder {
     public enum Mode { POWER, CURRENT }
     private final Mode mode;
     private final boolean rectifierMeasurement;
-    private final double setpoint,scheduledVolts,compensationOhms;
+    private final double setpoint,scheduledVolts,compensationOhms,recoveryBase;
 
     /** Power setpoints use MW: positive at the rectifier, negative at the inverter. Current uses amperes. */
     public Cdc6tCurrentOrder(Mode mode,double signedSetpoint,double scheduledKilovolts,double compensationOhms) {
@@ -16,7 +16,13 @@ public final class Cdc6tCurrentOrder {
         this.setpoint=Math.abs(signedSetpoint);rectifierMeasurement=signedSetpoint>0;
         scheduledVolts=scheduledKilovolts*1000;finite(scheduledVolts);
         this.compensationOhms=compensationOhms;
+        recoveryBase=mode==Mode.CURRENT?setpoint:setpoint*1e6/scheduledVolts;
+        finite(recoveryBase);
+        if(recoveryBase<=0)throw new IllegalArgumentException("Positive recovery current base required");
     }
+    /** Recovery uses the source current order, or absolute MW divided by scheduled kV.
+     * It is independent of solved current, voltage measurements and the metering end. */
+    public double recoveryBaseAmperes(){return recoveryBase;}
     /** Unconstrained desired current. Call only in normal operation; do not apply during blocked recovery. */
     public double amperes(double measuredInverterVolts,double measuredRectifierVolts,double auxiliaryMegawatts) {
         finite(measuredInverterVolts);finite(measuredRectifierVolts);finite(auxiliaryMegawatts);

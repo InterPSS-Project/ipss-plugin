@@ -98,7 +98,7 @@ public final class Cdc6tNetworkPreparation {
                 owner.getCompondR(UnitType.Ohm),modeThresholdKilovolts,vi,current,vr);
         var rectifierBoundary=boundary(rectifier,true,network.getBaseKva()*1000);
         var inverterBoundary=boundary(inverter,false,network.getBaseKva()*1000);
-        var prepared=constantGamma?parameters.prepareConstantGamma(rectifierBoundary,inverterBoundary,resistance,point,inverter.getFiringAngLimit().getMin())
+        var prepared=constantGamma?parameters.prepareConstantGamma(rectifierBoundary,inverterBoundary,resistance,point,inverter.getFiringAngLimit().getMin(),owner.getPowerCurrentMargin())
                 :parameters.prepare(rectifierBoundary,inverterBoundary,resistance,point);
         var ports=new Cdc6tNormalTerminalPorts(parameters.linkName(),rb,ib,prepared.runtime(),vi,current,vr,prepared.protection());
         if(transferredGamma)ports.prepareInitialControlTransfer(rectifier.powerIntoConverter(),inverter.powerIntoConverter());

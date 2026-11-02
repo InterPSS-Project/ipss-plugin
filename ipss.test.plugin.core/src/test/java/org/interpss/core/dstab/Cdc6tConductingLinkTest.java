@@ -80,4 +80,25 @@ public class Cdc6tConductingLinkTest {
         assertEquals(5000,first[6]-first[7],1e-9);
         assertThrows(NullPointerException.class,()->new Cdc6tConductingLink(rectifier,inverter,5,0,0,null));
     }
+    @Test void currentMarginIsAlgebraicAndOnlyChangesAnActiveRectifierLimit(){
+        var rectifier=new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8);
+        var inverter=new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8);
+        var gamma=new Cdc6tConductingLink(rectifier,inverter,5,Math.toRadians(5),Math.toRadians(15),
+                Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA,.1);
+        var zero=new Cdc6tConductingLink(rectifier,inverter,5,Math.toRadians(5),Math.toRadians(15),
+                Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA);
+        double[] first=new double[8],second=new double[8];
+        assertEquals(1000,gamma.evaluateCurrent(1,1,1000,500000,first,0),0);
+        zero.evaluate(1,1,1000,500000,second,0);assertArrayEquals(first,second,0);
+        for(int repetition=0;repetition<3;repetition++){
+            assertEquals(900,gamma.evaluateCurrent(.8,1,1000,500000,first,0),0);
+            assertEquals(5,Math.toDegrees(first[2]),1e-10);
+            assertEquals(4500,first[6]-first[7],1e-9);
+            assertEquals(5*900*900/1e8,first[0]+first[3],1e-12);
+        }
+        assertEquals(1000,gamma.evaluateCurrent(1,1,1000,500000,first,0),0);
+        assertArrayEquals(first,second,0,"No retained reduction when the voltage recovers");
+        assertThrows(IllegalArgumentException.class,()->new Cdc6tConductingLink(rectifier,inverter,5,0,0,
+                Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA,1));
+    }
 }

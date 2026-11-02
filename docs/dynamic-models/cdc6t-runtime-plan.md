@@ -1127,3 +1127,84 @@ Private paired captures:
 Private complete comparisons, reports, source snapshots and integrity manifest:
 `verification-artifacts/cdc6t-transfer-orders-20261101/validation.zip`, SHA-256
 `c0989f391ea944fda364c0253788d9133720d7756dbf4361b8e6d77c98c49f36`.
+
+## Recovery bases and converged protection decisions
+
+Independent blocking/recovery captures distinguish three different currents:
+the static load-flow current, the settled dynamic initial current and the
+scheduled recovery base. The recovery base is the source current setpoint in
+current control, or absolute scheduled power divided by scheduled voltage in
+power control. The metering end does not introduce a DC-loss subtraction.
+For example, 505 MW and 500 kV give a 1,010 A recovery base even though the
+dynamic initial current is approximately 909.57 A. Both the restart fraction
+and the delivered recovery request now use this same prepared base. Normal
+power control continues to use its measured voltage.
+
+For constant-gamma current control, a binding rectifier minimum angle reduces
+the requested current by the configured current margin. The shared conducting
+kernel now returns that delivered current and recalculates both terminal
+boundaries. The current transducer receives the delivered current. This is
+an algebraic decision: repeated evaluations do not accumulate reductions, and
+an inactive rectifier limit leaves the existing equations unchanged. Nonzero
+dynamic margins with scheduled-voltage control remain unqualified and are not
+enabled by the new kernel overload.
+
+These corrections exposed a separate coupled-event defect. At a restart at
+0.070 s, an intermediate network iterate reached 0.899925 pu and latched another
+rectifier block. The converged recovery voltage is above the blocking threshold.
+The spurious block subsequently caused alternating network iterates and exhausted
+the unchanged 50-iteration budget near 0.090 s under both integration methods.
+The experimental mixer did not resolve it and remains disabled.
+
+The core now provides an opt-in `ConvergedNetworkAction` contract. A participant
+evaluates its working event decision at converged voltage; a changed injection
+requests another numerical pass at the same physical time. All passes share
+the original iteration budget, one begin/end lifecycle and failure cleanup.
+`afterNetworkConvergence` runs once after the actions stabilize. A before-iteration
+index is local to its numerical pass. Callback exceptions, action-budget
+exhaustion and ordinary numerical nonconvergence all discard working events.
+The existing path is retained when no participant implements this contract.
+The action list is reused and the first pass reuses its existing diagnostic
+record; no controller arrays or histories are copied in the numerical loop.
+
+CDC6T samples protection at the preceding accepted boundary and at converged
+network boundaries. Intermediate voltage iterates refresh electrical injections
+without latching protection. The owning port keeps predictor/corrector and
+accepted-history rules; the other terminal does not own an action. Recovery now
+completes under both integrators with the original step, tolerance and iteration
+limit. At 0.080 s the rectifier voltage differs from the independent current-order
+capture by approximately 0.00000002 pu.
+
+Three paired independent captures cover current control with a nonzero margin
+and both power-metering ends. Complete recorded-input replay, including every
+transition sample, has maximum converter P/Q error below 0.0000082 pu, angle
+error below 0.000064 degrees and DC-voltage error below 0.297 V. Prepared-factor
+tests cover restart, reset and rejected trials. Coupled tests verify both
+integration methods, delivered-current derivatives, accepted clocks and the
+shared network budget. The new test is registered in the core plugin suite.
+
+Validation passes 149 isolated core tests and 319 plugin/model/adjacent tests,
+without failures, errors or skips. Of 101 preceding complete trajectories,
+71 are byte-identical. All preceding state values, timestamps, accepted clocks
+and recorded modes are unchanged. The remaining numerical differences have
+maximum bus-voltage change 0.000000330 pu; the largest converter reactive-power
+change is 0.00000439 pu. Existing acceptance gates are unchanged. Complete
+repository suites were not rerun for this slice.
+
+Full protected-trajectory acceptance remains open. The new complete comparisons
+retain a peak bus-voltage error of 0.057843 pu at the internal recovery transition;
+the local recorder does not yet expose every reference internal event-side
+observation. Maximum voltage-state errors are approximately 4,095 V for modified
+Euler and 29.23 V for staggered integration. These are retained diagnostic
+results, not waived accuracy gates. Remaining work includes internal transition
+recording and timing, severe faults with infeasible conducting intermediates,
+nonzero-margin power/scheduled-voltage controls, bypass and temporary-current
+bases after startup transfer, production intervals, long-duration runs and
+automatic attachment.
+
+Private paired captures:
+`verification-artifacts/cdc6t-transfer-recovery-20261101/captures.zip`, SHA-256
+`61767d749282ba5c1c6399e4fb55e4f6717ae5188bbcbfcb29fd225ca52f62dd`.
+Private complete comparisons, reports, failure diagnostics and source snapshots:
+`verification-artifacts/cdc6t-transfer-recovery-20261101/validation.zip`, SHA-256
+`a79719a398973dccfef7b1425b88d7d42aa85d4f79ace830f00d25969e8a154e`.

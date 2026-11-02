@@ -74,7 +74,7 @@ public final class Cdc6tNormalTerminalPorts {
                     recovery?protection.voltageFactor():1,recovery?protection.currentFactor():1,currents,0);
         }
     }
-    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware,org.interpss.dstab.control.util.InitialEndpointAction {
+    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware,org.interpss.dstab.control.util.InitialEndpointAction,com.interpss.dstab.device.ConvergedNetworkAction {
         private final boolean owner;
         private Port(String id,BaseDStabBus<?,?> bus,boolean owner) {
             this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
@@ -135,12 +135,19 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner)return;
             if(initialNetworkPending){refresh();runtime.initializeFromBoundary();return;}
             if(!networkTrial)return;
-            // Observe AC pickup before a deep-voltage conducting evaluation can become infeasible.
-            protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            // The first pass starts from the preceding accepted boundary. Later
+            // passes start from the converged boundary that requested an action.
+            // Never latch protection from an intermediate voltage iterate.
+            if(iteration==0)protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
-            // Fresh DC pickup can select bypass at this same physical time, before the matrix solve.
-            protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+        }
+        @Override public boolean applyConvergedNetworkAction(){
+            if(!owner||!networkTrial||initialNetworkPending)return false;
             refresh();runtime.readBoundary(electrical,0);trialDcVoltage=electrical[7];
+            var before=protection.operatingMode();
+            double voltageFactor=protection.voltageFactor(),currentFactor=protection.currentFactor();
+            protection.observe(rectifier.getVoltageMag(),inverter.getVoltageMag(),trialDcVoltage);
+            return before!=protection.operatingMode()||voltageFactor!=protection.voltageFactor()||currentFactor!=protection.currentFactor();
         }
         @Override public void afterNetworkConvergence(){
             if(!owner||!boundaryTrial)return;
