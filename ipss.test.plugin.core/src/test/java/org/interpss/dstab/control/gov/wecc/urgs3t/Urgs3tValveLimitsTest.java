@@ -95,7 +95,7 @@ public class Urgs3tValveLimitsTest {
             for(int step=0;step<200;step++) {
                 if(shared){g.readStaggeredState(states,0);g.evaluateStaggered(.0005,rates,0);for(int i=0;i<5;i++)states[i]+=.0005*rates[i];g.applyStaggeredState(states,0,.0005);g.completeStaggeredStep(.0005);}
                 else {g.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,m,0);g.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,m,1);}
-                g.readStaggeredState(states,0);assertTrue(states[0]>=.2&&states[0]<=.4);
+                g.readPublishedStates(states,0);assertTrue(states[0]>=.2&&states[0]<=.4);
             }
         }
         m.setPm(.3);assertTrue(g.initStates(m.getDStabBus(),m));g.readStaggeredState(states,0);assertEquals(.3,states[0],1e-14);assertEquals(.3,g.getOutput(m),1e-14);

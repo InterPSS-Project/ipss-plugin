@@ -137,12 +137,12 @@ public final class Urgs3tGovernor extends AbstractGovernor
             if (predicted) throw new IllegalStateException("URGS3T predictor already pending");
             System.arraycopy(x, 0, old, 0, 5); derivatives(x, d0); retain(d0, Stage.PREDICTOR);
             for (int i = 0; i < 5; i++) x[i] = old[i] + h*d0[i];
-            project(); predicted = true;
+            projectTrial(); predicted = true;
         } else {
             if (!predicted) throw new IllegalStateException("URGS3T corrector requires its predictor");
             derivatives(x, d1); retain(d1, Stage.CORRECTOR);
             for (int i = 0; i < 5; i++) x[i] = old[i] + .5*h*(d0[i] + d1[i]);
-            project(); commit(); predicted = false;
+            projectTrial(); commit(); predicted = false;
         }
         return true;
     }
@@ -158,7 +158,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
         shared(values, offset, h);
         for (int i = 0; i < 5; i++) if (!Double.isFinite(values[offset+i]))
             throw new IllegalArgumentException("URGS3T states must be finite");
-        System.arraycopy(values, offset, x, 0, 5); project();
+        System.arraycopy(values, offset, x, 0, 5); projectTrial();
         if (h > 0) sharedTrialPending = true;
     }
     @Override public void completeStaggeredStep(double h) {
@@ -180,7 +180,8 @@ public final class Urgs3tGovernor extends AbstractGovernor
         int m = deadbandMode(u);
         return m > 0 ? u - c[17] : m < 0 ? u + c[17] : 0;
     }
-    private double engine(double[] s) { return s[1] + engineRatio*(s[0] - c[9]); }
+    private double valve(double[] s) { return Math.max(lower, Math.min(upper, s[0])); }
+    private double engine(double[] s) { return s[1] + engineRatio*(valve(s) - c[9]); }
     private double curvePower(double[] s) { return interpolate(engine(s), curveX, curveY); }
     private double backlash(double power) {
         if (runtimeConvention == RuntimeConvention.SOURCE_RECORD)
@@ -195,17 +196,26 @@ public final class Urgs3tGovernor extends AbstractGovernor
         referenceJumpPending = false;
     }
     private void project() { x[0] = Math.max(lower, Math.min(upper, x[0])); }
+    // The source-record valve observation is bounded, but its numerical
+    // coordinate retains the last crossing overshoot. Erasing that coordinate
+    // (or the solver's derivative history) changes the subsequent release.
+    // Initialization still projects explicitly; direct diagram construction
+    // retains its existing state-projection convention.
+    private void projectTrial() {
+        if (runtimeConvention == RuntimeConvention.PUBLISHED_DIAGRAM) project();
+    }
     private void derivatives(double[] s, double[] rates) {
         // The droop path acts directly on speed deviation; rating conversion is at the output.
         double input = reference - speedInput()/c[0];
         double demand = c[29] > 0 ? s[4] + governorFeedthrough*input : input;
         double temperatureLimit = c[9] + c[4] + c[5]*(c[4]-s[2]);
-        double upperRate = s[0]-s[3] > c[11] ? c[13] : c[10];
-        double rate = Math.min(upperRate, Math.min(demand, temperatureLimit)-s[0])/c[1];
-        rates[0] = (s[0] >= upper && rate > 0) || (s[0] <= lower && rate < 0) ? 0 : rate;
-        rates[1] = (engineLagFraction*(s[0]-c[9])-s[1])/engineTime;
+        double valve = valve(s);
+        double upperRate = valve-s[3] > c[11] ? c[13] : c[10];
+        double rate = Math.min(upperRate, Math.min(demand, temperatureLimit)-valve)/c[1];
+        rates[0] = (valve >= upper && rate > 0) || (valve <= lower && rate < 0) ? 0 : rate;
+        rates[1] = (engineLagFraction*(valve-c[9])-s[1])/engineTime;
         rates[2] = runtimeConvention == RuntimeConvention.SOURCE_RECORD ? 0 : (engine(s)-s[2])/c[3];
-        rates[3] = (s[0]-s[3])/c[12];
+        rates[3] = (valve-s[3])/c[12];
         rates[4] = c[29] > 0 ? (governorLagGain*input-s[4])/c[31] : 0;
     }
     private double interpolate(double value, double[] abscissa, double[] ordinate) {
@@ -267,7 +277,18 @@ public final class Urgs3tGovernor extends AbstractGovernor
         values[offset] = initialReference; values[offset+1] = initialSpeed; values[offset+2] = speedInput();
         values[offset+3] = curvePower(x); values[offset+4] = backlash(values[offset+3]);
     }
-    @Override public Map<String, Double> getNamedStates() { return getIntegrationStates(); }
+    /** Pure published coordinates; the source-record valve is the bounded
+     * physical output. readStaggeredState and getIntegrationStates instead
+     * expose the numerical coordinate, including retained crossing overshoot. */
+    public void readPublishedStates(double[] values, int offset) {
+        requireState(); Objects.checkFromIndexSize(offset, 5, values.length);
+        System.arraycopy(x, 0, values, offset, 5); values[offset] = valve(x);
+    }
+    @Override public Map<String, Double> getNamedStates() {
+        var result = new LinkedHashMap<String, Double>();
+        for (int i = 0; i < 5; i++) result.put(NAMES[i], i == 0 ? valve(x) : x[i]);
+        return Map.copyOf(result);
+    }
     @Override public Map<String, Double> getIntegrationStates() {
         var result = new LinkedHashMap<String, Double>();
         for (int i = 0; i < 5; i++) result.put(NAMES[i], x[i]);

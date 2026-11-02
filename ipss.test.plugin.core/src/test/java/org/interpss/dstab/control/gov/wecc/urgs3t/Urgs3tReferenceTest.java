@@ -282,7 +282,7 @@ public class Urgs3tReferenceTest {
             boolean active=m.isActive()&&m.getParentGen().isActive()&&m.getDStabBus().isActive();
             var power=active?v.multiply(m.getIgen().subtract(v.multiply(m.getYgen())).conjugate()):Complex.ZERO;var a=new LinkedHashMap<String,Double>();a.put("time_s",t);a.put("HOST_ACTIVE",active?1.:0.);
             if(tripBus==1&&!active&&historiesAtTrip==null){historiesAtTrip=g.getIntegrationHistories();evaluationsAtTrip=g.getStaggeredEvaluationCount();}
-            g.readStaggeredState(states,0);g.readPublishedVariables(vars,0);
+            g.readPublishedStates(states,0);g.readPublishedVariables(vars,0);
             for(int i=0;i<5;i++){a.put("STATE"+i,states[i]);a.put("VAR"+i,vars[i]);}
             a.put("V1",v.abs());a.put("V2",n.getDStabBus("Bus2").getVoltageMag());a.put("A1",Math.toDegrees(v.getArgument()));a.put("A2",Math.toDegrees(n.getDStabBus("Bus2").getVoltage().getArgument()));
             a.put("P_PU",power.getReal());a.put("Q_PU",power.getImaginary());a.put("ANGLE_DEG",active?Math.toDegrees(m.getAngle()):0.);a.put("SPEED",active?m.getSpeed()-1:0.);a.put("PMECH",active?m.getPm():0.);a.put("EFD",active?m.getEfd():0.);

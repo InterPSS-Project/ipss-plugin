@@ -31,6 +31,8 @@ PROFILES = {
     'initial-upper': {6: .4},
     'initial-lower': {7: .6},
     'position-limits': {6: .52, 7: .48},
+    'position-limits-wide': {6: .55, 7: .45},
+    'position-limits-slow': {1: .2, 6: .52, 7: .48},
     'initial-upper-leadlag': {6: .4, 14: .3, 15: 1.2, 29: 1.3, 30: .03, 31: .12},
     'initial-lower-rating': {7: .8, 8: .3, 9: .1, 32: 80.},
 }

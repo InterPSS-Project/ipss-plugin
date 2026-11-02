@@ -15,7 +15,9 @@ The entered constants remain unchanged.
 The runtime stores five continuous coordinates: valve, engine compensation,
 exhaust temperature, valve average and governor lead-lag compensation. Modified
 Euler and the shared staggered solver evaluate the same right-hand side and
-project the same valve bounds. Numerical stages use reusable primitive arrays;
+enforce the same physical valve bounds. The source-record convention retains
+the numerical crossing overshoot separately from the bounded valve observation.
+Numerical stages use reusable primitive arrays;
 state dictionaries are materialized only when requested. Tests measure warmed
 per-step allocation in both paths.
 
@@ -51,6 +53,7 @@ represented by immutable `RuntimeConvention` values, not by fitted parameters:
 | Turbine output | Live algebraic output | Previous accepted turbine output during stepping; current accepted output at an explicit run resume |
 | Damping | On machine base after turbine rating conversion | Inside the turbine rating conversion, using current speed |
 | Power deadband | Ordinary backlash/play function | Direction relative to accepted output selects input minus/plus the entered width |
+| Valve limit | Project the integration coordinate | Retain the numerical crossing coordinate; bound the physical valve used in all equations and observations |
 
 Direct Java construction selects the diagram convention. The standard-record
 builder explicitly selects the source convention. This source behavior is
@@ -93,7 +96,7 @@ explicitly verifies that each run uses the requested integration path.
 
 Qualification is incomplete. Resolve remaining source power-deadband and
 command-response state/boundary errors without changing acceptance
-limits. Extend bypass and time-preparation rules, active-bound release, reconnection,
+limits. Extend bypass and time-preparation rules, production-step active-bound release, reconnection,
 longer duration and production-step coverage. Full-system tests without this
 model establish non-regression only. Raw allocated variables and published
 power are retained for diagnosis; passing selected state and boundary gates
@@ -301,8 +304,8 @@ incorrectly kept the initial valve and output at the unconstrained values.
 The tests exercise both runtime conventions, both integration interfaces,
 opposing commands, unchanged physical bounds and reinitialization into a
 feasible operating point. Independent cold pairs also cover feasible narrow
-position limits. Flat coupled runs pass under both methods. Complete command
-trajectories remain registered failures, with unchanged thresholds:
+position limits. Flat coupled runs pass under both methods. At the initialization
+checkpoint, complete command trajectories failed with these unchanged thresholds:
 
 | Method | Worst voltage NRMSE | Q NRMSE | Maximum valve error |
 |---|---:|---:|---:|
@@ -311,9 +314,9 @@ trajectories remain registered failures, with unchanged thresholds:
 
 The staggered command test additionally fails the engine and valve-average
 state gates. Its largest valve difference occurs on the first accepted interval
-after the upper-limit release command. This requires a separate limiter-history
-and integration-stage investigation; the initialization correction does not
-claim to resolve it. A direct stored-derivative query was rejected by the
+after the upper-limit release command. The investigation below resolves its
+valve-coordinate cause; the initialization correction alone did not resolve it.
+A direct stored-derivative query was rejected by the
 reference API, whose documented reader exposes time, interval, states,
 constants and variables. The failed probe is retained privately, and the
 unsupported option is absent from the maintained probe.
@@ -322,6 +325,57 @@ The immutable private `valve-limit-captures.zip` retains all paired accepted and
 rejected diagnostic runs, with SHA-256
 `9ce0fbb8bcd04e0611b800fd7477ff85ac1365393b0f04ccdc16b478a7992cd0`.
 Host-machine disconnection is exercised below; hot reconnection remains open.
+
+## Retained valve coordinate and physical limit observations
+
+Independent release controls distinguish a bounded physical valve from its
+numerical integration coordinate. A step that crosses a limit can leave a small
+overshoot in the latter. The outward derivative is zero while limited, but the
+existing two-step history can still move the numerical coordinate on the next
+interval. The reference retains the resulting coordinate until an inward command
+releases it. Projecting the coordinate and clearing the history prematurely
+changes that release. This is an integration-storage distinction, not an added
+physical delay or a changed valve limit.
+
+Six synthetic profiles vary the interval between 0.5 and 0.25 ms, the valve
+bounds between narrow and wide settings, and the servo time between 0.1 and
+0.2 seconds. Each has an identical cold repeat. Using their recorded speed as
+input, the corrected shared runtime reproduces the complete valve trace with
+maximum errors between `1.77e-7` and `2.39e-7` pu. The former projection is retained
+as a negative control and gives errors between `2.25e-4` and `7.31e-4` pu. Every
+startup and event-side sample remains in the replay output.
+
+The standard-record runtime now preserves that numerical coordinate in both
+integration methods. `readStaggeredState`, `getIntegrationStates` and stored
+derivative snapshots expose numerical storage. `readPublishedStates` and
+`getNamedStates` expose the bounded physical valve. Engine feedthrough, engine
+derivatives, valve averaging, feedback and rate-limit selection all use the
+bounded valve. Observations remain pure, initialization still projects the
+initial state, and reinitialization clears the retained overshoot. Direct
+diagram construction retains its previous projection convention. Neither
+solver's integration formula nor its general history policy changes.
+
+Both-method unit checks distinguish the numerical and physical coordinates,
+exercise outward blocking and inward release, verify downstream physical
+feedback, and preserve reinitialization. Existing warmed allocation checks still
+pass without per-step objects.
+
+In the complete narrow-limit 0.5 ms comparison, the staggered maximum valve
+error falls from `3.96237e-4` to `2.34946e-7` pu. All five controller-state gates
+now pass in all six staggered release profiles; the largest state error is
+`7.56e-7` pu. The wide-limit staggered profiles also pass every existing selected
+boundary gate. Four narrow/slow profiles still fail voltage or reactive-power
+range NRMSE: voltage errors are at most `2.32e-6` pu, but the largest normalized
+voltage error is `0.004318`. These small-response failures remain registered.
+
+Modified Euler retains its Heun stages and fails the six release command-state
+comparisons; four additionally fail selected voltage/power gates. All twelve
+rotor-angle RMSE values remain below `0.000652` degrees. The correction establishes
+the limiter-coordinate behavior, not complete model or boundary acceptance.
+Production-step and longer-duration active-limit profiles remain to be qualified.
+
+The immutable private `valve-release-captures.zip` is pinned to SHA-256
+`b99ecd2f0f032c904439216ffa5f2684b141e07f44994512d6b4938cd0846f42`.
 
 ## Machine-trip lifecycle and inactive observations
 
@@ -443,6 +497,17 @@ The private `machine-trip-validation.zip` retains the new complete comparisons,
 lifecycle results, regression reports and test classes over `valve-validation.zip`.
 Hash-identical raw reference files are linked to their immutable capture archives
 in the manifest rather than duplicated; every comparison sample is retained.
+
+With retained valve coordinates, the registered suite executes 4,259 tests with
+60 failures, no errors and 13 skips. All fifty preceding failure identities are
+preserved; the ten added failures are the release comparisons described above.
+The six recorded-speed discriminators and both coordinate-contract checks pass.
+The core plugin module passes 486 tests with four skips and no failures or errors.
+Of the 108 previous complete comparisons, 106 trajectory CSVs are byte-identical
+and their numerical summaries unchanged. Only the two intended active-valve
+command comparisons change. The private `valve-release-validation.zip` retains
+complete comparisons, replay negative controls, regression reports and runtime
+classes over `machine-trip-validation.zip`. No acceptance thresholds change.
 
 Private immutable capture archives retain the complete cold-run evidence; the
 current fixture is `urgs3t-initial-20261102/captures-v3.zip`, pinned by the test to
