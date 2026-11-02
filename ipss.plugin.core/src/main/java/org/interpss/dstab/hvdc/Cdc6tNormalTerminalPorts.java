@@ -129,6 +129,9 @@ public final class Cdc6tNormalTerminalPorts {
             if(!owner||!initialInjectionPending)return false;
             initialInjectionPending=false;initialNetworkPending=true;return true;
         }
+        @Override public boolean isInitialOperatingPointPreparation(){
+            return owner&&initialRectifierInjection!=null;
+        }
         @Override public void acceptInitialNetworkEndpoint() {
             if(!owner||!initialNetworkPending)return;
             refresh();runtime.readBoundary(electrical,0);

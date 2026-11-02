@@ -1576,3 +1576,101 @@ Private immutable paired interval captures:
 Complete comparisons, lifecycle reports, source snapshots and integrity manifest:
 `verification-artifacts/cdc6t-local-left-20261102/validation.zip`, SHA-256
 `dc8a8d8b494e8a89f262741cd0d3a149c77f83edd82a1ce170f1c21f27bd793d`.
+
+## Initial source balance and ten-second terminal qualification
+
+The ten-second fixed-tap control-transfer runs exposed a source initialization
+error. The converter's initial control transfer settled a new electrical
+operating point, but classical machines retained shaft power from before that
+transfer. Independent generator power channels show that the reference starts
+with shaft power balanced to the settled electrical power. The local mismatch
+was already present before the first fault and produced artificial acceleration.
+
+`InitialEndpointAction.isInitialOperatingPointPreparation()` now distinguishes
+this preparation from an ordinary physical initial event. The shared solver
+first applies declared control preparations, converges their network and
+initializes their measurement states. Qualified classical sources then update
+shaft power from the converged air-gap power, retaining internal emf, angle and
+speed. Ordinary zero-time load or protection actions follow this phase and do
+not rebase shaft power. Running faults likewise cannot rebase it. Existing
+operating-point compensation is retained rather than recomputed to absorb the
+control change.
+
+This source reconciliation is currently qualified only for imported classical
+machines without active governors, exciters or stabilizers. Other active source
+types or active source controls cause an explicit rejection before consuming
+the pending transfer. Their state/control initialization requires further
+implementation and independent qualification. The restriction applies to the
+declared startup-transfer path, not ordinary dynamic initialization.
+
+Both integration methods use the same preparation and source equations. The
+change adds initialization work only; controller states and derivatives retain
+their shared numerical storage and existing integration stages.
+
+Paired cold reference runs retain all terminal, converter and source-machine
+samples, including duplicate event times and the last complete interval beyond
+the requested stop time. Adding source diagnostics leaves all previously
+recorded reference channels numerically identical. The comparison retains both
+original clocks, checks integration ordinals and bounds the accumulated
+single-precision clock difference; it neither shifts curves nor drops samples.
+
+| Ten-second profile | Integration | Peak bus voltage error, pu | Peak bus angle error, degrees | Worst bus angle RMSE, degrees |
+| --- | --- | ---: | ---: | ---: |
+| Current order | Modified Euler | 0.000007244 | 0.004626 | 0.002687 |
+| Current order | Staggered | 0.000007242 | 0.004263 | 0.002478 |
+| Inverter power order | Modified Euler | 0.000011628 | 0.003989 | 0.002205 |
+| Inverter power order | Staggered | 0.000020065 | 0.004318 | 0.002395 |
+
+Before the correction, the current-order peak bus-angle difference was about
+0.119 degrees. The corrected complete voltage trajectories have range-normalized
+RMSE below 0.000080; the worst converter P/Q difference is 0.000689 pu. Tests
+also check independent initial mechanical power, unchanged shaft power through
+faults, recovery completion and the existing network-iteration budget.
+
+Recorded-speed replay independently identifies source-angle precision as a
+remaining contributor. Unrounded trapezoidal angle integration differs from
+the recorded source angles by up to 0.00581 degrees. Rounding each accumulated
+radian state to binary32 reduces that maximum below 0.000020 degrees, and
+improves every source by more than a factor of ten. This is a diagnostic replay,
+not the reference's complete integration implementation. Production machine
+states remain unrounded, and raw reference angles remain the comparison target.
+
+Some previous short-run limits benefited from cancellation by the incorrect
+mechanical-power drift. The following raw-channel regression bounds were
+re-established explicitly after correcting that initialization:
+
+| Check | Previous bound | New bound | Observed maximum |
+| --- | ---: | ---: | ---: |
+| Limited-gamma rectifier angle, degrees | 0.000400 | 0.000450 | 0.0004087 |
+| Staggered power-order rectifier angle, degrees | 0.000070 / 0.000072 | 0.000150 | 0.0001405 |
+| Staggered mode-transfer rectifier angle, degrees | 0.000060 | 0.000140 | 0.0001247 |
+| Half-interval severe-fault rectifier angle, degrees | 0.002400 | 0.002700 | 0.002520 |
+| Deep-fault rectifier voltage during blocking, pu | 0.000000012 | 0.000000020 | 0.0000000171 |
+
+Other existing gates are unchanged. The complete long-run gates additionally
+require peak voltage error below 0.000022 pu, voltage NRMSE below 0.0005, peak
+raw bus-angle error below 0.006 degrees, angle RMSE below 0.003 degrees, and
+converter P/Q peak error below 0.0008 pu with NRMSE below 0.0002.
+
+The expanded model/adjacent matrix passes 456 tests with no failures, errors or
+skips. This includes initial physical-load separation, rejection of unqualified
+controlled sources, both integration methods and adjacent compressor initial
+protection behavior. Of 138 prior complete trajectory exports, 92 remain
+byte-identical; the 46 changed exports are startup-transfer profiles. Full
+repository/system suites were not rerun.
+
+Full CDC6T acceptance remains open. At quarter-cycle intervals, the largest
+voltage-transducer differences still reach about 11082 V under modified Euler
+and 1039 V under staggered integration. These method/event differences are
+reported in complete channel metrics rather than hidden by terminal acceptance.
+Other source families, active source controllers, remaining protected variants,
+strict state qualification and automatic production attachment need further work.
+
+Private paired source-power captures:
+`verification-artifacts/cdc6t-long-power-20261102/captures.zip`, SHA-256
+`5d39961f2d005a44d41ce075c8c5b440260d3feff108b90a7734692f9e1e42f3`.
+
+Complete comparisons, uncorrected controls, temporary diagnostic rebase,
+failed-check logs, final reports, source snapshots and integrity manifest:
+`verification-artifacts/cdc6t-initial-balance-20261102/validation.zip`, SHA-256
+`ca119ac9971abc467b34993041ebe163f87b2bb5ccd10ef53ec39068339ef91a`.

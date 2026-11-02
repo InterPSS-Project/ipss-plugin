@@ -287,6 +287,8 @@ import org.interpss.core.dstab.Cdc6tRecoveryRampTest;
 import org.interpss.core.dstab.Cdc6tRecoveryBaseTest;
 import org.interpss.core.dstab.Cdc6tTransferredModeBaseTest;
 import org.interpss.core.dstab.Cdc6tDeepRecoveryTest;
+import org.interpss.core.dstab.Cdc6tLongRunTest;
+import org.interpss.core.dstab.Cdc6tInitialBalanceLifecycleTest;
 import org.interpss.core.dstab.Cdc6tRectifierProtectionTest;
 import org.interpss.core.dstab.Cdc6tInverterProtectionTest;
 import org.interpss.core.dstab.Cdc6tBypassTest;
@@ -1263,6 +1265,8 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tRecoveryBaseTest.class,
     Cdc6tTransferredModeBaseTest.class,
     Cdc6tDeepRecoveryTest.class,
+    Cdc6tLongRunTest.class,
+    Cdc6tInitialBalanceLifecycleTest.class,
     Cdc6tRectifierProtectionTest.class,
     Cdc6tInverterProtectionTest.class,
     Cdc6tBypassTest.class,

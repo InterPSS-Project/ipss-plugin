@@ -124,9 +124,11 @@ public class Cdc6tTransferredModeBaseTest extends CorePluginTestSetup {
             }
         }
         if(profile.startsWith("switch/")){
+            // Raw source angles no longer include the stale mechanical-power
+            // drift; see the independent long-run source-balance discriminator.
             if(!eventSides)assertEquals(capture.rows().size(),recorder.rows.size(),"Complete trajectory and scheduled event sides");
             double[] limits=staggered
-                    ?new double[]{1.6e-6,.00006,2.6e-6,.0011,2.6,.0038,2.6,.000018,.000029,.00058,.000018,.000012,1e-10,1.4,1.4}
+                    ?new double[]{1.6e-6,.00014,2.6e-6,.0011,2.6,.0038,2.6,.000018,.000029,.00058,.000018,.000012,1e-10,1.4,1.4}
                     :new double[]{.000056,.0048,.0000095,.0054,205,.28,205,.0022,.000047,.016,.0022,.00115,1e-10,2.9,4.8};
             for(int i=0;i<limits.length;i++)assertTrue(maximum[i]<limits[i],Cdc6tCoupledReferenceTest.KEYS[i]+" full-trajectory error="+maximum[i]);
         }

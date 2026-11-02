@@ -93,6 +93,12 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
     /** Diagnostic only: preserve every reference row, including internal transitions and inspection duplicates.
      * An internal reference transition has no synthetic pre-transition sample added to our integration grid. */
     static double[] writeComparison(Path out,List<Map<String,Double>> reference,List<double[]> actual,double step)throws Exception{
+        return writeComparison(out,reference,actual,step,1e-5);
+    }
+    /** Explicit long-run floating-clock bound; never changes either trajectory's timestamps. */
+    static double[] writeComparison(Path out,List<Map<String,Double>> reference,List<double[]> actual,double step,double clockTolerance)throws Exception{
+        assertTrue(Double.isFinite(clockTolerance)&&clockTolerance>0&&clockTolerance<step/2,
+                "Clock bound must still distinguish adjacent integration intervals");
         String[] keys=Cdc6tCoupledReferenceTest.KEYS;double[] maxima=new double[keys.length];
         try(var writer=BenchmarkOutputGuard.newWriter(out.resolve("trajectory.csv"),2*1024*1024)){
             writer.write("time_s,"+String.join(",",keys)+"\n");
@@ -111,7 +117,7 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
                 // Retained single-precision reference clocks accumulate up to 9.36 microseconds
                 // over the half-step run. Keep both original times; never shift a trajectory.
                 assertEquals(Math.round(t/step),Math.round(observed[0]/step),"Same integration interval");
-                assertEquals(t,observed[0],1e-5,"Bounded floating-clock departure");
+                assertEquals(t,observed[0],clockTolerance,"Bounded floating-clock departure");
                 writer.write(index+","+t+","+selected+","+observed[0]);
                 for(int j=0;j<keys.length;j++){
                     double error=observed[j+1]-row.get(keys[j]);assertTrue(Double.isFinite(error));

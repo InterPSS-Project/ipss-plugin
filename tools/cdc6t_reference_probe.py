@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
     parser.add_argument('--step', type=float, default=.0005)
+    parser.add_argument('--duration', type=float, default=.5)
+    parser.add_argument('--machine-diagnostics', action='store_true')
     parser.add_argument('--static-gamma', type=float)
     parser.add_argument('--static-alpha-min', type=float, default=15.)
     parser.add_argument('--dynamic-gamma', type=float, default=20.)
@@ -42,6 +44,8 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.step) or not .0001 <= args.step <= .005:
         parser.error('Network step must be between 0.1 and 5 ms')
+    if not math.isfinite(args.duration) or not .5 <= args.duration <= 10:
+        parser.error('Duration must be between 0.5 and 10 seconds')
     if not math.isfinite(args.scheduled_kv) or args.scheduled_kv<=0:
         parser.error('Scheduled DC voltage must be finite and positive')
     if not math.isfinite(args.current_margin) or not 0 <= args.current_margin < 1:
@@ -52,11 +56,11 @@ def main():
         parser.error('Measurement times must be finite and nonnegative')
     if any(not math.isfinite(v) or v < 0 for v in [args.restart_current,args.minimum_current]):
         parser.error('Restart and minimum currents must be finite and nonnegative')
-    if any(not math.isfinite(t) or not 0 < t < .5 for t in args.inspect_at):
+    if any(not math.isfinite(t) or not 0 < t < args.duration for t in args.inspect_at):
         parser.error('Inspection times must be finite and strictly inside the run')
     if not math.isfinite(args.mode_threshold_kv) or args.mode_threshold_kv < 0:
         parser.error('Mode threshold must be finite and nonnegative')
-    if not math.isfinite(args.fault_clear) or not .05 < args.fault_clear < .5:
+    if not math.isfinite(args.fault_clear) or not .05 < args.fault_clear < args.duration:
         parser.error('Fault clearing must be strictly between application and end time')
     if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
         parser.error('Inverter recovery delay must be finite and nonnegative')
@@ -69,7 +73,7 @@ def main():
     if args.second_fault_at is not None or args.second_fault_clear is not None:
         if args.profile != 'fault' or args.second_fault_at is None or args.second_fault_clear is None:
             parser.error('Second fault requires the fault profile and both event times')
-        if not args.fault_clear < args.second_fault_at < args.second_fault_clear < .5:
+        if not args.fault_clear < args.second_fault_at < args.second_fault_clear < args.duration:
             parser.error('Second fault must follow first clearing and finish before end time')
         if not math.isfinite(args.second_fault_reactance) or args.second_fault_reactance <= 0:
             parser.error('Second fault reactance must be finite and positive')
@@ -198,6 +202,10 @@ def main():
             checked('channel', fn([-1, layout[kind] + i], kind + str(i)))
     for bus in [7, 9]:
         checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
+    if args.machine_diagnostics:
+        for bus in range(1, 5):
+            for code, name in [(1, 'ANGLE'), (7, 'SPEED'), (2, 'PELEC'), (6, 'PMECH')]:
+                checked('machine channel', psspy.machine_array_channel([-1, code, bus], '1', f'M{bus}_{name}'))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
     checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
@@ -243,7 +251,7 @@ def main():
         run_until('second fault interval', args.second_fault_clear)
         snapshot('before-second-clearing')
         checked('second clear', psspy.dist_clear_fault(1))
-    run_until('finish', .5)
+    run_until('finish', args.duration)
     snapshot('finished')
     Path('snapshots.json').write_text(json.dumps(snapshots, indent=2)+'\n')
     _, labels, data = dyntools.CHNF('native.out').get_data()

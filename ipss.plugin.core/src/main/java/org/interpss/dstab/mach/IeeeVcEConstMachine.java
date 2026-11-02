@@ -11,6 +11,23 @@ public final class IeeeVcEConstMachine extends EConstMachineImpl
     private IeeeVcData ieeeVcData;
     @Override public boolean supportsDeferredCurrentPublication(){return true;}
 
+    /** This fixed-emf preparation is qualified without attached active controls. */
+    public boolean supportsInitialOperatingPointBalance() {
+        return (getGovernor() == null || !getGovernor().isActive())
+                && (getExciter() == null || !getExciter().isActive())
+                && (getStabilizer() == null || !getStabilizer().isActive());
+    }
+
+    /** Set shaft power from the converged initial electrical boundary, retaining
+     * internal emf, angle and speed. Never call this for a running-network event. */
+    public void reconcileInitialOperatingPointBalance() {
+        if (!supportsInitialOperatingPointBalance())
+            throw new IllegalStateException("Initial source balance with active classical-machine controls is not qualified");
+        getIgen(); // Publish electrical air-gap power using the final initial voltage.
+        if (!Double.isFinite(getPe()))throw new IllegalStateException("Nonfinite initial electrical power");
+        setPm(getPe());
+    }
+
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
         if (!super.initStates(bus)) return false;

@@ -293,6 +293,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
      * stage. Zero-delay actions change the physical Y for the next solve; they
      * must not be absorbed into the operating-point compensation current. */
     private boolean acceptInitialPlantEndpoints(BaseDStabNetwork<?, ?> network) {
+        if (!prepareInitialOperatingPoint(network)) return false;
         boolean initialPhysicalAction = false;
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
             if (!bus.isActive()) continue;
@@ -300,7 +301,8 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model statcom
                         && !statcom.acceptSwitchingEndpoint()) return false;
             for (var device : bus.getDynamicBusDeviceList())
-                if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action)
+                if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action
+                        && !action.isInitialOperatingPointPreparation())
                     initialPhysicalAction |= action.acceptInitialEndpoint();
             for (DStabGen generator : bus.getContributeGenList()) {
                 if (!generator.isActive()) continue;
@@ -335,6 +337,40 @@ public class PsseDStabSolver extends DStabSolverImpl {
             finally { networkSolutionStage = previousStage; }
         }
         return true;
+    }
+
+    /** Establish model-requested startup control transfers before physical
+     * initial events. Keeping these phases separate preserves real load/trip
+     * disturbances instead of absorbing them into generator shaft power. */
+    private boolean prepareInitialOperatingPoint(BaseDStabNetwork<?, ?> network) {
+        var preparations = new java.util.ArrayList<org.interpss.dstab.control.util.InitialEndpointAction>();
+        for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
+            for (var device : bus.getDynamicBusDeviceList())
+                if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action
+                        && action.isInitialOperatingPointPreparation()) preparations.add(action);
+        if (preparations.isEmpty()) return true;
+        var sources = new java.util.ArrayList<org.interpss.dstab.mach.IeeeVcEConstMachine>();
+        for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
+            for (DStabGen generator : bus.getContributeGenList()) if (generator.isActive()) {
+                var device = generator.getDynamicGenDevice();
+                if (device == null || !device.isActive()) continue;
+                if (!(device instanceof org.interpss.dstab.mach.IeeeVcEConstMachine machine)
+                        || !machine.supportsInitialOperatingPointBalance())
+                    throw new IllegalStateException("Initial control-transfer source balance is not qualified for " + generator.getId());
+                sources.add(machine);
+            }
+        boolean changed = false;
+        for (var action : preparations) changed |= action.acceptInitialEndpoint();
+        if (!changed) return true;
+        String previousStage = networkSolutionStage;
+        networkSolutionStage = "INITIAL";
+        try {
+            if (!super.networkSolutionStep()) return false;
+            for (var action : preparations) action.acceptInitialNetworkEndpoint();
+            for (var source : sources) source.reconcileInitialOperatingPointBalance();
+            return true;
+        } catch (DStabSimuException failure) { return false; }
+        finally { networkSolutionStage = previousStage; }
     }
 
     static void retainNonzeroCompensation(Hashtable<String, Complex> compensation,

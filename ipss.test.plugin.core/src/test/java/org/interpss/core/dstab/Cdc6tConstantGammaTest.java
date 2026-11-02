@@ -159,16 +159,19 @@ public class Cdc6tConstantGammaTest extends CorePluginTestSetup {
                 :new double[]{.000085,.0052,7.5e-6,.0047,180,.017,180,.0021,.00065,.0115,.0021,.0012,.0035,16,16};
         // This source operating point retains an initial bus-angle residual.
         // Gate the absolute trajectory without subtracting or fitting an offset.
-        if(limited&&!order)tolerance=new double[]{1e-6,.0004,2.3e-6,.00095,staggered?2.4:190,1e-8,
+        // The source-balance correction removes a spurious angle drift that
+        // partly cancelled this residual. Retain separately measured raw-angle
+        // bounds; the long-run source-speed replay documents reference rounding.
+        if(limited&&!order)tolerance=new double[]{1e-6,.00045,2.3e-6,.00095,staggered?2.4:190,1e-8,
                 staggered?2.4:190,.000012,.000027,.00045,.000012,.000013,.00014,1.2,1.2};
         if(order)tolerance=profile.equals("order-current")
                 ?new double[]{1.4e-6,.00025,4e-6,.0015,staggered?2.7:190,1e-8,staggered?2.7:190,.000022,.000045,.0007,.000022,.0000052,1e-8,2.1,2.1}
-                :staggered?new double[]{2e-6,.00007,2.7e-6,.00105,2.6,.0026,2.6,.000017,.000029,.00043,.000017,.000011,1e-8,1.5,1.5}
+                :staggered?new double[]{2e-6,.00015,2.7e-6,.00105,2.6,.0026,2.6,.000017,.000029,.00043,.000017,.000011,1e-8,1.5,1.5}
                 :new double[]{.000065,.0046,9.5e-6,.0052,190,.014,190,.0021,.00056,.016,.0021,.0011,1e-8,6.6,8.2};
         // The independent half-step capture retains its own absolute clock and
         // angle residual. Tighten the finite-stage errors against that capture.
         if(profile.equals("order-half-inverter-power"))tolerance=staggered
-                ?new double[]{1.5e-6,.000072,2.4e-6,.0012,1.55,.0022,1.55,.000011,.00003,.0004,.000011,.0000065,1e-8,1.35,1.35}
+                ?new double[]{1.5e-6,.00015,2.4e-6,.0012,1.55,.0022,1.55,.000011,.00003,.0004,.000011,.0000065,1e-8,1.35,1.35}
                 :new double[]{.000033,.0025,6e-6,.0032,101,.0048,101,.0011,.00028,.0082,.0011,.00057,1e-8,3.3,4.1};
         try(var writer=BenchmarkOutputGuard.newWriter(out.resolve("maxima.csv"),16384)){
             writer.write("channel,max_absolute,limit\n");
