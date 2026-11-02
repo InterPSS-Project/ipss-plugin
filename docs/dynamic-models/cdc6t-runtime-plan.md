@@ -6,10 +6,10 @@ record reader now preserves that name and the constant order, including names
 containing commas, escaped quotes and slashes. A quoted numeric name remains a
 link name. Adjacent machine records are retained.
 
-This is record-decoding support only. Strict import continues to report CDC6T
+Automatic import provides record-decoding support only. Strict import continues to report CDC6T
 as unsupported, rather than allowing an incomplete dynamic network to appear
-fully supported. No controller, network injection or integration support is
-claimed by this change.
+fully supported. The typed conducting runtime described below is tested separately;
+it does not establish complete model support.
 
 ## Shared-runtime work
 
@@ -47,9 +47,9 @@ five-ohm DC voltage drop, rectifier/inverter power signs and 100 MVA power base,
 including startup and duplicate segment/event samples. Flat states are constant;
 the fault produces nonzero transducer and terminal-power response.
 
-These tests validate the reference contract only. CDC6T remains unsupported by
-the Java dynamic runtime. Implement and compare the controller, state/history
-integration and network coupling before changing that status.
+These tests validate the reference contract only. Complete CDC6T import remains
+unsupported. Qualify the assembled controller, state/history integration and
+network coupling before changing that status.
 
 ## Measurement component
 
@@ -62,9 +62,9 @@ zero-duration local steps do not advance state, and nonfinite updates fail befor
 changing stored coordinates. Mixed local/staggered trial ownership is rejected.
 
 Analytic exponential tests verify second-order convergence for local modified
-Euler and accepted two-step rates. This component is not yet attached to a DC
-network device, and does not implement blocking, bypass, recovery or current
-command limits. Only positive measurement time constants are admitted at this
+Euler and accepted two-step rates. The typed conducting runtime below owns this
+component; the measurements do not themselves implement blocking, bypass,
+recovery or command limits. Only positive measurement time constants are admitted at this
 stage; zero-time handling requires its own source and reference qualification.
 
 Recorded-input replay also remains diagnostic: endpoint-sampled voltage inputs
@@ -296,12 +296,10 @@ restores the same state owner. Tests check equilibrium under both lifecycles,
 disturbed-state refinement, rotating-phasor power conservation, fresh voltage
 inputs and failed/stale trial behavior.
 
-This component is restricted to ordinary conduction. It is not yet registered
-as a network device, does not replace the static DC injection, and does not own
-protection events. The staggered solver currently validates device types
-explicitly; both terminal ports and their shared integration owner must be
-registered together. Complete attachment, coordinated event behavior and
-independent full-solver trajectory acceptance remain outstanding.
+This component is restricted to ordinary conduction. The paired ports below
+register its dynamic injections and shared integration owner. It does not own
+protection events. Coordinated event behavior, complete automatic attachment
+and independent full-solver trajectory acceptance remain outstanding.
 
 ## Network ownership established before attachment
 
@@ -348,3 +346,21 @@ import remains unsupported, and full network trajectories, coordinated protectio
 events, reinitialization after stopped integration and independent reference
 accuracy are not yet qualified. No full-model support claim follows from the
 terminal-port tests.
+
+## Complete-network no-event gate
+
+The paired ports now pass a complete small-network no-event run under both
+modified-Euler and staggered solvers, including the ordinary state monitor.
+The solved terminal voltages remain within `1e-5` pu throughout the run and the
+three DC measurement states remain within `0.01` of their initial SI values.
+Observed voltage drift in this gate is approximately `1.45e-15` pu, with unchanged
+measurement states. This is equilibrium evidence, not fault-trajectory acceptance.
+
+The full path exposed two integration defects that component replay could not:
+the LCC builder assumed load-flow-only bus types, leaving converter terminals
+unbound when importing a dynamic network; and terminal recording omitted the
+required device identifier. The builder now binds converters through the common
+bus interface while preserving converter IDs, and each port exports its recording
+identifier. The focused gate passes 77 tests without failures or skips, including
+existing LCC load-flow and JSON round-trip tests. Automatic controller import and the
+coordinated fault/protection runtime remain unfinished.

@@ -71,7 +71,9 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public boolean afterStep(double dt){return true;}
         @Override public boolean updateAttributes(boolean changed){return attachmentIntact();}
         @Override public Hashtable<String,Object> getStates(Object reference) {
-            var result=new Hashtable<String,Object>();if(owner)result.putAll(runtime.getIntegrationStates());return result;
+            var result=new Hashtable<String,Object>();
+            result.put(com.interpss.dstab.common.DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());
+            if(owner)result.putAll(runtime.getIntegrationStates());return result;
         }
         @Override public int staggeredStateCount(){return owner?3:0;}
         @Override public void readStaggeredState(double[] values,int offset){if(owner)runtime.readStaggeredState(values,offset);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}

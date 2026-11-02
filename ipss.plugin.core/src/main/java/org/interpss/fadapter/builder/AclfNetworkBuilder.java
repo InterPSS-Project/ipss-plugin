@@ -1181,7 +1181,10 @@ public class AclfNetworkBuilder {
             double acRatedVoltageKV, double xfrRatio, double tapSetting,
             double tapMax, double tapMin, double tapStepSize,
             double commutingCapacitor, Double firingAngDeg) {
-        ThyConverter<AclfBus> rec = HvdcObjectFactory.createThyConverter((AclfBus) lcc.getFromBus());
+        // Dynamic networks use BaseDStabBus rather than the load-flow-only AclfBus interface.
+        ThyConverter rec = HvdcObjectFactory.createThyConverter();
+        rec.setBus(((HvdcLine2TLCC) lcc).getFromBus());
+        rec.setId(rec.getBus().getId());
         rec.setConverterType(ConverterType.RECTIFIER);
         lcc.setRectifier(rec);
 
@@ -1215,7 +1218,9 @@ public class AclfNetworkBuilder {
             double acRatedVoltageKV, double xfrRatio, double tapSetting,
             double tapMax, double tapMin, double tapStepSize,
             double commutingCapacitor, Double firingAngDeg) {
-        ThyConverter<AclfBus> inv = HvdcObjectFactory.createThyConverter((AclfBus) lcc.getToBus());
+        ThyConverter inv = HvdcObjectFactory.createThyConverter();
+        inv.setBus(((HvdcLine2TLCC) lcc).getToBus());
+        inv.setId(inv.getBus().getId());
         inv.setConverterType(ConverterType.INVERTER);
         lcc.setInverter(inv);
 
