@@ -538,3 +538,56 @@ The validation log, focused reports and complete original/half-step comparison
 exports are retained in
 `verification-artifacts/cdc6t-local-events-20261101/validation.zip`, SHA-256
 `425c4d688f95ebb4a3c74be7af1301294c2bf502f1cde9145ba7d3e06d43b13a`.
+
+## Minimum conducting current demand
+
+The source `C0` minimum demand now has an explicit prepared runtime parameter.
+For normal, recovering and switched conducting operation, the runtime clamps
+the requested current from below before applying the voltage-dependent ceiling.
+Blocking still gives zero current; bypass keeps its separate scheduled-current
+rule. The new constructor rejects negative/nonfinite minima and minima above
+the lowest ceiling. The existing typed constructor retains a zero minimum;
+source-driven callers must pass the supplied `C0`. The coupled fixtures now do
+so explicitly. This scalar clamp uses the same reusable state and boundary
+buffers under both integration methods.
+
+Cold-repeated controls hold the restart request at 100 A and independently vary
+the minimum to 200 A and 400 A. Both references hold current at the corresponding
+minimum until the recovery request rises above it. All recorded rows, including
+blocked, bypassed and recovering regimes and duplicated event samples, agree
+with the shared electrical equations to below `3.06e-5` A current,
+`2.20e-5` pu terminal power, `5.33e-5` degrees converter angle and `0.031` V DC
+voltage. The regression limits are tightened separately for each channel.
+These are recorded-input electrical checks, not claims about complete protected
+trajectory agreement.
+
+Both minimum-current profiles also run through the complete network under
+modified Euler and staggered integration, asserting that recovery cannot fall
+below the minimum. Their slower current recovery is intentionally still active
+at the end of the half-second run. The focused CDC6T, LCC and staggered checks
+pass 175 distinct tests, followed by a passing rerun of the three tightened
+minimum-current tests. Full protected trajectories remain diagnostic.
+
+Private captures:
+`verification-artifacts/cdc6t-minimum-current-20261101/captures.zip`, SHA-256
+`9634c30bc479897165d89e1bf97a9fba3c11881614dd7f6d3035eec6258c0639`.
+Private validation reports and complete comparison exports:
+`verification-artifacts/cdc6t-minimum-current-20261101/validation.zip`, SHA-256
+`ff126fa64966bb286e053fc20499a6613012691283da4aac6080004073df329b`.
+
+## Explicit reference-clock observation
+
+The reference probe now records the exposed simulation clock, actual interval,
+states and flags before and after fault operations and at requested inspections.
+Cold repeats are identical. For the inverter-origin control, the exposed clearing
+time is approximately 0.1000001 s, while the recorded recovery deadline is
+0.1102501 s. Conducting recovery appears at the 0.1105001 s output sample; the
+Java endpoint-clock control releases at 0.1100 s. The protection diagram defines
+the delay and voltage conditions but does not define this internal half-step
+observation schedule. No empirical clock offset has been added to production.
+This timing difference and the remaining protected state trajectories still
+need qualification.
+
+Private clock captures:
+`verification-artifacts/cdc6t-protection-clock-20261101/captures.zip`, SHA-256
+`609104596f3293090e3e35e92302f05b765f701ea4ef1e82cdd8e8bcc6c93369`.

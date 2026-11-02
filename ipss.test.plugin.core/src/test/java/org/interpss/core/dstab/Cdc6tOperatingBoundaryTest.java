@@ -16,11 +16,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Recorded-regime electrical checks; mode decisions and full protected trajectories remain separate. */
 public class Cdc6tOperatingBoundaryTest {
     static Cdc6tNormalRuntime runtime(){
+        return runtime(0);
+    }
+    static Cdc6tNormalRuntime runtime(double minimumCurrent){
         var r=new Cdc6tNormalRuntime(new Cdc6tMeasurements(.05,.05,.05),
                 new Cdc6tCurrentOrder(Cdc6tCurrentOrder.Mode.POWER,-500,500,0),
                 Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000),
                 new Cdc6tConductingLink(new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8),
-                        new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8),5,Math.toRadians(5),Math.toRadians(20)));
+                        new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8),5,Math.toRadians(5),Math.toRadians(20)),minimumCurrent);
         r.initialize(500000,1000,505000);return r;
     }
     @ParameterizedTest @CsvSource({"blocking,instant","blocking,delayed","inverter-blocking,short","inverter-blocking,long","bypass,dc","bypass,ac"})

@@ -295,6 +295,7 @@ import org.interpss.core.dstab.Cdc6tCoupledReferenceTest;
 import org.interpss.core.dstab.Cdc6tOperatingBoundaryTest;
 import org.interpss.core.dstab.Cdc6tProtectionCoordinatorTest;
 import org.interpss.core.dstab.Cdc6tProtectedNetworkTest;
+import org.interpss.core.dstab.Cdc6tMinimumCurrentTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
 import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -1260,6 +1261,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tOperatingBoundaryTest.class,
     Cdc6tProtectionCoordinatorTest.class,
     Cdc6tProtectedNetworkTest.class,
+    Cdc6tMinimumCurrentTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,

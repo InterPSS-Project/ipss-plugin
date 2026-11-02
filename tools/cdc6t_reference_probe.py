@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
     parser.add_argument('--step', type=float, default=.0005)
+    parser.add_argument('--restart-current', type=float, default=500.)
+    parser.add_argument('--minimum-current', type=float, default=400.)
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
     parser.add_argument('--inverter-recovery-voltage', type=float)
@@ -31,6 +33,8 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.step) or not .0001 <= args.step <= .005:
         parser.error('Network step must be between 0.1 and 5 ms')
+    if any(not math.isfinite(v) or v < 0 for v in [args.restart_current,args.minimum_current]):
+        parser.error('Restart and minimum currents must be finite and nonnegative')
     if any(not math.isfinite(t) or not 0 < t < .5 for t in args.inspect_at):
         parser.error('Inspection times must be finite and strictly inside the run')
     if not math.isfinite(args.mode_threshold_kv) or args.mode_threshold_kv < 0:
@@ -112,6 +116,10 @@ def main():
         constants[15:21] = [480, 800, 490, 980, 500, 1200]
     if args.inverter_recovery_voltage is not None:
         constants[8] = args.inverter_recovery_voltage
+    constants[11] = args.restart_current
+    constants[14] = args.minimum_current
+    if constants[14] >= constants[16]:
+        parser.error('Minimum current must be below the first current-limit ordinate')
     (out / 'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))
                                     + "'1' 'CDC6T' " + ' '.join(map(str, constants)) + ' /\n')
     for name in ['cdc6t_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -150,6 +158,9 @@ def main():
     snapshots = []
     def snapshot(stage):
         snapshots.append(dict(stage=stage,
+            time=checked('clock', psspy.dsrval('TIME', 0)),
+            step=checked('interval', psspy.dsrval('DELT', 0)),
+            states=[checked('state', psspy.dsrval('STATE', layout['STATE']+i)) for i in range(3)],
             icons=[checked('flag', psspy.dsival('ICON', layout['ICON']+i)) for i in range(3)],
             variables=[checked('variable', psspy.dsrval('VAR', layout['VAR']+i)) for i in range(18)]))
     inspections = sorted(set(args.inspect_at))
@@ -163,12 +174,15 @@ def main():
         checked(label, psspy.run(0, end, 1000000, 1, 0))
     snapshot('initialized')
     run_until('prefault', .05)
+    snapshot('before-first-fault')
     if args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.0))
     if args.profile == 'fault':
         checked('fault', psspy.dist_bus_fault(7 if args.fault_terminal == 'rectifier' else 9,
                 3, 230., [0., .2*230**2/100]))
+        snapshot('first-fault-applied')
     run_until('fault interval', args.fault_clear)
+    snapshot('before-first-clearing')
     if args.profile == 'fault':
         checked('clear', psspy.dist_clear_fault(1))
     if args.profile == 'modulation':

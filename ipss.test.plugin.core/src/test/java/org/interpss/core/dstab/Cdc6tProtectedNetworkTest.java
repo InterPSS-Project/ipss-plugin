@@ -23,14 +23,15 @@ import com.interpss.dstab.cache.StateMonitor;
 /** Complete protected network lifecycle. Full independent state/trajectory acceptance remains a separate gate. */
 public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
     @TempDir Path folder;
-    static java.util.stream.Stream<Arguments> profiles(){return java.util.stream.Stream.of("inverter","delay","rectifier","inverter-half")
+    static java.util.stream.Stream<Arguments> profiles(){return java.util.stream.Stream.of("inverter","delay","rectifier","inverter-half","floor200","floor400")
             .flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));}
     @ParameterizedTest @MethodSource("profiles")
     void protectedFaultCompletesWithOneAcceptedClock(String profile,boolean staggered)throws Exception {
         boolean half=profile.endsWith("-half");double step=half?.00025:.0005;
-        var archive=Path.of("testData/private/verification-artifacts/cdc6t-coordination"+(half?"-halfstep":"")+"-20261101/captures.zip");
+        boolean floor=profile.startsWith("floor");double minimum=profile.equals("floor200")?200:400;
+        var archive=Path.of("testData/private/verification-artifacts/cdc6t-"+(floor?"minimum-current":"coordination"+(half?"-halfstep":""))+"-20261101/captures.zip");
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent coordinated network inputs");
-        assertEquals(half?"8137239dd9529a6a9e8d34661ba7050a82e4f9b63b5106bf7bf187d1447a8d29":"40a91608fe41d356c3c6c108da7d548e1d9e530e1d32af70ee47700ee518f6f9",
+        assertEquals(floor?"9634c30bc479897165d89e1bf97a9fba3c11881614dd7f6d3035eec6258c0639":half?"8137239dd9529a6a9e8d34661ba7050a82e4f9b63b5106bf7bf187d1447a8d29":"40a91608fe41d356c3c6c108da7d548e1d9e530e1d32af70ee47700ee518f6f9",
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         List<String> raw;List<Map<String,Double>> reference;
         try(var z=new ZipFile(archive.toFile())){
@@ -41,9 +42,9 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
         var coordinator=new Cdc6tProtectionCoordinator(new Cdc6tRectifierProtection(.9,-999,999,.94,.01,.02),
                 new Cdc6tInverterProtection(.9,.02,profile.equals("rectifier")?.99:.92,profile.equals("delay")?.04:.01,.02),
                 new Cdc6tBypassProtection(490000,.9,.01,profile.equals("rectifier")?.99:.92,.01,.02),
-                new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,500,1000,2,2));
+                new Cdc6tModeSwitch(true,0,.02),new Cdc6tRecoveryRamp(250000,500000,floor?100:500,1000,2,2));
         var f=Cdc6tCoupledNetworkTest.load(folder,raw,Cdc6tCurrentOrder.Mode.POWER,-500,
-                Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000),coordinator);
+                Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000),coordinator,minimum);
         var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(step);a.setTotalSimuTimeSec(.5);a.setSimuOutputHandler(new StateMonitor());
         var recorder=new Cdc6tCoupledReferenceTest.Recorder(f);
@@ -69,6 +70,8 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
                     assertEquals(1000*(1-.75*step/.05),states[1],1e-6,"Internal blocking uses the independently observed discontinuity treatment once");
                 for(double value:states)assertTrue(Double.isFinite(value));for(double value:boundary)assertTrue(Double.isFinite(value));
                 if(mode==OperatingMode.BLOCKED){assertEquals(0,boundary[0],0);assertEquals(0,boundary[3],0);}
+                if(floor&&mode==OperatingMode.RECOVERING&&history[5]*1000<minimum)
+                    assertEquals(minimum,boundary[0]*1e8/boundary[6],1e-8,"Recovery cannot bypass the minimum current demand");
                 writer.write(t+","+mode+","+history[0]+","+n.getBus("Bus7").getVoltageMag()+","+n.getBus("Bus9").getVoltageMag());
                 for(double value:states)writer.write(","+value);for(double value:boundary)writer.write(","+value);writer.write("\n");
             }
@@ -83,7 +86,7 @@ public class Cdc6tProtectedNetworkTest extends CorePluginTestSetup {
         double referenceRecovery=reference.stream().filter(row->row.get("VAR2")<1&&row.get("VAR2")>0&&row.get("VAR5")>0&&row.get("VAR7")!=0)
                 .mapToDouble(row->row.get("time_s")).min().orElseThrow();
         assertEquals(referenceRecovery,firstRecovery,2.2*step,"Release within two network intervals of independent capture");
-        assertEquals(OperatingMode.NORMAL,coordinator.operatingMode());
+        assertEquals(floor?OperatingMode.RECOVERING:OperatingMode.NORMAL,coordinator.operatingMode());
     }
 
     /** Diagnostic only: preserve every reference row, including internal transitions and inspection duplicates.

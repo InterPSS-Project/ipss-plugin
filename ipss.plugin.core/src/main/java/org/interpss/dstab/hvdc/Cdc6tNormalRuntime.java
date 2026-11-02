@@ -13,6 +13,7 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
     private final Cdc6tCurrentOrder command;
     private final Cdc6tVoltageCurrentLimit limit;
     private final Cdc6tConductingLink link;
+    private final double minimumCurrentAmperes;
     private final double[] states=new double[3],boundary=new double[8],currents=new double[4];
     private boolean boundaryReady;
     private double scheduledAmperes;
@@ -20,9 +21,19 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
     /** Takes exclusive ownership of the mutable measurements and link scratch buffers. */
     public Cdc6tNormalRuntime(Cdc6tMeasurements measurements,Cdc6tCurrentOrder command,
             Cdc6tVoltageCurrentLimit limit,Cdc6tConductingLink link) {
+        this(measurements,command,limit,link,0);
+    }
+    /** Minimum demand applies to conducting orders, including recovery, before the current ceiling.
+     * Blocking remains zero current and bypass retains its distinct scheduled-current regime. */
+    public Cdc6tNormalRuntime(Cdc6tMeasurements measurements,Cdc6tCurrentOrder command,
+            Cdc6tVoltageCurrentLimit limit,Cdc6tConductingLink link,double minimumCurrentAmperes) {
         this.measurements=java.util.Objects.requireNonNull(measurements);
         this.command=java.util.Objects.requireNonNull(command);this.limit=java.util.Objects.requireNonNull(limit);
         this.link=java.util.Objects.requireNonNull(link);
+        if(!Double.isFinite(minimumCurrentAmperes)||minimumCurrentAmperes<0
+                ||minimumCurrentAmperes>limit.ceilingAmperes(0))
+            throw new IllegalArgumentException("Nonnegative minimum demand no greater than the lowest current ceiling required");
+        this.minimumCurrentAmperes=minimumCurrentAmperes;
     }
     public void initialize(double inverterVolts,double currentAmperes,double rectifierVolts) {
         if(!Double.isFinite(currentAmperes)||currentAmperes<=0)throw new IllegalArgumentException("Positive scheduled current required");
@@ -64,7 +75,7 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
         } else {
             double desired=mode==OperatingMode.RECOVERING?scheduledAmperes*currentFactor
                     :mode==OperatingMode.POWER_TO_CURRENT?scheduledAmperes:command.amperes(states[0],states[2],auxiliaryMegawatts);
-            current=limit.limit(desired,states[0]);
+            current=limit.limit(Math.max(minimumCurrentAmperes,desired),states[0]);
             link.evaluate(vr,vi,current,command.inverterVoltage(current,voltageFactor),boundary,0);
             injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);
             injection(boundary[3],boundary[4],inverterReal,inverterImag,vi,currents,2);
