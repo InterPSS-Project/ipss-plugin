@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.core.aclf.hvdc.LccSourceControls;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -52,7 +53,9 @@ public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
             var dc=records.stream().filter(r->r.canonicalModelName().equals("CDC6T")).toList();assertEquals(1,dc.size());
             parameters=Cdc6tRecordMapper.prepare(dc.get(0));
         }
-        var f=Cdc6tCoupledNetworkTest.load(folder,raw,parameters,modeThreshold);
+        var f=Cdc6tCoupledNetworkTest.load(folder,raw,parameters);
+        var owner=(com.interpss.core.aclf.hvdc.HvdcLine2TLCC<?>)f.context().getDStabilityNet().getSpecialBranchList().get(0);
+        assertEquals(modeThreshold,((LccSourceControls)owner.getExtensionObject()).modeTransferKilovolts(),0);
         var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
         var recorder=new Cdc6tCoupledReferenceTest.Recorder(f,.05,clear);
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(step);a.setTotalSimuTimeSec(.5);a.setSimuOutputHandler(new StateMonitor());

@@ -845,6 +845,7 @@ public class PSSEJsonDirectParser {
         double rdc = getDouble(row, "rdc", 0.0);
         double setvl = getDouble(row, "setvl", 0.0);
         double vschd = getDouble(row, "vschd", 0.0);
+        double vcmod = getDouble(row, "vcmod", 0.0);
         double rcomp = getDouble(row, "rcomp", 0.0);
         double delti = getDouble(row, "delti", 0.0);
         String meter = getString(row, "met", "I");
@@ -905,6 +906,8 @@ public class PSSEJsonDirectParser {
                     getDouble(row, "stpi", 0.00625),
                     getDouble(row, "xcapi", 0.0),
                     null);
+            lcc.setExtensionObject(new com.interpss.core.aclf.hvdc.LccSourceControls(vcmod,
+                    getDouble(row, "xcapr", 0.0), getDouble(row, "xcapi", 0.0)));
         } catch (Exception e) {
             log.error("Error parsing RAWX twotermdc {}: {}", name, e.getMessage());
         }

@@ -860,13 +860,14 @@ public class PSSEJsonExporter {
 				LimitType invAngle = inv.getFiringAngLimit(UnitType.Deg);
 				LimitType recTap = rec.getXformerTapLimit();
 				LimitType invTap = inv.getXformerTapLimit();
+				var sourceControls = line.getExtensionObject() instanceof com.interpss.core.aclf.hvdc.LccSourceControls controls ? controls : null;
 				section.getAsJsonArray("data").add(row(
 						nullToEmpty(line.getName()),
 						twoTerminalDcMode(line),
 						line.getRdc(UnitType.Ohm),
 						twoTerminalDcSetpoint(line),
 						twoTerminalDcScheduledVoltage(line),
-						0.0,
+						sourceControls == null ? 0.0 : sourceControls.modeTransferKilovolts(),
 						line.getCompondR(UnitType.Ohm),
 						line.getPowerCurrentMargin(),
 						line.getMeterEnd() == ConverterType.RECTIFIER ? "R" : "I",
@@ -876,13 +877,13 @@ public class PSSEJsonExporter {
 						rec.getAcRatedVoltage(UnitType.kV, rec.getBus().getBaseVoltage()),
 						rec.getXformerRatio(), solvedLccTap(line, rec),
 						recTap.getMax(), recTap.getMin(), rec.getXformerTapStepSize(),
-						0, 0, 0, 0, 0, 0.0,
+						0, 0, 0, 0, 0, sourceControls == null ? 0.0 : sourceControls.rectifierCapacitorOhms(),
 						busNumber((AclfBus) inv.getBus()), inv.getNBridges(),
 						invAngle.getMax(), invAngle.getMin(), invZ.getReal(), invZ.getImaginary(),
 						inv.getAcRatedVoltage(UnitType.kV, inv.getBus().getBaseVoltage()),
 						inv.getXformerRatio(), solvedLccTap(line, inv),
 						invTap.getMax(), invTap.getMin(), inv.getXformerTapStepSize(),
-						0, 0, 0, 0, 0, 0.0,
+						0, 0, 0, 0, 0, sourceControls == null ? 0.0 : sourceControls.inverterCapacitorOhms(),
 						lccTapPosition(rec), solvedLccAngle(line, rec),
 						realOrNull(recPower), imaginaryOrNull(recPower),
 						lccTapPosition(inv), solvedLccAngle(line, inv),

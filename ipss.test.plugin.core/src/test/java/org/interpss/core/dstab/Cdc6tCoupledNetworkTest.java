@@ -39,7 +39,7 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     record Fixture(com.interpss.simu.SimuContext context,Cdc6tNormalRuntime runtime,Cdc6tNormalTerminalPorts ports,Cdc6tProtectionCoordinator protection) {}
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tParameters parameters)throws Exception{
-        return load(folder,lines,parameters,0);
+        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,null,null,0,parameters,null);
     }
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tParameters parameters,double modeThresholdKv)throws Exception{
         return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,null,null,0,parameters,modeThresholdKv);
@@ -58,10 +58,10 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
             Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent) throws Exception {
-        return load(folder,lines,mode,setpoint,limit,protection,minimumCurrent,null,0);
+        return load(folder,lines,mode,setpoint,limit,protection,minimumCurrent,null,null);
     }
     private static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
-            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters,double modeThresholdKv) throws Exception {
+            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters,Double modeThresholdKv) throws Exception {
         for(int n=3;n<lines.size();n++) {
             if(lines.get(n).strip().startsWith("0 /"))break;
             String[] fields=lines.get(n).split(",",-1);
@@ -81,7 +81,7 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
         algorithm.getAclfAlgorithm().getLfAdjAlgo().setApplyAdjustAlgo(false);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         if(parameters!=null){
-            var prepared=Cdc6tNetworkPreparation.prepare(net,parameters,modeThresholdKv);
+            var prepared=modeThresholdKv==null?Cdc6tNetworkPreparation.prepare(net,parameters):Cdc6tNetworkPreparation.prepare(net,parameters,modeThresholdKv);
             prepared.ports().attach();
             return new Fixture(context,prepared.runtime(),prepared.ports(),prepared.protection());
         }

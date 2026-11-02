@@ -721,14 +721,48 @@ independent ownership, command signs, compensation, equivalent primary-base
 specifications and invalid-owner rejection. The final focused model, adjacent
 LCC, staggered and parser regression passes 231 tests without failures or skips.
 
-Automatic import remains disabled. The current static importer does not retain
-all source controls, including the dynamic mode-transfer voltage threshold and
-some converter-variant selectors. The threshold must therefore be supplied
-explicitly, and callers must establish eligibility for this ordinary fixed-tap
-path. Preserve those source settings before enabling automatic preparation;
-never assume their absence means the corresponding feature was disabled.
-Protected release timing and complete trajectory qualification remain open.
+Automatic dynamic import remains disabled. Static RAW/JSON import now retains
+the mode-transfer voltage and both commutation-capacitor impedances, as described
+below. Other equipment/control variants, protected release timing and complete
+trajectory qualification remain open.
 
 Private complete exports, reports and preparation source:
 `verification-artifacts/cdc6t-static-owner-20261101/validation.zip`, SHA-256
 `72f9a21d0e971b0ecb1a8e1aee40c930ce68cc623171455e4ae30946f34f4555`.
+
+
+## Retained source controls and network copying
+
+`LccSourceControls` belongs to the core LCC data model and is serialized through
+`HvdcLine2TLCCState`. Static RAW and JSON imports retain the mode-transfer
+threshold and both capacitor impedances; JSON export and complete-network JSON
+copy preserve them. The immutable record validates finite values without
+changing source settings. Capacitor impedances remain in ohms and never enter
+the static converter's reactive-power-offset field.
+
+Default explicit CDC6T preparation uses the imported threshold. Missing or
+unrecognized metadata fails instead of silently disabling mode transfer. A
+separate explicit-threshold overload remains available for programmatic
+networks and controlled experiments. Both paths reject retained capacitor
+commutation and negative mode-transfer settings pending qualification. Equal
+inverter angle limits select constant-gamma control; this variant is rejected
+because it must not silently use the ordinary dynamic inverter angle.
+
+Moving the metadata into core fixes a regression found by adjacent network-copy
+tests: plugin-only extension data was previously lost on copying. Older
+snapshots without these fields still restore without them, and unrelated
+extension objects are not cleared by an absent source-control field.
+
+Validation passes 15 core copy checks and 317 focused plugin checks, with no
+failures, errors or skips. The scope includes versioned RAW layouts, nonzero
+JSON export/import/copy round trips, missing metadata and variant rejection,
+adjacent LCC power-flow/copy checks, parser checks, and staggered regressions.
+All 14 conducting and 24 protected coupled trajectories under both integration
+methods are byte-identical to the preceding static-owner checkpoint. This
+preserves existing conducting acceptance and existing protected discrepancies;
+it does not establish full protection accuracy or automatic attachment support.
+No source metadata lookup was added to the per-step numerical runtime.
+
+Private complete trajectories, reports and dependency hash:
+`verification-artifacts/cdc6t-source-controls-20261101/validation.zip`, SHA-256
+`12c24c074ea7628ee0185ee0eb3a6e3cd109d3e609e2147aa3e5aaaa11cd0b9e`.
