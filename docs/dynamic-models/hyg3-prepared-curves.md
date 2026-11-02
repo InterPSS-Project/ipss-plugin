@@ -415,3 +415,66 @@ Across the original bypass profiles, quarter-cycle active-power NRMSE remains
 output; it does not qualify the complete governor or justify changing its
 equations to compensate for machine/network integration differences. Production
 code contains no playback override and the accuracy threshold is unchanged.
+
+## Fast feedback and pre-initialization validation
+
+HYG3 now participates in the common parameter-validation report. Checks cover
+finite scalar data, nonnegative time constants, existing selector/curve/physical
+constraints, gate/valve limits and the prepared zero-`Tf` convention. The
+report uses the governor's outer interval even when another controller uses
+local subdivisions. It never changes entered parameters or initializes states.
+Zero water time remains an explicitly reported, unqualified algebraic extension.
+
+The bypassed PID input equation requires the denominator
+`1 + Rgate * (K2 + K1 / effectiveTf)`, with the derivative term omitted for the
+typed derivative bypass. A zero or nonfinite denominator now prevents both
+direct governor initialization and initialization through either solver's
+shared validation path. Previously direct initialization could succeed while
+publishing nonfinite derivatives. A frozen pre-change runtime fails the new
+regression. Finite, nonzero denominators are not replaced or clamped.
+
+For the PID branch with positive `Td` and effective `Tf` and nonnegative
+feedback gains, validation also screens the frozen-integral input/derivative
+subsystem. Its Jacobian is `[-a, b; d, -d]`, where
+`a = (1 + Rgate * (K2 + K1 / Tf)) / Td`,
+`b = Rgate * K1 / (Td * Tf)` and `d = 1 / Tf`.
+The faster decay time is `2 / (a + d + sqrt((a-d)^2 + 4*b*d))`.
+This may be shorter than either entered lag. A value below the configured
+step margin produces a warning; this partial subsystem calculation is not a
+complete stability certificate for the governor, turbine or network.
+
+Independent combined-bypass and short-positive-time controls retain all states
+and terminal channels. Cold repeats reproduce both the finite exports and the
+explicit nonfinite rejections. The probe retains raw output and a
+`rejected-nonfinite` manifest instead of producing an accepted CSV for those
+failures. Combined zero `Td`/`Tf` controls agree with explicit `Tf = 4H` to
+within 0.0000003 pu across the finite captures; the fine double-derivative
+controls agree exactly. Some fine PID combined-bypass references are nonfinite
+and cannot establish trajectory acceptance for that setting.
+
+A particularly important negative control has PID `Tf = H` at a quarter-cycle
+interval. Its reference compensation coordinate exceeds 2.5 million despite
+finite, limited mechanical power. The staggered run also develops a large
+internal oscillation, while modified Euler remains bounded. Another
+double-derivative `Tf = H` profile has a compensation-coordinate discrepancy
+near 1.8 pu despite small voltage and rotor-angle errors. These profiles remain
+unqualified; terminal-output agreement and finiteness do not replace internal
+state acceptance. No gains, lags, integration defaults or accuracy thresholds
+were changed to conceal these differences.
+
+The focused model/common-validator run executes 78 tests with two existing
+quarter-cycle power-gate failures, no errors and no skips. The complete
+core-plugin module executes 486 tests with no failures and four existing skips.
+Warmed HYG3 state/update/observation loops still allocate zero bytes. The new
+guard runs at initialization, and the added validation work stays outside the
+integration loop. Complete named samples from the finite fast-feedback runs
+are unchanged by the validation/initialization guard.
+
+The cold-reference archive is
+`testData/private/verification-artifacts/hyg3-fast-feedback-20261102/captures.zip`,
+SHA-256 `feab110e4cea07232d1b04f7182f6ea048c7c5c6b7acc7f94efb325d24822fa7`.
+`Hyg3FastFeedbackReferenceTest` checks reference quality and preparation controls;
+it does not claim coupled trajectory qualification. Private evidence retains
+all diagnostic comparisons and the frozen-runtime negative control. Remaining
+work includes fast-state integration accuracy, combined PID bypass qualification,
+the existing power gate and longer-duration state/limiter histories.

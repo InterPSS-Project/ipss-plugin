@@ -81,6 +81,40 @@ public class Hyg3SharedStateTest {
         assertEquals(0.,governor.getEffectiveDerivativeFilterTime(),0.);
     }
 
+    @Test void combinedImportedBypassesSolveLivePidFeedbackWithoutAdvancingStoredInputOrHistory() throws Exception {
+        for (boolean shared : new boolean[]{false,true}) {
+            var governor=model(1,false); var data=governor.getData();
+            data.setTd(0.); data.setTt(0.); data.setTp(0.); data.setTf(0.);
+            assertTrue(governor.initStates(governor.getMachine().getDStabBus(),governor.getMachine()));
+            double[] state=new double[9],rates=new double[9],published=new double[9];
+            governor.readStaggeredState(state,0); state[0]=.9; state[2]=.00001; state[3]=.01; state[5]=.9;
+            governor.getMachine().setSpeed(1.0002); governor.getMachine().setPe(.41);
+            governor.applyStaggeredState(state,0,H);
+            var before=governor.getIntegrationStates(); var history=governor.getIntegrationHistories();
+            double tf=4*H, derivativeGain=data.getK1()/tf;
+            double input=(governor.getRefPoint()-.0002-data.getRelec()*.41
+                    -data.getRgate()*(state[1]-derivativeGain*state[2]))
+                    /(1+data.getRgate()*(data.getK2()+derivativeGain));
+            double command=state[1]+data.getK2()*input+derivativeGain*(input-state[2]);
+            if (shared) governor.evaluateStaggered(H/4,rates,0);
+            else {
+                governor.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,governor.getMachine(),0);
+                var snapshot=governor.getStateDerivativeSnapshot();
+                for (int i=0;i<9;i++) rates[i]=snapshot.rates().get(NAMES[i]);
+            }
+            governor.readPublishedState(published,0);
+            assertEquals(input,published[0],1e-15); assertEquals(.41,published[5],0.);
+            assertEquals(command,governor.getControlValveCommand(),1e-14);
+            assertEquals(data.getKi()*input,rates[1],1e-15);
+            assertEquals((input-state[2])/tf,rates[2],1e-12);
+            assertEquals(Math.max(data.getVelclose(),Math.min(data.getVelopen(),
+                    data.getKg()*(command-governor.getGateOutput()))),published[3],1e-14);
+            for(int i:new int[]{0,3,5,7,8}) assertEquals(0.,rates[i],0.);
+            assertEquals(before,governor.getIntegrationStates()); assertEquals(history,governor.getIntegrationHistories());
+            assertEquals(0.,data.getTf(),0.);
+        }
+    }
+
     @Test void pureRhsMatchesOrdinaryEquationsAndPreservesHistoryAcrossBothModesAndBypasses() throws Exception {
         for (int mode : new int[]{0, 1}) for (boolean bypass : new boolean[]{false, true}) {
             var shared = model(mode, bypass); var ordinary = model(mode, bypass);

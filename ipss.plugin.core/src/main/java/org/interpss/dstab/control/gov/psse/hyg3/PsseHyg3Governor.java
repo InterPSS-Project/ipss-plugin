@@ -97,6 +97,11 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
                 == PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS
                 && d.getTf() == 0. && integrationStep <= 0.) return false;
         preparedZeroDerivativeTime = 4. * integrationStep;
+        if (d.getControlFlag() == PsseHyg3GovernorData.PID_CONTROL && d.getTd() <= SMALL) {
+            double tf = getEffectiveDerivativeFilterTime();
+            double denominator = 1. + d.getRgate() * (d.getK2() + (tf > SMALL ? d.getK1()/tf : 0.));
+            if (!Double.isFinite(denominator) || denominator == 0.) return false;
+        }
         double minimum = Math.max(SMALL, integrationStep * minimumTimeConstantMultiplier);
         effectiveAt = d.getAt() <= 0.0 ? minimum : d.getAt();
         effectiveTw = d.getTw() > 0.0 && d.getTw() < minimum ? minimum : d.getTw();

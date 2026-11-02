@@ -25,6 +25,11 @@ PROFILES = {
     'derivative-filter-fixed-small': {7: .002},
     'derivative-filter-two-steps': {},
     'derivative-filter-four-steps': {},
+    'derivative-filter-one-step': {},
+    'derivative-filter-half-step': {},
+    'input-derivative-bypass': {3: 0., 7: 0.},
+    'input-derivative-explicit': {3: 0.},
+    'input-power-servo-derivative-bypass': {2: 0., 3: 0., 7: 0., 9: 0.},
 }
 REFERENCE_PROFILES = {'valve-limits', 'gate-limits', 'backlash-small', 'backlash-large'}
 REFERENCE_PROGRAM = [( .05, .2), (.3, -.4), (.6, .2)]
@@ -58,8 +63,12 @@ def main():
         values[index] = value
     if args.profile == 'derivative-filter-two-steps':
         values[7] = 2 * args.step
-    elif args.profile == 'derivative-filter-four-steps':
+    elif args.profile in {'derivative-filter-four-steps', 'input-derivative-explicit'}:
         values[7] = 4 * args.step
+    elif args.profile == 'derivative-filter-one-step':
+        values[7] = args.step
+    elif args.profile == 'derivative-filter-half-step':
+        values[7] = .5 * args.step
     lines[1] = f"1 'USRMDL' '1' 'HYG3U1' 5 0 2 36 9 5 {args.mode} 0 " + ' '.join(format(v, '.17g') for v in values) + ' /'
     (out / 'dynamic.dyr').write_text('\n'.join(lines) + '\n')
     for name in ['hyg3_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -114,21 +123,23 @@ def main():
         checked('postfault', psspy.run(0, args.duration, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
-    assert all(math.isfinite(v) for k in ['time']+keys for v in data[k])
+    finite = all(math.isfinite(v) for k in ['time']+keys for v in data[k])
     assert len(data['time']) < 30000
     assert all(a <= b for a, b in zip(data['time'], data['time'][1:]))
     assert sum(a == b for a, b in zip(data['time'], data['time'][1:])) >= 2
-    with Path('native.csv').open('w', newline='') as stream:
-        writer = csv.writer(stream, lineterminator='\n')
-        writer.writerow(['time_s']+[labels[k] for k in keys])
-        for i, time in enumerate(data['time']):
-            writer.writerow([format(time, '.12g')]+[format(data[k][i], '.12g') for k in keys])
-    assert Path('native.csv').stat().st_size < 16*1024**2
+    if finite:
+        with Path('native.csv').open('w', newline='') as stream:
+            writer = csv.writer(stream, lineterminator='\n')
+            writer.writerow(['time_s']+[labels[k] for k in keys])
+            for i, time in enumerate(data['time']):
+                writer.writerow([format(time, '.12g')]+[format(data[k][i], '.12g') for k in keys])
+        assert Path('native.csv').stat().st_size < 16*1024**2
     checked('model report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
-    quality = 'Initial conditions check O.K.' in log and all(message not in log for message in
+    quality = finite and 'Initial conditions check O.K.' in log and all(message not in log for message in
             ['Network not converged', 'Incomplete data record'])
-    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout,
+    status = 'rejected-nonfinite' if not finite else 'complete' if quality else 'rejected-quality'
+    manifest = dict(status=status, finite_measurements=finite, settings=vars(args), layout=layout,
             entered_constants=entered, initialized_constants=initialized,
             load_conversion_percent=[0., 100., 0., 100.], fault_impedance_pu=None if reference_profile else [0., .2],
             event_kind='reference' if reference_profile else 'fault', reference_events=REFERENCE_PROGRAM if reference_profile else [],

@@ -38,6 +38,13 @@ final class Hyg3ReferenceFixture {
             return new ObjectMapper().readTree(stream);
         }
     }
+    JsonNode captureManifest(String tag) throws Exception {
+        try (var zip = new ZipFile(archive().toFile())) {
+            var entry=zip.getEntry(tag+"/manifest.json");assertNotNull(entry);
+            assertTrue(entry.getSize()>0&&entry.getSize()<1024*1024);
+            try(var stream=zip.getInputStream(entry)){return new ObjectMapper().readTree(stream);}
+        }
+    }
     Path stage(String tag) throws Exception {
         Path destination = staged.resolve(tag); assertTrue(destination.normalize().startsWith(staged.normalize()));
         Files.createDirectories(destination);

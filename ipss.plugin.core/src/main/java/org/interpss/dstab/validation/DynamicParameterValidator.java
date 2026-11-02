@@ -292,6 +292,39 @@ public final class DynamicParameterValidator {
                 if(!c.validateParameters())add(Severity.ERROR,"model constraints",0,"Existing HYGOV parameter validation rejects this data");
                 add(Severity.INFO,"initialization policy",h,"Existing governor may increase small time constants and expand initial limits; imported values are unchanged by this report.");return true;
             }
+            if(controller instanceof org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor c) {
+                var d=c.getData();finiteData(d);
+                time("Tt",d.getTt(),true);time("Td",d.getTd(),true);time("Tp",d.getTp(),true);
+                time("Tw",d.getTw(),true);time("Tf",d.getTf(),true);
+                limits("gate",d.getPmin(),d.getPmax());limits("valve",d.getVelclose(),d.getVelopen());
+                if(!c.validateParameters())add(Severity.ERROR,"model constraints",0,"HYG3 parameter validation rejects this data, including selectors, gate curves or physical limits");
+                double tf=d.getTf();
+                if(tf==0.&&d.getZeroDerivativeFilterConvention()==org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS) {
+                    tf=4*h;
+                    add(Severity.INFO,"Tf preparation",tf,"Zero imported Tf uses four outer integration intervals; entered data remain unchanged");
+                    time("effective Tf",tf,false);
+                }
+                if(d.getTw()==0.)add(Severity.WARNING,"Tw",0.,"Zero water time selects an algebraic runtime extension; independent source-model trajectory acceptance is unavailable for this setting");
+                if(d.getControlFlag()==org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData.PID_CONTROL&&d.getTd()<=1e-9) {
+                    double denominator=1.+d.getRgate()*(d.getK2()+(tf>1e-9?d.getK1()/tf:0.));
+                    if(!Double.isFinite(denominator)||denominator==0.)
+                        add(Severity.ERROR,"PID algebraic feedback denominator",denominator,"Bypassed input filter requires a finite, nonzero algebraic-feedback denominator");
+                }
+                // A frozen-integral input/derivative subsystem can be faster than
+                // either entered lag. This screen is not a complete coupled-stability proof.
+                if(d.getControlFlag()==org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData.PID_CONTROL
+                        &&d.getTd()>0.&&tf>0.&&d.getRgate()>=0.&&d.getK1()>=0.&&d.getK2()>=0.) {
+                    double derivativeGain=d.getK1()/tf;
+                    double a=(1.+d.getRgate()*(d.getK2()+derivativeGain))/d.getTd();
+                    double b=d.getRgate()*derivativeGain/d.getTd(), inverseTf=1./tf;
+                    double fastestTime=2./(a+inverseTf+Math.hypot(a-inverseTf,2.*Math.sqrt(b*inverseTf)));
+                    if(Double.isFinite(fastestTime)&&fastestTime>0.&&fastestTime/h<multiple)
+                        add(Severity.WARNING,"PID derivative/input screening time",fastestTime,
+                                "Frozen-integral input/derivative feedback is faster than the configured step margin; review the integration interval and internal-state response. This is not a complete coupled-stability proof.");
+                }
+                add(Severity.INFO,"initialization policy",h,"HYG3 prepares water/turbine coefficients and initial limits separately; validation does not initialize states or change imported data");
+                return true;
+            }
             if(controller instanceof PsseGgov1Governor c) {
                 var d=c.getData();finiteData(d);
                 time("Tpelec",d.getTpelec(),true);time("Tact",d.getTact(),false);time("Tdgov",d.getTdgov(),true);
