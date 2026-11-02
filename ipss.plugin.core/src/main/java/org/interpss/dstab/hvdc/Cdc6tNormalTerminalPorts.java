@@ -16,6 +16,8 @@ public final class Cdc6tNormalTerminalPorts {
     private final Cdc6tNormalRuntime runtime;
     private final Cdc6tProtectionCoordinator protection;
     private final double initialVi,initialCurrent,initialVr;
+    private Complex initialRectifierInjection,initialInverterInjection;
+    private boolean initialInjectionPending,initialNetworkPending;
     private final double[] currents=new double[4];
     private final Port rectifierPort,inverterPort;
     private final double[] electrical=new double[8];
@@ -53,6 +55,14 @@ public final class Cdc6tNormalTerminalPorts {
     }
     public Port rectifierPort(){return rectifierPort;}
     public Port inverterPort(){return inverterPort;}
+    /** Preserve the solved static injection while the solver captures representation
+     * compensation. The dynamic control change is applied at the initial endpoint. */
+    void prepareInitialControlTransfer(Complex rectifierPower,Complex inverterPower) {
+        if(rectifierPort.getDStabBus()!=null||inverterPort.getDStabBus()!=null)
+            throw new IllegalStateException("Prepare initial control transfer before attachment");
+        initialRectifierInjection=rectifierPower.divide(rectifier.getVoltage()).conjugate().negate();
+        initialInverterInjection=inverterPower.divide(inverter.getVoltage()).conjugate().negate();
+    }
     private void refresh() {
         if(!rectifierPort.attachmentIntact())throw new IllegalStateException("Both original DC terminal ports must remain attached");
         Complex vr=rectifier.getVoltage(),vi=inverter.getVoltage();
@@ -64,7 +74,7 @@ public final class Cdc6tNormalTerminalPorts {
                     recovery?protection.voltageFactor():1,recovery?protection.currentFactor():1,currents,0);
         }
     }
-    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware {
+    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware,org.interpss.dstab.control.util.InitialEndpointAction {
         private final boolean owner;
         private Port(String id,BaseDStabBus<?,?> bus,boolean owner) {
             this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
@@ -81,13 +91,26 @@ public final class Cdc6tNormalTerminalPorts {
             if(protection!=null){if(coordinatorTrial)protection.discardTrial();protection.reset();}
             coordinatorTrial=false;networkTrial=false;boundaryTrial=false;staggeredEndpointPending=false;acceptedDcVoltage=initialVi;
             inputDiscontinuityVersion=0;acceptedMode=Cdc6tNormalRuntime.OperatingMode.NORMAL;
+            initialInjectionPending=initialRectifierInjection!=null;initialNetworkPending=false;
             runtime.initialize(initialVi,initialCurrent,initialVr);return true;
+        }
+        @Override public boolean acceptInitialEndpoint() {
+            if(!owner||!initialInjectionPending)return false;
+            initialInjectionPending=false;initialNetworkPending=true;return true;
+        }
+        @Override public void acceptInitialNetworkEndpoint() {
+            if(!owner||!initialNetworkPending)return;
+            refresh();runtime.readBoundary(electrical,0);
+            runtime.initialize(electrical[7],initialCurrent,electrical[6]);
+            acceptedDcVoltage=electrical[7];initialNetworkPending=false;
         }
         @Override public void beginNetworkSolution(NetworkIterationAware.Context context){
             if(!owner||!isOperational())return;
             if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
             boundaryTrial=true;
-            if(protection==null)return;
+            // Initial settling has no simulation-clock history; callers may
+            // still choose negative-time startup after initialization returns.
+            if(protection==null||initialNetworkPending)return;
             boolean directEndpoint="DIRECT".equals(context.stage())&&staggeredEndpointPending;
             if("DIRECT".equals(context.stage())&&!directEndpoint)return; // Initialization/direct probes cannot commit a clock.
             if(!directEndpoint&&!"INITIAL".equals(context.stage())&&!"PREDICTOR".equals(context.stage())&&!"CORRECTOR".equals(context.stage()))
@@ -138,10 +161,12 @@ public final class Cdc6tNormalTerminalPorts {
         }
         @Override public Object getOutputObject() {
             if(!isOperational())return Complex.ZERO;
+            if(initialInjectionPending)return owner?initialRectifierInjection:initialInverterInjection;
             refresh();int offset=owner?0:2;return new Complex(currents[offset],currents[offset+1]);
         }
         @Override public boolean nextStep(double dt,DynamicSimuMethod method,int stage) {
             if(!owner||!isOperational())return true;
+            requireInitialEndpoint();
             if(method!=DynamicSimuMethod.MODIFIED_EULER)throw new IllegalArgumentException("Use modified Euler or the shared staggered participant");
             if(stage==0&&dt>0)runtime.sampleCommandMeasurements();
             refresh();runtime.step(dt,stage);return true;
@@ -156,7 +181,11 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public int staggeredStateCount(){return owner?3:0;}
         @Override public long staggeredInputDiscontinuityVersion(){return owner?inputDiscontinuityVersion:0;}
         @Override public void readStaggeredState(double[] values,int offset){if(owner)runtime.readStaggeredState(values,offset);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
-        @Override public void evaluateStaggered(double h,double[] values,int offset){if(owner){refresh();runtime.evaluateStaggered(h,values,offset);}else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
+        @Override public void evaluateStaggered(double h,double[] values,int offset){if(owner){requireInitialEndpoint();refresh();runtime.evaluateStaggered(h,values,offset);}else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
+        private void requireInitialEndpoint(){
+            if(initialInjectionPending||initialNetworkPending)
+                throw new IllegalStateException("Settle the initial CDC6T control transfer before integrating states");
+        }
         @Override public void applyStaggeredState(double[] values,int offset,double h){if(owner)runtime.applyStaggeredState(values,offset,h);else java.util.Objects.checkFromIndexSize(offset,0,values.length);}
         @Override public void completeStaggeredStep(double h,double endpointTime){
             if(!owner||!isOperational())return;

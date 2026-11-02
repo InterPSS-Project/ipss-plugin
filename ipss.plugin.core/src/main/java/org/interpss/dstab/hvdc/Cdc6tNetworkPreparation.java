@@ -49,14 +49,19 @@ public final class Cdc6tNetworkPreparation {
             throw new IllegalArgumentException("Active solved DC-link owner required");
         if(owner.getOperationMode()!=HvdcOperationMode.REC1_INV1||owner.getRectifier2()!=null||owner.getInverter2()!=null||owner.isPuBasedPowerFlowAlgo())
             throw new IllegalArgumentException("CDC6T preparation requires a single converter pair solved in physical units");
-        if(owner.getRectifierControlMode()!=HvdcControlMode.DC_CURRENT)
-            throw new IllegalArgumentException("Rectifier-current control required");
         var rectifier=owner.getRectifier();var inverter=owner.getInverter();
         if(rectifier==null||inverter==null||rectifier.getConverterType()!=ConverterType.RECTIFIER||inverter.getConverterType()!=ConverterType.INVERTER)
             throw new IllegalArgumentException("Oriented rectifier/inverter equipment required");
         if(inverter.getFiringAngLimit()==null)throw new IllegalArgumentException("Explicit inverter angle limits required");
         boolean constantGamma=inverter.getFiringAngLimit().getMin()==inverter.getFiringAngLimit().getMax();
-        if(owner.getInverterControlMode()!=(constantGamma?HvdcControlMode.FIRING_ANGLE:HvdcControlMode.DC_VOLTAGE))
+        boolean transferredGamma=constantGamma
+                &&owner.getDcLineControlMode()==HvdcControlMode.DC_CURRENT
+                &&owner.getRectifierControlMode()==HvdcControlMode.FIRING_ANGLE
+                &&owner.getInverterControlMode()==HvdcControlMode.DC_CURRENT
+                &&owner.getPowerCurrentMargin()==0;
+        if(owner.getRectifierControlMode()!=HvdcControlMode.DC_CURRENT&&!transferredGamma)
+            throw new IllegalArgumentException("Rectifier-current control or qualified constant-gamma current transfer required");
+        if(!transferredGamma&&owner.getInverterControlMode()!=(constantGamma?HvdcControlMode.FIRING_ANGLE:HvdcControlMode.DC_VOLTAGE))
             throw new IllegalArgumentException("Solved inverter mode must agree with the source angle limits");
         if(!(rectifier.getBus() instanceof BaseDStabBus<?,?> rb)||!(inverter.getBus() instanceof BaseDStabBus<?,?> ib)
                 ||rb==ib||!rb.isActive()||!ib.isActive()||rb.getNetwork()!=network||ib.getNetwork()!=network
@@ -72,6 +77,12 @@ public final class Cdc6tNetworkPreparation {
             setpoint=owner.getPowerDemand(UnitType.mW)*(owner.getControlSide()==HvdcControlSide.INVERTER?-1:1);
         }else throw new IllegalArgumentException("Power or current control required");
         double current=rectifier.getIdc(),vr=rectifier.getDcVoltage(),vi=inverter.getDcVoltage(),resistance=owner.getRdc(UnitType.Ohm);
+        if(transferredGamma&&(rectifier.getFiringAngLimit()==null
+                ||!Double.isFinite(rectifier.getFiringAng())
+                ||!Double.isFinite(rectifier.getFiringAngLimit().getMin())
+                ||Math.abs(rectifier.getFiringAng()-rectifier.getFiringAngLimit().getMin())>1e-7
+                ||Math.abs(current-owner.getCurrentDemand())>1e-7*Math.max(1,Math.abs(current))))
+            throw new IllegalArgumentException("Constant-gamma transfer requires the solved rectifier minimum and unchanged current order");
         if(!Double.isFinite(current)||!Double.isFinite(vr)||!Double.isFinite(vi)||!Double.isFinite(resistance)||resistance<0
                 ||Math.abs(current-inverter.getIdc())>1e-7*Math.max(1,Math.abs(current))
                 ||!Double.isFinite(inverter.getIdc())||Math.abs(vr-vi-current*resistance)>1e-7*Math.max(1,Math.max(Math.abs(vr),Math.abs(vi))))
@@ -89,6 +100,7 @@ public final class Cdc6tNetworkPreparation {
         var prepared=constantGamma?parameters.prepareConstantGamma(rectifierBoundary,inverterBoundary,resistance,point,inverter.getFiringAngLimit().getMin())
                 :parameters.prepare(rectifierBoundary,inverterBoundary,resistance,point);
         var ports=new Cdc6tNormalTerminalPorts(parameters.linkName(),rb,ib,prepared.runtime(),vi,current,vr,prepared.protection());
+        if(transferredGamma)ports.prepareInitialControlTransfer(rectifier.powerIntoConverter(),inverter.powerIntoConverter());
         return new Binding(owner,point,prepared.runtime(),prepared.protection(),ports);
     }
     private static Cdc6tConverterBoundary boundary(ThyConverter<?> converter,boolean rectifier,double baseVA){

@@ -26,7 +26,7 @@ import com.interpss.dstab.cache.StateMonitor;
 public class Cdc6tConstantGammaTest extends CorePluginTestSetup {
     @TempDir Path folder;
     static java.util.stream.Stream<Arguments> profiles(){
-        return java.util.stream.Stream.of("fixed-inverter","fixed-rectifier","low","high","rectifier","schedule495","schedule505","rectifier-power")
+        return java.util.stream.Stream.of("fixed-inverter","fixed-rectifier","limited-inverter","limited-rectifier","low","high","rectifier","schedule495","schedule505","rectifier-power")
                 .flatMap(p->java.util.stream.Stream.of(false,true).map(s->Arguments.of(p,s)));
     }
     @ParameterizedTest @ValueSource(strings={"low","high","rectifier"})
@@ -84,17 +84,18 @@ public class Cdc6tConstantGammaTest extends CorePluginTestSetup {
     }
     @ParameterizedTest @MethodSource("profiles")
     void constantGammaUsesStaticControlAndBothCoupledIntegrators(String profile,boolean staggered)throws Exception{
-        boolean fixed=profile.startsWith("fixed-");
+        boolean limited=profile.startsWith("limited-");
+        boolean fixed=profile.startsWith("fixed-")||limited;
         boolean schedule=profile.startsWith("schedule")||profile.equals("rectifier-power");
-        Path archive=Path.of("testData/private/verification-artifacts/"+(schedule?"cdc6t-gamma-power-preparation":"cdc6t-constant-gamma"+(fixed?"-fixed-v2":""))+"-20261101/"+(schedule?"captures-v2.zip":"captures.zip"));
+        Path archive=Path.of("testData/private/verification-artifacts/"+(schedule?"cdc6t-gamma-power-preparation":"cdc6t-constant-gamma"+(limited?"-fixed":fixed?"-fixed-v2":""))+"-20261101/"+(schedule?"captures-v2.zip":"captures.zip"));
         Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain independent constant-gamma captures");
-        assertEquals(schedule?"002bef9babdc7f44cd5afc708d16e04d7b6f675d5dfb485feffd31265a61fd3e":fixed?"1fe186a87d766575bfa7bdda495cf85d6f9b88f760a00014cdf0102cc381df68":"b5398197ab827c04b1d955482fa99acedc6e5227c56ea5a0395b68e82b2b41cf",
+        assertEquals(schedule?"002bef9babdc7f44cd5afc708d16e04d7b6f675d5dfb485feffd31265a61fd3e":limited?"447984396d6920f266a9b0640a2424b4c7d39d9a81d8df6d352eb4e9530c0d1f":fixed?"1fe186a87d766575bfa7bdda495cf85d6f9b88f760a00014cdf0102cc381df68":"b5398197ab827c04b1d955482fa99acedc6e5227c56ea5a0395b68e82b2b41cf",
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         List<String> raw;List<Map<String,Double>> reference;Cdc6tParameters parameters;
         com.fasterxml.jackson.databind.JsonNode solvedEquipment;
         String faultBus;
         try(var zip=new ZipFile(archive.toFile())){
-            String key=fixed?profile.substring(6):profile;
+            String key=limited?profile.substring(8):fixed?profile.substring(6):profile;
             String prefix=key+"/a/";
             byte[] capture=zip.getInputStream(zip.getEntry(prefix+"native.csv")).readAllBytes();
             assertArrayEquals(capture,zip.getInputStream(zip.getEntry(key+"/b/native.csv")).readAllBytes());
@@ -110,7 +111,7 @@ public class Cdc6tConstantGammaTest extends CorePluginTestSetup {
         }
         var f=fixed?Cdc6tCoupledNetworkTest.load(folder,raw,parameters):Cdc6tCoupledNetworkTest.loadWithDcTapControl(folder,raw,parameters);
         var owner=(com.interpss.core.aclf.hvdc.HvdcLine2TLCC<?>)f.context().getDStabilityNet().getSpecialBranchList().get(0);
-        assertEquals(com.interpss.core.aclf.hvdc.HvdcControlMode.FIRING_ANGLE,owner.getInverterControlMode());
+        assertEquals(limited?com.interpss.core.aclf.hvdc.HvdcControlMode.DC_CURRENT:com.interpss.core.aclf.hvdc.HvdcControlMode.FIRING_ANGLE,owner.getInverterControlMode());
         if(fixed){
             assertEquals(.94375,owner.getInverter().getXformerTapSetting(),1e-12);
             assertEquals(1000,owner.getInverter().getIdc(),1e-10);
@@ -140,6 +141,10 @@ public class Cdc6tConstantGammaTest extends CorePluginTestSetup {
         if(!fixed)tolerance=staggered
                 ?new double[]{1e-5,.00095,3.5e-6,.00018,4,.004,4,.000055,.00011,.0012,.000055,.00011,.0015,6,6}
                 :new double[]{.000085,.0052,7.5e-6,.0047,180,.017,180,.0021,.00065,.0115,.0021,.0012,.0035,16,16};
+        // This source operating point retains an initial bus-angle residual.
+        // Gate the absolute trajectory without subtracting or fitting an offset.
+        if(limited)tolerance=new double[]{1e-6,.0004,2.3e-6,.00095,staggered?2.4:190,1e-8,
+                staggered?2.4:190,.000012,.000027,.00045,.000012,.000013,.00014,1.2,1.2};
         try(var writer=BenchmarkOutputGuard.newWriter(out.resolve("maxima.csv"),16384)){
             writer.write("channel,max_absolute,limit\n");
             for(int k=0;k<tolerance.length;k++)writer.write(Cdc6tCoupledReferenceTest.KEYS[k]+","+maxima[k]+","+tolerance[k]+"\n");

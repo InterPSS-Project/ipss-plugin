@@ -171,12 +171,20 @@ def main():
     equipment={str(bus): {key: checked('solved equipment', psspy.dc2dat_2('1',bus,key))
                 for key in ['TAP','TR','EBASE','XC','ANGLE','ANGMIN','ANGMAX','KVDC','DCCUR']} for bus in [7,9]}
     Path('solved-equipment.json').write_text(json.dumps(equipment,indent=2)+'\n')
+    def preparation_boundary():
+        return {str(bus): dict(voltage_pu=checked('preparation voltage',psspy.busdat(bus,'PU')),
+                    angle_rad=checked('preparation angle',psspy.busdat(bus,'ANGLE')),
+                    converter={key:checked('preparation converter',psspy.dc2dat_2('1',bus,key))
+                               for key in ['TAP','ANGLE','KVDC','DCCUR']}) for bus in [7,9]}
+    preparation={'loadflow':preparation_boundary()}
     checked('generators', psspy.cong(0))
     for stage in [1, 2, 3]:
         checked('loads', psspy.conl(0, 1, stage, [0, 0], [0., 100., 0., 100.]))
     checked('order', psspy.ordr(0))
     checked('factor', psspy.fact())
     checked('converted', psspy.tysl(0))
+    preparation['converted']=preparation_boundary()
+    Path('preparation-boundaries.json').write_text(json.dumps(preparation,indent=2)+'\n')
     checked('models', psspy.dyre_new([1, 1, 1, 1], 'dynamic.dyr', '', '', ''))
     layout = {kind: checked('allocation', psspy.dc2mind('1', kind))
               for kind in ['CON', 'STATE', 'VAR', 'ICON', 'NCON', 'NSTATE', 'NVAR', 'NICON']}

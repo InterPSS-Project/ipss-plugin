@@ -912,9 +912,9 @@ same timestamps and gates every channel. It does not establish general gamma
 protection/recovery or production-step qualification.
 
 The original static power-controlled preparation gap is resolved for the
-normal conducting profiles described below. Rectifier-limited initialization
-remains a distinct, unqualified control-transfer case; dynamic states are not
-fitted to mask it.
+normal conducting profiles described below. Rectifier-limited current-order
+initialization is qualified separately in the startup-transfer section;
+power-order and nonzero-margin transfer variants remain open.
 
 Explicit preparation now rejects a constant-gamma power point whose solved
 terminal V-times-I differs from its power schedule by more than one part per
@@ -985,3 +985,71 @@ Private paired additional reference captures:
 Private complete comparisons, reports, source snapshots and manifest:
 `verification-artifacts/cdc6t-gamma-power-preparation-20261101/validation.zip`, SHA-256
 `1567f9becdbac170043599ad1e5b3a3428dfc42100afc1b15b3a233423b8c157`.
+
+## Rectifier-limited startup transfer
+
+The explicit current-order constant-gamma path now accepts a solved rectifier
+minimum-angle/inverter-current operating point with zero current margin and
+unchanged scheduled current. In this mode equal source inverter angle limits
+select gamma control; they do not impose a physical upper angle bound after
+current-control transfer. Static reporting and reduced-equation boundary
+detection permit the inverter angle to rise while retaining its minimum.
+Unequal physical angle limits retain their existing behavior. A core regression
+checks the resulting derivatives and the unequal-upper-limit control.
+
+The independent startup discriminator has different static and dynamic
+rectifier minima. Its dynamic converter therefore changes the physical initial
+injection. Previously the solver absorbed that change into operating-point
+current compensation, holding the bus voltages at the static solution and
+leaving voltage-transducer states initialized from the old boundary. Merely
+correcting the reported static angle did not fix that trajectory discrepancy.
+
+Prepared terminal ports now publish their solved static injection while the
+solver captures representation compensation. The existing `InitialEndpointAction`
+contract then activates the shared dynamic equations, requests a fresh network
+solution and initializes the measurement states at its settled boundary. Only
+the rectifier port owns this action. Repeated actions/getters are idempotent;
+either terminal initialization order restores the prepared starting condition.
+Initial settling does not advance protection clocks, so negative-time startup
+remains available. Integrating before this endpoint is settled fails explicitly.
+No new hot-loop arrays, expression lookup or duplicate equations were added.
+
+Paired independent captures retain load-flow and converted-network equipment
+and AC boundaries; recorded bus-angle units are radians. The static reference
+retains a small AC residual: the local inverter angle differs by 0.002472 degrees
+after the corrected static solve. The dynamic comparison uses every absolute
+sample without fitting or subtracting an initial offset. Across faults at either
+terminal, at 0.5 ms steps over 0.5 seconds, the measured maxima are:
+
+| Quantity | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Bus voltage | 0.000002085 pu | 0.000002085 pu |
+| Bus angle | 0.0009115 degrees | 0.0009116 degrees |
+| Voltage measurement state | 183.69 V | 2.214 V |
+| DC boundary voltage | 1.023 V | 1.023 V |
+| Converter P/Q | 0.0000240 pu | 0.0000236 pu |
+
+The earlier voltage discrepancy was 0.001371 pu. These new profiles have their
+own channel limits, including 0.00095 degrees for the bus-angle residual and
+separate finite-stage state limits. Existing profile limits are unchanged.
+Complete trajectories retain 1,005 samples and both scheduled event sides.
+
+Validation passes 122 isolated core tests and 298 plugin/model/adjacent tests,
+without failures, errors or skips. All 89 preceding complete trajectories are
+byte-identical. Tests cover source-mode guards, nonfinite initialization,
+nonzero-margin rejection, repeated current reads, single-owner initial action,
+reinitialization, premature integration rejection and both coupled integrators.
+The new static/lifecycle test is registered in the core plugin suite. Complete
+repository suites were not rerun for this slice.
+
+Power-order transfer, nonzero current margin, initially active current ceilings,
+protected gamma recovery, other equipment configurations and production-step/
+long-duration qualification remain open. Automatic attachment remains disabled.
+
+Private paired preparation-boundary captures:
+`verification-artifacts/cdc6t-gamma-transfer-20261101/captures.zip`, SHA-256
+`be173a4e676a863b17e6575e51ef5580c13e94ea5c3ac85d7cf793c8190142d1`.
+The earlier fixed-current reference archive retains both terminal faults.
+Private complete comparisons, reports, diagnostics and source snapshots:
+`verification-artifacts/cdc6t-gamma-transfer-20261101/validation.zip`, SHA-256
+`8f943506398640b59f30c901d9a70f968ab29445658388aa63514f056efbc604`.

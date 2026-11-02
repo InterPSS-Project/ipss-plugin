@@ -300,6 +300,7 @@ import org.interpss.core.dstab.Cdc6tMinimumCurrentTest;
 import org.interpss.core.dstab.Cdc6tParametersTest;
 import org.interpss.core.dstab.Cdc6tNetworkPreparationTest;
 import org.interpss.core.dstab.Cdc6tConstantGammaTest;
+import org.interpss.core.dstab.Cdc6tLimitedGammaTest;
 import org.interpss.core.dstab.LccSourceControlsTest;
 import org.interpss.core.dstab.Cdc6tBypassSwitchNetworkTest;
 import org.interpss.core.dstab.HspUsageRankedModelTest;
@@ -1272,6 +1273,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tParametersTest.class,
     Cdc6tNetworkPreparationTest.class,
     Cdc6tConstantGammaTest.class,
+    Cdc6tLimitedGammaTest.class,
     LccSourceControlsTest.class,
     Cdc6tBypassSwitchNetworkTest.class,
     HspUsageRankedModelTest.class,
