@@ -55,7 +55,7 @@ public class Cdc6tInitialBalanceLifecycleTest extends CorePluginTestSetup {
     @Test void unqualifiedControlledSourceIsRejectedBeforeTransfer()throws Exception {
         var f=load(true);var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
         var source=(IeeeVcEConstMachine)n.getMachine("Bus1-mach1");
-        var governor=new org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor("test-governor","Test governor","Test");
+        var governor=new org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor("test-governor","Test governor","Test");
         governor.setMachine(source);governor.setStatus(true);
         assertFalse(source.supportsInitialOperatingPointBalance());
         assertThrows(IllegalStateException.class,source::reconcileInitialOperatingPointBalance);

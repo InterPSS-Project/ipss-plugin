@@ -123,6 +123,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CDC6T
 
+- Retain the [governed classical-source and internal network-boundary contract](dynamic-models/cdc6t-runtime-plan.md#governed-classical-sources-and-internal-network-boundaries): settled TGOV1 initialization, final compiled bindings, shared staggered states and rollback-safe classical acceleration sampling. Preserve independent both-method source/governor gates; resolve remaining power-recovery and converter-state trajectory errors before generalizing source controls or enabling automatic attachment.
+
 - Retain [initial source balance and long-run terminal qualification](dynamic-models/cdc6t-runtime-plan.md#initial-source-balance-and-ten-second-terminal-qualification): settle startup control transfers before reconciling qualified fixed-emf source power, then apply physical initial actions without rebasing sources. Preserve both-method complete terminal/PQ gates, independent source-power and angle-precision diagnostics, and explicit rejection of unqualified source controls. Extend source families and active-controller preparation, strict state trajectories and remaining protection variants before automatic attachment.
 
 - Retain [transactional local-event derivatives and interval qualification](dynamic-models/cdc6t-runtime-plan.md#converged-local-event-derivatives-and-interval-qualification), separate event observations and two-step history, complete both-method terminal gates and staggered state gates from half-step through quarter-cycle intervals. Preserve the independently checked modified-Euler event formula; extend duration and protection coverage and resolve remaining state/electrical-boundary differences before full qualification.

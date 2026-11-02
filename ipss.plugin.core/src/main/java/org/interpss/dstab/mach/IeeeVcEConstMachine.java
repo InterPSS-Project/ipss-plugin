@@ -11,9 +11,11 @@ public final class IeeeVcEConstMachine extends EConstMachineImpl
     private IeeeVcData ieeeVcData;
     @Override public boolean supportsDeferredCurrentPublication(){return true;}
 
-    /** This fixed-emf preparation is qualified without attached active controls. */
+    /** Fixed-emf preparation supports governors declaring the explicit initial
+     * shaft-power contract; other active control types remain unqualified. */
     public boolean supportsInitialOperatingPointBalance() {
-        return (getGovernor() == null || !getGovernor().isActive())
+        return (getGovernor() == null || !getGovernor().isActive()
+                    || getGovernor() instanceof org.interpss.dstab.control.util.InitialMechanicalPowerPreparation)
                 && (getExciter() == null || !getExciter().isActive())
                 && (getStabilizer() == null || !getStabilizer().isActive());
     }
@@ -26,6 +28,10 @@ public final class IeeeVcEConstMachine extends EConstMachineImpl
         getIgen(); // Publish electrical air-gap power using the final initial voltage.
         if (!Double.isFinite(getPe()))throw new IllegalStateException("Nonfinite initial electrical power");
         setPm(getPe());
+        if (getGovernor() != null && getGovernor().isActive()
+                && !((org.interpss.dstab.control.util.InitialMechanicalPowerPreparation)getGovernor())
+                    .initializeMechanicalOperatingPoint(getDStabBus(), this))
+            throw new IllegalStateException("Could not initialize governor from settled initial shaft power");
     }
 
     @Override

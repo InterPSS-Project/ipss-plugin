@@ -1674,3 +1674,72 @@ Complete comparisons, uncorrected controls, temporary diagnostic rebase,
 failed-check logs, final reports, source snapshots and integrity manifest:
 `verification-artifacts/cdc6t-initial-balance-20261102/validation.zip`, SHA-256
 `ca119ac9971abc467b34993041ebe163f87b2bb5ccd10ef53ec39068339ef91a`.
+
+## Governed classical sources and internal network boundaries
+
+Classical sources with TGOV1 now participate in CDC6T initial operating-point
+preparation through `InitialMechanicalPowerPreparation`. After the startup
+control transfer settles electrically, shaft power is balanced and the governor
+uses its existing initialization equations to reset its reference and storage.
+This happens before physical initial actions. Running actions cannot rebase
+shaft power. Other active source-control families remain unqualified.
+
+Modified-Euler controller compilation now follows this final preparation, so
+compiled bindings refer to the final governor blocks. The qualified classical
+TGOV1 owner uses the existing optimized graph. Staggered integration binds those
+same machine and governor states to its existing numerical lifecycle. Neither
+path introduces a second set of governor equations. Compiled and generic
+modified-Euler source trajectories agree within 1e-12 throughout the checks.
+
+An internal converter action exposed a missing machine-input boundary. The
+converter retained its left derivative, but classical machines immediately used
+the changed electrical power. The core now provides a provisional notification
+after a converged action changes injections, while bus voltage still represents
+the left boundary. Staggered integration samples classical mechanical rates
+using the machine's existing zero-time equations, restores scratch derivatives
+and electrical power, and retains the sample only after the whole solve succeeds.
+The next interval averages the left and right rates without replacing the
+separate two-step history. Only exact qualified classical machine classes use
+this behavior; controller/electrical-state event rules are unchanged.
+
+The notification runs only on changed action passes. Reusable arrays are bound
+once; ordinary network iterations do no additional derivative evaluation.
+Multiple changes retain the first left boundary. External event averaging takes
+precedence, and failed solves discard provisional samples. Tests cover callback
+ordering, unchanged actions, the shared iteration budget, callback failure,
+unchanged machine/governor storage and discarded pending history.
+
+Paired independent moderate-fault captures use finite-inertia classical sources
+with active TGOV1 governors. Both current and inverter-power control run for two
+seconds at 0.5 ms and quarter-cycle intervals. Comparisons retain all raw rows,
+event-side duplicates and clock overshoot, with no angle offsets or time shifts.
+
+| Grid and control | Modified-Euler peak source-angle error, degrees | Staggered before boundary fix, degrees | Staggered after fix, degrees |
+| --- | ---: | ---: | ---: |
+| 0.5 ms, current | 0.001531 | 0.035521 | 0.001451 |
+| 0.5 ms, inverter power | 0.006592 | 0.024967 | 0.006656 |
+| Quarter cycle, current | 0.010970 | 0.283408 | 0.005737 |
+| Quarter cycle, inverter power | 0.063964 | 0.203980 | 0.067451 |
+
+At the first quarter-cycle endpoint after internal blocking, the current-control
+source-speed discrepancy drops from about 1.97e-5 to 7.33e-9 pu. Worst speed
+error over that complete profile drops from 3.58e-5 to 9.22e-7 pu. The remaining
+power-control discrepancy develops later during recovery and is visible under
+both methods; full CDC6T state and trajectory acceptance remains open. The
+per-channel regression bounds in `Cdc6tGovernedSourceTest` preserve that
+distinction rather than imply the strict full-model accuracy target is met.
+
+Private paired captures: `verification-artifacts/cdc6t-governed-20261102/captures.zip`,
+SHA-256 `d23ec47224466c084a37cb8ba9ceead9d22656f7f789e277a35cf030096ad9c1`.
+
+Validation: 491 scoped plugin/model tests and 16 core network-lifecycle tests
+pass with no failures, errors or skips. The matrix includes both integration
+methods, compiled/generic governor parity, initial physical-action separation,
+CDC6T protected/control variants and adjacent controller/HVDC checks. Full
+repository and large-system suites were not rerun. The required core hook is
+committed as `44ca49d85`.
+
+Complete comparisons, before-change controls, failure and final logs, scoped
+reports, source snapshots and an integrity manifest are retained in
+`verification-artifacts/cdc6t-governed-20261102/validation.zip`, SHA-256
+`e0abe94f2ed527116a5b20f02951d062a3e261893ce048cd1f292049363012a7`.

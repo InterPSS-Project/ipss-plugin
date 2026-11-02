@@ -55,7 +55,11 @@ final class ModifiedEulerControllerPreparation {
                     .allMatch(c->c==null||(c.eAdapters().isEmpty()&&BusFrequencySelection.isAuditedController(c)
                         &&(!(c instanceof AbstractAnnotateController graph)||standard.test(graph))))
                 && (machine.getClass()==org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
-                    ||machine.getClass()==org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class);
+                    ||machine.getClass()==org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class
+                    ||machine.getClass()==org.interpss.dstab.mach.IeeeVcEConstMachine.class
+                        &&machine.getExciter()==null&&machine.getStabilizer()==null
+                        &&machine.getGovernor()!=null&&machine.getGovernor().getClass()
+                            ==org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor.class);
             // Include inactive attachments, which may become active after initialization.
             for(var candidate:Arrays.asList(machine.getExciter(),machine.getStabilizer(),machine.getGovernor())) {
                 if(candidate==null||!seen.add(candidate))continue;

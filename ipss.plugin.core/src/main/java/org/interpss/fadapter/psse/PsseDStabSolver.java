@@ -256,14 +256,10 @@ public class PsseDStabSolver extends DStabSolverImpl {
                     integrationStepInputs.add(new StepInput(device, bus, input));
             }
         selectFrequencyMeasurements();
-        if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
-                &&dstabAlgo.getSimuMethod()==com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)
-            controllerPreparationReport=controllerPreparation.prepare(dstabAlgo);
-
         // Do not overwrite a hybrid-simulation current source supplied by a caller.
         Hashtable<String, Complex> existing = network.getCustomBusCurrInjHashtable();
         Object previous = network.getExtraInfo().get(COMPENSATION_KEY);
-        if (existing != null && existing != previous) return acceptInitialPlantEndpoints(network);
+        if (existing != null && existing != previous) return finishInitialPreparation(network);
 
         Hashtable<String, Complex> compensation = new Hashtable<>();
         Complex[] voltage = new Complex[network.getNoBus()];
@@ -285,7 +281,17 @@ public class PsseDStabSolver extends DStabSolverImpl {
         }
         network.setCustomBusCurrInjHashtable(compensation);
         network.getExtraInfo().put(COMPENSATION_KEY, compensation);
-        return acceptInitialPlantEndpoints(network);
+        return finishInitialPreparation(network);
+    }
+
+    private boolean finishInitialPreparation(BaseDStabNetwork<?, ?> network) {
+        if (!acceptInitialPlantEndpoints(network)) return false;
+        // Startup control transfers can reinitialize controller blocks and
+        // references. Bind optimized execution only to their final storage.
+        if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
+                &&dstabAlgo.getSimuMethod()==com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)
+            controllerPreparationReport=controllerPreparation.prepare(dstabAlgo);
+        return true;
     }
 
     /** The solved initial network is an accepted endpoint. Start discrete plant

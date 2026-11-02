@@ -22,6 +22,8 @@ def main():
     parser.add_argument('--step', type=float, default=.0005)
     parser.add_argument('--duration', type=float, default=.5)
     parser.add_argument('--machine-diagnostics', action='store_true')
+    parser.add_argument('--source-governor', choices=['none', 'tgov1'], default='none')
+    parser.add_argument('--source-inertia', type=float, default=99999.)
     parser.add_argument('--static-gamma', type=float)
     parser.add_argument('--static-alpha-min', type=float, default=15.)
     parser.add_argument('--dynamic-gamma', type=float, default=20.)
@@ -46,6 +48,8 @@ def main():
         parser.error('Network step must be between 0.1 and 5 ms')
     if not math.isfinite(args.duration) or not .5 <= args.duration <= 10:
         parser.error('Duration must be between 0.5 and 10 seconds')
+    if not math.isfinite(args.source_inertia) or not .1 <= args.source_inertia <= 99999:
+        parser.error('Source inertia must be finite and between 0.1 and 99999 seconds')
     if not math.isfinite(args.scheduled_kv) or args.scheduled_kv<=0:
         parser.error('Scheduled DC voltage must be finite and positive')
     if not math.isfinite(args.current_margin) or not 0 <= args.current_margin < 1:
@@ -160,8 +164,10 @@ def main():
     constants[14] = args.minimum_current
     if constants[14] >= constants[16]:
         parser.error('Minimum current must be below the first current-limit ordinate')
-    (out / 'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))
-                                    + "'1' 'CDC6T' " + ' '.join(map(str, constants)) + ' /\n')
+    source_records = ''.join(f"{bus} 'GENCLS' '1' {args.source_inertia:g} 0 /\n" for bus in range(1, 5))
+    if args.source_governor == 'tgov1':
+        source_records += ''.join(f"{bus} 'TGOV1' '1' .05 .1 1.5 0 .2 .5 0 /\n" for bus in range(1, 5))
+    (out / 'dynamic.dyr').write_text(source_records + "'1' 'CDC6T' " + ' '.join(map(str, constants)) + ' /\n')
     for name in ['cdc6t_reference_probe.py', 'tgov1_limit_probe.py']:
         shutil.copy2(root / 'tools' / name, out / name)
     import psse3607
@@ -206,6 +212,13 @@ def main():
         for bus in range(1, 5):
             for code, name in [(1, 'ANGLE'), (7, 'SPEED'), (2, 'PELEC'), (6, 'PMECH')]:
                 checked('machine channel', psspy.machine_array_channel([-1, code, bus], '1', f'M{bus}_{name}'))
+    if args.source_governor != 'none':
+        for bus in range(1, 5):
+            first = checked('governor state index', psspy.mdlind(bus, '1', 'GOV', 'STATE'))
+            count = checked('governor state count', psspy.mdlind(bus, '1', 'GOV', 'NSTATE'))
+            assert count == 2
+            for index in range(count):
+                checked('governor state channel', psspy.state_channel([-1, first+index], f'M{bus}_GOV_STATE{index}'))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
     checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))

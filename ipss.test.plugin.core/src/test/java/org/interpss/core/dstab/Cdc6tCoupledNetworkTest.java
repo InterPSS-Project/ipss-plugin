@@ -69,13 +69,21 @@ public class Cdc6tCoupledNetworkTest extends CorePluginTestSetup {
     }
     private static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
             Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters,Double modeThresholdKv,boolean dcTapControl) throws Exception {
+        return load(folder,lines,mode,setpoint,limit,protection,minimumCurrent,parameters,modeThresholdKv,dcTapControl,
+                "1 'GENCLS' '1' 99999 0 /\n2 'GENCLS' '1' 99999 0 /\n3 'GENCLS' '1' 99999 0 /\n4 'GENCLS' '1' 99999 0 /\n");
+    }
+    static Fixture loadWithSourceModels(Path folder,java.util.List<String> lines,Cdc6tParameters parameters,String sourceModels)throws Exception {
+        return load(folder,lines,Cdc6tCurrentOrder.Mode.POWER,-500,null,null,0,parameters,null,false,sourceModels);
+    }
+    private static Fixture load(Path folder,java.util.List<String> lines,Cdc6tCurrentOrder.Mode mode,double setpoint,
+            Cdc6tVoltageCurrentLimit limit,Cdc6tProtectionCoordinator protection,double minimumCurrent,Cdc6tParameters parameters,Double modeThresholdKv,boolean dcTapControl,String sourceModels) throws Exception {
         for(int n=3;n<lines.size();n++) {
             if(lines.get(n).strip().startsWith("0 /"))break;
             String[] fields=lines.get(n).split(",",-1);
             if(Integer.parseInt(fields[0].strip())==8){fields[3]="4";lines.set(n,String.join(",",fields));}
         }
         Files.write(folder.resolve("network.raw"),lines);
-        Files.writeString(folder.resolve("dynamic.dyr"),"1 'GENCLS' '1' 99999 0 /\n2 'GENCLS' '1' 99999 0 /\n3 'GENCLS' '1' 99999 0 /\n4 'GENCLS' '1' 99999 0 /\n");
+        Files.writeString(folder.resolve("dynamic.dyr"),sourceModels);
         var context=new PSSEMultiFileLoader().loadDStab(folder.resolve("network.raw").toString(),folder.resolve("dynamic.dyr").toString());
         var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         var staticLink=(com.interpss.core.aclf.hvdc.HvdcLine2TLCC<?>)net.getSpecialBranchList().get(0);

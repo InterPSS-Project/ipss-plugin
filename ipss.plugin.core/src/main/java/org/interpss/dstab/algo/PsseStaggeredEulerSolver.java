@@ -31,6 +31,7 @@ import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.mach.IeeeVcEConstMachine;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
@@ -65,7 +66,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * The latter behavior is verified by independent reference fault and VREF steps.
  * Non-windup projection clears outward history at a bound.</p>
  *
- * <p>Supported machines: GENROU, GENSAL and uncontrolled GENCLS. Supported
+ * <p>Supported machines: GENROU, GENSAL and GENCLS (uncontrolled or with TGOV1). Supported
  * controllers: IEEET1, EXST1/ESST1A, ESST4B, PSS2A, IEEEST, GAST, TGOV1, IEESGO,
  * IEEEG1, GGOV1, HYGOV, EXAC1, EXAC2, ESAC1A, ESAC6A, ESDC1A, ESDC2A,
  * EXPIC1 and SCRX. REGCA1/REECA1 bundles use their two-step path.
@@ -196,6 +197,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private boolean st4EndpointReuseEnabled = true;
     private double[] start;
     private double[] derivative;
+    private final List<Integer> classicalMechanicalOffsets = new ArrayList<>();
+    private final List<MachineImpl> classicalMachines = new ArrayList<>();
+    private double[] trialMechanicalLeft = new double[0], acceptedMechanicalLeft = new double[0];
+    private boolean trialMechanicalBoundary, acceptedMechanicalBoundary;
     private final List<Participant> participants = new ArrayList<>();
     private final java.util.IdentityHashMap<Object, Participant> participantByController = new java.util.IdentityHashMap<>();
     private final List<Renewable> renewables = new ArrayList<>();
@@ -405,6 +410,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); busParticipants.clear(); extendedStack=false;
         upstreamPlants.clear();upstreamAuxiliaries.clear();upstreamOwners.clear();
         previous = null; wasActive = null; inputDiscontinuity = false;
+        classicalMechanicalOffsets.clear(); classicalMachines.clear();
+        trialMechanicalBoundary = acceptedMechanicalBoundary = false;
         participantEndpointTime = 0;
         networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
@@ -442,18 +449,49 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
 
     @Override public boolean networkSolutionStep() throws DStabSimuException {
         networkEndpointAvailable = false;
-        if (!super.networkSolutionStep())
-            throw new DStabSimuException("Network did not converge to " + converge_tol
-                    + " at " + dstabAlgo.getSimuTime());
-        // Injection evaluation precedes the linear solve. The selected boundary
-        // must remain the same for ordinary solves, events and endpoint reuse.
-        // Refreshing here changes controller inputs and electrical derivatives;
-        // it is not interchangeable with retaining the last injection boundary.
-        if (machineMeasurementStage == MachineMeasurementStage.ACCEPTED_VOLTAGE)
-            for (int i = 0; i < machines.size(); i++)
-                if (machineActive.get(i).getAsBoolean()) machines.get(i).getIxy();
-        networkEndpointAvailable = true;
-        return true;
+        trialMechanicalBoundary = false;
+        try {
+            if (!super.networkSolutionStep())
+                throw new DStabSimuException("Network did not converge to " + converge_tol
+                        + " at " + dstabAlgo.getSimuTime());
+            // Injection evaluation precedes the linear solve. The selected boundary
+            // must remain the same for ordinary solves, events and endpoint reuse.
+            // Refreshing here changes controller inputs and electrical derivatives;
+            // it is not interchangeable with retaining the last injection boundary.
+            if (machineMeasurementStage == MachineMeasurementStage.ACCEPTED_VOLTAGE)
+                for (int i = 0; i < machines.size(); i++)
+                    if (machineActive.get(i).getAsBoolean()) machines.get(i).getIxy();
+            networkEndpointAvailable = true;
+            if (trialMechanicalBoundary && !acceptedMechanicalBoundary) {
+                System.arraycopy(trialMechanicalLeft,0,acceptedMechanicalLeft,0,trialMechanicalLeft.length);
+                acceptedMechanicalBoundary = true;
+            }
+            return true;
+        } finally { trialMechanicalBoundary = false; }
+    }
+
+    @Override protected void afterConvergedNetworkAction() throws DStabSimuException {
+        if (previous == null || trialMechanicalBoundary || acceptedMechanicalBoundary
+                || eventBoundaryThisStep && "INITIAL".equals(networkSolutionStage)) return;
+        // Only the qualified classical mechanical coordinates are sampled.
+        // Electrical power uses the still-converged left voltage. Zero-time
+        // mechanical evaluation reuses the machine equations, then restores
+        // their scratch derivatives; no governor or controller is advanced.
+        for (int i=0;i<classicalMachines.size();i++) {
+            var m=classicalMachines.get(i);
+            int offset=classicalMechanicalOffsets.get(i);
+            if (!states.get(offset).active.getAsBoolean()) continue;
+            var saved=m.captureMechanicalIntegrationState();
+            double pe=m.getPe();
+            try {
+                ((EConstMachineImpl)m).getIgen();
+                m.nextStepMechanical(0,DynamicSimuMethod.MODIFIED_EULER,dstabAlgo.getNetwork(),0);
+                var left=m.captureMechanicalIntegrationState();
+                trialMechanicalLeft[2*i]=left.speedDerivative();
+                trialMechanicalLeft[2*i+1]=left.angleDerivative();
+            } finally { m.setPe(pe);m.restoreMechanicalIntegrationState(saved); }
+        }
+        trialMechanicalBoundary = !classicalMachines.isEmpty();
     }
 
     private static void validateController(Object c) {
@@ -515,8 +553,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 validateController(m.getExciter());
                 validateController(m.getGovernor());
                 validateController(m.getStabilizer());
-                if (m instanceof EConstMachineImpl && (m.hasExciter() || m.hasGovernor() || m.hasStabilizer()))
-                    throw new IllegalArgumentException("GENCLS controllers are not supported by this solver");
+                if (m instanceof EConstMachineImpl && (m.getExciter()!=null || m.getStabilizer()!=null
+                        || m.getGovernor()!=null && (!(m instanceof org.interpss.dstab.mach.IeeeVcEConstMachine)
+                            || !(m.getGovernor() instanceof PsseTGov1SteamTurGovernor))))
+                    throw new IllegalArgumentException("Classical-machine controls require the qualified TGOV1 source path");
             }
         }
         for (var branch : dstabAlgo.getNetwork().getBranchList())
@@ -827,6 +867,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                         && m.getExciter()==exciter && m.getGovernor()==governor && m.getStabilizer()==stabilizer);
                 ownerActive = () -> bus.isActive() && gen.isActive() && m.isActive();
                 machineActive.add(ownerActive);
+                if (m.getClass()==EConstMachineImpl.class || m.getClass()==IeeeVcEConstMachine.class) {
+                    classicalMachines.add(m);classicalMechanicalOffsets.add(states.size());
+                }
                 state(m::getSpeed,m::setSpeed,()->m.captureMechanicalIntegrationState().speedDerivative());
                 state(m::getAngle,m::setAngle,()->m.captureMechanicalIntegrationState().angleDerivative());
                 if (m instanceof RoundRotorMachineImpl r) {
@@ -847,6 +890,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         previous=new double[states.size()];
         wasActive=new boolean[states.size()];
         start=new double[states.size()]; derivative=new double[states.size()];
+        trialMechanicalLeft=new double[2*classicalMachines.size()];
+        acceptedMechanicalLeft=new double[trialMechanicalLeft.length];
     }
 
     @Override
@@ -1048,6 +1093,14 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             wasActive[i]=active;
             if (discontinuity) derivative[i]=.5*(derivative[i]+previous[i]);
         }
+        if (acceptedMechanicalBoundary && !discontinuity)
+            for (int i=0;i<classicalMachines.size();i++) {
+                int offset=classicalMechanicalOffsets.get(i);
+                if (!wasActive[offset]) continue;
+                derivative[offset]=.5*(derivative[offset]+acceptedMechanicalLeft[2*i]);
+                derivative[offset+1]=.5*(derivative[offset+1]+acceptedMechanicalLeft[2*i+1]);
+            }
+        acceptedMechanicalBoundary=false;
         for (var p:participants) {
             p.model.readStaggeredState(p.values,0);
             boolean active=p.active.getAsBoolean();
