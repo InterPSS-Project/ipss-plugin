@@ -104,3 +104,56 @@ qualification and does not change the production or acceptance settings.
 No complete-run speedup is claimed. Warm restoration, other initial-action
 interactions, parameter validation, and the composite's separate internal
 network/static-load discrepancy remain outside this qualification.
+
+## Localizing the remaining startup thermal errors
+
+After the machine event-history correction, the no-initial-shedding controls
+retain two failing coupled staggered temperature gates at the 0.5 ms interval.
+The maximum errors are 3.183542e-6 pu with the frequency filter and 3.165888e-6 pu
+with its bypass, against the unchanged 3e-6 pu limit. Both motor groups have the
+same error. These are incomplete trajectory qualifications, not new thermal
+model acceptance.
+
+The regression now completes both integration intervals even if the coarse
+comparison fails. It retains the declared method gates before evaluating the
+boundary and state assertions, reports both temperature coordinates, and keeps
+all startup samples and event-side duplicates. Modified-Euler criteria and
+paired refinement checks remain unchanged.
+
+An independent thermal reconstruction uses the entered resistance and thermal
+time constant, the solved initial temperature, accepted heating-current squared,
+and the staggered two-step equation. Fresh left and right event rates remain
+separate from older integration history. The reconstruction reproduces the
+coupled implementation temperatures to the 2e-13 pu equation-residual gate.
+It introduces no production allocations, equation changes or precision changes.
+Retained negative controls reject both substituting older integration history
+for the fresh left rate and omitting event-rate averaging. The smallest error
+among those deliberately incorrect reconstructions is 1.920835e-6 pu; the
+correct reconstruction has zero residual across the retained profiles.
+
+A second reconstruction substitutes the independently recorded heating currents
+while retaining the same entered coefficients and solved initial temperature.
+It explicitly applies the recorded complete-trip projection; the test separately
+requires agreement of the coupled trip sample and side, so projection cannot
+conceal a trip-timing mismatch. This is input localization, not a replacement
+for a complete coupled comparison.
+
+| Frequency input | Interval | Coupled temperature maximum error | Recorded-current reconstruction maximum error |
+|---|---:|---:|---:|
+| Filtered | 0.5 ms | 3.183542e-6 pu | 4.516389e-7 pu |
+| Bypass | 0.5 ms | 3.165888e-6 pu | 3.369259e-7 pu |
+| Filtered | 0.25 ms | 1.563264e-6 pu | 1.040704e-6 pu |
+| Bypass | 0.25 ms | 2.005494e-6 pu | 9.023780e-7 pu |
+
+The prescribed-current residual is not monotonic with the interval; reference
+observation and integration behavior remain part of that diagnostic. Its gates
+are 4.6e-7 pu at 0.5 ms and 1.1e-6 pu at 0.25 ms. Neither changes the coupled
+temperature gate. The complete finer-step runs pass that original gate.
+
+Separate retained controls at network tolerances 1e-4, 1e-6 and 1e-8 show that
+tightening the network solve does not remove the coarse temperature discrepancy.
+At 1e-8, the filtered and bypass maxima remain 3.194262e-6 and 3.172278e-6 pu.
+The evidence localizes the dominant coarse discrepancy to the coupled heating
+inputs rather than an incorrect thermal recurrence. Resolve those upstream
+electrical/frequency inputs without fitting thermal parameters or changing the
+acceptance limit. Full compressor and composite-model qualification remain open.

@@ -18,6 +18,7 @@ import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.test.TestConfig;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
@@ -207,11 +208,12 @@ public class CompressorStartupFrequencyTest {
         var report = Acmtblu1SharedSmibTest.runReference(name, ref, shared, out, false, new Acmtblu1SharedSmibTest.RunSettings(2, shared, 1e-4, true));
         var boundary = (Map<?, ?>) report.get("boundary_errors"); var states = (Map<?, ?>) report.get("state_errors");
         var limits = new LinkedHashMap<String, Double>(); var stateLimits = new LinkedHashMap<String, Double>();
+        var checks = new ArrayList<Executable>();
         for (String key : List.of("V1", "V2", "V3", "P_PU", "Q_PU", "ANGLE_DEG", "SPEED")) {
             String norm = key.equals("ANGLE_DEG") || key.equals("SPEED") ? "rmse" : "range_normalized_rmse";
             double bound = shared ? (key.equals("ANGLE_DEG") ? 2e-4 : key.equals("SPEED") ? 2e-7 : key.equals("P_PU") ? 4e-5 : key.equals("Q_PU") ? 3e-6 : 2e-6)
                     : ref.h() / .0005 * (key.equals("ANGLE_DEG") ? .01 : key.equals("SPEED") ? 5e-6 : key.startsWith("V") ? 1e-4 : 1e-3);
-            assertTrue(((Number) ((Map<?, ?>) boundary.get(key)).get(norm)).doubleValue() <= bound, key + ": " + boundary.get(key));
+            checks.add(() -> assertTrue(((Number) ((Map<?, ?>) boundary.get(key)).get(norm)).doubleValue() <= bound, key + ": " + boundary.get(key)));
             limits.put(key + "_" + norm, bound);
         }
         var actual = rows(Files.readString(out.resolve("actual.csv")));
@@ -222,7 +224,7 @@ public class CompressorStartupFrequencyTest {
             for (String key : List.of("TemperatureA", "TemperatureB", "Fmeas", "FrequencyOutput", "ThermalFractionA", "ThermalFractionB", "UvTimer1", "UvTimer2", "StallTimer", "StallTimerB", "RestartTimer")) {
                 if (FILTERS.get(name) == 0 && (key.equals("Fmeas") || key.equals("FrequencyOutput"))) continue;
                 double bound = key.startsWith("Temperature") ? 3e-6 : key.contains("Timer") ? 2e-8 : key.startsWith("Thermal") ? 5e-5 : 5e-6;
-                assertTrue(((Number) ((Map<?, ?>) states.get(key)).get("maximum_absolute")).doubleValue() <= bound, key + ": " + states.get(key));
+                checks.add(() -> assertTrue(((Number) ((Map<?, ?>) states.get(key)).get("maximum_absolute")).doubleValue() <= bound, key + ": " + states.get(key)));
                 stateLimits.put(key, bound);
             }
             for (int i = 0; i < actual.size(); i++) for (int g = 0; g < 2; g++)
@@ -231,6 +233,7 @@ public class CompressorStartupFrequencyTest {
         if (FILTERS.get(name) == 0) explainBypassInputs(ref, actual, out);
         var gate = Map.of("trajectory_limits", limits, "state_maximum_limits", stateLimits, "clock_policy", "phase sampling only at positive physical endpoints; all other coordinates integrate during startup", "frequency_state_parity_required", shared && FILTERS.get(name) > 0, "complete_model_parity", false);
         try (var w = BenchmarkOutputGuard.newWriter(out.resolve("method-gate.json"), 100000)) { new GsonBuilder().setPrettyPrinting().create().toJson(gate, w); }
+        assertAll(name + " " + (shared ? "staggered" : "modified-euler"), checks);
         return report;
     }
     static Stream<Arguments> coupledMethods() {
@@ -266,12 +269,106 @@ public class CompressorStartupFrequencyTest {
     }
     @ParameterizedTest @MethodSource("coupledMethods")
     void bothSolversDeliverPhysicalTimeThroughFullImportedStartup(String name, boolean shared) throws Exception {
-        var coarse = coupled(name + "-h0.0005", shared); var fine = coupled(name + "-h0.00025", shared);
+        var reports = new ArrayList<Map<String, Object>>();
+        // A failing coarse gate must not suppress the independent refinement run.
+        assertAll("Both complete integration intervals",
+                () -> reports.add(coupled(name + "-h0.0005", shared)),
+                () -> reports.add(coupled(name + "-h0.00025", shared)));
+        var coarse = reports.get(0); var fine = reports.get(1);
         if (!shared) for (String key : List.of("V1", "V2", "V3", "P_PU", "Q_PU", "ANGLE_DEG", "SPEED")) {
             double a = ((Number) ((Map<?, ?>) ((Map<?, ?>) coarse.get("boundary_errors")).get(key)).get("rmse")).doubleValue();
             double b = ((Number) ((Map<?, ?>) ((Map<?, ?>) fine.get("boundary_errors")).get(key)).get("rmse")).doubleValue();
             double noise = key.equals("ANGLE_DEG") ? 2e-5 : key.equals("SPEED") ? 2e-8 : 2e-7;
             assertTrue(b <= .75 * a + noise, "Step refinement must reduce " + key + " error: coarse=" + a + ", fine=" + b);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"none-h0.0005", "none-h0.00025", "none-bypass-h0.0005", "none-bypass-h0.00025"})
+    void heatingCurrentReplaySeparatesThermalIntegrationFromCoupledInputError(String name) throws Exception {
+        var ref = REFERENCES.get(name); var m = motor(ref);
+        Path out = Files.createTempDirectory(Path.of("target"), "compressor-startup-heating-");
+        Acmtblu1SharedSmibTest.runReference(name, ref, true, out, false,
+                new Acmtblu1SharedSmibTest.RunSettings(2, true, 1e-4, true));
+        var actual = rows(Files.readString(out.resolve("actual.csv")));
+        assertEquals(ref.rows().size(), actual.size());
+        var output = new ArrayList<Map<String, Double>>();
+        var errors = new LinkedHashMap<String, Object>();
+        var checks = new ArrayList<Executable>();
+        for (int group = 0; group < 2; group++) {
+            String suffix = group == 0 ? "A" : "B", temperature = "Temperature" + suffix;
+            String fraction = "ThermalFraction" + suffix, sourceFraction = group == 0 ? "VAR14" : "VAR18";
+            String sourceTemperature = "STATE" + (group + 2), sourceCurrent = "VAR" + (group + 19);
+            // Both reconstructions start at the solved implementation state, with entered
+            // coefficients. No source-state offset or coefficient fitting is permitted.
+            double[] x = {actual.getFirst().get(temperature), actual.getFirst().get(temperature)};
+            double[] olderRate = new double[2], leftRate = new double[2];
+            var equation = new Error(); var recordedInput = new Error();
+            var currentContribution = new Error(); var coupledError = new Error();
+            int eventSides = 0, startupRows = 0;
+            for (int j = 0; j < actual.size(); j++) {
+                var a = actual.get(j); var s = ref.rows().get(j); double time = s.get("time_s");
+                boolean active = a.get(fraction) != 0, sourceActive = s.get(sourceFraction) != 0;
+                // Projection is an explicit prescribed-input diagnostic. Confirm that it
+                // does not hide a disagreement in the actual complete-trip action sample.
+                assertEquals(sourceActive, active, name + " trip side at " + time);
+                if (!active) x[0] = 0;
+                if (!sourceActive) x[1] = 0;
+                equation.add(x[0], a.get(temperature), time);
+                recordedInput.add(x[1], s.get(sourceTemperature), time);
+                currentContribution.add(x[0], x[1], time);
+                coupledError.add(a.get(temperature), s.get(sourceTemperature), time);
+                var row = new LinkedHashMap<String, Double>();
+                row.put("source_time_s", time); row.put("group", (double) group);
+                row.put("actual_temperature", a.get(temperature)); row.put("reference_temperature", s.get(sourceTemperature));
+                row.put("actual_heating_squared", a.get("ElectricalHeatingSquared" + suffix));
+                row.put("reference_heating_squared", s.get(sourceCurrent) * s.get(sourceCurrent));
+                row.put("actual_input_recurrence", x[0]); row.put("reference_input_recurrence", x[1]);
+                row.put("equation_residual", x[0] - a.get(temperature));
+                row.put("recorded_input_reference_error", x[1] - s.get(sourceTemperature));
+                row.put("input_current_contribution", x[0] - x[1]);
+                row.put("coupled_reference_error", a.get(temperature) - s.get(sourceTemperature));
+                output.add(row);
+                if (time < 0) startupRows++;
+                if (j + 1 == actual.size()) continue;
+                double[] heat = {a.get("ElectricalHeatingSquared" + suffix), s.get(sourceCurrent) * s.get(sourceCurrent)};
+                double[] rates = new double[2];
+                for (int k = 0; k < 2; k++) rates[k] = active ? (heat[k] * m.getRstall() - x[k]) / m.getTth() : 0;
+                if (time == ref.rows().get(j + 1).get("time_s")) {
+                    System.arraycopy(rates, 0, leftRate, 0, 2); eventSides++; continue;
+                }
+                int grid = (int) Math.round((time + 2 * ref.h()) / ref.h());
+                int nextGrid = (int) Math.round((ref.rows().get(j + 1).get("time_s") + 2 * ref.h()) / ref.h());
+                assertEquals(grid + 1, nextGrid, "No missing integration samples");
+                boolean afterEvent = j > 0 && time == ref.rows().get(j - 1).get("time_s");
+                for (int k = 0; k < 2; k++) {
+                    double rate = afterEvent ? .5 * (rates[k] + leftRate[k]) : rates[k];
+                    x[k] += ref.h() * (1.5 * rate - .5 * olderRate[k]); olderRate[k] = rate;
+                }
+            }
+            assertEquals(2, startupRows); assertEquals(4, eventSides);
+            errors.put(suffix, Map.of("equation_residual", equation.report(), "recorded_input_reference_error", recordedInput.report(),
+                    "input_current_contribution", currentContribution.report(), "coupled_reference_error", coupledError.report()));
+            checks.add(() -> assertTrue(equation.maximum <= 2e-13, "Independent thermal recurrence: " + equation.report()));
+            double inputLimit = ref.h() == .0005 ? 4.6e-7 : 1.1e-6;
+            checks.add(() -> assertTrue(recordedInput.maximum <= inputLimit, "Recorded-current diagnostic: " + recordedInput.report()));
+        }
+        var report = Map.of("profile", name, "status", "input-localization-only-not-coupled-acceptance",
+                "initial_state", "solved implementation state", "coefficients", "entered model values",
+                "thermal_trip_projection", "recorded zero-fraction side; coupled trip sides checked separately",
+                "errors", errors);
+        try (var w = BenchmarkOutputGuard.newWriter(out.resolve("thermal-inputs.json"), 100000)) {
+            new GsonBuilder().setPrettyPrinting().create().toJson(report, w);
+        }
+        var keys = output.getFirst().keySet();
+        try (var w = BenchmarkOutputGuard.newWriter(out.resolve("thermal-inputs.csv"), BenchmarkOutputGuard.estimateCsvBytes(output.size(), keys.size()))) {
+            w.write(String.join(",", keys) + "\n");
+            for (var row : output) {
+                boolean first = true;
+                for (String key : keys) { if (!first) w.write(","); first = false; w.write(row.get(key).toString()); }
+                w.write("\n");
+            }
+        }
+        assertAll(name, checks);
     }
 }
