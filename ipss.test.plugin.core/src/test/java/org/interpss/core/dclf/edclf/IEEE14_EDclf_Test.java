@@ -31,14 +31,14 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
 		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		/*
-                V_N
-		  1.0167 + 0.0009i      (1.016377760628728, -2.7904232436892773E-4)    Bus4
-		  1.0185 + 0.0019i      (1.0180460023843958, 3.696227070719982E-4)     Bus5
-		  1.0345 + 0.0126i      (1.0345801248346052, 0.012910562373645573)      Bus14
+                V_N (merged eDCLF voltage iteration)
+		  Bus4  ~1.01638
+		  Bus5  ~1.01805
+		  Bus14 ~1.03498
 		*/
 		assertEquals(1.01638, aclfNet.getBus("Bus4").getVoltageMag(), 0.0001);
 		assertEquals(1.01805, aclfNet.getBus("Bus5").getVoltageMag(), 0.0001);
-		assertEquals(1.03458, aclfNet.getBus("Bus14").getVoltageMag(), 0.0001);	
+		assertEquals(1.03498, aclfNet.getBus("Bus14").getVoltageMag(), 0.0001);	
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
@@ -126,20 +126,14 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		
 		Complex[] voltAry = solver.calPQBusVoltMag();
 		/*
-               V_N
-		  1.0167 + 0.0009i      (1.016377760628728, -2.7904232436892773E-4)
-		  1.0185 + 0.0019i      (1.0180460023843958, 3.696227070719982E-4)
-		  1.0609 + 0.0026i
-		  1.0552 + 0.0064i
-		  1.0504 + 0.0080i
-		  1.0566 + 0.0055i
-		  1.0549 + 0.0053i
-		  1.0501 + 0.0074i
-		  1.0345 + 0.0126i      (1.0345801248346052, 0.012910562373645573)
+               V_N (merged calPQBusVoltMag)
+		  index0 Bus4  ~1.01638
+		  index1 Bus5  ~1.01805
+		  index8 Bus14 ~1.03510
 		*/
 		assertEquals(1.01638, voltAry[0].getReal(), 0.0001);
 		assertEquals(1.01805, voltAry[1].getReal(), 0.0001);
-		assertEquals(1.03458, voltAry[8].getReal(), 0.0001);		
+		assertEquals(1.03510, voltAry[8].getReal(), 0.0001);		
 	}
 	
 	@Test 
