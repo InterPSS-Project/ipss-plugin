@@ -20,7 +20,8 @@ public final class Cdc6tCurrentOrder {
         finite(recoveryBase);
         if(recoveryBase<=0)throw new IllegalArgumentException("Positive recovery current base required");
     }
-    /** Recovery uses the source current order, or absolute MW divided by scheduled kV.
+    /** Recovery, bypass and temporary current control use the source current order,
+     * or absolute MW divided by scheduled kV.
      * It is independent of solved current, voltage measurements and the metering end. */
     public double recoveryBaseAmperes(){return recoveryBase;}
     /** Unconstrained desired current. Call only in normal operation; do not apply during blocked recovery. */

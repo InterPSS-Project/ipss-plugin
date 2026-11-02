@@ -285,6 +285,7 @@ import org.interpss.core.dstab.Cdc6tConverterBoundaryTest;
 import org.interpss.core.dstab.Cdc6tConductingLinkTest;
 import org.interpss.core.dstab.Cdc6tRecoveryRampTest;
 import org.interpss.core.dstab.Cdc6tRecoveryBaseTest;
+import org.interpss.core.dstab.Cdc6tTransferredModeBaseTest;
 import org.interpss.core.dstab.Cdc6tRectifierProtectionTest;
 import org.interpss.core.dstab.Cdc6tInverterProtectionTest;
 import org.interpss.core.dstab.Cdc6tBypassTest;
@@ -1259,6 +1260,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tConductingLinkTest.class,
     Cdc6tRecoveryRampTest.class,
     Cdc6tRecoveryBaseTest.class,
+    Cdc6tTransferredModeBaseTest.class,
     Cdc6tRectifierProtectionTest.class,
     Cdc6tInverterProtectionTest.class,
     Cdc6tBypassTest.class,

@@ -1208,3 +1208,64 @@ Private paired captures:
 Private complete comparisons, reports, failure diagnostics and source snapshots:
 `verification-artifacts/cdc6t-transfer-recovery-20261101/validation.zip`, SHA-256
 `a79719a398973dccfef7b1425b88d7d42aa85d4f79ace830f00d25969e8a154e`.
+
+## Source-base bypass and temporary current control
+
+Paired independent discriminators now separate the scheduled current from the
+current reached by startup settling. With constant-gamma controls, the latter
+is approximately 907.93 A for inverter-metered power and 909.57 A for
+rectifier-metered power. The reference bypass and temporary-current regimes
+instead use 1,000 A and 1,010 A, respectively: absolute scheduled power divided
+by scheduled voltage. Current-controlled bypass uses the source current order.
+
+The shared runtime now uses the same immutable prepared base for these regimes
+and recovery. Initialization changes measurement states without overwriting that
+base. Temporary current control retains the existing minimum demand, current
+ceiling and converter-limit evaluation. Bypass retains its separate electrical
+rule and sends the delivered current to the measurement derivative. This removes
+one mutable field and adds no per-step allocations, filtering or integration
+changes. Both integration methods execute the same equations.
+
+All five new recorded-input profiles failed the current-derivative assertion
+before the correction. Afterwards, all active samples pass. Bypass terminal
+active-power error is below 0.000000006 pu, firing-angle error below 0.00004
+degrees, and DC voltages match the independent captures. The bypass reactive
+residual reaches 0.00008556 pu in these transferred profiles; its separate
+0.00009 pu envelope does not replace the tighter earlier-profile limits or
+establish exact numerical equivalence. Temporary-current electrical replay has
+power errors below 0.000002 pu and DC-voltage errors below 0.22 V.
+
+Both power-metering ends have complete temporary-current fault trajectory gates
+under both methods, retaining all states, channels and scheduled event sides.
+Maximum bus-voltage error is 0.00005091 pu for modified Euler and 0.00000236 pu
+for staggered integration. Maximum voltage-state error is approximately 184.77 V
+and 2.38 V, respectively; the separate method-specific gates retain this finite-step
+difference. Bypass profiles also complete under both methods and check delivered
+current, accepted clocks and the unchanged network-iteration budget.
+
+Full bypass/recovery accuracy is still incomplete. Complete diagnostic comparisons
+retain a maximum bus-voltage difference of 0.14590 pu around internal transitions;
+maximum voltage-state differences are approximately 3,534 V for modified Euler
+and 26.34 V for staggered integration. These are not accepted trajectory gates.
+Internal-event observation, recovery timing and longer/production-step runs
+remain required. Automatic attachment remains disabled pending full qualification.
+
+The adjacent plugin/model matrix passes 334 tests without failures, errors or
+skips. All 110 preceding retained trajectories are byte-identical. A subsequent
+focused run checks the new per-channel temporary-current trajectory limits.
+The preceding core lifecycle validation remains applicable; no core code changed
+in this slice. Complete repository suites were not rerun.
+
+An initial temporary-current discriminator put its transfer threshold above the
+scheduled initial voltage and failed the reference initialization quality gate.
+It is retained as rejected evidence. The accepted discriminator uses a threshold
+below that initial voltage, activates during the fault and cold-repeats exactly.
+No quality gate was bypassed.
+
+Private paired captures:
+`verification-artifacts/cdc6t-transferred-modes-20261102/captures.zip`, SHA-256
+`2989ff0be244dad9a96b05cda8c275643414f6e738a7ee6ba1a66e20a9fc397d`.
+
+Private complete comparisons, test reports, source snapshots and rejected-profile evidence:
+`verification-artifacts/cdc6t-transferred-modes-20261102/validation.zip`, SHA-256
+`9dd702c22258adf8f742baae309483ab19619f541a2211e2ac0fd8c305134ca9`.

@@ -17,7 +17,6 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
     private double boundaryAmperes;
     private final double[] states=new double[3],boundary=new double[8],currents=new double[4];
     private boolean boundaryReady;
-    private double scheduledAmperes;
 
     /** Takes exclusive ownership of the mutable measurements and link scratch buffers. */
     public Cdc6tNormalRuntime(Cdc6tMeasurements measurements,Cdc6tCurrentOrder command,
@@ -38,7 +37,7 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
     }
     public void initialize(double inverterVolts,double currentAmperes,double rectifierVolts) {
         if(!Double.isFinite(currentAmperes)||currentAmperes<=0)throw new IllegalArgumentException("Positive scheduled current required");
-        measurements.initialize(inverterVolts,currentAmperes,rectifierVolts);scheduledAmperes=currentAmperes;boundaryReady=false;
+        measurements.initialize(inverterVolts,currentAmperes,rectifierVolts);boundaryReady=false;
     }
     public void configureIntegrationStep(double outerStep){measurements.configureIntegrationStep(outerStep);}
     public void sampleCommandMeasurements(){measurements.sampleCommandMeasurements();}
@@ -74,11 +73,11 @@ public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, Inte
             current=0;java.util.Arrays.fill(boundary,0);boundary[2]=Math.PI/2;boundary[5]=Math.PI/2;
             java.util.Arrays.fill(currents,0);
         } else if(mode==OperatingMode.BYPASSED){
-            current=scheduledAmperes;link.evaluateBypassed(vr,current,boundary,0);
+            current=command.recoveryBaseAmperes();link.evaluateBypassed(vr,current,boundary,0);
             injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);currents[2]=0;currents[3]=0;
         } else {
             double desired=mode==OperatingMode.RECOVERING?command.recoveryBaseAmperes()*currentFactor
-                    :mode==OperatingMode.POWER_TO_CURRENT?scheduledAmperes:command.amperes(states[0],states[2],auxiliaryMegawatts);
+                    :mode==OperatingMode.POWER_TO_CURRENT?command.recoveryBaseAmperes():command.amperes(states[0],states[2],auxiliaryMegawatts);
             current=limit.limit(Math.max(minimumCurrentAmperes,desired),states[0]);
             current=link.evaluateCurrent(vr,vi,current,command.inverterVoltage(current,voltageFactor),boundary,0);
             injection(boundary[0],boundary[1],rectifierReal,rectifierImag,vr,currents,0);
