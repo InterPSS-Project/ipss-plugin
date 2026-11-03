@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+The [CHVDC2 coupled line-mode and refinement controls](dynamic-models/chvdc2-named-link.md#coupled-line-mode-and-numerical-refinement-controls)
+separate coarse algebraic-line instability from an event-side electrical-input
+mismatch that persists after refinement. Bypassed measurements do not establish
+coupled parity. Retain the unchanged strict gates, explicit failed-run artifacts
+and late-time reference plateau diagnostic while resolving integration ownership
+and source publication stages. No production precision or equations were changed.
+
 The [shared CHVDC2 published-state accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates)
 expose live bypassed measurements without projecting numerical coordinates or
 advancing history. Independent input-driven checks qualify these observations

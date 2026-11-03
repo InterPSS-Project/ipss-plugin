@@ -673,3 +673,46 @@ the bypass and line-mode controls. `Chvdc2MeasurementReferenceTest` separates th
 four both-method observation checks from the two reference-only line-mode
 discriminators. Full protected/capacitive trajectories and automatic network
 attachment remain open.
+
+## Coupled line-mode and numerical-refinement controls
+
+The coupled comparison now reads line-dynamics flags from each reference manifest
+and exercises the algebraic line as well as the dynamic line with bypassed
+measurements. Recorded inputs do not drive the evolving Java states or terminal
+voltages. Both methods retain all reference samples and event-side duplicates.
+A separate control uses ten numerical steps per recorded interval, solves the AC
+circuit at each stage, and preserves the outer interval for coefficient
+preparation. This is whole-system refinement, not a claim that the reference uses
+the same local clock.
+
+- With line dynamics disabled, coarse single-step staggered integration becomes
+  unstable before the fault and reaches the unsupported reverse-current boundary
+  at about 0.0375 s. Ten steps complete that trajectory under both methods. The
+  failed run remains an error; its partial trace, completed-sample count, stopping
+  time and exception are retained explicitly.
+- Refinement does not remove the algebraic line's event-side mismatch: maximum
+  current difference remains about 65.3 A and voltage difference about 0.0003664
+  pu. Away from event times, the refined current difference still reaches roughly
+  9.4 to 15.8 A. Acceptance includes every event sample. Electrical input and
+  publication stages need investigation separately from numerical stability.
+- With dynamic line current and zero measurement lag, both methods complete the
+  refined runs, but current differences remain about 0.356 A at the coarser
+  interval and 0.481 A at the finer interval. Bypassing the measurement lag does
+  not establish coupled agreement.
+
+A retained equation diagnostic also locates a late-time precision limitation in
+the original fine-interval references. Both fault directions end with unchanged
+measured-current, rectifier PI/angle and line-current coordinates for more than
+0.2 s, despite an interior rectifier PI derivative of approximately 0.07 degrees
+per second. These samples are not equilibria of the continuous equations. A
+binary32 increment using one tenth of the outer interval is absorbed by rounding
+at those stored PI values; an outer-interval increment is representable. This is
+consistent with the earlier precision discriminator, but does not identify the
+complete internal recurrence. Production arithmetic and gates are unchanged.
+
+The existing numerical/history and allocation checks pass. All new coupled
+trajectory checks remain unaccepted. The private
+`chvdc2-coupled-modes-20261102/validation.zip` retains comparisons, the explicitly
+incomplete trajectory, refinement settings, plateau diagnostic and regression
+evidence. Resolve electrical sampling, local integration ownership, protected
+and capacitive trajectories, and automatic attachment before full qualification.
