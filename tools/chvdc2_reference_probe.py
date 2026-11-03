@@ -42,6 +42,8 @@ def main():
     parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited', 'dc-limit', 'ac-limit', 'zero-filters', 'raml', 'commutation'], default='nominal')
     parser.add_argument('--static-gamma', type=float)
     parser.add_argument('--fault-reactance', type=float, default=.2, help='Fault reactance in pu on 230 kV / 100 MVA')
+    parser.add_argument('--network-iterations', type=int, help='Explicit network iteration ceiling, at most 50')
+    parser.add_argument('--commutation-duration', type=float, help='Explicit minimum short duration in seconds')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], default=.0005)
@@ -52,6 +54,10 @@ def main():
         parser.error('Static gamma must be finite and strictly between zero and ninety degrees')
     if not math.isfinite(args.fault_reactance) or args.fault_reactance <= 0:
         parser.error('Fault reactance must be finite and positive')
+    if args.network_iterations is not None and not 1 <= args.network_iterations <= 50:
+        parser.error('Network iteration ceiling must be between one and fifty')
+    if args.commutation_duration is not None and (not math.isfinite(args.commutation_duration) or args.commutation_duration < 0):
+        parser.error('Commutation duration must be finite and nonnegative')
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
     root = Path.cwd()
@@ -66,6 +72,10 @@ def main():
         tag = tag[:-1]+f'gamma{args.static_gamma:g}-'+args.repeat
     if args.fault_reactance != .2:
         tag = tag[:-1]+f'faultx{args.fault_reactance:g}-'+args.repeat
+    if args.network_iterations is not None:
+        tag = tag[:-1]+f'netiter{args.network_iterations}-'+args.repeat
+    if args.commutation_duration is not None:
+        tag = tag[:-1]+f'cfhold{args.commutation_duration:g}-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -115,6 +125,8 @@ def main():
         constants[38:42] = [40., .03, 1.025, .02]
     elif args.controller_profile == 'commutation':
         constants[30:33] = [31.4, 1.025, .035]
+    if args.commutation_duration is not None:
+        constants[32] = args.commutation_duration
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
                                  header+' '.join(map(str, args.flags+constants))+' /\n')
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -155,7 +167,8 @@ def main():
         for code, label in [(1, 'ANGLE'), (2, 'P'), (3, 'Q'), (6, 'PMECH'), (7, 'SPEED')]:
             checked('machine channel', psspy.machine_array_channel([-1, code, bus], '1', f'M{bus}_{label}'))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
-    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, args.step]+[df]*5))
+    checked('step', psspy.dynamics_solution_param_2([di if args.network_iterations is None else args.network_iterations]+[di]*7,
+                                                [df, 1e-6, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(48)]
     checked('before event', psspy.run(0, .05, 1000000, 1, 0))

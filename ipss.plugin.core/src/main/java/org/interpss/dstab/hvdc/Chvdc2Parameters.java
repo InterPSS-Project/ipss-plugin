@@ -69,6 +69,8 @@ public final class Chvdc2Parameters {
     public double[] copySourceConstants() { return constants.clone(); }
     /** Independently owned PI/angle storage; outer measurements, angle-bound logic and attachment remain separate. */
     public Chvdc2CurrentControls prepareCurrentControls() { return new Chvdc2CurrentControls(this); }
+    /** Shared washout state and explicitly committed RAML/commutation histories. */
+    public Chvdc2Protection prepareProtection() { return new Chvdc2Protection(this); }
     /** Independently owned transducers, current-order controls and calculated inverter angle bound. */
     public Chvdc2OrderControls prepareOrderControls(double inverterTransformerRatio,double inverterTap) {
         return new Chvdc2OrderControls(this,inverterTransformerRatio,inverterTap);

@@ -33,6 +33,13 @@ initial independent boundaries and recorded-input rectifier P/Q gates pass.
 Inverter channel publication, protection, local integration and full coupled
 SMIB qualification remain open; no telemetry time shift is applied.
 
+The [accepted CHVDC2 protection and extinction history](dynamic-models/chvdc2-named-link.md#accepted-protection-and-extinction-angle-history)
+adds the shared RAML state, explicit accepted-event sequencing and transactional
+rollback. The valid commutation control qualifies short/release histories under
+both methods. Committed extinction history resolves measured-input inverter
+P/Q through an explicit boundary evaluation order. Strict RAML replay, rejected
+reference regimes and complete coupled attachment remain open.
+
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
 omitted distribution, fully represented transformer/feeder boundaries, and

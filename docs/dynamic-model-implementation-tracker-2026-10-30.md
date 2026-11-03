@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain the [accepted protection and extinction-angle history](dynamic-models/chvdc2-named-link.md#accepted-protection-and-extinction-angle-history), shared RAML coordinate, transactional rollback, explicit acceptance epochs and named event histories. Preserve independently qualified short/release clocks and the committed-angle AC power boundary. Resolve RAML stage timing, protected line/AC coupling, local integration and rejected reference regimes before complete SMIB acceptance.
+
 - Retain the [signed conducting-converter boundary](dynamic-models/chvdc2-named-link.md#signed-conducting-converter-boundary), shared prepared bridge equations, both-method line-coupling/energy checks and independent initial/rectifier-power gates. Resolve inverter publication timing without fitting a delay; complete protection circuits, a joint state owner and coupled SMIB trajectories before qualifying the model.
 
 - Retain the [shared measurement/current-order component](dynamic-models/chvdc2-named-link.md#shared-measurement-and-current-order-component), active AC/DC limit captures, prepared unit/transformer conversions and source-checked zero-time observation semantics. Resolve finite-lag observation-stage and strict replay discrepancies, then complete RAML, commutation-failure histories, local integration ownership and coupled converter/network attachment. Preserve both-method state, limiter and allocation gates; component availability does not establish complete SMIB qualification.

@@ -9,6 +9,7 @@ import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.*;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.dstab.hvdc.LccConverterBoundary;
+import org.interpss.dstab.hvdc.Chvdc2Parameters;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -46,6 +47,40 @@ public class Chvdc2ConverterReferenceTest {
     private static LccConverterBoundary converter(JsonNode equipment,boolean rectifier) {
         return new LccConverterBoundary(rectifier,2,equipment.path("EBASE").asDouble()*1000,equipment.path("TR").asDouble(),
                 equipment.path("TAP").asDouble(),equipment.path("XC").asDouble(),1e8);
+    }
+    @ParameterizedTest @MethodSource("profiles")
+    void acceptedExtinctionHistoryReconstructsEveryInverterPowerSample(String tag)throws Exception {
+        var capture=CAPTURES.get(tag);var manifest=capture.manifest();var inverter=converter(capture.equipment().path("9"),false);
+        var history=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,JSON.convertValue(manifest.path("settings").path("flags"),int[].class),
+                JSON.convertValue(manifest.path("entered_constants"),double[].class)).prepareProtection();
+        List<Map<String,Double>> rows;try(var z=new ZipFile(capture.archive().toFile())){rows=Tiocr1ResetReferenceTest.csv(z.getInputStream(z.getEntry(tag+"/native.csv")).readAllBytes());}
+        var first=rows.getFirst();history.initialize(first.get("V7"),first.get("V9"),first.get("VAR4"),first.get("time_s"));
+        double[] output=new double[3],maximum=new double[2],times=new double[2];int duplicates=0;double previous=Double.NaN;
+        Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-inverter-history-");
+        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),9))) {
+            w.write("time_s,accepted_extinction_deg,published_extinction_deg,P_pu,reference_P_pu,P_error_pu,Q_pu,reference_Q_pu,Q_error_pu\n");
+            for(int n=0;n<rows.size();n++) {
+                var row=rows.get(n);double time=row.get("time_s");if(time==previous)duplicates++;previous=time;
+                double angle=history.acceptedInverterExtinctionDegrees();
+                double electricalVoltage=inverter.maximumDcVoltage(row.get("V9"),row.get("VAR7"),Math.toRadians(angle));
+                inverter.evaluateDcVoltage(row.get("V9"),electricalVoltage,row.get("VAR7"),output,0);
+                w.write(time+","+angle+","+row.get("VAR4"));
+                for(int channel=0;channel<2;channel++) {
+                    double reference=row.get("VAR"+(11+channel))/100,error=output[channel]-reference;
+                    if(Math.abs(error)>maximum[channel]){maximum[channel]=Math.abs(error);times[channel]=time;}
+                    w.write(","+output[channel]+","+reference+","+error);
+                }
+                w.write("\n");history.setInput(row.get("STATE10"),row.get("V9"),row.get("VAR4"));history.acceptBoundary(time,n);
+                assertEquals(row.get("VAR4"),history.acceptedInverterExtinctionDegrees());
+            }
+        }
+        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),20000)){
+            JSON.writerWithDefaultPrettyPrinter().writeValue(w,Map.of("profile",tag,"samples",rows.size(),"event_duplicates",duplicates,
+                    "maximum_absolute_power_errors_pu",maximum,"maximum_error_time_s",times,"power_limit_pu",1e-5,
+                    "contract","inverter AC power uses accepted extinction history before accepting the refreshed boundary","full_coupled_acceptance_is_separate",true));
+        }
+        assertEquals(manifest.path("samples").asInt(),rows.size());assertEquals(2,duplicates);
+        assertTrue(maximum[0]<1e-5,"Accepted-history inverter P "+maximum[0]);assertTrue(maximum[1]<1e-5,"Accepted-history inverter Q "+maximum[1]);
     }
     @ParameterizedTest @MethodSource("profiles")
     void initialConditionsAndRectifierPowersMatchWhileInverterPublicationRemainsDiagnostic(String tag)throws Exception {

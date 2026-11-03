@@ -252,15 +252,14 @@ Initial boundaries at both terminals pass, as do rectifier P/Q trajectories
 under the 0.00001 pu gates. The full comparison files retain both startup
 history and fault-side duplicate rows, including the unresolved inverter errors.
 
-The inverter reference channels themselves do not always satisfy simultaneous
+The instantaneous-angle comparison shows that inverter reference channels do not always satisfy simultaneous
 `P = -Vi*Ii`: the largest same-row discrepancy is approximately 0.38334 MW.
 The firing-angle kernel's largest recorded-input inverter P/Q differences are
 approximately 0.38331 MW and 0.54103 Mvar. This is evidence that channel
 publication and network evaluation stages require investigation; it does not
-establish the correct coupled trajectory. No delay, offset, fitted impedance,
-changed coefficient or production precision adjustment is applied. The passing
-boundary tests qualify initialization and rectifier P/Q only; inverter and
-complete coupled SMIB acceptance remain open.
+establish the correct coupled trajectory. The accepted-extinction-history
+experiment below resolves the measured-input AC power discrepancy through an
+explicit evaluation/commit order. Complete coupled SMIB acceptance remains open.
 
 Targeted protection probes now exercise RAML and commutation-failure settings
 with explicit fault reactance and static extinction angle recorded in each
@@ -279,3 +278,90 @@ module runs 486 checks with no failures or errors and four skips. The private
 `chvdc2-converter-20261102/validation.zip` retains executable/source hashes,
 complete comparison traces, logs and reports. These regression results preserve
 the unresolved model gates rather than treating them as accepted behavior.
+
+## Accepted protection and extinction-angle history
+
+`Chvdc2Protection` adds one shared RAML washout coordinate, prepared reciprocal
+time, bounded minimum-angle output, and explicitly committed RAML and
+commutation-failure histories. Modified Euler and staggered integration use the
+same scalar RHS. The numerical coordinate is the washout lag; after the RAML
+switch releases, that memory decays while the output returns to the entered
+minimum. Entered settings remain unchanged when preparing the RAML voltage
+threshold from the initial rectifier voltage.
+
+The owner supplies filtered rectifier voltage, terminal inverter voltage and
+the newly calculated extinction angle. Only `acceptBoundary(time, sequence)`
+may update the protection modes or clocks. Sequence numbers distinguish accepted
+events sharing a timestamp; repeated acceptance requires identical inputs.
+Falling below the RAML threshold triggers its hold. Release requires both a
+strictly expired hold and voltage strictly above the threshold. Commutation
+failure uses a strict angle trigger, strict minimum duration and inclusive
+voltage-recovery threshold; nonpositive failure angle disables it. One accepted
+boundary makes at most one short/release transition.
+
+Trial input refresh, derivative evaluation, zero-duration integration and
+observation do not commit histories. A preallocated transaction checkpoint
+restores states, inputs, flags, timestamps, accepted extinction angle and event
+revision together after a rejected boundary. Predictor cancellation restores
+the numerical coordinate. The event owner supplies a stored left-side RHS for
+staggered discontinuities; this is distinct from the solver's older two-step
+rate history. Named state/derivative/history maps allocate only when requested;
+the warmed numerical and transactional update checks allocate no per-step objects.
+
+### Inverter AC power uses committed extinction history
+
+The retained controls identify a specific evaluation order: inverter AC power
+uses the previously accepted extinction angle with the current terminal voltage
+and current. The newly calculated extinction angle is then committed for the
+next boundary. `acceptedInverterExtinctionDegrees()` exposes that history;
+ordinary input refresh leaves it fixed through all network trials. Acceptance
+advances it exactly once, including a separately accepted event-side boundary
+at unchanged physical time.
+
+This order reconstructs every inverter P/Q sample in the normal controller and
+current-order controls under the unchanged 0.00001 pu electrical gates. The
+same order passes those gates during the valid short-duration commutation
+control under both integration methods. The contemporaneous-angle calculation
+remains a negative control. There is no trace interpolation, timestamp offset,
+changed model coefficient or fitted filter. These are recorded-input boundary
+checks; the complete runtime still must calculate and own its fresh extinction
+angle and network state.
+
+### Independent protection checks and remaining qualification
+
+Both methods reproduce every short/release flag and transition timestamp in the
+cold-repeated valid 0.5 ms commutation control. That control uses an explicitly
+entered short hold. The default-duration control remains nonconvergent even
+with an explicit network ceiling of 50; its tolerance is unchanged. The refined
+short-hold control also fails native network convergence. These failed runs
+remain rejected, so neither default-duration nor refinement acceptance is claimed.
+
+The valid source shorting flag sets line-side inverter voltage to zero while
+retaining line current. Its recorded AC injection remains nonzero and agrees
+with the adjacent AC source powers. Therefore a complete electrical owner must
+qualify the distinction between the imposed line-side short and the accepted-
+angle AC interface; resetting current or replacing AC power with zero is not
+supported by these captures.
+
+All four full RAML replays still fail the strict angle/state gates. The largest
+washout-state discrepancy is about 0.71461 degrees and the sampled minimum-angle
+discrepancy reaches 35 degrees around switch activation. At the source's
+activation row the published filtered-voltage state has not yet crossed its
+prepared threshold. This identifies a stage-ownership question; no anticipatory
+threshold, fitted delay or shifted trace is used to hide it. Both complete
+samples and event-side duplicates remain in the comparisons. Joint controller,
+protection and network execution, local substeps, RAML observation timing and
+complete model attachment remain required.
+
+The private `chvdc2-protection-20261102/captures.zip` retains the valid repeated
+commutation control and the rejected iteration/refinement controls. The earlier
+RAML archive remains immutable. Source/kernel fingerprints, complete replays
+and regression reports are retained in the accompanying validation archive.
+
+The focused protection/converter run executes 70 checks with four RAML replay
+failures and no errors. The registered suite executes 4,452 checks with 119
+failures, no errors and 13 skips: all 115 preceding failure identities remain,
+and only the four explicit RAML replay gates are new. The core-plugin module
+executes 486 checks with no failures or errors and four skips. These results
+qualify the accepted-history and electrical reconstruction scope above; they
+do not qualify the complete protected model.
