@@ -71,6 +71,10 @@ public final class Chvdc2Parameters {
     public Chvdc2CurrentControls prepareCurrentControls() { return new Chvdc2CurrentControls(this); }
     /** Shared washout state and explicitly committed RAML/commutation histories. */
     public Chvdc2Protection prepareProtection() { return new Chvdc2Protection(this); }
+    /** Joint controller coordinates with explicit protection-stage and transaction ownership. */
+    public Chvdc2ControlAssembly prepareControls(double inverterTransformerRatio,double inverterTap) {
+        return new Chvdc2ControlAssembly(this,inverterTransformerRatio,inverterTap);
+    }
     /** Independently owned transducers, current-order controls and calculated inverter angle bound. */
     public Chvdc2OrderControls prepareOrderControls(double inverterTransformerRatio,double inverterTap) {
         return new Chvdc2OrderControls(this,inverterTransformerRatio,inverterTap);

@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain the [joint controller state owner and RAML limit separation](dynamic-models/chvdc2-named-link.md#joint-controller-state-ownership-and-raml-limit-separation), common staged equations, exact predictor/network rollback and held accepted extinction angle. Preserve independent evidence that RAML changes the firing-angle floor without rebasing PI memory. Resolve complete joint replay, physical input/event stages and publication order before full coupled SMIB qualification and automatic attachment.
+
 - Retain the [accepted protection and extinction-angle history](dynamic-models/chvdc2-named-link.md#accepted-protection-and-extinction-angle-history), shared RAML coordinate, transactional rollback, explicit acceptance epochs and named event histories. Preserve independently qualified short/release clocks and the committed-angle AC power boundary. Resolve RAML stage timing, protected line/AC coupling, local integration and rejected reference regimes before complete SMIB acceptance.
 
 - Retain the [signed conducting-converter boundary](dynamic-models/chvdc2-named-link.md#signed-conducting-converter-boundary), shared prepared bridge equations, both-method line-coupling/energy checks and independent initial/rectifier-power gates. Resolve inverter publication timing without fitting a delay; complete protection circuits, a joint state owner and coupled SMIB trajectories before qualifying the model.

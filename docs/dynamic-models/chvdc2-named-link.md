@@ -365,3 +365,84 @@ and only the four explicit RAML replay gates are new. The core-plugin module
 executes 486 checks with no failures or errors and four skips. These results
 qualify the accepted-history and electrical reconstruction scope above; they
 do not qualify the complete protected model.
+
+## Joint controller state ownership and RAML limit separation
+
+`Chvdc2ControlAssembly` connects the existing measurement/current-order, current-PI
+and protection components directly. Its fifteen numerical coordinates follow
+the source controller-state order. Modified-Euler prediction/correction and
+the shared staggered participant use the same equations, dependency order,
+prepared constants and underlying state storage. There is no second set of
+controller equations, expression lookup or per-step object allocation.
+
+The electrical owner supplies current, voltage, current reference, the common
+auxiliary signal and fresh extinction angle. Current controls receive the
+measurement and order values from the same numerical stage. A modified-Euler
+corrector therefore sees predicted measurements rather than stale values from
+before the predictor. State projection applies measurements and the RAML
+coordinate before evaluating dependent firing-angle bounds.
+
+Protection acceptance remains explicit. `acceptBoundary` accepts a converged
+boundary; `evaluatePredictorProtection` evaluates a protection branch inside an
+open predictor trial. Canceling that predictor restores its numerical states,
+inputs, protection clocks and modes, accepted extinction history and event
+revision together. A pending predictor does not publish its discontinuity
+revision or fresh extinction angle to the electrical boundary. An independent
+outer transaction can roll back completed local stages and a pending predictor.
+Exact rollback bypasses limiter projection, since a saved state may precede
+the first numerical application of a newly accepted bound. Trial state and
+history diagnostics remain inspectable; observation does not accept a trial.
+
+The assembly does not choose a default number of local steps or advance a
+network clock implicitly. Its caller selects the integration interval and
+acceptance sequence. Both-method analytic tests verify second-order convergence
+of the connected measurement/current-integral equations. Separate tests cover
+simultaneous correction, equilibrium, dependent-write failure rollback,
+predictor and transaction ownership, moving bounds and warmed zero-allocation
+updates.
+
+### RAML changes the angle floor, not the PI memory
+
+Independent RAML captures show the rectifier PI state remaining near 32.7 degrees
+while the moving firing-angle floor rises above it. The PI continues to integrate
+current error under its entered bounds. The firing-angle coordinate follows the
+RAML floor. Applying that moving floor to both coordinates incorrectly rebased
+the PI state by approximately seven degrees and retained that error after RAML
+released.
+
+`Chvdc2CurrentControls` now uses the entered rectifier minimum for the PI
+coordinate and its anti-windup test. The moving RAML minimum still constrains
+the PI sum sent to the angle lag and the firing-angle coordinate. The two cold-
+repeated independent controls check the PI increments and the angle-floor
+response; both integration methods also exercise activation and release in
+focused equation tests. The inverter limits and entered constants are unchanged.
+
+### Complete joint replays remain diagnostic
+
+The joint reference tests evolve all fifteen controller states continuously
+from initialization. They use recorded physical terminal inputs, held during
+each explicitly configured ten-step local cycle, and retain every startup and
+event-side sample. A candidate publication order records the final local
+derivative evaluation before its state update; an event-left observation has
+zero duration. No recorded controller state is reset after initialization.
+This is a test of stage ordering, not an accepted network execution contract.
+
+The PI-limit correction reduces the largest persistent rectifier PI discrepancy
+from about 7.27 degrees to 0.00450 degrees. All four joint replays still fail
+strict state/output gates. The first post-event voltage-filter state differs
+from the reference, changing RAML pickup/release timing; at the coarser step
+this produces a large one-sample firing-angle difference. The small PI remainder
+also needs qualification without changing production precision. Internal
+electrical-stage inputs, event integration and publication ownership must be
+resolved before full coupled SMIB acceptance or automatic attachment.
+
+The focused checkpoint executes 82 checks with 28 failures: 24 preceding
+current-controller replay gates and the four new joint replay gates. The
+equation, ownership, allocation and independent PI-limit controls pass. The
+registered suite executes 4,471 checks with 123 failures, no errors and 13 skips;
+all 119 preceding failure identities remain unchanged, and only the four new
+joint replay gates are added. The core-plugin module executes 486 checks with
+no failures or errors and four skips. The private
+`chvdc2-joint-controls-20261102/validation.zip` retains the source/executable
+fingerprints, complete before/after diagnostic traces, reports and reference
+archive hashes. Full model qualification remains open.

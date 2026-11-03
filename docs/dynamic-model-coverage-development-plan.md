@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+The [joint CHVDC2 controller owner](dynamic-models/chvdc2-named-link.md#joint-controller-state-ownership-and-raml-limit-separation)
+connects shared controller coordinates under both integration methods, provides
+predictor/outer-transaction rollback and preserves accepted electrical history.
+Independent RAML evidence separates the entered PI limit from the moving firing-
+angle floor, eliminating an artificial PI rebase. Strict complete joint replay,
+event/input staging and full coupled network attachment remain open.
+
 The [CHVDC2 named-link foundation](dynamic-models/chvdc2-named-link.md) preserves
 standard/legacy source identity and exact allocation, validates immutable
 parameters, and provides a shared physical DC-line component for both integration

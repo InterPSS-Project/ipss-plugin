@@ -126,6 +126,8 @@ public final class Chvdc2OrderControls implements StaggeredEulerParticipant, Int
         System.arraycopy(candidate,0,state,0,SIZE);pending=stage==0;
     }
     public void cancelPrediction(){ready();if(pending){System.arraycopy(origin,0,state,0,SIZE);pending=false;monitor.reset();}}
+    /** Exact rollback for the enclosing controller owner; never re-project a saved coordinate. */
+    void restoreCoordinates(double[] values,int offset){System.arraycopy(values,offset,state,0,SIZE);pending=false;monitor.reset();}
     @Override public int staggeredStateCount(){return SIZE;}
     @Override public void readStaggeredState(double[] values,int offset){ready();buffer(values,offset);System.arraycopy(state,0,values,offset,SIZE);}
     @Override public void evaluateStaggered(double seconds,double[] values,int offset){ready();exclusive();interval(seconds);buffer(values,offset);rates();record(IntegrationStateMonitor.Stage.STAGGERED);System.arraycopy(rate,0,values,offset,SIZE);}

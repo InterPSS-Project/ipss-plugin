@@ -73,6 +73,16 @@ public class Chvdc2CurrentControlsTest {
         m.setInput(.3,.3,1050,1400,0,0,5,150);m.initialize(35,140);assertEquals(initial,m.getIntegrationStates());
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
+    void ramlFloorDoesNotRebaseOrFreezeTheRectifierCurrentIntegral(boolean shared){
+        var m=model(Chvdc2ParametersTest.constants());m.setInput(.3,.3,1050,1400,0,0,5,150);m.initialize(32,140);
+        m.setInput(.29,.3,1050,1400,0,0,40,150);double[] x=new double[4],f=new double[4];m.evaluateStaggered(.0001,f,0);
+        assertEquals(-1.5,f[0],1e-10,"The PI remains within its entered limits while below the RAML floor");
+        if(shared){m.readStaggeredState(x,0);for(int i=0;i<4;i++)x[i]+=.0001*f[i];m.applyStaggeredState(x,0,.0001);}
+        else{m.step(.0001,0);m.step(.0001,1);}
+        m.readStaggeredState(x,0);assertEquals(32-.00015,x[0],1e-10);assertEquals(40,x[1]);
+        m.setInput(.29,.3,1050,1400,0,0,5,150);m.evaluateStaggered(.0001,f,0);assertTrue(f[1]<0,"Releasing RAML exposes the retained PI command");
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
     void warmedNumericalStagesAllocateNoPerStepObjects(boolean shared){
         var bean=ManagementFactory.getThreadMXBean();Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);
         var memory=(com.sun.management.ThreadMXBean)bean;Assumptions.assumeTrue(memory.isThreadAllocatedMemorySupported());

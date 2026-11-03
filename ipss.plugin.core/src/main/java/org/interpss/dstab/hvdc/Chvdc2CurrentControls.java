@@ -60,9 +60,10 @@ public final class Chvdc2CurrentControls implements StaggeredEulerParticipant, I
     public double rectifierDegrees(){ready();return state[1];}
     public double inverterDegrees(){ready();return state[3];}
     private void rates() {
-        double piR=clip(state[0],minR,maxR),alphaR=clip(state[1],minR,maxR);
+        // RAML changes the firing-angle floor without rebasing the current PI memory.
+        double piR=clip(state[0],baseMinR,maxR),alphaR=clip(state[1],minR,maxR);
         double piI=clip(state[2],minI,maxI),alphaI=clip(state[3],minI,maxI);
-        rate[0]=nonWindup(piR,kiR*errorR,minR,maxR);
+        rate[0]=nonWindup(piR,kiR*errorR,baseMinR,maxR);
         rate[1]=nonWindup(alphaR,clip(clip(piR+kpR*errorR,minR,maxR)-alphaR,minRate,maxRate)*inverseTimeR,minR,maxR);
         rate[2]=nonWindup(piI,kiI*errorI,minI,maxI);
         rate[3]=nonWindup(alphaI,clip(clip(piI+kpI*errorI,minI,maxI)-alphaI,minRate,maxRate)*inverseTimeI,minI,maxI);
@@ -83,6 +84,8 @@ public final class Chvdc2CurrentControls implements StaggeredEulerParticipant, I
         System.arraycopy(candidate,0,state,0,SIZE);pending=stage==0;
     }
     public void cancelPrediction(){ready();if(pending){System.arraycopy(origin,0,state,0,SIZE);pending=false;monitor.reset();}}
+    /** Exact rollback for the enclosing controller owner; saved states may precede a changed bound. */
+    void restoreCoordinates(double[] values,int offset){System.arraycopy(values,offset,state,0,SIZE);pending=false;monitor.reset();}
     @Override public int staggeredStateCount(){return SIZE;}
     @Override public void readStaggeredState(double[] values,int offset){ready();buffer(values,offset);System.arraycopy(state,0,values,offset,SIZE);}
     @Override public void evaluateStaggered(double seconds,double[] values,int offset){
@@ -96,7 +99,7 @@ public final class Chvdc2CurrentControls implements StaggeredEulerParticipant, I
     }
     @Override public Map<String,Double> getIntegrationStates(){ready();return Map.of(NAMES[0],state[0],NAMES[1],state[1],NAMES[2],state[2],NAMES[3],state[3]);}
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){return monitor.snapshot();}
-    private void project(double[] x,int offset){x[offset]=clip(x[offset],minR,maxR);x[offset+1]=clip(x[offset+1],minR,maxR);x[offset+2]=clip(x[offset+2],minI,maxI);x[offset+3]=clip(x[offset+3],minI,maxI);}
+    private void project(double[] x,int offset){x[offset]=clip(x[offset],baseMinR,maxR);x[offset+1]=clip(x[offset+1],minR,maxR);x[offset+2]=clip(x[offset+2],minI,maxI);x[offset+3]=clip(x[offset+3],minI,maxI);}
     private void record(IntegrationStateMonitor.Stage stage){monitor.begin(stage);for(int i=0;i<SIZE;i++)monitor.record(i,state[i],rate[i]);}
     private static double nonWindup(double x,double f,double lo,double hi){return x<=lo&&f<0||x>=hi&&f>0?0:f;}
     private static double clip(double x,double lo,double hi){return Math.max(lo,Math.min(hi,x));}

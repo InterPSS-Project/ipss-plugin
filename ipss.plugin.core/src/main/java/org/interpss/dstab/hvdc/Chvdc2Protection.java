@@ -20,6 +20,10 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
     private final IntegrationStateMonitor monitor=new IntegrationStateMonitor(STATE_NAME);
     private double preparedRamVoltage,origin,firstRate,pendingStep;
     private boolean initialized,pending,transaction;
+    /** Prepared owner checkpoint permits an outer network trial and an inner predictor independently. */
+    static final class Checkpoint { private final Frame frame=new Frame(); }
+    void saveCheckpoint(Checkpoint destination){ready();exclusive();destination.frame.copyFrom(frame);}
+    void restoreCheckpoint(Checkpoint source){frame.copyFrom(source.frame);pending=false;monitor.reset();}
 
     /** Scalar storage is copied into a preallocated checkpoint only at transaction boundaries. */
     private static final class Frame {
