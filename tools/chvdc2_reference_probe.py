@@ -39,8 +39,9 @@ def main():
     parser.add_argument('--form', choices=['standard', 'legacy'], required=True)
     parser.add_argument('--control', choices=['inverter-power', 'current'], default='inverter-power')
     parser.add_argument('--network', choices=['coupled', 'stiff'], default='coupled')
-    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited', 'dc-limit', 'ac-limit', 'zero-filters'], default='nominal')
+    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited', 'dc-limit', 'ac-limit', 'zero-filters', 'raml', 'commutation'], default='nominal')
     parser.add_argument('--static-gamma', type=float)
+    parser.add_argument('--fault-reactance', type=float, default=.2, help='Fault reactance in pu on 230 kV / 100 MVA')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], default=.0005)
@@ -49,6 +50,8 @@ def main():
     args = parser.parse_args()
     if args.static_gamma is not None and (not math.isfinite(args.static_gamma) or not 0 < args.static_gamma < 90):
         parser.error('Static gamma must be finite and strictly between zero and ninety degrees')
+    if not math.isfinite(args.fault_reactance) or args.fault_reactance <= 0:
+        parser.error('Fault reactance must be finite and positive')
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
     root = Path.cwd()
@@ -59,6 +62,10 @@ def main():
         tag = 'stiff-'+tag
     if args.controller_profile != 'nominal':
         tag = tag[:-1]+args.controller_profile+'-'+args.repeat
+    if args.static_gamma is not None:
+        tag = tag[:-1]+f'gamma{args.static_gamma:g}-'+args.repeat
+    if args.fault_reactance != .2:
+        tag = tag[:-1]+f'faultx{args.fault_reactance:g}-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -102,6 +109,12 @@ def main():
     elif args.controller_profile == 'zero-filters':
         for index in [11, 13, 17, 25, 27]:
             constants[index] = 0.
+    elif args.controller_profile == 'raml':
+        if args.flags[1] != 1:
+            parser.error('RAML profile requires the rectifier minimum-angle limiter flag')
+        constants[38:42] = [40., .03, 1.025, .02]
+    elif args.controller_profile == 'commutation':
+        constants[30:33] = [31.4, 1.025, .035]
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
                                  header+' '.join(map(str, args.flags+constants))+' /\n')
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -148,7 +161,7 @@ def main():
     checked('before event', psspy.run(0, .05, 1000000, 1, 0))
     if args.profile.endswith('fault'):
         bus = 7 if args.profile.startswith('rectifier') else 9
-        checked('fault', psspy.dist_bus_fault(bus, 3, 230., [0., .2*230**2/100]))
+        checked('fault', psspy.dist_bus_fault(bus, 3, 230., [0., args.fault_reactance*230**2/100]))
     elif args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.))
     checked('during event', psspy.run(0, .1, 1000000, 1, 0))

@@ -26,6 +26,13 @@ remaining dynamic coordinate. Both-method analytic/allocation checks pass;
 strict finite-lag replay, observation timing, protection and complete coupled
 attachment remain open.
 
+The [signed CHVDC2 converter boundary](dynamic-models/chvdc2-named-link.md#signed-conducting-converter-boundary)
+shares prepared conducting-bridge equations with the existing current-order
+converter. Both-method bridge/line analytic convergence, energy balance,
+initial independent boundaries and recorded-input rectifier P/Q gates pass.
+Inverter channel publication, protection, local integration and full coupled
+SMIB qualification remain open; no telemetry time shift is applied.
+
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
 omitted distribution, fully represented transformer/feeder boundaries, and

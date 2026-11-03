@@ -209,3 +209,73 @@ network injection or complete model attachment. Coupled SMIB, local substep
 and observation-stage qualification remain necessary. The private
 `chvdc2-orders-20261102` archives retain the active-limit and zero-filter
 captures separately.
+
+## Signed conducting-converter boundary
+
+`LccConverterBoundary` prepares bridge/transformer geometry once and exposes
+the firing-angle electrical boundary needed by the shared CHVDC2 runtime.
+For positive line current, its terminal voltages are
+
+```
+Vr = E0r * cos(alphaR) - Rcr * Ir
+Vi = -E0i * cos(alphaI) + Rci * Ii
+```
+
+Here `E0` includes the live AC voltage, bridge count, transformer ratio and tap;
+`Rc = 3 * bridges * Xcomm / pi`. AC active power into each terminal is `Vr*Ir`
+and `-Vi*Ii`. Signed DC voltage allows temporary rectifier inversion. The
+overlap equation supplies reactive power and inverter extinction angle. An
+infeasible overlap is rejected; the conducting kernel does not invent a
+commutation-failure or blocking circuit.
+
+The existing `Cdc6tConverterBoundary` delegates its unchanged positive-voltage
+API to this shared kernel. Both interfaces use the same reactive-power equation,
+including the analytic cancellation that keeps reactive power finite at zero
+DC active power. All numerical calls use caller-owned buffers, validate before
+publishing outputs, and refresh voltage-dependent quantities at every call.
+No controller state, clock, history or integration step is advanced here.
+
+The bridge-plus-inductive-line test feeds trial line current back through both
+converters at each integration stage. Modified Euler and staggered integration
+both converge at second order to the independent RL analytic response. The
+test also checks instantaneous AC active-power balance against line resistance
+and the derivative of stored magnetic energy. Signed voltage, zero-current,
+zero-active-power, lossless power factor, infeasible-trial atomicity and warmed
+allocation checks pass. Existing current-order converter reference gates remain
+unchanged and pass after sharing the equations.
+
+### Independent electrical observations
+
+All complete samples from the earlier cold-repeated controller/order captures
+are evaluated with recorded firing angles, currents and terminal voltages.
+Initial boundaries at both terminals pass, as do rectifier P/Q trajectories
+under the 0.00001 pu gates. The full comparison files retain both startup
+history and fault-side duplicate rows, including the unresolved inverter errors.
+
+The inverter reference channels themselves do not always satisfy simultaneous
+`P = -Vi*Ii`: the largest same-row discrepancy is approximately 0.38334 MW.
+The firing-angle kernel's largest recorded-input inverter P/Q differences are
+approximately 0.38331 MW and 0.54103 Mvar. This is evidence that channel
+publication and network evaluation stages require investigation; it does not
+establish the correct coupled trajectory. No delay, offset, fitted impedance,
+changed coefficient or production precision adjustment is applied. The passing
+boundary tests qualify initialization and rectifier P/Q only; inverter and
+complete coupled SMIB acceptance remain open.
+
+Targeted protection probes now exercise RAML and commutation-failure settings
+with explicit fault reactance and static extinction angle recorded in each
+manifest. The RAML controls cold-repeat at both reference steps. The initial
+high-threshold commutation profiles lose native network convergence. A separate
+default-threshold control with lower initial extinction margin also activates
+commutation failure but loses network convergence later. All are retained as
+rejected evidence in the private `chvdc2-converter-20261102/protection-captures.zip`
+archive, alongside the complete valid RAML controls. These observations do not
+yet qualify a production protection state machine or automatic attachment.
+
+The focused electrical-boundary run passes all 45 checks. The registered suite
+runs 4,413 checks with the same 115 pre-existing failures, no errors and 13 skips;
+failure identities match the retained preceding checkpoint. The core-plugin
+module runs 486 checks with no failures or errors and four skips. The private
+`chvdc2-converter-20261102/validation.zip` retains executable/source hashes,
+complete comparison traces, logs and reports. These regression results preserve
+the unresolved model gates rather than treating them as accepted behavior.
