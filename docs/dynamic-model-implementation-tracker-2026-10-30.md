@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain the shared [published measurement accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates), pure numerical/history storage and allocation-free both-method execution. Preserve independent bypass-observation and line-mode discriminators while resolving accepted electrical input stages. Observation parity does not qualify complete controller/network trajectories.
+
 - Use the independently checked [run-boundary clock controls](dynamic-models/chvdc2-named-link.md#independent-run-boundary-clock-checks) to resolve accepted input/history stages under both methods. Preserve pure observations, complete event-side samples and explicit run segmentation; do not infer derivative access, fit a time shift or treat split-run diagnostics as continuous trajectory acceptance.
 
 - Retain the independently checked [network-interval capacitance preparation](dynamic-models/chvdc2-named-link.md#network-interval-capacitance-preparation), unchanged entered data and frozen local-step coefficients. Preserve complete equivalence of the suppressed-capacitor control to the zero-capacitor control; keep nonfinite reference regimes explicitly rejected. Resolve complete capacitive state trajectories, event/input publication and stable local integration before automatic attachment.

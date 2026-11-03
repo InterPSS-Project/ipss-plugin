@@ -624,3 +624,52 @@ The private `chvdc2-boundary-clock-20261102/captures.zip` contains the uninstrum
 observation-only and split-run controls, exact scripts, manifests and failed API
 attempts. Both new clock checks pass. No production equation or accuracy gate is
 changed, and complete coupled trajectories remain unaccepted.
+
+## Live published measurements and numerical coordinates
+
+`Chvdc2ControlAssembly.readPublishedStates` and
+`Chvdc2CoupledRuntime.readPublishedStates` now expose the low-level order
+controller's algebraic observations through the joint owners. With zero entered
+measurement time, measured rectifier/inverter currents and AC voltages follow
+their current terminal inputs immediately, including zero-duration event sides.
+The coupled accessor refreshes voltage-dependent inputs and appends the line's
+numerical coordinates. Both accessors write into caller-owned reusable arrays.
+
+`readStaggeredState`, `getIntegrationStates` and rollback checkpoints continue to
+represent numerical storage. Reading published values does not project or
+advance that storage, accept a protection/electrical epoch, change the frozen
+accepted power sample, or replace derivative history. Observations are also pure
+during a modified-Euler predictor and after transaction rollback. The warmed
+both-method integration/allocation checks now include published-state reads and
+still allocate no per-step objects. Recording remains explicit; numerical updates
+do not create an observation map or array when diagnostics are disabled.
+
+Independent zero-measurement-time captures at both network intervals verify all
+four algebraic measurement channels under both Java integration methods. The
+comparison prescribes the recorded terminal inputs, retains every sample and
+event side, and checks that repeated observations leave coordinates and histories
+unchanged. Maximum observation error is below 0.0000001 pu. This qualifies the
+memoryless observation boundary, not the remaining controller or coupled-network
+trajectories. The complete coupled comparison now uses published observations
+for recording and continues to use numerical coordinates for integration.
+
+Separate independent controls disable DC-line dynamics while retaining a positive
+measurement lag. The first rectifier AC-voltage measurement increment is exactly
+the same as in the dynamic-line control, although the DC-current response differs
+substantially. The first current-measurement state remains unchanged in both
+controls. Therefore the filter's first-step timing cannot be attributed to line
+inductance. The algebraic line's electrical publication and accepted input/history
+stages still need reconciliation; do not replace them with an inferred delay.
+
+An equation-only reconstruction using the previous recorded terminal voltages
+and current firing angles matches the algebraic DC current within 0.003 A on
+positive-time intervals. Using same-time voltages instead reaches about 0.58 A
+error. Both original time grids and duplicate observations are retained. This
+localizes an electrical-input sampling boundary; it does not establish the full
+controller integration recurrence or the update policy at zero-time event sides.
+
+The private `chvdc2-measurements-20261102/captures.zip` retains both cold repeats of
+the bypass and line-mode controls. `Chvdc2MeasurementReferenceTest` separates the
+four both-method observation checks from the two reference-only line-mode
+discriminators. Full protected/capacitive trajectories and automatic network
+attachment remain open.

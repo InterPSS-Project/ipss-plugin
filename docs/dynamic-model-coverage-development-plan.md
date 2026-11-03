@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+The [shared CHVDC2 published-state accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates)
+expose live bypassed measurements without projecting numerical coordinates or
+advancing history. Independent input-driven checks qualify these observations
+under both integration methods. Line-mode controls isolate the first filter
+increment from DC-line inductance; complete coupled trajectories and physical
+input/history sequencing remain unaccepted.
+
 The [CHVDC2 run-boundary clock checks](dynamic-models/chvdc2-named-link.md#independent-run-boundary-clock-checks)
 separate pure public observations from pause/resume effects on controller
 history. Cold controls at both network intervals retain every sample and show

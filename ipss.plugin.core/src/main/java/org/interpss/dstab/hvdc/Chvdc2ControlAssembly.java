@@ -108,6 +108,15 @@ public final class Chvdc2ControlAssembly implements StaggeredEulerParticipant, I
         order.readStaggeredState(orderValues,0);current.readStaggeredState(currentValues,0);
         protection.readStaggeredState(protectionValue,0);pack(destination);
     }
+    /** Published observations in source state order. Bypassed measurement and order
+     * lags expose their live algebraic outputs; integration coordinates and committed
+     * histories are unchanged. Never use this buffer as a numerical state checkpoint. */
+    public void readPublishedStates(double[] values,int offset) {
+        ready();buffer(values,offset);
+        order.readPublishedStates(orderValues,0);current.readStaggeredState(currentValues,0);
+        protection.readStaggeredState(protectionValue,0);pack(state);
+        System.arraycopy(state,0,values,offset,STATE_COUNT);
+    }
     /** Project dependencies in order: measurements, RAML coordinate, then current-controller bounds. */
     private void apply(double[] values,int offset,double seconds) {
         for(int i=0;i<STATE_COUNT;i++)finite(values[offset+i]);save(write);

@@ -11,7 +11,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class Chvdc2CoupledRuntimeTest {
     record Rig(Chvdc2CoupledRuntime model,LccConverterBoundary rectifier,LccConverterBoundary inverter,Chvdc2DcLine line,double vr,double vi){}
     static Rig rig(boolean dynamic,double capacitance) {
+        return rig(dynamic,capacitance,.01);
+    }
+    static Rig rig(boolean dynamic,double capacitance,double measurementTime) {
         var c=Chvdc2ParametersTest.constants();c[30]=10;c[38]=40;c[39]=.03;
+        c[17]=measurementTime;
         var parameters=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,dynamic?1:0},c);
         var r=new LccConverterBoundary(true,2,230000,1,1,5,1e8);var i=new LccConverterBoundary(false,2,230000,1,1,5,1e8);
         var line=new Chvdc2DcLine(5,2.5,capacitance,dynamic);var m=new Chvdc2CoupledRuntime(parameters,r,i,line,1,1);
@@ -27,6 +31,33 @@ public class Chvdc2CoupledRuntimeTest {
         m.evaluateInjections(inj,0);assertEquals(-b[4],1.03*inj[0],1e-12);assertEquals(-b[6],1.03*inj[2],1e-12);
         assertEquals(b[5],1.03*inj[1],1e-12);assertEquals(b[7],1.03*inj[3],1e-12);
         assertEquals(m.staggeredStateCount(),m.getIntegrationStates().size());
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void bypassedObservationsStayLiveWithoutChangingEitherIntegrationHistory(boolean staggered) {
+        var m=rig(true,0,0).model();m.acceptBoundary(0,0);int count=m.staggeredStateCount();
+        double[] raw=new double[count],check=new double[count],published=new double[count+2],rates=new double[count],power=new double[10],accepted=new double[10];
+        m.readAcceptedBoundary(accepted,0);m.beginTransaction();
+        m.setBoundary(1.02,0,1.025,0,1050,0);m.readStaggeredState(raw,0);var histories=m.getIntegrationHistories();
+        java.util.Arrays.fill(published,-17);
+        for(int n=0;n<5;n++) {
+            m.readPublishedStates(published,1);m.readStaggeredState(check,0);
+            assertArrayEquals(raw,check);assertEquals(histories,m.getIntegrationHistories());
+            assertEquals(1.02,published[11]);assertEquals(1.025,published[12]);
+            assertEquals(raw[15]/3500,published[1],1e-15);assertEquals(raw[15]/3500,published[2],1e-15);
+            assertEquals(-17,published[0]);assertEquals(-17,published[count+1]);
+        }
+        assertNotEquals(raw[10],published[11],"The observation must not substitute a stale numerical coordinate");
+        if(staggered){
+            m.evaluateStaggered(.00001,rates,0);for(int n=0;n<count;n++)raw[n]+=.00001*rates[n];m.applyStaggeredState(raw,0,.00001);
+        }else{
+            m.step(.00001,0);m.readStaggeredState(raw,0);m.readPublishedStates(published,1);m.readStaggeredState(check,0);assertArrayEquals(raw,check);
+            m.step(.00001,1);
+        }
+        m.readBoundary(power,0);m.readPublishedStates(published,1);assertEquals(power[2]/3500,published[1],1e-15);
+        m.readAcceptedBoundary(power,0);assertArrayEquals(accepted,power);assertEquals(histories,m.getIntegrationHistories());
+        m.rollbackTransaction();m.readStaggeredState(raw,0);m.readPublishedStates(published,1);
+        assertEquals(1.03,published[11]);assertEquals(1.03,published[12]);assertEquals(.3,raw[0],1e-14);
+        var before=m.getIntegrationStates();assertThrows(IndexOutOfBoundsException.class,()->m.readPublishedStates(published,3));assertEquals(before,m.getIntegrationStates());
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void liveAnglesAndVoltagesRefreshTheSameCircuitForBothMethods(boolean staggered) {
@@ -115,6 +146,6 @@ public class Chvdc2CoupledRuntimeTest {
         for(int n=0;n<5;n++)batch(m,staggered,x,f,i,20000);long before=memory.getThreadAllocatedBytes(thread);batch(m,staggered,x,f,i,20000);assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
     }
     private static void batch(Chvdc2CoupledRuntime m,boolean staggered,double[] x,double[] f,double[] i,int count) {
-        for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);}else{m.step(.00001,0);m.step(.00001,1);}m.commitTransaction();}
+        for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);m.readPublishedStates(x,0);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);}else{m.step(.00001,0);m.step(.00001,1);}m.commitTransaction();}
     }
 }

@@ -105,6 +105,13 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double ir=(-p*c-q*s)/magnitude,ii=(-p*s+q*c)/magnitude;finite(ir);finite(ii);output[offset]=ir;output[offset+1]=ii;
     }
     public void readBoundary(double[] output,int offset){ready();java.util.Objects.checkFromIndexSize(offset,BOUNDARY_SIZE,output.length);refresh();System.arraycopy(boundary,0,output,offset,BOUNDARY_SIZE);}
+    /** Live controller observations followed by the numerical line coordinates.
+     * Refreshes voltage-dependent inputs without advancing integration or accepting an
+     * electrical/protection epoch. Use readStaggeredState for integration and rollback. */
+    public void readPublishedStates(double[] output,int offset) {
+        ready();buffer(output,offset);refresh();
+        controls.readPublishedStates(output,offset);line.readStaggeredState(output,offset+15);
+    }
     /** Frozen accepted observation retains the angle used by that electrical evaluation,
      * even after the freshly calculated margin is committed for a subsequent boundary. */
     public void readAcceptedBoundary(double[] output,int offset){ready();java.util.Objects.checkFromIndexSize(offset,BOUNDARY_SIZE,output.length);if(!acceptedReady)throw new IllegalStateException("No accepted coupled boundary");System.arraycopy(accepted,0,output,offset,BOUNDARY_SIZE);}

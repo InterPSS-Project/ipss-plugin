@@ -126,7 +126,7 @@ public class Chvdc2CoupledReferenceTest {
                     }
                     circuit.accept(model,time);
                 }
-                model.readAcceptedBoundary(b,0);model.readStaggeredState(x,0);
+                model.readAcceptedBoundary(b,0);model.readPublishedStates(x,0);
                 double[] values={Math.hypot(circuit.v[0],circuit.v[1]),Math.hypot(circuit.v[2],circuit.v[3]),b[2],b[3],b[4],b[5],b[6],b[7],x[6],x[7]};
                 double[] reference={row.get("V7"),row.get("V9"),row.get("VAR5"),row.get("VAR7"),row.get("VAR9")/100,row.get("VAR10")/100,row.get("VAR11")/100,row.get("VAR12")/100,row.get("STATE6"),row.get("STATE7")};
                 w.write(Double.toString(time));for(int k=0;k<channels;k++){
