@@ -716,3 +716,76 @@ trajectory checks remain unaccepted. The private
 incomplete trajectory, refinement settings, plateau diagnostic and regression
 evidence. Resolve electrical sampling, local integration ownership, protected
 and capacitive trajectories, and automatic attachment before full qualification.
+
+## Sampled algebraic current and accepted integration intervals
+
+The coupled owner now retains algebraic DC current as accepted numerical history.
+Network trials and observations refresh the AC power and phasor-current
+transformations using live terminal voltages, but do not implicitly resample that
+DC current. On completion of a numerical interval, the owner uses the interval's
+sampled AC voltage magnitudes and the updated firing angles to publish the next
+current. The dynamic-line equations and storage are unchanged.
+
+Modified Euler publishes current after the corrector, using the predictor-start
+voltage sample. Shared staggered state proposals remain history-pure:
+`applyStaggeredState` may be used for trial states and derivative probes, while
+`completeStaggeredStep` publishes current once for the accepted step. Zero-duration
+completion does not advance history. Repeated or mismatched positive completion
+is rejected. Numerical coordinates, sampled current, pending proposals and
+interval progress all participate in transaction rollback.
+
+`beginIntegrationInterval(H)` and `completeIntegrationInterval()` let local
+integration steps retain one outer electrical sample. Completion requires local
+durations to sum to H and occurs before the final network solve. Without this
+explicit bracket, each completed numerical step is one electrical interval.
+These calls do not alter coefficient preparation or choose a default substep
+count. Production attachment and local-step orchestration remain unfinished.
+
+Independent prescribed-input/state component replays retain every observation
+and both event-side duplicates. At outer intervals of 0.5 and 0.25 ms, maximum
+current errors are 0.008035 and 0.007552 A, respectively, within the existing
+0.01 A current gate. A separate raw-angle reconstruction stays below 0.0031 A;
+the component owner additionally projects firing angles to its calculated
+limits. These checks qualify the sampled-current component boundary, not the
+evolving coupled trajectories.
+
+The complete coupled comparisons use no prescribed reference states or boundary
+inputs. With ten local steps and one outer electrical sample, their results are:
+
+| Outer interval | Integration method | Maximum voltage error (pu) | Maximum current error (A) |
+| --- | --- | --- | --- |
+| 0.5 ms | Modified Euler | 0.000004266 | 0.8923 |
+| 0.5 ms | Staggered | 0.000003194 | 0.5532 |
+| 0.25 ms | Modified Euler | 0.000003603 | 0.6682 |
+| 0.25 ms | Staggered | 0.000003093 | 0.6682 |
+
+These replace the preceding checkpoint's roughly 65.3 A algebraic-line mismatch.
+The refined voltage gate passes, but the unchanged 0.01 A coupled-current gate
+still fails. Single-step coarse staggered integration still reaches an
+unsupported reverse-current boundary before the fault; its partial trajectory
+and exception are retained. All 22 dynamic-line comparison traces, including
+zero-measurement-time refinement controls, remain byte-identical to the preceding
+checkpoint. Numerical/history checks cover both integration methods and show
+zero warmed per-step allocation, including explicit interval completion.
+
+The largest remaining normalized internal-state error in these refined controls
+is the rectifier AC-voltage measurement immediately after fault application.
+It persists under both integration methods. Resolve that measurement/integration
+boundary separately from the independently checked algebraic-current sampling;
+the late-time current discrepancy must also retain the reference plateau
+diagnostic described above.
+
+The private `chvdc2-sampled-line-20261102/validation.zip` retains the component
+replays, complete and explicitly incomplete coupled comparisons, executable and
+source snapshots, and regression evidence. Full trajectory qualification,
+protected algebraic-line behavior, production local-step ownership and automatic
+network attachment remain open. No acceptance threshold or production precision
+was changed.
+
+Registered regression validation ran 4,545 tests: 152 failures, one error and 13
+skips, with exactly the same failing/error test identities as the preceding
+checkpoint. All eleven added checks pass. The core plugin module ran 486 tests
+with no failures or errors and four skips. An earlier broad attempt hit the
+generated-output free-space guard; its reports are retained separately and are
+not used as regression evidence. Inactive generated outputs were relocated with
+hash verification and original-path junctions before the completed retry.

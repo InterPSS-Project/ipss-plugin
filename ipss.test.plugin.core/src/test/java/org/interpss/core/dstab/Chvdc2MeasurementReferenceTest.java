@@ -82,6 +82,54 @@ public class Chvdc2MeasurementReferenceTest {
         assertEquals(2,duplicates);for(double error:maximum)assertTrue(error<1e-7,"Zero-lag observation differs from independent source: "+error);
     }
     @ParameterizedTest @ValueSource(doubles={.0005,.00025})
+    void algebraicCurrentUsesPreviousVoltageAndAcceptedAngles(double h)throws Exception {
+        String tag=PROFILES.entrySet().stream().filter(e->e.getValue().path("settings").path("step").asDouble()==h&&e.getValue().path("settings").path("flags").get(2).asInt()==0).map(Map.Entry::getKey).findFirst().orElseThrow();
+        var manifest=PROFILES.get(tag);double[] constants=JSON.convertValue(manifest.path("entered_constants"),double[].class);List<Map<String,Double>> rows;JsonNode equipment;
+        try(var z=new ZipFile(ARCHIVE.toFile())){rows=Tiocr1ResetReferenceTest.csv(bytes(z,tag,"native.csv"));equipment=JSON.readTree(bytes(z,tag,"solved-equipment.json"));}
+        var parameters=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,0},constants);
+        var r=equipment.path("7");var i=equipment.path("9");
+        var rectifier=new LccConverterBoundary(true,2,r.path("EBASE").asDouble()*1000,r.path("TR").asDouble(),r.path("TAP").asDouble(),r.path("XC").asDouble(),1e8);
+        var inverter=new LccConverterBoundary(false,2,i.path("EBASE").asDouble()*1000,i.path("TR").asDouble(),i.path("TAP").asDouble(),i.path("XC").asDouble(),1e8);
+        var line=parameters.prepareDcLine(5,2,r.path("XC").asDouble(),i.path("XC").asDouble(),60,h);
+        var model=new Chvdc2CoupledRuntime(parameters,rectifier,inverter,line,i.path("TR").asDouble(),i.path("TAP").asDouble());
+        var first=rows.getFirst();bind(model,first,constants[28]);model.initialize(first.get("VAR8")*1000+5*first.get("VAR5"),first.get("VAR8")*1000,first.get("time_s"));
+        double[] state=new double[15],check=new double[15],boundary=new double[10];double maximum=0,rawMaximum=0,projectionMaximum=0,rawCurrent=first.get("VAR5");int duplicates=0;
+        double resistance=5+3/Math.PI*2*(r.path("XC").asDouble()+i.path("XC").asDouble());
+        Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-algebraic-sampling-");
+        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),8))) {
+            w.write("time_s,current_A,reference_A,error_A,raw_angle_current_A,raw_angle_error_A,rectifier_angle_projection_deg,inverter_angle_projection_deg\n");
+            for(int n=0;n<rows.size();n++) {
+                var row=rows.get(n);
+                if(n>0) {
+                    var previous=rows.get(n-1);bind(model,previous,constants[28]);
+                    if(!row.get("time_s").equals(previous.get("time_s"))) {
+                        for(int k=0;k<15;k++)state[k]=row.get("STATE"+k);
+                        model.applyStaggeredState(state,0,h);
+                        model.completeStaggeredStep(h);
+                        rawCurrent=(rectifier.dcVoltageAtFiringAngle(previous.get("V7"),0,Math.toRadians(row.get("STATE6")))
+                                -inverter.dcVoltageAtFiringAngle(previous.get("V9"),0,Math.toRadians(row.get("STATE7"))))/resistance;
+                    }else duplicates++;
+                }
+                bind(model,row,constants[28]);model.readStaggeredState(state,0);var histories=model.getIntegrationHistories();
+                model.readBoundary(boundary,0);model.readStaggeredState(check,0);assertArrayEquals(state,check);assertEquals(histories,model.getIntegrationHistories());
+                double error=boundary[2]-row.get("VAR5");maximum=Math.max(maximum,Math.abs(error));assertEquals(boundary[2],boundary[3]);
+                rawMaximum=Math.max(rawMaximum,Math.abs(rawCurrent-row.get("VAR5")));projectionMaximum=Math.max(projectionMaximum,Math.abs(boundary[2]-rawCurrent));
+                w.write(row.get("time_s")+","+boundary[2]+","+row.get("VAR5")+","+error+","+rawCurrent+","+(rawCurrent-row.get("VAR5"))+","+(state[6]-row.get("STATE6"))+","+(state[7]-row.get("STATE7"))+"\n");
+            }
+        }
+        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),20000)) {
+            JSON.writerWithDefaultPrettyPrinter().writeValue(w,Map.of("profile",tag,"samples",rows.size(),"event_duplicates",duplicates,
+                    "maximum_current_error_A",maximum,"maximum_raw_angle_error_A",rawMaximum,"maximum_projection_contribution_A",projectionMaximum,
+                    "reference_coordinates_and_inputs_prescribed",true,"complete_coupled_trajectory_qualified",false));
+        }
+        assertEquals(2,duplicates);assertTrue(rawMaximum<.0031,"Raw-angle sampling error: "+rawMaximum);
+        assertTrue(maximum<.01,"Algebraic current sampling must satisfy the existing coupled-current gate: "+maximum);
+    }
+    private static void bind(Chvdc2CoupledRuntime model,Map<String,Double> row,double rated) {
+        double ar=Math.toRadians(row.get("A7")),ai=Math.toRadians(row.get("A9"));
+        model.setBoundary(row.get("V7")*Math.cos(ar),row.get("V7")*Math.sin(ar),row.get("V9")*Math.cos(ai),row.get("V9")*Math.sin(ai),row.get("VAR15")*rated,row.get("VAR0"));
+    }
+    @ParameterizedTest @ValueSource(doubles={.0005,.00025})
     void firstMeasurementIncrementIsIndependentOfDcLineDynamics(double h)throws Exception {
         String tag=PROFILES.entrySet().stream().filter(e->e.getValue().path("settings").path("step").asDouble()==h&&e.getValue().path("settings").path("flags").get(2).asInt()==0).map(Map.Entry::getKey).findFirst().orElseThrow();
         List<Map<String,Double>> algebraic,dynamic=null;

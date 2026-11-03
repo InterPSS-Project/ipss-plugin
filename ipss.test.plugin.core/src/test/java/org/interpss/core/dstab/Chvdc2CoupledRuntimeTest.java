@@ -79,6 +79,82 @@ public class Chvdc2CoupledRuntimeTest {
         double terminalPower=b[0]*x[15]-b[1]*x[17]-2.5*(x[15]*x[15]+x[17]*x[17]);
         assertEquals(terminalPower,storedRate,1e-6);
     }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void algebraicCurrentSamplesTheIntegrationInputWhileAcInjectionsStayLive(boolean staggered) {
+        var rig=rig(false,0);var m=rig.model();double[] b=new double[10],x=new double[15],f=new double[15],i=new double[4],oldInjection=new double[4];
+        m.acceptBoundary(0,0);m.evaluateInjections(oldInjection,0);m.beginTransaction();
+        m.setBoundary(1.02,0,1.03,0,1050,0);var history=m.getIntegrationHistories();
+        for(int n=0;n<3;n++) {
+            m.readBoundary(b,0);assertEquals(1050,b[2],1e-8);m.evaluateInjections(i,0);m.readPublishedStates(x,0);
+            assertNotEquals(oldInjection[0],i[0]);assertEquals(history,m.getIntegrationHistories());
+        }
+        if(staggered) {
+            m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int k=0;k<15;k++)x[k]+=.00001*f[k];m.applyStaggeredState(x,0,.00001);m.completeStaggeredStep(.00001);
+        }else {
+            m.step(.00001,0);m.readBoundary(b,0);assertEquals(1050,b[2],1e-8);
+            // Predictor network voltage must not replace the interval's sampled voltage.
+            m.setBoundary(1.019,0,1.031,0,1050,0);m.step(.00001,1);
+        }
+        m.readStaggeredState(x,0);m.readBoundary(b,0);
+        double expected=(rig.rectifier().dcVoltageAtFiringAngle(1.02,0,Math.toRadians(x[6]))
+                -rig.inverter().dcVoltageAtFiringAngle(1.03,0,Math.toRadians(x[7])))
+                /(5+2*(3/Math.PI*2*5));
+        assertEquals(expected,b[2],1e-10);assertNotEquals(1050,b[2]);
+        m.acceptBoundary(.00001,1);m.rollbackTransaction();m.readBoundary(b,0);assertEquals(1050,b[2],1e-8);
+        m.acceptBoundary(0,0);assertEquals(1050,m.getIntegrationHistories().get("Algebraic line current (A)"),1e-8);
+    }
+    @Test void algebraicPredictorCancellationAndFailedAcceptanceRestoreCurrentHistory() {
+        var r=rig(false,0);var m=r.model();m.acceptBoundary(0,0);var initial=m.getIntegrationHistories();var states=m.getIntegrationStates();
+        m.setBoundary(1.02,0,1.03,0,1050,0);m.step(.00001,0);m.cancelPrediction();
+        assertEquals(initial,m.getIntegrationHistories());assertEquals(states,m.getIntegrationStates());
+        double[] x=new double[15];m.readStaggeredState(x,0);x[6]=90;
+        m.beginTransaction();m.applyStaggeredState(x,0,.001);
+        assertThrows(IllegalArgumentException.class,()->m.completeStaggeredStep(.001));assertEquals(initial,m.getIntegrationHistories());m.rollbackTransaction();
+        assertEquals(initial,m.getIntegrationHistories());assertEquals(states,m.getIntegrationStates());
+        m.setBoundary(1.03,0,1.03,0,1050,0);m.initialize(r.vr(),r.vi(),0);
+        assertEquals(1050,m.getIntegrationHistories().get("Algebraic line current (A)"),1e-8);
+    }
+    @Test void repeatedAcceptanceChecksAlgebraicHistoryEvenWhenStatesAndInputsMatch() {
+        var m=rig(false,0).model();double[] x=new double[15],before=new double[10],after=new double[10];
+        m.acceptBoundary(0,0);m.readStaggeredState(x,0);m.readAcceptedBoundary(before,0);m.beginTransaction();
+        m.setBoundary(1.02,0,1.03,0,1050,0);m.applyStaggeredState(x,0,.00001);m.completeStaggeredStep(.00001);m.setBoundary(1.03,0,1.03,0,1050,0);
+        assertThrows(IllegalStateException.class,()->m.acceptBoundary(0,0));m.readAcceptedBoundary(after,0);assertArrayEquals(before,after);
+        m.rollbackTransaction();m.acceptBoundary(0,0);m.readAcceptedBoundary(after,0);assertArrayEquals(before,after);
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void localStepsKeepOneOuterAlgebraicInputAndRollbackItsProgress(boolean staggered) {
+        var r=rig(false,0);var m=r.model();double[] x=new double[15],f=new double[15],b=new double[10];double h=.0000025;
+        m.acceptBoundary(0,0);m.beginTransaction();m.setBoundary(1.02,0,1.03,0,1050,0);m.beginIntegrationInterval(4*h);
+        assertThrows(IllegalStateException.class,()->m.beginIntegrationInterval(h));assertThrows(IllegalStateException.class,m::completeIntegrationInterval);
+        assertThrows(IllegalStateException.class,m::commitTransaction);assertThrows(IllegalStateException.class,()->m.initialize(r.vr(),r.vi(),0));
+        for(int n=0;n<4;n++) {
+            m.setBoundary(1.02-n*.0001,0,1.03+n*.0001,0,1050,0);
+            if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(h,f,0);for(int k=0;k<15;k++)x[k]+=h*f[k];m.applyStaggeredState(x,0,h);m.completeStaggeredStep(h);}
+            else{m.step(h,0);assertThrows(IllegalStateException.class,m::completeIntegrationInterval);m.step(h,1);}
+            m.readBoundary(b,0);assertEquals(1050,b[2],1e-8);
+        }
+        var states=m.getIntegrationStates();m.readStaggeredState(x,0);
+        if(staggered)assertThrows(IllegalArgumentException.class,()->m.applyStaggeredState(x,0,h));else assertThrows(IllegalArgumentException.class,()->m.step(h,0));
+        assertEquals(states,m.getIntegrationStates());m.completeIntegrationInterval();m.readBoundary(b,0);
+        double expected=(r.rectifier().dcVoltageAtFiringAngle(1.02,0,Math.toRadians(x[6]))-r.inverter().dcVoltageAtFiringAngle(1.03,0,Math.toRadians(x[7])))/(5+2*(3/Math.PI*2*5));
+        assertEquals(expected,b[2],1e-10);assertThrows(IllegalStateException.class,m::completeIntegrationInterval);
+        m.rollbackTransaction();m.acceptBoundary(0,0);m.readBoundary(b,0);assertEquals(1050,b[2],1e-8);
+        m.beginIntegrationInterval(2*h);m.step(h,0);m.cancelPrediction();assertThrows(IllegalStateException.class,m::completeIntegrationInterval);
+        m.step(h,0);m.step(h,1);assertThrows(IllegalStateException.class,m::completeIntegrationInterval);m.step(h,0);m.step(h,1);m.completeIntegrationInterval();
+    }
+    @Test void sharedStateProposalsDoNotResampleAlgebraicCurrentOrConsumeTheInterval() {
+        var m=rig(false,0).model();double[] initial=new double[15],trial=new double[15],rate=new double[15];
+        m.readStaggeredState(initial,0);m.beginTransaction();m.setBoundary(1.02,0,1.03,0,1050,0);m.beginIntegrationInterval(.00001);var histories=m.getIntegrationHistories();
+        for(int n=0;n<3;n++) {
+            System.arraycopy(initial,0,trial,0,15);trial[6]+=.001*n;
+            m.applyStaggeredState(trial,0,.00001);m.evaluateStaggered(.00001,rate,0);assertEquals(histories,m.getIntegrationHistories());
+        }
+        m.completeStaggeredStep(0);assertEquals(histories,m.getIntegrationHistories());
+        assertThrows(IllegalStateException.class,()->m.acceptBoundary(.00001,0));assertThrows(IllegalStateException.class,m::completeIntegrationInterval);
+        assertThrows(IllegalStateException.class,()->m.completeStaggeredStep(.00002));
+        m.completeStaggeredStep(.00001);assertEquals(histories,m.getIntegrationHistories());assertThrows(IllegalStateException.class,()->m.completeStaggeredStep(.00001));
+        m.completeIntegrationInterval();assertNotEquals(histories,m.getIntegrationHistories());m.rollbackTransaction();m.readStaggeredState(trial,0);assertArrayEquals(initial,trial);
+    }
     @Test void acceptedPowerKeepsTheAngleUsedBeforeHistoryAdvances() {
         var m=rig(true,0).model();double[] b=new double[10],a=new double[10],x=new double[m.staggeredStateCount()];m.acceptBoundary(0,0);m.readAcceptedBoundary(a,0);
         m.readStaggeredState(x,0);x[7]-=1;m.applyStaggeredState(x,0,0);m.readBoundary(b,0);assertNotEquals(b[8],b[9]);
@@ -140,12 +216,19 @@ public class Chvdc2CoupledRuntimeTest {
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void warmedElectricalAndIntegrationStagesAllocateNoObjects(boolean staggered) {
+        checkAllocation(staggered,true);
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void warmedAlgebraicLineSamplingAllocatesNoObjects(boolean staggered) {
+        checkAllocation(staggered,false);
+    }
+    private static void checkAllocation(boolean staggered,boolean dynamic) {
         var bean=ManagementFactory.getThreadMXBean();Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);var memory=(com.sun.management.ThreadMXBean)bean;
         Assumptions.assumeTrue(memory.isThreadAllocatedMemorySupported());memory.setThreadAllocatedMemoryEnabled(true);long thread=Thread.currentThread().threadId();
-        var m=rig(true,0).model();double[] x=new double[m.staggeredStateCount()],f=new double[x.length],i=new double[4];
+        var m=rig(dynamic,0).model();double[] x=new double[m.staggeredStateCount()],f=new double[x.length],i=new double[4];
         for(int n=0;n<5;n++)batch(m,staggered,x,f,i,20000);long before=memory.getThreadAllocatedBytes(thread);batch(m,staggered,x,f,i,20000);assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
     }
     private static void batch(Chvdc2CoupledRuntime m,boolean staggered,double[] x,double[] f,double[] i,int count) {
-        for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);m.readPublishedStates(x,0);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);}else{m.step(.00001,0);m.step(.00001,1);}m.commitTransaction();}
+        for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);m.readPublishedStates(x,0);boolean algebraic=x.length==15;if(algebraic)m.beginIntegrationInterval(.00001);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);m.completeStaggeredStep(.00001);}else{m.step(.00001,0);m.step(.00001,1);}if(algebraic)m.completeIntegrationInterval();m.commitTransaction();}
     }
 }

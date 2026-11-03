@@ -23,14 +23,18 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private final Checkpoint prediction,transaction,write;
     private IntegrationStateMonitor monitor;
     private String[] names;
-    private boolean inputReady,initialized,pending,inTransaction,acceptedReady;
-    private double pendingStep,acceptedTime;
+    private boolean inputReady,initialized,pending,inTransaction,acceptedReady,intervalActive,sharedPending;
+    private double pendingStep,acceptedTime,algebraicCurrent,acceptedAlgebraicCurrent;
+    private double intervalSeconds,intervalAdvanced,intervalRectifierVoltage,intervalInverterVoltage;
+    private double sharedStep;
     private long revision,acceptedSequence=-1,latestSequence=-1;
     private static final class Checkpoint {
         final Chvdc2ControlAssembly.Checkpoint controls=new Chvdc2ControlAssembly.Checkpoint();
         final double[] states,inputs=new double[6],accepted=new double[BOUNDARY_SIZE],left,
                 acceptedState,acceptedInputs=new double[6];
-        double gamma,acceptedTime;long revision,acceptedSequence,latestSequence;boolean acceptedReady;
+        double gamma,acceptedTime,algebraicCurrent,acceptedAlgebraicCurrent;long revision,acceptedSequence,latestSequence;boolean acceptedReady;
+        double intervalSeconds,intervalAdvanced,intervalRectifierVoltage,intervalInverterVoltage;boolean intervalActive;
+        double sharedStep;boolean sharedPending;
         Checkpoint(int count){states=new double[count];left=new double[count];acceptedState=new double[count];}
     }
     /** Takes exclusive ownership of the mutable line and controller components. */
@@ -55,7 +59,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     /** Initialize from a consistent solved line voltage drop. Firing angles and fresh
      * extinction margin are calculated from the same prepared converter geometry. */
     public void initialize(double rectifierDcVolts,double inverterDcVolts,double time) {
-        exclusive();if(inTransaction)throw new IllegalStateException("Finish the coupled transaction before initialization");
+        exclusive();noSharedProposal();if(inTransaction||intervalActive)throw new IllegalStateException("Finish the coupled transaction and integration interval before initialization");
         if(!inputReady)throw new IllegalStateException("Supply terminal phasors and current reference first");
         finite(time);initialized=false;line.initialize(rectifierDcVolts,inverterDcVolts);
         double ir=line.rectifierAmperes(),ii=line.inverterAmperes(),vr=Math.hypot(inputs[0],inputs[1]),vi=Math.hypot(inputs[2],inputs[3]);
@@ -63,6 +67,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double gamma=inverter.extinctionAtFiringAngle(vi,ii,ai);
         controls.setInput(ir,ii,rectifierDcVolts*.001,inverterDcVolts*.001,vr,vi,inputs[4],inputs[5],Math.toDegrees(gamma));
         controls.initialize(Math.toDegrees(ar),Math.toDegrees(ai),time);
+        algebraicCurrent=ir;intervalSeconds=intervalAdvanced=intervalRectifierVoltage=intervalInverterVoltage=0;
         names=new String[count];int index=0;for(String name:controls.getIntegrationStates().keySet())names[index++]=name;
         if(count==16)names[15]="Line current (A)";
         if(count==18){names[15]="Rectifier line current (A)";names[16]="Line capacitor voltage (V)";names[17]="Inverter line current (A)";}
@@ -75,11 +80,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double vr=Math.hypot(inputs[0],inputs[1]),vi=Math.hypot(inputs[2],inputs[3]);
         double ar=Math.toRadians(controls.rectifierDegrees()),ai=Math.toRadians(controls.inverterDegrees());
         double ir,ii;
-        if(count==15) {
-            double source=rectifier.dcVoltageAtFiringAngle(vr,0,ar);
-            if(!controls.inverterShorted())source-=inverter.dcVoltageAtFiringAngle(vi,0,ai);
-            ir=ii=source/(controls.inverterShorted()?shortedResistance:conductingResistance);
-        }else{ir=line.rectifierAmperes();ii=line.inverterAmperes();}
+        if(count==15){ir=ii=algebraicCurrent;}else{ir=line.rectifierAmperes();ii=line.inverterAmperes();}
         if(ir<0||ii<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary");
         double dcR=rectifier.dcVoltageAtFiringAngle(vr,ir,ar),dcI=controls.inverterShorted()?0:inverter.dcVoltageAtFiringAngle(vi,ii,ai);
         double gamma=inverter.extinctionAtFiringAngle(vi,ii,ai);
@@ -92,6 +93,42 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         boundary[0]=dcR;boundary[1]=dcI;boundary[2]=ir;boundary[3]=ii;
         boundary[4]=rectifierValues[1];boundary[5]=rectifierValues[2];boundary[6]=inverterValues[0];boundary[7]=inverterValues[1];
         boundary[8]=gamma;boundary[9]=heldGamma;
+    }
+    /** The algebraic line is evaluated at a numerical-state boundary. Network
+     * iteration consumes that current and still refreshes the AC power/current
+     * transformation with live phasors. It must not resample the DC line implicitly. */
+    private void advanceAlgebraicCurrent(double vr,double vi) {
+        double source=rectifier.dcVoltageAtFiringAngle(vr,0,Math.toRadians(controls.rectifierDegrees()));
+        if(!controls.inverterShorted())source-=inverter.dcVoltageAtFiringAngle(vi,0,Math.toRadians(controls.inverterDegrees()));
+        double current=source/(controls.inverterShorted()?shortedResistance:conductingResistance);
+        finite(current);if(current<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary");
+        algebraicCurrent=current;
+    }
+    /** Start an outer electrical interval before local state integration. Local
+     * steps retain its algebraic current and sampled voltages; live AC injections
+     * still refresh at every network trial. Coefficient preparation is unchanged.
+     * Without this bracket, each completed numerical step is one outer interval. */
+    public void beginIntegrationInterval(double seconds) {
+        ready();exclusive();noSharedProposal();positive(seconds);
+        if(intervalActive)throw new IllegalStateException("An integration interval is already open");
+        intervalRectifierVoltage=Math.hypot(inputs[0],inputs[1]);intervalInverterVoltage=Math.hypot(inputs[2],inputs[3]);
+        intervalSeconds=seconds;intervalAdvanced=0;intervalActive=true;
+    }
+    /** Publish the algebraic line after all local steps, before the final network
+     * solve. This is a numerical boundary, not protection/electrical acceptance. */
+    public void completeIntegrationInterval() {
+        ready();exclusive();noSharedProposal();
+        if(!intervalActive||intervalAdvanced==0||Math.abs(intervalAdvanced-intervalSeconds)>64*Math.ulp(intervalSeconds))
+            throw new IllegalStateException("Complete all local integration steps before publishing the interval");
+        save(write);
+        try {
+            if(count==15)advanceAlgebraicCurrent(intervalRectifierVoltage,intervalInverterVoltage);
+            refresh();intervalActive=false;
+        }catch(RuntimeException failure){restore(write);throw failure;}
+    }
+    private void verifyAdvance(double seconds) {
+        if(intervalActive&&intervalAdvanced+seconds-intervalSeconds>64*Math.ulp(intervalSeconds))
+            throw new IllegalArgumentException("Local integration exceeds the open outer interval");
     }
     /** Fresh trial injection: rectifier real/imaginary, then inverter real/imaginary.
      * Failed evaluation never writes a partial caller buffer or accepts a history. */
@@ -118,11 +155,11 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     /** Repeating an unchanged electrical epoch is a no-op, including its published
      * power. Changed phasors or coordinates require a new caller-owned sequence. */
     public void acceptBoundary(double time,long sequence){
-        ready();exclusive();
+        ready();exclusive();noSharedProposal();
         if(acceptedReady&&sequence==acceptedSequence){
             read(state);
-            if(sequence!=latestSequence||time!=acceptedTime||!java.util.Arrays.equals(inputs,acceptedInputs)||!java.util.Arrays.equals(state,acceptedState))
-                throw new IllegalStateException("Repeated electrical acceptance has changed time, inputs or states");
+            if(sequence!=latestSequence||time!=acceptedTime||algebraicCurrent!=acceptedAlgebraicCurrent||!java.util.Arrays.equals(inputs,acceptedInputs)||!java.util.Arrays.equals(state,acceptedState))
+                throw new IllegalStateException("Repeated electrical acceptance has changed time, inputs, states or current history");
             return;
         }
         accept(time,sequence);
@@ -134,55 +171,94 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
             rates();double gamma=heldGamma();long before=controls.staggeredInputDiscontinuityVersion();
             if(pending)controls.acceptProtectionStage(time,sequence);else controls.acceptBoundary(time,sequence);
             latestSequence=sequence;
-            if(controls.staggeredInputDiscontinuityVersion()!=before){System.arraycopy(rate,0,leftRate,0,count);revision=controls.staggeredInputDiscontinuityVersion();}
+            if(controls.staggeredInputDiscontinuityVersion()!=before){
+                System.arraycopy(rate,0,leftRate,0,count);revision=controls.staggeredInputDiscontinuityVersion();
+                if(count==15)advanceAlgebraicCurrent(Math.hypot(inputs[0],inputs[1]),Math.hypot(inputs[2],inputs[3]));
+            }
             refresh(gamma);if(!pending){
                 System.arraycopy(boundary,0,accepted,0,BOUNDARY_SIZE);read(acceptedState);System.arraycopy(inputs,0,acceptedInputs,0,6);
-                acceptedTime=time;acceptedSequence=sequence;acceptedReady=true;
+                acceptedTime=time;acceptedSequence=sequence;acceptedReady=true;acceptedAlgebraicCurrent=algebraicCurrent;
             }
         }catch(RuntimeException failure){restore(write);throw failure;}
     }
     public boolean inverterShorted(){ready();return controls.inverterShorted();}
     private void rates(){refresh();controls.evaluateStaggered(0,rate,0);line.evaluateStaggered(0,rate,15);}
     private void read(double[] destination){controls.readStaggeredState(destination,0);line.readStaggeredState(destination,15);}
-    private void apply(double[] values,int offset,double seconds) {
+    private void apply(double[] values,int offset,double seconds,boolean advanceLine,double vr,double vi) {
         for(int i=0;i<count;i++)finite(values[offset+i]);save(write);
-        try {line.applyStaggeredState(values,offset+15,seconds);refresh();controls.applyStaggeredState(values,offset,seconds);refresh();}
+        try {
+            line.applyStaggeredState(values,offset+15,seconds);refresh();controls.applyStaggeredState(values,offset,seconds);
+            if(count==15&&advanceLine)advanceAlgebraicCurrent(vr,vi);
+            refresh();
+        }
         catch(RuntimeException failure){restore(write);throw failure;}
     }
     public void step(double seconds,int stage) {
-        ready();interval(seconds);if(stage!=0&&stage!=1)throw new IllegalArgumentException("Predictor or corrector required");if(seconds==0)return;
+        ready();noSharedProposal();interval(seconds);if(stage!=0&&stage!=1)throw new IllegalArgumentException("Predictor or corrector required");if(seconds==0)return;
         if(stage==0&&pending||stage==1&&(!pending||seconds!=pendingStep))throw new IllegalStateException("Matching coupled integration stages required");
+        verifyAdvance(seconds);
         read(state);rates();if(stage==0){save(prediction);System.arraycopy(rate,0,firstRate,0,count);}
         for(int i=0;i<count;i++)candidate[i]=stage==0?state[i]+seconds*rate[i]:prediction.states[i]+.5*seconds*(firstRate[i]+rate[i]);
-        apply(candidate,0,seconds);record(stage==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
+        boolean advanceLine=count==15&&stage==1&&!intervalActive;
+        apply(candidate,0,seconds,advanceLine,advanceLine?Math.hypot(prediction.inputs[0],prediction.inputs[1]):0,advanceLine?Math.hypot(prediction.inputs[2],prediction.inputs[3]):0);
+        record(stage==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
+        if(stage==1&&intervalActive)intervalAdvanced+=seconds;
         pendingStep=seconds;pending=stage==0;
     }
     public void cancelPrediction(){ready();if(pending){restore(prediction);pending=false;}}
     public void beginTransaction(){ready();exclusive();if(inTransaction)throw new IllegalStateException("Coupled transaction already open");save(transaction);inTransaction=true;}
-    public void commitTransaction(){ready();exclusive();if(!inTransaction)throw new IllegalStateException("No coupled transaction");inTransaction=false;}
+    public void commitTransaction(){ready();exclusive();noSharedProposal();if(!inTransaction||intervalActive)throw new IllegalStateException("A complete coupled transaction is required");inTransaction=false;}
     public void rollbackTransaction(){ready();if(!inTransaction)throw new IllegalStateException("No coupled transaction");restore(transaction);pending=false;inTransaction=false;}
     private void save(Checkpoint c) {
         controls.saveOwnerCheckpoint(c.controls);read(c.states);System.arraycopy(inputs,0,c.inputs,0,6);System.arraycopy(accepted,0,c.accepted,0,BOUNDARY_SIZE);
         System.arraycopy(leftRate,0,c.left,0,count);c.gamma=Math.toRadians(controls.acceptedInverterExtinctionDegrees());c.revision=revision;c.acceptedReady=acceptedReady;
         System.arraycopy(acceptedState,0,c.acceptedState,0,count);System.arraycopy(acceptedInputs,0,c.acceptedInputs,0,6);c.acceptedTime=acceptedTime;c.acceptedSequence=acceptedSequence;c.latestSequence=latestSequence;
+        c.algebraicCurrent=algebraicCurrent;c.acceptedAlgebraicCurrent=acceptedAlgebraicCurrent;
+        c.intervalActive=intervalActive;c.intervalSeconds=intervalSeconds;c.intervalAdvanced=intervalAdvanced;
+        c.intervalRectifierVoltage=intervalRectifierVoltage;c.intervalInverterVoltage=intervalInverterVoltage;
+        c.sharedPending=sharedPending;c.sharedStep=sharedStep;
     }
     private void restore(Checkpoint c) {
         controls.restoreOwnerCheckpoint(c.controls);line.restoreCoordinates(c.states,15);System.arraycopy(c.inputs,0,inputs,0,6);
         System.arraycopy(c.accepted,0,accepted,0,BOUNDARY_SIZE);System.arraycopy(c.left,0,leftRate,0,count);revision=c.revision;acceptedReady=c.acceptedReady;monitor.reset();
         System.arraycopy(c.acceptedState,0,acceptedState,0,count);System.arraycopy(c.acceptedInputs,0,acceptedInputs,0,6);acceptedTime=c.acceptedTime;acceptedSequence=c.acceptedSequence;latestSequence=c.latestSequence;
+        algebraicCurrent=c.algebraicCurrent;acceptedAlgebraicCurrent=c.acceptedAlgebraicCurrent;
+        intervalActive=c.intervalActive;intervalSeconds=c.intervalSeconds;intervalAdvanced=c.intervalAdvanced;
+        intervalRectifierVoltage=c.intervalRectifierVoltage;intervalInverterVoltage=c.intervalInverterVoltage;
+        sharedPending=c.sharedPending;sharedStep=c.sharedStep;
     }
     @Override public int staggeredStateCount(){return count;}
     @Override public void readStaggeredState(double[] values,int offset){ready();buffer(values,offset);read(state);System.arraycopy(state,0,values,offset,count);}
     @Override public void evaluateStaggered(double seconds,double[] values,int offset){ready();exclusive();interval(seconds);buffer(values,offset);read(state);rates();record(IntegrationStateMonitor.Stage.STAGGERED);System.arraycopy(rate,0,values,offset,count);}
-    @Override public void applyStaggeredState(double[] values,int offset,double seconds){ready();exclusive();interval(seconds);buffer(values,offset);apply(values,offset,seconds);}
+    @Override public void applyStaggeredState(double[] values,int offset,double seconds){
+        ready();exclusive();interval(seconds);buffer(values,offset);verifyAdvance(seconds);
+        apply(values,offset,seconds,false,0,0);
+        sharedPending=seconds>0&&(count==15||intervalActive);sharedStep=seconds;
+    }
+    /** State proposals and derivative probes do not publish algebraic current or
+     * consume an outer interval. The solver completes the accepted shared step
+     * once, before solving its new electrical endpoint. */
+    @Override public void completeStaggeredStep(double seconds) {
+        ready();exclusive();interval(seconds);if(seconds==0||count!=15&&!intervalActive)return;
+        if(!sharedPending||seconds!=sharedStep)throw new IllegalStateException("A matching shared state proposal is required");
+        verifyAdvance(seconds);save(write);
+        try {
+            if(count==15&&!intervalActive)advanceAlgebraicCurrent(Math.hypot(inputs[0],inputs[1]),Math.hypot(inputs[2],inputs[3]));
+            refresh();if(intervalActive)intervalAdvanced+=seconds;sharedPending=false;
+        }catch(RuntimeException failure){restore(write);throw failure;}
+    }
     @Override public long staggeredInputDiscontinuityVersion(){return pending?prediction.revision:revision;}
     @Override public boolean readStaggeredInputDiscontinuityLeftRates(double[] values,int offset){ready();buffer(values,offset);if(staggeredInputDiscontinuityVersion()==0)return false;System.arraycopy(pending?prediction.left:leftRate,0,values,offset,count);return true;}
     @Override public Map<String,Double> getIntegrationStates(){ready();read(state);var result=new LinkedHashMap<String,Double>();for(int i=0;i<count;i++)result.put(names[i],state[i]);return java.util.Collections.unmodifiableMap(result);}
-    @Override public Map<String,Double> getIntegrationHistories(){ready();return controls.getIntegrationHistories();}
+    @Override public Map<String,Double> getIntegrationHistories(){
+        ready();if(count!=15)return controls.getIntegrationHistories();
+        var histories=new LinkedHashMap<String,Double>(controls.getIntegrationHistories());histories.put("Algebraic line current (A)",algebraicCurrent);return java.util.Collections.unmodifiableMap(histories);
+    }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){ready();return monitor.snapshot();}
     private void record(IntegrationStateMonitor.Stage stage){monitor.begin(stage);for(int i=0;i<count;i++)monitor.record(i,state[i],rate[i]);}
     private void ready(){if(!initialized)throw new IllegalStateException("Initialize coupled converter runtime first");}
     private void exclusive(){if(pending)throw new IllegalStateException("Finish or cancel the coupled predictor first");}
+    private void noSharedProposal(){if(sharedPending)throw new IllegalStateException("Complete or restore the shared state proposal first");}
     private static void finite(double value){if(!Double.isFinite(value))throw new IllegalArgumentException("Finite coupled boundary required");}
     private static void positive(double value){finite(value);if(value<=0)throw new IllegalArgumentException("Positive AC voltage magnitude required");}
     private static void interval(double value){finite(value);if(value<0)throw new IllegalArgumentException("Nonnegative integration interval required");}

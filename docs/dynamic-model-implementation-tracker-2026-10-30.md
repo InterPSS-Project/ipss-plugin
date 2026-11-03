@@ -175,7 +175,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
-- Resolve the [coupled line-mode and refinement failures](dynamic-models/chvdc2-named-link.md#coupled-line-mode-and-numerical-refinement-controls). Preserve both-method complete comparisons, explicit partial-run failures, fixed preparation intervals and event-side samples. Separate algebraic-line numerical stability, electrical publication and reference roundoff; do not fit a clock or precision change to absorb their errors. Production local-step ownership and automatic attachment remain required.
+- Retain the independently checked [sampled-current lifecycle](dynamic-models/chvdc2-named-link.md#sampled-algebraic-current-and-accepted-integration-intervals), accepted-step callback, explicit outer intervals and allocation-free rollback under both methods. Resolve the remaining coupled-current gates, coarse staggered instability, protected algebraic-line qualification, production local-step ownership and automatic attachment. Preserve complete event-side comparisons and unchanged dynamic-line controls; do not fit a clock, precision or threshold change to absorb the remaining errors.
 
 - Retain the shared [published measurement accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates), pure numerical/history storage and allocation-free both-method execution. Preserve independent bypass-observation and line-mode discriminators while resolving accepted electrical input stages. Observation parity does not qualify complete controller/network trajectories.
 

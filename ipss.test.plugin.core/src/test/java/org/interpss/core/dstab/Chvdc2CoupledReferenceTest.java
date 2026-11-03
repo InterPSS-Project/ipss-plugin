@@ -133,17 +133,23 @@ public class Chvdc2CoupledReferenceTest {
                     if(time==rows.get(n-1).get("time_s")) {
                         model.evaluateStaggered(h,left,0);event=true;duplicates++;
                         circuit.faultSide=duplicates==1?(tag.contains("rectifier-fault")?0:1):-1;
-                    }else for(int sub=0;sub<localSteps;sub++) {
+                    }else {
+                      boolean sampledInterval=localSteps>1&&flags[2]==0;
+                      if(sampledInterval){circuit.solve(model);model.beginIntegrationInterval(h);}
+                      for(int sub=0;sub<localSteps;sub++) {
                         double stageTime=sub+1==localSteps?time:time-h+(sub+1)*localStep;
                         if(staggered) {
                             circuit.solve(model);model.readStaggeredState(x,0);model.evaluateStaggered(localStep,f,0);if(!started)System.arraycopy(f,0,old,0,count);
                             if(event){for(int k=0;k<count;k++)f[k]=.5*(f[k]+left[k]);event=false;}
                             for(int k=0;k<count;k++)trial[k]=x[k]+localStep*(1.5*f[k]-.5*old[k]);model.applyStaggeredState(trial,0,localStep);model.readStaggeredState(x,0);
                             for(int k=0;k<count;k++)old[k]=x[k]==trial[k]?f[k]:0;started=true;
+                            model.completeStaggeredStep(localStep);
                         }else {
                             circuit.solve(model);model.step(localStep,0);circuit.solve(model);model.evaluatePredictorProtection(stageTime,circuit.sequence++);model.step(localStep,1);
                         }
                         if(sub+1<localSteps)circuit.accept(model,stageTime);
+                      }
+                      if(sampledInterval)model.completeIntegrationInterval();
                     }
                     circuit.accept(model,time);
                 }
