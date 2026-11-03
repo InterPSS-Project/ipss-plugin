@@ -44,6 +44,7 @@ def main():
     parser.add_argument('--fault-reactance', type=float, default=.2, help='Fault reactance in pu on 230 kV / 100 MVA')
     parser.add_argument('--network-iterations', type=int, help='Explicit network iteration ceiling, at most 50')
     parser.add_argument('--commutation-duration', type=float, help='Explicit minimum short duration in seconds')
+    parser.add_argument('--line-capacitance', type=float, help='Entered DC-line capacitance in microfarads')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], default=.0005)
@@ -58,6 +59,8 @@ def main():
         parser.error('Network iteration ceiling must be between one and fifty')
     if args.commutation_duration is not None and (not math.isfinite(args.commutation_duration) or args.commutation_duration < 0):
         parser.error('Commutation duration must be finite and nonnegative')
+    if args.line_capacitance is not None and (not math.isfinite(args.line_capacitance) or args.line_capacitance < 0):
+        parser.error('Line capacitance must be finite and nonnegative')
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
     root = Path.cwd()
@@ -76,6 +79,8 @@ def main():
         tag = tag[:-1]+f'netiter{args.network_iterations}-'+args.repeat
     if args.commutation_duration is not None:
         tag = tag[:-1]+f'cfhold{args.commutation_duration:g}-'+args.repeat
+    if args.line_capacitance is not None:
+        tag = tag[:-1]+f'cap{args.line_capacitance:g}-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -127,6 +132,8 @@ def main():
         constants[30:33] = [31.4, 1.025, .035]
     if args.commutation_duration is not None:
         constants[32] = args.commutation_duration
+    if args.line_capacitance is not None:
+        constants[47] = args.line_capacitance
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
                                  header+' '.join(map(str, args.flags+constants))+' /\n')
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -185,7 +192,9 @@ def main():
     checked('finish', psspy.run(0, .5, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
-    assert len(data['time']) < 5000 and all(math.isfinite(v) for k in ['time']+keys for v in data[k])
+    assert len(data['time']) < 5000
+    nonfinite = [(i, 'time_s' if k == 'time' else labels[k])
+                 for k in ['time']+keys for i, v in enumerate(data[k]) if not math.isfinite(v)]
     with Path('native.csv').open('w', newline='') as f:
         w = csv.writer(f, lineterminator='\n'); w.writerow(['time_s']+[labels[k] for k in keys])
         for i, t in enumerate(data['time']):
@@ -201,8 +210,11 @@ def main():
     elif args.profile.endswith('fault'):
         channel = next(k for k in keys if labels[k] == ('V7' if args.profile.startswith('rectifier') else 'V9'))
         excitation = max(abs(v-data[channel][0]) for v in data[channel]) > 1e-5
-    status = 'rejected-quality' if not quality else 'complete' if excitation else 'rejected-excitation'
+    status = ('rejected-nonfinite' if nonfinite else 'rejected-quality' if not quality
+              else 'complete' if excitation else 'rejected-excitation')
     manifest = dict(status=status, initialization_and_network_valid=quality, excitation_observed=excitation,
+                    finite_measurements=not nonfinite, nonfinite_measurements=len(nonfinite),
+                    first_nonfinite=min(nonfinite) if nonfinite else None,
                     settings=vars(args), layout=layout,
                     entered_constants=entered, initialized_constants=initialized, samples=len(data['time']), channels=len(keys),
                     engine_module=psse3607.__name__, library_sha256=sha(library),
@@ -210,7 +222,7 @@ def main():
                     files={p.name: sha(p) for p in Path('.').iterdir() if p.is_file()})
     Path('manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     print(json.dumps(dict(tag=out.name, status=manifest['status'])), flush=True)
-    assert quality and excitation
+    assert quality and excitation and not nonfinite
 
 
 if __name__ == '__main__':

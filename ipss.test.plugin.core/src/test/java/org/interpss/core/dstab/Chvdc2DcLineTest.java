@@ -81,4 +81,51 @@ public class Chvdc2DcLineTest {
         m.evaluateStaggered(.0001,state,0);assertEquals(800,state[0]);
         m.initialize(505000,500000);assertEquals(initial,m.getIntegrationStates());
     }
+    @Test void outerIntervalSelectsCapacitanceWithoutChangingEnteredData(){
+        var values=Chvdc2ParametersTest.constants();values[47]=.0001;
+        var p=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,1},values);
+        var coarse=p.prepareDcLine(5,2,13.5,13,60,.0005);
+        var fine=p.prepareDcLine(5,2,13.5,13,60,.00025);
+        assertEquals(1,coarse.staggeredStateCount());assertEquals(0,coarse.capacitanceFarads());
+        assertEquals(3,fine.staggeredStateCount());assertEquals(1e-10,fine.capacitanceFarads(),1e-25);
+        assertEquals(coarse.effectiveHenries(),fine.effectiveHenries());assertArrayEquals(values,p.copySourceConstants());
+        assertEquals(3,p.prepareDcLine(5,2,13.5,13,60).staggeredStateCount(),"Physical-only preparation has no implicit integration interval");
+    }
+    @Test void capacitanceThresholdIsStrictAndDisabledDynamicsRemainAlgebraic(){
+        var values=Chvdc2ParametersTest.constants();values[44]=1000;values[45]=values[46]=0;values[47]=1e6;
+        var p=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2,new int[]{0,0,1},values);
+        double frequency=1/(2*Math.PI),threshold=10/(3*frequency);
+        assertEquals(10,3*frequency*threshold,0);
+        assertEquals(3,p.prepareDcLine(5,1,0,0,60,threshold).staggeredStateCount());
+        assertEquals(1,p.prepareDcLine(5,1,0,0,60,Math.nextUp(threshold)).staggeredStateCount());
+        var off=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2,new int[]{0,0,0},values);
+        assertEquals(0,off.prepareDcLine(5,1,0,0,60,2*threshold).staggeredStateCount());
+        assertArrayEquals(values,off.copySourceConstants());
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void localRefinementDoesNotRestoreASuppressedCapacitor(boolean staggered){
+        var values=Chvdc2ParametersTest.constants();values[47]=.0001;
+        var p=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2,new int[]{0,0,1},values);
+        var prepared=p.prepareDcLine(5,2,13.5,13,60,.0005);
+        var rl=new Chvdc2DcLine(5,prepared.effectiveHenries(),0,true);
+        double[] state=new double[1],previous=new double[1],rate=new double[1],otherState=new double[1],otherPrevious=new double[1],otherRate=new double[1];
+        prepared.initialize(505000,500000);rl.initialize(505000,500000);
+        prepared.setInput(506000,500000);rl.setInput(506000,500000);
+        for(int n=0;n<100;n++){
+            advance(prepared,staggered,n,.000001,state,previous,rate);
+            advance(rl,staggered,n,.000001,otherState,otherPrevious,otherRate);
+            assertEquals(rl.rectifierAmperes(),prepared.rectifierAmperes(),0);
+            assertEquals(1,prepared.staggeredStateCount());assertEquals(0,prepared.capacitanceFarads());
+        }
+        assertEquals(.0001,p.value(Chvdc2Parameters.Constant.C_LINE_MICRO_F));
+    }
+    @Test void invalidPreparationIntervalsAndUnderflowCannotSilentlyChangeTheCircuit(){
+        var values=Chvdc2ParametersTest.constants();values[47]=26;
+        var p=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2,new int[]{0,0,1},values);
+        for(double h:new double[]{0,-1,Double.NaN,Double.POSITIVE_INFINITY})
+            assertThrows(IllegalArgumentException.class,()->p.prepareDcLine(5,2,13.5,13,60,h));
+        values[47]=Double.MIN_VALUE;
+        var tiny=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2,new int[]{0,0,1},values);
+        assertThrows(IllegalArgumentException.class,()->tiny.prepareDcLine(5,2,13.5,13,60,.0005));
+    }
 }

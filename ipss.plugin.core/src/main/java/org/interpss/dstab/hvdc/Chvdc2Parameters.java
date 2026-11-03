@@ -79,16 +79,42 @@ public final class Chvdc2Parameters {
     public Chvdc2OrderControls prepareOrderControls(double inverterTransformerRatio,double inverterTap) {
         return new Chvdc2OrderControls(this,inverterTransformerRatio,inverterTap);
     }
-    /** Prepare physical line coefficients once. Reactances are per bridge in ohms at the supplied Hz.
-     * Any source-specific capacitance suppression must be established separately, not inferred from a local step. */
+    /** Prepare physical coefficients without interval-dependent source preparation.
+     * Reactances are per bridge in ohms at the supplied Hz. Use the overload with
+     * a network interval when applying the source capacitance rule. */
     public Chvdc2DcLine prepareDcLine(double lineOhms,int bridges,double rectifierCommutationOhms,
+            double inverterCommutationOhms,double frequencyHz) {
+        return new Chvdc2DcLine(lineOhms,effectiveInductance(bridges,rectifierCommutationOhms,inverterCommutationOhms,frequencyHz),
+                value(Constant.C_LINE_MICRO_F)*1e-6,lineDynamicsEnabled());
+    }
+    /** Prepare the source line once for the outer network interval H. Capacitor
+     * dynamics are suppressed only when 3*fn*H > 10, fn=1/(2*pi*sqrt(L*C)).
+     * Entered data and the inductive dynamics are retained. Local integration
+     * intervals do not change this decision; changing H requires new preparation. */
+    public Chvdc2DcLine prepareDcLine(double lineOhms,int bridges,double rectifierCommutationOhms,
+            double inverterCommutationOhms,double frequencyHz,double networkIntervalSeconds) {
+        if(!Double.isFinite(networkIntervalSeconds)||networkIntervalSeconds<=0)
+            throw new IllegalArgumentException("Positive finite outer network interval required");
+        double henries=effectiveInductance(bridges,rectifierCommutationOhms,inverterCommutationOhms,frequencyHz);
+        double farads=value(Constant.C_LINE_MICRO_F)*1e-6;
+        if(value(Constant.C_LINE_MICRO_F)>0&&farads==0)
+            throw new IllegalArgumentException("Entered capacitance is below the representable farad range");
+        if(lineDynamicsEnabled()&&farads>0) {
+            if(!Double.isFinite(henries)||henries<=0)
+                throw new IllegalArgumentException("Positive finite effective inductance required for dynamic preparation");
+            // Separate roots avoid overflowing/underflowing the L*C product.
+            double naturalFrequency=1/(2*Math.PI*Math.sqrt(henries)*Math.sqrt(farads));
+            if(3*naturalFrequency*networkIntervalSeconds>10)farads=0;
+        }
+        return new Chvdc2DcLine(lineOhms,henries,farads,lineDynamicsEnabled());
+    }
+    private double effectiveInductance(int bridges,double rectifierCommutationOhms,
             double inverterCommutationOhms,double frequencyHz) {
         if(bridges<=0||!Double.isFinite(rectifierCommutationOhms)||rectifierCommutationOhms<0
                 ||!Double.isFinite(inverterCommutationOhms)||inverterCommutationOhms<0
                 ||!Double.isFinite(frequencyHz)||frequencyHz<=0)
             throw new IllegalArgumentException("Positive bridge count/frequency and nonnegative commutation reactances required");
-        double henries=(value(Constant.L_LINE_MH)+value(Constant.L_SMOOTH_R_MH)+value(Constant.L_SMOOTH_I_MH))*.001
+        return (value(Constant.L_LINE_MH)+value(Constant.L_SMOOTH_R_MH)+value(Constant.L_SMOOTH_I_MH))*.001
                 +bridges*1.75*(rectifierCommutationOhms+inverterCommutationOhms)/(2*Math.PI*frequencyHz);
-        return new Chvdc2DcLine(lineOhms,henries,value(Constant.C_LINE_MICRO_F)*1e-6,lineDynamicsEnabled());
     }
 }

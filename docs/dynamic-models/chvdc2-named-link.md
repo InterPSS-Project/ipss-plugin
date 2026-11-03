@@ -40,8 +40,9 @@ line-state equivalence remains a separate qualification requirement.
 Effective inductance includes entered line/smoothing inductances and the
 documented commutation contribution. Millihenries, microfarads and commutation
 reactances are converted once during preparation. Coefficients remain fixed
-across local integration stages. Source-specific capacitance suppression and
-fast-time preparation are not yet implemented or inferred from local steps.
+across local integration stages. The network-interval overload described below
+implements source capacitance suppression. Additional fast-time preparation and
+local-step selection are not inferred from that suppression decision.
 
 Modified Euler and shared staggered integration use the same state storage and
 RHS. Numerical arrays are reused. Explicit prediction cancellation and ownership
@@ -464,7 +465,8 @@ power to signed current injections, line loss/energy balance, both-method
 responses, commutation shorting without deletion of stored current, and atomic
 failure/predictor/outer-transaction rollback. Zero terminal AC voltage and reverse
 DC current remain rejected rather than assigned an unqualified conducting
-equivalent. The source-specific capacitance preparation rule is still pending.
+equivalent. Source capacitance preparation is described below; full capacitive
+trajectory qualification remains open.
 
 ### Electrical publication is distinct from a numerical protection stage
 
@@ -517,3 +519,62 @@ core-plugin module executes 486 tests with no failures or errors and four skips.
 The private `chvdc2-coupled-runtime-20261102/validation.zip` retains complete
 coupled traces, the reference-only event-increment diagnostic, source/executable
 fingerprints, regression reports and immutable reference-archive hashes.
+
+## Network-interval capacitance preparation
+
+The `Chvdc2Parameters.prepareDcLine` overload with `networkIntervalSeconds`
+applies the source rule once, before the line state storage is allocated:
+
+```text
+fn = 1 / (2*pi*sqrt(L*C))
+ignore capacitor dynamics only when line dynamics are enabled, C > 0,
+and 3*fn*H > 10
+```
+
+Here `H` is the outer network interval, and `L` includes the prepared commutation
+inductance. Equality retains the capacitor. Suppression changes the numerical
+line from three coordinates to one series-current coordinate; it retains the
+inductive dynamics and leaves all entered parameters unchanged. Invalid network
+intervals and capacitance unit conversion underflow are rejected. The original
+overload without an interval remains physical-only preparation for explicit
+equation use; it does not assume a network interval.
+
+Local modified-Euler or staggered steps use the resulting immutable coefficients.
+Refining those local steps cannot silently restore a capacitor that was
+suppressed for the outer interval. A changed network interval requires explicit
+new preparation. The documented frequency criterion is a model-preparation
+rule, not a stability certificate for the chosen integration interval.
+
+Independent cold repeats check the suppressed and retained modes. The tiny-
+capacitance control at the coarser network interval matches the complete earlier
+zero-capacitance reference byte-for-byte, including every channel and event-side
+sample. With the finer network interval, that same entered capacitor remains
+in the initialized state vector, but the reference subsequently becomes
+nonfinite after the fault. Its raw output, full CSV and rejection manifest are
+retained; only its initialization/preparation decision is used as evidence.
+The capture tool now records nonfinite results before returning failure, rather
+than losing the diagnostic at its pre-export assertion.
+
+A larger retained capacitor completes independent fault runs at both network
+intervals with unchanged entered data. Coupled tests now evolve all eighteen
+controller/line coordinates and compare capacitor voltage and both line
+currents. All fourteen coupled comparisons remain unaccepted: the six additional
+mode comparisons fail strict trajectory gates, while the four independent
+preparation checks pass. The retained-capacitor profiles reach 0.631 A current
+error, 0.00592 degrees rectifier-angle error and 119.6 V internal capacitor-voltage
+error. These are separate from AC bus-voltage error. The original eight coupled
+trajectories remain numerically unchanged.
+
+The private `chvdc2-capacitor-20261102/captures.zip` preserves both cold repeats,
+the rejected controls and exact probe provenance. Full coupled state/event
+sequencing, protected trajectories and production network attachment remain
+required before either record form can be classified as fully supported.
+
+The focused run executes 54 checks with fourteen coupled-reference failures and
+no errors. The registered suite executes 4,508 checks with 137 failures, no
+errors and 13 skips: all 131 preceding failure identities remain, and only the
+six additional coupled-mode comparisons are new. The core-plugin module
+executes 486 checks with no failures or errors and four skips. The accompanying
+private `chvdc2-capacitor-20261102/validation.zip` retains source/executable
+fingerprints, complete new traces, regression reports and exact equality checks
+against all eight preceding coupled trajectories.

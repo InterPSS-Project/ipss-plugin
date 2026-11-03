@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The [CHVDC2 network-interval capacitance preparation](dynamic-models/chvdc2-named-link.md#network-interval-capacitance-preparation)
+now freezes the source suppression decision before allocating line states,
+preserves entered constants and keeps local refinement separate. Cold independent
+controls verify suppression/retention; a retained tiny-capacitance reference
+becomes nonfinite and remains rejected. Complete capacitive coupled comparisons
+are retained but still fail strict gates. Production attachment and full
+trajectory qualification remain open.
+
 The [coupled CHVDC2 controller and DC-line runtime](dynamic-models/chvdc2-named-link.md#coupled-controller-and-dc-line-runtime)
 uses shared numerical coordinates, live converter injections and transactional
 electrical/protection histories under both integration methods. Repeated
