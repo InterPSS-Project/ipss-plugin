@@ -1,5 +1,46 @@
 # CHVDC2 named-link preparation and shared components
 
+## Preparation from the solved network
+
+`Chvdc2NetworkPreparation.prepare(network, parameters, H, initialTime)` resolves
+the exact named static link and prepares an independently owned, initialized
+`Chvdc2CoupledRuntime`. Both integration methods use this same runtime. The API
+does not attach terminal devices, disable the static link or mutate the solved
+network. It is the preparation boundary for the forthcoming network attachment.
+
+Preparation validates the solved-network flag, unique active link ownership,
+converter orientation, terminal ownership, physical units, equal bridge counts,
+positive consistent DC currents and the ohmic voltage drop. Unsupported
+capacitor-commutated equipment and converter resistance are rejected explicitly.
+It uses the network MVA base, converter primary voltage, transformer ratios,
+fixed taps, commutation reactances and network frequency. The entered outer
+interval `H` determines capacitor suppression once; local integration does not
+reprepare coefficients. Later edits to static equipment do not alter this
+runtime: prepare a new binding after resolving the changed network.
+
+The initial current reference is the solved line current; it is not recomputed
+from a live static power schedule during dynamics. Initial auxiliary input is
+zero. The binding preserves the solved operating point, outer interval and
+prepared physical coefficients. Source auxiliary routing and subsequent command
+ownership remain explicit attachment work.
+
+The initialization comparison solves the captured synthetic RAW afresh and
+uses entered controller constants, without importing recorded dynamic states
+or terminal voltages. Both retained source time grids pass the existing initial
+state and electrical boundary gates: maximum terminal-voltage error is
+`3.26266e-8 pu`, DC-current error `0.00250244 A`, power error `1.25123e-5 pu`,
+and firing-angle state error `1.35125e-5 degrees`. These results qualify initial
+preparation only. Fixed-terminal equilibrium checks exercise both integration
+methods and both algebraic and inductive line modes. Full coupled fault
+acceptance, production local integration and automatic attachment remain open.
+
+Validation for this preparation slice: the focused tests pass, including the
+independent initialization controls; the core-plugin module suite has no
+failures. The registered suite retains exactly the previous failure identities.
+All retained coupled CHVDC2 comparison traces are byte-identical, including the
+explicitly incomplete coarse algebraic run. This slice changes preparation,
+not controller equations, integration precision or trajectory acceptance limits.
+
 The named-link reader now recognizes standard `CHVDC2` and legacy
 `USRDCL` / `CHVDC2U1` records. It preserves their distinct identities, quoted
 link names, source locations and original parameters. The legacy allocation

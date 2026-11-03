@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Use the [solved-network preparation](dynamic-models/chvdc2-named-link.md#preparation-from-the-solved-network) for exact owner resolution, physical units, initial current reference and frozen outer-interval coefficients. Retain independent initialization and both-method equilibrium checks; complete terminal attachment, static-to-dynamic injection ownership and local integration without importing recorded states or treating initialization parity as fault-trajectory acceptance.
+
 - Resolve measurement event/integration history using the [same-time event discriminator](dynamic-models/chvdc2-named-link.md#same-time-event-calls-and-the-measurement-equation). Same-time run calls leave all reference samples unchanged and cannot prepare the post-event stage. Preserve the documented first-order lag and the distinct positive-time pause/resume evidence; do not introduce an extra input delay to fit the first postfault sample.
 
 - Retain the independently checked [sampled-current lifecycle](dynamic-models/chvdc2-named-link.md#sampled-algebraic-current-and-accepted-integration-intervals), accepted-step callback, explicit outer intervals and allocation-free rollback under both methods. Resolve the remaining coupled-current gates, coarse staggered instability, protected algebraic-line qualification, production local-step ownership and automatic attachment. Preserve complete event-side comparisons and unchanged dynamic-line controls; do not fit a clock, precision or threshold change to absorb the remaining errors.

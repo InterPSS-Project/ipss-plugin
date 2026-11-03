@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+The [CHVDC2 solved-network preparation](dynamic-models/chvdc2-named-link.md#preparation-from-the-solved-network)
+resolves and validates the static owner, prepares immutable physical coefficients
+using the outer interval, and initializes the shared runtime without changing
+network ownership. Independent initial states/boundaries and both-method
+fixed-terminal equilibrium pass. Production terminal attachment, local-step
+ownership and complete coupled trajectory acceptance remain unfinished.
+
 The [CHVDC2 same-time event controls](dynamic-models/chvdc2-named-link.md#same-time-event-calls-and-the-measurement-equation)
 rule out zero-duration `RUN` calls as a way to prepare the missing post-event
 measurement stage. Cold repeats leave complete trajectories and public snapshots
