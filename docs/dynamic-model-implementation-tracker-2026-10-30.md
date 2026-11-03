@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Resolve measurement event/integration history using the [same-time event discriminator](dynamic-models/chvdc2-named-link.md#same-time-event-calls-and-the-measurement-equation). Same-time run calls leave all reference samples unchanged and cannot prepare the post-event stage. Preserve the documented first-order lag and the distinct positive-time pause/resume evidence; do not introduce an extra input delay to fit the first postfault sample.
+
 - Retain the independently checked [sampled-current lifecycle](dynamic-models/chvdc2-named-link.md#sampled-algebraic-current-and-accepted-integration-intervals), accepted-step callback, explicit outer intervals and allocation-free rollback under both methods. Resolve the remaining coupled-current gates, coarse staggered instability, protected algebraic-line qualification, production local-step ownership and automatic attachment. Preserve complete event-side comparisons and unchanged dynamic-line controls; do not fit a clock, precision or threshold change to absorb the remaining errors.
 
 - Retain the shared [published measurement accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates), pure numerical/history storage and allocation-free both-method execution. Preserve independent bypass-observation and line-mode discriminators while resolving accepted electrical input stages. Observation parity does not qualify complete controller/network trajectories.

@@ -789,3 +789,42 @@ with no failures or errors and four skips. An earlier broad attempt hit the
 generated-output free-space guard; its reports are retained separately and are
 not used as regression evidence. Inactive generated outputs were relocated with
 hash verification and original-path junctions before the completed retry.
+
+## Same-time event calls and the measurement equation
+
+Independent cold controls now make one or two `RUN` calls with the current
+physical time immediately after fault application and clearing. At both retained
+network intervals, every complete output CSV is byte-identical to the ordinary
+continuous baseline. The calls preserve time, all public states and variables,
+and bus voltages. They neither add observations nor perform the post-event
+network evaluation. Cold repeats also reproduce the boundary snapshots exactly.
+
+These calls therefore cannot be used to repair the remaining first-step filter
+discrepancy. They are distinct from pausing after a positive integration interval,
+which the preceding run-boundary controls show can change subsequent history.
+The source operation manual describes pre-event and post-event derivative/network
+stages at pause/resume boundaries. That description does not expose the complete
+internal controller recurrence, and does not justify a fitted time shift.
+
+Review of the installed model diagram confirms a first-order terminal-voltage
+measurement with the entered measurement time constant. No additional input
+delay is shown. The current shared measurement equation is consistent with that
+diagram. Investigation must retain the distinction between equation conformance
+and the still-unaccepted event/integration trajectory; no extra delay, gain,
+precision rule or parameter correction was introduced.
+
+`Chvdc2RunBoundaryReferenceTest` checks both refresh counts, both cold repeats and
+both time grids against the unchanged baseline, using complete CSV equality and
+public boundary snapshots. The private
+`chvdc2-event-refresh-20261103/captures.zip` retains the raw outputs, exact capture
+scripts, manifests, diagram review and document fingerprints. These are reference
+lifecycle discriminators, not acceptance of either Java integration method or of
+the complete model. Production local integration, protected trajectories and
+automatic attachment remain open.
+
+The focused lifecycle, component-measurement and run-boundary selection passes
+all 37 checks with no skips. The new checks belong to the existing registered
+run-boundary test class. Production Java is unchanged in this slice; the preceding
+registered-suite failure baseline is retained, not represented as a fresh full
+suite run. Capture and validation evidence are retained separately in the private
+event-refresh artifact directory.

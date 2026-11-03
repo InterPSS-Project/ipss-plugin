@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class Chvdc2RunBoundaryReferenceTest {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final Path ARCHIVE = Path.of("testData/private/verification-artifacts/chvdc2-boundary-clock-20261102/captures.zip");
+    private static final Path REFRESH = Path.of("testData/private/verification-artifacts/chvdc2-event-refresh-20261103/captures.zip");
     private static final Map<String, JsonNode> PROFILES = new LinkedHashMap<>();
 
     private static String sha(byte[] bytes) throws Exception {
@@ -68,6 +69,54 @@ public class Chvdc2RunBoundaryReferenceTest {
     private static double serialized(double value) {
         // The capture script explicitly writes twelve significant digits to its CSV.
         return Double.parseDouble(String.format(Locale.ROOT, "%.12g", value));
+    }
+
+    @ParameterizedTest @ValueSource(doubles = {.0005, .00025})
+    void sameTimeRunCallsDoNotPrepareAnEventOrAlterTheContinuousTrajectory(double step) throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(REFRESH), "Retain independent same-time event captures");
+        assertEquals("2979a86b7efbe9038933277508bf08083ec7b4b9640c1177da4b4f01f612faf2", sha(Files.readAllBytes(REFRESH)));
+        try (var source = new ZipFile(REFRESH.toFile()); var baseline = new ZipFile(ARCHIVE.toFile())) {
+            var matrix = JSON.readTree(source.getInputStream(source.getEntry("manifest.json")));
+            for (var file : matrix.path("files").properties())
+                assertEquals(file.getValue().asText(), sha(source.getInputStream(source.getEntry(file.getKey())).readAllBytes()));
+            String plain = profile(step, null);
+            byte[] original = bytes(baseline, plain, "native.csv");
+            var baselineManifest = PROFILES.get(plain);
+            var observed = JSON.readTree(bytes(baseline, profile(step, "observations"), "boundary-snapshots.json"));
+            int checked = 0;
+            for (var p : matrix.path("profiles")) {
+                if (p.path("step").asDouble() != step) continue;
+                String tag = p.path("tag").asText();
+                int refreshCount = p.path("event_refresh_count").asInt();
+                assertTrue(refreshCount == 1 || refreshCount == 2);
+                var manifest = JSON.readTree(bytes(source, tag, "manifest.json"));
+                assertEquals("complete", manifest.path("status").asText());
+                assertTrue(manifest.path("finite_measurements").asBoolean());
+                assertTrue(manifest.path("initialization_and_network_valid").asBoolean());
+                assertEquals(refreshCount, manifest.path("settings").path("event_refresh_count").asInt());
+                assertEquals(baselineManifest.path("entered_constants"), manifest.path("entered_constants"));
+                assertEquals(manifest.path("entered_constants"), manifest.path("initialized_constants"));
+                assertEquals(baselineManifest.path("samples"), manifest.path("samples"));
+                assertArrayEquals(original, bytes(source, tag, "native.csv"),
+                        "Every source sample and event duplicate must remain identical, without alignment or filtering");
+                var snapshots = JSON.readTree(bytes(source, tag, "boundary-snapshots.json"));
+                for (String event : List.of("event", "clearing")) {
+                    var before = snapshot(snapshots, event + " API returned");
+                    var originalBoundary = snapshot(observed, event + " API returned");
+                    for (String key : List.of("time_s", "states", "variables", "ac_voltage")) {
+                        assertEquals(originalBoundary.path(key), before.path(key));
+                        for (int n = 1; n <= refreshCount; n++)
+                            assertEquals(before.path(key), snapshot(snapshots, event + " same-time refresh " + n).path(key),
+                                    "A same-time RUN must not be mistaken for a t+ network evaluation");
+                    }
+                }
+                if (p.path("repeat").asText().equals("a"))
+                    assertArrayEquals(bytes(source, tag, "boundary-snapshots.json"),
+                            bytes(source, tag.substring(0, tag.length() - 1) + "b", "boundary-snapshots.json"));
+                checked++;
+            }
+            assertEquals(4, checked, "Both refresh counts and cold repeats are required at each interval");
+        }
     }
 
     @ParameterizedTest @ValueSource(doubles = {.0005, .00025})

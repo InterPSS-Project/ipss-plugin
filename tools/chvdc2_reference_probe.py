@@ -47,6 +47,8 @@ def main():
     parser.add_argument('--line-capacitance', type=float, help='Entered DC-line capacitance in microfarads')
     parser.add_argument('--measurement-time', type=float, help='Entered current/AC-voltage measurement lag in seconds')
     parser.add_argument('--boundary-probe', choices=['observations', 'split'], help='Read public state/time snapshots; split additionally pauses after the first event step')
+    parser.add_argument('--event-refresh-count', type=int, choices=[0, 1, 2], default=0,
+                        help='Diagnostic same-time RUN calls after each event API; ordinary captures use zero')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], default=.0005)
@@ -89,6 +91,8 @@ def main():
         tag = tag[:-1]+f'meas{args.measurement_time:g}-'+args.repeat
     if args.boundary_probe is not None:
         tag = tag[:-1]+args.boundary_probe+'-'+args.repeat
+    if args.event_refresh_count:
+        tag = tag[:-1]+f'refresh{args.event_refresh_count}-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -189,7 +193,7 @@ def main():
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     snapshots = []
     def snapshot(label):
-        if args.boundary_probe is None:
+        if args.boundary_probe is None and not args.event_refresh_count:
             return
         states = [checked('snapshot state', psspy.dsrval('STATE', layout['STATE']+i)) for i in range(18)]
         snapshots.append(dict(label=label, time_s=checked('snapshot time', psspy.dsrval('TIME', 0)),
@@ -207,6 +211,10 @@ def main():
     elif args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.))
     snapshot('event API returned')
+    for refresh in range(args.event_refresh_count):
+        current_time = checked('refresh time', psspy.dsrval('TIME', 0))
+        checked('same-time event refresh', psspy.run(0, current_time, 1000000, 1, 0))
+        snapshot(f'event same-time refresh {refresh+1}')
     if args.boundary_probe == 'split':
         checked('first event step', psspy.run(0, .05+args.step, 1000000, 1, 0))
         snapshot('first event step')
@@ -217,6 +225,10 @@ def main():
     elif args.profile == 'modulation':
         checked('release modulation', psspy.change_var(layout['VAR'], 0.))
     snapshot('clearing API returned')
+    for refresh in range(args.event_refresh_count):
+        current_time = checked('refresh time', psspy.dsrval('TIME', 0))
+        checked('same-time clearing refresh', psspy.run(0, current_time, 1000000, 1, 0))
+        snapshot(f'clearing same-time refresh {refresh+1}')
     if args.boundary_probe == 'split':
         checked('first cleared step', psspy.run(0, .1+args.step, 1000000, 1, 0))
         snapshot('first cleared step')

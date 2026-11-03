@@ -2,6 +2,12 @@
 
 ## Current checkpoint
 
+The [CHVDC2 same-time event controls](dynamic-models/chvdc2-named-link.md#same-time-event-calls-and-the-measurement-equation)
+rule out zero-duration `RUN` calls as a way to prepare the missing post-event
+measurement stage. Cold repeats leave complete trajectories and public snapshots
+unchanged at both time grids. Retain the documented first-order lag equation and
+investigate positive-time event/integration history without adding a fitted delay.
+
 The [CHVDC2 sampled-current lifecycle](dynamic-models/chvdc2-named-link.md#sampled-algebraic-current-and-accepted-integration-intervals)
 separates live network observations from accepted algebraic-line history under
 both integration methods. Independent component replays pass the current gate;
