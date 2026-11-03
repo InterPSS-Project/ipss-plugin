@@ -39,7 +39,7 @@ def main():
     parser.add_argument('--form', choices=['standard', 'legacy'], required=True)
     parser.add_argument('--control', choices=['inverter-power', 'current'], default='inverter-power')
     parser.add_argument('--network', choices=['coupled', 'stiff'], default='coupled')
-    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited'], default='nominal')
+    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited', 'dc-limit', 'ac-limit', 'zero-filters'], default='nominal')
     parser.add_argument('--static-gamma', type=float)
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
@@ -92,6 +92,16 @@ def main():
         constants[2], constants[3] = 32.74, 32.70
     elif args.controller_profile == 'rate-limited':
         constants[18], constants[19] = .0002, -.0002
+    elif args.controller_profile == 'dc-limit':
+        constants[20:24] = [.1, .4, .996, 1.001]
+    elif args.controller_profile == 'ac-limit':
+        if args.flags[0] != 1:
+            parser.error('AC limiter profile requires the AC VDCOL flag')
+        constants[35:38] = [.286, .1, .05]
+        constants[42] = 1.03
+    elif args.controller_profile == 'zero-filters':
+        for index in [11, 13, 17, 25, 27]:
+            constants[index] = 0.
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
                                  header+' '.join(map(str, args.flags+constants))+' /\n')
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:

@@ -175,11 +175,14 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain the [shared measurement/current-order component](dynamic-models/chvdc2-named-link.md#shared-measurement-and-current-order-component), active AC/DC limit captures, prepared unit/transformer conversions and source-checked zero-time observation semantics. Resolve finite-lag observation-stage and strict replay discrepancies, then complete RAML, commutation-failure histories, local integration ownership and coupled converter/network attachment. Preserve both-method state, limiter and allocation gates; component availability does not establish complete SMIB qualification.
+
 - Retain the [shared current-controller equations and precision discriminator](dynamic-models/chvdc2-named-link.md#shared-current-controller-component), bounded PI output, active angle/rate-limit captures and both-method allocation/lifecycle checks. Resolve the strict rectifier-state replay gates without fitting equations or silently changing production precision. Complete outer measurements, current orders, calculated angle bounds, protection histories and coupled network attachment before claiming model qualification.
 
 - Retain [strict named-link decoding and the shared DC-line component](dynamic-models/chvdc2-named-link.md), distinct legacy/standard identities, immutable source coefficients and both-method physical equation gates. Use the valid cold-repeated stiff-source references to complete controller/protection equations, source-specific preparation, network attachment and full SMIB qualification; keep the original coupled startup failure diagnostic and decoded records explicitly unsupported for automatic attachment.
 
 - Preserve exact USRDCL named-link decoding and allocation/schema rejection.
+- Implement converter/network attachment with one shared state owner, fresh voltage-dependent terminal injections and transactional protection histories. Cover signed rectifier DC voltage and commutation-failure current paths explicitly; the existing normal-conducting converter helper's nonnegative-voltage contract is not sufficient by itself.
 - Implement dynamic HVDC controls and verify equations before sharing an engine with another variant.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 

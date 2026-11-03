@@ -18,6 +18,14 @@ A separate binary32 sub-update diagnostic localizes the PI discrepancy to
 reference stepping/precision; production precision remains unchanged and
 complete model qualification remains open.
 
+The [shared CHVDC2 measurement/current-order component](dynamic-models/chvdc2-named-link.md#shared-measurement-and-current-order-component)
+adds asymmetric DC-voltage filters, AC current-limit integrators, the DC VDCOL
+curve and calculated inverter angle bound. Cold controls exercise active limits
+and zero-time filters. The zero-down-time observation correction preserves the
+remaining dynamic coordinate. Both-method analytic/allocation checks pass;
+strict finite-lag replay, observation timing, protection and complete coupled
+attachment remain open.
+
 The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
 extends low-voltage static preparation to eligible motor-free composites with
 omitted distribution, fully represented transformer/feeder boundaries, and

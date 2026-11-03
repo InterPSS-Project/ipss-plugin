@@ -335,6 +335,8 @@ import org.interpss.core.dstab.Chvdc2ParametersTest;
 import org.interpss.core.dstab.Chvdc2DcLineTest;
 import org.interpss.core.dstab.Chvdc2CurrentControlsTest;
 import org.interpss.core.dstab.Chvdc2CurrentControlsReferenceTest;
+import org.interpss.core.dstab.Chvdc2OrderControlsTest;
+import org.interpss.core.dstab.Chvdc2OrderControlsReferenceTest;
 import org.interpss.core.dstab.Cdc6tNetworkPreparationTest;
 import org.interpss.core.dstab.Cdc6tConstantGammaTest;
 import org.interpss.core.dstab.Cdc6tLimitedGammaTest;
@@ -1345,6 +1347,8 @@ import org.junit.platform.suite.api.Suite;
     Chvdc2DcLineTest.class,
     Chvdc2CurrentControlsTest.class,
     Chvdc2CurrentControlsReferenceTest.class,
+    Chvdc2OrderControlsTest.class,
+    Chvdc2OrderControlsReferenceTest.class,
     Cdc6tNetworkPreparationTest.class,
     Cdc6tConstantGammaTest.class,
     Cdc6tLimitedGammaTest.class,

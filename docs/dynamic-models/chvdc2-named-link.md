@@ -144,3 +144,68 @@ this diagnostic. Neither the precision discriminator nor passing component
 tests replace the unresolved full-replay gates. Complete attachment, all
 controller/protection states, coupled SMIB trajectories and long-duration
 qualification remain required.
+
+## Shared measurement and current-order component
+
+`Chvdc2OrderControls` implements the measured DC currents and AC voltages,
+asymmetric DC-voltage filters, piecewise DC VDCOL curve, optional AC-voltage
+current-limit integrators, inverter order/error lags and calculated inverter
+maximum firing angle. Its ten coordinates correspond to source states
+0, 1, 2, 3, 8, 9, 10, 11, 12 and 13. Both integration methods use the same
+primitive state buffers and RHS; reciprocals, unit conversions and the VDCOL
+segment slope are prepared once. Warmed state and output kernels allocate no
+per-step objects in the component test.
+
+Terminal currents and orders enter in amperes, DC voltages in kV, and AC
+voltages on bus base. The entered ratings establish DC current/voltage pu.
+The inverter angle calculation scales its measured AC voltage by converter
+transformer ratio divided by tap, then applies the documented denominator
+floor and cosine limits. The error lag excludes the inverter current margin;
+that margin belongs to the downstream current PI.
+
+The AC current-limit states initialize at their upper limits. The prepared AC
+voltage reference is the minimum of the entered reference and the two initial
+terminal voltages, with entered data unchanged. The low selector combines the
+DC curve, current reference and enabled AC limit separately for each terminal.
+Upward and downward DC-voltage filtering use their respective entered times.
+
+Fully zero-time measurement/order filters expose algebraic observations without
+committing numerical storage. A zero down-time does not remove the asymmetric
+DC filter's dynamic coordinate: its positive up-time still owns state. Its
+published state therefore remains stored until an explicit integration/apply
+operation accepts the downward projection. Predictor cancellation restores
+numerical storage; input refresh and getters cannot perform that commit.
+
+### Independent order-control checks and remaining timing work
+
+Separate cold-repeated captures activate DC VDCOL and both AC-voltage limiters.
+Zero-time filter captures preserve their entered zeros through native
+initialization. These extend the earlier nominal and PI-limit profiles to
+twenty-two complete recorded-boundary controls. Every sample/channel and both
+event-side duplicates remain in the private archives; reference hashes and cold
+equality are enforced by the registered test.
+
+The analytic unit checks pass for both methods, including exponential
+convergence, asymmetric voltage filtering, piecewise current orders, active
+AC limits, algebraic observations, invalid-input atomicity, predictor ownership
+and warmed allocation. Thirteen of the forty-four full prescribed-input
+replays pass all unchanged channel gates. This includes both methods for the
+rectifier zero-filter fault and staggered integration for the inverter
+zero-filter fault. The latter modified-Euler run retains a maximum DC-filter
+voltage discrepancy of 0.00013113 pu against the 0.0001 pu gate.
+
+Finite-lag profiles still expose reference timing and precision differences.
+In the active inverter DC-limit control, applying the documented static curve
+to the reference's same-row voltage-filter state differs from its recorded
+current-order VAR by up to 50.33 A at 0.5 ms, and 25.85 A at 0.25 ms. Thus those
+two channels cannot be assumed to represent the same internal evaluation
+stage. A separate source-only diagnostic retains this distinction and checks
+the initial static bases. Observation-stage ownership still requires
+qualification; no production time shift is applied to improve the comparison.
+Full replay errors remain recorded without relaxing gates or changing precision.
+
+This component does not supply RAML, commutation-failure histories, converter
+network injection or complete model attachment. Coupled SMIB, local substep
+and observation-stage qualification remain necessary. The private
+`chvdc2-orders-20261102` archives retain the active-limit and zero-filter
+captures separately.

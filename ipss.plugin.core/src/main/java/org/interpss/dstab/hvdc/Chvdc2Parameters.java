@@ -69,6 +69,10 @@ public final class Chvdc2Parameters {
     public double[] copySourceConstants() { return constants.clone(); }
     /** Independently owned PI/angle storage; outer measurements, angle-bound logic and attachment remain separate. */
     public Chvdc2CurrentControls prepareCurrentControls() { return new Chvdc2CurrentControls(this); }
+    /** Independently owned transducers, current-order controls and calculated inverter angle bound. */
+    public Chvdc2OrderControls prepareOrderControls(double inverterTransformerRatio,double inverterTap) {
+        return new Chvdc2OrderControls(this,inverterTransformerRatio,inverterTap);
+    }
     /** Prepare physical line coefficients once. Reactances are per bridge in ohms at the supplied Hz.
      * Any source-specific capacitance suppression must be established separately, not inferred from a local step. */
     public Chvdc2DcLine prepareDcLine(double lineOhms,int bridges,double rectifierCommutationOhms,
