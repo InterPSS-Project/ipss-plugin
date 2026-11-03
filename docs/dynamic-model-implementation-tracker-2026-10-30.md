@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Use the independently checked [run-boundary clock controls](dynamic-models/chvdc2-named-link.md#independent-run-boundary-clock-checks) to resolve accepted input/history stages under both methods. Preserve pure observations, complete event-side samples and explicit run segmentation; do not infer derivative access, fit a time shift or treat split-run diagnostics as continuous trajectory acceptance.
+
 - Retain the independently checked [network-interval capacitance preparation](dynamic-models/chvdc2-named-link.md#network-interval-capacitance-preparation), unchanged entered data and frozen local-step coefficients. Preserve complete equivalence of the suppressed-capacitor control to the zero-capacitor control; keep nonfinite reference regimes explicitly rejected. Resolve complete capacitive state trajectories, event/input publication and stable local integration before automatic attachment.
 
 - Retain the [coupled controller/DC-line owner](dynamic-models/chvdc2-named-link.md#coupled-controller-and-dc-line-runtime), live voltage-dependent injections, shared equations for both methods, electrical acceptance idempotence and nested rollback. Resolve strict coupled reference trajectories, event/stage publication, protected and capacitive profiles, and production network attachment. Do not promote decoded records to automatic support on the basis of finite trajectories or voltage agreement alone.

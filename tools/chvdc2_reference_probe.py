@@ -45,6 +45,8 @@ def main():
     parser.add_argument('--network-iterations', type=int, help='Explicit network iteration ceiling, at most 50')
     parser.add_argument('--commutation-duration', type=float, help='Explicit minimum short duration in seconds')
     parser.add_argument('--line-capacitance', type=float, help='Entered DC-line capacitance in microfarads')
+    parser.add_argument('--measurement-time', type=float, help='Entered current/AC-voltage measurement lag in seconds')
+    parser.add_argument('--boundary-probe', choices=['observations', 'split'], help='Read public state/time snapshots; split additionally pauses after the first event step')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240], default=.0005)
@@ -61,6 +63,8 @@ def main():
         parser.error('Commutation duration must be finite and nonnegative')
     if args.line_capacitance is not None and (not math.isfinite(args.line_capacitance) or args.line_capacitance < 0):
         parser.error('Line capacitance must be finite and nonnegative')
+    if args.measurement_time is not None and (not math.isfinite(args.measurement_time) or args.measurement_time < 0):
+        parser.error('Measurement time must be finite and nonnegative')
     if not args.batch.replace('-', '').isalnum():
         parser.error('Batch must contain only letters, digits and hyphens')
     root = Path.cwd()
@@ -81,6 +85,10 @@ def main():
         tag = tag[:-1]+f'cfhold{args.commutation_duration:g}-'+args.repeat
     if args.line_capacitance is not None:
         tag = tag[:-1]+f'cap{args.line_capacitance:g}-'+args.repeat
+    if args.measurement_time is not None:
+        tag = tag[:-1]+f'meas{args.measurement_time:g}-'+args.repeat
+    if args.boundary_probe is not None:
+        tag = tag[:-1]+args.boundary_probe+'-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -134,6 +142,8 @@ def main():
         constants[32] = args.commutation_duration
     if args.line_capacitance is not None:
         constants[47] = args.line_capacitance
+    if args.measurement_time is not None:
+        constants[17] = args.measurement_time
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
                                  header+' '.join(map(str, args.flags+constants))+' /\n')
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:
@@ -177,19 +187,41 @@ def main():
     checked('step', psspy.dynamics_solution_param_2([di if args.network_iterations is None else args.network_iterations]+[di]*7,
                                                 [df, 1e-6, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
+    snapshots = []
+    def snapshot(label):
+        if args.boundary_probe is None:
+            return
+        states = [checked('snapshot state', psspy.dsrval('STATE', layout['STATE']+i)) for i in range(18)]
+        snapshots.append(dict(label=label, time_s=checked('snapshot time', psspy.dsrval('TIME', 0)),
+                              states=states, derivatives_available=False,
+                              variables=[checked('snapshot variable', psspy.dsrval('VAR', layout['VAR']+i)) for i in range(24)],
+                              ac_voltage=[checked('snapshot voltage', psspy.busdat(bus, 'PU')) for bus in [7, 9]]))
+        Path('boundary-snapshots.json').write_text(json.dumps(snapshots, indent=2)+'\n')
+    snapshot('started')
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(48)]
     checked('before event', psspy.run(0, .05, 1000000, 1, 0))
+    snapshot('before event')
     if args.profile.endswith('fault'):
         bus = 7 if args.profile.startswith('rectifier') else 9
         checked('fault', psspy.dist_bus_fault(bus, 3, 230., [0., args.fault_reactance*230**2/100]))
     elif args.profile == 'modulation':
         checked('modulation', psspy.change_var(layout['VAR'], 10.))
+    snapshot('event API returned')
+    if args.boundary_probe == 'split':
+        checked('first event step', psspy.run(0, .05+args.step, 1000000, 1, 0))
+        snapshot('first event step')
     checked('during event', psspy.run(0, .1, 1000000, 1, 0))
+    snapshot('before clearing')
     if args.profile.endswith('fault'):
         checked('clear', psspy.dist_clear_fault(1))
     elif args.profile == 'modulation':
         checked('release modulation', psspy.change_var(layout['VAR'], 0.))
+    snapshot('clearing API returned')
+    if args.boundary_probe == 'split':
+        checked('first cleared step', psspy.run(0, .1+args.step, 1000000, 1, 0))
+        snapshot('first cleared step')
     checked('finish', psspy.run(0, .5, 1000000, 1, 0))
+    snapshot('finished')
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
     assert len(data['time']) < 5000

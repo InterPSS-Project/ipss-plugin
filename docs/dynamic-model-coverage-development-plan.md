@@ -2,6 +2,13 @@
 
 ## Current checkpoint
 
+The [CHVDC2 run-boundary clock checks](dynamic-models/chvdc2-named-link.md#independent-run-boundary-clock-checks)
+separate pure public observations from pause/resume effects on controller
+history. Cold controls at both network intervals retain every sample and show
+that changing run segmentation changes subsequent states. Use this evidence
+when resolving accepted input/history stages; it does not qualify the current
+coupled trajectories or justify a fitted time shift.
+
 The [CHVDC2 network-interval capacitance preparation](dynamic-models/chvdc2-named-link.md#network-interval-capacitance-preparation)
 now freezes the source suppression decision before allocating line states,
 preserves entered constants and keeps local refinement separate. Cold independent

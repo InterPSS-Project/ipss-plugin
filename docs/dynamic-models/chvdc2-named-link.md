@@ -578,3 +578,49 @@ executes 486 checks with no failures or errors and four skips. The accompanying
 private `chvdc2-capacitor-20261102/validation.zip` retains source/executable
 fingerprints, complete new traces, regression reports and exact equality checks
 against all eight preceding coupled trajectories.
+
+## Independent run-boundary clock checks
+
+The capture tool can now change the entered measurement lag and record public
+state, variable, voltage and time snapshots at explicit run boundaries. A
+separate split-run control pauses immediately after the first faulted step and
+the first cleared step. Every original sample, event side and additional pause
+observation remains in the immutable private capture archive. The installed
+scripting environment cannot import its documented derivative module; derivative
+access is explicitly unavailable, rather than inferred from finite differences.
+The failed API probes are retained separately from completed captures.
+
+With a 1 ms measurement lag, independent cold repeats establish these properties
+at 0.5 and 0.25 ms network intervals:
+
+- Reading public snapshots leaves the complete ordinary-run CSV byte-identical.
+- Public state arrays at run return match the recorded states at the same
+  physical time, including event-side duplicates. Fault application and clearing
+  alone do not advance those states or refresh the published variables and bus
+  measurements before the next run call.
+- Pausing after the first faulted step leaves all previously recorded states
+  unchanged, but changes the states after resuming. The maximum change in the
+  rectifier AC-voltage measurement state is 0.0002797842 pu at the coarser step
+  and 0.00009000301 pu at the finer step. These are controller-filter differences,
+  not bus-voltage accuracy errors.
+
+`Chvdc2RunBoundaryReferenceTest` checks these properties against both cold
+repeats, verifies all retained file hashes, and compares common samples by time
+and occurrence. Extra pause observations stay in the archive. The small summary
+reports use bounded writers in unique run directories, so repeating the test
+preserves earlier evidence without an output collision. These reports do not
+substitute for the complete captures.
+
+This evidence rules out a simple CSV state-publication delay at run return and
+shows that run segmentation affects numerical history. It does not identify the
+internal integration recurrence or justify introducing a fitted half-step, input
+interpolation, precision change or extra filter into the Java equations. A faster
+measurement-lag discriminator also fails to support the earlier input-ramp
+hypothesis. Reconcile accepted input/history stages before changing either shared
+integration path; a pause/resume diagnostic must not silently replace the
+continuous reference run used for trajectory acceptance.
+
+The private `chvdc2-boundary-clock-20261102/captures.zip` contains the uninstrumented,
+observation-only and split-run controls, exact scripts, manifests and failed API
+attempts. Both new clock checks pass. No production equation or accuracy gate is
+changed, and complete coupled trajectories remain unaccepted.
