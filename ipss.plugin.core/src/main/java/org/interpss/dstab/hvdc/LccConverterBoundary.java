@@ -3,6 +3,31 @@ package org.interpss.dstab.hvdc;
 /** Prepared non-capacitor-commutated LCC terminal equations, independent of controller integration. */
 public final class LccConverterBoundary {
     private final double valveVoltsPerPu,noLoadDcVoltsPerPu,commutatingOhms,reactanceOhms,baseVA,powerSign;
+    double commutatingResistanceOhms(){return commutatingOhms;}
+    boolean isRectifier(){return powerSign>0;}
+    /** Signed terminal DC voltage before any externally owned protection short. */
+    public double dcVoltageAtFiringAngle(double acVoltagePu,double amperes,double angleRadians) {
+        firingInputs(acVoltagePu,amperes,angleRadians);
+        double value=powerSign*(noLoadDcVoltsPerPu*acVoltagePu*Math.cos(angleRadians)-commutatingOhms*amperes);
+        finite(value);return value;
+    }
+    /** Recover the firing angle from a solved signed terminal voltage, without changing equipment. */
+    public double firingAngleForDcVoltage(double acVoltagePu,double dcVolts,double amperes) {
+        positive(acVoltagePu);finite(dcVolts);finite(amperes);
+        if(amperes<0)throw new IllegalArgumentException("Nonnegative converter current required");
+        return Math.acos(unit((powerSign*dcVolts+commutatingOhms*amperes)/(noLoadDcVoltsPerPu*acVoltagePu)));
+    }
+    /** Fresh extinction margin for protection. Loss of a feasible commutation margin
+     * returns zero; this does not replace the terminal by a short or define its AC power. */
+    public double extinctionAtFiringAngle(double acVoltagePu,double amperes,double angleRadians) {
+        firingInputs(acVoltagePu,amperes,angleRadians);
+        double cosine=-Math.cos(angleRadians)+Math.sqrt(2)*amperes*reactanceOhms/(valveVoltsPerPu*acVoltagePu);
+        finite(cosine);return Math.acos(Math.max(-1,Math.min(1,cosine)));
+    }
+    private static void firingInputs(double voltage,double current,double angle) {
+        positive(voltage);finite(current);finite(angle);
+        if(current<0||angle<0||angle>Math.PI)throw new IllegalArgumentException("Nonnegative current and a firing angle in [0,pi] required");
+    }
     public LccConverterBoundary(boolean rectifier,int bridges,double acBaseVolts,double transformerRatio,
             double tap,double reactanceOhms,double networkBaseVA) {
         positive(acBaseVolts);positive(transformerRatio);positive(tap);positive(networkBaseVA);

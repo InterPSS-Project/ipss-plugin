@@ -446,3 +446,74 @@ no failures or errors and four skips. The private
 `chvdc2-joint-controls-20261102/validation.zip` retains the source/executable
 fingerprints, complete before/after diagnostic traces, reports and reference
 archive hashes. Full model qualification remains open.
+
+## Coupled controller and DC-line runtime
+
+`Chvdc2CoupledRuntime` owns the controller coordinates, DC-line coordinates and
+electrical acceptance history together. Both modified Euler and staggered
+integration use the same right-hand side. The prepared converter geometry
+calculates firing-angle terminal voltages and fresh extinction margin from live
+AC voltages and DC currents. Terminal current injections refresh with every
+network trial. Reusable primitive buffers cover numerical stages, boundary
+evaluation and nested rollback; warmed numerical and electrical updates allocate
+no objects in the focused tests.
+
+The runtime supports the algebraic line, the inductive line and the three-state
+capacitive T-circuit. Tests check a flat initialized boundary, conversion of
+power to signed current injections, line loss/energy balance, both-method
+responses, commutation shorting without deletion of stored current, and atomic
+failure/predictor/outer-transaction rollback. Zero terminal AC voltage and reverse
+DC current remain rejected rather than assigned an unqualified conducting
+equivalent. The source-specific capacitance preparation rule is still pending.
+
+### Electrical publication is distinct from a numerical protection stage
+
+A predictor can evaluate a protection transition without publishing a new
+extinction angle to the AC interface. Finishing its corrector retains that
+electrical history until explicit boundary acceptance. Protection mode and its
+clock can therefore participate in the numerical trial without advancing the
+AC publication twice.
+
+`readAcceptedBoundary` returns the power sample evaluated using the held angle,
+even after fresh extinction margin has been accepted for the next boundary.
+Repeated acceptance of an unchanged sequence is exactly idempotent. Changing
+phasors, coordinates or time requires a new sequence; an older electrical epoch
+cannot rewind a completed protection stage. All acceptance snapshots are
+included in rollback. Regression tests first reproduced changed inverter power
+on repeated acceptance and now preserve the complete published sample exactly.
+
+### Coupled independent trajectories remain unaccepted
+
+The new comparisons integrate all controller and line states continuously from
+the initialized operating point. The synthetic AC system is reduced to two
+source equivalents with its specified source/branch impedances. Reference source
+angles are checked to stay fixed. Fault admittance and live converter injections
+determine terminal voltage; no recorded voltage or state trajectory is imposed
+after initialization. Raw negative startup samples and both event-side duplicates
+remain in every comparison.
+
+Both rectifier- and inverter-side faults are checked at 0.5 and 0.25 ms under
+both integration methods. The eight comparisons still fail unchanged strict
+state and power gates. Across these profiles, bus-voltage error is below
+0.0000024 pu, line-current error reaches 0.520 A, and rectifier firing-angle error
+reaches 0.00542 degrees. Voltage agreement alone does not qualify the converter.
+
+The first post-event reference sample retains its previous current-measurement
+state while line current and AC-voltage measurement have begun moving. The
+coupled numerical schemes produce different first increments. Reducing the
+network interval does not remove every discrepancy. Event sampling, internal
+controller/line sequencing and published-state timing remain to be established;
+no coefficient, precision, time shift or gate was fitted to these traces.
+
+This runtime is not automatically attached by the importer. Full production
+network attachment, protected/capacitive coupled trajectories, startup and
+event sequencing, and complete independent SMIB acceptance remain required.
+
+The registered checkpoint executes 4,493 tests with 131 failures, no errors and
+13 skips. All 123 preceding failure identities remain; the only additions are
+the eight new coupled-reference comparisons. All fourteen coupled-runtime tests
+pass, including repeated-acceptance negative controls and rollback. The
+core-plugin module executes 486 tests with no failures or errors and four skips.
+The private `chvdc2-coupled-runtime-20261102/validation.zip` retains complete
+coupled traces, the reference-only event-increment diagnostic, source/executable
+fingerprints, regression reports and immutable reference-archive hashes.

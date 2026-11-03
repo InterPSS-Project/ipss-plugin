@@ -28,14 +28,14 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
     /** Scalar storage is copied into a preallocated checkpoint only at transaction boundaries. */
     private static final class Frame {
         double state,rectifierVoltage,inverterVoltage,gamma,time,ramStart,ramMarker,failureTime,leftRate,
-                acceptedRectifierVoltage,acceptedInverterVoltage,acceptedGamma;
+                acceptedRectifierVoltage,acceptedInverterVoltage,acceptedGamma,electricalGamma;
         int ramPhase;
         boolean failed,hadFailureTransition;
         long acceptance=-1,revision;
         void copyFrom(Frame f) {
             state=f.state;rectifierVoltage=f.rectifierVoltage;inverterVoltage=f.inverterVoltage;gamma=f.gamma;
             time=f.time;ramStart=f.ramStart;ramMarker=f.ramMarker;failureTime=f.failureTime;leftRate=f.leftRate;
-            acceptedRectifierVoltage=f.acceptedRectifierVoltage;acceptedInverterVoltage=f.acceptedInverterVoltage;acceptedGamma=f.acceptedGamma;
+            acceptedRectifierVoltage=f.acceptedRectifierVoltage;acceptedInverterVoltage=f.acceptedInverterVoltage;acceptedGamma=f.acceptedGamma;electricalGamma=f.electricalGamma;
             ramPhase=f.ramPhase;failed=f.failed;hadFailureTransition=f.hadFailureTransition;acceptance=f.acceptance;revision=f.revision;
         }
     }
@@ -55,7 +55,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
         voltage(rectifierVoltagePu);voltage(inverterVoltagePu);finite(extinctionDegrees);finite(time);
         preparedRamVoltage=Math.min(enteredRamVoltage,rectifierVoltagePu);
         frame.state=0;frame.rectifierVoltage=rectifierVoltagePu;frame.inverterVoltage=inverterVoltagePu;frame.gamma=extinctionDegrees;
-        frame.acceptedRectifierVoltage=rectifierVoltagePu;frame.acceptedInverterVoltage=inverterVoltagePu;frame.acceptedGamma=extinctionDegrees;
+        frame.acceptedRectifierVoltage=rectifierVoltagePu;frame.acceptedInverterVoltage=inverterVoltagePu;frame.acceptedGamma=extinctionDegrees;frame.electricalGamma=extinctionDegrees;
         frame.time=time;frame.ramStart=time;frame.ramMarker=0;frame.failureTime=time;frame.leftRate=0;
         frame.ramPhase=IDLE;frame.failed=false;frame.hadFailureTransition=false;frame.acceptance=-1;frame.revision=0;
         initialized=true;pending=false;monitor.reset();
@@ -70,6 +70,11 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
      * Each acceptance executes at most one commutation transition; a released short cannot
      * immediately re-trigger within the same accepted boundary. */
     public void acceptBoundary(double time,long acceptance) {
+        accept(time,acceptance,true);
+    }
+    /** A numerical protection stage may change its trial mode without publishing a new AC reference angle. */
+    void acceptProtectionStage(double time,long acceptance){accept(time,acceptance,false);}
+    private void accept(double time,long acceptance,boolean publishElectricalAngle) {
         ready();exclusive();finite(time);
         if(acceptance<0||acceptance<frame.acceptance||time<frame.time)
             throw new IllegalArgumentException("Protection acceptance sequence and time must be monotonic");
@@ -78,6 +83,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
             if(time!=frame.time||frame.rectifierVoltage!=frame.acceptedRectifierVoltage
                     ||frame.inverterVoltage!=frame.acceptedInverterVoltage||frame.gamma!=frame.acceptedGamma)
                 throw new IllegalArgumentException("Repeated protection acceptance has changed boundary inputs");
+            if(publishElectricalAngle)frame.electricalGamma=frame.gamma;
             return;
         }
         int phase=frame.ramPhase;double start=frame.ramStart,marker=frame.ramMarker,failureTime=frame.failureTime;
@@ -104,6 +110,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
         frame.failureTime=failureTime;frame.hadFailureTransition=hadTransition;frame.revision=revision;frame.leftRate=leftRate;
         frame.time=time;frame.acceptance=acceptance;
         frame.acceptedRectifierVoltage=frame.rectifierVoltage;frame.acceptedInverterVoltage=frame.inverterVoltage;frame.acceptedGamma=frame.gamma;
+        if(publishElectricalAngle)frame.electricalGamma=frame.gamma;
     }
     public void beginTransaction(){ready();exclusive();if(transaction)throw new IllegalStateException("Protection transaction already open");saved.copyFrom(frame);transaction=true;}
     public void commitTransaction(){ready();exclusive();if(!transaction)throw new IllegalStateException("No protection transaction");transaction=false;}
@@ -115,7 +122,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
     /** Electrical evaluation uses the previously accepted extinction angle; acceptBoundary
      * publishes the freshly calculated angle only for the next boundary. Input refresh and
      * rejected network iterations must not advance this history. */
-    public double acceptedInverterExtinctionDegrees(){ready();return frame.acceptedGamma;}
+    public double acceptedInverterExtinctionDegrees(){ready();return frame.electricalGamma;}
     public double rectifierMinimumDegrees(){ready();return ramlActive()?Math.max(minimumAngle,Math.min(ramAngle,ramAngle-frame.state)):minimumAngle;}
     public double ramlTriggerTime(){ready();return frame.ramStart;}
     public double ramlTimerMarker(){ready();return frame.ramMarker;}
@@ -143,7 +150,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
         ready();return Map.of("RAML active",ramlActive()?1.:0.,"RAML trigger time (s)",frame.ramStart,
                 "RAML timer marker (s)",frame.ramMarker,"Inverter shorted",frame.failed?1.:0.,
                 "Commutation transition time (s)",frame.failureTime,"Commutation transition observed",frame.hadFailureTransition?1.:0.,"Accepted time (s)",frame.time,
-                "Accepted inverter extinction angle (deg)",frame.acceptedGamma);
+                "Accepted inverter extinction angle (deg)",frame.electricalGamma);
     }
     private void record(IntegrationStateMonitor.Stage stage,double rate){monitor.begin(stage);monitor.record(0,frame.state,rate);}
     private void ready(){if(!initialized)throw new IllegalStateException("Initialize protection first");}

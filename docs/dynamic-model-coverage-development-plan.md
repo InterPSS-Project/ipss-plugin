@@ -2,6 +2,14 @@
 
 ## Current checkpoint
 
+The [coupled CHVDC2 controller and DC-line runtime](dynamic-models/chvdc2-named-link.md#coupled-controller-and-dc-line-runtime)
+uses shared numerical coordinates, live converter injections and transactional
+electrical/protection histories under both integration methods. Repeated
+electrical acceptance is idempotent. Complete synthetic coupled faults now
+evolve without recorded trajectory forcing, but all eight strict reference
+comparisons remain unaccepted. Event/stage sequencing, protected and capacitive
+profiles, production attachment and full model qualification remain open.
+
 The [joint CHVDC2 controller owner](dynamic-models/chvdc2-named-link.md#joint-controller-state-ownership-and-raml-limit-separation)
 connects shared controller coordinates under both integration methods, provides
 predictor/outer-transaction rollback and preserves accepted electrical history.

@@ -62,7 +62,8 @@ public class Chvdc2ControlAssemblyTest {
         assertEquals(before,m.getIntegrationStates());assertEquals(histories,m.getIntegrationHistories());assertEquals(0,m.staggeredInputDiscontinuityVersion());
         m.step(.00001,0);m.evaluatePredictorProtection(.00001,1);m.step(.00001,1);
         assertEquals(1,m.staggeredInputDiscontinuityVersion());assertTrue(m.ramlActive());assertTrue(m.inverterShorted());
-        assertEquals(0,m.acceptedInverterExtinctionDegrees());
+        assertEquals(30,m.acceptedInverterExtinctionDegrees(),"Correcting a controller state does not accept a new electrical reference");
+        m.acceptBoundary(.00001,2);assertEquals(0,m.acceptedInverterExtinctionDegrees());
         m.readStaggeredState(x,0);assertEquals(.5*.00001*40/.03,x[14],1e-12);assertEquals(32,x[4],1e-12,"RAML must not rebase PI memory");
         assertEquals(40-x[14],x[6],1e-12,"Apply the new firing-angle bound with the corrected RAML coordinate");
     }

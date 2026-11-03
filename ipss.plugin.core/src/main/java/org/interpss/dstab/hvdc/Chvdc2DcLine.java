@@ -56,6 +56,8 @@ public final class Chvdc2DcLine implements StaggeredEulerParticipant, Integratio
     public double midpointVolts(){ready();return state.length==3?state[1]:.5*rectifierVolts+.5*inverterVolts;}
     public double effectiveHenries(){return inductance;}
     public double capacitanceFarads(){return capacitance;}
+    double resistanceOhms(){return resistance;}
+    void restoreCoordinates(double[] values,int offset){System.arraycopy(values,offset,state,0,state.length);pending=false;monitor.reset();}
     private void rates() {
         if(state.length==1)rate[0]=(rectifierVolts-inverterVolts-resistance*state[0])*inverseInductance;
         else if(state.length==3){

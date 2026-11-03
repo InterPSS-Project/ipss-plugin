@@ -30,7 +30,7 @@ public final class Chvdc2ControlAssembly implements StaggeredEulerParticipant, I
     private double pendingStep;
     private long revision;
 
-    private static final class Checkpoint {
+    static final class Checkpoint {
         final double[] order=new double[10],current=new double[4],inputs=new double[9],left=new double[STATE_COUNT];
         final Chvdc2Protection.Checkpoint protection=new Chvdc2Protection.Checkpoint();
         long revision;
@@ -70,16 +70,17 @@ public final class Chvdc2ControlAssembly implements StaggeredEulerParticipant, I
         protection.setInput(orderValues[6],inputs[5],inputs[8]);
     }
     /** Commit a converged boundary. Distinct event sides require distinct sequence numbers. */
-    public void acceptBoundary(double time,long sequence){ready();exclusive();accept(time,sequence);}
+    public void acceptBoundary(double time,long sequence){ready();exclusive();accept(time,sequence,true);}
+    void acceptProtectionStage(double time,long sequence){ready();exclusive();accept(time,sequence,false);}
     /** Evaluate the predictor's protection branch within the current trial. Canceling
      * the prediction restores the previous mode, clock, input and extinction history.
      * The revision becomes externally visible only after the corrector succeeds. */
     public void evaluatePredictorProtection(double time,long sequence) {
-        ready();if(!pending)throw new IllegalStateException("A controller predictor is required");accept(time,sequence);
+        ready();if(!pending)throw new IllegalStateException("A controller predictor is required");accept(time,sequence,false);
     }
-    private void accept(double time,long sequence) {
+    private void accept(double time,long sequence,boolean publishElectricalAngle) {
         rates();bindProtection();long before=protection.staggeredInputDiscontinuityVersion();
-        protection.acceptBoundary(time,sequence);
+        if(publishElectricalAngle)protection.acceptBoundary(time,sequence);else protection.acceptProtectionStage(time,sequence);
         long after=protection.staggeredInputDiscontinuityVersion();
         if(after!=before){System.arraycopy(rate,0,leftRate,0,STATE_COUNT);revision=after;}
         bindCurrent();
@@ -137,6 +138,8 @@ public final class Chvdc2ControlAssembly implements StaggeredEulerParticipant, I
     public void beginTransaction(){ready();exclusive();if(inTransaction)throw new IllegalStateException("Controller transaction already open");save(transaction);inTransaction=true;}
     public void commitTransaction(){ready();exclusive();if(!inTransaction)throw new IllegalStateException("No controller transaction");inTransaction=false;}
     public void rollbackTransaction(){ready();if(!inTransaction)throw new IllegalStateException("No controller transaction");restore(transaction);pending=false;inTransaction=false;}
+    void saveOwnerCheckpoint(Checkpoint destination){ready();exclusive();save(destination);}
+    void restoreOwnerCheckpoint(Checkpoint source){restore(source);pending=false;}
     private void save(Checkpoint c) {
         order.readStaggeredState(c.order,0);current.readStaggeredState(c.current,0);protection.saveCheckpoint(c.protection);
         protection.readStaggeredState(protectionValue,0);c.raml=protectionValue[0];c.acceptedGamma=protection.acceptedInverterExtinctionDegrees();
