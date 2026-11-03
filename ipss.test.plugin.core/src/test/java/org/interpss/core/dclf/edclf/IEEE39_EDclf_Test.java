@@ -12,7 +12,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
-import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
+import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.PredicateConnectBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.algo.impl.solver.YMatrixSolver;
 import com.interpss.core.datatype.Mismatch;
@@ -61,14 +61,14 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
-		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
+		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, PredicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		
 		DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet)
 		                     .updateConnectBusVoltage();
 
 		System.out.println("EDclf/VCorrection Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
-		mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
+		mis = aclfNet.maxMismatch(AclfMethodType.NR, PredicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		assertTrue(mis.maxMis.abs() < 0.0001);
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
@@ -84,7 +84,7 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 		//aclfNet.initContributeGenLoad();
 		
 		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
-				.formYMatrixSet(false, predicateConnectBus);
+				.formYMatrixSet(false, PredicateConnectBus);
 		
 		assertTrue(ySet[0].getDimension() == 12);
 		assertTrue(ySet[3].getDimension() == 27);
