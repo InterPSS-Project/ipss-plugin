@@ -319,3 +319,32 @@ threshold was fitted to remove it. Remaining work includes:
 Private evidence retains exact source/tool provenance, executed probes, original
 captures and diagnostic outputs. The public implementation tracker contains only
 model-specific work and priorities.
+
+## Modified-Euler switching discrimination
+
+A test-only coupled clock cut retains the ordinary modified-Euler equations and
+changes only the accepted endpoint clock presented to bank switching. It retains
+all reference rows and event-side duplicates. It reduces differing bank-status
+rows from nine to four: discharge, cooling-slot selection and repeated reactor
+removal then agree. The cooling profile's peak terminal-voltage error falls from
+0.032512 to 0.002587 pu. This is diagnostic evidence, not a production clock
+policy change or acceptance of the complete modified-Euler matrix.
+
+The remaining capacitor and reactor insertion differences start before any bank
+operates. At the first endpoint following the reference change, capacitor
+current is 0.350594 pu versus 0.339957 pu in the reference, straddling the 0.35 pu
+pickup threshold. Reactor current is 0.243559 versus 0.257626 pu, straddling
+0.25 pu. Ordinary predictor/corrector therefore starts pickup one 0.5 ms interval
+earlier. Its first current agrees with an independently evaluated Heun recurrence
+to 2e-12 pu; the captured reference agrees with the averaged-event two-step
+increment to 2e-7 pu. Substituting either recurrence for the other fails the
+first-interval discriminator. This identifies an integration-stage difference,
+not evidence of incorrect bank-delay equations.
+
+The tests retain the existing accepted staggered and single-operation gates.
+The full repeated-operation modified-Euler matrix remains diagnostic: its paired
+capacitor and reactor insertion peak voltage errors remain 0.034233 and
+0.026749 pu respectively. No thresholds, model coefficients, production clock
+or numerical equations were changed. Further qualification must distinguish an
+explicit solver clock contract from integration-method accuracy; adjusting bank
+pickup to hide a current-integration difference would change the model.
