@@ -262,3 +262,43 @@ The complete failing traces, diagnostic source, contraction summary and passing
 contract-test log are pinned in private `regca-hv-half-contraction-20261104`, manifest
 SHA-256 `74b1d85ac705519963e3ec43289c04439cd25aef63830ca9cd2683d987201cfc`.
 Earlier failed executions remain in `regca-hv-half-weighting-20261104`.
+
+### Coupled fixed-point prototype: nonuniqueness stops acceleration
+
+A limited scalar prototype tests the original coupled voltage/correction equations,
+using retained active-profile current state and saved voltage. It does not change
+production code or use trajectory fitting. Both acceleration values admit more than
+one exact fixed point. Let `D=(1-a)*Vs+a*V`. For any admissible voltage below the
+`D=Volim` boundary, choose
+
+`C = D*(Iq_state-(V-1)/0.21)`.
+
+When `C>=0` and the generated-current ceiling is inactive, the original correction
+update leaves C unchanged, and the original network equation returns the same V.
+The prototype constructs two distinct points for each profile, separated by 0.000999
+pu voltage. Both have zero measured scalar-map and KCL residual in double arithmetic.
+This is a constructive nonuniqueness result, not a tolerance-based approximation.
+
+| Weight | First exact voltage / correction | Second exact voltage / correction |
+|---|---|---|
+| 0.8 | 1.199902667 / 0.129860109 | 1.198903667 / 0.135478388 |
+| 0.4 | 1.183073653 / 0.210336498 | 1.182074653 / 0.215973125 |
+
+The retained finite-stop reference outputs differ from these exact fixed points.
+Starting the original scalar iteration from zero correction accepts its voltage-change
+criterion after 32 iterations for the selected 0.8 boundary, with terminal voltage
+within 9.5e-8 pu of the corresponding reference observation before final-output
+correction evaluation. The selected 0.4 boundary remains unconverged at 50 iterations.
+These are conditional scalar controls with fixed recorded inputs, not replacement
+full dynamic simulations or new trajectory accuracy gates.
+
+A generic residual-certified coupled accelerator could choose a different retained
+correction even while satisfying the equations and limits exactly. Preserving the
+original correction-selection history and finite-stop semantics therefore requires
+an additional model contract; residual certification alone is insufficient. The
+prototype stops at this nonuniqueness result. No numerical mixing, production solver
+change, tolerance relaxation or default change is introduced.
+
+Reproduction script and complete scalar iteration traces are pinned by private
+`regca-hv-fixed-point-proof-20261104/manifest.json`, SHA-256
+`2afe6b8b7c1d749d2e1eb79dbce8f20d22a9061e2ff436acecdaa6c378af4c1f`.
