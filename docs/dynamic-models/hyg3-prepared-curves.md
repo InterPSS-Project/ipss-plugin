@@ -343,7 +343,7 @@ pre-change executable fails the new bypass-observation regression.
 per-channel errors, state envelopes and the existing 0.001 range-normalized
 boundary limits. State envelopes, voltage gates and the 0.01-degree rotor-angle
 gate pass under both methods. The new quarter-cycle modified-Euler comparisons
-expose an existing active-power NRMSE of 0.001128–0.001131, which exceeds 0.001;
+expose an existing active-power NRMSE of 0.001128â€“0.001131, which exceeds 0.001;
 the frozen executable reproduces it. Fine-step modified Euler and both
 staggered resolutions pass the power gate. This failure remains enabled, so
 the focused run reports 47 of 48 tests passing, with no skips or errors. The
@@ -387,7 +387,7 @@ these are not described as exact internal-state parity.
 
 `Hyg3DerivativePreparationConformanceTest` retains the cold controls and complete
 zero-setting comparisons under both methods. All voltage and angle gates pass.
-The quarter-cycle modified-Euler active-power NRMSE remains 0.001127–0.001130,
+The quarter-cycle modified-Euler active-power NRMSE remains 0.001127â€“0.001130,
 above the unchanged 0.001 gate. Fine-step modified Euler and all staggered power
 comparisons pass. The new test leaves this failure enabled alongside the
 existing bypass-profile power failure. Shared-update tests cover local-step
@@ -411,7 +411,7 @@ samples to the machine while retaining the ordinary machine/network solver.
 The prescribed output matches every positive-time reference sample exactly;
 the retained initial machine output differs by 0.000000014 pu.
 Across the original bypass profiles, quarter-cycle active-power NRMSE remains
-0.00112–0.00114. This localizes the remaining gate downstream of the governor
+0.00112â€“0.00114. This localizes the remaining gate downstream of the governor
 output; it does not qualify the complete governor or justify changing its
 equations to compensate for machine/network integration differences. Production
 code contains no playback override and the accuracy threshold is unchanged.
@@ -675,7 +675,36 @@ than a speedup. Across three interleaved JVM forks per version, complete ordinar
 update cycles increased from approximately 97/103 to 116/121 ns for the two
 controller modes; shared cycles increased from 71/72 to 85/85 ns. Each fork used
 six warmup and nine measured batches of 200,000 cycles, one reported processor
-and a bounded heap, without CPU affinity. These 13–19 ns increases include
+and a bounded heap, without CPU affinity. These 13â€“19 ns increases include
 state/output observations and exclude startup; they are not estimates of total
 simulation runtime. Reproducible source, harness and measurements are retained
 in the private `hyg3-runtime-control-20261104` evidence archive.
+
+
+### Ordered initial gate bounds
+
+Imported source-convention records now preserve ordered PMIN/PMAX limits when
+initial dispatch requires a gate outside that interval. Initialization clips the
+physical gate, retains the dispatched flow and valve-integrator coordinates,
+and publishes the resulting head, mechanical power and nonzero derivatives.
+It does not widen a physical limit to manufacture an equilibrium. Existing typed
+preparation semantics, including their reversed-limit extension, remain unchanged.
+
+Eight independent cold captures cover upper and lower infeasibility in both
+controller modes. Each pair repeats exactly and retains unchanged entered
+constants, but every run reports suspect initial conditions. They qualify the
+initial bound and residual behavior only; they are explicitly rejected as
+trajectory references. Returning true from initialization does not certify an
+acceptable equilibrium.
+
+The production `IntegrationStateAccess` diagnostic exposes the last evaluation
+stage (initialization or the staggered solver's initial rate evaluation), coordinates and nonzero valve/water-flow rates. The existing
+benchmark initialization audit consumes that same interface; the compiled-CML
+residual checker does not cover this custom governor. Tests inspect the public
+diagnostic interface under both solvers, including observation purity. Valid
+initialization follows the prior arithmetic path. Existing coupled bypass and
+long-duration trajectory limitations remain unresolved.
+
+Private evidence is retained in `hyg3-initial-bounds-20261104`; the public tests
+retain the rejected-quality checks instead of presenting those captures as
+accepted dynamic trajectories.

@@ -121,22 +121,28 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
 
         double rawMax = Math.max(d.getPmax(), d.getPmin());
         double rawMin = Math.min(d.getPmax(), d.getPmin());
-        effectivePmax = Math.max(rawMax, gate0);
-        effectivePmin = Math.min(rawMin, gate0);
+        // Imported ordered physical limits remain limits even when the dispatch
+        // cannot initialize at equilibrium. Preserve the typed preparation
+        // extension (including reversed bounds) separately.
+        boolean preserveInitialBounds = sourceConvention() && d.getPmax() >= d.getPmin();
+        effectivePmax = preserveInitialBounds ? rawMax : Math.max(rawMax, gate0);
+        effectivePmin = preserveInitialBounds ? rawMin : Math.min(rawMin, gate0);
+        double initialGate = clamp(gate0, effectivePmin, effectivePmax);
         pref = d.getRgate() * gate0 + d.getRelec() * pe0;
-        state.set(0.0, 0.0, gate0, gate0, q0, 0.0, pe0, 0.0, 0.0);
+        state.set(0.0, 0.0, gate0, initialGate, q0, 0.0, pe0, 0.0, 0.0);
         oldState.copyFrom(state);
-        committedGateOutput = gate0;
-        committedBacklashInput = gate0;
-        currentGateOutput = gate0;
+        committedGateOutput = initialGate;
+        committedBacklashInput = initialGate;
+        currentGateOutput = initialGate;
         currentCv = gate0;
         currentOutput = pm0;
         committedDeadbandMode = DeadbandMode.NEUTRAL;
         initializedMachine = mach;
         initializedData = d;
         initialized = true;
-        retainRates(state, derivatives(state, algebraic(state, committedGateOutput, committedDeadbandMode)),
-                Stage.INITIALIZATION);
+        Algebraic initial = algebraic(state, committedGateOutput, committedDeadbandMode);
+        if (initialGate != gate0) publish(initial);
+        retainRates(state, derivatives(state, initial), Stage.INITIALIZATION);
         return true;
     }
 
