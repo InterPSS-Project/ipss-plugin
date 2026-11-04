@@ -55,8 +55,17 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
         double dr=high.getReal()-low.getReal()/tap, di=high.getImaginary()-low.getImaginary()/tap;
         double denominator=(zr*zr+zi*zi)*tap;
         double ir=(dr*zr+di*zi)/denominator, ii=(di*zr-dr*zi)/denominator;
-        return Math.hypot(low.getReal()-ir*compensationR+ii*compensationX,
-                low.getImaginary()-ir*compensationX-ii*compensationR);
+        // The timer observes the accepted command prepared with the existing
+        // transformer boundary current, before that command changes the network.
+        // Keep the physical voltage/current untouched; electrical application
+        // still belongs to advance() and the following network solution.
+        double command=state.tap();
+        if (command == tap)
+            return Math.hypot(low.getReal()-ir*compensationR+ii*compensationX,
+                    low.getImaginary()-ir*compensationX-ii*compensationR);
+        double voltageScale=command/tap, currentScale=tap/command;
+        return Math.hypot(low.getReal()*voltageScale-(ir*compensationR-ii*compensationX)*currentScale,
+                low.getImaginary()*voltageScale-(ir*compensationX+ii*compensationR)*currentScale);
     }
     private void advance(double dt, double voltage) {
         if (dt == 0) return;

@@ -380,3 +380,42 @@ The private `cmldblu1-tap-command-stage-20261104` evidence contains the source,
 independent reconstruction scripts, eight complete traces for both methods,
 rollback/rebuild tests, bounded logs and per-file hashes. Archive SHA-256:
 `02c7b3ce2087b7d21ac0d9b5193c49890a0c55259cf817ef9867a40812d8fa66`.
+
+
+## Timer measurement after an accepted command
+
+A separate measurement-coordinate defect is now corrected without moving the
+command or electrical application boundaries. The timer previously sampled the
+physical low-side voltage even when the accepted command differed from the
+applied transformer ratio. The source instead prepares its compensated control
+voltage from that accepted command and the existing primary boundary current:
+
+`Vcontrol = abs(Vlow * command/applied - Zcomp * Iprimary/command)`.
+
+This changes neither the solved voltage nor the transformer matrix. When command
+and applied ratio coincide, the original arithmetic path is retained exactly.
+The sampler uses primitive arithmetic and does not advance any history.
+
+The retained downward and reversal profiles discriminate these coordinates at
+0.2484986 and 0.3294975 seconds, respectively. Physical compensated voltage is
+about 0.948355 pu, above the 0.945 pu upper bound; the prepared observation is
+about 0.943398 pu, inside the 0.915–0.945 pu band. Independent reconstruction
+matches the recorded control observation within 1.5e-8 pu. With the unchanged
+0.01-second control delay and 0.0005-second interval, the next accepted counter
+must decrease by 0.05. Both runtime methods previously held the saturated
+counter for an extra interval. All four before-change tests fail by 0.05;
+the corrected histories agree through their complete decay to zero.
+
+The tests also cover compensation disabled, identical command/applied ratios,
+and repeated pure observations with unchanged bus voltages, histories and all
+four transformer admittance entries. Existing failed-step rollback, successful
+retry and matrix-rebuild checks remain enabled. These checks qualify timer
+measurement and history only. The six active full-trajectory profiles still
+fail their unchanged normalized gates; reversing-profile reactive-power NRMSE
+remains approximately 0.00333947. No precision rounding, timing adjustment or
+trajectory-tolerance change is introduced.
+
+Final focused validation: 62 tests, zero failures/errors/skips. The private
+`cmldblu1-tap-measurement-20261104/validation.zip` retains source, before/after
+logs, exact test reports and reference provenance. SHA-256:
+`19024b74de52ff8027526c8bc14555ac0b9a6cc4e4c189f1b740717f62b4cb8f`.
