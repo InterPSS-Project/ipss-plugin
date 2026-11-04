@@ -240,3 +240,22 @@ qualification remain open.
 Private executed reports and the skipped-test identity are retained at
 `verification-artifacts/accepted-memory-integrated-renewables-20261104`, SHA-256
 `f1d2e6a0f29041dee76caa11d59a4801c68083f5cac335a6ec645d7ce647b202`.
+
+## Full extended-suite recheck
+
+At `e57235ef3`, the registered suite with the extended profile executes 4,879
+tests across 734 class reports: 4,643 pass, 221 fail, two error and 13 skip.
+Every previously failing identity remains. Six additional failing identities
+are explained by expanded coverage: three registered motor-overlap profiles
+and three load-flow tests absent from the retained baseline reports. The latter
+reproduce in isolation with both installed core dependency versions; they are
+not established as converter regressions. Their expected values were not changed.
+
+The new converter memory tests pass in this full run. Nevertheless, the branch
+is not ready to merge: the complete suite and several independent model
+qualification gates remain unresolved. No main-branch merge was performed.
+
+Complete executed reports and failure-identity comparison are retained at
+`verification-artifacts/full-accepted-memory-20261104`, archive SHA-256
+`ff487b2ba024a62abee322468a9c30e11abf4f24582c5dd481fa69b964cf13e7`.
+The same directory retains separate isolated load-flow controls.
