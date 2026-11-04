@@ -11,10 +11,17 @@ partly collapsed composite full-removal test. REECC1's optional two-step path
 and its remaining qualification boundaries are documented in
 [the controller report](reecc1-two-step-integration.md).
 
-This focused result does not qualify the entire branch for merging. The latest
-full registered suite, before this wave, reported 4,756 tests with 215 failures,
-two errors and 13 skips. No new failing identities appeared relative to its
-previous baseline, but the remaining model and system gates must be resolved.
+This focused result does not qualify the entire branch for merging. The full
+registered suite at `771b92e33` reports 4,809 tests with 215 failures, two errors
+and 13 skips. Its failing identities are unchanged from the previous full run
+(4,756 tests). No failures are newly introduced or resolved by this wave;
+the remaining model and system gates must be resolved.
+
+The full run was compiled before the later motor-rearm and early relay-preflight
+changes, which have separate focused validations. Its 719 executed test-class
+reports and bounded log are retained at
+`verification-artifacts/full-model-wave-20261104`, SHA-256
+`d7a9aa03e1a7795ae0b77b0743de9541b538c862805b3913e1811994d0ae89a4`.
 
 Private evidence is retained at
 `verification-artifacts/parallel-model-wave-222-20261104`.
@@ -80,3 +87,16 @@ one-network-step action delay remains under investigation. See the
 Private integrated evidence is at
 `verification-artifacts/motor-reclose-integration-20261104`, SHA-256
 `e202a00e8c0730eaef51e5f628673222cd83b71825c5227ae461936f985696f0`.
+
+## Early shared relay preflight
+
+The subsequent relay change validates prepared target identity, static definition,
+status and parent ownership before advancing shared accepted-step timers or
+transfer actions. Legitimate dynamic power evolution remains allowed. Actual
+LDS3BL/LVS3BL callback tests now cover invalid targets, restored retries and
+idempotence on networks prepared by both solvers. These are lifecycle tests,
+not independent equation qualification of those relay families.
+
+The combined relay, composite and motor selection passes 137 tests with no
+failures, errors or skips. Private evidence is retained at
+`verification-artifacts/relay-lifecycle-integration-20261104`.

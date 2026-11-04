@@ -1343,6 +1343,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.Tiocr1PhysicalTerminalReferenceTest.class,
     org.interpss.core.dstab.Tiocr1BreakerTransferReferenceTest.class,
     org.interpss.core.dstab.Tiocr1MultipleTransferReferenceTest.class,
+    org.interpss.core.dstab.StagedRelayTargetLifecycleTest.class,
     org.interpss.core.dstab.dynLoad.Tiocr1CompositeLoadTest.class,
     org.interpss.core.dstab.dynLoad.CompositeCollapsedFullTripTest.class,
     org.interpss.core.dstab.dynLoad.CompositePartlyCollapsedFullTripTest.class,
