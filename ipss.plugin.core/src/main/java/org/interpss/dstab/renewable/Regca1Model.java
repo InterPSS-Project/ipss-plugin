@@ -28,7 +28,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
         implements DynamicGenDevice, RenewableConverterHost, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
-        NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort {
+        NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort,
+        org.interpss.dstab.control.util.NetworkEventInput {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
@@ -458,6 +459,25 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             q = newQ;
         }
         return finite(p) && finite(q);
+    }
+    /** Publish solved event inputs without advancing any converter/controller history. */
+    @Override public void acceptNetworkEventInput(double physicalTimeSec) {
+        if (!Double.isFinite(physicalTimeSec)) throw new IllegalArgumentException("Invalid event time");
+        if (!isActive() || getDStabBus() == null || !getDStabBus().isActive()
+                || parentGen == null || !parentGen.isActive()
+                || deviceBaseMva <= EPS || systemBaseMva <= EPS) return;
+        if (networkSolutionInProgress)
+            throw new IllegalStateException("Event inputs require a completed network solution");
+        // This is the same pure current function used by the network source.
+        // Optional iteration memory has already been finalized by convergence.
+        Complex voltage = getDStabBus().getVoltage();
+        Complex power = voltage.multiply(injectedCurrent(voltage).conjugate())
+                .multiply(systemBaseMva / deviceBaseMva);
+        double acceptedP = power.getReal(), acceptedQ = power.getImaginary();
+        if (!finite(acceptedP) || !finite(acceptedQ))
+            throw new IllegalStateException("Nonfinite accepted converter power");
+        p = acceptedP;
+        q = acceptedQ;
     }
     @Override public boolean afterStep(double dt) {
         var controller=activeController();
