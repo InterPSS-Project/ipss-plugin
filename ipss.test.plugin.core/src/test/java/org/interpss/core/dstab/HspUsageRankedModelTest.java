@@ -102,6 +102,8 @@ public class HspUsageRankedModelTest {
     /** Observe the solved algebraic boundary at each accepted grid time, before advancing states. */
     private static final class SmallNetworkRecorder extends org.interpss.dstab.algo.DefaultDynamicSimulationSolver {
         final List<Captured> rows=new ArrayList<>();final boolean flat,resetProfile;boolean enabled;
+        private Map<String,Double> protectionLeft;
+        private long protectionRevision;
         SmallNetworkRecorder(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm,boolean flat,boolean resetProfile) {
             super(algorithm);this.flat=flat;this.resetProfile=resetProfile;
         }
@@ -112,7 +114,30 @@ public class HspUsageRankedModelTest {
         void captureBeforeStep(double t) {
             boolean scheduled=!flat&&(Math.abs(t-.05)<1e-9||Math.abs(t-(resetProfile?.06:.1))<1e-9
                     ||resetProfile&&(Math.abs(t-.2)<1e-9||Math.abs(t-.25)<1e-9));
-            if(enabled&&(scheduled||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty())))rows.add(new Captured(t,"EVENT_PRE",capture(dstabAlgo.getNetwork())));
+            if(enabled&&(scheduled||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty()))) {
+                var values=capture(dstabAlgo.getNetwork());
+                if(protectionLeft!=null&&relayRevision()!=protectionRevision)values.putAll(protectionLeft);
+                rows.add(new Captured(t,"EVENT_PRE",values));
+            }
+            protectionLeft=null;
+        }
+        private long relayRevision() {
+            long revision=0;
+            for(var bus:dstabAlgo.getNetwork().getBusList())for(var device:bus.getDynamicBusDeviceList())
+                if(device instanceof Tiocr1RelayModel relay)revision+=relay.getNetworkActionVersion();
+            return revision;
+        }
+        void captureProtectionLeft() {
+            if(!enabled)return;
+            protectionRevision=relayRevision();
+            for(var bus:dstabAlgo.getNetwork().getBusList())for(var device:bus.getDynamicBusDeviceList())
+                if(device instanceof Tiocr1RelayModel relay)protectionLeft=Map.of(
+                        "RELAY.Current",relay.currentMagnitude(),"RELAY.Position",relay.getPosition(),
+                        "RELAY.Breaker",relay.getBreakerTimer(),"RELAY.Operated",relay.isOperated()?1.:0.,
+                        "RELAY.ShedFraction",relay.getShedFraction(),"RELAY.Revision",(double)relay.getNetworkActionVersion());
+        }
+        @Override public void afterStep(double t) throws com.interpss.dstab.common.DStabSimuException {
+            captureProtectionLeft();super.afterStep(t);
         }
         @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
             boolean solved=super.networkSolutionStep();
@@ -130,6 +155,9 @@ public class HspUsageRankedModelTest {
         }
         @Override public void beforeStep(double t) throws com.interpss.dstab.common.DStabSimuException {
             recording.captureBeforeStep(t);super.beforeStep(t);
+        }
+        @Override public void afterStep(double t) throws com.interpss.dstab.common.DStabSimuException {
+            recording.captureProtectionLeft();super.afterStep(t);
         }
         @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
             boolean solved=super.networkSolutionStep();
@@ -155,6 +183,8 @@ public class HspUsageRankedModelTest {
         for(var bus:net.getBusList())for(var device:bus.getDynamicBusDeviceList())
             if(device instanceof Tiocr1RelayModel relay) {
                 values.put("RELAY.Current",relay.currentMagnitude());values.put("RELAY.Position",relay.getPosition());values.put("RELAY.Breaker",relay.getBreakerTimer());
+                values.put("RELAY.Operated",relay.isOperated()?1.:0.);values.put("RELAY.ShedFraction",relay.getShedFraction());
+                values.put("RELAY.Revision",(double)relay.getNetworkActionVersion());
             }
         return values;
     }

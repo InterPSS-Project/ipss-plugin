@@ -249,3 +249,38 @@ unsupported collapsed topologies before mutation. Full-trip references retain
 all relay and fault event samples. Full-trip voltage/power normalized errors are
 below the same `5e-5` modified-Euler and `8e-6` staggered regression envelopes,
 with rotor-angle peak error below `6e-5` degrees. Restoration remains unsupported.
+
+## Opposite-terminal physical actions and pre-trip recording
+
+Cold-paired charging-line captures now exercise physical transfer trip and
+ten-percent remote load shedding from each monitored terminal. The full 0.5-second
+trajectories retain all 1,004 nonnegative samples, including application, relay
+operation and clearing duplicates. Both methods pass the existing `0.001`
+full-reference-range voltage/power NRMSE and `0.01`-degree rotor-angle RMSE gates.
+The largest voltage/power NRMSE is `0.0000311` for modified Euler and `0.00000386`
+for staggered integration. The existing terminal-position envelopes also pass:
+maximum errors are `0.0000194` and `0.000000290`, respectively.
+
+The benchmark recorder previously obtained the pre-trip row in `beforeStep`,
+after the preceding accepted callback had already opened the branch and cleared
+the relay position. It now retains relay observations immediately before that
+callback and uses them only when the physical-action revision changes. The
+post-action sample retains the live values. No physical states or actions change;
+the existing four complete trajectories differ only in the three relay fields
+on their single pre-action row. A frozen old recorder fails all four new tests
+with pre-trip position zero instead of one. The focused suite passes 36 tests
+without failures, errors or skips.
+
+Raw diagnostic slots remain distinct from physical quantities. The reference's
+breaker memory contains `9999` before pickup, an absolute operation deadline
+while pending, and zero after opening; the runtime exposes elapsed breaker time.
+Its recorded current is zero on the opening row but resumes a terminal-admittance
+diagnostic on subsequent rows even though the branch is open. The physical
+current accessor correctly stays zero. The test retains and explicitly exposes
+these differences rather than treating those raw slots as interchangeable.
+Complete diagnostic-current publication, additional breaker delays, multiple
+transfer targets and reconnection remain separate qualification work.
+
+The immutable paired captures are retained in
+`testData/private/verification-artifacts/tiocr-physical-terminal-20261104/captures.zip`,
+SHA-256 `76deeda96324b72911d7b6525e352656cb245e478dda1cbc62365886d0cee07c`.
