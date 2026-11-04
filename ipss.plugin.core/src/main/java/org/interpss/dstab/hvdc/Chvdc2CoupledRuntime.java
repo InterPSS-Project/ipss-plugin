@@ -17,6 +17,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private final LccConverterBoundary rectifier,inverter;
     private final double resistance,conductingResistance,shortedResistance;
     private final int count;
+    private final boolean laggedCurrentMeasurement;
     private final double[] inputs=new double[6],boundary=new double[BOUNDARY_SIZE],accepted=new double[BOUNDARY_SIZE],
             rectifierValues=new double[4],inverterValues=new double[3],injections=new double[4],
             state,rate,firstRate,candidate,leftRate,acceptedState,acceptedInputs=new double[6];
@@ -26,6 +27,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private boolean inputReady,initialized,pending,inTransaction,acceptedReady,intervalActive,sharedPending;
     private double pendingStep,acceptedTime,algebraicCurrent,acceptedAlgebraicCurrent;
     private double intervalSeconds,intervalAdvanced,intervalRectifierVoltage,intervalInverterVoltage;
+    private double intervalRectifierCurrent,intervalInverterCurrent;
     private double sharedStep;
     private long revision,acceptedSequence=-1,latestSequence=-1;
     private static final class Checkpoint {
@@ -34,6 +36,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
                 acceptedState,acceptedInputs=new double[6];
         double gamma,acceptedTime,algebraicCurrent,acceptedAlgebraicCurrent;long revision,acceptedSequence,latestSequence;boolean acceptedReady;
         double intervalSeconds,intervalAdvanced,intervalRectifierVoltage,intervalInverterVoltage;boolean intervalActive;
+        double intervalRectifierCurrent,intervalInverterCurrent;
         double sharedStep;boolean sharedPending;
         Checkpoint(int count){states=new double[count];left=new double[count];acceptedState=new double[count];}
     }
@@ -42,6 +45,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
             Chvdc2DcLine line,double inverterTransformerRatio,double inverterTap) {
         this.rectifier=java.util.Objects.requireNonNull(rectifier);this.inverter=java.util.Objects.requireNonNull(inverter);
         this.line=java.util.Objects.requireNonNull(line);controls=parameters.prepareControls(inverterTransformerRatio,inverterTap);
+        laggedCurrentMeasurement=parameters.value(Chvdc2Parameters.Constant.T_MEAS_SEC)>0;
         if(!rectifier.isRectifier()||inverter.isRectifier()||parameters.lineDynamicsEnabled()!=(line.staggeredStateCount()>0))
             throw new IllegalArgumentException("Oriented converters and the selected line-dynamics mode required");
         resistance=line.resistanceOhms();shortedResistance=resistance+rectifier.commutatingResistanceOhms();
@@ -68,6 +72,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         controls.setInput(ir,ii,rectifierDcVolts*.001,inverterDcVolts*.001,vr,vi,inputs[4],inputs[5],Math.toDegrees(gamma));
         controls.initialize(Math.toDegrees(ar),Math.toDegrees(ai),time);
         algebraicCurrent=ir;intervalSeconds=intervalAdvanced=intervalRectifierVoltage=intervalInverterVoltage=0;
+        intervalRectifierCurrent=intervalInverterCurrent=0;
         names=new String[count];int index=0;for(String name:controls.getIntegrationStates().keySet())names[index++]=name;
         if(count==16)names[15]="Line current (A)";
         if(count==18){names[15]="Rectifier line current (A)";names[16]="Line capacitor voltage (V)";names[17]="Inverter line current (A)";}
@@ -89,7 +94,11 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         inverter.evaluateDcVoltage(vi,electricalInverterVoltage,ii,inverterValues,0);
         // Line-side shorting and the held-angle AC interface are intentionally distinct.
         line.setInput(dcR,dcI);
-        controls.setInput(ir,ii,dcR*.001,dcI*.001,vr,vi,inputs[4],inputs[5],Math.toDegrees(gamma));
+        // Lagged current transducers sample the line current once per outer
+        // interval. Zero-lag observations, converter voltage and AC injection stay live.
+        boolean sampled=intervalActive&&laggedCurrentMeasurement;
+        controls.setInput(sampled?intervalRectifierCurrent:ir,sampled?intervalInverterCurrent:ii,
+                dcR*.001,dcI*.001,vr,vi,inputs[4],inputs[5],Math.toDegrees(gamma));
         boundary[0]=dcR;boundary[1]=dcI;boundary[2]=ir;boundary[3]=ii;
         boundary[4]=rectifierValues[1];boundary[5]=rectifierValues[2];boundary[6]=inverterValues[0];boundary[7]=inverterValues[1];
         boundary[8]=gamma;boundary[9]=heldGamma;
@@ -105,13 +114,16 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         algebraicCurrent=current;
     }
     /** Start an outer electrical interval before local state integration. Local
-     * steps retain its algebraic current and sampled voltages; live AC injections
+     * steps retain its algebraic current, sampled voltages and transducer currents; live AC injections
      * still refresh at every network trial. Coefficient preparation is unchanged.
-     * Without this bracket, each completed numerical step is one outer interval. */
+     * Without this bracket, current-transducer inputs remain live and each
+     * completed numerical step publishes the algebraic line. */
     public void beginIntegrationInterval(double seconds) {
         ready();exclusive();noSharedProposal();positive(seconds);
         if(intervalActive)throw new IllegalStateException("An integration interval is already open");
         intervalRectifierVoltage=Math.hypot(inputs[0],inputs[1]);intervalInverterVoltage=Math.hypot(inputs[2],inputs[3]);
+        intervalRectifierCurrent=count==15?algebraicCurrent:line.rectifierAmperes();
+        intervalInverterCurrent=count==15?algebraicCurrent:line.inverterAmperes();
         intervalSeconds=seconds;intervalAdvanced=0;intervalActive=true;
     }
     /** Publish the algebraic line after all local steps, before the final network
@@ -242,6 +254,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         c.algebraicCurrent=algebraicCurrent;c.acceptedAlgebraicCurrent=acceptedAlgebraicCurrent;
         c.intervalActive=intervalActive;c.intervalSeconds=intervalSeconds;c.intervalAdvanced=intervalAdvanced;
         c.intervalRectifierVoltage=intervalRectifierVoltage;c.intervalInverterVoltage=intervalInverterVoltage;
+        c.intervalRectifierCurrent=intervalRectifierCurrent;c.intervalInverterCurrent=intervalInverterCurrent;
         c.sharedPending=sharedPending;c.sharedStep=sharedStep;
     }
     private void restore(Checkpoint c) {
@@ -251,6 +264,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         algebraicCurrent=c.algebraicCurrent;acceptedAlgebraicCurrent=c.acceptedAlgebraicCurrent;
         intervalActive=c.intervalActive;intervalSeconds=c.intervalSeconds;intervalAdvanced=c.intervalAdvanced;
         intervalRectifierVoltage=c.intervalRectifierVoltage;intervalInverterVoltage=c.intervalInverterVoltage;
+        intervalRectifierCurrent=c.intervalRectifierCurrent;intervalInverterCurrent=c.intervalInverterCurrent;
         sharedPending=c.sharedPending;sharedStep=c.sharedStep;
     }
     @Override public int staggeredStateCount(){return count;}

@@ -213,7 +213,13 @@ public final class Chvdc2TerminalPorts {
             if(stage==0&&(integrationPending||networkTrial)||stage==1&&(!integrationPending||sharedIntegration||!predictorConverged||h!=interval))
                 throw new IllegalStateException("Matching predictor/network/corrector lifecycle required");
             if(stage==0){beginTransaction();integrationPending=true;interval=h;}
-            try{if(stage==0)advanceProtectionClock(h);bind();runtime.step(h,stage);return true;}catch(RuntimeException failure){rollback();throw failure;}
+            try{
+                if(stage==0)advanceProtectionClock(h);
+                bind();if(stage==0)runtime.beginIntegrationInterval(h);
+                runtime.step(h,stage);
+                if(stage==1)runtime.completeIntegrationInterval();
+                return true;
+            }catch(RuntimeException failure){rollback();throw failure;}
         }
         @Override public boolean afterStep(double h){return true;}
         @Override public boolean updateAttributes(boolean changed){return attachmentIntact();}
@@ -247,7 +253,10 @@ public final class Chvdc2TerminalPorts {
                 throw new IllegalStateException("Shared state proposal requires an idle prepared integration owner");
             boolean starting=h>0&&!transaction;
             if(starting){beginTransaction();integrationPending=true;sharedIntegration=true;interval=h;}
-            try{if(starting)advanceProtectionClock(h);runtime.applyStaggeredState(values,offset,h);}catch(RuntimeException failure){rollback();throw failure;}
+            try{
+                if(starting){advanceProtectionClock(h);bind();runtime.beginIntegrationInterval(h);}
+                runtime.applyStaggeredState(values,offset,h);
+            }catch(RuntimeException failure){rollback();throw failure;}
         }
         @Override public void completeStaggeredStep(double h,double endpointTime){
             if(!owner||!isOperational())return;
@@ -255,7 +264,7 @@ public final class Chvdc2TerminalPorts {
                     ||h>0&&(!integrationPending||!sharedIntegration||h!=interval||sharedEndpointPending))
                 throw new IllegalStateException("Complete the matching shared integration proposal once");
             if(h==0)return;
-            try{runtime.completeStaggeredStep(h);sharedEndpoint=endpointTime;sharedEndpointPending=true;}
+            try{runtime.completeStaggeredStep(h);runtime.completeIntegrationInterval();sharedEndpoint=endpointTime;sharedEndpointPending=true;}
             catch(RuntimeException failure){rollback();throw failure;}
         }
     }

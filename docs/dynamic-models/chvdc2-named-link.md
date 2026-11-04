@@ -284,6 +284,79 @@ repeat checks and restoration checks are retained in the private
 `chvdc2-outer-refinement-20261103` validation archive. This is full-network
 refinement evidence, not qualification of a production local-substep API.
 
+### Current-transducer sampling at the outer interval
+
+The coupled runtime now samples each lagged current transducer's input when
+`beginIntegrationInterval(H)` opens. Local controller/line steps use these two
+samples until the interval completes. Physical line currents, converter
+voltages, AC injections and zero-lag current observations remain live. The
+samples are included in reusable transaction and predictor checkpoints;
+rollback restores the interval and its progress. Both terminal integration
+paths now bracket their numerical update with this interval contract. This
+does not add a production local-substep scheduler or change prepared coefficients.
+
+Independent recorded-current replay through the production transducer equations
+supports this sampling boundary. It initializes once, retains every sample and
+both event-side duplicates, and keeps double-precision state storage. The
+ten-local-step peak measurement errors are:
+
+| Independent profile | Modified Euler (pu) | Staggered (pu) |
+| --- | --- | --- |
+| Nominal, 0.5 ms outer interval | 0.000005007 | 0.000001202 |
+| Nominal, 0.25 ms outer interval | 0.000005945 | 0.000005945 |
+| Protected, 0.5 ms outer interval | 0.000739292 | 0.000008063 |
+
+The protected modified-Euler replay still fails the unchanged `1e-5` measurement
+gate. Its difference persists with local refinement; a different numerical
+method must not be disguised by a fitted delay or reference-state resets.
+`Chvdc2CurrentSamplingReferenceTest` records one-step negative controls and the
+ten-step comparisons, and is registered in the main test suite. Five of its six
+reference checks pass. This is a transducer discriminator, not complete-model
+qualification.
+
+The complete moving-source network comparison gives:
+
+| Profile and method | Previous peak current error (A) | Sampled-current error (A) |
+| --- | --- | --- |
+| Protected, matched clock, modified Euler | 19.294055 | 6.999057 |
+| Protected, matched clock, staggered | 69.808659 | 69.808659 |
+| Nominal, 0.5 ms, modified Euler | 0.350302 | 0.291692 |
+| Nominal, 0.25 ms, modified Euler | 0.517190 | 0.517235 |
+| Rectifier protection, 0.5 ms, modified Euler | 6.230865 | 6.242078 |
+| Rectifier protection, 0.25 ms, modified Euler | 1.841856 | 1.829883 |
+
+Staggered one-step trajectories stay unchanged because their derivative
+evaluation already uses the left endpoint. All twenty complete network
+comparisons repeat byte-for-byte; their trajectory gates remain open. The
+matched-clock protected runs retain zero flag mismatches. Default caller-time
+and independent binary32 clock policies remain distinct.
+
+The held-AC-boundary diagnostic with ten joint local steps reduces protected
+current error from 18.571 to 2.942 A for modified Euler and from 17.259 to
+6.907 A for staggered integration. That diagnostic supplies recorded AC inputs;
+it must not be reported as a full-network result. It also remains outside the
+current gate. Fixed-angle controls do not improve, so the remaining line event
+and publication ordering must still be resolved.
+
+All 67 focused lifecycle checks pass, including distinct capacitor-terminal
+samples, current resampling, zero-lag bypass, rollback, live injections and
+zero-allocation warmed integration in both methods. Complete traces, diagnostic
+source, rejected precision/input controls and test reports are retained in the
+private `chvdc2-current-sampling-20261103/validation.zip` archive (SHA-256
+`47d88a2f4841ac679fea9a7c896d1be920ef8ef2de8109387a1c85a09c06d17e`).
+The full maintained model run has 342 checks, 113 failures and one error, with
+no skips. The prior committed runtime was rerun against the 309 unchanged
+checks: both versions have the same 112 failures and one error, with no
+pass/fail/error status changes. The additional failure is the newly exposed
+protected modified-Euler transducer gate described above. The existing error
+is the rejected reverse-current algebraic boundary. After restoring and
+rebuilding the working runtime, all twenty network CSVs reproduce the saved
+current-version traces exactly. This audit uses only classes actually executed
+by the recorded commands, excluding stale report files. Its private
+`regression-validation.zip` SHA-256 is
+`de5eab02162cae0ebbbd42ced1f65c3aefe3d273d66bcd8924051b076c2c0aaf`.
+Automatic attachment and full trajectory acceptance remain unqualified.
+
 ### Fixed-angle line controls and preparation checks
 
 Independent controls now distinguish line integration from angle-controller

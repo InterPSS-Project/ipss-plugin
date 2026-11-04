@@ -36,7 +36,7 @@ public class Chvdc2CoupledRuntimeTest {
     void bypassedObservationsStayLiveWithoutChangingEitherIntegrationHistory(boolean staggered) {
         var m=rig(true,0,0).model();m.acceptBoundary(0,0);int count=m.staggeredStateCount();
         double[] raw=new double[count],check=new double[count],published=new double[count+2],rates=new double[count],power=new double[10],accepted=new double[10];
-        m.readAcceptedBoundary(accepted,0);m.beginTransaction();
+        m.readAcceptedBoundary(accepted,0);m.beginTransaction();m.beginIntegrationInterval(.00001);
         m.setBoundary(1.02,0,1.025,0,1050,0);m.readStaggeredState(raw,0);var histories=m.getIntegrationHistories();
         java.util.Arrays.fill(published,-17);
         for(int n=0;n<5;n++) {
@@ -48,12 +48,12 @@ public class Chvdc2CoupledRuntimeTest {
         }
         assertNotEquals(raw[10],published[11],"The observation must not substitute a stale numerical coordinate");
         if(staggered){
-            m.evaluateStaggered(.00001,rates,0);for(int n=0;n<count;n++)raw[n]+=.00001*rates[n];m.applyStaggeredState(raw,0,.00001);
+            m.evaluateStaggered(.00001,rates,0);for(int n=0;n<count;n++)raw[n]+=.00001*rates[n];m.applyStaggeredState(raw,0,.00001);m.completeStaggeredStep(.00001);
         }else{
             m.step(.00001,0);m.readStaggeredState(raw,0);m.readPublishedStates(published,1);m.readStaggeredState(check,0);assertArrayEquals(raw,check);
             m.step(.00001,1);
         }
-        m.readBoundary(power,0);m.readPublishedStates(published,1);assertEquals(power[2]/3500,published[1],1e-15);
+        m.readBoundary(power,0);m.readPublishedStates(published,1);assertEquals(power[2]/3500,published[1],1e-15);m.completeIntegrationInterval();
         m.readAcceptedBoundary(power,0);assertArrayEquals(accepted,power);assertEquals(histories,m.getIntegrationHistories());
         m.rollbackTransaction();m.readStaggeredState(raw,0);m.readPublishedStates(published,1);
         assertEquals(1.03,published[11]);assertEquals(1.03,published[12]);assertEquals(.3,raw[0],1e-14);
@@ -70,6 +70,36 @@ public class Chvdc2CoupledRuntimeTest {
             m.acceptBoundary((n+1)*.00001,2*n+2);m.readBoundary(b,0);assertTrue(b[2]>0);assertFalse(m.inverterShorted());
         }
         m.readStaggeredState(x,0);assertTrue(x[15]<1050);assertTrue(x[0]<.3);assertTrue(x[4]<32);
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void outerIntervalSamplesBothCurrentTransducersButKeepsTheCircuitLive(boolean staggered) {
+        var m=rig(true,.0001).model();int count=m.staggeredStateCount();double h=.0000025;
+        double[] initial=new double[count],x=new double[count],f=new double[count],b=new double[10],injection=new double[4],changed=new double[4];
+        m.readStaggeredState(initial,0);m.acceptBoundary(0,0);m.beginTransaction();m.beginIntegrationInterval(4*h);
+        m.evaluateInjections(injection,0);
+        for(int local=0;local<4;local++) {
+            // Distinct capacitor-terminal currents catch accidental reuse of one sample.
+            m.readStaggeredState(x,0);x[15]=1060+local;x[17]=1040-local;
+            m.applyStaggeredState(x,0,0);m.setBoundary(1.02,0,1.03,0,1050,0);
+            m.evaluateStaggered(h,f,0);m.readBoundary(b,0);m.evaluateInjections(changed,0);
+            assertEquals(0,f[0],1e-10);assertEquals(0,f[1],1e-10);
+            assertEquals(x[15],b[2]);assertEquals(x[17],b[3]);assertNotEquals(injection[0],changed[0]);
+            assertEquals((x[15]-x[17])/.0001,f[16],1e-7);
+            if(staggered){for(int k=0;k<count;k++)x[k]+=h*f[k];m.applyStaggeredState(x,0,h);m.completeStaggeredStep(h);}
+            else{m.step(h,0);m.step(h,1);}
+        }
+        m.completeIntegrationInterval();m.readStaggeredState(x,0);m.evaluateStaggered(h,f,0);
+        assertEquals((x[15]/3500-x[0])/.01,f[0],1e-10);
+        assertEquals((x[17]/3500-x[1])/.01,f[1],1e-10);
+        assertNotEquals(0,f[0]);assertNotEquals(0,f[1]);
+        m.beginIntegrationInterval(h);double sampledR=x[15],sampledI=x[17];
+        x[15]+=2;x[17]-=2;m.applyStaggeredState(x,0,0);m.evaluateStaggered(h,f,0);
+        assertEquals((sampledR/3500-x[0])/.01,f[0],1e-10);
+        assertEquals((sampledI/3500-x[1])/.01,f[1],1e-10);
+        m.rollbackTransaction();m.readStaggeredState(x,0);assertArrayEquals(initial,x);
+        // Rollback must discard the new interval and its current samples.
+        m.beginIntegrationInterval(h);m.step(h,0);m.cancelPrediction();m.step(h,0);m.step(h,1);m.completeIntegrationInterval();
+        m.readStaggeredState(x,0);assertArrayEquals(initial,x,1e-10);
     }
     @Test void capacitorCircuitRetainsBothCurrentsAndItsEnergyBalance() {
         var r=rig(true,.0001);var m=r.model();assertEquals(18,m.staggeredStateCount());double[] x=new double[18],f=new double[18],b=new double[10];
@@ -229,6 +259,6 @@ public class Chvdc2CoupledRuntimeTest {
         for(int n=0;n<5;n++)batch(m,staggered,x,f,i,20000);long before=memory.getThreadAllocatedBytes(thread);batch(m,staggered,x,f,i,20000);assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
     }
     private static void batch(Chvdc2CoupledRuntime m,boolean staggered,double[] x,double[] f,double[] i,int count) {
-        for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);m.readPublishedStates(x,0);boolean algebraic=x.length==15;if(algebraic)m.beginIntegrationInterval(.00001);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);m.completeStaggeredStep(.00001);}else{m.step(.00001,0);m.step(.00001,1);}if(algebraic)m.completeIntegrationInterval();m.commitTransaction();}
+        for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);m.readPublishedStates(x,0);m.beginIntegrationInterval(.00001);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);m.completeStaggeredStep(.00001);}else{m.step(.00001,0);m.step(.00001,1);}m.completeIntegrationInterval();m.commitTransaction();}
     }
 }
