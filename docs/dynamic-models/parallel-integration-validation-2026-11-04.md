@@ -81,8 +81,8 @@ remained blocked by the first reconnection's latch. Seven integrated lifecycle
 tests pass, including independent repeated-fault captures, warm state copies
 and read-only observations. The test is registered in the main suite.
 
-This establishes recurring actions, not exact protection timing: the existing
-one-network-step action delay remains under investigation. See the
+That checkpoint established recurring actions, not exact protection timing;
+the subsequent correction is described below. See the
 [motor report](cmldblu1-induction-reclose.md) for scope and retained controls.
 Private integrated evidence is at
 `verification-artifacts/motor-reclose-integration-20261104`, SHA-256
@@ -116,3 +116,26 @@ without failures, errors or skips. Full attached-plant network feedback remains
 a separate gate. See [the qualification report](reecc1-plant-and-remote-sensing.md).
 Private validation is retained at
 `verification-artifacts/reecc-plant-integration-20261104`.
+
+## Composite motor publication and application stages
+
+The subsequent legacy composite policy separates accepted protection publication
+from electrical application at the following boundary. Independent voltage,
+angle and current-balance controls establish this ordering; it is not a timestamp
+shift. Sampled protection fractions now match exactly, with physical trajectories
+unchanged from the rearm-only version. Zero-delay healthy-voltage and cancelled
+pickup controls pass. Warm copies retain pending history, capacity changes use
+the applied fraction, and unsupported external-protection combinations reject
+before mutation. Generic motor scheduling remains unchanged.
+
+Low-voltage relay comparisons also pass under both methods using the inherited
+elliptic load-current curve; an intentionally wrong curve fails the low-voltage
+controls. The combined selection passes 155 tests, including six generic motor
+state tests, with no failures, errors or skips. The older
+`TestInductionMotorModel` has commented test annotations and is not included in
+that count. Full motor restart and the second protection stage's exact equality
+boundary remain unqualified.
+
+Private evidence is retained at
+`verification-artifacts/protection-timing-integration-20261104`, SHA-256
+`8e5c75eeb551d73eb907020f937f9fae5e5fde8ebf2a05a1945f0aee28471051`.
