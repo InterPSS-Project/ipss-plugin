@@ -1967,3 +1967,30 @@ Private cold-pair captures:
 Complete samples, controlled pre-fix comparison, source snapshots and test reports:
 `verification-artifacts/cdc6t-initial-ceiling-20261104/validation.zip`, SHA-256
 `bb809df9200422fa91e75a8fe7ea4606368131349a222c9d12aae52d9c71ef9a`.
+
+
+### Zero-time continuation discriminator
+
+A fresh cold pair inserts exactly one RUN continuation at the current time
+immediately after fault clearing. Source preparation, model constants, network
+interval and physical event times are unchanged from the retained base
+noninteger-delay bypass control. Both new complete outputs are byte-identical
+to each other **and** to that original uninterrupted recording: all 1,006 rows,
+including every event-side duplicate. The added before/after snapshots retain
+identical time, three states, three flags and all 18 published variables.
+The continuation does not add an output row or advance the clock.
+
+This rules out zero-time API entry alone as a sufficient cause of the delayed
+recovery-timer publication. It does not establish that the native engine
+actually invoked the protection model during that call. Production timer
+origins, equations and integration history remain unchanged. The useful missing
+evidence is still the voltage supplied to protection and the model evaluation
+phase inside the clearing solve, rather than another recorded endpoint or a
+new fitted delay. The published variable table contains timers and electrical
+outputs but no such callback-stage sensing coordinate. Existing strict
+trajectory failures remain open.
+
+`Cdc6tCallBoundaryReferenceTest` checks the entire original-output hash and all
+added snapshot coordinates; this is an observation/lifecycle discriminator,
+not an accuracy acceptance test. Private complete paired archive SHA-256:
+`137a2a509fb94fadeda7c9ffd96abbd15c1a0c3d01549bf09e8fd39fbe2c50eb`.
