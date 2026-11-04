@@ -98,3 +98,14 @@ composite has initialized but before the engine builds its dynamic matrix.
 at the action boundary. `ownsCapacityLoad` tests consuming-leaf identity without
 allocating a collection; a caller that also walks source-bus loads must skip
 these already-owned leaves to avoid applying a wildcard action twice.
+
+The integrator subsequently passed all six complete control/partial/full-trip
+reference comparisons under both methods, including relay timing and internal
+prepared observations while retaining distinct physical voltages. The coupled
+voltage/power range-normalized error envelopes are `5e-5` for modified Euler and
+`8e-6` for staggered integration, with a `6e-5` degree peak rotor-angle envelope.
+The matrix-rebuild correction is included. Full-trip staggered maximum normalized
+error is `3.88e-6`. The final owner regression also retains an unrelated active
+parent load alongside the parent shunt through disconnection, rebuilding and
+continued simulation. These qualify the represented capacity-action profiles;
+other composite thermal, tap and trajectory gaps remain separate.

@@ -19,6 +19,11 @@ public class CompositeLoadChangeTest {
         var a=context.getDynSimuAlgorithm();
         var unrelatedShunt=new org.apache.commons.math3.complex.Complex(.002,.003);
         a.getNetwork().getDStabBus("Bus2").setShuntY(unrelatedShunt);
+        var unrelatedLoad=com.interpss.dstab.DStabObjectFactory.createDStabLoad("outside");
+        unrelatedLoad.setCode(com.interpss.core.aclf.AclfLoadCode.CONST_P);
+        unrelatedLoad.setLoadCP(new org.apache.commons.math3.complex.Complex(.2,.04));unrelatedLoad.setStatus(true);
+        a.getNetwork().getDStabBus("Bus2").getContributeLoadList().add(unrelatedLoad);
+        assertTrue(a.getNetwork().getDStabBus("Bus2").initContributeLoad(false));
         assertTrue(a.getAclfAlgorithm().loadflow());
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.1);
         a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
@@ -85,6 +90,8 @@ public class CompositeLoadChangeTest {
         assertTrue(model.canChangeLoad("1",-.5));assertTrue(model.changeLoad(-.5));
         assertEquals(0,model.getRemainingCapacity(),0);assertTrue(parent.isActive());
         assertEquals(unrelatedShunt,parent.getShuntY(),"Unrelated parent shunt survives full composite disconnection");
+        assertSame(unrelatedLoad,parent.getContributeLoad("outside"));assertTrue(unrelatedLoad.isActive());
+        assertEquals(new org.apache.commons.math3.complex.Complex(.2,.04),unrelatedLoad.getLoadCP());
         assertFalse(model.getLowVoltBus().isActive());assertFalse(load.isActive());
         assertFalse(feeder.isActive());assertFalse(model.getDistributionTransformer().isActive());
         assertFalse(model.changeLoad(.1));assertFalse(model.changeLoad(-.1));
