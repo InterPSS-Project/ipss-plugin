@@ -14,8 +14,10 @@ voltage. No differential states, additional integration stages or adapters are
 introduced; modified Euler and staggered integration use the same component.
 
 The eligibility condition is exact and uses immutable model data. A recovery
-coefficient below one retains the existing distinct policy. This change does
-not qualify that policy's trial-history commit/discard behavior. The cached
+coefficient below one belongs to the separate 133-constant CMLDZNU2/U2
+schema, not the 132-constant CMLDBLU1 record. The shared engine retains that
+distinct extended policy; its trial-history commit/discard qualification is
+not a missing legacy CMLDBLU1 capability. The cached
 electronic fraction remains a derived observation, not a new accepted-history
 state. No whole-simulation speedup is claimed for this arithmetic reduction.
 
@@ -75,3 +77,20 @@ omitted or represented distribution in this scope. Additional
 cover omitted distribution. Motor mixtures, represented-distribution
 static/electronic mixtures, tap-control actions, long-duration and
 production-step controls remain open; the complete composite remains `LOADABLE`.
+
+
+## Recovery-schema boundary
+
+The primary U2 model table defines the restart fraction at zero-based constant
+index 132 and declares 133 constants. The independently captured legacy record
+has 132 constants and no such input. The legacy mapping supplies exactly 1.0 to
+the shared engine's extension coordinate, consistent with the retained complete
+ramp/dropout/recovery captures. The installed primary table describes the U2
+family; it must not be presented as a separately documented legacy parameter.
+
+Partial electronic recovery is therefore a CMLDZNU2/U2 implementation and
+qualification task. It must not be added to the CMLDBLU1 parser or used as a
+legacy completion gate. Shared code alone does not make their input schemas or
+history contracts interchangeable. The partial policy currently changes its
+running minimum during current queries and remains unqualified for accepted
+history, rollback and output ownership; no new runtime support is claimed here.

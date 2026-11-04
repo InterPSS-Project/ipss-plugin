@@ -159,8 +159,9 @@ zero-step behavior.
 - Qualify all remaining published diagnostics, zero-time-constant bypasses,
   active stall/thermal/UV/contactors, reclosure, full disconnection and load
   changes through the complete solver, not just isolated history callbacks.
-- Resolve electronic recovery memory during trial network iterations, preserve
-  exact legacy versus extended recovery behavior, and qualify LTC actions.
+- Keep the legacy full-recovery electronic path separate from partial recovery
+  in the extended CMLDZNU2/U2 schema. Qualify extended recovery history in that
+  model's scope; it is not a legacy CMLDBLU1 completion gate. Qualify LTC actions.
 - Extend independent coupled qualification to production quarter-cycle steps,
   longer runs, base/ownership edge cases and extreme valid parameters.
 
