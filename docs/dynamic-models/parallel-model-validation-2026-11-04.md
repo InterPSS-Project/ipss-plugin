@@ -46,3 +46,21 @@ tests with zero failures/errors and 16 skips. Its source tree was unchanged.
 This validates the engine baseline used by the plugin work; it does not replace
 the plugin's independent dynamic-model trajectory gates. Reports and the bounded
 log are retained in `verification-artifacts/parallel-core-engine-20261104`.
+
+After the electrical/mechanical event-rate corrections, HYG3 stage guards and
+battery-controller corrections, a fresh registered suite at `e90050aaf` ran
+4,756 tests: 215 failures, two errors and 13 skips. Comparing every failing test
+identity with the earlier baseline found no new failures. The two resolved
+identities are the weak-grid battery conformance test and endpoint recording
+test, which now explicitly use certified bounded network acceleration. Existing
+accuracy gates remain unchanged; this run still fails the main-branch merge gate.
+Complete reports are retained in
+`verification-artifacts/combined-event-controller-suite-20261104/validation.zip`,
+SHA-256 `2f1396b944a1aa3bce55e2b74923864e03955841c9627b842913c20fa285f6a5`.
+
+The subsequent explicit electrical-controller coupling refactor at `0541c260d`
+passed 104 converter/controller/network/solver tests without failures, errors or
+skips. Existing REECA and fixed-command behavior is preserved; this capability
+contract alone does not qualify new controller implementations or change network
+fast-path eligibility. Reports are retained in
+`verification-artifacts/electrical-controller-contract-integration-20261104`.
