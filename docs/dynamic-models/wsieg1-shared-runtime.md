@@ -752,3 +752,42 @@ combined validation responsibility. The downstream quarter-cycle modified-Euler
 electrical-power discrepancy, strict small-response/flat normalized gates,
 reconnection, exact zero-primary allocation and broader trajectory qualification
 remain open; this lifecycle correction does not promote the model to `VERIFIED`.
+
+## Status reenable discriminator
+
+Eight fresh reference captures exercise primary and secondary trips followed by a
+working-case status reenable request. Each has an independent cold repeat, at
+0.5 ms and quarter-cycle intervals, with all samples and event duplicates retained.
+Each pair is byte-identical; startup checks pass. The request returns success and
+changes the machine status from offline to online without resetting any of the six
+governor coordinates. This is diagnostic evidence, not qualification of a supported
+dynamic reconnect API or of the Java hot-reconnection path.
+
+For the primary trip, the companion's mechanical output remains held while the
+allocated differential coordinates continue moving. Their increments agree with
+the last pretrip equation derivatives: the first increment retains the older
+multistep derivative, and subsequent increments reuse the last derivative. The
+maximum reconstruction error is 1.66e-8 pu, consistent with stored binary32
+coordinates. The bypass coordinate stays held. The valve moves approximately
+0.01 pu during the 50 ms outage. On reenable, the shaft-weighted retained
+coordinates reproduce both physical mechanical outputs within 3.20e-8 pu. Those
+inactive coordinates therefore cannot be dismissed as harmless diagnostic noise.
+
+`tools/check_wsieg1_status_reenable.py` independently checks the cold pairs,
+manifest hashes, status/state transition, explicit stale-rate recurrence and
+recovered output equations. It does not fit a derivative from the outage samples.
+The private `wsieg1-status-reenable-20261104/evidence.zip` preserves all eight
+captures, the initial rejected status-query attempt, the capture/validation tools,
+bounded logs and numerical audit. Existing trajectory acceptance limits are
+unchanged, and these captures are labeled `diagnostic-only`.
+
+The implementation boundary needs an explicit inactive-owner lifecycle. The model
+must distinguish retained integration coordinates/history from held physical
+shaft outputs; the engine must schedule that lifecycle exactly once while the
+primary is offline and its companion remains attached. Reenable must restore
+outputs from retained coordinates without silently rerunning initialization or
+changing the prepared shaft allocation. A secondary-only trip must continue to
+leave the active primary as the sole state owner. A generic change to every
+inactive controller would be unjustified. The current ordinary and shared solver
+paths skip inactive primary participants, so this requires coordinated engine
+work and complete Java/reference event trajectories before qualification.

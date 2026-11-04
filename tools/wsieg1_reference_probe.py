@@ -53,6 +53,8 @@ def main():
     parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary','zero-primary','zero-both','secondary-off','balanced-zero-primary','balanced-zero-both'], default='entered')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/480, 1/240], required=True)
+    parser.add_argument('--status-reenable', action='store_true',
+                        help='Diagnostic only: request working-case machine status on at 0.1 s after a trip')
     parser.add_argument('--machine-states', action='store_true',
                         help='Record both coupled machine state vectors and field voltages for integration diagnostics')
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
@@ -66,12 +68,16 @@ def main():
         parser.error('Base controls require the unmodified dual-shaft fixture')
     if args.event == 'reference-reversals' and args.duration < 1.:
         parser.error('The complete reference-reversal program requires at least one second')
+    if args.status_reenable and not args.event.endswith('-trip'):
+        parser.error('Status reenable diagnostic requires a shaft-trip event')
     if args.pretrip_reference and not args.event.endswith('-trip'):
         parser.error('Pretrip excitation requires a shaft-trip profile')
     root = Path.cwd()
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/HspModels'
     excitation = f'-r{args.pretrip_reference:g}' if args.pretrip_reference else ''
     tag = f'{args.fixture}-{args.event}{excitation}-h{args.step:.12g}-t{args.duration:g}-{args.repeat}'.replace('.', 'p')
+    if args.status_reenable:
+        tag = 'status-reenable-' + tag
     if args.profile != 'base':
         tag = args.profile + '-' + tag
     if args.base_profile != 'entered':
@@ -187,6 +193,7 @@ def main():
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(34)]
     initial_reference = checked('reference', psspy.dsrval('VAR', layout['VAR']))
+    reconnect_probe = None
     reference_events = [(.05, .1), (.3, -.2), (.6, .1)] if args.event == 'reference-reversals' else []
     if args.event == 'reference-reversals':
         for time, increment in reference_events:
@@ -205,6 +212,24 @@ def main():
             checked('shaft trip', psspy.dist_machine_trip(1 if args.event == 'primary-trip' else 2, '1'))
         checked('during', psspy.run(0, .1, 1000000, 1, 0))
         if args.event == 'fault': checked('clear', psspy.dist_clear_fault(1))
+        if args.status_reenable:
+            bus = 1 if args.event == 'primary-trip' else 2
+            def machine_status():
+                code, value = psspy.macint(bus, '1', 'STATUS')
+                # The scalar query returns the status together with codes 3/4
+                # for non-generator buses and offline machines.
+                assert code in (0, 3, 4), code
+                return dict(return_code=code, value=value)
+            before = dict(machine_status=machine_status(),
+                          governor_states=[checked('state before request', psspy.dsrval('STATE', layout['STATE']+i)) for i in range(6)])
+            # This working-case API is deliberately not assumed to be a dynamic
+            # reconnect operation. Retain its return code and state evidence.
+            ierr = psspy.machine_chng_5(bus, '1', [1]+[di]*6, [df]*17, ['', ''])
+            after = dict(machine_status=machine_status(),
+                         governor_states=[checked('state after request', psspy.dsrval('STATE', layout['STATE']+i)) for i in range(6)])
+            reconnect_probe = dict(api='machine_chng_5', requested_status=1, at_seconds=.1,
+                                   return_code=ierr, before=before, after=after, accepted_reconnect_contract=False)
+
     checked('finish', psspy.run(0, args.duration, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
@@ -221,12 +246,14 @@ def main():
     quality = 'Initial conditions check O.K.' in log and all(message not in log for message in ['Network not converged', 'Incomplete data record'])
     manifest = dict(status=('complete' if quality else 'rejected-quality') if finite else 'rejected-nonfinite', settings=vars(args), layout=layout,
         entered_constants=entered, initialized_constants=initialized, initial_reference=initial_reference,
-        reference_events=reference_events, machine_layouts=machine_layouts,
+        reference_events=reference_events, machine_layouts=machine_layouts, status_reenable_diagnostic=reconnect_probe,
         load_conversion_percent=[0., 100., 0., 100.], samples=len(data['time']),
         diagnostic_storage_initialization='All VAR slots zeroed before STRT; model initialization then owns their values',
         engine_module=psse3607.__name__, library_sha256=sha(library),
         source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'), source_pdf_pages=[522, 523, 524],
         files={p.name: sha(p) for p in Path('.').iterdir() if p.is_file()})
+    if args.status_reenable:
+        manifest['status'] = 'diagnostic-only' if quality and finite else manifest['status']
     Path('manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     print(json.dumps(dict(tag=tag, status=manifest['status'], samples=manifest['samples'])), flush=True)
     assert quality
