@@ -31,6 +31,7 @@ public class Svsmo3t2MssBoundaryTest extends CorePluginTestSetup {
         var lf = context.getDynSimuAlgorithm().getAclfAlgorithm();
         lf.getLfAdjAlgo().setLocalContinuousSvcAsPv(true);
         assertTrue(lf.loadflow());
+        context.getDynSimuAlgorithm().setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         return context;
     }
 
@@ -159,4 +160,70 @@ public class Svsmo3t2MssBoundaryTest extends CorePluginTestSetup {
             }
         }
     }
+    @Test void failedStampRestoresExactBankControllerAndPeerHistoriesBeforeRetry(@TempDir Path temporary) throws Exception {
+        var context = context(temporary, 3, .1, false);
+        var algorithm = context.getDynSimuAlgorithm();
+        assertTrue(algorithm.initialization());
+        var net = context.getDStabilityNet();
+        var bus = net.getDStabBus("Bus3");
+        var peer = (Svsmo3t2Model) bus.getDynamicBusDeviceList().stream()
+                .filter(Svsmo3t2Model.class::isInstance).findFirst().orElseThrow();
+        var boundary = new Svsmo3t2MssBoundary(net, data(3));
+        boundary.initialize();
+        var controllerBefore = boundary.getNamedStates();
+        var historiesBefore = peer.getIntegrationHistories();
+        var stateBefore = peer.getNamedStates();
+        var matrix = net.getYMatrix();
+        var diagonal = matrix.getA(bus.getSortNumber(), bus.getSortNumber());
+        var shunt = bus.getShuntY();
+        boolean dirty = net.isYMatrixDirty();
+        var proxy = (org.interpss.numeric.sparse.ISparseEqnComplex) java.lang.reflect.Proxy.newProxyInstance(
+                matrix.getClass().getClassLoader(), new Class<?>[]{org.interpss.numeric.sparse.ISparseEqnComplex.class},
+                (ignored, method, args) -> {
+                    try {
+                        Object result = method.invoke(matrix, args);
+                        if (method.getName().equals("addToA")) throw new IllegalStateException("Injected post-stamp failure");
+                        return result;
+                    } catch (java.lang.reflect.InvocationTargetException wrapped) { throw wrapped.getCause(); }
+                });
+        net.setYMatrix(proxy);
+        assertThrows(IllegalStateException.class, () -> boundary.advance(0, 1));
+        assertFalse(bus.getCompensator("S0").isActive());
+        assertEquals(diagonal, matrix.getA(bus.getSortNumber(), bus.getSortNumber()));
+        assertEquals(shunt, bus.getShuntY());
+        assertEquals(dirty, net.isYMatrixDirty());
+        assertEquals(controllerBefore, boundary.getNamedStates());
+        assertEquals(historiesBefore, peer.getIntegrationHistories());
+        assertEquals(stateBefore, peer.getNamedStates());
+        net.setYMatrix(matrix);
+        boundary.advance(0, 1);
+        assertTrue(bus.getCompensator("S0").isActive());
+        assertEquals(1, boundary.controller().completionCount());
+        boundary.advance(0, 1);
+        assertEquals(1, boundary.controller().completionCount());
+    }
+
+    @Test void pendingPeerAndChangedOwnershipRejectBeforeBankMutation(@TempDir Path temporary) throws Exception {
+        var context = context(temporary, 3, .1, false);
+        assertTrue(context.getDynSimuAlgorithm().initialization());
+        var net = context.getDStabilityNet();
+        var bus = net.getDStabBus("Bus3");
+        var peer = (Svsmo3t2Model) bus.getDynamicBusDeviceList().stream()
+                .filter(Svsmo3t2Model.class::isInstance).findFirst().orElseThrow();
+        var boundary = new Svsmo3t2MssBoundary(net, data(3)); boundary.initialize();
+        var before = boundary.getNamedStates();
+        assertTrue(peer.nextStep(.0005, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        var trial = peer.getNamedStates(); var history = peer.getIntegrationHistories();
+        assertThrows(IllegalStateException.class, () -> boundary.advance(0, 1));
+        assertEquals(before, boundary.getNamedStates()); assertEquals(trial, peer.getNamedStates());
+        assertEquals(history, peer.getIntegrationHistories()); assertFalse(bus.getCompensator("S0").isActive());
+        assertTrue(peer.nextStep(.0005, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 1));
+        bus.getDynamicBusDeviceList().remove(peer);
+        assertThrows(IllegalStateException.class, () -> boundary.advance(0, 1));
+        assertEquals(before, boundary.getNamedStates()); assertFalse(bus.getCompensator("S0").isActive());
+        bus.getDynamicBusDeviceList().add(peer);
+        boundary.advance(0, 1);
+        assertEquals(1, boundary.controller().completionCount());
+    }
+
 }

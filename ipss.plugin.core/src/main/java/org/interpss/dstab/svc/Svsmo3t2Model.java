@@ -385,8 +385,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     public boolean isNetworkDetached() { return networkDetached; }
     /** Accept a scheduled electrical-network event, independently of state integration. */
     public void acceptNetworkEvent() {
-        if (predictorPending) throw new IllegalStateException("Finish the predictor before accepting a network event");
+        checkNetworkEventReady();
+        acceptPreparedNetworkEvent();
+    }
+    final void acceptPreparedNetworkEvent() {
         if (tripped) { networkDetached = true; acceptedCurrent = 0; }
+    }
+    void checkNetworkEventReady() {
+        if (predictorPending) throw new IllegalStateException("Finish the predictor before accepting a network event");
     }
     /** Available rating before voltage reduction/blocking; a tripped device has none. */
     public double getAvailableCurrentRating() { return tripped ? 0 : rating(); }

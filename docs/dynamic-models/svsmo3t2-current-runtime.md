@@ -81,7 +81,8 @@ The prepared solver device list dispatches this event without scanning all buses
 each step. `acceptNetworkEvent()` also provides an explicit boundary for callers;
 it rejects an unfinished predictor and is idempotent after removal.
 Reinitialization resets trip/removal flags and timers. Automatic notification
-from arbitrary external matrix edits or MSS-triggered rebuilds remains unqualified.
+from arbitrary external matrix edits remains unqualified. MSS bank stamps use
+the accepted boundary described below.
 
 Independent discriminators also establish source initialization selections:
 positive slow-reset gains suppress nonlinear droop even when the separate
@@ -427,3 +428,54 @@ Local refinement does not remove this finite-outer-step method-transition
 residual. No production local-substep option or extra runtime work was added.
 The timestamp defect and the remaining modified-Euler trajectory discrepancy
 are separate findings; neither changes the other method's equations or gates.
+
+
+## A second controller's MSS action removes a tripped device
+
+A two-controller control distinguishes an internal bank operation from ordinary
+continued integration. Independent uninterrupted cold pairs show the tripped
+controller retaining positive decaying physical current until the other
+controller inserts its bank. At the bank event, two rows with the same timestamp
+retain the output-lag state at 0.00827986 pu while physical current changes from
+that value to zero. Without the bank operation, physical current keeps decaying
+until fault clearing. All original rows and event duplicates are retained.
+The inactive source state subsequently drifts; it must not be interpreted as
+physical injected current or used to fit active controller equations.
+
+Earlier status-polling captures issued a new continuation call every interval.
+Those calls themselves altered trip removal, so they are retained as rejected
+lifecycle controls. The accepted bank/no-bank controls run uninterrupted across
+the relevant interval. The scheduled-event control includes its actual event
+boundary; its result alone does not separate an event from a continuation call.
+The pickup setting sustains demand through the fault, rather than resetting the
+bank delay before it expires. No current gain or trajectory threshold is fitted.
+
+The MSS boundary now prepares controller references during initialization.
+After a successful bank stamp it applies the existing electrical-removal commit
+to active peers. This performs no integration and leaves nontripped peers
+attached. The ordinary and staggered coupled tests both remove the tripped peer
+at the bank endpoint; previously neither removed it. The no-bank and scheduled
+paths retain their prior behavior. These are lifecycle gates, not new full
+trajectory acceptance or a resolution of coarse modified-Euler method error.
+
+A reusable checkpoint protects the bank controller. Ownership and unfinished
+predictors are checked before any physical mutation. A failed matrix stamp
+restores exact bank status, sequence cache, matrix diagonal, dirty flag and
+controller histories; peer histories and injections remain untouched. The same
+time can then be retried successfully, and repeated acceptance is idempotent.
+The exact cache rollback uses the isolated core snapshot API. Preparation scans
+once; ownership checks occur only on actual bank actions, not every integration
+step. Disabled MSS does not build the peer registry.
+
+This transaction ends after the physical stamp. Rollback of a later failed
+network solve remains unfinished, as does arbitrary external topology-edit
+notification. No shared solver lifecycle or default dependency was changed.
+
+The scoped default regression selection executes 24 tests across five classes,
+with no failures, errors or skips. This includes the unchanged scheduled trip,
+blocking, rating and MSS gates; optional extended trajectory diagnostics were
+not selected. The source-pair test was repeated after tightening comparison of
+the assigned bank timer (two tests pass). Private provenance, original captures,
+rejected controls, full logs, reports and source snapshots are retained at
+`verification-artifacts/svs-mss-trip-boundary-20261104`.
+Archive SHA-256: `f6071e67a8de558f6a03273a1803dd7553bbf059bcb9e0864546c83d37410c12`.

@@ -84,6 +84,32 @@ public final class Svsmo3t2MssController {
         return -1;
     }
 
+    /** Reusable event transaction storage; no per-endpoint allocation. */
+    static final class Checkpoint {
+        final double[] opened = new double[8];
+        final boolean[] status = new boolean[8];
+        boolean sampled;
+        double clock, upper, lower, breaker;
+        int direction;
+        long attempts, completed;
+    }
+
+    void save(Checkpoint saved) {
+        System.arraycopy(openedAt, 0, saved.opened, 0, 8);
+        System.arraycopy(active, 0, saved.status, 0, 8);
+        saved.sampled = sampled; saved.clock = clock;
+        saved.upper = upperStart; saved.lower = lowerStart; saved.breaker = breakerStart;
+        saved.direction = pendingDirection; saved.attempts = attempts; saved.completed = completed;
+    }
+
+    void restore(Checkpoint saved) {
+        System.arraycopy(saved.opened, 0, openedAt, 0, 8);
+        System.arraycopy(saved.status, 0, active, 0, 8);
+        sampled = saved.sampled; clock = saved.clock;
+        upperStart = saved.upper; lowerStart = saved.lower; breakerStart = saved.breaker;
+        pendingDirection = saved.direction; attempts = saved.attempts; completed = saved.completed;
+    }
+
     private int select(int direction, boolean readyToOperate) {
         if (direction == 0) return -1;
         // Unlike other plant-controller families, source slot order wins over

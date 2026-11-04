@@ -16,6 +16,10 @@ final class Svsmo3t2MssBoundary {
     private final BaseDStabNetwork<?, ?> network;
     private final Binding[] bindings = new Binding[8];
     private final Svsmo3t2MssController controller;
+    private final Svsmo3t2MssController.Checkpoint checkpoint = new Svsmo3t2MssController.Checkpoint();
+    private record PeerBus(BaseDStabBus<?, ?> bus, Object[] devices) { }
+    private PeerBus[] peerBuses = new PeerBus[0];
+    private Svsmo3t2Model[] peers = new Svsmo3t2Model[0];
 
     Svsmo3t2MssBoundary(BaseDStabNetwork<?, ?> network, Svsmo3t2Data data) {
         this.network = java.util.Objects.requireNonNull(network);
@@ -46,6 +50,16 @@ final class Svsmo3t2MssBoundary {
             active[i] = bindings[i].device().isActive();
         }
         controller.initialize(b, active);
+        if (!controller.isEnabled()) { peerBuses = new PeerBus[0]; peers = new Svsmo3t2Model[0]; return; }
+        var preparedBuses = new java.util.ArrayList<PeerBus>();
+        var preparedPeers = new java.util.ArrayList<Svsmo3t2Model>();
+        for (var bus : network.getBusList()) {
+            preparedBuses.add(new PeerBus(bus, bus.getDynamicBusDeviceList().toArray()));
+            for (var device : bus.getDynamicBusDeviceList())
+                if (device instanceof Svsmo3t2Model model) preparedPeers.add(model);
+        }
+        peerBuses = preparedBuses.toArray(PeerBus[]::new);
+        peers = preparedPeers.toArray(Svsmo3t2Model[]::new);
     }
 
     void advance(double time, double current) {
@@ -57,20 +71,64 @@ final class Svsmo3t2MssBoundary {
                     || binding.device().getB() != binding.nominal().getImaginary())
                 throw new IllegalStateException("External MSS status/admittance changed; reinitialize before switching");
         }
-        int changed = controller.advance(time, current);
-        if (changed < 0) return;
-        var binding = bindings[changed];
-        boolean active = controller.isInService(changed);
-        var delta = binding.nominal().multiply(active ? 1 : -1);
-        binding.device().setStatus(active);
-        // B is represented by the named compensator; G is retained separately
-        // on the bus. Update cached sequence data and only this physical stamp.
-        binding.bus().setShuntY(binding.bus().getShuntY().add(new Complex(delta.getReal(), 0)));
-        binding.bus().applyPositiveSequenceShuntAdmittanceChange(delta);
-        if (binding.bus().isActive()) {
-            int index = binding.bus().getSortNumber();
-            network.getYMatrix().addToA(delta, index, index);
-            network.setYMatrixDirty(true);
+        controller.save(checkpoint);
+        try {
+            int changed = controller.advance(time, current);
+            if (changed < 0) return;
+            preflightPeers();
+            var binding = bindings[changed];
+            boolean active = controller.isInService(changed);
+            var delta = binding.nominal().multiply(active ? 1 : -1);
+            var bus = binding.bus();
+            var cache = bus.captureSequenceEquivalentState();
+            var oldShunt = bus.getShuntY();
+            boolean oldStatus = binding.device().isActive();
+            boolean oldDirty = network.isYMatrixDirty();
+            int index = bus.getSortNumber();
+            var oldDiagonal = bus.isActive() ? network.getYMatrix().getA(index, index) : null;
+            try {
+                binding.device().setStatus(active);
+                bus.setShuntY(oldShunt.add(new Complex(delta.getReal(), 0)));
+                bus.applyPositiveSequenceShuntAdmittanceChange(delta);
+                if (bus.isActive()) {
+                    network.getYMatrix().addToA(delta, index, index);
+                    network.setYMatrixDirty(true);
+                }
+            } catch (RuntimeException failure) {
+                binding.device().setStatus(oldStatus);
+                bus.setShuntY(oldShunt);
+                bus.restoreSequenceEquivalentState(cache);
+                if (oldDiagonal != null) network.getYMatrix().setA(oldDiagonal, index, index);
+                network.setYMatrixDirty(oldDirty);
+                throw failure;
+            }
+            // An actual bank stamp is an electrical event, including for a
+            // different tripped controller. Continuous state is not integrated.
+            for (var peer : peers)
+                if (peer.isActive() && peer.getDStabBus().isActive()) peer.acceptPreparedNetworkEvent();
+        } catch (RuntimeException failure) {
+            controller.restore(checkpoint);
+            throw failure;
+        }
+    }
+
+    private void preflightPeers() {
+        if (network.getBusList().size() != peerBuses.length)
+            throw new IllegalStateException("Network ownership changed; reinitialize MSS before switching");
+        for (int i = 0; i < peerBuses.length; i++) {
+            var prepared = peerBuses[i];
+            var devices = prepared.bus().getDynamicBusDeviceList();
+            if (network.getBusList().get(i) != prepared.bus() || devices.size() != prepared.devices().length)
+                throw new IllegalStateException("Device ownership changed; reinitialize MSS before switching");
+            for (int j = 0; j < prepared.devices().length; j++) {
+                if (devices.get(j) != prepared.devices()[j])
+                    throw new IllegalStateException("Device ownership changed; reinitialize MSS before switching");
+                if (devices.get(j) instanceof Svsmo3t2Model peer) {
+                    if (peer.getDStabBus() != prepared.bus())
+                        throw new IllegalStateException("Controller host changed; reinitialize MSS before switching");
+                    if (peer.isActive() && prepared.bus().isActive()) peer.checkNetworkEventReady();
+                }
+            }
         }
     }
 
