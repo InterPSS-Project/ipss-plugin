@@ -305,6 +305,8 @@ public class CompressorStartupFrequencyTest {
             double[] olderRate = new double[2], leftRate = new double[2];
             var equation = new Error(); var recordedInput = new Error();
             var currentContribution = new Error(); var coupledError = new Error();
+            var decompositionResidual = new Error(); var stalledLawResidual = new Error();
+            double[] contribution = new double[3], olderContributionRate = new double[3], leftContributionRate = new double[3];
             int eventSides = 0, startupRows = 0;
             for (int j = 0; j < actual.size(); j++) {
                 var a = actual.get(j); var s = ref.rows().get(j); double time = s.get("time_s");
@@ -314,6 +316,8 @@ public class CompressorStartupFrequencyTest {
                 assertEquals(sourceActive, active, name + " trip side at " + time);
                 if (!active) x[0] = 0;
                 if (!sourceActive) x[1] = 0;
+                if (!active) Arrays.fill(contribution, 0);
+                decompositionResidual.add(Arrays.stream(contribution).sum(), x[0] - x[1], time);
                 equation.add(x[0], a.get(temperature), time);
                 recordedInput.add(x[1], s.get(sourceTemperature), time);
                 currentContribution.add(x[0], x[1], time);
@@ -328,19 +332,39 @@ public class CompressorStartupFrequencyTest {
                 row.put("recorded_input_reference_error", x[1] - s.get(sourceTemperature));
                 row.put("input_current_contribution", x[0] - x[1]);
                 row.put("coupled_reference_error", a.get(temperature) - s.get(sourceTemperature));
+                row.put("stalled_voltage_contribution", contribution[0]);
+                row.put("stalled_current_law_residual_contribution", contribution[1]);
+                row.put("running_current_contribution", contribution[2]);
                 output.add(row);
                 if (time < 0) startupRows++;
                 if (j + 1 == actual.size()) continue;
                 double[] heat = {a.get("ElectricalHeatingSquared" + suffix), s.get(sourceCurrent) * s.get(sourceCurrent)};
+                // Decompose the linear thermal recurrence without feeding any component back
+                // into the coupled simulation. A stalled motor has no frequency factor.
+                boolean stalled = active && a.get("ContactorFraction") > 0
+                        && a.get("Run" + suffix) == 0 && s.get("VAR" + (16 + group)) == 0;
+                double impedanceSquared = m.getRstall() * m.getRstall() + m.getXstall() * m.getXstall();
+                double voltageHeat = stalled ? (a.get("V2") * a.get("V2") - s.get("V2") * s.get("V2")) / impedanceSquared : 0;
+                if (stalled) stalledLawResidual.add(heat[0], a.get("V2") * a.get("V2") / impedanceSquared, time);
+                double deltaHeat = heat[0] - heat[1];
+                double[] heatComponents = {voltageHeat, stalled ? deltaHeat - voltageHeat : 0, stalled ? 0 : deltaHeat};
+                double[] componentRate = new double[3];
+                for (int k = 0; k < 3; k++) componentRate[k] = active
+                        ? (m.getRstall() * heatComponents[k] - contribution[k]) / m.getTth() : 0;
                 double[] rates = new double[2];
                 for (int k = 0; k < 2; k++) rates[k] = active ? (heat[k] * m.getRstall() - x[k]) / m.getTth() : 0;
                 if (time == ref.rows().get(j + 1).get("time_s")) {
-                    System.arraycopy(rates, 0, leftRate, 0, 2); eventSides++; continue;
+                    System.arraycopy(rates, 0, leftRate, 0, 2);
+                    System.arraycopy(componentRate, 0, leftContributionRate, 0, 3); eventSides++; continue;
                 }
                 int grid = (int) Math.round((time + 2 * ref.h()) / ref.h());
                 int nextGrid = (int) Math.round((ref.rows().get(j + 1).get("time_s") + 2 * ref.h()) / ref.h());
                 assertEquals(grid + 1, nextGrid, "No missing integration samples");
                 boolean afterEvent = j > 0 && time == ref.rows().get(j - 1).get("time_s");
+                for (int k = 0; k < 3; k++) {
+                    double rate = afterEvent ? .5 * (componentRate[k] + leftContributionRate[k]) : componentRate[k];
+                    contribution[k] += ref.h() * (1.5 * rate - .5 * olderContributionRate[k]); olderContributionRate[k] = rate;
+                }
                 for (int k = 0; k < 2; k++) {
                     double rate = afterEvent ? .5 * (rates[k] + leftRate[k]) : rates[k];
                     x[k] += ref.h() * (1.5 * rate - .5 * olderRate[k]); olderRate[k] = rate;
@@ -348,7 +372,10 @@ public class CompressorStartupFrequencyTest {
             }
             assertEquals(2, startupRows); assertEquals(4, eventSides);
             errors.put(suffix, Map.of("equation_residual", equation.report(), "recorded_input_reference_error", recordedInput.report(),
-                    "input_current_contribution", currentContribution.report(), "coupled_reference_error", coupledError.report()));
+                    "input_current_contribution", currentContribution.report(), "coupled_reference_error", coupledError.report(),
+                    "decomposition_residual", decompositionResidual.report(), "stalled_current_law_residual", stalledLawResidual.report()));
+            checks.add(() -> assertTrue(decompositionResidual.maximum <= 2e-13, "Linear input decomposition: " + decompositionResidual.report()));
+            checks.add(() -> assertTrue(stalledLawResidual.maximum <= 5e-13, "Stalled current law: " + stalledLawResidual.report()));
             checks.add(() -> assertTrue(equation.maximum <= 2e-13, "Independent thermal recurrence: " + equation.report()));
             double inputLimit = ref.h() == .0005 ? 4.6e-7 : 1.1e-6;
             checks.add(() -> assertTrue(recordedInput.maximum <= inputLimit, "Recorded-current diagnostic: " + recordedInput.report()));

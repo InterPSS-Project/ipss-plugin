@@ -157,3 +157,35 @@ The evidence localizes the dominant coarse discrepancy to the coupled heating
 inputs rather than an incorrect thermal recurrence. Resolve those upstream
 electrical/frequency inputs without fitting thermal parameters or changing the
 acceptance limit. Full compressor and composite-model qualification remain open.
+
+### Stalled-voltage contribution to the remaining error
+
+A further independent decomposition separates the heating-input difference into
+stalled terminal-voltage history, stalled current-law residual, and running
+current history. Each contribution obeys the same linear thermal recurrence,
+with separate event-side rates and complete-trip projection. Their sum reproduces
+the recorded-current reconstruction difference at every retained sample within
+`2e-13` pu. The stalled current law independently satisfies
+`I² = V² / (Rstall² + Xstall²)` within `5e-13` pu; it has no frequency factor.
+
+At the two failing coarse-step temperature peaks:
+
+| Input | Temperature error | Stalled voltage contribution | Stalled current-law residual contribution | Running current contribution |
+|---|---:|---:|---:|---:|
+| Filtered | 3.183541e-6 | 2.947112e-6 | 1.178617e-7 | -1.486782e-9 |
+| Bypass | 3.165888e-6 | 2.806275e-6 | 1.144255e-7 | -1.069041e-9 |
+
+All values are pu temperature. The difference between total temperature error
+and the three input contributions remains in the independently recorded-current
+thermal reconstruction. Thus about 89–93% of the failing coarse peak is explained
+by the stalled terminal-voltage history. Changing the thermal time constant,
+frequency equation, or integration history would target the wrong subsystem.
+This evidence does not establish why the coupled voltages differ or prove a
+reference precision floor. Upstream machine/network attribution remains open.
+
+Four complete replay profiles pass the new decomposition and current-law checks;
+the original coupled temperature gates remain unchanged and failing. No production
+code changes follow from this diagnostic. The private
+`acmtblu1-thermal-voltage-decomposition-20261104` archive preserves full samples,
+source, independent scripts, bounded test log and file hashes. Archive SHA-256:
+`b9bc7090f05ea3b1dc60bbb318a224d97e408395e42e7735517b496eb46e15ac`.
