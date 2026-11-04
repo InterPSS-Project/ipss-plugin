@@ -142,6 +142,20 @@ public final class Cdc6tNormalTerminalPorts {
         @Override public void beginNetworkSolution(NetworkIterationAware.Context context){
             if(!owner||!isOperational())return;
             if(boundaryTrial)throw new IllegalStateException("Nested CDC6T network trial");
+            boolean directEndpoint="DIRECT".equals(context.stage())&&staggeredEndpointPending;
+            if(!"DIRECT".equals(context.stage())&&!"INITIAL".equals(context.stage())
+                    &&!"PREDICTOR".equals(context.stage())&&!"CORRECTOR".equals(context.stage()))
+                throw new IllegalArgumentException("Unknown CDC6T network stage: "+context.stage());
+            boolean protectionEndpoint=protection!=null&&!initialNetworkPending
+                    &&(!"DIRECT".equals(context.stage())||directEndpoint);
+            double evaluationTime=directEndpoint?staggeredEndpoint:context.evaluationTime();
+            // Reject invalid entry before marking the network trial open or
+            // discarding a predictor's still-valid protection history.
+            if(protectionEndpoint){
+                protection.validateTrialTime(evaluationTime);
+                if(coordinatorTrial&&"CORRECTOR".equals(context.stage())&&evaluationTime!=protectionTrialTime)
+                    throw new IllegalStateException("Corrector must finish the pending CDC6T endpoint");
+            }
             boundaryTrial=true;
             pendingLocalLeft=false;
             clearTransitions();
@@ -149,17 +163,8 @@ public final class Cdc6tNormalTerminalPorts {
             predictorNetworkTrial="PREDICTOR".equals(context.stage());
             // Initial settling has no simulation-clock history; callers may
             // still choose negative-time startup after initialization returns.
-            if(protection==null||initialNetworkPending)return;
-            boolean directEndpoint="DIRECT".equals(context.stage())&&staggeredEndpointPending;
-            if("DIRECT".equals(context.stage())&&!directEndpoint)return; // Initialization/direct probes cannot commit a clock.
-            if(!directEndpoint&&!"INITIAL".equals(context.stage())&&!"PREDICTOR".equals(context.stage())&&!"CORRECTOR".equals(context.stage()))
-                throw new IllegalArgumentException("Unknown CDC6T network stage: "+context.stage());
-            double evaluationTime=directEndpoint?staggeredEndpoint:context.evaluationTime();
+            if(!protectionEndpoint)return; // Initialization/direct probes cannot commit a clock.
             if(coordinatorTrial&&"CORRECTOR".equals(context.stage())){
-                if(evaluationTime!=protectionTrialTime){
-                    protection.discardTrial();coordinatorTrial=false;
-                    throw new IllegalStateException("Corrector must finish the pending CDC6T endpoint");
-                }
                 // Retain continuous recovery factors predicted at this endpoint.
                 // Discrete protection is first observed after the differential corrector,
                 // so its right-hand input cannot leak into the interval just completed.

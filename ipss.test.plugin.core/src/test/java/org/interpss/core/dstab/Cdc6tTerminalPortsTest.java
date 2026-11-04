@@ -35,6 +35,42 @@ public class Cdc6tTerminalPortsTest extends CorePluginTestSetup {
     }
     private static double[] history(Cdc6tProtectionCoordinator c){double[] result=new double[23];c.readAcceptedHistory(result,0);return result;}
 
+    @Test void rejectedNetworkEntryLeavesValidRetryAvailable(){
+        var f=protectedPair();var p=f.ports().rectifierPort();solve(p,"INITIAL",.1,true);
+        double[] accepted=history(f.coordinator());
+        assertThrows(IllegalArgumentException.class,()->p.beginNetworkSolution(new Context("UNKNOWN",.1,.1,50,1e-6)));
+        assertArrayEquals(accepted,history(f.coordinator()),0);
+        solve(p,"INITIAL",.1,true);
+        for(double invalid:new double[]{Double.NaN,Double.POSITIVE_INFINITY,.09}){
+            assertThrows(IllegalArgumentException.class,()->p.beginNetworkSolution(new Context("INITIAL",invalid,invalid,50,1e-6)));
+            assertArrayEquals(accepted,history(f.coordinator()),0);
+            solve(p,"INITIAL",.1,true);
+        }
+    }
+
+    @Test void mismatchedCorrectorDoesNotDiscardPendingProtectionEndpoint(){
+        var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();
+        solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));
+        solve(p,"INITIAL",.05,true);solve(p,"INITIAL",.071,true);
+        inv.getDStabBus().setVoltage(Complex.ONE);solve(p,"INITIAL",.1,true);
+        solve(p,"PREDICTOR",.12,true);double[] accepted=history(f.coordinator());
+        assertThrows(IllegalStateException.class,()->p.beginNetworkSolution(new Context("CORRECTOR",.1,.13,50,1e-6)));
+        assertArrayEquals(accepted,history(f.coordinator()),0);
+        solve(p,"CORRECTOR",.12,true);
+        assertEquals(Cdc6tNormalRuntime.OperatingMode.RECOVERING,f.coordinator().operatingMode());
+        assertEquals(.12,history(f.coordinator())[0],0);
+    }
+
+    @Test void rejectedStaggeredEndpointCanBeReplacedBeforeOpeningNetworkTrial(){
+        var f=protectedPair();var p=f.ports().rectifierPort();solve(p,"INITIAL",.1,true);
+        double[] accepted=history(f.coordinator());
+        p.completeStaggeredStep(.01,.09);
+        assertThrows(IllegalArgumentException.class,()->p.beginNetworkSolution(new Context("DIRECT",0,0,50,1e-6)));
+        assertArrayEquals(accepted,history(f.coordinator()),0);
+        p.completeStaggeredStep(.01,.11);solve(p,"DIRECT",0,true);
+        assertEquals(.11,history(f.coordinator())[0],0);
+    }
+
     @Test void predictorDefersRecoveryAndFailedCorrectorDiscardsIt(){
         var f=protectedPair();var p=f.ports().rectifierPort();var inv=f.ports().inverterPort();var c=f.coordinator();
         solve(p,"INITIAL",0,true);inv.getDStabBus().setVoltage(new Complex(.8,0));

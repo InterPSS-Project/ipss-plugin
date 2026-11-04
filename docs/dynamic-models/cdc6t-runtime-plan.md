@@ -1817,3 +1817,28 @@ Complete final comparisons, before-handoff controls, clock diagnostics, failed
 and passing test logs, source snapshots and integrity manifest:
 `verification-artifacts/cdc6t-governed-ramp-20261102/validation.zip`, SHA-256
 `d162c97d924172648cace04e13b7609895a1bd09f8a631828c2d025abd65c775`.
+
+## Atomic network-trial entry
+
+The terminal owner validates the network stage, prospective protection clock and
+pending corrector endpoint before changing network-trial bookkeeping. Invalid
+entry previously left the trial marked open, preventing a valid retry; a
+mismatched corrector also discarded its valid predictor protection history.
+Rejected entry now preserves that history and leaves the owner available for a
+matching retry. The coordinator and terminal owner share the same finite,
+nondecreasing clock validation without allocating a history snapshot.
+
+Regression controls cover unknown stages, nonfinite/backward times, a mismatched
+modified-Euler corrector, and replacement of a rejected staggered endpoint. All
+three controls fail against the previous implementation because valid retries
+encounter a spurious nested-trial error. Normal entry, accepted histories and
+electrical equations are unchanged. This lifecycle fix does not qualify the
+remaining strict state trajectories, other protection variants or automatic
+model attachment.
+
+Validation passes all 278 scoped CDC6T checks. The three added regression tests
+fail against the original runtime; after the fix, all 446 generated CSV outputs
+match the baseline byte-for-byte, including complete both-method coupled
+trajectories and error tables. Existing comparisons that report reference
+discrepancies diagnostically retain that status; passing this suite does not
+promote those diagnostics into trajectory acceptance.

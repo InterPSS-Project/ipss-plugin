@@ -61,7 +61,7 @@ public final class Cdc6tProtectionCoordinator {
      * decisions and recovery ramps retain the physical endpoint time. */
     public void beginTrial(double physicalTime,boolean completedInterval){
         if(open)throw new IllegalStateException("Protection trial already open");
-        if(!Double.isFinite(physicalTime)||physicalTime<acceptedTime)throw new IllegalArgumentException("Finite nondecreasing physical time required");
+        validateTrialTime(physicalTime);
         workingRectifier.copyHistoryFrom(rectifier);workingInverter.copyHistoryFrom(inverter);
         workingBypass.copyHistoryFrom(bypass);workingModeSwitch.copyHistoryFrom(modeSwitch);
         System.arraycopy(accepted,0,working,0,5);trialTime=physicalTime;
@@ -77,6 +77,11 @@ public final class Cdc6tProtectionCoordinator {
             // until the accepted network owner explicitly observes this time.
         }
         open=true;failed=false;observed=false;
+    }
+    /** Validate a prospective boundary before its owner changes trial bookkeeping. */
+    void validateTrialTime(double physicalTime){
+        if(!Double.isFinite(physicalTime)||physicalTime<acceptedTime)
+            throw new IllegalArgumentException("Finite nondecreasing physical time required");
     }
     /** Explicit working-history observation, called by the event/network owner, never by an output getter.
      * Repeated observations at one time may discover a transition, then a new electrical regime.
