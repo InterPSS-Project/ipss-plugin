@@ -23,7 +23,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
             "T6","K5","K6","T7","K7","K8","Db1","Err","Db2","Gv1","Pgv1","Gv2","Pgv2",
             "Gv3","Pgv3","Gv4","Pgv4","Gv5","Pgv5","Iblock");
     private final double[] c;
-    private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6];
+    private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6], trial = new double[6];
     private final double[] referenceLeftRates = new double[6];
     private final double[] curveX = new double[5], curveY = new double[5];
     private final double[] turbineTimes = new double[4];
@@ -32,6 +32,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private int points, mode;
     private double reference, lower, upper, gateMemory;
     private boolean initialized, predicted;
+    private double predictorStep;
     private Machine initializedMachine;
     private long staggeredEvaluationCount;
     private long referenceRevision;
@@ -63,7 +64,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         }
         @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag) {
             // The shared turbine is integrated by its high-pressure owner exactly once per stage.
-            return initializedMachine==machine&&owner.secondaryScaleReady&&Double.isFinite(dt)&&dt>=0
+            return machine!=null&&initializedMachine==machine&&machine==getMachine()&&machine.getGovernor()==this
+                    &&owner.hasCurrentPrimaryOwner()&&owner.secondaryScaleReady&&Double.isFinite(dt)&&dt>=0
                     &&method==DynamicSimuMethod.MODIFIED_EULER&&(flag==0||flag==1);
         }
         @Override public double getOutput(Machine machine) { return owner.getSecondaryBaseScale()*owner.shaftOutput(1); }
@@ -117,7 +119,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private double preparedLag(double entered) {return entered<=2.*integrationStep?0.:entered;}
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine machine) {
-        initialized=false;predicted=false;monitor.reset();staggeredEvaluationCount=0;referenceRevision=0;referenceJumpPending=false;
+        initialized=false;predicted=false;predictorStep=0.;monitor.reset();staggeredEvaluationCount=0;referenceRevision=0;referenceJumpPending=false;
         if(secondaryMachine!=null){secondaryScaleReady=false;primaryInitializationPending=false;}
         if(machine==null || machine!=getMachine() || !Double.isFinite(machine.getPm()) || !Double.isFinite(machine.getSpeed()))return false;
         double sum=c[9]+c[12]+c[15]+c[18];
@@ -166,27 +168,40 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         primaryInitializationPending=false;secondaryInitializationPending=false;return true;
     }
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag) {
-        if(!initialized || secondaryMachine!=null&&!secondaryScaleReady || !Double.isFinite(dt)||dt<0 || method!=DynamicSimuMethod.MODIFIED_EULER
-                || (flag!=0&&flag!=1) || (flag==1&&!predicted)) return false;
+        if(!hasCurrentPrimaryOwner()||machine!=getMachine()||!Double.isFinite(machine.getSpeed())
+                ||secondaryMachine!=null&&(!secondaryScaleReady||!hasCurrentSecondaryOwner())
+                || !Double.isFinite(dt)||dt<0 || method!=DynamicSimuMethod.MODIFIED_EULER
+                || (flag!=0&&flag!=1) || (flag==1&&!predicted)
+                ||dt>0&&(flag==0&&predicted||flag==1&&dt!=predictorStep)) return false;
         if(dt==0) {
-            derivatives(x,d1,machine.getSpeed()-1.);retainRates(x,d1,Stage.PREDICTOR);
+            derivatives(x,d1,machine.getSpeed()-1.);if(!finiteVector(d1))return false;
+            retainRates(x,d1,Stage.PREDICTOR);
             return true; // Event-boundary algebraic refresh cannot advance state/history.
         }
         if(flag==0) {
-            System.arraycopy(x,0,old,0,6);
-            derivatives(old,d0,machine.getSpeed()-1);
-            retainRates(old,d0,Stage.PREDICTOR);
-            for(int i=0;i<6;i++) x[i]=old[i]+dt*d0[i];
-            predicted=true;
+            derivatives(x,d0,machine.getSpeed()-1.);if(!finiteVector(d0))return false;
+            for(int i=0;i<6;i++)trial[i]=x[i]+dt*d0[i];
         } else {
-            derivatives(x,d1,machine.getSpeed()-1);
-            retainRates(x,d1,Stage.CORRECTOR);
-            for(int i=0;i<6;i++) x[i]=old[i]+.5*dt*(d0[i]+d1[i]);
-            predicted=false;
+            derivatives(x,d1,machine.getSpeed()-1.);if(!finiteVector(d1))return false;
+            for(int i=0;i<6;i++)trial[i]=old[i]+.5*dt*(d0[i]+d1[i]);
         }
-        x[1]=projectTrialValve(x[1],old[1]);
-        synchronizeBypasses(x);
-        if(flag==1) commitHistories();
+        if(!finiteVector(trial))return false;
+        trial[1]=projectTrialValve(trial[1],flag==0?x[1]:old[1]);synchronizeBypasses(trial);
+        if(!finiteVector(trial))return false;
+        // Validate the complete trial before publishing state or accepting histories.
+        // A rejected corrector retains its predictor so a valid retry is possible.
+        if(flag==0) {
+            System.arraycopy(x,0,old,0,6);retainRates(old,d0,Stage.PREDICTOR);
+            predicted=true;predictorStep=dt;
+        } else {
+            retainRates(x,d1,Stage.CORRECTOR);predicted=false;predictorStep=0.;
+        }
+        System.arraycopy(trial,0,x,0,6);
+        if(flag==1)commitHistories();
+        return true;
+    }
+    private static boolean finiteVector(double[] values) {
+        for(double value:values)if(!Double.isFinite(value))return false;
         return true;
     }
 
@@ -198,8 +213,14 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private static void requireStep(double step) {
         if(!Double.isFinite(step)||step<=0.)throw new IllegalArgumentException("Shared integration step must be finite and positive");
     }
+    private boolean hasCurrentPrimaryOwner() {
+        return initialized&&initializedMachine==getMachine()&&getMachine()!=null&&getMachine().getGovernor()==this;
+    }
+    private boolean hasCurrentSecondaryOwner() {
+        return secondaryMachine==null||secondaryMachine.getGovernor() instanceof SecondaryShaft companion&&companion.owner==this;
+    }
     private void requireSharedState() {
-        if(!initialized||initializedMachine!=getMachine()||getMachine().getGovernor()!=this)
+        if(!hasCurrentPrimaryOwner()||!hasCurrentSecondaryOwner())
             throw new IllegalStateException("Initialize the governor with its current machine owner before shared integration");
         if(secondaryMachine!=null&&!secondaryScaleReady)throw new IllegalStateException("Initialize both shafts before shared integration");
         if(predicted)throw new IllegalStateException("Finish the modified-Euler predictor before shared integration");

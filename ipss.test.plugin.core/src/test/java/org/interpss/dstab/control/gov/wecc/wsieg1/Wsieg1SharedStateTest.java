@@ -96,6 +96,39 @@ public class Wsieg1SharedStateTest {
         assertThrows(IllegalStateException.class,()->g.readStaggeredState(values,0));
     }
 
+    @Test void ordinaryStagesRejectWrongOwnerRepeatedPredictorsAndMismatchedCorrectors()throws Exception {
+        var g=model("standard",false);var machine=g.getMachine();var other=model("standard",false).getMachine();
+        var states=g.getIntegrationStates();var histories=g.getIntegrationHistories();
+        assertFalse(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,other,0));
+        assertFalse(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,null,0));
+        assertEquals(states,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+        machine.setSpeed(1.0004);assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,0));
+        var predicted=g.getIntegrationStates();var diagnostic=g.getStateDerivativeSnapshot();
+        assertFalse(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,0));
+        assertFalse(g.nextStep(2*H,DynamicSimuMethod.MODIFIED_EULER,machine,1));
+        assertEquals(predicted,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+        assertEquals(diagnostic,g.getStateDerivativeSnapshot());
+        assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,1));
+        var accepted=g.getIntegrationStates();
+        var replacement=new Wsieg1Governor("replacement",g.getConstants());machine.getControllerList().remove(g);replacement.setMachine(machine);
+        assertFalse(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,0));assertEquals(accepted,g.getIntegrationStates());
+    }
+
+    @Test void overflowingCorrectorCannotPublishPartialStateOrConsumeItsPredictor()throws Exception {
+        var g=model("standard",false);var m=g.getMachine();var histories=g.getIntegrationHistories();
+        m.setSpeed(1.0004);assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,m,0));
+        var predicted=g.getIntegrationStates();var snapshot=g.getStateDerivativeSnapshot();
+        for(double speed:new double[]{Double.NaN,Double.POSITIVE_INFINITY,Double.MAX_VALUE}) {
+            m.setSpeed(speed);assertFalse(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,m,1));
+            assertEquals(predicted,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+            assertEquals(snapshot,g.getStateDerivativeSnapshot());
+        }
+        m.setSpeed(1.0004);assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,m,1));
+        assertFalse(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,m,1));
+        double[] accepted=new double[6];g.readStaggeredState(accepted,0);
+        for(double value:accepted)assertTrue(Double.isFinite(value));
+    }
+
     @Test void bypassedCompensationPublishesLiveInputWithoutAdvancingHistory()throws Exception {
         for(boolean shared:new boolean[]{false,true}) {
             var g=model("standard",true);double[] published=new double[8],rates=new double[6];

@@ -710,3 +710,45 @@ trajectories and twelve staggered no-event trajectories remain identical across
 every sample and channel. Private evidence retains the full comparisons,
 negative-control executable, reference hashes and failure-identity audit.
 Broader model and system acceptance remains open.
+
+
+## Atomic ordinary stages and current shaft ownership
+
+The ordinary modified-Euler path now checks the same current machine/controller
+ownership used by shared-state integration. A callback from another machine, a
+replaced primary controller, or a replaced secondary companion is rejected before
+state changes. Checks use object attachment, not machine identifiers. An initially
+inactive secondary still permits the valid primary-only path with its prepared
+zero contribution; replacing that companion invalidates the pair in either method.
+This does not implement or qualify hot reconnection.
+
+A positive-duration predictor cannot overwrite an unfinished predictor. The
+corrector must use the same step as its matching predictor. Nonfinite measurements,
+overflowing rates and nonfinite projected trials are rejected before publishing
+coordinates, derivative diagnostics or accepted backlash/deadband history. A failed
+corrector retains the original predictor for a valid retry. Ordinary zero-duration
+observation retains its existing non-advancing behavior.
+
+The six-coordinate trial buffer is allocated with the governor. The accepted
+arithmetic, limiter order, bypass synchronization, coefficients and output equations
+are unchanged. Existing warmed allocation checks remain at zero bytes under both
+integration methods and for active and bypassed compensation. This establishes
+allocation behavior, not a runtime speedup.
+
+The new wrong-owner regression fails against the preceding executable. Added
+checks cover repeated predictors, unequal corrector intervals, changed primary
+and secondary attachments, an initially inactive secondary, invalid/overflowing
+corrector inputs, unchanged rejected-state diagnostics and successful corrector
+retry. The focused group runs 88 tests: 82 pass and the same six independent
+accuracy gates remain failing, with no errors or skips. Every prior test identity
+retains its status. All 214 recorded before/after trajectory CSVs are byte-identical
+after gzip decoding, including their complete samples and event-side duplicates.
+
+Evidence in the private `wsieg1-owner-stage-20261104/validation.zip` retains source
+and executable snapshots, the failing previous-executable regression, isolated
+reports, bounded logs and matched trajectory hashes. No reference capture or
+acceptance threshold changed. Full-system integration remains the coordinator's
+combined validation responsibility. The downstream quarter-cycle modified-Euler
+electrical-power discrepancy, strict small-response/flat normalized gates,
+reconnection, exact zero-primary allocation and broader trajectory qualification
+remain open; this lifecycle correction does not promote the model to `VERIFIED`.

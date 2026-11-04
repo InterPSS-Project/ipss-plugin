@@ -106,6 +106,24 @@ public class Wsieg1ShaftInitializationTest {
         }
     }
 
+    @Test void replacedCompanionAndPrimaryAttachmentsRejectBothIntegrationPaths()throws Exception {
+        for(boolean inactiveSecondary:new boolean[]{false,true}) {
+            var p=pair();p.secondary.setStatus(!inactiveSecondary);
+            if(inactiveSecondary)assertTrue(initialize(p.primary));else initializePair(p,false);
+            var states=p.owner.getIntegrationStates();var history=p.owner.getIntegrationHistories();
+            var previous=p.secondary.getGovernor();p.secondary.getControllerList().remove(previous);
+            var replacement=new Wsieg1Governor("replacement",p.owner.getConstants());replacement.setMachine(p.secondary);
+            assertFalse(p.owner.nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.primary,0));
+            assertThrows(IllegalStateException.class,()->p.owner.evaluateStaggered(.0005,new double[6],0));
+            assertFalse(previous.nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.secondary,0));
+            assertEquals(states,p.owner.getIntegrationStates());assertEquals(history,p.owner.getIntegrationHistories());
+        }
+        var p=pair();initializePair(p,false);var previous=p.primary.getGovernor();p.primary.getControllerList().remove(previous);
+        var replacement=new Wsieg1Governor("replacement",p.owner.getConstants());replacement.setMachine(p.primary);
+        assertFalse(p.secondary.getGovernor().nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.secondary,0));
+        assertThrows(IllegalStateException.class,()->((StaggeredEulerParticipant)p.secondary.getGovernor()).readStaggeredState(new double[0],0));
+    }
+
     private static void updateBoth(Pair p,boolean shared,double[] state,double[] rates) {
         for(int tick=0;tick<20000;tick++) {
             p.primary.setSpeed(1.+.0001*Math.sin(tick*.01));
