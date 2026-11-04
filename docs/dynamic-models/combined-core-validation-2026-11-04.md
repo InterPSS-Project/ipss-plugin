@@ -63,3 +63,17 @@ Archive SHA-256:
 The loaded core artifact SHA-256 is
 `3cf1c01a7fef77150f51662c80d478258f729fde5cb5f6848f40a6d1018743ed`.
 No tolerance, assertion, model default or iteration cap was relaxed.
+
+## Configuration repair and clean-source module rerun
+
+At plugin commit `0390f989f`, the full plugin-core default test selection was
+rerun against the same combined core artifact. All 494 tests completed with
+zero failures/errors and four unchanged optional native-solver skips. The
+configuration-policy failure is resolved by immutable JSON fixture settings;
+the Java solver path and numerical defaults are unchanged.
+
+The bounded log and all executed XML reports are retained privately under
+`verification-artifacts/plugin-core-fixture-repair-20261104`, archive SHA-256
+`a5a1aca6f8d65f89acd9257e98af6df357f2d47453482822e07bc5ad9514d8ba`.
+This module result does not resolve the full registered suite's remaining
+model-accuracy failures or qualify the branch for merging.
