@@ -156,6 +156,7 @@ import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedStateTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedSmibTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3StateConformanceTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LimitConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LongDurationConformanceTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3BypassConformanceTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3DerivativePreparationConformanceTest;
 import org.interpss.dstab.control.gov.psse.hyg3.Hyg3ParameterValidationTest;
@@ -1176,6 +1177,7 @@ import org.junit.platform.suite.api.Suite;
     Hyg3SharedSmibTest.class,
     Hyg3StateConformanceTest.class,
     Hyg3LimitConformanceTest.class,
+    Hyg3LongDurationConformanceTest.class,
     Hyg3BypassConformanceTest.class,
     Hyg3DerivativePreparationConformanceTest.class,
     Hyg3ParameterValidationTest.class,

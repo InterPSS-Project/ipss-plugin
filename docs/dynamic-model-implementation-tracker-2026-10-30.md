@@ -10,6 +10,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## PSS2B
 
+- Retain [independent selector-state recurrence coverage](dynamic-models/pss2b-compiled-runtime.md#independent-selector-state-recurrence-coverage), compiled first-washout rate checks for all selectors and event-history negative control. Host-exciter local refinement does not resolve the quarter-cycle modified-Euler angle gate; finish ramp/lead-lag and sampled-output trajectory qualification without changing equations to compensate.
+
 - Retain [accepted input-path publication](dynamic-models/pss2b-compiled-runtime.md#accepted-input-path-publication), primitive history, automatic standard-record selection, both-method sampled-output gates and pure trial/observation behavior. Extend full controller-state qualification and resolve the long-run modified-Euler gate; the ordinary-evaluation cache experiment remains rejected.
 - Retain the independently checked [input-transducer preparation](dynamic-models/pss2b-compiled-runtime.md#input-transducer-preparation), source-specific T6/T7 bypass rule, unchanged entered data and both-method SMIB boundary gates. Resolve fast-transition controller-state/output discrepancies separately from network boundary acceptance; do not generalize this rule to other lag families without evidence.
 - Retain direct shared-state staggered participation, the existing modified-Euler execution, sampled measurement histories and audited ownership/predictor guards.
@@ -22,6 +24,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Retain the [compiled runtime contract](dynamic-models/pss2b-compiled-runtime.md), accepted derivative history and zero-duration event checks when extending qualification.
 
 ## HYG3U1
+
+- Retain the [ten-second fault and reversal extension](dynamic-models/hyg3-prepared-curves.md#ten-second-fault-and-reversal-extension), cold repeats and exact final integration tick. Physical boundary gates pass, while late governor-state and recorded-input replay discrepancies remain open; preserve original state envelopes and do not change production precision to fit the retained observations.
 
 - Retain the independently checked [accepted pre-event controller rates](dynamic-models/hyg3-prepared-curves.md#accepted-pre-event-controller-rates), separate two-step history and both-mode event-increment regression. This restores the standard-state and zero-derivative-time staggered gates exposed by the machine event correction. Resolve the remaining coupled power-filter-bypass state discrepancy using the recorded speed/power replay; preserve existing limits and distinguish controller equations from upstream machine/network errors. Broader acceptance remains open.
 - Retain [fast-feedback validation](dynamic-models/hyg3-prepared-curves.md#fast-feedback-and-pre-initialization-validation), singular algebraic-feedback rejection through both solvers, non-mutating parameter checks and cold reference-quality controls. Resolve fast positive-time internal oscillations and combined PID bypass qualification; finite terminal trajectories do not qualify divergent compensation states. Preserve the full failed/rejected diagnostics and existing strict power gates.
