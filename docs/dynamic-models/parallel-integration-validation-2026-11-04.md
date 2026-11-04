@@ -1,5 +1,18 @@
 # Parallel model integration validation
 
+The latest complete combined-core run and compatibility checks are recorded in
+[the combined validation report](combined-core-validation-2026-11-04.md).
+After that run, the composite tap measurement correction passed all 62 focused
+integration checks against the same core artifact, including both integration
+methods, counter histories, rollback and observation purity. This resolves a
+one-interval timer error; complete reactive-power trajectory acceptance remains open.
+
+The subsequent fixture-configuration repair passes the repository policy check.
+The eight converter reference checks still report the same two strict failures;
+no numerical threshold or algorithm default changed. Logs and actual XML reports
+are retained privately at `verification-artifacts/tap-and-fixture-integration-20261104`,
+archive SHA-256 `ff3407dc6e6a444efc4643f26829948f1f6167eac4c925d48f404e3767ccdc4f`.
+
 The combined REECC1, TIOCR1 and composite-load implementation wave passes
 222 tests with no failures, errors or skips. This includes shared renewable
 controller regressions, both integration methods, relay physical-action
