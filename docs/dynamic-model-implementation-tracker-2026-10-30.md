@@ -49,6 +49,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## WSIEG1
 
+- Retain the opt-in shared-turbine reactivation contract and exact converted-load cache rollback. All staggered reclose profiles and modified-Euler secondary-shaft profiles pass their existing gates; modified-Euler primary-shaft state/power qualification remains open. Simultaneous paired reclose, mixed-sequence networks and broader composed-network lifecycle remain unfinished. Ordinary trip/energization cache handling is a separate active investigation.
+
 - Use the [status-reenable discriminator](dynamic-models/wsieg1-shared-runtime.md#status-reenable-discriminator) to design an explicit model-opt-in inactive lifecycle. Cold pairs show retained stale-derivative state increments becoming physical on reenable; a Java implementation must separate held outputs from retained numerical state, keep sole-primary ownership and define each integrator's dormant policy. The working-case status API diagnostic alone does not qualify hot reconnection.
 
 - Retain [atomic ordinary stages and current-shaft ownership](dynamic-models/wsieg1-shared-runtime.md#atomic-ordinary-stages-and-current-shaft-ownership): reject wrong/replaced owners, repeated predictors and mismatched or nonfinite correctors before state publication; preserve a rejected corrector for valid retry. Both-method trajectory controls remain unchanged; exact zero-primary allocation, hot reconnection and the existing reference gates remain open.
@@ -111,6 +113,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
+- Preserve exact imported load identities separately from typed wildcard APIs. Independent action-time logs reject absent wildcard targets; do not treat initial record acceptance as action qualification. Exact symbolic IDs remain explicitly unsupported where the runtime cannot distinguish them from typed wildcard operations. Retain import atomicity and no-load-action controls; typed collapsed residual allocation remains open.
+
 - Retain [partial composite-load action](dynamic-models/tiocr1-accepted-runtime.md#partial-composite-load-action) and [owned-subtree disconnection](dynamic-models/tiocr1-accepted-runtime.md#owned-composite-disconnection), explicit source-owner preparation and accepted-action preflight. Both-method complete shed/control trajectories retain the relay-operation duplicate and distinguish prepared internal diagnostics from physical bus voltage. Extend other full-removal topologies, aggregate source selection and restoration without phantom parent load stamps.
 
 - Retain [independent terminal selection with charging current](dynamic-models/tiocr1-accepted-runtime.md#independent-terminal-selection-with-charging-current) and [both-terminal physical actions](dynamic-models/tiocr1-accepted-runtime.md#opposite-terminal-physical-actions-and-pre-trip-recording). Both methods retain the pre-action observation and complete fault/trip trajectories. Retain zero/positive breaker-delay and monitored/parallel transfer controls, with a coherent latched pre-action snapshot separate from physical revision. Extend multiple transfer targets and production-step timing separately.
@@ -125,6 +129,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2
+
+- Retain independently verified peer-trip removal at MSS bank events, prepared peer ownership and exact stamp-failure rollback under both methods. Keep disconnected physical current separate from stored output-lag state. Later failed-network-solve rollback and full trajectory gates remain open; repeated reference continuation calls cannot substitute for uninterrupted event controls.
 
 - Retain the [accepted recovery clock](dynamic-models/svsmo3t2-current-runtime.md#recovery-clock-and-local-integration-discrimination): use the selected endpoint timestamps rather than summing nominal intervals. Keep the default precision unchanged. Local refinement does not resolve the remaining coarse modified-Euler transition error and is not enabled as a production workaround.
 
