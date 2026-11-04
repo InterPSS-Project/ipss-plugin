@@ -55,8 +55,8 @@ def archives(root):
         if (folder.name.startswith('tiocr') or folder.name.startswith('relay-composite')
                 or folder.name.startswith('cmldblu1-') and 'shedding' in folder.name):
             selected.extend(sorted(folder.glob('*.zip')))
-    legacy=root/'2026-10-30-hsp-usage'/'cold-runs'
-    if legacy.is_dir():selected.extend(sorted(legacy.rglob('tiocr*.zip')))
+    for legacy in sorted(root.glob('*/cold-runs')):
+        if legacy.is_dir():selected.extend(sorted(legacy.rglob('tiocr*.zip')))
     return selected
 
 def audit(root):
