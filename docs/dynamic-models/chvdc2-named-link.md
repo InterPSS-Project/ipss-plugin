@@ -38,6 +38,8 @@ clock is checked independently against its step recurrence: the reference uses
 binary32 accumulation. Signals are paired by numerical step and event side;
 there is no time shift, interpolation or removal of duplicate timestamps.
 
+The initial terminal-attachment checkpoint produced:
+
 | Network interval | Method | Maximum bus-voltage error (pu) | Maximum DC-current error (A) | Maximum terminal-power error (pu) |
 | --- | --- | ---: | ---: | ---: |
 | 0.5 ms | Modified Euler | 0.000002010 | 0.350302 | 0.00203230 |
@@ -60,6 +62,37 @@ failure identity and adds only the four explicit terminal-reference failures
 listed above. No failed reference gate is skipped or relaxed. Replacing the
 test's global output-path setting with the repository build directory leaves
 all four complete comparison CSVs byte-identical.
+
+### Accepted left-endpoint rates at network events
+
+The terminal owner now selects the staggered solver's accepted-endpoint rate
+snapshot for a scheduled network discontinuity. The solver evaluates this RHS
+after accepting the terminal's electrical and protection history. Its event
+average therefore uses the converged left endpoint; the older integration-start
+rate remains separate in the two-step formula. The companion owns no rates.
+This reuses the existing cached derivative vector without an extra per-step RHS
+evaluation. The additional event buffer is allocated once at initialization.
+
+A coupled fault-clearing regression observes the left endpoint, right endpoint
+and previous integration-start rates independently, then checks the resulting
+voltage-filter coordinate against the staggered recurrence. Restoring the old
+policy makes this test fail by `0.0001560502 pu`; the corrected policy passes.
+The control also verifies that the two slopes differ, so an equilibrium test
+cannot accidentally mask an ownership error.
+
+The complete modified-Euler comparisons remain byte-identical. The coarse
+staggered current maximum changes from `0.333831` to `0.334514 A`, and its maximum
+power error changes from `0.00206151` to `0.00206500 pu`. The fine current maximum
+remains approximately `0.517188 A`. This is a correction to integration-event
+ownership, not a claim of improved reference agreement. The first post-event
+measurement discrepancy and late-time reference plateaus remain separate open
+issues; no precision, equation, time shift or acceptance limit was adjusted.
+
+Validation of the event-rate change reruns the terminal/lifecycle and existing
+coupled-reference classes, plus the core-plugin module suite. All lifecycle
+checks pass; the earlier reduced-network traces remain byte-identical and their
+failure identities are unchanged. The complete registered-suite baseline is
+the preceding terminal-attachment checkpoint, not a fresh run for this change.
 
 ## Preparation from the solved network
 

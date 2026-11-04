@@ -125,4 +125,38 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         f.network().context().getDStabilityNet().getSpecialBranchList().remove(link);
         assertFalse(p.attachmentIntact());assertFalse(p.updateAttributes(false));
     }
+    @Test void staggeredFaultClearingUsesTheAcceptedLeftRateAndKeepsTwoStepHistorySeparate()throws Exception {
+        var f=fixture(true);var a=f.network().context().getDynSimuAlgorithm();var p=f.ports().rectifierPort();
+        double h=.0005,clear=.004;int coordinate=11;
+        class ObservedSolver extends StaggeredEulerSolver {
+            final double[] rate=new double[16],state=new double[16];
+            double previousStartRate,olderRate,leftRate,rightRate,initialState;
+            boolean clearing,recording;
+            ObservedSolver(){super(a);setReuseNetworkEndpoint(false);}
+            @Override public void beforeStep(double time)throws com.interpss.dstab.common.DStabSimuException {
+                clearing=Math.abs(time-clear)<1e-12;
+                if(clearing){p.evaluateStaggered(h,rate,0);leftRate=rate[coordinate];
+                    olderRate=previousStartRate;p.readStaggeredState(state,0);initialState=state[coordinate];}
+                super.beforeStep(time);
+            }
+            @Override public boolean networkSolutionStep()throws com.interpss.dstab.common.DStabSimuException {
+                boolean ok=super.networkSolutionStep();
+                if(ok&&recording&&"INITIAL".equals(networkSolutionStage)){
+                    p.evaluateStaggered(h,rate,0);previousStartRate=rate[coordinate];
+                    if(clearing)rightRate=rate[coordinate];
+                }
+                return ok;
+            }
+        }
+        var solver=new ObservedSolver();a.setSolver(solver);a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        a.setSimuStepSec(h);a.setTotalSimuTimeSec(clear+h);a.setSimuOutputHandler(new StateMonitor());
+        a.getNetwork().addDynamicEvent(com.interpss.dstab.DStabObjectFactory.createBusFaultEvent("Bus9",a.getNetwork(),
+                com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.001,clear-.001),"Fault");
+        assertTrue(a.initialization());solver.recording=true;
+        while(a.getSimuTime()<clear+h/2)assertTrue(a.solveDEqnStep(true));
+        double expected=solver.initialState+h*(1.5*.5*(solver.leftRate+solver.rightRate)-.5*solver.olderRate);
+        p.readStaggeredState(solver.state,0);
+        assertTrue(Math.abs(solver.leftRate-solver.olderRate)>1e-5,"The event must distinguish the two retained slopes");
+        assertEquals(expected,solver.state[coordinate],1e-12,"Network event uses settled left rate while AB2 retains the older start rate");
+    }
 }
