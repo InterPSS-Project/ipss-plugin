@@ -348,3 +348,12 @@ capacitor and reactor insertion peak voltage errors remain 0.034233 and
 or numerical equations were changed. Further qualification must distinguish an
 explicit solver clock contract from integration-method accuracy; adjusting bank
 pickup to hide a current-integration difference would change the model.
+
+A coupled reinitialization regression now drives the controller to a latched
+trip, accepts electrical detachment, restores and resolves the operating point,
+invalidates cached network initialization and reinitializes the same solver.
+For both ordinary modified Euler and staggered integration, the next forty
+coupled endpoints match a fresh import: all six coordinates and bus voltage
+within 1e-9, with identical accepted histories. This verifies clean solver/model
+reuse after explicit reinitialization. It does not introduce an online reconnect
+command or establish an independent reference reconnect trajectory.

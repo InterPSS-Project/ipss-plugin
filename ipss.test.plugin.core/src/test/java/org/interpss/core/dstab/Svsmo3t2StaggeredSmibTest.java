@@ -220,6 +220,47 @@ public class Svsmo3t2StaggeredSmibTest extends CorePluginTestSetup {
         assertThrows(IllegalStateException.class, () -> solver.nextStep(algo.getSimuTime(), .0005, DynamicSimuMethod.MODIFIED_EULER));
     }
 
+    @Test void coupledReinitializationAfterTripMatchesFreshOperatingPoint(@TempDir Path folder) throws Exception {
+        for (boolean staggered : new boolean[]{false, true}) {
+            var used = load(folder.resolve("used-" + staggered));
+            var fresh = load(folder.resolve("fresh-" + staggered));
+            var algo = used.getDynSimuAlgorithm();
+            var clean = fresh.getDynSimuAlgorithm();
+            if (staggered) {
+                algo.setSolver(new StaggeredEulerSolver(algo));
+                clean.setSolver(new StaggeredEulerSolver(clean));
+            }
+            assertTrue(algo.initialization());
+            var device = model(used);
+            var bus = device.getDStabBus();
+            var voltage = bus.getVoltage();
+            bus.setVoltage(new org.apache.commons.math3.complex.Complex(2, 0));
+            for (int i = 0; i < 4000 && !device.isTripped(); i++) {
+                assertTrue(device.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 0));
+                assertTrue(device.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 1));
+            }
+            assertTrue(device.isTripped());
+            device.acceptNetworkEvent();
+            assertTrue(device.isNetworkDetached());
+            bus.setVoltage(voltage);
+            used.getDStabilityNet().setDStabNetInitialized(false);
+            assertTrue(algo.getAclfAlgorithm().loadflow());
+            assertTrue(algo.initialization());
+            assertTrue(clean.initialization());
+            assertFalse(device.isNetworkDetached());
+            assertFalse(device.isTripped());
+            var cleanDevice = model(fresh);
+            for (int i = 0; i < 40; i++) {
+                assertTrue(algo.solveDEqnStep(true));
+                assertTrue(clean.solveDEqnStep(true));
+                for (var entry : cleanDevice.getIntegrationStates().entrySet())
+                    assertEquals(entry.getValue(), device.getIntegrationStates().get(entry.getKey()), 1e-9, entry.getKey());
+                assertEquals(cleanDevice.getIntegrationHistories(), device.getIntegrationHistories());
+                assertEquals(cleanDevice.getDStabBus().getVoltageMag(), bus.getVoltageMag(), 1e-9);
+            }
+        }
+    }
+
     @Test void endpointClockRequiresARepresentablePositiveStep(@TempDir Path folder) throws Exception {
         var context = load(folder);
         var algo = context.getDynSimuAlgorithm();
