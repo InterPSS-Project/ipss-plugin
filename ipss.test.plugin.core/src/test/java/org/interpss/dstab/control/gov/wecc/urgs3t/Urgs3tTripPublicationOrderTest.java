@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.interpss.dstab.common.DStabSimuException;
 
 /** A premature run publication changes held mechanical rates despite identical trip states. */
-class Urgs3tTripPublicationOrderTest {
+public class Urgs3tTripPublicationOrderTest {
     @BeforeAll static void setup()throws Exception{Urgs3tReactivationReferenceTest.setup();}
     private record Observation(double beforePower,double publishedPower,double speed,double inertia,
             double heldRate,double disconnectedSpeed) { }

@@ -1199,6 +1199,7 @@ import org.junit.platform.suite.api.Suite;
     Urgs3tValveReleaseTest.class,
     org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationLifecycleTest.class,
     org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationReferenceTest.class,
+    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tTripPublicationOrderTest.class,
     Wsieg1SharedSmibTest.class,
     Wsieg1StateConformanceTest.class,
     Wsieg1BypassLimitConformanceTest.class,

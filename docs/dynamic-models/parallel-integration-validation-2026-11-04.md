@@ -338,3 +338,32 @@ See the [qualification report](../benchmarks/lcc-gamma-limit-control-2026-11-04.
 Integrated evidence with the actual loaded artifact hash is retained at
 `verification-artifacts/lcc-gamma-candidate-integrated-20261104`, SHA-256
 `01c9f1a9c8e6b51e69f0d1f18ea528fd089e911161bd531ef15063f2b979907d`.
+
+## Combined candidate suite and trip-publication correction
+
+Plugin `ddeee7bd3` with isolated core `f5d6ec07b` reports 4,894 tests across
+738 class reports: 4,652 pass, 227 fail, two error and 13 skip. Compared with
+the preceding complete run, four newly registered reactivation state gates
+and two EDCLF checks fail; no previous failure identity disappears.
+Evidence is retained at `verification-artifacts/full-reactivation-lcc-candidate-20261104`,
+SHA-256 `c630a5d479409b20ed46e2b21d3f29b9dd5fdadbcb674bcb04947094c52d775c`.
+
+The EDCLF checks independently pass with core 1.4.7 and fail identically with
+both baseline 1.4.8 and the converter candidate. The candidate's EDCLF bytecode
+is identical to 1.4.8. These are dependency-transition failures, not evidence
+of an LCC regression; the documented equation is being audited before any
+assertion or core change. Private isolation evidence is retained at
+`verification-artifacts/edclf-core-version-isolation-20261104`.
+
+After this full run, an independently demonstrated reference-harness error was
+corrected: the primary host's trip must retain its true left-side mechanical
+power publication. Negative controls reproduce the erroneous extra acceleration
+under both methods. Runtime equations, thresholds and ordinary/surviving-host
+publication remain unchanged. The complete integrated URGS3T selection then
+reports 193 tests: 146 pass and 47 fail, with no errors or skips. The staggered
+reactivation trajectory now passes every unchanged gate; no new failure identity
+appears. Other state and method-comparison failures remain open.
+
+Post-correction evidence is retained at
+`verification-artifacts/urgs-trip-order-integrated-20261104`, SHA-256
+`4a8a5e4f7f878ffe6c0f94c1ac7076736f4e58cfb110506f811144bbc46b7635`.
