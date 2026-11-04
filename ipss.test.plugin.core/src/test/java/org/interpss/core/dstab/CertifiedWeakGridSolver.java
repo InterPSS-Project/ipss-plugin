@@ -35,8 +35,12 @@ final class CertifiedWeakGridSolver extends DefaultDynamicSimulationSolver {
     }
 
     void assertAccelerationExercised() {
-        assertTrue(calls > 0);
+        assertCertifiedSolutions();
         assertTrue(getNetworkAccelerationApplications() > 0);
+    }
+
+    void assertCertifiedSolutions() {
+        assertTrue(calls > 0);
         System.out.println("Weak-grid certificate: calls=" + calls + ", maximum iterations="
                 + maximumIterations + ", maximum original voltage correction=" + maximumCorrection
                 + ", bounded mixes=" + getNetworkAccelerationApplications());
