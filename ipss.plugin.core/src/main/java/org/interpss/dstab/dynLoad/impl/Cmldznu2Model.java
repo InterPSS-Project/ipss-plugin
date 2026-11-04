@@ -304,21 +304,74 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         return true;
     }
 
-    /** Prepared whole-owner partial capacity action; zero-capacity topology is not inferred. */
+    /** Prepared whole-owner capacity action, including verified owned-subtree disconnection. */
     protected final boolean canChangeCompositeCapacity(double factor) {
-        if (capacityLeaves == null || !Double.isFinite(factor) || factor > 0 || remainingCapacity + factor <= 0
+        if (capacityLeaves == null || !Double.isFinite(factor) || factor > 0 || remainingCapacity <= 0 || remainingCapacity + factor < 0
                 || getDStabBus()!=capacityParent || getLowVoltBus()!=capacityLowBus || getLoadBus()!=capacityLoadBus
                 || capacityParent.getNetwork()!=capacityNetwork || capacityLowBus.getNetwork()!=capacityNetwork
                 || capacityLoadBus.getNetwork()!=capacityNetwork || capacityNetwork.getYMatrix()==null) return false;
         if (distFdr!=null && (distFdr.getFromBus()!=capacityLowBus || distFdr.getToBus()!=capacityLoadBus)) return false;
         if (distXfr!=null && (distXfr.getFromBus()!=capacityParent || distXfr.getToBus()!=capacityLowBus)) return false;
         for (var leaf:capacityLeaves) if (leaf.getDStabBus()!=capacityLoadBus) return false;
+        if (remainingCapacity+factor==0 && !canDisconnectOwnedDistribution()) return false;
         return true;
+    }
+
+    private boolean canDisconnectOwnedDistribution() {
+        // Full-disconnection evidence covers a distinct owned transformer/feeder subtree.
+        if (distXfr==null || distFdr==null || capacityLowBus==capacityParent
+                || capacityLoadBus==capacityParent || capacityLowBus==capacityLoadBus) return false;
+        for (var bus:new BaseDStabBus<?,?>[]{capacityLowBus,capacityLoadBus}) {
+            if (bus==capacityParent) continue;
+            if (!bus.getContributeGenList().isEmpty()) return false;
+            for (var device:bus.getDynamicBusDeviceList()) if(!isOwnedCapacityDevice(device)) return false;
+            for (var branch:capacityNetwork.getBranchList())
+                if (branch.isActive() && (branch.getFromBus()==bus || branch.getToBus()==bus)
+                        && branch!=distFdr && branch!=distXfr) return false;
+            if(bus.getDynLoadModelList()!=null) for (var leaf:bus.getDynLoadModelList()) {
+                if (!isOwnedCapacityDevice(leaf)) return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isOwnedCapacityDevice(Object device) {
+        for(var leaf:capacityLeaves)if(leaf==device)return true;
+        return device instanceof LegacyDistributionShuntPort shunt && shunt.getId().equals(getId()+"_lowShunt");
+    }
+
+    private void disconnectOwnedDistribution(double factor) {
+        // Remove live stamps in place, preserving an unrelated active fault's diagonal.
+        removeDistributionBranch(distFdr);removeDistributionBranch(distXfr);
+        for (var leaf:capacityLeaves) {
+            leaf.changeLoad(factor);
+            leaf.setLoadPQ(Complex.ZERO);leaf.setStatus(false);
+        }
+        if (tapControl!=null)tapControl.setStatus(false);
+        for (var bus:new BaseDStabBus<?,?>[]{capacityLowBus,capacityLoadBus}) if (bus!=capacityParent && bus.isActive()) {
+            if(bus.getDynLoadModelList()!=null)for (var leaf:bus.getDynLoadModelList())leaf.setStatus(false);
+            bus.setStatus(false);
+            int row=bus.getSortNumber();capacityNetwork.getYMatrix().setA(Complex.ONE,row,row);
+            capacityNetwork.getYMatrix().setBi(Complex.ZERO,row);
+        }
+        ownedLowSideShunt=Complex.ZERO;nearCompensation=Complex.ZERO;farCompensation=Complex.ZERO;
+        remainingCapacity=0;
+        capacityNetwork.setYMatrixDirty(true);
+    }
+
+    private void removeDistributionBranch(com.interpss.dstab.DStabBranch branch) {
+        if(branch==null || !branch.isActive())return;
+        int from=branch.getFromBus().getSortNumber(),to=branch.getToBus().getSortNumber();
+        var matrix=capacityNetwork.getYMatrix();
+        matrix.addToA(branch.yff().negate(),from,from);matrix.addToA(branch.yft().negate(),from,to);
+        matrix.addToA(branch.ytf().negate(),to,from);matrix.addToA(branch.ytt().negate(),to,to);
+        branch.setStatus(false);
     }
 
     protected final boolean changeCompositeCapacity(double factor) {
         if (!canChangeCompositeCapacity(factor)) return false;
         if (factor == 0) return true;
+        if (remainingCapacity+factor==0) { disconnectOwnedDistribution(factor);return true; }
         double next = remainingCapacity + factor, ratio = next / remainingCapacity;
         var network = (DStabilityNetwork)getDStabBus().getNetwork();
         if (distFdr != null) {

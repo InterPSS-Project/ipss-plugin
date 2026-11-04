@@ -11,7 +11,9 @@ source ID or a whole-owner `*`/`#` target. The factor is an increment relative t
 initial capacity: two `-0.25` actions leave 50%, rather than 56.25%. A selected
 individual ID within an aggregated owner is rejected because its separate
 capacity allocation is not retained. Positive restoration, nonfinite factors
-and zero/negative remaining capacity are also rejected before mutation. The
+and negative remaining capacity are also rejected before mutation. Zero remaining
+capacity requires a distinct, exclusively owned transformer/feeder subtree;
+collapsed or foreign-attached topology is rejected. The
 whole-owner `changeLoad(factor)` applies only a successful prepared action.
 
 Independent matched shed/no-shed captures establish these physical changes:
@@ -44,9 +46,8 @@ The retained archive SHA-256 is
 both methods. It now checks repeated partial actions, physical element scaling,
 rejected-action nonmutation, motor online fractions and endpoint current balance,
 as well as all-sample independent reference ratios. Complete relay-triggered
-trajectory qualification is separate. Full shedding needs independently verified
-disconnection/topology handling; no infinite feeder impedance or artificial
-small admittance is substituted for that missing behavior. This is not a claim
+trajectory qualification is separate. Full shedding follows the verified disconnection behavior below; no infinite
+feeder impedance or artificial small admittance substitutes for disconnection. This is not a claim
 of complete composite-model or zone-dialect qualification.
 
 ## Full-trip discriminator
@@ -64,9 +65,14 @@ This identifies complete disconnection of the composite boundary, including its
 substation contribution, despite unchanged stored transformer/substation
 parameters. It does **not** justify extrapolating partial-capacity equations to
 zero, preserving the energized substation, or inserting a small substitute
-admittance. Production continues to reject zero remaining capacity before
-mutation until expanded-bus deactivation and solver topology lifecycle are
-implemented and independently checked. Full-trip captures and integrity manifest
+admittance. The implementation removes only the owned transformer and feeder matrix stamps,
+deactivates their two internal buses and owned leaves, and uses the engine's
+normal identity-row representation for inactive buses. Parent-bus loads, shunts
+and active fault stamps remain untouched. Internal differential states and
+voltage observations remain frozen while the external network keeps solving.
+A later matrix rebuild reproduces this disconnected topology. Reconnection is
+not supported by this capacity-action API; neither positive restoration nor
+foreign-attached or collapsed topology is silently accepted. Full-trip captures and integrity manifest
 SHA-256: `dada624db14a401ddda2fa66c6fa9b6f5b320df013c95fa9fd3579bc8e0761b6`.
 
 The matrix-rebuild regression exposed a separate cached-sequence requirement:
@@ -78,3 +84,10 @@ consistent. The test failed under both methods before the correction, then
 passed along with the broader composite/tap tests (40 tests, no skips). It checks
 both internal-bus diagonals before and after rebuilding and resumes simulation
 with endpoint current balance.
+
+
+The runtime full-trip regression applies two partial stages followed by the
+remaining capacity trip under both methods, with an unrelated parent shunt.
+It checks inactive bus/branch/device ownership, matrix rebuild consistency,
+continued external simulation and frozen internal states. Complete relay-driven
+full-trip reference trajectory qualification remains a separate gate.

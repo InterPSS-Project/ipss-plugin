@@ -16,7 +16,10 @@ public class CompositeLoadChangeTest {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var path=Cmldblu1SharedSmibTest.CASE;
         var context=new PSSEMultiFileLoader().loadDStab(path.resolve("load-network.raw").toString(),path.resolve("cmldblu1-mixed.dyr").toString());
-        var a=context.getDynSimuAlgorithm();assertTrue(a.getAclfAlgorithm().loadflow());
+        var a=context.getDynSimuAlgorithm();
+        var unrelatedShunt=new org.apache.commons.math3.complex.Complex(.002,.003);
+        a.getNetwork().getDStabBus("Bus2").setShuntY(unrelatedShunt);
+        assertTrue(a.getAclfAlgorithm().loadflow());
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.1);
         a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         if(staggered)a.setSolver(new StaggeredEulerSolver(a));
@@ -34,7 +37,7 @@ public class CompositeLoadChangeTest {
         assertEquals(originalZ,feeder.getZ());model.setDStabBus(parent);
         assertTrue(model.canChangeLoad("1",-.25));assertTrue(model.canChangeLoad("*",-.25));
         assertFalse(model.canChangeLoad("other",-.25));
-        assertFalse(model.canChangeLoad(-1));assertFalse(model.changeLoad(-1));
+        assertFalse(model.canChangeLoad(-1.1));assertFalse(model.changeLoad(-1.1));
         assertFalse(model.changeLoad(Double.NaN));assertFalse(model.changeLoad(.1));
         assertEquals(originalZ,feeder.getZ());assertEquals(1,model.getRemainingCapacity(),0);
         assertTrue(model.changeLoad(-.25),"Source owner must accept and delegate physical load change");
@@ -48,7 +51,7 @@ public class CompositeLoadChangeTest {
         assertTrue(model.changeLoad(-.25));assertEquals(.5,model.getRemainingCapacity(),1e-14);
         assertEquals(0,feeder.getZ().subtract(originalZ.divide(.5)).abs(),1e-14);
         assertEquals(.5,model.getInductionMotorA().getFonline(),1e-12);
-        assertFalse(model.changeLoad(-.5));assertEquals(.5,model.getRemainingCapacity(),1e-14);
+        assertFalse(model.changeLoad(-.6));assertEquals(.5,model.getRemainingCapacity(),1e-14);
         var matrix=a.getNetwork().getYMatrix();
         int lowRow=model.getLowVoltBus().getSortNumber(), loadRow=model.getLoadBus().getSortNumber();
         var lowDiagonal=matrix.getA(lowRow,lowRow);var loadDiagonal=matrix.getA(loadRow,loadRow);
@@ -63,6 +66,22 @@ public class CompositeLoadChangeTest {
         current=current.add(load.getShuntY().multiply(voltage));
         var incoming=model.getLowVoltBus().getVoltage().subtract(voltage).divide(feeder.getZ());
         assertTrue(incoming.subtract(current).abs()<1e-4,"Expanded leaf and physical shunt current balance");
+        var parentVoltage=parent.getVoltage();var frozenLow=model.getLowVoltBus().getVoltage();var frozenLoad=load.getVoltage();
+        var motorState=model.getInductionMotorA().getEp();
+        assertTrue(model.canChangeLoad("1",-.5));assertTrue(model.changeLoad(-.5));
+        assertEquals(0,model.getRemainingCapacity(),0);assertTrue(parent.isActive());
+        assertEquals(unrelatedShunt,parent.getShuntY(),"Unrelated parent shunt survives full composite disconnection");
+        assertFalse(model.getLowVoltBus().isActive());assertFalse(load.isActive());
+        assertFalse(feeder.isActive());assertFalse(model.getDistributionTransformer().isActive());
+        assertFalse(model.changeLoad(.1));assertFalse(model.changeLoad(-.1));
+        var parentDiagonal=a.getNetwork().getYMatrix().getA(parent.getSortNumber(),parent.getSortNumber());
+        assertEquals(org.apache.commons.math3.complex.Complex.ONE,a.getNetwork().getYMatrix().getA(lowRow,lowRow));
+        a.getNetwork().formYMatrix4DStab();
+        assertEquals(0,a.getNetwork().getYMatrix().getA(parent.getSortNumber(),parent.getSortNumber()).subtract(parentDiagonal).abs(),1e-12);
+        for(int i=0;i<40;i++)assertTrue(a.solveDEqnStep(true));
+        assertEquals(frozenLow,model.getLowVoltBus().getVoltage());assertEquals(frozenLoad,load.getVoltage());
+        assertEquals(motorState,model.getInductionMotorA().getEp(),"Disconnected differential state remains frozen");
+        assertTrue(parent.getVoltage().subtract(parentVoltage).abs()>1e-5,"External network keeps solving");
     }
     @org.junit.jupiter.api.Test
     void independentCaptureIdentifiesWhichDistributionElementsScale()throws Exception {
