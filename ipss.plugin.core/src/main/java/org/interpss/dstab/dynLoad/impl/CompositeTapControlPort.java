@@ -19,6 +19,7 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
     private final double initialTap;
     private final double compensationR, compensationX;
     private double sampledVoltage;
+    private double precedingAppliedTap;
     private double voltageMinimum, voltageMaximum;
     private boolean pending, solving, predictorPending;
     private double predictorStep;
@@ -62,8 +63,13 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
         if (!owner.getDistributionTransformer().isActive() || !owner.getLowVoltBus().isActive()) return;
         if (pending) throw new IllegalStateException("Accept or discard the previous tap interval before advancing");
         previous.copyFrom(state);
+        precedingAppliedTap=owner.getDistributionTransformer().getToTurnRatio();
+        // The accepted command belongs to this network evaluation. The timer's
+        // newly produced command is published only after this interval succeeds;
+        // it must not alter the electrical endpoint that produced that command.
         state.advance(dt, voltage, voltageMinimum, voltageMaximum);
-        pending=true; setTap(state.tap());
+        pending=true;
+        setTap(previous.tap());
     }
     private void setTap(double tap) {
         var branch=owner.getDistributionTransformer();
@@ -116,7 +122,7 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
     }
     @Override public void beginNetworkSolution(Context context) { solving=pending; }
     @Override public void endNetworkSolution(boolean converged) {
-        if (solving && !converged) { setTap(previous.tap()); state.copyFrom(previous); }
+        if (solving && !converged) { setTap(precedingAppliedTap); state.copyFrom(previous); }
         if (solving) pending=false;
         if (!converged) predictorPending=false;
         solving=false;
@@ -127,7 +133,7 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
     @Override public Map<String,Double> getIntegrationHistories() { return getNamedStates(); }
     @Override public Map<String,Double> getNamedStates() {
         var accepted=pending ? previous : state;
-        return Map.of("LTC.Tap",accepted.tap(),"LTC.Control",accepted.control(),
+        return Map.of("LTC.Tap",accepted.tap(),"LTC.AppliedTap",pending ? precedingAppliedTap : owner.getDistributionTransformer().getToTurnRatio(),"LTC.Control",accepted.control(),
                 "LTC.Time",accepted.time(),"LTC.PendingTime",Double.isFinite(accepted.due()) ? accepted.due() : -1.0);
     }
 }

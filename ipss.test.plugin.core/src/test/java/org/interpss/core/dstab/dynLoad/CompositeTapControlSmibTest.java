@@ -61,9 +61,9 @@ public class CompositeTapControlSmibTest {
         int current=0;boolean first=false,second=false;double maxTap=0,maxV=0,maxAngle=0,old=m.getDistributionTransformer().getToTurnRatio();
         var metrics=new TreeMap<String,double[]>();
         var diagnostic=new ArrayList<String>();
-        diagnostic.add("time,tap,low_v,load_v,parent_v,parent_a,static_p,static_q,e_p,e_q,machine_p,machine_q,angle");
+        diagnostic.add("time,tap,low_v,load_v,parent_v,parent_a,static_p,static_q,e_p,e_q,machine_p,machine_q,angle,commanded_tap,eq,ed,psid,psiq");
         for(String name:List.of("V1","V2","V3","P_PU","Q_PU","SPEED","ANGLE_DEG"))
-            metrics.put(name,new double[]{0,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY,0});
+            metrics.put(name,new double[]{0,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY,0,0});
         for(int j=1;j<lines.length;j++) {
             String[] values=lines[j].split(",");double t=Double.parseDouble(values[0]);if(t<0)continue;
             int step=(int)Math.round(t/.0005);
@@ -75,7 +75,10 @@ public class CompositeTapControlSmibTest {
                     if(profile.equals("deadband"))m.setTapVoltageBand(1.030,1.060);
                     second=true;
                 }
+                double acceptedCommand=m.getNamedStates().get("LTC.Tap");
                 assertTrue(a.solveDEqnStep(true));current++;
+                assertEquals(acceptedCommand,m.getDistributionTransformer().getToTurnRatio(),1e-14,
+                        "An interval applies its previously accepted command, not its newly produced command");
                 double tap=m.getDistributionTransformer().getToTurnRatio();assertTrue(Math.abs(tap-old)<.00500001,"Incremental physical tap");old=tap;
             }
             double tap=m.getDistributionTransformer().getToTurnRatio();
@@ -93,8 +96,11 @@ public class CompositeTapControlSmibTest {
                     .add(load.multiply(m.getLoadBus().getShuntY().multiply(load).conjugate()));
             assertTrue(parent.multiply(incoming.conjugate()).subtract(physicalDemand).abs()<2e-6,
                     "Complex power includes feeder/transformer losses and both physical shunts");
-            maxTap=Math.max(maxTap,Math.abs(tap-Double.parseDouble(values[index.get("VAR12")])));
-            maxV=Math.max(maxV,Math.abs(m.getLowVoltBus().getVoltageMag()-Double.parseDouble(values[index.get("VAR30")])));
+            double commanded=m.getNamedStates().get("LTC.Tap");
+            maxTap=Math.max(maxTap,Math.abs(commanded-Double.parseDouble(values[index.get("VAR12")])));
+            // Published internal voltage uses the new command with the solved boundary current.
+            var preparedLow=parent.subtract(m.getDistributionTransformer().getZ().multiply(incoming)).multiply(commanded);
+            maxV=Math.max(maxV,Math.abs(preparedLow.abs()-Double.parseDouble(values[index.get("VAR30")])));
             maxAngle=Math.max(maxAngle,Math.abs(Math.toDegrees(a.getNetwork().getMachine("Bus1-mach1").getAngle())-Double.parseDouble(values[index.get("ANGLE_DEG")])));
             var machine=a.getNetwork().getMachine("Bus1-mach1");var voltage=machine.getDStabBus().getVoltage();
             var power=voltage.multiply(machine.getIgen().subtract(voltage.multiply(machine.getYgen())).conjugate());
@@ -107,7 +113,11 @@ public class CompositeTapControlSmibTest {
                 diagnostic.add(String.join(",",Double.toString(t),Double.toString(tap),Double.toString(m.getLowVoltBus().getVoltageMag()),
                         Double.toString(m.getLoadBus().getVoltageMag()),Double.toString(m.getDStabBus().getVoltageMag()),Double.toString(Math.toDegrees(m.getDStabBus().getVoltageAng())),
                         s.get("STATIC.P").toString(),s.get("STATIC.Q").toString(),s.get("ELECTRONIC.P").toString(),s.get("ELECTRONIC.Q").toString(),
-                        Double.toString(power.getReal()),Double.toString(power.getImaginary()),Double.toString(Math.toDegrees(machine.getAngle()))));
+                        Double.toString(power.getReal()),Double.toString(power.getImaginary()),Double.toString(Math.toDegrees(machine.getAngle())),Double.toString(commanded),
+                        Double.toString(((com.interpss.dstab.mach.RoundRotorMachine)machine).getEq1()),
+                        Double.toString(((com.interpss.dstab.mach.RoundRotorMachine)machine).getEd1()),
+                        Double.toString(((com.interpss.dstab.mach.RoundRotorMachine)machine).getPsikd()),
+                        Double.toString(((com.interpss.dstab.mach.RoundRotorMachine)machine).getPsikq())));
             }
             for(var e:metrics.entrySet()) {
                 String name=e.getKey();double reference=Double.parseDouble(values[index.get(name)]);
@@ -117,9 +127,9 @@ public class CompositeTapControlSmibTest {
                     default -> a.getNetwork().getDStabBus("Bus"+name.substring(1)).getVoltageMag();
                 };
                 var metric=e.getValue();metric[0]+=(actual-reference)*(actual-reference);
-                metric[1]=Math.min(metric[1],reference);metric[2]=Math.max(metric[2],reference);metric[3]++;
+                metric[1]=Math.min(metric[1],reference);metric[2]=Math.max(metric[2],reference);metric[3]++;metric[4]=Math.max(metric[4],Math.abs(actual-reference));
             }
-            assertEquals(tap,m.getNamedStates().get("LTC.Tap"),1e-14,"Only committed history is recorded");
+            assertEquals(tap,m.getNamedStates().get("LTC.AppliedTap"),1e-14,"Only committed electrical tap is recorded");
         }
         System.out.printf("TAP_DIAGNOSTIC %s %s maxTap=%.12g maxLowV=%.12g maxAngle=%.12g%n",staggered,profile,maxTap,maxV,maxAngle);
         if(CONFIG.bool("recording.enabled")) {
@@ -136,7 +146,7 @@ public class CompositeTapControlSmibTest {
             boolean trajectoryQualified=true;
             for(var e:metrics.entrySet()) {
                 var metric=e.getValue();double rmse=Math.sqrt(metric[0]/metric[3]);double range=metric[2]-metric[1];
-                System.out.printf("TAP_ERROR %s %s %s RMSE=%.12g NRMSE=%.12g%n",staggered,profile,e.getKey(),rmse,rmse/range);
+                System.out.printf("TAP_ERROR %s %s %s RMSE=%.12g NRMSE=%.12g MAXABS=%.12g%n",staggered,profile,e.getKey(),rmse,rmse/range,metric[4]);
                 // Retain strict full-trajectory assessment separately from tap-state qualification.
                 // At a tap action, the reference publishes pre-action power with the new tap.
                 trajectoryQualified &= e.getKey().equals("ANGLE_DEG") ? rmse<.0002 : range>1e-10 ? rmse/range<.001 : rmse<1e-7;
@@ -196,11 +206,11 @@ public class CompositeTapControlSmibTest {
         double tap=m.getDistributionTransformer().getToTurnRatio();var history=observed.getNamedStates();
         int f=m.getDStabBus().getSortNumber(),t=m.getLowVoltBus().getSortNumber();
         var matrix=new org.apache.commons.math3.complex.Complex[]{net.getYMatrix().getA(f,f),net.getYMatrix().getA(f,t),net.getYMatrix().getA(t,f),net.getYMatrix().getA(t,t)};
-        for(int n=0;n<40;n++) {
+        for(int n=0;n<41;n++) {
             if(staggered)participant.completeStaggeredStep(.0005,(n+1)*.0005);
             else {port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);}
             aware.beginNetworkSolution(new NetworkIterationAware.Context("CORRECTOR",n*.0005,(n+1)*.0005,50,1e-5));
-            if(n<39) {aware.endNetworkSolution(true);history=observed.getNamedStates();}
+            if(n<40) {aware.endNetworkSolution(true);history=observed.getNamedStates();}
         }
         assertEquals(tap+.005,m.getDistributionTransformer().getToTurnRatio(),1e-13);
         assertEquals(history,observed.getNamedStates(),"Trial history is not published");
@@ -209,6 +219,16 @@ public class CompositeTapControlSmibTest {
         var actual=new org.apache.commons.math3.complex.Complex[]{net.getYMatrix().getA(f,f),net.getYMatrix().getA(f,t),net.getYMatrix().getA(t,f),net.getYMatrix().getA(t,t)};
         for(int n=0;n<4;n++)assertTrue(matrix[n].subtract(actual[n]).abs()<1e-13);
         assertTrue(net.isYMatrixDirty());
+        // Retry applies the still-accepted command, then rebuilding must reproduce
+        // the complete transformer stamp without a stale ratio cache.
+        if(staggered)participant.completeStaggeredStep(.0005,.0205);
+        else {port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);}
+        aware.beginNetworkSolution(new NetworkIterationAware.Context("CORRECTOR",.020,.0205,50,1e-5));
+        aware.endNetworkSolution(true);
+        var acceptedMatrix=new org.apache.commons.math3.complex.Complex[]{net.getYMatrix().getA(f,f),net.getYMatrix().getA(f,t),net.getYMatrix().getA(t,f),net.getYMatrix().getA(t,t)};
+        net.formYMatrix4DStab();
+        var rebuiltMatrix=new org.apache.commons.math3.complex.Complex[]{net.getYMatrix().getA(f,f),net.getYMatrix().getA(f,t),net.getYMatrix().getA(t,f),net.getYMatrix().getA(t,t)};
+        for(int n=0;n<4;n++)assertEquals(0,acceptedMatrix[n].subtract(rebuiltMatrix[n]).abs(),1e-12,"Accepted transformer stamp survives rebuild");
         int count=m.getDStabBus().getDynLoadModelList().size();assertTrue(port.initStates());
         assertEquals(0,observed.getNamedStates().get("LTC.Time"));
         assertEquals(tap,observed.getNamedStates().get("LTC.Tap"));

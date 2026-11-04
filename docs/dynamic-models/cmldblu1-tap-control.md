@@ -326,3 +326,57 @@ internal action like an externally imposed network fault. It also does not
 resolve the remaining full-run reactive-power discrepancy. The reconstruction
 script and all per-state candidate residuals are retained separately, SHA-256:
 `7b0b9177c02abe054a7b457270e02e1a84213fe39c7750cdf39c981ba8083245`.
+
+## Accepted command and electrical application
+
+The runtime now separates the accepted tap command (`LTC.Tap`) from the
+transformer ratio actually used by the network (`LTC.AppliedTap`). Each interval
+applies the previously accepted command during its network evaluation. The
+new command produced by that interval's timer becomes accepted only after a
+successful solve. It cannot change the electrical endpoint that produced it.
+This is an integration-stage contract, with no added delay parameter and no
+change to generator derivative history.
+
+The complete reversing trace reproduces all three independently observed
+boundaries under this contract: command publication at `0.0700 s`, source power
+response at `0.0705 s`, and the first electrical-state response at `0.0710 s`.
+The recorded low-side observation at command publication uses the new command
+with the preceding boundary current. Tests retain that prepared observation
+separately from the physical solved voltage and check physical current and
+complex-power balance at every sample. Neither quantity replaces the other.
+
+Failed intervals restore both the preceding physical ratio and the accepted
+command/timer history. A successful retry followed by a full network-matrix
+rebuild preserves all four transformer admittance entries to `1e-12`.
+Modified Euler and staggered integration both exercise this lifecycle.
+
+The final focused run passes 11 tests; the preceding composite/capacity and
+recording run passes 51 tests. These counts establish lifecycle and equation
+checks, not full trajectory acceptance. The strict complete-trajectory diagnostic
+still reports failure for all six active up/down/reversal profiles, with all
+samples retained and the original thresholds unchanged. For the staggered
+reversing profile:
+
+| Channel | RMSE | Maximum absolute error | Range-normalized RMSE |
+|---|---:|---:|---:|
+| Source rotor angle (degrees) | 0.0000285250 | 0.0000571949 | Not used |
+| Active power (pu) | 0.00000284894 | 0.00000672942 | 0.000376031 |
+| Reactive power (pu) | 0.00000894798 | 0.0000192650 | 0.00333947 |
+| Source-bus voltage (pu) | 0.00000137865 | 0.00000278771 | 0.00393902 |
+| Load-parent voltage (pu) | 0.000000566885 | 0.00000169620 | 0.000946625 |
+| Infinite-bus voltage (pu) | 0.000000107128 | 0.000000320002 | 0.00299553 |
+
+An independent reconstruction from recorded generator states, field voltage,
+power and voltage phasors identifies a separate precision effect. Over part of
+the response the recorded transient field state stays constant despite computed
+per-step changes between `8.65e-9` and `2.88e-8`, below its binary32 half-ULP.
+The cumulative missing increments reach `4.94e-6`, close to the double-precision
+runtime's `5.03e-6` peak discrepancy in that state. This is evidence consistent
+with state-update quantization in the reference, not proof of its internal
+implementation. No rounding, fitted coefficient, threshold relaxation or global
+history reset is introduced. Complete trajectory qualification remains open.
+
+The private `cmldblu1-tap-command-stage-20261104` evidence contains the source,
+independent reconstruction scripts, eight complete traces for both methods,
+rollback/rebuild tests, bounded logs and per-file hashes. Archive SHA-256:
+`02c7b3ce2087b7d21ac0d9b5193c49890a0c55259cf817ef9867a40812d8fa66`.
