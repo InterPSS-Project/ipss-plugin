@@ -28,6 +28,10 @@ public class CompositeLoadChangeTest {
         var originalZ=feeder.getZ();var transformerZ=model.getDistributionTransformer().getZ();
         var lowB=model.getLowVoltBus().getShuntY();var farB=model.getLoadBus().getShuntY();
         double bss=model.getData().value(1)*.4/Math.abs(model.getData().value(0));
+        var parent=model.getDStabBus();
+        model.setDStabBus(a.getNetwork().getDStabBus("Bus1"));
+        assertFalse(model.canChangeLoad("1",-.25));assertFalse(model.changeLoad(-.25));
+        assertEquals(originalZ,feeder.getZ());model.setDStabBus(parent);
         assertTrue(model.canChangeLoad("1",-.25));assertTrue(model.canChangeLoad("*",-.25));
         assertFalse(model.canChangeLoad("other",-.25));
         assertFalse(model.canChangeLoad(-1));assertFalse(model.changeLoad(-1));

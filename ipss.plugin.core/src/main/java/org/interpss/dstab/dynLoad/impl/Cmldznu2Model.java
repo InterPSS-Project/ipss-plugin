@@ -36,6 +36,8 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private Complex nearCompensation = Complex.ZERO, farCompensation = Complex.ZERO;
     private com.interpss.dstab.dynLoad.DynLoadModel[] capacityLeaves;
     private double remainingCapacity = 1.0;
+    private BaseDStabBus<?,?> capacityParent, capacityLowBus, capacityLoadBus;
+    private DStabilityNetwork capacityNetwork;
 
     public Cmldznu2Model(String id, BaseDStabBus<?, ?> bus, Set<String> targetLoadIds,
             Complex targetPower, Cmldznu2Data data) {
@@ -297,14 +299,21 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                 getInductionMotorC(), get1PhaseACMotor(), staticLoadComponent, electronicLoadComponent)
                 .filter(java.util.Objects::nonNull).toArray(com.interpss.dstab.dynLoad.DynLoadModel[]::new);
         remainingCapacity = 1.0;
+        capacityParent=getDStabBus(); capacityLowBus=getLowVoltBus(); capacityLoadBus=getLoadBus();
+        capacityNetwork=(DStabilityNetwork)capacityParent.getNetwork();
         return true;
     }
 
     /** Prepared whole-owner partial capacity action; zero-capacity topology is not inferred. */
     protected final boolean canChangeCompositeCapacity(double factor) {
-        return capacityLeaves != null && Double.isFinite(factor) && factor <= 0
-                && remainingCapacity + factor > 0 && getDStabBus().getNetwork() instanceof DStabilityNetwork n
-                && n.getYMatrix() != null;
+        if (capacityLeaves == null || !Double.isFinite(factor) || factor > 0 || remainingCapacity + factor <= 0
+                || getDStabBus()!=capacityParent || getLowVoltBus()!=capacityLowBus || getLoadBus()!=capacityLoadBus
+                || capacityParent.getNetwork()!=capacityNetwork || capacityLowBus.getNetwork()!=capacityNetwork
+                || capacityLoadBus.getNetwork()!=capacityNetwork || capacityNetwork.getYMatrix()==null) return false;
+        if (distFdr!=null && (distFdr.getFromBus()!=capacityLowBus || distFdr.getToBus()!=capacityLoadBus)) return false;
+        if (distXfr!=null && (distXfr.getFromBus()!=capacityParent || distXfr.getToBus()!=capacityLowBus)) return false;
+        for (var leaf:capacityLeaves) if (leaf.getDStabBus()!=capacityLoadBus) return false;
+        return true;
     }
 
     protected final boolean changeCompositeCapacity(double factor) {
