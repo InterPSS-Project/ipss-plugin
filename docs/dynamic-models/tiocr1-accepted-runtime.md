@@ -141,6 +141,7 @@ samples the same input from its existing indexed relay bindings after the left
 network solve and before advancing differential coordinates. The accepted
 `afterStep` callback remains the only owner of position, breaker timers and
 physical actions. Zero-duration calls do not consume or change the sample.
+Operated relays skip unused integration-input measurements.
 Standalone accepted-step calls without an integration-stage sample continue to
 use their supplied network boundary.
 

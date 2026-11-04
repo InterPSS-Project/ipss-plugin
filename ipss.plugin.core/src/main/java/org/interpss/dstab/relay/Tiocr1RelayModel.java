@@ -83,7 +83,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     @Override public boolean initStates(BaseDStabBus<?,?> bus) { return bus==owner&&attachmentIntact()&&Double.isFinite(currentMagnitude())&&reset(); }
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {
         if(!attachmentIntact()||!Double.isFinite(dt)||dt<0)return false;
-        if(dt>0&&flag==0) {
+        if(!operated&&dt>0&&flag==0) {
             double current=currentMagnitude();
             if(!Double.isFinite(current))return false;
             intervalCurrent=current;
@@ -109,9 +109,9 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     @Override public boolean afterStep(double dt) {
         if(!attachmentIntact()||!Double.isFinite(dt)||dt<0)return false;
         if(dt==0)return true;
+        if(operated){intervalCurrent=Double.NaN;return true;}
         double current=Double.isNaN(intervalCurrent)?currentMagnitude():intervalCurrent;
         intervalCurrent=Double.NaN;
-        if(operated)return true;
         if(!pickedUp) {
             double rate=curve.rate(current);
             position=Double.isInfinite(rate)?0:Math.max(0,Math.min(1,position+dt*rate));
