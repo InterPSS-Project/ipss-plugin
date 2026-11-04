@@ -708,3 +708,11 @@ long-duration trajectory limitations remain unresolved.
 Private evidence is retained in `hyg3-initial-bounds-20261104`; the public tests
 retain the rejected-quality checks instead of presenting those captures as
 accepted dynamic trajectories.
+
+Integrated validation runs 86 tests: 77 pass and the same nine existing
+comparisons fail, with no errors or skips. All 78 preexisting outcomes and
+failure messages match the retained baseline; the eight initial-bound controls
+pass and are registered in the core plugin suite. Full reports, source settings
+and the comparison are retained privately in
+`hyg3-initial-bounds-integrated-20261104`. This validates the initialization
+correction without claiming that the remaining trajectory gates pass.
