@@ -70,6 +70,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Retain the separate accepted tap command and applied electrical ratio, transactional rollback and matrix-rebuild checks. Independent command, power and machine-state transition ordering now agrees; complete small-range power trajectory qualification remains open. Do not round machine states or relax gates to absorb the remaining precision-sensitive discrepancy.
+
 - Retain [source-owner capacity actions](dynamic-models/cmldblu1-capacity-actions.md) and complete relay-driven [partial](dynamic-models/tiocr1-accepted-runtime.md#partial-composite-load-action) and [owned-subtree disconnection](dynamic-models/tiocr1-accepted-runtime.md#owned-composite-disconnection) qualification: demand, feeder impedance and compensation change together, including the cached shunt representation used by matrix rebuilds. Exact singleton and whole-owner targets are distinct from unsupported individual aggregate selection. Extend collapsed-topology full removal, relay wildcard static-residual allocation and restoration separately.
 
 - Preserve the [tap-action history discriminator](dynamic-models/cmldblu1-tap-control.md#tap-action-history-discriminator): ordinary source-machine history fits the first responding interval, and a generic discontinuity reset does not fix complete reactive-power trajectories. Resolve command publication, electrical application and state-response stages without installing an unqualified delay or global history reset.
@@ -119,6 +121,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2
+
+- Retain the [accepted recovery clock](dynamic-models/svsmo3t2-current-runtime.md#recovery-clock-and-local-integration-discrimination): use the selected endpoint timestamps rather than summing nominal intervals. Keep the default precision unchanged. Local refinement does not resolve the remaining coarse modified-Euler transition error and is not enabled as a production workaround.
 
 - Retain [directional blocking recovery](dynamic-models/svsmo3t2-current-runtime.md#directional-blocking-recovery): undervoltage releases immediately, overvoltage starts its hold on recovery, and zero-duration holds bypass that history. Both methods match independent block/release rows while the separate raw-voltage trip remains unchanged. Complete the coarse modified-Euler overvoltage trajectory gate; exact lifecycle agreement does not remove that numerical error.
 
@@ -182,6 +186,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Add import, event and independent trajectory checks.
 
 ## CDC6T
+
+- Retain initial current-ceiling preparation: settle an initially binding ceiling through the existing startup-control-transfer lifecycle before source reconciliation. Both-method flat/fault comparisons and equal/inactive-ceiling controls qualify this path; preserve source constants, physical limits and the separate unresolved protection-timing gates.
 
 - Use the [bypass observation-stage counterexamples](dynamic-models/cdc6t-runtime-plan.md#bypass-observation-stage-counterexamples) when resolving recovery timing. Base and transferred-source captures require different observed start stages even across delay, threshold and control-mode discriminators; a universal completed-interval rule regresses an existing voltage gate. Preserve source-specific evidence rather than fitting a blanket timer delay.
 

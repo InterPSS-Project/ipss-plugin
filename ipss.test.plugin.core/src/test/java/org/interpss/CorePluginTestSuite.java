@@ -1394,6 +1394,7 @@ import org.junit.platform.suite.api.Suite;
     Chvdc2TerminalPortsTest.class,
     Chvdc2TerminalReferenceTest.class,
     Cdc6tNetworkPreparationTest.class,
+    org.interpss.core.dstab.Cdc6tInitialCeilingTest.class,
     Cdc6tConstantGammaTest.class,
     Cdc6tLimitedGammaTest.class,
     LccSourceControlsTest.class,
