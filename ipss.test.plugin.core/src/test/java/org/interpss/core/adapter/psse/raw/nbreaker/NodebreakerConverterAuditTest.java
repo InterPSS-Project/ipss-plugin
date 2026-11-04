@@ -19,7 +19,7 @@ import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 /** Independent converter-only voltage-control and minimum-angle qualification.
  * Capacitor commutation and full-network reference equivalence remain separate. */
 @Tag("extended")
-class NodebreakerConverterAuditTest extends CorePluginTestSetup {
+public class NodebreakerConverterAuditTest extends CorePluginTestSetup {
     private static final Path ARCHIVE=Path.of("testData/private/lcc-gamma-limit-20261104/reference.zip");
     private static final String PREFIX="isolated-lcc-loadflow-20261104-zero-xcap-continued-equipment-converter-only-";
     @TempDir Path temporary;

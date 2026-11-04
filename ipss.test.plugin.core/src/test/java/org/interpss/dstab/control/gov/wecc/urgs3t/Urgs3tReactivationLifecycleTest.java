@@ -13,7 +13,7 @@ import org.interpss.dstab.algo.MachineReactivationLifecycle;
 import org.interpss.fadapter.psse.PsseDStabSolver;
 
 /** Atomic accepted-state controls, separate from strict independent trajectory gates. */
-class Urgs3tReactivationLifecycleTest {
+public class Urgs3tReactivationLifecycleTest {
     @BeforeAll static void setup()throws Exception{Urgs3tReactivationReferenceTest.setup();}
     private static void exercise(Urgs3tReferenceTest.Recording recording,PsseDStabSolver solver,
             MachineReactivationLifecycle lifecycle,boolean[] reject,double time)throws Exception {

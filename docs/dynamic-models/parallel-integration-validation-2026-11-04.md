@@ -303,3 +303,38 @@ parameter, tolerance or iteration-limit change was made.
 Private integrated weighting evidence is retained at
 `verification-artifacts/converter-weighting-integrated-20261104`, SHA-256
 `14a7c16dc5b15eadcee55684954d1ff5eb48f50b1bd3933dc1f457522b3fe130`.
+
+## Experimental reactivation integration
+
+The opt-in retained-state lifecycle is integrated under both solvers. Its
+current eligibility is explicitly limited to one selected fixed-excitation
+round-rotor/URGS3T host with controller-free classical surviving sources.
+Broader composed-network event preparation and rollback remain unfinished.
+Ordinary cold energization and default disconnected behavior are unchanged.
+
+The registered integrated selection executes 76 tests: 65 pass and 11 fail,
+with no errors or skips. Seven failures are existing trip-state identities;
+four are newly registered reactivation state gates. No prior failure identity
+in this selection is resolved or replaced. Physical V/P/Q and rotor-angle
+gates pass, but full trajectory qualification is not claimed. Test visibility
+was corrected after the initial suite-registration compilation failure.
+
+Evidence is retained at `verification-artifacts/urgs-reactivation-integrated-20261104`,
+SHA-256 `f99103efe9ba31d8cbac081348a34f0e6eacbc24844f23770c66ac9558624827`.
+
+## Isolated core converter candidate
+
+Core commit `f5d6ec07b` remains on its isolated feature branch. Its full core
+suite reports 3,801 tests with 16 unchanged skips and no failures/errors; all
+baseline test identities remain covered. Four independent converter controls
+also pass after plugin integration using explicit artifact
+`1.4.8-lcc-gamma-final`. Neither core master nor the plugin's default dependency
+has been changed. The new reference test is registered for combined validation
+with the candidate; the baseline core does not satisfy these new gates.
+
+The standard-converter correction does not implement capacitor commutation or
+close the original full-sample failures. Those expected values remain unchanged.
+See the [qualification report](../benchmarks/lcc-gamma-limit-control-2026-11-04.md).
+Integrated evidence with the actual loaded artifact hash is retained at
+`verification-artifacts/lcc-gamma-candidate-integrated-20261104`, SHA-256
+`01c9f1a9c8e6b51e69f0d1f18ea528fd089e911161bd531ef15063f2b979907d`.

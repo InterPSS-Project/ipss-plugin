@@ -1197,6 +1197,8 @@ import org.junit.platform.suite.api.Suite;
     Urgs3tValveLimitsTest.class,
     Urgs3tMachineTripTest.class,
     Urgs3tValveReleaseTest.class,
+    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationLifecycleTest.class,
+    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationReferenceTest.class,
     Wsieg1SharedSmibTest.class,
     Wsieg1StateConformanceTest.class,
     Wsieg1BypassLimitConformanceTest.class,
@@ -1502,6 +1504,7 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_Sample_NB_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Rawx_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Aclf_Test.class,
+	org.interpss.core.adapter.psse.raw.nbreaker.NodebreakerConverterAuditTest.class,
 
 	// PowSyBl catalog coverage
 	PSSE_PowSyBl_IEEE_Smoke_Test.class,

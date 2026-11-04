@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import com.interpss.dstab.common.DStabSimuException;
 
 /** Complete independent hot-reactivation and permanently-offline controls. */
-class Urgs3tReactivationReferenceTest {
+public class Urgs3tReactivationReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/urgs3t-reactivation-contract-20261104/captures.zip");
     @BeforeAll static void setup()throws Exception {
         Urgs3tReferenceTest.setup();Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE));
