@@ -165,6 +165,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CDC6T
 
+- Retain [atomic network-trial entry](dynamic-models/cdc6t-runtime-plan.md#atomic-network-trial-entry): validate stage and endpoint before opening a trial or discarding pending protection history. Rejected calls must permit a valid retry; both-method complete recorded trajectories remain unchanged.
+
 - Retain the [recovery-completion history contract](dynamic-models/cdc6t-runtime-plan.md#recovery-completion-preserves-derivative-history), independently discriminated normal two-step handoff, both-method nearby-rate controls and rollback-safe electrical re-solves. Preserve the explicit clock-boundary controls and their raw errors; do not hide the remaining timing discrepancy with derivative averaging or shifted samples.
 
 - Retain the [governed classical-source and internal network-boundary contract](dynamic-models/cdc6t-runtime-plan.md#governed-classical-sources-and-internal-network-boundaries): settled TGOV1 initialization, final compiled bindings, shared staggered states and rollback-safe classical acceleration sampling. Preserve independent both-method source/governor gates; resolve remaining power-recovery and converter-state trajectory errors before generalizing source controls or enabling automatic attachment.
@@ -194,6 +196,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 
 ## CHVDC2U1
+
+- Retain [network-context rejection before transaction entry](dynamic-models/chvdc2-named-link.md#network-context-rejection-before-transaction-entry): reject nonfinite timestamps without opening or corrupting trials, including pending local modified-Euler predictors and both protection clocks. Strict reference gates remain unchanged.
 
 - Retain [default local integration for both methods](dynamic-models/chvdc2-named-link.md#default-local-integration-for-both-methods): ten configurable local steps, shared numerical storage and outer protection/clock ownership. Finish independent trajectory qualification; modified-Euler local refinement completes all fault runs but does not pass the strict reference gates.
 
@@ -253,6 +257,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 
 ## URGS3T
+
+- Retain [atomic numerical stages](dynamic-models/urgs3t-shared-runtime.md#atomic-numerical-stages), matching ordinary predictor/corrector intervals and finite trial validation before publication. Preserve valid retry, reusable storage and unchanged full trajectories; existing reference-accuracy failures remain open.
 
 - Retain the independently checked [valve integration coordinate](dynamic-models/urgs3t-shared-runtime.md#retained-valve-coordinate-and-physical-limit-observations), bounded physical observations, pure numerical access and both-method shared equations. Recorded-speed negative controls distinguish premature state projection; all staggered release controller states pass at the checked fine steps. Resolve modified-Euler command-state and small-response voltage/power gates, and extend production-step/long-duration active-limit qualification without changing precision or thresholds.
 
