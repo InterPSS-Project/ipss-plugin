@@ -40,3 +40,9 @@ or diagnostic cases. They are not counted as executed successes. This confirms
 adjacent plugin compatibility, not completion of the failed registered dynamic
 model reference gates. Complete reports and the bounded log are retained in
 `verification-artifacts/parallel-plugin-compatibility-20261104`.
+
+The separate core-engine reactor at `3b1292682` subsequently completed 3,797
+tests with zero failures/errors and 16 skips. Its source tree was unchanged.
+This validates the engine baseline used by the plugin work; it does not replace
+the plugin's independent dynamic-model trajectory gates. Reports and the bounded
+log are retained in `verification-artifacts/parallel-core-engine-20261104`.
