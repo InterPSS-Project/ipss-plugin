@@ -17,9 +17,7 @@ final class Svsmo3t2MssBoundary {
     private final Binding[] bindings = new Binding[8];
     private final Svsmo3t2MssController controller;
     private final Svsmo3t2MssController.Checkpoint checkpoint = new Svsmo3t2MssController.Checkpoint();
-    private record PeerBus(BaseDStabBus<?, ?> bus, Object[] devices) { }
-    private PeerBus[] peerBuses = new PeerBus[0];
-    private Svsmo3t2Model[] peers = new Svsmo3t2Model[0];
+    private Svsmo3t2PeerRegistry peerRegistry;
 
     Svsmo3t2MssBoundary(BaseDStabNetwork<?, ?> network, Svsmo3t2Data data) {
         this.network = java.util.Objects.requireNonNull(network);
@@ -50,16 +48,7 @@ final class Svsmo3t2MssBoundary {
             active[i] = bindings[i].device().isActive();
         }
         controller.initialize(b, active);
-        if (!controller.isEnabled()) { peerBuses = new PeerBus[0]; peers = new Svsmo3t2Model[0]; return; }
-        var preparedBuses = new java.util.ArrayList<PeerBus>();
-        var preparedPeers = new java.util.ArrayList<Svsmo3t2Model>();
-        for (var bus : network.getBusList()) {
-            preparedBuses.add(new PeerBus(bus, bus.getDynamicBusDeviceList().toArray()));
-            for (var device : bus.getDynamicBusDeviceList())
-                if (device instanceof Svsmo3t2Model model) preparedPeers.add(model);
-        }
-        peerBuses = preparedBuses.toArray(PeerBus[]::new);
-        peers = preparedPeers.toArray(Svsmo3t2Model[]::new);
+        peerRegistry = controller.isEnabled() ? Svsmo3t2PeerRegistry.acquire(network) : null;
     }
 
     void advance(double time, double current) {
@@ -75,7 +64,7 @@ final class Svsmo3t2MssBoundary {
         try {
             int changed = controller.advance(time, current);
             if (changed < 0) return;
-            preflightPeers();
+            peerRegistry.preflight();
             var binding = bindings[changed];
             boolean active = controller.isInService(changed);
             var delta = binding.nominal().multiply(active ? 1 : -1);
@@ -104,31 +93,10 @@ final class Svsmo3t2MssBoundary {
             }
             // An actual bank stamp is an electrical event, including for a
             // different tripped controller. Continuous state is not integrated.
-            for (var peer : peers)
-                if (peer.isActive() && peer.getDStabBus().isActive()) peer.acceptPreparedNetworkEvent();
+            peerRegistry.acceptPreparedEvent();
         } catch (RuntimeException failure) {
             controller.restore(checkpoint);
             throw failure;
-        }
-    }
-
-    private void preflightPeers() {
-        if (network.getBusList().size() != peerBuses.length)
-            throw new IllegalStateException("Network ownership changed; reinitialize MSS before switching");
-        for (int i = 0; i < peerBuses.length; i++) {
-            var prepared = peerBuses[i];
-            var devices = prepared.bus().getDynamicBusDeviceList();
-            if (network.getBusList().get(i) != prepared.bus() || devices.size() != prepared.devices().length)
-                throw new IllegalStateException("Device ownership changed; reinitialize MSS before switching");
-            for (int j = 0; j < prepared.devices().length; j++) {
-                if (devices.get(j) != prepared.devices()[j])
-                    throw new IllegalStateException("Device ownership changed; reinitialize MSS before switching");
-                if (devices.get(j) instanceof Svsmo3t2Model peer) {
-                    if (peer.getDStabBus() != prepared.bus())
-                        throw new IllegalStateException("Controller host changed; reinitialize MSS before switching");
-                    if (peer.isActive() && prepared.bus().isActive()) peer.checkNetworkEventReady();
-                }
-            }
         }
     }
 

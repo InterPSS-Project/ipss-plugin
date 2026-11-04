@@ -479,3 +479,49 @@ the assigned bank timer (two tests pass). Private provenance, original captures,
 rejected controls, full logs, reports and source snapshots are retained at
 `verification-artifacts/svs-mss-trip-boundary-20261104`.
 Archive SHA-256: `f6071e67a8de558f6a03273a1803dd7553bbf059bcb9e0864546c83d37410c12`.
+
+## Shared ownership metadata
+
+MSS boundaries now share one immutable, network-owned ownership snapshot.
+It stores flat bus identities, device offsets and device identities rather than
+one object and one device array per bus for every controller. Empty buses still
+have entries: attaching a device there invalidates the old snapshot. Acquisition
+at explicit initialization reuses an unchanged snapshot or creates a new one.
+Previously prepared boundaries retain their old snapshot and reject changed
+ownership until they are reinitialized; another boundary cannot refresh them
+implicitly. Network copies do not copy the transient adapter, and different
+networks cannot reuse its ownership data.
+
+The checks still run only during preparation and actual bank actions. There is
+no additional per-integration-step network scan. Physical equations, trip
+acceptance, bank ordering and exact stamp rollback are unchanged.
+
+A synthetic metadata-only harness prepares 32 enabled MSS boundary instances on
+7,000 buses. It does not solve an electrical network or measure complete
+simulation time. After six warmups, seven samples give the following costs per
+**complete 32-boundary preparation pass**:
+
+| Ownership preparation | Allocated bytes | Median time | Observed range |
+|---|---:|---:|---:|
+| Previous per-boundary snapshots | 20,641,024 | 4.095 ms | 3.929–8.468 ms |
+| Shared snapshot rebuilt | 60,480 | 1.776 ms | 1.185–1.894 ms |
+| Shared snapshot reused | 4,352 | 1.831 ms | 0.584–5.016 ms |
+
+Rebuilding allocates about 99.7% less; allocation is repeatable across samples.
+These are warmed preparation measurements: rebuilding the snapshot does not
+mean a cold JVM. The reuse timing range overlaps the baseline, so allocation
+reduction is stronger evidence than a precise speedup ratio. No whole-simulation
+performance improvement is claimed.
+
+The existing default six-class selection passes 27 tests, then the completed
+seven-test boundary class also passes after adding the explicit stale-owner
+control: 28 distinct tests, no failures/errors/skips. Coverage includes network
+copy/owner separation, devices added to previously empty buses, same-size
+replacement, removal, explicit refresh, failed-stamp rollback and both-method
+trip ordering. Optional extended trajectory diagnostics are outside this run.
+
+The comparison baseline is plugin `a48e0e9d1`. Exact harness/source snapshots,
+commands, logs and reports are retained privately at
+`verification-artifacts/svs-shared-ownership-20261104`; its manifest pins the
+candidate commit and the explicit isolated core dependency.
+Archive SHA-256: `676e6090ac6a0e6ba29a0523a6ff833d9fdad8a7bfc5054c5f50842cd99e061a`.

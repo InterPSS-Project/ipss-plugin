@@ -226,4 +226,25 @@ public class Svsmo3t2MssBoundaryTest extends CorePluginTestSetup {
         assertEquals(1, boundary.controller().completionCount());
     }
 
+    @Test void reinitializingAnotherBoundaryDoesNotRefreshAStaleOwner(@TempDir Path temporary) throws Exception {
+        var context = context(temporary, 3, .1, false);
+        assertTrue(context.getDynSimuAlgorithm().initialization());
+        var net = context.getDStabilityNet();
+        var oldBoundary = new Svsmo3t2MssBoundary(net, data(3)); oldBoundary.initialize();
+        var host = net.getDStabBus("Bus3");
+        var existing = (Svsmo3t2Model) host.getDynamicBusDeviceList().stream()
+                .filter(Svsmo3t2Model.class::isInstance).findFirst().orElseThrow();
+        var previouslyEmpty = net.getDStabBus("Bus1");
+        assertTrue(previouslyEmpty.getDynamicBusDeviceList().isEmpty());
+        new Svsmo3t2Model(previouslyEmpty, previouslyEmpty, existing.getStaticDevice(), existing.getData());
+        var fresh = new Svsmo3t2MssBoundary(net, data(3)); fresh.initialize();
+        var before = oldBoundary.getNamedStates();
+        assertThrows(IllegalStateException.class, () -> oldBoundary.advance(0, 1));
+        assertEquals(before, oldBoundary.getNamedStates());
+        assertFalse(host.getCompensator("S0").isActive());
+        fresh.advance(0, 1);
+        assertTrue(host.getCompensator("S0").isActive());
+        assertEquals(1, fresh.controller().completionCount());
+    }
+
 }
