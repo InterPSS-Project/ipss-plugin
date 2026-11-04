@@ -259,3 +259,22 @@ Complete executed reports and failure-identity comparison are retained at
 `verification-artifacts/full-accepted-memory-20261104`, archive SHA-256
 `ff487b2ba024a62abee322468a9c30e11abf4f24582c5dd481fa69b964cf13e7`.
 The same directory retains separate isolated load-flow controls.
+
+## Subsequent lifecycle checks
+
+At `799ee00e3`, 19 converter lifecycle/network tests pass without failures,
+errors or skips. The additional controls cover a distinct second event at the
+same timestamp and active high-voltage correction rollback. They confirm that
+the last accepted terminal voltage is retained without advancing saved history
+twice. No production equation changed. Active high-voltage reference accuracy
+remains a separate, incomplete gate.
+
+Private integrated evidence is retained at
+`verification-artifacts/active-memory-boundaries-integrated-20261104`, SHA-256
+`f10a784d0a802ebf1053404de32d43d419eff2db85bcab344060876f1b2ca4b0`.
+
+The independently repeated [URGS3T reactivation captures](../benchmarks/urgs3t-reactivation-lifecycle-2026-11-04.md)
+also pass their complete source-contract checker after integration. They prove
+inactive coordinate advancement and retained-state reactivation in the reference,
+not implementation parity. Engine lifecycle implementation and both-method
+trajectory qualification remain required.
