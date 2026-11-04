@@ -53,5 +53,35 @@ public class Tiocr1LoadOnlyReferenceTest {
             assertTrue(nrmse<.001,k+" NRMSE "+nrmse);
         }
         for(String k:bounds.keySet())assertTrue(errors.get(k)<=bounds.get(k),k+" error "+errors.get(k));
+        int latchedSamples=0;
+        for(int i=0;i<reference.size();i++) {
+            // The third published slot is the scheduled breaker deadline, not
+            // elapsed breaker time. Load-only action leaves the monitored line
+            // energized and the independently observed moving element latched.
+            var expected=reference.get(i);
+            if(expected.get("VAR2")<9999. && expected.get("time_s")>=expected.get("VAR2")) {
+                assertEquals(1.,expected.get("VAR1"),0.,"Reference retains the energized moving element");
+                assertEquals(expected.get("VAR1"),actual.get(i).get("RELAY.Position"),0.,
+                        "Load-only shedding must not clear the monitored relay position");
+                latchedSamples++;
+            }
+        }
+        assertTrue(latchedSamples>500,"Complete post-operation history is checked");
+        var curve=new org.interpss.dstab.relay.Tiocr1Data(new double[]{.4,.1,1.1,.04,1.5,.03,2,.02,3,.01,5,.005,.01,.1});
+        double leftPosition=0,rightPosition=0,leftError=0,rightError=0,actualPositionError=0;
+        for(int i=1;i<reference.size();i++) {
+            var left=reference.get(i-1);var right=reference.get(i);
+            if(right.get("time_s")>left.get("time_s")) {
+                if(leftPosition<1)leftPosition=Math.max(0,Math.min(1,leftPosition+.0005*curve.rate(left.get("VAR0"))));
+                if(rightPosition<1)rightPosition=Math.max(0,Math.min(1,rightPosition+.0005*curve.rate(right.get("VAR0"))));
+            }
+            leftError=Math.max(leftError,Math.abs(leftPosition-right.get("VAR1")));
+            rightError=Math.max(rightError,Math.abs(rightPosition-right.get("VAR1")));
+            actualPositionError=Math.max(actualPositionError,Math.abs(actual.get(i).get("RELAY.Position")-right.get("VAR1")));
+        }
+        assertTrue(leftError<3e-7,"Recorded left-current recurrence reproduces every position sample");
+        assertTrue(rightError>1e-3,"Endpoint-current substitution must fail the independent discriminator");
+        System.out.println("Load-only moving-element error "+staggered+"="+actualPositionError);
+        assertTrue(actualPositionError<(staggered?8e-7:3e-5),"Complete coupled moving-element trajectory");
     }
 }

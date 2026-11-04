@@ -98,8 +98,9 @@ cover normal-voltage operation; low-voltage curve transitions, dynamic-load
 targets and additional independent remote-action trajectories remain separate requirements.
 
 These results qualify the base coupled boundary profiles, not every relay
-configuration. Raw relay diagnostic current/position publication differs around
-trip-event samples and still needs an explicit observation-stage contract.
+configuration. Raw relay diagnostic current/position publication around branch-trip
+event samples still needs an explicit observation-stage contract; the energized
+load-only position is qualified separately below.
 Protection coordination, additional reset/re-pickup settings, remote-action combinations, reconnection,
 production-step and longer-duration cases remain on the implementation work list.
 The accepted-history tests also exercise both monitored ends, but those additional
@@ -125,3 +126,34 @@ reparenting, restoration and removal of a later transfer target. Existing
 independent trajectory tests retain their original tolerances and samples.
 This ownership correction does not change relay curves, pickup sequencing,
 breaker timing, or extend the qualification scope listed above.
+
+## Left-end current and energized relay position
+
+The moving element uses the solved current at the beginning of its accepted
+interval. Independent reconstruction from the complete load-only reference,
+including both sides of every event, reproduces position within `1.86e-7`.
+Substituting the right-end current produces a `0.002962` error. The reference
+therefore distinguishes this input timing from a controller-equation change.
+
+The ordinary predictor samples that current into one reusable scalar; the
+corrector and observation methods cannot overwrite it. The staggered solver
+samples the same input from its existing indexed relay bindings after the left
+network solve and before advancing differential coordinates. The accepted
+`afterStep` callback remains the only owner of position, breaker timers and
+physical actions. Zero-duration calls do not consume or change the sample.
+Standalone accepted-step calls without an integration-stage sample continue to
+use their supplied network boundary.
+
+Remote load shedding does not necessarily open the monitored branch. Its relay
+position now remains latched at one when that branch stays energized, matching
+every post-operation sample of the independent load-only reference. An action
+that opens the monitored branch still clears the position. The previous
+unconditional reset incorrectly produced a unit position error after shedding.
+
+Both-method coupled position checks now require peak errors below `3e-5` for
+modified Euler and `8e-7` for staggered integration; measured errors are
+`2.72e-5` and `6.80e-7`, respectively. The tests also require the recorded-input
+left-current reconstruction to pass and its right-current negative control to
+fail. Physical boundary, trip-time and reset checks retain their original gates.
+This does not qualify branch-trip observation ordering, dynamic-load actions,
+reconnection or other configurations listed above.

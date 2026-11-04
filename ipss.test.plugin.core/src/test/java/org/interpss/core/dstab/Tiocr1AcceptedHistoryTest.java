@@ -17,6 +17,23 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 public class Tiocr1AcceptedHistoryTest {
     private static final Path CASE=Path.of("testData/adpter/psse/v33/HspModels");
 
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void movingElementUsesLeftCurrentWithoutAdvancingTrialHistory(boolean staggered)throws Exception {
+        var a=setup(staggered);var branch=a.getNetwork().getBranchList().getFirst();
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,1,1.5,1,2,1,3,1,5,1,.01,0});
+        var relay=new Tiocr1RelayModel(branch,true,2,false,a.getNetwork().getDStabBus("Bus2"),null,
+                new com.interpss.core.aclf.AclfBranch[3],curve);
+        assertTrue(a.initialization());var before=relay.getIntegrationHistories();
+        assertTrue(relay.nextStep(.1,DynamicSimuMethod.MODIFIED_EULER,0));
+        branch.getFromAclfBus().setVoltage(Complex.ZERO);branch.getToAclfBus().setVoltage(Complex.ZERO);
+        assertTrue(relay.nextStep(.1,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertEquals(before,relay.getIntegrationHistories());
+        assertEquals(0,relay.currentMagnitude(),0.);
+        assertTrue(relay.afterStep(.1));assertEquals(.1,relay.getPosition(),1e-14);
+        assertTrue(relay.nextStep(.1,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(relay.afterStep(.1));assertEquals(0,relay.getPosition(),0.);
+    }
+
     @ParameterizedTest
     @CsvSource({"false,false","false,true","true,false","true,true"})
     void zeroDurationCannotResetMotionAndCurrentMatchesBothTerminals(boolean staggered,boolean fromEnd) throws Exception {
@@ -88,6 +105,8 @@ public class Tiocr1AcceptedHistoryTest {
         double v0=bus.getInitVoltMag();int row=bus.getSortNumber();
         var before=net.getYMatrix().getA(row,row);
         assertTrue(relay.afterStep(.002));assertEquals(.25,relay.getShedFraction(),1e-12);
+        assertTrue(net.getBranchList().getFirst().isActive());
+        assertEquals(1.,relay.getPosition(),0.,"Remote shedding leaves the monitored relay latched");
         assertEquals(1,relay.getNetworkActionVersion());
         var delta=net.getYMatrix().getA(row,row).subtract(before);
         var accepted=net.getYMatrix().getA(row,row);

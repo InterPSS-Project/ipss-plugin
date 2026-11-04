@@ -97,6 +97,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
+- Retain the independently qualified [left-end current and energized relay position](dynamic-models/tiocr1-accepted-runtime.md#left-end-current-and-energized-relay-position): both methods sample the solved interval-start current, and remote load-only actions preserve the latched moving element when the monitored branch stays active. Complete branch-trip observation ordering and the remaining action/configuration matrix separately.
+
 - Retain [attachment ownership and atomic rejection](dynamic-models/tiocr1-accepted-runtime.md#attachment-ownership-and-atomic-rejection): validate host and every target before attachment or accepted action, including replaced and cross-network objects. Complete reference trajectories remain unchanged.
 
 - Retain the [accepted-step runtime](dynamic-models/tiocr1-accepted-runtime.md), explicit staggered support, zero-duration history guard, primitive current measurement and post-protection network-discontinuity handling. Base coupled boundary profiles pass under both methods; finish raw relay diagnostic observation-stage qualification while keeping timers and physical actions out of trial derivative evaluations.

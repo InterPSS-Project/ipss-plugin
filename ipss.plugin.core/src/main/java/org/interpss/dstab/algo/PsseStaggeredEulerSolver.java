@@ -1146,6 +1146,15 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             finally { networkSolutionStage = previousStage; }
         }
         networkEndpointAvailable = false;
+        // Accepted-step relay motion uses the solved left-endpoint current.
+        // Sample it before advancing any differential coordinates; the relay's
+        // existing afterStep callback remains the sole timer/action owner.
+        for(int i=0;i<acceptedRelays.size();i++) {
+            var relay=acceptedRelays.get(i);
+            if(relay.isActive()&&relay.getDStabBus().isActive()
+                    &&!relay.nextStep(dt,method,0))
+                throw new DStabSimuException("Relay input sampling failed: "+relay.getId());
+        }
         if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
             for (var p : participants)
                 if (p.eventLeftRates != null && p.model.providesNetworkEventLeftRates()

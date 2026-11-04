@@ -27,6 +27,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     private final BaseDStabBus<?,?> owner,loadHost;
     private final BaseDStabNetwork<?,?> ownerNetwork;
     private double position, breakerTimer;
+    private double intervalCurrent=Double.NaN;
     private boolean pickedUp, operated;
     private long networkActionVersion;
     private final LoadPort loadPort;
@@ -80,7 +81,15 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         return true;
     }
     @Override public boolean initStates(BaseDStabBus<?,?> bus) { return bus==owner&&attachmentIntact()&&Double.isFinite(currentMagnitude())&&reset(); }
-    @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {return attachmentIntact()&&Double.isFinite(dt)&&dt>=0;}
+    @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {
+        if(!attachmentIntact()||!Double.isFinite(dt)||dt<0)return false;
+        if(dt>0&&flag==0) {
+            double current=currentMagnitude();
+            if(!Double.isFinite(current))return false;
+            intervalCurrent=current;
+        }
+        return true;
+    }
     @Override public boolean updateAttributes(boolean changed) {return attachmentIntact();}
     @Override public Object getOutputObject() {return Complex.ZERO;}
     @Override public Hashtable<String,Object> getStates(Object ignored) {output.putAll(getNamedStates());return output;}
@@ -100,9 +109,11 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     @Override public boolean afterStep(double dt) {
         if(!attachmentIntact()||!Double.isFinite(dt)||dt<0)return false;
         if(dt==0)return true;
+        double current=Double.isNaN(intervalCurrent)?currentMagnitude():intervalCurrent;
+        intervalCurrent=Double.NaN;
         if(operated)return true;
         if(!pickedUp) {
-            double rate=curve.rate(currentMagnitude());
+            double rate=curve.rate(current);
             position=Double.isInfinite(rate)?0:Math.max(0,Math.min(1,position+dt*rate));
             if(position<1-1e-12)return true;
             pickedUp=true; // Breaker timer starts at pickup, without counting this interval twice.
@@ -128,10 +139,12 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
             networkChanged|=loadPort.getShedFraction()!=previousFraction;
         }
         if(networkChanged)networkActionVersion++;
-        position=0; // An opened/de-energized relay clears its moving-element coordinate.
+        // A remote action can leave this relay's monitored branch energized.
+        // Only opening that branch clears its moving-element coordinate.
+        if(!monitored.isActive())position=0;
         return true;
     }
-    @Override public boolean reset() { position=breakerTimer=0;pickedUp=operated=false;if(loadPort!=null)loadPort.reset();return true; }
+    @Override public boolean reset() { position=breakerTimer=0;intervalCurrent=Double.NaN;pickedUp=operated=false;if(loadPort!=null)loadPort.reset();return true; }
     @Override public Map<String,Double> getNamedStates() {
         return Map.of("Relay position",position,"Breaker timer",breakerTimer,
                 "Pickup",pickedUp?1.:0.,"Operated",operated?1.:0.,"Shed fraction",getShedFraction());
