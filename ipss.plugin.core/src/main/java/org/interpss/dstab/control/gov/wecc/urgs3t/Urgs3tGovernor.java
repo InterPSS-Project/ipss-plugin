@@ -33,12 +33,14 @@ public final class Urgs3tGovernor extends AbstractGovernor
     private final double engineRatio, engineLagFraction, engineTime;
     private final double governorLagFraction, governorFeedthrough, governorLagGain;
     private final double[] x = new double[5], old = new double[5], d0 = new double[5], d1 = new double[5];
+    private final double[] trial = new double[5];
     private final double[] referenceLeftRates = new double[5];
     private final double[] curveX = new double[5], curveY = new double[5];
     private final IntegrationStateMonitor monitor = new IntegrationStateMonitor(NAMES);
     private int points, mode;
     private double scale, reference, initialReference, lower, upper, powerMemory, powerInputMemory, initialSpeed;
     private double acceptedTurbinePower, publishedTurbinePower;
+    private double predictedStep;
     private Machine initializedMachine;
     private boolean initialized, predicted, referenceJumpPending, sharedTrialPending;
     private long evaluations, referenceRevision;
@@ -111,8 +113,8 @@ public final class Urgs3tGovernor extends AbstractGovernor
         if (!Double.isFinite(reference) || !Double.isFinite(power)) return false;
         for (double state : x) if (!Double.isFinite(state)) return false;
         initializedMachine = machine; initialized = true;
-        derivatives(x, d0);
-        for (double rate : d0) if (!Double.isFinite(rate)) { initialized = false; return false; }
+        try { derivatives(x, d0); }
+        catch (IllegalStateException invalidBoundary) { initialized = false; return false; }
         retain(d0, Stage.INITIALIZATION);
         return true;
     }
@@ -135,13 +137,19 @@ public final class Urgs3tGovernor extends AbstractGovernor
         if (h == 0) { derivatives(x, d1); retain(d1, flag == 0 ? Stage.PREDICTOR : Stage.CORRECTOR); return true; }
         if (flag == 0) {
             if (predicted) throw new IllegalStateException("URGS3T predictor already pending");
-            System.arraycopy(x, 0, old, 0, 5); derivatives(x, d0); retain(d0, Stage.PREDICTOR);
-            for (int i = 0; i < 5; i++) x[i] = old[i] + h*d0[i];
-            projectTrial(); predicted = true;
+            derivatives(x, d0);
+            for (int i = 0; i < 5; i++) trial[i] = x[i] + h*d0[i];
+            validateTrial(trial); retain(d0, Stage.PREDICTOR);
+            System.arraycopy(x, 0, old, 0, 5);
+            System.arraycopy(trial, 0, x, 0, 5);
+            projectTrial(); predictedStep = h; predicted = true;
         } else {
             if (!predicted) throw new IllegalStateException("URGS3T corrector requires its predictor");
-            derivatives(x, d1); retain(d1, Stage.CORRECTOR);
-            for (int i = 0; i < 5; i++) x[i] = old[i] + .5*h*(d0[i] + d1[i]);
+            if (h != predictedStep) throw new IllegalStateException("URGS3T corrector interval differs from its predictor");
+            derivatives(x, d1);
+            for (int i = 0; i < 5; i++) trial[i] = old[i] + .5*h*(d0[i] + d1[i]);
+            validateTrial(trial); retain(d1, Stage.CORRECTOR);
+            System.arraycopy(trial, 0, x, 0, 5);
             projectTrial(); commit(); predicted = false;
         }
         return true;
@@ -158,7 +166,8 @@ public final class Urgs3tGovernor extends AbstractGovernor
         shared(values, offset, h);
         for (int i = 0; i < 5; i++) if (!Double.isFinite(values[offset+i]))
             throw new IllegalArgumentException("URGS3T states must be finite");
-        System.arraycopy(values, offset, x, 0, 5); projectTrial();
+        System.arraycopy(values, offset, trial, 0, 5); validateTrial(trial);
+        System.arraycopy(trial, 0, x, 0, 5); projectTrial();
         if (h > 0) sharedTrialPending = true;
     }
     @Override public void completeStaggeredStep(double h) {
@@ -190,6 +199,9 @@ public final class Urgs3tGovernor extends AbstractGovernor
     }
     private void commit() {
         double power = curvePower(x), output = backlash(power);
+        requireFiniteBoundary();
+        if (!Double.isFinite(power) || !Double.isFinite(output))
+            throw new IllegalStateException("URGS3T accepted power must be finite");
         publishedTurbinePower = acceptedTurbinePower; acceptedTurbinePower = output;
         if (output != powerMemory) powerInputMemory = power;
         powerMemory = output; mode = deadbandMode(getMachine().getSpeed()-1);
@@ -205,6 +217,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
         if (runtimeConvention == RuntimeConvention.PUBLISHED_DIAGRAM) project();
     }
     private void derivatives(double[] s, double[] rates) {
+        requireFiniteBoundary();
         // The droop path acts directly on speed deviation; rating conversion is at the output.
         double input = reference - speedInput()/c[0];
         double demand = c[29] > 0 ? s[4] + governorFeedthrough*input : input;
@@ -217,6 +230,19 @@ public final class Urgs3tGovernor extends AbstractGovernor
         rates[2] = runtimeConvention == RuntimeConvention.SOURCE_RECORD ? 0 : (engine(s)-s[2])/c[3];
         rates[3] = (valve-s[3])/c[12];
         rates[4] = c[29] > 0 ? (governorLagGain*input-s[4])/c[31] : 0;
+        for (double rateValue : rates) if (!Double.isFinite(rateValue))
+            throw new IllegalStateException("URGS3T derivative must be finite");
+    }
+    private void requireFiniteBoundary() {
+        if (!Double.isFinite(getMachine().getSpeed()))
+            throw new IllegalStateException("URGS3T machine speed must be finite");
+    }
+    private void validateTrial(double[] values) {
+        for (double value : values) if (!Double.isFinite(value))
+            throw new IllegalStateException("URGS3T numerical trial must be finite");
+        double power = curvePower(values);
+        if (!Double.isFinite(power) || !Double.isFinite(backlash(power)))
+            throw new IllegalStateException("URGS3T trial power must be finite");
     }
     private double interpolate(double value, double[] abscissa, double[] ordinate) {
         int hi = 1;

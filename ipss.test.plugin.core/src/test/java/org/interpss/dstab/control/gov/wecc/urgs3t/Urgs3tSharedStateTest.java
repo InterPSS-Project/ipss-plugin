@@ -116,6 +116,59 @@ public class Urgs3tSharedStateTest {
             if(convention==Urgs3tGovernor.RuntimeConvention.PUBLISHED_DIAGRAM)assertTrue(states[2]>.5);else assertEquals(.5,states[2],0.);
         }
     }
+    @Test void mismatchedCorrectorPreservesPendingStateAndAllowsValidRetry() throws Exception {
+        var g=model(BASE);var control=model(BASE);double h=.0005;
+        g.applyReferenceEvent(.7);control.applyReferenceEvent(.7);
+        g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0);
+        control.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,control.getMachine(),0);
+        var states=g.getIntegrationStates();var histories=g.getIntegrationHistories();
+        var snapshot=g.getStateDerivativeSnapshot();
+        assertThrows(IllegalStateException.class,()->g.nextStep(2*h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1));
+        assertEquals(states,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+        assertEquals(snapshot,g.getStateDerivativeSnapshot());
+        g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1);
+        control.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,control.getMachine(),1);
+        assertEquals(control.getIntegrationStates(),g.getIntegrationStates());
+        assertEquals(control.getIntegrationHistories(),g.getIntegrationHistories());
+    }
+    @Test void rejectedNumericalStagesDoNotPoisonStatesHistoriesOrDiagnostics() throws Exception {
+        for(boolean corrector:new boolean[]{false,true}) {
+            var g=model(BASE);var control=model(BASE);double h=.0005;
+            g.applyReferenceEvent(.7);control.applyReferenceEvent(.7);
+            if(corrector){g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0);control.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,control.getMachine(),0);}
+            var states=g.getIntegrationStates();var histories=g.getIntegrationHistories();var snapshot=g.getStateDerivativeSnapshot();
+            long revision=g.staggeredInputDiscontinuityVersion();
+            g.getMachine().setSpeed(Double.NaN);
+            assertThrows(IllegalStateException.class,()->g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),corrector?1:0));
+            assertEquals(states,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+            assertEquals(snapshot,g.getStateDerivativeSnapshot());assertEquals(revision,g.staggeredInputDiscontinuityVersion());
+            g.getMachine().setSpeed(1.);
+            if(!corrector){g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0);control.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,control.getMachine(),0);}
+            g.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1);control.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,control.getMachine(),1);
+            assertEquals(control.getIntegrationStates(),g.getIntegrationStates());assertEquals(control.getIntegrationHistories(),g.getIntegrationHistories());
+        }
+        var g=model(BASE);g.applyReferenceEvent(.7);
+        var states=g.getIntegrationStates();var histories=g.getIntegrationHistories();
+        assertThrows(IllegalStateException.class,()->g.nextStep(Double.MAX_VALUE,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0));
+        assertEquals(states,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+        g.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0);
+        g.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1);
+    }
+    @Test void sharedInvalidBoundaryAndOverflowingPowerRejectAtomically() throws Exception {
+        double[] c=BASE.clone();c[22]=2.;var g=model(c);double[] states=new double[5],rates={11,12,13,14,15};
+        g.readStaggeredState(states,0);var before=g.getIntegrationStates();var histories=g.getIntegrationHistories();
+        var snapshot=g.getStateDerivativeSnapshot();long evaluations=g.getStaggeredEvaluationCount();
+        g.getMachine().setSpeed(Double.NaN);
+        assertThrows(IllegalStateException.class,()->g.evaluateStaggered(.001,rates,0));
+        assertArrayEquals(new double[]{11,12,13,14,15},rates,0.);
+        assertEquals(snapshot,g.getStateDerivativeSnapshot());assertEquals(evaluations,g.getStaggeredEvaluationCount());
+        g.getMachine().setSpeed(1.);states[1]=Double.MAX_VALUE;
+        assertThrows(IllegalStateException.class,()->g.applyStaggeredState(states,0,.001));
+        assertEquals(before,g.getIntegrationStates());assertEquals(histories,g.getIntegrationHistories());
+        g.publishAcceptedRunBoundary(); // Rejected trial must not leave a pending publication barrier.
+        g.readStaggeredState(states,0);g.evaluateStaggered(.001,rates,0);
+        g.applyStaggeredState(states,0,.001);g.completeStaggeredStep(.001);
+    }
     @Test void rateLimiterPrecedesServoTimeAndOnlyRestrictsOpening() throws Exception {
         double[] c=BASE.clone();c[10]=.03;c[11]=.001;c[13]=.005;
         var g=model(c);double[] states=new double[5],rates=new double[5];g.readStaggeredState(states,0);

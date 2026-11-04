@@ -42,6 +42,20 @@ physical bounds to manufacture equilibrium. When engine feedthrough is active,
 the initial turbine publication uses the curve output after valve projection.
 Reinitialization recomputes these coordinates and clears accepted command history.
 
+## Atomic numerical stages
+
+An ordinary corrector must use its predictor's interval. Nonfinite boundary
+speed, derivatives, trial coordinates or turbine-power calculations are rejected
+before publishing states, diagnostics or accepted histories. A reusable trial
+buffer preserves a pending predictor for a corrected-input retry and adds no
+per-step allocation. Shared derivative evaluation preserves the caller's rate
+buffer on rejection; shared state application validates the complete candidate
+and its power observation before changing numerical storage.
+
+These guards preserve the equation and arithmetic order of valid trajectories.
+They do not resolve the existing independent command-state or boundary accuracy
+gates, and do not redefine the enclosing solver's shared-step completion contract.
+
 ## Explicit source and diagram conventions
 
 The independent executable and its published diagram differ. These are
