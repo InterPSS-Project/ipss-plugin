@@ -192,13 +192,10 @@ public final class Reecc1Model
     }
 
     private void integrateEnergy(double dt, double p) {
-        double soc = getStateOfCharge();
-        if ((soc <= data.minimumSoc() + EPS && p > 0.0)
-                || (soc >= data.maximumSoc() - EPS && p < 0.0)) return;
+        // The published energy state is the unrestricted integral of electrical
+        // power. Only the derived SOC signal is limited; converter current may
+        // continue to deliver energy after its command reaches a SOC bound.
         energyOutput += dt * p / data.dischargeTime();
-        double nextSoc = data.initialSoc() - energyOutput;
-        if (nextSoc < data.minimumSoc()) energyOutput = data.initialSoc() - data.minimumSoc();
-        if (nextSoc > data.maximumSoc()) energyOutput = data.initialSoc() - data.maximumSoc();
     }
 
     private void updateCommands() {
@@ -343,7 +340,9 @@ public final class Reecc1Model
     public double getReactiveOutput() { return reactiveOutput; }
     public double getActivePowerOrder() { return pOrder; }
     public double getEnergyOutput() { return energyOutput; }
-    public double getStateOfCharge() { return data.initialSoc() - energyOutput; }
+    public double getStateOfCharge() {
+        return limit(data.initialSoc() - energyOutput, data.minimumSoc(), data.maximumSoc());
+    }
     public void setAuxiliaryPower(double value) { auxiliaryPower = value; }
     public double getAuxiliaryPower() { return auxiliaryPower; }
     @Override public double getIpcmd() { return ipcmd; }

@@ -59,6 +59,65 @@ public class PsseReecc1ControllerTest {
         assertTrue(!parser.getLastImportReport().isStrictlyComplete());
     }
 
+    @Test
+    void energyIntegralRetainsOvershootWhileSocAndCurrentCommandsAreLimited(@TempDir Path tempDir)
+            throws Exception {
+        for (double direction : new double[]{1., -1.}) {
+            Reecc1Model model = parse(tempDir.resolve("energy-" + direction + ".dyr"),
+                    REGCA + "1 'REECC1' '1' "
+                    + PARAMETERS.replace("13750 .64 .92 .14", ".2 .55 .6 .5") + " /\n");
+            model.initialize(direction * .4, .1, 1.);
+            for (int i=0; i<100; i++) model.step(.001, direction*.4, .1, 1., 1.);
+            assertEquals(direction*.2, model.getEnergyOutput(), 1.e-14);
+            assertEquals(direction>0 ? .5 : .6, model.getStateOfCharge(), 1.e-14);
+            assertEquals(0., model.getIpcmd(), 0.);
+            // Reversing terminal power must first repay retained energy overshoot.
+            for (int i=0; i<50; i++) model.step(.001, -direction*.4, .1, 1., 1.);
+            assertEquals(direction*.1, model.getEnergyOutput(), 1.e-14);
+            assertEquals(direction>0 ? .5 : .6, model.getStateOfCharge(), 1.e-14);
+            for (int i=0; i<30; i++) model.step(.001, -direction*.4, .1, 1., 1.);
+            assertEquals(.55-direction*.04, model.getStateOfCharge(), 1.e-14);
+            assertTrue(direction*model.getIpcmd()>0.);
+            model.initialize(direction*.4, .1, 1.);
+            assertEquals(0., model.getEnergyOutput(), 0.);
+            assertEquals(.55, model.getStateOfCharge(), 0.);
+        }
+    }
+
+    @org.junit.jupiter.api.Tag("extended")
+    @Test
+    void recordedChargeAndDischargeBoundariesRetainEnergyOvershoot(@TempDir Path tempDir)
+            throws Exception {
+        Path evidence = Path.of("testData/private/verification-artifacts/reecc1-energy-limits-20261104");
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.isDirectory(evidence),
+                "Private paired reference captures are required");
+        for (String mode : new String[]{"charge-limit", "discharge-limit"}) {
+            Path profile=evidence.resolve(mode+"-fine-a");
+            var lines=Files.readAllLines(profile.resolve("native.csv"));
+            var columns=java.util.Arrays.asList(lines.get(0).split(","));
+            double[] previous=java.util.Arrays.stream(lines.get(1).split(",")).mapToDouble(Double::parseDouble).toArray();
+            int p=columns.indexOf("P_PU"), q=columns.indexOf("Q_PU"), v=columns.indexOf("V1");
+            int energy=columns.indexOf("ELEC_STATE6"), soc=columns.indexOf("ELEC_VAR4");
+            Reecc1Model model=parse(tempDir.resolve(mode+".dyr"), Files.readAllLines(profile.resolve("dynamic.dyr")).stream()
+                    .filter(line -> line.startsWith("1 ")).collect(java.util.stream.Collectors.joining("\n")));
+            model.initialize(previous[p],previous[q],previous[v]);
+            double maximumEnergyError=0., maximumSocError=0.;
+            for (int i=1; i<lines.size(); i++) {
+                double[] row=java.util.Arrays.stream(lines.get(i).split(",")).mapToDouble(Double::parseDouble).toArray();
+                model.step(row[0]-previous[0], previous[p], previous[q], previous[v], 1.);
+                maximumEnergyError=Math.max(maximumEnergyError,Math.abs(model.getEnergyOutput()-row[energy]));
+                maximumSocError=Math.max(maximumSocError,Math.abs(model.getStateOfCharge()-row[soc]));
+                previous=row;
+            }
+            // Includes every startup/event-side sample. One-step startup and
+            // quadrature differences are bounded by the paired-capture envelope.
+            assertTrue(maximumEnergyError<.00035, mode+" energy="+maximumEnergyError);
+            assertTrue(maximumSocError<.00035, mode+" SOC="+maximumSocError);
+            assertTrue(Math.abs(model.getEnergyOutput())>.07);
+            System.out.println(mode+" energy replay maximum="+maximumEnergyError+", SOC="+maximumSocError);
+        }
+    }
+
     private static Reecc1Model parse(Path dyr, String contents) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Files.writeString(dyr, contents);
