@@ -117,6 +117,10 @@ final class Cmldblu1SharedRecording {
             double faultX, double secondFaultX, double endTime) throws Exception {
         return simulate("static-control", dynamicFile, staggered, false, h, faultX, secondFaultX, endTime);
     }
+    static Cmldblu1SharedRecording simulateControl(Path dynamicFile,boolean staggered,boolean flat,
+            double h,double faultX,double secondFaultX,double endTime)throws Exception {
+        return simulate("control",dynamicFile,staggered,flat,h,faultX,secondFaultX,endTime);
+    }
     private static Cmldblu1SharedRecording simulate(String fixture, Path dynamicFile, boolean staggered, boolean flat, double h) throws Exception {
         return simulate(fixture, dynamicFile, staggered, flat, h,
                 fixture.endsWith("electronic") || fixture.endsWith("-restart") ? .01 : .2,

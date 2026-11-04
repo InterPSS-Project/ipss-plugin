@@ -27,14 +27,26 @@ public class CompositeMotorRecloseTest {
         var out=Files.createTempDirectory(Path.of("target"),"motor-reclose-");recording.write(out.resolve("complete.csv.gz"));
         assertEquals(rows.size(),recording.frames.size());
         var nativeActions=new ArrayList<Double>();var actualActions=new ArrayList<Double>();
+        var nativeFractions=new ArrayList<Double>();var actualFractions=new ArrayList<Double>();
+        var squares=new TreeMap<String,Double>();var peaks=new TreeMap<String,Double>();
+        for(String k:List.of("V1","V2","V3","P_PU","Q_PU","ANGLE_DEG","SPEED")){squares.put(k,0.);peaks.put(k,0.);}
         for(int i=0;i<rows.size();i++) {
             assertEquals(rows.get(i).get("time_s"),recording.frames.get(i).time(),5e-6);
-            if(i>0 && !rows.get(i).get("VAR83").equals(rows.get(i-1).get("VAR83")))nativeActions.add(rows.get(i).get("time_s"));
-            if(i>0 && !recording.frames.get(i).values().get("MotorA.UvFraction").equals(recording.frames.get(i-1).values().get("MotorA.UvFraction")))actualActions.add(recording.frames.get(i).time());
+            if(i>0 && !rows.get(i).get("VAR83").equals(rows.get(i-1).get("VAR83"))){nativeActions.add(rows.get(i).get("time_s"));nativeFractions.add(rows.get(i).get("VAR83"));}
+            if(i>0 && !recording.frames.get(i).values().get("MotorA.UvFraction").equals(recording.frames.get(i-1).values().get("MotorA.UvFraction"))){actualActions.add(recording.frames.get(i).time());actualFractions.add(recording.frames.get(i).values().get("MotorA.UvFraction"));}
+            for(String k:squares.keySet()) {double e=recording.frames.get(i).values().get(k)-rows.get(i).get(k);squares.put(k,squares.get(k)+e*e);peaks.put(k,Math.max(peaks.get(k),Math.abs(e)));}
+            assertEquals(rows.get(i).get("VAR83"),recording.frames.get(i).values().get("MotorA.UvFraction"),0,"Unshifted fraction row "+i);
         }
         System.out.println("MOTOR RECLOSE staggered="+staggered+" protection="+protection+" native="+nativeActions+" actual="+actualActions+" record="+out.getFileName());
         assertEquals(protection.equals("enabled")?4:0,nativeActions.size());
         assertEquals(nativeActions.size(),actualActions.size(),"Every trip and reclose must recur");
+        assertEquals(nativeFractions,actualFractions,"Exact per-action shedding and recovery fractions");
+        if(protection.equals("enabled"))assertEquals(List.of(.75,1.,.75,1.),actualFractions);
+        var normalized=new TreeMap<String,Double>();
+        for(String k:squares.keySet()) {double range=rows.stream().mapToDouble(r->r.get(k)).max().orElseThrow()-rows.stream().mapToDouble(r->r.get(k)).min().orElseThrow();normalized.put(k,Math.sqrt(squares.get(k)/rows.size())/range);}
+        System.out.println("MOTOR BOUNDARIES staggered="+staggered+" protection="+protection+" NRMSE="+normalized+" peaks="+peaks);
+        for(String k:List.of("V1","V2","V3","P_PU","Q_PU","SPEED"))assertTrue(normalized.get(k)<2e-4,k+" NRMSE="+normalized.get(k));
+        assertTrue(peaks.get("ANGLE_DEG")<2e-4,"Rotor peak error");
         for(int i=0;i<nativeActions.size();i++)assertEquals(nativeActions.get(i),actualActions.get(i),.000505,"Accepted action "+i);
         assertEquals(1.,recording.model.getInductionMotorA().getFuv(),0,"Second recovery completes");
     }
@@ -44,6 +56,7 @@ public class CompositeMotorRecloseTest {
         assertEquals("2c3f16467dfa0a11b315897ba04bd8030cf7cd3bea348fabc2f1f83b456da7ca",HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(ARCHIVE))));
         try(var zip=new java.util.zip.ZipFile(ARCHIVE.toFile())) {
             for(String profile:List.of("enabled","disabled-cleared"))for(int part=0;part<2;part++) {
+                assertArrayEquals(Files.readAllBytes(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw")),read(zip,prefix(profile,"a",part)+"network.raw"));
                 var raw=read(zip,prefix(profile,"a",part)+"native.csv");
                 assertArrayEquals(raw,read(zip,prefix(profile,"b",part)+"native.csv"));
                 var rows=csv(new String(raw,java.nio.charset.StandardCharsets.UTF_8));assertEquals(1007,rows.size());
@@ -69,6 +82,7 @@ public class CompositeMotorRecloseTest {
         motor.setInitLoadPQ(new org.apache.commons.math3.complex.Complex(.3,.12));
         motor.setVtr1(stage==1?.8:0);motor.setTtr1(.005);motor.setFtr1(stage==1?.25:0);motor.setVrc1(.9);motor.setTrc1(.01);
         motor.setVtr2(stage==2?.8:0);motor.setTtr2(.005);motor.setFtr2(stage==2?.25:0);motor.setVrc2(.9);motor.setTrc2(.01);
+        motor.setLegacyCompositeProtectionScheduling(true);
         assertTrue(motor.initStates());
         org.interpss.dstab.dynLoad.impl.InductionMotorImpl copy=null;
         int changes=0;double prior=1;

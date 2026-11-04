@@ -36,6 +36,16 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             "EPrimeQ", "EPrimeD", "Slip");
     private long staggeredEvaluationCount;
     private boolean initialReactiveDemandMatching;
+    private boolean legacyCompositeProtectionScheduling;
+
+    /** Select the composite accepted-history and subsequent electrical-application stages. */
+    public void setLegacyCompositeProtectionScheduling(boolean enabled) {
+        if (enabled && motorProtectionList!=null && !motorProtectionList.isEmpty())
+            throw new IllegalStateException("Legacy composite protection cannot combine external protection controls");
+        if (equivYSysBase != null && enabled != legacyCompositeProtectionScheduling)
+            throw new IllegalStateException("Protection scheduling must be selected before initialization");
+        legacyCompositeProtectionScheduling=enabled;
+    }
 
     /** Retain a specified initial reactive demand through a physical parallel admittance. */
     public void setInitialReactiveDemandMatching(boolean enabled) {
@@ -66,7 +76,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     }
 
     private void evaluateRates(double[] rates, int offset, IntegrationStateMonitor.Stage stage) {
-        boolean connected = Fuv > 0 && Fonline > 0;
+        boolean connected = Fonline > 0 && (legacyCompositeProtectionScheduling || Fuv > 0);
         Complex source = twoAxisModel ? epp : ep;
         if (connected) {
             Complex voltage = getDStabBus().getVoltage();
@@ -92,7 +102,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
         for (int i = 0; i < staggeredStateCount(); i++)
             if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
-        boolean connected = Fuv > 0 && Fonline > 0;
+        boolean connected = Fonline > 0 && (legacyCompositeProtectionScheduling || Fuv > 0);
         ep = connected ? new Complex(values[offset], values[offset + 1]) : Complex.ZERO;
         if (twoAxisModel) {
             ek = new Complex(values[offset + 2], values[offset + 3]);
@@ -138,6 +148,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     public static final class ModelState extends com.interpss.state.net.NameTagState {
         public long staggeredEvaluationCount;
         public boolean initialReactiveDemandMatching;
+        public boolean legacyCompositeProtectionScheduling;
         public String scriptsValue, extendedId, deviceKind;
         public boolean protectionListAllocated;
         public double inheritedLoadFactor;
@@ -234,6 +245,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             super(source);
             staggeredEvaluationCount = source.staggeredEvaluationCount;
             initialReactiveDemandMatching = source.initialReactiveDemandMatching;
+            legacyCompositeProtectionScheduling = source.legacyCompositeProtectionScheduling;
             if(source.getClass()!=InductionMotorImpl.class)throw new IllegalArgumentException("Unsupported induction motor subclass");
             if(source.motorProtectionList!=null&&!source.motorProtectionList.isEmpty())throw new IllegalArgumentException("External motor protection controls require explicit companions");
             protectionListAllocated=source.motorProtectionList!=null;
@@ -427,6 +439,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.resetIntegrationObservation();
             target.staggeredEvaluationCount = staggeredEvaluationCount;
             target.initialReactiveDemandMatching = initialReactiveDemandMatching;
+            target.legacyCompositeProtectionScheduling = legacyCompositeProtectionScheduling;
             return target;
         }
     }
@@ -1987,6 +2000,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	}
 	
 	public boolean initStates() {
+        if (legacyCompositeProtectionScheduling && motorProtectionList!=null && !motorProtectionList.isEmpty())
+            throw new IllegalStateException("Legacy composite protection cannot combine external protection controls");
 		boolean initSucceed = true;
 		staggeredEvaluationCount = 0;
         integrationMonitor.reset();
@@ -2338,7 +2353,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         }
 		// if the motor is out-of-service or tripped
 		
-		if(this.Fuv<=0.0 || this.Fonline <=0.0){
+		if(this.Fonline <=0.0 || !legacyCompositeProtectionScheduling && this.Fuv<=0.0){
             evaluateRates(observedRates, 0, flag == 0
                     ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
 			this.ep = new Complex(0.0);
@@ -2614,35 +2629,40 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 * Mainly for check the protection actions
 	 * @return
 	 */
-	private boolean postSolutionStepProcess(double dt){
-		boolean flag = true;
-		
-		double vt = this.getDStabBus().getVoltage().abs();
-		
-		if(this.lvProtectionTimer1>=this.Ttr1 && !this.lvProtection1Applied ){
+    private void applyUvActions(double vt) {
+		if(this.lvProtectionTimer1>=this.Ttr1 && !this.lvProtection1Applied && (!legacyCompositeProtectionScheduling || vt<this.Vtr1)){
 			this.Fuv = this.Fuv -this.Ftr1;
 			this.lvProtection1Applied = true;
             this.lvReconnect1Applied = false;
 		}
-		
-		if(this.lvProtectionTimer2>=this.Ttr2 && !this.lvProtection2Applied ){
+
+		if(this.lvProtectionTimer2>=this.Ttr2 && !this.lvProtection2Applied && (!legacyCompositeProtectionScheduling || vt<this.Vtr2)){
 			this.Fuv = this.Fuv -this.Ftr2;
 			this.lvProtection2Applied = true;
             this.lvReconnect2Applied = false;
 		}
-		if(this.lvReconnectTimer1>=this.Trc1 && this.lvProtection1Applied && !this.lvReconnect1Applied){
+		if(this.lvReconnectTimer1>=this.Trc1 && this.lvProtection1Applied && !this.lvReconnect1Applied && (!legacyCompositeProtectionScheduling || vt>this.Vrc1)){
 			this.Fuv = this.Fuv +this.Ftr1;
 			// update it for the next voltage dip, if any
 			this.lvProtection1Applied = false;
 			this.lvReconnect1Applied = true;
 		}
-		if(this.lvReconnectTimer2>=this.Trc2  && this.lvProtection2Applied && !this.lvReconnect2Applied){
+		if(this.lvReconnectTimer2>=this.Trc2  && this.lvProtection2Applied && !this.lvReconnect2Applied && (!legacyCompositeProtectionScheduling || vt>this.Vrc2)){
 			this.Fuv = this.Fuv +this.Ftr2;
 			// update it for the next voltage dip, if any
 			this.lvProtection2Applied = false;
 			this.lvReconnect2Applied = true;
 		}
+
+    }
+
+	private boolean postSolutionStepProcess(double dt){
+		boolean flag = true;
+
+		double vt = this.getDStabBus().getVoltage().abs();
 		
+        double priorUvFraction=Fuv;
+        if (!legacyCompositeProtectionScheduling) applyUvActions(vt);
 		if(vt<this.Vtr1 && !this.lvProtection1Applied ){
 			this.lvProtectionTimer1 += dt;
 		}
@@ -2678,6 +2698,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		
 		
+        // Evaluate thresholds after accumulating this accepted interval.
+        if (legacyCompositeProtectionScheduling) applyUvActions(vt);
 		boolean singleMotorTrip = false;
 		boolean singleMotorReconnect = false;
 		
@@ -2711,7 +2733,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		// Recompute from the independent load-change and relay fractions. Multiplying
 		// the prior value every step causes an unintended exponential decay.
-		this.Fonline = (1.0+this.accumulatedLoadChangeFactor)*this.Fuv;
+		this.Fonline = (1.0+this.accumulatedLoadChangeFactor)*(legacyCompositeProtectionScheduling?priorUvFraction:this.Fuv);
 
 		
 		return flag;
@@ -2745,6 +2767,12 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	@Override
 	public boolean afterStep(double dt) {
+        if (legacyCompositeProtectionScheduling) {
+            if (motorProtectionList!=null && !motorProtectionList.isEmpty())
+                throw new IllegalStateException("Legacy composite protection cannot combine external protection controls");
+            if (!Double.isFinite(dt) || dt<0) throw new IllegalArgumentException("Invalid accepted protection interval");
+            if (dt==0) return true;
+        }
 		postSolutionStepProcess(dt);
 		return true;
 	}
@@ -2816,6 +2844,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 */
 	@Override
 	public boolean changeLoad(double percentageFactor){
+        if (legacyCompositeProtectionScheduling && accumulatedLoadChangeFactor<=-1 && percentageFactor>0) return false;
 		
 		if (percentageFactor < -1.0){
 			logger.error("percentageFactor < -1.0, this change will not be applied");
@@ -2824,7 +2853,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		if (this.accumulatedLoadChangeFactor <= -1.0 &&  percentageFactor < 0.0)
 			logger.error("this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
 		
-		this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + percentageFactor;
+		double appliedUvFraction=legacyCompositeProtectionScheduling && this.accumulatedLoadChangeFactor>-1
+                ? this.Fonline/(1+this.accumulatedLoadChangeFactor) : this.Fuv;
+        this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + percentageFactor;
 		
 		if (this.accumulatedLoadChangeFactor < -1.0){
 			logger.error("the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
@@ -2834,7 +2865,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		this.Fonline = 1.0 + this.accumulatedLoadChangeFactor;
 		
 		//also consider the load internal protection effects
-		this.Fonline = this.Fonline*this.Fuv;
+		this.Fonline = this.Fonline*appliedUvFraction;
 		
 		logger.info("this.accumulatedLoadChangeFactor = "+ this.accumulatedLoadChangeFactor +", Fonline = "+this.Fonline);
 		

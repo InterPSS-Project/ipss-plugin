@@ -100,7 +100,7 @@ public final class Cmldblu1Model extends Cmldznu2Model {
         double p = getLoadBus().getInitLoad().getReal() * motor.getLoadPercent() / 100;
         motor.setMvaBase(0);
         motor.setInitLoadPQ(new Complex(p, p * motorReactiveRatio(motor.getLoadFactor())));
-        if (motor instanceof InductionMotorImpl implementation) implementation.setInitialReactiveDemandMatching(true);
+        if (motor instanceof InductionMotorImpl implementation) { implementation.setInitialReactiveDemandMatching(true); implementation.setLegacyCompositeProtectionScheduling(true); }
         return motor.initStates();
     }
 
