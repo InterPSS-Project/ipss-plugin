@@ -70,6 +70,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Retain [source-owner capacity actions](dynamic-models/cmldblu1-capacity-actions.md) and complete relay-driven [partial](dynamic-models/tiocr1-accepted-runtime.md#partial-composite-load-action) and [owned-subtree disconnection](dynamic-models/tiocr1-accepted-runtime.md#owned-composite-disconnection) qualification: demand, feeder impedance and compensation change together, including the cached shunt representation used by matrix rebuilds. Exact singleton and whole-owner targets are distinct from unsupported individual aggregate selection. Extend collapsed-topology full removal, relay wildcard static-residual allocation and restoration separately.
+
 - Preserve the [tap-action history discriminator](dynamic-models/cmldblu1-tap-control.md#tap-action-history-discriminator): ordinary source-machine history fits the first responding interval, and a generic discontinuity reset does not fix complete reactive-power trajectories. Resolve command publication, electrical application and state-response stages without installing an unqualified delay or global history reset.
 
 - Retain [tap integration ownership validation](dynamic-models/cmldblu1-tap-control.md#integration-ownership-validation): reject overlapping ordinary/shared stages and mismatched correctors, preserve read-only zero-duration refresh and valid retry. Both-method trajectory controls remain unchanged.
@@ -103,6 +105,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
+- Retain [partial composite-load action](dynamic-models/tiocr1-accepted-runtime.md#partial-composite-load-action) and [owned-subtree disconnection](dynamic-models/tiocr1-accepted-runtime.md#owned-composite-disconnection), explicit source-owner preparation and accepted-action preflight. Both-method complete shed/control trajectories retain the relay-operation duplicate and distinguish prepared internal diagnostics from physical bus voltage. Extend other full-removal topologies, aggregate source selection and restoration without phantom parent load stamps.
+
 - Retain [independent terminal selection with charging current](dynamic-models/tiocr1-accepted-runtime.md#independent-terminal-selection-with-charging-current): both monitored ends pass complete monitoring-only fault trajectories under both methods, with a negative control that rejects the opposite terminal. Extend opposite-end physical actions, remaining breaker settings and production-step timing separately.
 
 - Retain the independently qualified [left-end current and energized relay position](dynamic-models/tiocr1-accepted-runtime.md#left-end-current-and-energized-relay-position): both methods sample the solved interval-start current, and remote load-only actions preserve the latched moving element when the monitored branch stays active. Complete branch-trip observation ordering and the remaining action/configuration matrix separately.
@@ -115,6 +119,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2
+
+- Retain [directional blocking recovery](dynamic-models/svsmo3t2-current-runtime.md#directional-blocking-recovery): undervoltage releases immediately, overvoltage starts its hold on recovery, and zero-duration holds bypass that history. Both methods match independent block/release rows while the separate raw-voltage trip remains unchanged. Complete the coarse modified-Euler overvoltage trajectory gate; exact lifecycle agreement does not remove that numerical error.
 
 - Retain the [modified-Euler switching discrimination](dynamic-models/svsmo3t2-current-runtime.md#modified-euler-switching-discrimination): separate accepted-clock effects from method-dependent current crossing of pickup thresholds. The remaining first-interval crossings satisfy their declared integration formulas; do not replace ordinary equations or change production precision to erase these diagnostics. Complete repeated-operation qualification remains open.
 
