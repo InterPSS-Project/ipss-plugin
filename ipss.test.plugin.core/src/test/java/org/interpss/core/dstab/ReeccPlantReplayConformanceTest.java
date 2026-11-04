@@ -13,11 +13,12 @@ import com.interpss.dstab.BaseDStabNetwork;
 
 /** Independent attached-plant input replay; does not certify full network feedback. */
 @Tag("extended")
-class ReeccPlantReplayConformanceTest {
+public class ReeccPlantReplayConformanceTest {
+    private static final Path CAPTURES=Path.of("testData/private/verification-artifacts/reecc1-plant-remote-20261104");
     @Test void attachedPlantStatesAndAcceptedPortsFollowAllRecordedSamples() throws Exception {
+        verifyCaptures();
         for(String profile:new String[]{"plant-flat","plant-fault"})for(boolean history:new boolean[]{false,true}) {
-            Path folder=Path.of("testData/private/verification-artifacts/reecc1-plant-remote-20261104",profile+"-a");
-            org.junit.jupiter.api.Assumptions.assumeTrue(Files.exists(folder.resolve("native.csv")), "Private independent reference not installed");
+            Path folder=CAPTURES.resolve(profile+"-a");
             var rows=org.interpss.core.dstab.reference.RepcaNativeVerification.rows(Files.readString(folder.resolve("native.csv")));
             assertEquals(1205,rows.size(),"Full reference row count");
             var context=new PSSEMultiFileLoader().loadDStab(folder.resolve("network.raw").toString(),folder.resolve("dynamic.dyr").toString());
@@ -63,6 +64,34 @@ class ReeccPlantReplayConformanceTest {
             Files.writeString(Path.of("../target/reecc-plant-replay-"+profile+"-"+history+".csv"),trace);
             System.out.println("REECC plant "+profile+" history="+history+" names="+names+" max="+Arrays.toString(maximum)+" at="+Arrays.toString(at));
         }
+    }
+    private static void verifyCaptures() throws Exception {
+        Path manifest=CAPTURES.resolve("manifest.json");
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.exists(manifest), "Private independent reference not installed");
+        assertEquals("e05fdfb606c947805d7d6157958b9d7c45d7bc71e4da263e2560713e075328d1",sha256(manifest),"Pinned capture index");
+        var index=com.google.gson.JsonParser.parseString(Files.readString(manifest)).getAsJsonObject();
+        for(var entry:index.getAsJsonObject("files").entrySet()) {
+            Path file=CAPTURES.resolve(entry.getKey()).normalize();
+            assertTrue(file.startsWith(CAPTURES),"Capture path must stay inside its archive");
+            assertEquals(entry.getValue().getAsString(),sha256(file),entry.getKey());
+        }
+        for(String profile:List.of("plant-flat","plant-fault")) {
+            var pair=index.getAsJsonObject("pairs").getAsJsonObject(profile);
+            assertTrue(pair.get("byte_identical_csv").getAsBoolean());
+            assertEquals(1205,pair.get("rows").getAsInt());
+            assertEquals("complete",pair.get("status").getAsString());
+            assertArrayEquals(Files.readAllBytes(CAPTURES.resolve(profile+"-a/native.csv")),
+                    Files.readAllBytes(CAPTURES.resolve(profile+"-b/native.csv")),profile+" cold repeat");
+            for(String repeat:List.of("a","b")) {
+                var capture=com.google.gson.JsonParser.parseString(Files.readString(CAPTURES.resolve(profile+"-"+repeat+"/manifest.json"))).getAsJsonObject();
+                assertEquals("complete",capture.get("status").getAsString());
+                assertTrue(capture.get("selector_readback_unchanged").getAsBoolean());
+                assertEquals(1205,capture.get("sample_count").getAsInt());
+            }
+        }
+    }
+    private static String sha256(Path file) throws Exception {
+        return HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file)));
     }
     // Fixed physical-unit ceilings for this independent input replay. No sample exclusions.
     private static double ceiling(String profile, boolean history, int channel) {
