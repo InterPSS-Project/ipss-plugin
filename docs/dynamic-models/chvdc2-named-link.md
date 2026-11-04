@@ -1,5 +1,21 @@
 # CHVDC2 named-link preparation and shared components
 
+## Network-context rejection before transaction entry
+
+The terminal owner validates both network-context timestamps before changing its
+stage flags or opening a transaction. A nonfinite timestamp therefore cannot
+leave a nested network trial behind or invalidate an otherwise valid pending
+local predictor. This applies to caller-time and binary32 protection clocks;
+selecting the latter does not make an invalid caller context acceptable.
+
+Four negative controls fail on the prior implementation and pass with this
+guard, including corrected-context retry after a ten-local-step predictor.
+The runtime and terminal lifecycle checks pass. All six retained coarse fault
+trajectories are byte-identical to the prior implementation, including both
+integration methods and local modified Euler. Their six existing strict
+reference failures remain unchanged: this validation fix does not establish
+trajectory acceptance or alter the equations, clocks or substep policy.
+
 ## Default local integration for both methods
 
 `Chvdc2TerminalPorts(binding)` and its clock-selecting overload now use ten local

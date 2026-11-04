@@ -73,6 +73,33 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         assertEquals(1,defaults.inverterPort().staggeredLocalStepCount());
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
+    void invalidNetworkTimesCannotOpenATransaction(boolean binaryClock)throws Exception {
+        var clock=binaryClock?Chvdc2TerminalPorts.ProtectionClock.BINARY32:Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME;
+        var f=fixture(true,clock,0,10);initializePorts(f);var p=f.ports().rectifierPort();
+        var states=p.getIntegrationStates();var histories=p.getIntegrationHistories();Object output=p.getOutputObject();
+        for(double bad:new double[]{Double.NaN,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY}) {
+            assertThrows(IllegalArgumentException.class,()->p.beginNetworkSolution(new Context("INITIAL",0,bad,50,1e-10)));
+            assertThrows(IllegalArgumentException.class,()->p.beginNetworkSolution(new Context("INITIAL",bad,0,50,1e-10)));
+            assertEquals(states,p.getIntegrationStates());assertEquals(histories,p.getIntegrationHistories());assertSame(output,p.getOutputObject());
+        }
+        p.beginNetworkSolution(new Context("INITIAL",0,0,50,1e-10));
+        p.beforeNetworkIteration(0);p.afterNetworkConvergence();p.endNetworkSolution(true);
+        assertEquals(states,p.getIntegrationStates());assertEquals(histories,p.getIntegrationHistories());
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void rejectedNetworkContextPreservesPendingLocalPredictor(boolean binaryClock)throws Exception {
+        var clock=binaryClock?Chvdc2TerminalPorts.ProtectionClock.BINARY32:Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME;
+        var f=fixture(true,clock,0,10);initializePorts(f);var p=f.ports().rectifierPort();double h=.0005;
+        p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0);
+        var predicted=p.getIntegrationStates();var histories=p.getIntegrationHistories();Object output=p.getOutputObject();
+        assertThrows(IllegalArgumentException.class,()->p.beginNetworkSolution(context("PREDICTOR",Double.NaN)));
+        assertEquals(predicted,p.getIntegrationStates());assertEquals(histories,p.getIntegrationHistories());assertSame(output,p.getOutputObject());
+        p.beginNetworkSolution(context("PREDICTOR",h));p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.endNetworkSolution(true);
+        p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);
+        p.beginNetworkSolution(context("CORRECTOR",h));p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.endNetworkSolution(true);
+        assertTrue(p.getIntegrationStates().values().stream().allMatch(Double::isFinite));
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
     void localModifiedEulerFailedCorrectorRestoresOuterTransaction(boolean dynamic)throws Exception {
         var f=fixture(dynamic,Chvdc2TerminalPorts.ProtectionClock.BINARY32,0,10);initializePorts(f);
         var p=f.ports().rectifierPort();var m=f.binding().runtime();double H=.0005;

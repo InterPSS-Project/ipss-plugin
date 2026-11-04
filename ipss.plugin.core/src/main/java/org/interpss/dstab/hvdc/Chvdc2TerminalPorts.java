@@ -172,6 +172,8 @@ public final class Chvdc2TerminalPorts {
         @Override public void beginNetworkSolution(Context context){
             if(!owner||!isOperational())return;
             if(networkTrial)throw new IllegalStateException("Nested CHVDC2 network solve");
+            if(!Double.isFinite(context.stepStartTime())||!Double.isFinite(context.evaluationTime()))
+                throw new IllegalArgumentException("Finite CHVDC2 network context times required");
             predictorTrial="PREDICTOR".equals(context.stage());
             boolean corrector="CORRECTOR".equals(context.stage()),direct="DIRECT".equals(context.stage());
             if(!predictorTrial&&!corrector&&!direct&&!"INITIAL".equals(context.stage()))throw new IllegalArgumentException("Unknown network stage");
