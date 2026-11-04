@@ -72,6 +72,24 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         assertEquals(10,defaults.rectifierPort().staggeredLocalStepCount());
         assertEquals(1,defaults.inverterPort().staggeredLocalStepCount());
     }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void localModifiedEulerFailedCorrectorRestoresOuterTransaction(boolean dynamic)throws Exception {
+        var f=fixture(dynamic,Chvdc2TerminalPorts.ProtectionClock.BINARY32,0,10);initializePorts(f);
+        var p=f.ports().rectifierPort();var m=f.binding().runtime();double H=.0005;
+        var states=m.getIntegrationStates();var histories=m.getIntegrationHistories();Object output=p.getOutputObject();
+        for(boolean accepted:new boolean[]{false,true}) {
+            assertTrue(p.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0));
+            p.beginNetworkSolution(context("PREDICTOR",H));p.beforeNetworkIteration(0);
+            p.applyConvergedNetworkAction();p.endNetworkSolution(true);
+            assertTrue(p.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,1));
+            p.beginNetworkSolution(context("CORRECTOR",H));p.beforeNetworkIteration(0);
+            p.applyConvergedNetworkAction();p.endNetworkSolution(accepted);
+            if(!accepted) {
+                assertEquals(states,m.getIntegrationStates());assertEquals(histories,m.getIntegrationHistories());
+                assertSame(output,p.getOutputObject());
+            } else assertEquals((double)(float)H,m.getIntegrationHistories().get("Accepted time (s)"),1e-12);
+        }
+    }
     @Test void outputObservationIsPureAndFailedNetworkRestoresItsWorkingHistory()throws Exception {
         var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
         Object output=p.getOutputObject();var states=m.getIntegrationStates();var histories=m.getIntegrationHistories();

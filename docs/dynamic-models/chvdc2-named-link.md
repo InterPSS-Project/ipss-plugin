@@ -48,6 +48,28 @@ twelve added reference gates remain failures. This is not a new full-repository
 validation. Private sources, executable snapshots, reports and complete traces
 are retained in `chvdc2-local-euler-20261104/validation.zip`.
 
+### Coarse default-step and failed-corrector controls
+
+Additional default-count controls run the complete fixed-angle fault at quarter-
+and half-quarter-cycle network intervals with ten modified-Euler local steps.
+Both trajectories complete, including event-side duplicate samples, but retain
+peak current errors of `2.399257 A` and `1.202714 A`. These are essentially the
+preceding one-local-step errors (`2.399192 A` and `1.202705 A`). Internal local
+refinement therefore does not resolve this coarse outer-network/event discrepancy.
+Keep the reference gates open; do not infer accuracy from successful completion.
+
+For both dynamic and algebraic lines, an additional terminal regression executes
+local prediction, the converged predictor network, local correction and a failed
+corrector network. It requires exact restoration of states, protection histories,
+clock and the previously published output object. Retrying the same outer interval
+must advance the protection clock exactly once. These checks pass.
+
+The isolated selection runs 70 checks: 68 pass and the two new independent
+coarse reference gates fail; there are no errors or skips. Sources, executable
+snapshots, complete trajectories and bounded logs are retained privately in
+`chvdc2-default-local-20261104/validation.zip`. This expands default-step testing;
+it neither changes equations nor qualifies the remaining coarse-step accuracy.
+
 ## Explicit terminal attachment in progress
 
 `Chvdc2TerminalPorts` connects a prepared runtime to a pair of dynamic buses.
