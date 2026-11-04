@@ -126,6 +126,60 @@ public class PsseRenewableTwoStepIntegrationTest extends CorePluginTestSetup {
                 () -> converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0));
     }
 
+    @Test
+    void fixedCommandCapabilityPreservesPlantHistoryAcrossAlgebraicRefreshes() throws Exception {
+        Regca1Model converter=fixture();
+        var fixed=new ConverterCurrentCommands();
+        var plant=new Repca1Model(new Repca1Data(0,0,0,"0",0,0,0,
+                .1,2,3,0,.2,.7,0,0,0,1,-1,0,0,2,-2,
+                0,0,.1,0,0,1,-1,2,-2,.2,20,0,0));
+        fixed.setPlantController(plant);
+        converter.setActiveElectricalController(fixed);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        TwoStepElectricalController capability=fixed;
+        var commands=fixed.getNamedStates();
+        var states=plant.getIntegrationStates();
+        converter.rebaseNextTwoStep();
+        converter.getDStabBus().setVoltage(new Complex(.8,0.));
+        for(int i=0;i<5;i++) {
+            converter.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0);
+            converter.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,1);
+            assertEquals(commands,fixed.getNamedStates());
+            assertEquals(states,plant.getIntegrationStates());
+            assertEquals(fixed.getIpcmd(),capability.getTwoStepIpcmd(),0.);
+            assertEquals(fixed.getIqcmd(),capability.getTwoStepIqcmd(),0.);
+        }
+        converter.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0);
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+                plant.getStateDerivativeSnapshot().stage());
+        converter.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0);
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+                plant.getStateDerivativeSnapshot().stage());
+        var accepted=plant.getIntegrationStates();
+        for(double invalid:new double[]{-H,Double.NaN,Double.POSITIVE_INFINITY}) {
+            assertThrows(IllegalArgumentException.class,
+                    ()->converter.nextStep(invalid,DynamicSimuMethod.MODIFIED_EULER,0));
+            assertEquals(accepted,plant.getIntegrationStates());
+        }
+        assertThrows(IllegalArgumentException.class,
+                ()->converter.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,2));
+        assertEquals(accepted,plant.getIntegrationStates());
+    }
+
+    @Test
+    void publicCapabilityRejectsInvalidDurationsWithoutConsumingStates() throws Exception {
+        var converter=fixture();
+        var fixed=new ConverterCurrentCommands();fixed.initialize(.625,0.,1.);
+        for(TwoStepElectricalController controller:new TwoStepElectricalController[]{converter.getReeca1Controller(),fixed}) {
+            var owner=(com.interpss.dstab.controller.cml.ICMLStateProvider)controller;
+            var states=owner.getNamedStates();
+            for(double invalid:new double[]{-.001,Double.NaN,Double.POSITIVE_INFINITY}) {
+                assertThrows(IllegalArgumentException.class,()->controller.stepTwoStep(invalid,.625,0.,1.,1.));
+                assertEquals(states,owner.getNamedStates());
+            }
+        }
+    }
+
     private static Regca1Model fixture() throws Exception {
         var builder = DStabBuilderTestFixture.createBuilder();
         var bus = builder.getDStabNetwork().getDStabBus("Bus1");

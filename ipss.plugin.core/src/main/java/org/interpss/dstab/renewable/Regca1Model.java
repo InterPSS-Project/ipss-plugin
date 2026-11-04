@@ -242,8 +242,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public void rebaseNextTwoStep() {
         if (integrationScheme == IntegrationScheme.TWO_STEP) {
             twoStep.rebaseNextStep();
-            if(reeca1Controller!=null)reeca1Controller.rebaseNextTwoStep();
-            else if(activeController() instanceof ConverterCurrentCommands fixed)fixed.rebaseNextTwoStep();
+            if(activeController() instanceof TwoStepElectricalController controller)
+                controller.rebaseNextTwoStep();
         }
     }
 
@@ -299,9 +299,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private boolean nextTwoStep(double dt, DynamicSimuMethod method, int flag) {
-        ConverterCurrentCommands fixed=activeController() instanceof ConverterCurrentCommands c?c:null;
-        if (reeca1Controller == null && fixed==null)
-            throw new IllegalStateException("Two-step REGCA1 requires REECA1 or initialized fixed current commands");
+        if (!(activeController() instanceof TwoStepElectricalController controller))
+            throw new IllegalStateException("Electrical controller does not provide a two-step integration boundary");
         if (method != DynamicSimuMethod.MODIFIED_EULER || (flag != 0 && flag != 1)
                 || !Double.isFinite(dt) || dt < 0.0)
             throw new IllegalArgumentException("Two-step REGCA1 requires finite dt and stages 0/1");
@@ -312,18 +311,16 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         double frequency = getDStabBus().getFreq();
         double controlVoltage = activeController().getWeakGridController() == null
                 ? v : getDStabBus().getVoltageMag();
-        if(reeca1Controller!=null)reeca1Controller.refreshTwoStep(p,q,controlVoltage,frequency);
-        else fixed.stepTwoStep(0.,p,q,controlVoltage,frequency);
+        controller.refreshTwoStep(p,q,controlVoltage,frequency);
         if (flag == 0 && dt > 0.0) {
             double dv = derivative(v, vFiltered, data.tfltr());
-            double dip = activeCurrentDerivative(reeca1Controller!=null?reeca1Controller.getTwoStepIpcmd():fixed.getIpcmd(), ipState);
-            double diq = reactiveCurrentDerivative(reeca1Controller!=null?reeca1Controller.getTwoStepIqcmd():fixed.getIqcmd(), iqState);
+            double dip = activeCurrentDerivative(controller.getTwoStepIpcmd(), ipState);
+            double diq = reactiveCurrentDerivative(controller.getTwoStepIqcmd(), iqState);
             stateMonitor.begin(Stage.TWO_STEP);
             stateMonitor.record(0, vFiltered, dv);
             stateMonitor.record(1, ipState, dip);
             stateMonitor.record(2, iqState, diq);
-            if(reeca1Controller!=null)reeca1Controller.stepTwoStep(dt,p,q,controlVoltage,frequency);
-            else fixed.stepTwoStep(dt,p,q,controlVoltage,frequency);
+            controller.stepTwoStep(dt,p,q,controlVoltage,frequency);
             twoStep.begin(dt);
             vFiltered = twoStep.advance(0, vFiltered, dv);
             ipState = twoStep.advance(1, ipState, dip);

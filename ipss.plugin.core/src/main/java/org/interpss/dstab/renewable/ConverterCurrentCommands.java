@@ -3,7 +3,7 @@ package org.interpss.dstab.renewable;
 /** Initialized constant current commands when a converter has no electrical-control record.
  * Optional upstream controls retain their states but do not replace the absent electrical port.
  */
-public final class ConverterCurrentCommands implements RenewableElectricalController, com.interpss.dstab.controller.cml.ICMLStateProvider {
+public final class ConverterCurrentCommands implements TwoStepElectricalController, com.interpss.dstab.controller.cml.ICMLStateProvider {
     private double ipcmd, iqcmd, initialPower, initialVoltage;
     private ActivePowerResponseLimits response = ActivePowerResponseLimits.NORMAL;
     private Repca1Model plant;
@@ -31,14 +31,21 @@ public final class ConverterCurrentCommands implements RenewableElectricalContro
         if (wind != null) wind.step(dt, p, initialPower, getPlantPowerReference(initialPower), false, flag);
     }
     /** Advance attached observers while retaining the initialized fixed-current port. */
-    void stepTwoStep(double dt,double p,double q,double v,double frequency){
+    public void stepTwoStep(double dt,double p,double q,double v,double frequency){
+        if (!Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("Two-step duration must be finite and nonnegative");
         if(plant!=null)plant.stepTwoStep(dt,p,q,v,frequency);
         if(wind!=null)wind.stepTwoStep(dt,p,initialPower,getPlantPowerReference(initialPower),false);
     }
-    void rebaseNextTwoStep(){
+    public void rebaseNextTwoStep(){
         if(plant!=null)plant.rebaseNextTwoStep();
         if(wind!=null)wind.rebaseNextTwoStep();
     }
+    @Override public void refreshTwoStep(double p,double q,double v,double frequency) {
+        stepTwoStep(0.,p,q,v,frequency);
+    }
+    @Override public double getTwoStepIpcmd() { return ipcmd; }
+    @Override public double getTwoStepIqcmd() { return iqcmd; }
     @Override public java.util.Map<String, Double> getNamedStates() {
         return java.util.Map.of("Active Current Command", ipcmd, "Reactive Current Command", iqcmd);
     }

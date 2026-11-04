@@ -625,8 +625,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     continue;
                 }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {
-                    if (r.getReeca1Controller()==null && !(r.getActiveElectricalController()
-                            instanceof org.interpss.dstab.renewable.ConverterCurrentCommands))
+                    if (!(r.getActiveElectricalController()
+                            instanceof org.interpss.dstab.renewable.TwoStepElectricalController))
                         throw new IllegalArgumentException("Unsupported REGCA1 electrical controller: "+bus.getId()+"/"+gen.getId());
                     continue;
                 }

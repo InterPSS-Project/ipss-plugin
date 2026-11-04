@@ -13,7 +13,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
-public final class Reeca1Model implements RenewableElectricalController, ICMLStateProvider, IntegrationStateAccess {
+public final class Reeca1Model implements TwoStepElectricalController, ICMLStateProvider, IntegrationStateAccess {
     /** Native PSS/E retains PFLAG's speed input even when WTTQA1 is connected. */
     public enum WindSpeedConvention { PSSE_GENERATOR_SPEED, WTTQA_POWER_REFERENCE }
     private static final double EPS = 1.0e-9;
@@ -414,7 +414,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
 
     /** Refresh upstream algebraic signals without consuming derivative history. */
-    void refreshTwoStep(double p, double q, double v, double frequency) {
+    public void refreshTwoStep(double p, double q, double v, double frequency) {
         if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
         p = snapToInitial(p, p0);
         q = snapToInitial(q, q0);
@@ -435,6 +435,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
      * Endpoint output refreshes occur only after all states have advanced.
      */
     public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+        if (!Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("Two-step duration must be finite and nonnegative");
         if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
         if (dt <= 0.0) {
             refreshTwoStep(p, q, v, frequency);
@@ -744,8 +746,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     public boolean isVoltageDip() { return previousDip; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
-    double getTwoStepIpcmd() { return twoStepIpcmd; }
-    double getTwoStepIqcmd() { return twoStepIqcmd; }
+    public double getTwoStepIpcmd() { return twoStepIpcmd; }
+    public double getTwoStepIqcmd() { return twoStepIqcmd; }
 
 
     @Override public java.util.Map<String, Double> getIntegrationStates() {
