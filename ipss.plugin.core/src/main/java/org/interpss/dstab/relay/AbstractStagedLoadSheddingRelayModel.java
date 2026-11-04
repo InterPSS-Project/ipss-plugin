@@ -73,6 +73,9 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         boolean hasDynamicTarget = loadBus.getDynLoadModelList() != null
                 && loadBus.getDynLoadModelList().stream()
                     .anyMatch(load -> wildcard || loadId.equals(load.getId()));
+        // Rebuild target ownership for each preparation. A previous static
+        // target must not leave a second shedding stamp after dynamic attachment.
+        initialStaticLoad = Complex.ZERO;
         if (wildcard) {
             initialStaticLoad = loadBus.calNetLoadResults();
         } else if (!hasDynamicTarget) {

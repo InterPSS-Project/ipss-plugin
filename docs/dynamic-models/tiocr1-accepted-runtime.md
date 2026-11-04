@@ -186,3 +186,17 @@ and `3.3e-7`, respectively. Tests pin the reference archive and require exact
 cold-repeat data identity. This closes independent monitoring-terminal
 selection coverage at the tested interval; it does not qualify opposite-end
 physical actions, dynamic-load shedding, reconnection or production-step timing.
+
+## Reinitializing load-target ownership
+
+Every preparation clears the previous static-load contribution before resolving
+the current target. If a static source has been replaced by a dynamic current
+port, shedding now changes that dynamic load alone. Previously the relay also
+removed its cached static admittance, double-counting the action.
+
+A both-method regression reproduces the defect before the fix and checks the
+dynamic power reduction, unchanged network stamp and absence of stale static
+current correction after voltage changes. The focused relay and reference suite
+passes without changing trajectory tolerances. This preparation fix does not
+establish composite-load shedding support: expanded internal components and
+their equivalent distribution network require model-owned capacity changes.

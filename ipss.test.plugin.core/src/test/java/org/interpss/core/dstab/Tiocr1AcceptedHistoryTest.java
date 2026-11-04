@@ -165,6 +165,29 @@ public class Tiocr1AcceptedHistoryTest {
         assertEquals(matrix,net.getYMatrix().getA(first.getFromBus().getSortNumber(),first.getToBus().getSortNumber()));
     }
 
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void reinitializedDynamicTargetDoesNotRetainStaticSheddingStamp(boolean staggered)throws Exception {
+        var a=setup(staggered);var net=a.getNetwork();var bus=net.getDStabBus("Bus2");
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+        var relay=new Tiocr1RelayModel(net.getBranchList().getFirst(),true,2,true,bus,"1",
+                new com.interpss.core.aclf.AclfBranch[3],curve);
+        assertTrue(a.initialization());
+        var port=bus.getDynamicBusDeviceList().stream()
+                .filter(d->d.getId().contains(relay.getId()+"_LOAD")).findFirst().orElseThrow();
+        // A fresh preparation can replace a static source with a dynamic load.
+        var load=new org.interpss.dstab.dynLoad.impl.IeelLoadModel("IEEL",bus,bus.getContributeLoad("1"),
+                new org.interpss.dstab.dynLoad.IeelLoadData(1,0,0,1,0,0,0,0,1,0,0,2,0,0));
+        assertTrue(load.initStates());assertTrue(port.initStates(bus));
+        var originalPower=load.effectivePower();int row=bus.getSortNumber();
+        var originalStamp=net.getYMatrix().getA(row,row);
+        assertTrue(relay.afterStep(.002));assertEquals(.25,relay.getShedFraction(),0.);
+        assertEquals(0.,load.effectivePower().subtract(originalPower.multiply(.75)).abs(),1e-12);
+        assertEquals(originalStamp,net.getYMatrix().getA(row,row),
+                "The dynamic current port owns shedding; no former static stamp may also be removed");
+        bus.setVoltage(bus.getVoltage().multiply(.8));
+        assertEquals(Complex.ZERO,port.getOutputObject(),"No stale static current correction");
+    }
+
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("network.raw").toString(),CASE.resolve("tiocr1-0.dyr").toString());
