@@ -10,7 +10,7 @@ import org.interpss.IpssCorePlugin;
 import org.apache.commons.math3.complex.Complex;
 
 /** Oversubscribed legacy motor protection is reported without changing model data. */
-class CompositeMotorOverlapValidationTest {
+public class CompositeMotorOverlapValidationTest {
     @ParameterizedTest @ValueSource(doubles={.69,.70,.71})
     void overlapWarningIsNonmutating(double second)throws Exception {
         IpssCorePlugin.init();

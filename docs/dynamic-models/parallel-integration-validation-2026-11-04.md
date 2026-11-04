@@ -183,3 +183,22 @@ claim equality with an inaccessible internal voltage coordinate.
 Private source-contract integration evidence is retained at
 `verification-artifacts/relay-source-contract-integration-20261104`, SHA-256
 `3a2bc4a2c5ea9425909402099ca1ecd613be914d3c1398df9172cf4d0e4aa39a`.
+
+## Composite motor overlap coverage
+
+The validator now warns when the two motor trip fractions sum above one,
+without changing parameters or runtime equations. Both the warning tests and
+strict trajectory comparisons are registered in the suite. A registration
+compile failure was corrected by making the validation test class public.
+
+The focused integrated selection executes 43 tests: 40 pass, three fail, and
+none error or skip. The failures cover both overlapping-fraction trajectories
+and the modified-Euler exact-zero control's rotor-angle peak. These are newly
+registered qualification gaps, not a runtime change introduced by the warning.
+The independent overlap capture exhibits negative remaining motor fractions;
+neither silently clamping that evidence nor implementing negative motor load
+is justified. Existing accuracy thresholds remain unchanged.
+
+Private evidence, including the initial compilation failure, is retained at
+`verification-artifacts/motor-overlap-integration-20261104`, SHA-256
+`73f89ce734fb1e74776cc7037a1ae8c13b5919f03c76a081f7b4fa5adf939040`.

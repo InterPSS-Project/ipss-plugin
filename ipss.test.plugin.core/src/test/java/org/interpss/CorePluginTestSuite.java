@@ -1353,6 +1353,8 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.dynLoad.CompositeMotorRecloseTest.class,
     org.interpss.core.dstab.dynLoad.CompositeMotorProtectionTimingTest.class,
     org.interpss.core.dstab.dynLoad.MotorProtectionThresholdAuditTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorOverlapValidationTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorOverlapTest.class,
     org.interpss.core.dstab.dynLoad.CompositeLoadChangeTest.class,
     Cdc6tReferenceContractTest.class,
     Cdc6tMeasurementsTest.class,
