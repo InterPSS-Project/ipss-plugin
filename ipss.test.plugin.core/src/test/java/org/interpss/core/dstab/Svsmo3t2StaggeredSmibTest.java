@@ -151,6 +151,50 @@ public class Svsmo3t2StaggeredSmibTest extends CorePluginTestSetup {
         assertEquals(1, calls[0]);
     }
 
+    @Test void rejectedOrdinaryStagesPreserveTrialAndAcceptedHistories(@TempDir Path folder) throws Exception {
+        var context = load(folder);
+        var model = model(context);
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        assertFalse(model.nextStep(.0005, method, 0));
+        assertTrue(context.getDynSimuAlgorithm().initialization());
+        model.setScheduledVoltage(model.getScheduledVoltage() - .02);
+        var initial = model.getNamedStates();
+        var histories = model.getIntegrationHistories();
+        assertFalse(model.nextStep(.0005, method, 1));
+        assertEquals(initial, model.getNamedStates());
+        var bus = model.getRemoteBus();
+        var voltage = bus.getVoltage();
+        bus.setVoltage(org.apache.commons.math3.complex.Complex.NaN);
+        assertFalse(model.nextStep(.0005, method, 0));
+        assertEquals(initial, model.getNamedStates());
+        assertEquals(histories, model.getIntegrationHistories());
+        bus.setVoltage(voltage);
+        assertTrue(model.nextStep(.0005, method, 0));
+        var predicted = model.getNamedStates();
+        assertFalse(model.nextStep(.001, method, 1));
+        assertFalse(model.nextStep(0, method, 0));
+        assertFalse(model.nextStep(.0005, method, 0));
+        assertEquals(predicted, model.getNamedStates());
+        bus.setVoltage(org.apache.commons.math3.complex.Complex.NaN);
+        assertFalse(model.nextStep(.0005, method, 1));
+        assertEquals(predicted, model.getNamedStates());
+        assertEquals(histories, model.getIntegrationHistories());
+        assertEquals(0, model.getIntegrationTime());
+        bus.setVoltage(voltage);
+        assertTrue(model.nextStep(.0005, method, 1));
+        assertEquals(.0005, model.getIntegrationTime());
+        double[] trial = new double[6];
+        model.readStaggeredState(trial, 0);
+        var accepted = model.getNamedStates();
+        histories = model.getIntegrationHistories();
+        trial[0] += .1;
+        bus.setVoltage(org.apache.commons.math3.complex.Complex.NaN);
+        assertThrows(IllegalStateException.class, () -> model.applyStaggeredState(trial, 0, .0005));
+        assertEquals(accepted, model.getNamedStates());
+        assertEquals(histories, model.getIntegrationHistories());
+        bus.setVoltage(voltage);
+    }
+
     @Test void initiallyInactiveOrReactivatedBusDevicesRequireCoherentInitialization(@TempDir Path folder) throws Exception {
         var context = load(folder);
         var algo = context.getDynSimuAlgorithm();

@@ -30,6 +30,15 @@ runtime benchmark. The controller reads voltage; it does not require a passive
 bus-frequency measurement. Unknown observers retain conservative measurement
 selection.
 
+Ordinary integration requires successful initialization and a matching positive
+predictor/corrector interval. Duplicate predictors, orphan correctors, interval
+changes and zero-duration projections during a pending predictor are rejected
+without changing coordinates or accepted history. Nonfinite projected trials
+restore the prior coordinates from a reusable buffer; a failed corrector can
+be retried after its external input is repaired. Shared-state projection uses
+the same rollback protection. These guards do not change valid stage equations
+or qualify the remaining nonlinear and repeated-switching branches.
+
 The terminal current uses the explicit STATCOM MVA base. The solved static
 admittance remains in the network matrix; the device supplies only the current
 correction that replaces this contribution with its controlled current.

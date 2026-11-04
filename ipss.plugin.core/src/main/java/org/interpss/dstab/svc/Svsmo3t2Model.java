@@ -34,7 +34,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private final StaticVarCompensator svc;
     private final BaseDStabBus<?, ?> remoteBus;
     private final Svsmo3t2MssBoundary switching;
-    private final double[] x = new double[6], start = new double[6];
+    private final double[] x = new double[6], start = new double[6], trialBackup = new double[6];
     private final double[] rate = new double[6], firstRate = new double[6];
     private final IntegrationStateMonitor monitor = new IntegrationStateMonitor(NAMES);
     private final Hashtable<String, Object> outputStates = new Hashtable<>();
@@ -42,7 +42,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private final boolean nonlinearDroopActive;
     private final boolean thermalRatingActive;
     private double initialB, baseRatio, scheduledVoltage, auxiliarySignal;
-    private double integrationTime;
+    private double integrationTime, predictorStep;
     /** Last accepted physical output; trial states cannot start the rating timer early. */
     private double acceptedCurrent;
     private double preparedVrefMin, preparedVrefMax;
@@ -89,6 +89,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         networkDetached = false;
         deadbandLocked = data.deadband() > 0;
         integrationTime = 0;
+        predictorStep = 0;
         switching.initialize();
         monitor.reset();
         outputStates.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
@@ -122,9 +123,13 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         for (int i = 0; i < x.length; i++) if (!Double.isFinite(values[offset + i]))
             throw new IllegalArgumentException("Finite SVSMO3T2 integration coordinates required");
         if (networkDetached) return;
+        System.arraycopy(x, 0, trialBackup, 0, x.length);
         System.arraycopy(values, offset, x, 0, x.length);
         projectAlgebraicStates();
-        if (!finiteState()) throw new IllegalStateException("Nonfinite SVSMO3T2 projected state");
+        if (!finiteState()) {
+            System.arraycopy(trialBackup, 0, x, 0, x.length);
+            throw new IllegalStateException("Nonfinite SVSMO3T2 projected state");
+        }
     }
 
     /** Commit continuous-step histories once; physical switching remains an endpoint callback. */
@@ -154,12 +159,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     }
 
     @Override public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-        if (method != DynamicSimuMethod.MODIFIED_EULER || !Double.isFinite(dt) || dt < 0
+        if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || !Double.isFinite(dt) || dt < 0
                 || (flag != 0 && flag != 1)) return false;
+        if (predictorPending && (dt == 0 || flag == 0 || dt != predictorStep)) return false;
         if (networkDetached) return finiteState();
+        System.arraycopy(x, 0, trialBackup, 0, x.length);
         // Event-side limiter projection is algebraic. No derivative integration,
         // timer advance or accepted-history commit occurs at zero duration.
-        if (dt == 0) { projectAlgebraicStates(); return finiteState(); }
+        if (dt == 0) { projectAlgebraicStates(); return acceptFiniteTrial(); }
         if (flag == 0) {
             if (predictorPending) return false;
             evaluateRates();
@@ -168,6 +175,8 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             System.arraycopy(rate, 0, firstRate, 0, x.length);
             for (int i = 0; i < x.length; i++) x[i] = start[i] + dt * firstRate[i];
             projectAlgebraicStates();
+            if (!acceptFiniteTrial()) return false;
+            predictorStep = dt;
             predictorPending = true;
         } else {
             if (!predictorPending) return false;
@@ -175,11 +184,19 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             observe(Stage.CORRECTOR);
             for (int i = 0; i < x.length; i++) x[i] = start[i] + .5 * dt * (firstRate[i] + rate[i]);
             projectAlgebraicStates();
+            if (!acceptFiniteTrial()) return false;
             updateHistory(dt);
             predictorPending = false;
             if (finiteState()) integrationTime += dt;
         }
         return finiteState();
+    }
+
+    /** Reject a numerical trial without publishing invalid coordinates or advancing history. */
+    private boolean acceptFiniteTrial() {
+        if (finiteState()) return true;
+        System.arraycopy(trialBackup, 0, x, 0, x.length);
+        return false;
     }
 
     private void evaluateRates() {
