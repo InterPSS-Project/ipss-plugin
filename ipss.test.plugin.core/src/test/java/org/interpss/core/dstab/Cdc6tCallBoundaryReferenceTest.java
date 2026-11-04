@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 /** A zero-time API continuation does not identify internal protection callbacks. */
-class Cdc6tCallBoundaryReferenceTest {
+public class Cdc6tCallBoundaryReferenceTest {
     @Test void unchangedCompleteOutputAndSnapshots()throws Exception {
         Path archive=Path.of("testData/private/verification-artifacts/cdc6t-call-boundary-20261104/captures.zip");
         org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(archive));

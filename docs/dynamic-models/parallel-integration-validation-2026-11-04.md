@@ -202,3 +202,21 @@ is justified. Existing accuracy thresholds remain unchanged.
 Private evidence, including the initial compilation failure, is retained at
 `verification-artifacts/motor-overlap-integration-20261104`, SHA-256
 `73f89ce734fb1e74776cc7037a1ae8c13b5919f03c76a081f7b4fa5adf939040`.
+
+## Converter memory and DC reference contracts
+
+Two further registered source-contract selections pass 27 tests with no
+failures, errors or skips. The converter selection explicitly enables the
+extended profile, so both plant replay and the saved-voltage recurrence check
+execute alongside network lifecycle tests. This is diagnostic evidence, not
+qualification of a new production memory policy.
+
+The DC control adds a zero-time continuation after clearing. Its complete
+output and published states match the uninterrupted capture exactly. This
+rules out that API entry alone as the observed protection timing cause; it
+does not reveal internal sensing or callback stages, and no protection clock
+or production equation was changed.
+
+Private integrated evidence is retained at
+`verification-artifacts/memory-and-dc-contract-integration-20261104`, SHA-256
+`3015ea5aa2241b6cca69c3db90dbe84382a8d115452de1a722ce7242b2896f01`.
