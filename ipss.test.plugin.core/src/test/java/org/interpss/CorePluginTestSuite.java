@@ -1345,6 +1345,7 @@ import org.junit.platform.suite.api.Suite;
     ElectronicFullRecoverySmibTest.class,
     DistributedStaticPortLifecycleTest.class,
     CompositeTapControlSmibTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeTapMeasurementCoordinateTest.class,
     Tiocr1AcceptedHistoryTest.class,
     Tiocr1ResetReferenceTest.class,
     Tiocr1LoadOnlyReferenceTest.class,

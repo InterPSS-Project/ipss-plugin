@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /** Counter history at a tap command that crosses into the voltage deadband. */
-class CompositeTapMeasurementCoordinateTest {
+public class CompositeTapMeasurementCoordinateTest {
     @ParameterizedTest @CsvSource({"false,down","true,down","false,reversal","true,reversal"})
     void acceptedCommandMeasurementControlsFollowingCounter(boolean staggered,String profile) throws Exception {
         var a=CompositeTapControlSmibTest.setup(profile,staggered);
