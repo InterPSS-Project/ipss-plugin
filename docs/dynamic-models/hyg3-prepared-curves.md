@@ -646,3 +646,26 @@ Raw CSV byte hashes can differ because map-derived column ordering varies
 between processes. Private validation retains the full traces, test reports,
 executed controller classes and a field-based audit. The new failures remain
 qualification work, rather than evidence supporting a production equation fix.
+
+## Atomic integration-stage rejection
+
+Ordinary modified-Euler updates now require the initialized machine/data owner,
+a finite nonnegative interval and a matching predictor/corrector pair. A pending
+predictor cannot be replaced or completed with a different interval. Idle
+zero-duration evaluations remain available; they cannot interrupt a pending pair.
+
+Both integration paths reject nonfinite boundary inputs, rates and calculated
+outputs before publishing state, derivative diagnostics or accepted history.
+Ordinary candidate states and shared state proposals use reusable trial storage,
+so an overflowing proposal leaves the accepted/predicted state intact and can be
+retried after correcting the input. Shared derivative rejection also preserves
+the caller's output buffer. No per-step storage allocation is added.
+
+Four rejection/retry tests cover both controller modes, owner replacement,
+invalid intervals, mismatched stages, arithmetic overflow and shared callbacks.
+They expose the missing guards in the prior implementation. The full focused
+matrix runs 76 tests: 67 pass and the same nine reference comparisons fail,
+without errors or skips. All 136 complete exported trajectories match the
+baseline field for field, including event-side samples. Existing warmed
+allocation checks pass under both methods. These changes qualify rejection
+behavior only; the coupled bypass and long-duration accuracy gaps above remain.

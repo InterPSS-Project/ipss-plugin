@@ -17,6 +17,84 @@ public class Hyg3SharedStateTest {
     private static final String[] NAMES = {"Input filter", "Integral", "Derivative lag", "Valve", "Gate",
             "Electrical power", "Water flow", "Double derivative 1", "Double derivative 2"};
     private static volatile double sink;
+
+    @Test void ordinaryStagesRejectInvalidIntervalsAndOwnersBeforeMutation() throws Exception {
+        var governor=model(1,false);var machine=governor.getMachine();var other=model(1,false).getMachine();
+        var state=governor.getIntegrationStates();var history=governor.getIntegrationHistories();
+        var snapshot=governor.getStateDerivativeSnapshot();double output=governor.getOutput(machine);
+        for(double bad:new double[]{-H,Double.NaN,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY})
+            assertThrows(IllegalArgumentException.class,()->governor.nextStep(bad,DynamicSimuMethod.MODIFIED_EULER,machine,0));
+        assertThrows(IllegalStateException.class,()->governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,1));
+        assertThrows(IllegalStateException.class,()->governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,other,0));
+        assertEquals(state,governor.getIntegrationStates());assertEquals(history,governor.getIntegrationHistories());
+        assertEquals(snapshot,governor.getStateDerivativeSnapshot());assertEquals(output,governor.getOutput(machine),0.);
+        governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,0);
+        var predicted=governor.getIntegrationStates();var predictedSnapshot=governor.getStateDerivativeSnapshot();
+        for(int stage:new int[]{0,1})
+            assertThrows(IllegalStateException.class,()->governor.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,machine,stage));
+        assertThrows(IllegalStateException.class,()->governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,0));
+        assertThrows(IllegalStateException.class,()->governor.nextStep(H/2,DynamicSimuMethod.MODIFIED_EULER,machine,1));
+        assertEquals(predicted,governor.getIntegrationStates());assertEquals(predictedSnapshot,governor.getStateDerivativeSnapshot());
+        governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,1);
+        assertEquals(state,governor.getIntegrationStates());
+    }
+
+    @Test void rejectedOrdinaryArithmeticPreservesPredictorAndValidRetry() throws Exception {
+        for(int mode:new int[]{0,1}) {
+            var governor=model(mode,false);var control=model(mode,false);var machine=governor.getMachine();
+            for(var g:List.of(governor,control)) g.getMachine().setSpeed(1.002);
+            var initial=governor.getIntegrationStates();var initialSnapshot=governor.getStateDerivativeSnapshot();
+            machine.setPe(Double.MAX_VALUE);
+            assertThrows(IllegalArgumentException.class,()->governor.nextStep(Double.MAX_VALUE,DynamicSimuMethod.MODIFIED_EULER,machine,0));
+            assertEquals(initial,governor.getIntegrationStates());assertEquals(initialSnapshot,governor.getStateDerivativeSnapshot());
+            machine.setPe(.4);
+            for(var g:List.of(governor,control)) g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0);
+            var predicted=governor.getIntegrationStates();var history=governor.getIntegrationHistories();
+            var snapshot=governor.getStateDerivativeSnapshot();double output=governor.getOutput(machine);
+            machine.setPe(Double.MAX_VALUE);
+            assertThrows(IllegalArgumentException.class,()->governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,machine,1));
+            assertEquals(predicted,governor.getIntegrationStates());assertEquals(history,governor.getIntegrationHistories());
+            assertEquals(snapshot,governor.getStateDerivativeSnapshot());assertEquals(output,governor.getOutput(machine),0.);
+            machine.setPe(.4);
+            for(var g:List.of(governor,control)) g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1);
+            assertEquals(control.getIntegrationStates(),governor.getIntegrationStates());
+            assertEquals(control.getIntegrationHistories(),governor.getIntegrationHistories());
+            assertEquals(control.getOutput(control.getMachine()),governor.getOutput(machine),0.);
+        }
+    }
+
+    @Test void sharedRejectionPreservesStateOutputsHistoryAndCallerBuffer() throws Exception {
+        for(int mode:new int[]{0,1}) {
+            var governor=model(mode,false);var machine=governor.getMachine();double[] values=new double[9],rates=new double[9];
+            governor.readStaggeredState(values,0);var state=governor.getIntegrationStates();
+            var history=governor.getIntegrationHistories();var snapshot=governor.getStateDerivativeSnapshot();
+            double output=governor.getOutput(machine);values[6]=1e150;double[] trial=values.clone();
+            assertThrows(IllegalArgumentException.class,()->governor.applyStaggeredState(values,0,H));
+            assertEquals(state,governor.getIntegrationStates());assertArrayEquals(trial,values,0.);
+            for(double bad:new double[]{Double.NaN,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY}) {
+                machine.setSpeed(bad);Arrays.fill(rates,73.);
+                assertThrows(IllegalArgumentException.class,()->governor.evaluateStaggered(H,rates,0));
+                assertThrows(IllegalArgumentException.class,()->governor.completeStaggeredStep(H));
+                for(double rate:rates)assertEquals(73.,rate,0.);
+            }
+            assertEquals(state,governor.getIntegrationStates());assertEquals(history,governor.getIntegrationHistories());
+            assertEquals(snapshot,governor.getStateDerivativeSnapshot());assertEquals(output,governor.getOutput(machine),0.);
+            machine.setSpeed(1.);governor.readStaggeredState(values,0);governor.applyStaggeredState(values,0,H);
+            governor.evaluateStaggered(H,rates,0);governor.completeStaggeredStep(H);
+            assertEquals(state,governor.getIntegrationStates());
+        }
+    }
+
+    @Test void replacedMachineOwnerRejectsOrdinaryAndSharedUpdates() throws Exception {
+        var governor=model(1,false);var original=governor.getMachine();var replacement=model(1,false).getMachine();
+        var state=governor.getIntegrationStates();var history=governor.getIntegrationHistories();
+        governor.setMachine(replacement);
+        assertThrows(IllegalStateException.class,()->governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,replacement,0));
+        assertThrows(IllegalStateException.class,()->governor.evaluateStaggered(H,new double[9],0));
+        assertEquals(state,governor.getIntegrationStates());assertEquals(history,governor.getIntegrationHistories());
+        governor.setMachine(original);governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,original,0);
+        governor.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,original,1);
+    }
     @BeforeAll static void setup() { IpssCorePlugin.init(); }
 
     private static PsseHyg3Governor model(int mode, boolean bypass) throws Exception {

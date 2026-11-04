@@ -28,6 +28,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
 
     private final State state = new State();
     private final State oldState = new State();
+    private final State trialState = new State();
     private final Derivatives oldDerivatives = new Derivatives();
     private final Derivatives currentDerivatives = new Derivatives();
     private final Algebraic algebraicBuffer = new Algebraic();
@@ -54,6 +55,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     private DeadbandMode committedDeadbandMode = DeadbandMode.NEUTRAL;
     private boolean initialized;
     private boolean predictorPending;
+    private double pendingStep;
     private Machine initializedMachine;
     private PsseHyg3GovernorData initializedData;
     private long staggeredEvaluationCount;
@@ -144,32 +146,49 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             throw new InterpssRuntimeException("HYG3 supports MODIFIED_EULER only");
         }
         if (!initialized) return false;
+        requireCurrentOwner();
+        if (mach != initializedMachine)
+            throw new IllegalStateException("HYG3 integration requires its initialized machine owner");
+        if (!Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("HYG3 integration interval must be finite and nonnegative");
+        if (flag != 0 && flag != 1)
+            throw new InterpssRuntimeException("HYG3 invalid integration flag: " + flag);
+        if (dt == 0.) {
+            if (predictorPending) throw new IllegalStateException("Finish the pending HYG3 predictor before zero-duration evaluation");
+            Algebraic result = algebraic(state, committedGateOutput, committedDeadbandMode);
+            Derivatives rates = derivatives(state, result);
+            retainRates(state, rates, flag == 0 ? Stage.PREDICTOR : Stage.CORRECTOR);
+            publish(result);
+            return true;
+        }
+        if (flag == 0 && predictorPending || flag == 1 && (!predictorPending || dt != pendingStep))
+            throw new IllegalStateException("Matching HYG3 predictor/corrector intervals required");
         if (flag == 0) {
+            Algebraic old = algebraic(state, committedGateOutput, committedDeadbandMode);
+            Derivatives rates = derivatives(state, old);
+            trialState.plus(state, rates, dt);
+            trialState.requireFinite();
+            constrain(trialState);
+            Algebraic predicted = algebraic(trialState, committedGateOutput, committedDeadbandMode);
             oldState.copyFrom(state);
-            Algebraic old = algebraic(oldState, committedGateOutput, committedDeadbandMode);
-            oldDerivatives.copyFrom(derivatives(oldState, old));
+            oldDerivatives.copyFrom(rates);
             retainRates(oldState, oldDerivatives, Stage.PREDICTOR);
-            state.plus(oldState, oldDerivatives, dt);
-            constrain(state);
-            predictorPending = dt > 0.0;
-            Algebraic predicted = algebraic(state, committedGateOutput, committedDeadbandMode);
-            currentCv = predicted.cv;
-            currentGateOutput = predicted.gateOutput;
-            currentOutput = predicted.pmech;
+            state.copyFrom(trialState);
+            predictorPending = true;
+            pendingStep = dt;
+            publish(predicted);
         } else if (flag == 1) {
             Algebraic predicted = algebraic(state, committedGateOutput, committedDeadbandMode);
             Derivatives corrected = derivatives(state, predicted);
+            trialState.plusAverage(oldState, oldDerivatives, corrected, dt);
+            trialState.requireFinite();
+            constrain(trialState);
+            Algebraic result = algebraic(trialState, committedGateOutput, committedDeadbandMode);
             retainRates(state, corrected, Stage.CORRECTOR);
-            state.plusAverage(oldState, oldDerivatives, corrected, dt);
-            constrain(state);
-            Algebraic result = algebraic(state, committedGateOutput, committedDeadbandMode);
-            currentCv = result.cv;
-            currentGateOutput = result.gateOutput;
-            currentOutput = result.pmech;
-            if (dt > 0.) commitHistories(result);
+            state.copyFrom(trialState);
+            publish(result);
+            commitHistories(result);
             predictorPending = false;
-        } else {
-            throw new InterpssRuntimeException("HYG3 invalid integration flag: " + flag);
         }
         return true;
     }
@@ -184,9 +203,14 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     @Override public boolean useAcceptedEndpointRateAtInputDiscontinuity() { return true; }
     @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity() { return true; }
 
+    private void requireCurrentOwner() {
+        if (!initialized || initializedMachine != getMachine() || initializedData != getData()
+                || initializedMachine.getGovernor() != this)
+            throw new IllegalStateException("Initialize HYG3 with its current machine and data owner before integration");
+    }
+
     private void requireSharedState() {
-        if (!initialized || initializedMachine != getMachine() || initializedData != getData())
-            throw new IllegalStateException("Initialize HYG3 with its current machine and data owner before shared integration");
+        requireCurrentOwner();
         if (predictorPending)
             throw new IllegalStateException("Finish the HYG3 modified-Euler predictor before shared integration");
     }
@@ -219,9 +243,11 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         for (int i = 0; i < 9; i++) if (!Double.isFinite(values[offset+i]))
             throw new IllegalArgumentException("HYG3 trial states must be finite");
         prepareGateCurve();
-        state.readFrom(values, offset);
-        constrain(state);
-        publish(algebraic(state, committedGateOutput, committedDeadbandMode));
+        trialState.readFrom(values, offset);
+        constrain(trialState);
+        Algebraic result = algebraic(trialState, committedGateOutput, committedDeadbandMode);
+        state.copyFrom(trialState);
+        publish(result);
     }
 
     @Override public void completeStaggeredStep(double stepSec) {
@@ -403,6 +429,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
 
     private Algebraic algebraic(State s, double priorGateOutput, DeadbandMode priorMode) {
         PsseHyg3GovernorData d = getData();
+        requireFinite(getMachine().getSpeed());
+        requireFinite(getMachine().getPe());
         DeadbandResult frequency = deadband(getMachine().getSpeed() - 1.0, priorMode);
         double pe = measuredPower(s);
         double tdSignal = s.tdLag;
@@ -447,6 +475,8 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         valve = clamp(valve, d.getVelclose(), d.getVelopen());
         algebraicBuffer.set(frequency.mode, tdInput, tdSignal, integralError, cv,
                 gateOutput, valve, pmech, backlashWidth);
+        algebraicBuffer.requireFinite();
+        requireFinite(pmech * governorToMachineBase);
         return algebraicBuffer;
     }
 
@@ -477,6 +507,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         }
         currentDerivatives.set(tdDot, k1Dot, integralDot, valveDot, gateDot,
                 flowDot, peDot, k2FirstDot, k2SecondDot);
+        currentDerivatives.requireFinite();
         return currentDerivatives;
     }
 
@@ -629,6 +660,9 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
 
     private enum DeadbandMode { LOW, NEUTRAL, HIGH }
+    private static void requireFinite(double value) {
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("HYG3 numerical evaluation must remain finite");
+    }
     private static final class DeadbandResult {
         DeadbandMode mode; double output;
         DeadbandResult set(DeadbandMode mode, double output) {
@@ -643,6 +677,12 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             deadbandMode = mode; tdInput = input; tdSignal = signal; integralError = error;
             cv = command; gateOutput = gate; this.valve = valve; pmech = power; backlashWidth = width;
         }
+        void requireFinite() {
+            PsseHyg3Governor.requireFinite(tdInput); PsseHyg3Governor.requireFinite(tdSignal);
+            PsseHyg3Governor.requireFinite(integralError); PsseHyg3Governor.requireFinite(cv);
+            PsseHyg3Governor.requireFinite(gateOutput); PsseHyg3Governor.requireFinite(valve);
+            PsseHyg3Governor.requireFinite(pmech); PsseHyg3Governor.requireFinite(backlashWidth);
+        }
     }
     private static final class Derivatives {
         double tdLag, k1Lag, integrator, valve, gate, flow, peMeasured, k2First, k2Second;
@@ -654,6 +694,13 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         }
         void copyFrom(Derivatives d) {
             set(d.tdLag, d.k1Lag, d.integrator, d.valve, d.gate, d.flow, d.peMeasured, d.k2First, d.k2Second);
+        }
+        void requireFinite() {
+            PsseHyg3Governor.requireFinite(tdLag); PsseHyg3Governor.requireFinite(k1Lag);
+            PsseHyg3Governor.requireFinite(integrator); PsseHyg3Governor.requireFinite(valve);
+            PsseHyg3Governor.requireFinite(gate); PsseHyg3Governor.requireFinite(flow);
+            PsseHyg3Governor.requireFinite(peMeasured); PsseHyg3Governor.requireFinite(k2First);
+            PsseHyg3Governor.requireFinite(k2Second);
         }
         void writeTo(double[] values, int offset) {
             values[offset] = tdLag; values[offset+1] = integrator; values[offset+2] = k1Lag;
@@ -671,6 +718,13 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         }
         void copyFrom(State s) {
             set(s.tdLag, s.k1Lag, s.integrator, s.gate, s.flow, s.valve, s.peMeasured, s.k2First, s.k2Second);
+        }
+        void requireFinite() {
+            PsseHyg3Governor.requireFinite(tdLag); PsseHyg3Governor.requireFinite(k1Lag);
+            PsseHyg3Governor.requireFinite(integrator); PsseHyg3Governor.requireFinite(valve);
+            PsseHyg3Governor.requireFinite(gate); PsseHyg3Governor.requireFinite(flow);
+            PsseHyg3Governor.requireFinite(peMeasured); PsseHyg3Governor.requireFinite(k2First);
+            PsseHyg3Governor.requireFinite(k2Second);
         }
         void readFrom(double[] values, int offset) {
             set(values[offset], values[offset+2], values[offset+1], values[offset+4], values[offset+6],
