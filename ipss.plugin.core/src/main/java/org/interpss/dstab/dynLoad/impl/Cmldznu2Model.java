@@ -33,6 +33,9 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private Complex collapsedParentOriginalShunt;
     private Complex ownedLowSideShunt = Complex.ZERO;
     private CompositeTapControlPort tapControl;
+    private Complex nearCompensation = Complex.ZERO, farCompensation = Complex.ZERO;
+    private com.interpss.dstab.dynLoad.DynLoadModel[] capacityLeaves;
+    private double remainingCapacity = 1.0;
 
     public Cmldznu2Model(String id, BaseDStabBus<?, ?> bus, Set<String> targetLoadIds,
             Complex targetPower, Cmldznu2Data data) {
@@ -212,6 +215,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         double lowSusceptance = data.value(1) / mvaFactor + fromCompensation;
         Complex componentLowShunt = new Complex(0, lowSusceptance);
         ownedLowSideShunt = componentLowShunt;
+        nearCompensation = new Complex(0, fromCompensation);
         if (getLowVoltBus() == getDStabBus()) addShunt(getLowVoltBus(), lowSusceptance);
         else getLowVoltBus().setShuntY(componentLowShunt);
         Complex feederCurrent = incomingCurrent.divide(tap).subtract(lowVoltage.multiply(componentLowShunt));
@@ -234,6 +238,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         getLoadBus().setInitLoad(new Complex(loadPower.getReal(), grossReactiveDemand));
         double farCompensation = legacyAllocation ? (loadPower.getReal() * initialReactiveDemandRatio - loadPower.getImaginary())
                 / (loadVoltage.abs() * loadVoltage.abs()) : 0;
+        this.farCompensation = new Complex(0, farCompensation);
         if (getLoadBus() == getLowVoltBus()) addShunt(getLoadBus(), farCompensation);
         else getLoadBus().setShuntY(new Complex(0, farCompensation));
     }
@@ -288,8 +293,52 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
             if (staticLoadComponent != null) staticLoadComponent.setLoadPercent(100 * staticLoadComponent.getInitLoadPQ().getReal() / combined.getReal());
             if (electronicLoadComponent != null) electronicLoadComponent.setLoadPercent(100 * electronicLoadComponent.getInitLoadPQ().getReal() / combined.getReal());
         }
+        capacityLeaves = java.util.stream.Stream.of(getInductionMotorA(), getInductionMotorB(),
+                getInductionMotorC(), get1PhaseACMotor(), staticLoadComponent, electronicLoadComponent)
+                .filter(java.util.Objects::nonNull).toArray(com.interpss.dstab.dynLoad.DynLoadModel[]::new);
+        remainingCapacity = 1.0;
         return true;
     }
+
+    /** Prepared whole-owner partial capacity action; zero-capacity topology is not inferred. */
+    protected final boolean canChangeCompositeCapacity(double factor) {
+        return capacityLeaves != null && Double.isFinite(factor) && factor <= 0
+                && remainingCapacity + factor > 0 && getDStabBus().getNetwork() instanceof DStabilityNetwork n
+                && n.getYMatrix() != null;
+    }
+
+    protected final boolean changeCompositeCapacity(double factor) {
+        if (!canChangeCompositeCapacity(factor)) return false;
+        if (factor == 0) return true;
+        double next = remainingCapacity + factor, ratio = next / remainingCapacity;
+        var network = (DStabilityNetwork)getDStabBus().getNetwork();
+        if (distFdr != null) {
+            var ff=distFdr.yff(); var ft=distFdr.yft(); var tf=distFdr.ytf(); var tt=distFdr.ytt();
+            distFdr.setZ(distFdr.getZ().divide(ratio));
+            int from=getLowVoltBus().getSortNumber(), to=getLoadBus().getSortNumber();
+            network.getYMatrix().addToA(distFdr.yff().subtract(ff),from,from);
+            network.getYMatrix().addToA(distFdr.yft().subtract(ft),from,to);
+            network.getYMatrix().addToA(distFdr.ytf().subtract(tf),to,from);
+            network.getYMatrix().addToA(distFdr.ytt().subtract(tt),to,to);
+        }
+        Complex nearDelta=nearCompensation.multiply(ratio-1), farDelta=farCompensation.multiply(ratio-1);
+        changePhysicalShunt(getLowVoltBus(),nearDelta,network);
+        changePhysicalShunt(getLoadBus(),farDelta,network);
+        ownedLowSideShunt=ownedLowSideShunt.add(nearDelta);
+        nearCompensation=nearCompensation.multiply(ratio); farCompensation=farCompensation.multiply(ratio);
+        for (var leaf:capacityLeaves) if (!leaf.changeLoad(factor))
+            throw new IllegalStateException("Prepared composite leaf rejected a valid capacity decrement");
+        remainingCapacity=next;
+        network.setYMatrixDirty(true);
+        return true;
+    }
+
+    private static void changePhysicalShunt(BaseDStabBus<?,?> bus,Complex delta,DStabilityNetwork network) {
+        bus.setShuntY(bus.getShuntY().add(delta));
+        int row=bus.getSortNumber(); network.getYMatrix().addToA(delta,row,row);
+    }
+
+    public double getRemainingCapacity() { return remainingCapacity; }
 
     /** Prepare only this composite's owned leaves before the engine builds its dynamic matrix. */
     protected void prepareAlgebraicNetworkInterface(Cmldznu2AlgebraicLoadModel staticComponent,

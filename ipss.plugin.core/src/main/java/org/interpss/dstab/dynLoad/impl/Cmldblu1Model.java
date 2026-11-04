@@ -26,6 +26,17 @@ public final class Cmldblu1Model extends Cmldznu2Model {
     }
     public double[] getLegacyConstants() { return Arrays.copyOf(getData().values(),132); }
 
+    /** Source-ID action is unambiguous only for a singleton owner or a whole-owner wildcard. */
+    public boolean canChangeLoad(String sourceLoadId, double factor) {
+        boolean matches = "*".equals(sourceLoadId) || "#".equals(sourceLoadId)
+                || getTargetLoadIds().size() == 1 && getTargetLoadIds().contains(sourceLoadId);
+        return matches && canChangeCompositeCapacity(factor);
+    }
+
+    public boolean canChangeLoad(double factor) { return canChangeCompositeCapacity(factor); }
+
+    @Override public boolean changeLoad(double factor) { return changeCompositeCapacity(factor); }
+
     @Override protected boolean distributionIncludesReactiveCompensation() { return true; }
 
     @Override protected double staticReactiveDemandRatio() {
