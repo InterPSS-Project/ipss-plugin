@@ -91,6 +91,8 @@ class PsseStaggeredEulerSolverTest {
         }
         assertEquals(1,((StaggeredEulerSolver)plain.getSolver()).getMachineEventElectricalRefreshCount(),"No event refresh work in ordinary steps");
         assertEquals(1,((StaggeredEulerSolver)observed.getSolver()).getMachineEventElectricalRefreshCount());
+        assertEquals(2,((StaggeredEulerSolver)plain.getSolver()).getMachineEventMechanicalRefreshCount(),"No mechanical event work in ordinary intervals");
+        assertEquals(2,((StaggeredEulerSolver)observed.getSolver()).getMachineEventMechanicalRefreshCount());
     }
 
     @Test void acceptedMachineRefreshDoesNotEvaluateExciterHistory() throws Exception {
@@ -103,6 +105,48 @@ class PsseStaggeredEulerSolverTest {
         solver.notifyAcceptedEndpointDiscontinuity();solver.notifyAcceptedEndpointDiscontinuity();
         double[] after={exc.getSensedVoltage(),exc.getRegulatorOutput(),exc.getFieldVoltageState(),exc.getRateFeedback(),machine.getEfd()};
         assertArrayEquals(before,after,0.,"Accepted machine refresh cannot evaluate controller equations/history");
+    }
+
+    @Test void acceptedMechanicalRatesUsePhysicalTorqueAndPreservePredictorHistory() throws Exception {
+        for(String file:java.util.List.of("SMIB_v33_genrou.dyr","SMIB_v33_gensal.dyr"))
+            for(boolean active:new boolean[]{true,false}) {
+                var algo=loadSubtransient(file);var solver=(StaggeredEulerSolver)algo.getSolver();
+                var dynamic=(com.interpss.dstab.mach.impl.MachineImpl)algo.getNetwork().getMachine("Bus1-mach1");
+                var classical=(com.interpss.dstab.mach.impl.MachineImpl)algo.getNetwork().getMachine("Bus2-mach1");
+                var history=new java.util.IdentityHashMap<com.interpss.dstab.mach.impl.MachineImpl,com.interpss.dstab.mach.impl.MachineImpl.MechanicalIntegrationState>();
+                for(var m:java.util.List.of(dynamic,classical)) {
+                    m.setStatus(active);m.setSpeed(1.003);m.setPm(m.getPm()+.1);
+                    m.getDStabBus().setVoltage(m.getDStabBus().getVoltage().multiply(.85));
+                    history.put(m,m.captureMechanicalIntegrationState());
+                }
+                solver.notifyAcceptedEndpointDiscontinuity();
+                var owners=(java.util.List<?>)solverField(solver,"machines");
+                int[] slots=(int[])solverField(solver,"machineMechanicalStateSlots");
+                double[] left=(double[])solverField(solver,"machineEventLeft");
+                boolean[] valid=(boolean[])solverField(solver,"machineEventValid");
+                for(var m:java.util.List.of(dynamic,classical)) {
+                    int slot=slots[owners.indexOf(m)];assertEquals(active,valid[slot]);
+                    assertEquals(history.get(m),m.captureMechanicalIntegrationState(),"No mechanical predictor/history mutation");
+                    assertEquals(1.003,m.getSpeed(),0.);
+                    if(active) {
+                        double damping=m.getD()*.01*algo.getNetwork().getFrequency();
+                        double expected=m instanceof com.interpss.dstab.mach.impl.DynamicMachineImpl
+                                ? ((m.getPm()-damping*(m.getSpeed()-1))/m.getSpeed()-m.getPe()-m.getPe_NegSeq())/(2*m.getH())
+                                : (m.getPm()-m.getPe()-damping*(m.getSpeed()-1)-m.getPe_NegSeq())/(m.getSpeed()*2*m.getH());
+                        assertEquals(expected,left[slot],1e-14,"Accepted physical torque balance");
+                        assertEquals(2*Math.PI*algo.getNetwork().getFrequency()*(m.getSpeed()-1),left[slot+1],1e-14);
+                    }
+                }
+                double[] captured=left.clone();
+                for(var m:java.util.List.of(dynamic,classical))if(active){m.getIgen();m.getIgen();}
+                solver.notifyAcceptedEndpointDiscontinuity();
+                assertEquals(active?2:0,solver.getMachineEventMechanicalRefreshCount(),"One mechanical refresh per active source at first capture");
+                assertArrayEquals(captured,(double[])solverField(solver,"machineEventLeft"),0.,"First event rate survives repeated observation/notification");
+            }
+    }
+
+    private static Object solverField(StaggeredEulerSolver solver,String name) throws Exception {
+        var field=PsseStaggeredEulerSolver.class.getDeclaredField(name);field.setAccessible(true);return field.get(solver);
     }
 
     @Test void roundRotorRetainsLastInjectionMeasurementsWhenSelected() throws Exception {

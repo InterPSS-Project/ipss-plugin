@@ -241,3 +241,34 @@ A separate physical-torque/source-increment audit is required before changing
 mechanical event-left rates; this electrical result does not establish that policy.
 The final electrical-only source and 30-test validation addendum has SHA-256
 `7ce87c2d9208fe9da7b15c968d9104e7880141848a173374adad8a53804e9084`.
+
+### Separate mechanical event-left correction
+
+A subsequent torque-equation audit establishes the analogous mechanical defect.
+Using the entered inertia, zero damping and constant initialized shaft power,
+the accepted speed-increment recurrence disagrees by `1.07074e-8` pu at the
+second coarse-step fault (`2.69820e-9` at the refined interval). The independently
+recorded source agrees with its own torque/current inputs to `6.93e-11` pu over
+these complete profiles. The first fault and clearing do not expose the defect.
+
+The separate mechanical correction captures fresh speed and angle rates after
+refreshing accepted current, then restores the complete mechanical predictor
+record, including predictor speed. Only the event-left buffer receives the fresh
+rates; older integration history remains untouched. Classical machines retain
+their power-to-torque convention, while round-rotor and salient machines retain
+their declared stator-torque equations. No controller evaluation is introduced.
+
+Independent reconstruction now matches every complete runtime speed increment
+to `1.11e-16` pu and angle increments to `1.39e-17` radians. The first two fault
+boundaries and all physical samples through second-fault application remain
+identical before and after. Tests cover active/inactive classical, round-rotor
+and salient sources, repeated observations/notifications, mechanical predictor
+preservation, and zero additional event-refresh work over ordinary intervals.
+
+Thirty-one focused tests pass. The broader run has 67 tests and retains only the
+two original coarse thermal failures; this later event correction cannot remove
+their earlier peaks. No threshold, network tolerance or ordinary-step method
+changes. The private `accepted-machine-mechanical-event-20261104` archive retains
+full before/after dependency hashes, complete new traces, independent torque
+reconstruction, tests, source and bounded logs. Archive SHA-256:
+`1a6b2122a1a0c674b71c0ea32116c9d37a20a4b4f626f3aa8a3b8e1b53f92e53`.
