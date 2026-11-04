@@ -33,6 +33,10 @@ Shared release artifacts were not replaced.
 - All 51 focused core tests pass, including activation, release, current-order
   independence, explicit control, cold initialization, copy/restore, transaction
   rollback, invalid input and existing coupled-control regressions.
+- The full core suite on the committed correction passes: 3,801 tests, zero
+  failures/errors, 16 skips. Baseline has 3,797 tests and the same 16 skip
+  identities; four new lifecycle tests account for the increase. All report XMLs
+  and the identity comparison are retained.
 - Capacitor-commutated converters are excluded from this new path. Their source
   equations and external-transformer interpretation differ. The original full
   sample assertions remain unchanged and still fail identically on the candidate.
@@ -47,6 +51,7 @@ Private evidence directory: `testData/private/lcc-gamma-limit-20261104`.
 | --- | --- |
 | `reference.zip` | `5c6177d0a66ebaaf7035851f9c5ca49c117aad1ff277a27d38606ba007b291b9` |
 | `validation.zip` | `929ea4d95178b200397cd61a81a24cd58c7e3bc0015a710e15c63496d6c1f9b3` |
+| `full-core-validation.zip` | `7d053f1b00cdef95a35f5d57eafc26ae4d9fac57049d127bc233453583e66774` |
 
 The archives retain prepared inputs, original capture programs, all numerical
 outputs, rejected full-input attempts, source provenance, artifact hashes and
