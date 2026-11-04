@@ -350,6 +350,8 @@ import org.interpss.core.dstab.Chvdc2RunBoundaryReferenceTest;
 import org.interpss.core.dstab.Chvdc2MeasurementReferenceTest;
 import org.interpss.core.dstab.Chvdc2NetworkPreparationTest;
 import org.interpss.core.dstab.Chvdc2NetworkPreparationReferenceTest;
+import org.interpss.core.dstab.Chvdc2TerminalPortsTest;
+import org.interpss.core.dstab.Chvdc2TerminalReferenceTest;
 import org.interpss.core.dstab.Cdc6tNetworkPreparationTest;
 import org.interpss.core.dstab.Cdc6tConstantGammaTest;
 import org.interpss.core.dstab.Cdc6tLimitedGammaTest;
@@ -1375,6 +1377,8 @@ import org.junit.platform.suite.api.Suite;
     Chvdc2MeasurementReferenceTest.class,
     Chvdc2NetworkPreparationTest.class,
     Chvdc2NetworkPreparationReferenceTest.class,
+    Chvdc2TerminalPortsTest.class,
+    Chvdc2TerminalReferenceTest.class,
     Cdc6tNetworkPreparationTest.class,
     Cdc6tConstantGammaTest.class,
     Cdc6tLimitedGammaTest.class,

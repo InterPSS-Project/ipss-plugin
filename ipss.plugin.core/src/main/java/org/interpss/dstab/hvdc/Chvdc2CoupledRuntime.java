@@ -162,20 +162,28 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
                 throw new IllegalStateException("Repeated electrical acceptance has changed time, inputs, states or current history");
             return;
         }
-        accept(time,sequence);
+        accept(time,sequence,true);
     }
-    public void evaluatePredictorProtection(double time,long sequence){ready();if(!pending)throw new IllegalStateException("A coupled predictor is required");accept(time,sequence);}
-    private void accept(double time,long sequence) {
+    public void evaluatePredictorProtection(double time,long sequence){ready();if(!pending)throw new IllegalStateException("A coupled predictor is required");accept(time,sequence,false);}
+    /** Evaluate a converged network's protection branch without publishing its
+     * next-boundary electrical angle. The caller owns a transaction and must
+     * either accept the final boundary or roll this working history back. */
+    public void evaluateProtectionBoundary(double time,long sequence){
+        ready();exclusive();noSharedProposal();
+        if(!inTransaction)throw new IllegalStateException("Protection preview requires a coupled transaction");
+        accept(time,sequence,false);
+    }
+    private void accept(double time,long sequence,boolean publishElectricalAngle) {
         save(write);
         try {
             rates();double gamma=heldGamma();long before=controls.staggeredInputDiscontinuityVersion();
-            if(pending)controls.acceptProtectionStage(time,sequence);else controls.acceptBoundary(time,sequence);
+            if(!publishElectricalAngle)controls.acceptProtectionStage(time,sequence);else controls.acceptBoundary(time,sequence);
             latestSequence=sequence;
             if(controls.staggeredInputDiscontinuityVersion()!=before){
                 System.arraycopy(rate,0,leftRate,0,count);revision=controls.staggeredInputDiscontinuityVersion();
                 if(count==15)advanceAlgebraicCurrent(Math.hypot(inputs[0],inputs[1]),Math.hypot(inputs[2],inputs[3]));
             }
-            refresh(gamma);if(!pending){
+            refresh(gamma);if(!pending&&publishElectricalAngle){
                 System.arraycopy(boundary,0,accepted,0,BOUNDARY_SIZE);read(acceptedState);System.arraycopy(inputs,0,acceptedInputs,0,6);
                 acceptedTime=time;acceptedSequence=sequence;acceptedReady=true;acceptedAlgebraicCurrent=algebraicCurrent;
             }

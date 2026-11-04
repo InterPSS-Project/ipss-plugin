@@ -1,0 +1,128 @@
+package org.interpss.core.dstab;
+
+import static org.junit.jupiter.api.Assertions.*;
+import java.nio.file.Path;
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.CorePluginTestSetup;
+import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
+import org.interpss.dstab.algo.StaggeredEulerSolver;
+import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.device.NetworkIterationAware.Context;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
+    @TempDir Path folder;
+    record Fixture(Cdc6tCoupledNetworkTest.Fixture network,Chvdc2NetworkPreparation.Binding binding,Chvdc2TerminalPorts ports) {}
+    private Fixture fixture(boolean dynamic)throws Exception {
+        var f=Cdc6tCoupledNetworkTest.load(folder);var n=f.context().getDStabilityNet();
+        f.ports().rectifierPort().setDStabBus(null);f.ports().inverterPort().setDStabBus(null);
+        var o=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);
+        var p=new Chvdc2Parameters(o.getName(),Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,dynamic?1:0},Chvdc2ParametersTest.constants());
+        var b=Chvdc2NetworkPreparation.prepare(n,p,.0005,0);var ports=new Chvdc2TerminalPorts(b);ports.attach();
+        return new Fixture(f,b,ports);
+    }
+    private static Context context(String stage,double time){return new Context(stage,time-.0005,time,50,1e-10);}
+    private static void initializePorts(Fixture f) {
+        var p=f.ports();assertTrue(p.rectifierPort().initStates(p.rectifierPort().getDStabBus()));
+        assertTrue(p.inverterPort().initStates(p.inverterPort().getDStabBus()));p.rectifierPort().acceptInitialEndpoint();
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void completeNetworkMaintainsTheSolvedOperatingPointWithOneStateOwner(boolean staggered)throws Exception {
+        var f=fixture(true);var a=f.network().context().getDynSimuAlgorithm();var n=a.getNetwork();
+        double vr=n.getBus("Bus7").getVoltageMag(),vi=n.getBus("Bus9").getVoltageMag();
+        a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.1);
+        a.setSimuOutputHandler(new StateMonitor());a.setSolver(staggered?new StaggeredEulerSolver(a):new DefaultDynamicSimulationSolver(a));
+        assertTrue(a.initialization());assertEquals(16,f.ports().rectifierPort().staggeredStateCount());
+        assertEquals(0,f.ports().inverterPort().staggeredStateCount());
+        var compensation=n.getCustomBusCurrInjHashtable();
+        assertTrue(compensation.getOrDefault("Bus7",Complex.ZERO).abs()<1e-7,"Rectifier transfer must not be counted twice");
+        assertTrue(compensation.getOrDefault("Bus9",Complex.ZERO).abs()<1e-7,"Inverter transfer must not be counted twice");
+        double[] initial=new double[16],end=new double[16];f.binding().runtime().readStaggeredState(initial,0);
+        double worst=0;
+        while(a.getSimuTime()<.1-.00025){assertTrue(a.solveDEqnStep(true));worst=Math.max(worst,Math.max(Math.abs(n.getBus("Bus7").getVoltageMag()-vr),Math.abs(n.getBus("Bus9").getVoltageMag()-vi)));}
+        f.binding().runtime().readStaggeredState(end,0);assertArrayEquals(initial,end,1e-4);assertTrue(worst<1e-7,"No-event voltage drift "+worst);
+    }
+    @Test void outputObservationIsPureAndFailedNetworkRestoresItsWorkingHistory()throws Exception {
+        var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
+        Object output=p.getOutputObject();var states=m.getIntegrationStates();var histories=m.getIntegrationHistories();
+        p.getDStabBus().setVoltage(new Complex(.95,0));
+        for(int k=0;k<5;k++){assertSame(output,p.getOutputObject());assertEquals(states,m.getIntegrationStates());assertEquals(histories,m.getIntegrationHistories());}
+        p.beginNetworkSolution(context("INITIAL",0));p.beforeNetworkIteration(0);assertNotEquals(output,p.getOutputObject());
+        p.applyConvergedNetworkAction();p.endNetworkSolution(false);
+        assertSame(output,p.getOutputObject());assertEquals(states,m.getIntegrationStates());assertEquals(histories,m.getIntegrationHistories());
+    }
+    @Test void pendingPredictorAndCorrectorNetworkFailureRollBackTogether()throws Exception {
+        var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
+        var states=m.getIntegrationStates();var histories=m.getIntegrationHistories();Object output=p.getOutputObject();
+        p.getDStabBus().setVoltage(new Complex(1.02,0));
+        p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);
+        p.beginNetworkSolution(context("PREDICTOR",.0005));p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.afterNetworkConvergence();p.endNetworkSolution(true);
+        p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);
+        p.beginNetworkSolution(context("CORRECTOR",.0005));p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.endNetworkSolution(false);
+        assertEquals(states,m.getIntegrationStates());assertEquals(histories,m.getIntegrationHistories());assertSame(output,p.getOutputObject());
+    }
+    @Test void attachedDiagnosticsExposeOnlyTheOwnerWithoutEvaluatingInputs()throws Exception {
+        var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var companion=f.ports().inverterPort();
+        var runtime=f.binding().runtime();double[] rates=new double[p.staggeredStateCount()];
+        p.evaluateStaggered(.0005,rates,0);
+        var states=runtime.getIntegrationStates();var history=runtime.getIntegrationHistories();var derivative=runtime.getStateDerivativeSnapshot();
+        Object output=p.getOutputObject();p.getDStabBus().setVoltage(new Complex(.9,0));
+        assertFalse(derivative.rates().isEmpty());
+        assertEquals(states,p.getIntegrationStates());assertEquals(history,p.getIntegrationHistories());
+        assertEquals(derivative,p.getStateDerivativeSnapshot());assertSame(output,p.getOutputObject());
+        assertTrue(companion.getIntegrationStates().isEmpty());assertTrue(companion.getIntegrationHistories().isEmpty());
+        assertTrue(companion.getStateDerivativeSnapshot().rates().isEmpty());
+        assertEquals(states,runtime.getIntegrationStates());assertEquals(history,runtime.getIntegrationHistories());
+    }
+    @Test void repeatedInitialSolveRefreshesInjectionWithoutAcceptingAnotherElectricalEpoch()throws Exception {
+        var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var runtime=f.binding().runtime();
+        var history=runtime.getIntegrationHistories();Object output=f.ports().inverterPort().getOutputObject();
+        f.ports().inverterPort().getDStabBus().setVoltage(new Complex(.99,0));
+        p.beginNetworkSolution(context("INITIAL",0));p.beforeNetworkIteration(0);
+        assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);
+        assertEquals(history,runtime.getIntegrationHistories());
+        assertNotEquals(output,f.ports().inverterPort().getOutputObject());
+        // The same time on the far side of an explicit event is a new boundary.
+        p.beginNetworkSolution(new Context("INITIAL",0,0,50,1e-10,true));p.beforeNetworkIteration(0);
+        p.applyConvergedNetworkAction();p.afterNetworkConvergence();p.endNetworkSolution(true);
+        assertNotEquals(history,runtime.getIntegrationHistories());
+    }
+    @Test void acceptedOutputIsRetainedAndSharedEndpointIsCommittedOnce()throws Exception {
+        var f=fixture(false);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
+        int count=p.staggeredStateCount();double[] state=new double[count],rates=new double[count];
+        p.getDStabBus().setVoltage(new Complex(1.02,0));p.readStaggeredState(state,0);p.evaluateStaggered(.0005,rates,0);
+        for(int k=0;k<count;k++)state[k]+=.0005*rates[k];p.applyStaggeredState(state,0,.0005);p.completeStaggeredStep(.0005,.0005);
+        assertThrows(IllegalStateException.class,()->p.completeStaggeredStep(.0005,.0005));
+        p.beginNetworkSolution(context("DIRECT",.0005));p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.afterNetworkConvergence();
+        Object output=p.getOutputObject();p.endNetworkSolution(true);assertSame(output,p.getOutputObject());
+        assertEquals(.0005,m.getIntegrationHistories().get("Accepted time (s)"),0);
+        assertThrows(IllegalStateException.class,()->p.completeStaggeredStep(.0005,.001));
+    }
+    @Test void structuralAndIntegrationConfigurationGuardsAreExplicit()throws Exception {
+        var f=fixture(true);var p=f.ports().rectifierPort();
+        assertThrows(IllegalStateException.class,f.ports()::attach);
+        assertThrows(IllegalArgumentException.class,()->new Chvdc2TerminalPorts(f.binding()).attach());
+        assertThrows(IllegalArgumentException.class,()->p.configureIntegrationStep(.001));
+        initializePorts(f);assertThrows(IllegalStateException.class,()->p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1));
+        f.ports().inverterPort().setDStabBus(null);assertFalse(p.attachmentIntact());
+        assertFalse(p.updateAttributes(false));
+    }
+    @Test void staticLinkIdentityMembershipAndStatusRemainOwned()throws Exception {
+        var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var link=f.binding().owner();
+        String name=link.getName();link.setName(name+"-changed");
+        assertFalse(p.attachmentIntact());
+        assertThrows(IllegalArgumentException.class,()->new Chvdc2TerminalPorts(f.binding()).attach());
+        link.setName(name);assertTrue(p.attachmentIntact());
+        link.setStatus(false);assertFalse(p.isOperational());assertEquals(Complex.ZERO,p.getOutputObject());
+        assertEquals(Complex.ZERO,f.ports().inverterPort().getOutputObject());
+        link.setStatus(true);assertTrue(p.isOperational());
+        f.network().context().getDStabilityNet().getSpecialBranchList().remove(link);
+        assertFalse(p.attachmentIntact());assertFalse(p.updateAttributes(false));
+    }
+}

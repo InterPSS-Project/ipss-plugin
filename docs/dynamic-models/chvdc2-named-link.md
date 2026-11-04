@@ -1,5 +1,66 @@
 # CHVDC2 named-link preparation and shared components
 
+## Explicit terminal attachment in progress
+
+`Chvdc2TerminalPorts` connects a prepared runtime to a pair of dynamic buses.
+The rectifier port owns the shared numerical states; the inverter port publishes
+only its terminal injection. The staggered solver recognizes this explicit
+participant. The default solver uses its modified-Euler stages. Automatic
+source import and production local-substep ownership are still unfinished.
+
+The pair calculates both currents once per network iteration and retains the
+last converged currents for output access. Accepting a fresh electrical-angle
+history does not recalculate the already published current. A converged
+protection preview keeps that angle fixed while a changed protection regime
+requests another numerical network pass. Predictor history stays provisional
+through the corrector. A failed network solve restores this model's transaction;
+it does not roll back other devices, bus voltages or the solver's global history.
+
+The attached state owner exposes numerical coordinates, last-evaluated derivatives
+and committed histories through `IntegrationStateAccess`; the companion exposes
+empty diagnostics. Reads do not evaluate inputs or commit history. Static-link
+identity, name, network membership and terminal ownership are guarded, and an
+inactive link publishes zero at both terminals. A second runtime cannot attach to
+the same owner. Changing prepared equipment requires a new preparation.
+
+An ordinary `INITIAL` network solve revisits the previously accepted endpoint;
+it refreshes voltage-dependent injections without accepting the electrical-angle
+history again. An explicit external event still receives its own same-time
+acceptance. Both methods retain one state owner, shared equations and reusable
+numerical buffers. The terminal bridge publishes two immutable complex currents
+per evaluation; it is not an allocation-free adapter.
+
+Focused checks cover complete-network equilibrium under both methods, absence
+of a double-counted static transfer, pure diagnostics, failed-network rollback,
+accepted-output retention, endpoint idempotence and ownership guards. Independent
+full-network fault runs now complete with every sample and both event sides. Each
+clock is checked independently against its step recurrence: the reference uses
+binary32 accumulation. Signals are paired by numerical step and event side;
+there is no time shift, interpolation or removal of duplicate timestamps.
+
+| Network interval | Method | Maximum bus-voltage error (pu) | Maximum DC-current error (A) | Maximum terminal-power error (pu) |
+| --- | --- | ---: | ---: | ---: |
+| 0.5 ms | Modified Euler | 0.000002010 | 0.350302 | 0.00203230 |
+| 0.5 ms | Staggered | 0.000001941 | 0.333831 | 0.00206151 |
+| 0.25 ms | Modified Euler | 0.000002417 | 0.517190 | 0.00278729 |
+| 0.25 ms | Staggered | 0.000002417 | 0.517187 | 0.00278728 |
+
+Voltage passes the unchanged `1e-5 pu` gate. Current and power do not pass their
+`0.01 A` and `1e-4 pu` gates; internal-state gates also remain open. Removing the
+duplicate history acceptance has negligible effect on these errors. Earlier
+reduced-network comparisons already show comparable current errors, and all of
+their retained traces remain byte-identical after the runtime API refactor.
+This attachment is therefore explicit experimental support, not complete model
+qualification. Protected profiles, local integration, automatic import and the
+remaining coupled trajectory errors still require work.
+
+Regression validation: all focused runtime/lifecycle checks pass, and the
+core-plugin module suite passes. The registered suite retains every previous
+failure identity and adds only the four explicit terminal-reference failures
+listed above. No failed reference gate is skipped or relaxed. Replacing the
+test's global output-path setting with the repository build directory leaves
+all four complete comparison CSVs byte-identical.
+
 ## Preparation from the solved network
 
 `Chvdc2NetworkPreparation.prepare(network, parameters, H, initialTime)` resolves
