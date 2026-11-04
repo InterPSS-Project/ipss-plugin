@@ -791,3 +791,73 @@ leave the active primary as the sole state owner. A generic change to every
 inactive controller would be unjustified. The current ordinary and shared solver
 paths skip inactive primary participants, so this requires coordinated engine
 work and complete Java/reference event trajectories before qualification.
+
+
+## Opt-in retained-state reactivation
+
+The paired-shaft fixture now has an experimental, explicit hot-reactivation
+path. Select both machine IDs before initialization with
+`setHotReactivationMachineIds`, then use
+`reactivateMachineAtAcceptedEndpoint` for one disconnected host. Ordinary
+energization and the default inactive behavior remain unchanged.
+
+The primary owns six turbine coordinates; the companion owns no turbine
+coordinates. Each disconnected round-rotor machine retains its six machine
+coordinates. The first inactive interval uses the observed retained-rate
+recurrence, then advances with the held accepted rate. This is an explicit
+source-lifecycle policy, not a replacement integration formula for active
+modified Euler or staggered Euler.
+
+Primary disconnection clears its owned governor reference and holds both shaft
+outputs and published algebraic inputs. Secondary-only disconnection leaves the
+primary reference and turbine integration active. Reentry preserves differential
+states, refreshes algebraic bypass slots and reconnects the physical machine
+stamp; it does not call initialization. Fixed excitation remains zero after the
+host trips. The source guide's round-rotor status-reclose contract and prior
+state observations are supplemented by four new cold pairs with owned governor
+reference channels. All owned observations repeat exactly. The secondary
+`GREF_LP` channel has no governor owner: one pair contains different raw memory
+values. These are retained and explicitly excluded from reference-reset
+inference, not replaced with invented values.
+
+A failed-reclose control exposed a physical load error: resetting the bus
+sequence equivalent recomputed colocated converted-load admittance at the
+current disturbed voltage. Reconnection now adjusts only the generator
+contribution in the accepted positive-sequence cache. The matrix builder still
+substitutes the dynamic machine's Norton admittance for its raw source
+admittance. The new owner-bound core cache snapshot restores exact generator
+impedances, equivalent impedances and initialization flags on rejection.
+Physical records, voltages and the network matrix remain separately owned by
+the solver transaction. Custom buses without this API reject preparation.
+
+The full-trace tests retain every startup and event-side sample at 0.5 ms and
+quarter-cycle steps. All four staggered profiles and both secondary-trip
+modified-Euler profiles pass the preexisting state bounds, voltage/power
+range-NRMSE 0.001 and rotor-angle RMSE 0.01 degree gates. The two modified-Euler
+primary-reclose profiles still fail their original state bounds; their failures
+remain executable. No bounds, coefficients or timestamps were fitted.
+The secondary fine-step staggered rotor maximum difference fell from 0.00873
+degree to 0.0000901 degree after preserving the colocated load.
+
+This is not general lifecycle completion. Both hosts disconnected together are
+rejected in either request order before mutation. Mixed-sequence networks,
+nonzero governor deadbands, arbitrary controller compositions and other machine
+types remain unqualified. Follow-up must qualify simultaneous paired reclose,
+sequence-specific generator-stamp updates and composed accepted-input
+transactions. The shared turbine must never be integrated twice.
+
+`Wsieg1ReactivationTest` includes independent full trajectories, cold owned
+channel checks, rejected trial/owner/network requests, exact cache/Y rollback,
+retry, idempotence and both-order paired-disconnection rejection. The ordinary
+retained baseline remains bit-identical. Private immutable captures and validation
+artifacts are indexed under
+`verification-artifacts/wsieg1-reactivation-contract-20261104`.
+The plugin change requires the accompanying core snapshot API; validation uses
+`-Dipss.core.version=1.4.8-reactivation-cache-candidate` without changing the
+released dependency default. Core and plugin milestone versions must advance
+together before publishing this feature.
+
+The ordinary core trip/energization path still resets sequence-load equivalents.
+A separate source-controlled comparison must check whether this also rebases
+colocated loads at disturbed voltages before changing default event processing.
+That wider correction is outside this opt-in reclose slice.

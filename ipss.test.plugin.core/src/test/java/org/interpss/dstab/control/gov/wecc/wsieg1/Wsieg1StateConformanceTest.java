@@ -213,7 +213,7 @@ public class Wsieg1StateConformanceTest {
         }
     }
 
-    private static double[] stateBounds(boolean staggered,double h) {
+    static double[] stateBounds(boolean staggered,double h) {
         if(staggered)return h<.001?new double[]{3.6e-7,1e-5,7.5e-6,3.7e-6,2e-6,2e-6}:new double[]{8.2e-6,7.2e-6,2.8e-5,4.5e-6,3.2e-6,3.2e-6};
         return h<.001?new double[]{5.1e-6,3.3e-5,7.4e-6,3.7e-6,2.1e-6,2.1e-6}:new double[]{4.8e-5,2.8e-4,3.8e-5,6.9e-6,5e-6,5e-6};
     }

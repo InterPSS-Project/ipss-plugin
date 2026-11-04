@@ -7,6 +7,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor;
+import org.interpss.dstab.control.util.DisconnectedStateParticipant;
 
 /** Prepared, opt-in retained-coordinate lifecycle. Physical outputs remain disconnected. */
 public final class MachineReactivationLifecycle {
@@ -16,17 +18,20 @@ public final class MachineReactivationLifecycle {
     private double lastSampleTime = Double.NaN;
     private static final class Entry {
         final BaseDStabBus<?,?> bus; final DStabGen gen; final RoundRotorMachineImpl machine;
-        final Urgs3tGovernor governor;
-        final double[] last = new double[11], previous = new double[11];
-        final double[] start = new double[11], trial = new double[11];
+        final DisconnectedStateParticipant governor;
+        final double[] last, previous, start, trial;
         boolean connected = true, firstInactive = true, trialInactive;
         double reactivationTime=Double.NaN;
-        Entry(BaseDStabBus<?,?> b,DStabGen g,RoundRotorMachineImpl m,Urgs3tGovernor c) {
+        com.interpss.core.acsc.BaseAcscBus.SequenceEquivalentState savedSequenceCache;
+        Entry(BaseDStabBus<?,?> b,DStabGen g,RoundRotorMachineImpl m,DisconnectedStateParticipant c) {
             bus=b;gen=g;machine=m;governor=c;
+            int size=6+c.disconnectedStateCount();
+            last=new double[size];previous=new double[size];start=new double[size];trial=new double[size];
         }
         void checkOwner() {
             if(gen.getDynamicGenDevice()!=machine||machine.getParentGen()!=gen||machine.getDStabBus()!=bus
                     ||bus.getContributeGen(gen.getId())!=gen||machine.getGovernor()!=governor
+                    ||machine.getGovernor().getMachine()!=machine
                     ||machine.getExciter()!=null||machine.getStabilizer()!=null)
                 throw new IllegalStateException("Prepared hot-reactivation ownership changed");
         }
@@ -61,7 +66,8 @@ public final class MachineReactivationLifecycle {
         }
     }
     private static void validateConsumers(DynamicSimuAlgorithm algorithm,Set<String> requested) {
-        if(requested.size()!=1)throw new IllegalArgumentException("Experimental hot lifecycle requires one selected host");
+        if(!algorithm.getNetwork().isPositiveSeqDataOnly())throw new IllegalArgumentException("Mixed-sequence hot reactivation is not qualified");
+
         for(var bus:algorithm.getNetwork().getBusList())if(bus.isActive()) {
             for(var device:bus.getDynamicBusDeviceList())if(device.isActive())
                 throw new IllegalArgumentException("Composed bus-device reactivation inputs are not qualified");
@@ -84,14 +90,27 @@ public final class MachineReactivationLifecycle {
             var device=gen.getDynamicGenDevice();if(device==null||!requested.contains(device.getId()))continue;
             if(!(device instanceof RoundRotorMachineImpl machine)||!bus.isActive()||!gen.isActive()||!machine.isActive()
                     ||machine.getExciter()!=null||machine.getStabilizer()!=null
-                    ||!(machine.getGovernor() instanceof Urgs3tGovernor governor)
+                    ||!(machine.getGovernor() instanceof DisconnectedStateParticipant governor)
                     ||!governor.supportsDisconnectedStateLifecycle())
                 throw new IllegalArgumentException("Unsupported requested hot-reactivation unit: "+device.getId());
             if(!found.add(device.getId()))throw new IllegalArgumentException("Duplicate requested machine identity: "+device.getId());
+            // Reject custom buses without an exact cache transaction before any event/status mutation.
+            var cache=bus.captureSequenceEquivalentState();bus.restoreSequenceEquivalentState(cache);
             prepared.add(new Entry(bus,gen,machine,governor));
         }
         if(!found.equals(requested))throw new IllegalArgumentException("Hot-reactivation unit is missing or unprepared");
+        validateGroup(prepared);
         this.algorithm=algorithm;entries.clear();entries.addAll(prepared);pending=false;lastSampleTime=Double.NaN;
+    }
+    private static void validateGroup(List<Entry> prepared) {
+        if(prepared.size()==1&&prepared.get(0).governor instanceof Urgs3tGovernor)return;
+        if(prepared.size()==2) {
+            var owner=Wsieg1Governor.sharedOwner(prepared.get(0).governor);
+            if(owner!=null&&Wsieg1Governor.sharedOwner(prepared.get(1).governor)==owner
+                    &&prepared.stream().anyMatch(e->e.machine==owner.getMachine())
+                    &&prepared.stream().anyMatch(e->e.machine==owner.getSecondaryMachine()))return;
+        }
+        throw new IllegalArgumentException("Qualified lifecycle requires one retained host or one complete shared-turbine pair");
     }
     public boolean enabled(){return !entries.isEmpty();}
     public boolean owns(Object model){for(var e:entries)if(e.machine==model||e.governor==model)return true;return false;}
@@ -103,8 +122,8 @@ public final class MachineReactivationLifecycle {
         if(time==lastSampleTime)return;
         for(var e:entries)if(e.active())e.sample();
         for(var e:entries)if(e.active()) {
-            System.arraycopy(e.last,0,e.previous,0,11);System.arraycopy(e.trial,0,e.last,0,11);
-            if(!Double.isFinite(lastSampleTime))System.arraycopy(e.last,0,e.previous,0,11);
+            System.arraycopy(e.last,0,e.previous,0,e.last.length);System.arraycopy(e.trial,0,e.last,0,e.last.length);
+            if(!Double.isFinite(lastSampleTime))System.arraycopy(e.last,0,e.previous,0,e.last.length);
         }
         lastSampleTime=time;
     }
@@ -122,7 +141,7 @@ public final class MachineReactivationLifecycle {
         if(dt==0)return;
         for(var e:entries) {
             e.trialInactive=!e.active();if(!e.trialInactive)continue;e.read(e.start);
-            for(int i=0;i<11;i++) {
+            for(int i=0;i<e.trial.length;i++) {
                 e.trial[i]=e.start[i]+dt*(e.firstInactive?1.5*e.last[i]-.5*e.previous[i]:e.last[i]);
                 if(!Double.isFinite(e.trial[i]))throw new IllegalArgumentException("Nonfinite disconnected trial");
             }
@@ -136,7 +155,7 @@ public final class MachineReactivationLifecycle {
     public void requireBoundary(){if(pending)throw new IllegalStateException("Inactive integration trial is pending");}
     public void readHeldRates(Object model,double[] target,int offset) {
         for(var e:entries)if(e.machine==model||e.governor==model) {
-            System.arraycopy(e.last,e.machine==model?0:6,target,offset,e.machine==model?6:5);return;
+            System.arraycopy(e.last,e.machine==model?0:6,target,offset,e.machine==model?6:e.governor.disconnectedStateCount());return;
         }
         throw new IllegalArgumentException("Unprepared retained-rate owner");
     }
@@ -144,7 +163,10 @@ public final class MachineReactivationLifecycle {
         requireBoundary();
         if(!Double.isFinite(time)||Double.isFinite(lastSampleTime)&&time<lastSampleTime)
             throw new IllegalArgumentException("Invalid reactivation time");
-        validateConsumers(algorithm,Set.of(id));
+        Set<String> ids=new HashSet<>();for(var e:entries){e.checkOwner();ids.add(e.machine.getId());}
+        validateConsumers(algorithm,ids);validateGroup(entries);
+        if(entries.size()==2&&entries.stream().noneMatch(Entry::active))
+            throw new IllegalStateException("Simultaneous shared-shaft reactivation is not qualified");
         for(var e:entries)if(e.machine.getId().equals(id)) {
             if(e.gen.getDynamicGenDevice()!=e.machine||e.machine.getGovernor()!=e.governor
                     ||e.machine.getExciter()!=null||e.machine.getStabilizer()!=null)
@@ -167,14 +189,18 @@ public final class MachineReactivationLifecycle {
             if(e.connected)return null;
             if(!e.bus.isActive()||e.gen.isActive()||e.machine.isActive())
                 throw new IllegalStateException("Reactivation requires a disconnected prepared unit at an active bus");
-            e.gen.setStatus(true);e.machine.setStatus(true);e.bus.resetSeqEquivLoad();return e.machine;
+            var rawGeneratorY=org.apache.commons.math3.complex.Complex.ONE.divide(e.gen.getPosGenZ().multiply(e.gen.getZMultiFactor()));
+            e.savedSequenceCache=e.bus.captureSequenceEquivalentState();
+            // Preserve accepted converted loads. Matrix construction separately replaces raw source Y by machine Norton Y.
+            e.bus.applyPositiveSequenceShuntAdmittanceChange(rawGeneratorY);
+            e.gen.setStatus(true);e.machine.setStatus(true);return e.machine;
         }
         throw new IllegalArgumentException("Unprepared reactivation unit: "+id);
     }
     public void finishReactivation(Object machine,boolean accepted) {
         for(var e:entries)if(e.machine==machine) {
-            if(accepted) {e.governor.publishHostReactivation();e.machine.setPm(e.governor.getOutput(e.machine));e.connected=true;e.reactivationTime=lastSampleTime;}
-            else {e.gen.setStatus(false);e.machine.setStatus(false);e.bus.resetSeqEquivLoad();}
+            if(accepted) {e.governor.publishHostReactivation();e.machine.setPm(e.machine.getGovernor().getOutput(e.machine));e.connected=true;e.reactivationTime=lastSampleTime;}
+            else {e.gen.setStatus(false);e.machine.setStatus(false);e.bus.restoreSequenceEquivalentState(e.savedSequenceCache);}
             return;
         }
     }

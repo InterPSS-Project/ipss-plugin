@@ -15,7 +15,7 @@ import com.interpss.dstab.mach.Machine;
 
 /** Extended WECC steam governor: two deadbands, valve curve and four turbine stages. */
 public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess,
-        org.interpss.dstab.control.util.IntegrationStepAware {
+        org.interpss.dstab.control.util.IntegrationStepAware, org.interpss.dstab.control.util.DisconnectedStateParticipant {
     private static final String[] STATE_NAMES={"Speed lag","Valve","Turbine 1","Turbine 2","Turbine 3","Turbine 4"};
     /** Constant order after the secondary bus and machine identifier. */
     public static final java.util.List<String> CONSTANT_NAMES=java.util.List.of(
@@ -42,6 +42,13 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private double initialTurbinePower, secondaryInitialPower;
     private boolean primaryInitializationPending, secondaryInitializationPending, secondaryScaleReady;
     private Machine secondaryMachine;
+    private boolean disconnectedPublication;
+    private double heldPrimaryOutput,heldSecondaryOutput,heldSpeedInput,heldValveOutput,heldPublishedSpeedState;
+    public Machine getSecondaryMachine(){return secondaryMachine;}
+    public static Wsieg1Governor sharedOwner(Object controller) {
+        return controller instanceof Wsieg1Governor owner?owner:controller instanceof SecondaryShaft companion?companion.owner:null;
+    }
+
     public void attachSecondaryShaft(Machine machine) {
         if(secondaryMachine!=null || machine==null || machine==getMachine() || machine.getGovernor()!=null)
             throw new IllegalArgumentException("Only one distinct secondary shaft without an existing governor can be attached");
@@ -50,7 +57,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     /** The companion owns an output binding, never another copy of the turbine states. */
     public static boolean isSecondaryShaft(Object controller) { return controller instanceof SecondaryShaft; }
-    private static final class SecondaryShaft extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant {
+    private static final class SecondaryShaft extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, org.interpss.dstab.control.util.DisconnectedStateParticipant {
         private final Wsieg1Governor owner;
         private Machine initializedMachine;
         SecondaryShaft(Wsieg1Governor owner) {super(owner.getId()+"_LP","WSIEG1_LP","WECC");this.owner=owner;}
@@ -71,6 +78,14 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         @Override public double getOutput(Machine machine) { return owner.getSecondaryBaseScale()*owner.shaftOutput(1); }
         @Override public Map<String,Double> getNamedStates() {return Map.of("Shared turbine output",getOutput(getMachine()));}
         @Override public int staggeredStateCount() { return 0; }
+        @Override public int disconnectedStateCount(){return 0;}
+        @Override public boolean supportsDisconnectedStateLifecycle(){return owner.supportsDisconnectedStateLifecycle();}
+        @Override public void readDisconnectedState(double[] values,int offset){requireBuffer(values,offset);}
+        @Override public void readConnectedRates(double[] values,int offset){requireBuffer(values,offset);}
+        @Override public void writeDisconnectedState(double[] values,int offset){requireBuffer(values,offset);}
+        @Override public void acceptHostDisconnection(){owner.requireSharedState();}
+        @Override public void publishHostReactivation(){owner.requireSharedState();}
+
         private void requireBuffer(double[] values,int offset) {
             owner.requireSharedState();
             if(initializedMachine!=getMachine() || getMachine().getGovernor()!=this)
@@ -119,6 +134,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     private double preparedLag(double entered) {return entered<=2.*integrationStep?0.:entered;}
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine machine) {
+        disconnectedPublication=false;
         initialized=false;predicted=false;predictorStep=0.;monitor.reset();staggeredEvaluationCount=0;referenceRevision=0;referenceJumpPending=false;
         if(secondaryMachine!=null){secondaryScaleReady=false;primaryInitializationPending=false;}
         if(machine==null || machine!=getMachine() || !Double.isFinite(machine.getPm()) || !Double.isFinite(machine.getSpeed()))return false;
@@ -226,6 +242,35 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         if(predicted)throw new IllegalStateException("Finish the modified-Euler predictor before shared integration");
     }
     private void requireBuffer(double[] values,int offset) {requireSharedState();java.util.Objects.checkFromIndexSize(offset,6,values.length);}
+    @Override public int disconnectedStateCount(){return 6;}
+    @Override public boolean supportsDisconnectedStateLifecycle(){return secondaryMachine!=null&&c[20]==0&&c[21]==0&&c[22]==0;}
+    @Override public void readDisconnectedState(double[] values,int offset){requireBuffer(values,offset);System.arraycopy(x,0,values,offset,6);}
+    @Override public void readConnectedRates(double[] values,int offset){
+        requireBuffer(values,offset);
+        if(!getMachine().isActive())throw new IllegalStateException("Do not evaluate disconnected turbine rates");
+        derivatives(x,trial,getMachine().getSpeed()-1.);System.arraycopy(trial,0,values,offset,6);
+    }
+    @Override public void writeDisconnectedState(double[] values,int offset){
+        requireBuffer(values,offset);
+        for(int i=0;i<6;i++)if(!Double.isFinite(values[offset+i]))throw new IllegalArgumentException("Disconnected turbine coordinates must be finite");
+        System.arraycopy(values,offset,x,0,6);
+    }
+    @Override public void acceptHostDisconnection(){
+        requireSharedState();
+        if(!supportsDisconnectedStateLifecycle())throw new IllegalStateException("Unsupported disconnected turbine configuration");
+        heldPrimaryOutput=shaftOutput(0);heldSecondaryOutput=shaftOutput(1);
+        heldSpeedInput=getSpeedDeadbandOutput();heldValveOutput=getValveOutput();
+        heldPublishedSpeedState=speedTime>0?(1.-c[2]/speedTime)*x[0]:c[0]*heldSpeedInput;
+        disconnectedPublication=true;reference=0;
+    }
+    @Override public void publishHostReactivation(){
+        requireSharedState();
+        double primary=unheldShaftOutput(0),secondary=getSecondaryBaseScale()*unheldShaftOutput(1);
+        if(!Double.isFinite(primary)||!Double.isFinite(secondary))throw new IllegalStateException("Nonfinite resumed shaft output");
+        // Refresh only algebraic bypass coordinates; differential states/history remain retained.
+        synchronizeBypasses(x);disconnectedPublication=false;
+        if(secondaryMachine.isActive()&&secondaryMachine.getParentGen().isActive())secondaryMachine.setPm(secondary);
+    }
     @Override public int staggeredStateCount() { return 6; }
     @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity() { return true; }
     @Override public void readStaggeredState(double[] values,int offset) {requireBuffer(values,offset);System.arraycopy(x,0,values,offset,6);}
@@ -244,7 +289,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     /** Published compensation coordinate; bypassed slots expose their algebraic input. */
     public void readPublishedState(double[] values,int offset) {
         requireBuffer(values,offset);
-        values[offset]=speedTime>0?(1.-c[2]/speedTime)*x[0]:c[0]*speedInput(getMachine().getSpeed()-1.);
+        values[offset]=speedTime>0?(1.-c[2]/speedTime)*x[0]:disconnectedPublication?heldPublishedSpeedState:c[0]*speedInput(getMachine().getSpeed()-1.);
         System.arraycopy(x,1,values,offset+1,5);
     }
     private void retainRates(double[] state,double[] rates,Stage stage) {
@@ -293,6 +338,9 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     @Override public double getOutput(Machine machine) { return shaftOutput(0); }
     private double shaftOutput(int shaft) {
+        return disconnectedPublication?(shaft==0?heldPrimaryOutput:heldSecondaryOutput):unheldShaftOutput(shaft);
+    }
+    private double unheldShaftOutput(int shaft) {
         double input=interpolate(backlash(x[1]),curveX,curveY),output=0;
         for(int i=0;i<4;i++) { if(turbineTimes[i]>0) input=x[2+i];output+=c[9+3*i+shaft]*input; }
         return output;
@@ -334,8 +382,8 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         if(!secondaryScaleReady)throw new IllegalStateException("Initialize both shaft operating points before reading their normalization");
         return secondaryScale;
     }
-    public double getSpeedDeadbandOutput() { return speedInput(getMachine().getSpeed()-1.); }
-    public double getValveOutput() { return backlash(x[1]); }
+    public double getSpeedDeadbandOutput() { return disconnectedPublication?heldSpeedInput:speedInput(getMachine().getSpeed()-1.); }
+    public double getValveOutput() { return disconnectedPublication?heldValveOutput:backlash(x[1]); }
     public double getBacklashInputHistory() { return backlashInputMemory; }
     public double getValvePosition() { return x[1]; }
     public double valvePower(double gate) { return interpolate(gate,curveX,curveY); }

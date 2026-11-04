@@ -135,7 +135,7 @@ public class Wsieg1SharedSmibTest {
         return recording;
     }
 
-    private static final class OrdinaryRecorder extends DefaultDynamicSimulationSolver {
+    static class OrdinaryRecorder extends DefaultDynamicSimulationSolver {
         final Recording recording;
         OrdinaryRecorder(DynamicSimuAlgorithm a,Recording r){super(a);recording=r;converge_tol=TOLERANCE;}
         @Override public void beforeStep(double time)throws DStabSimuException{recording.before(time);super.beforeStep(time);}
@@ -144,7 +144,7 @@ public class Wsieg1SharedSmibTest {
                 recording.frames.add(recording.capture(dstabAlgo.getSimuTime(),"GRID"));return solved;
         }
     }
-    private static final class SharedRecorder extends StaggeredEulerSolver {
+    static class SharedRecorder extends StaggeredEulerSolver {
         final Recording recording;
         SharedRecorder(DynamicSimuAlgorithm a,Recording r){super(a);recording=r;setNetworkSolutionTolerance(TOLERANCE);setReuseNetworkEndpoint(false);}
         @Override public void beforeStep(double time)throws DStabSimuException{recording.before(time);super.beforeStep(time);}

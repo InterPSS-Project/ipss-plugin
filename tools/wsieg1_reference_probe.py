@@ -55,6 +55,7 @@ def main():
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/480, 1/240], required=True)
     parser.add_argument('--status-reenable', action='store_true',
                         help='Diagnostic only: request working-case machine status on at 0.1 s after a trip')
+    parser.add_argument('--governor-reference', action='store_true', help='Record machine governor-reference channels for reactivation diagnosis')
     parser.add_argument('--machine-states', action='store_true',
                         help='Record both coupled machine state vectors and field voltages for integration diagnostics')
     parser.add_argument('--duration', type=float, choices=[.5, 1., 5.], default=.5)
@@ -68,6 +69,8 @@ def main():
         parser.error('Base controls require the unmodified dual-shaft fixture')
     if args.event == 'reference-reversals' and args.duration < 1.:
         parser.error('The complete reference-reversal program requires at least one second')
+    if args.governor_reference and not args.status_reenable:
+        parser.error('Governor-reference reactivation channels require the status-reenable control')
     if args.status_reenable and not args.event.endswith('-trip'):
         parser.error('Status reenable diagnostic requires a shaft-trip event')
     if args.pretrip_reference and not args.event.endswith('-trip'):
@@ -78,6 +81,8 @@ def main():
     tag = f'{args.fixture}-{args.event}{excitation}-h{args.step:.12g}-t{args.duration:g}-{args.repeat}'.replace('.', 'p')
     if args.status_reenable:
         tag = 'status-reenable-' + tag
+    if args.governor_reference:
+        tag='gref-'+tag
     if args.profile != 'base':
         tag = args.profile + '-' + tag
     if args.base_profile != 'entered':
@@ -176,6 +181,9 @@ def main():
     for bus, suffix in [(1, '')] + ([(2, '_LP')] if args.fixture == 'dual' else []):
         for code, name in [(1, 'ANGLE_DEG'), (2, 'P_PU'), (3, 'Q_PU'), (6, 'PMECH'), (7, 'SPEED')]:
             checked('machine', psspy.machine_array_channel([-1, code, bus], '1', name+suffix))
+    if args.governor_reference:
+        for bus,suffix in [(1,'')]+([(2,'_LP')] if args.fixture=='dual' else []):
+            checked('governor reference',psspy.machine_array_channel([-1,14,bus],'1','GREF'+suffix))
     machine_layouts = {}
     if args.machine_states:
         for bus, suffix in [(1, '')] + ([(2, '_LP')] if args.fixture == 'dual' else []):
