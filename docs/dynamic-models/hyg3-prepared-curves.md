@@ -590,6 +590,54 @@ cause. Production state precision, equations and test thresholds remain
 unchanged. Further work must distinguish stored-state rounding, exact internal
 reference initialization and controller history before changing equations.
 
+## Initial-coordinate and mechanical-boundary discrimination
+
+`Hyg3InitialCoordinateReplayTest` compares the existing ten-second recorded-input
+replay with a second replay seeded from every reported initial controller
+coordinate and the equilibrium reference inferred from the capture. Both use
+the same equations, inputs and separate event/two-step histories. Changing those
+initial coordinates changes the maximum gate/flow discrepancies by less than
+0.000000001 pu; the existing flow gate still fails. Reported initial-coordinate
+offsets therefore do not explain the late drift. This experiment does not expose
+unrecorded internal precision or replace initialization acceptance.
+
+`Hyg3MechanicalBoundaryReplayTest` cuts the mechanical-power feedback path in
+the original power-filter-bypass profiles. It retains the same network interval,
+network tolerance and both event sides, holds the governor inactive after normal
+initialization, and supplies recorded mechanical power using the staggered
+solver's explicit participant endpoint clock. Every machine power observation
+must equal the prescribed sample exactly; inactive governor states are retained
+as diagnostics and are not trajectory-qualified.
+
+For the double-derivative profile at 0.5 ms, the maximum electrical-power error
+falls from 0.00000341714 to 0.00000189966 pu. The latter passes the unchanged
+0.0000033 pu bypass power-coordinate envelope. The maximum speed error falls
+from 0.0000000266481 to 0.0000000143130 pu. The ordinary coupled bypass coordinate
+already agrees with physical terminal power within 0.00000000000000145 pu, so
+there is no delayed power-observation correction to make in that coordinate.
+
+The capture's recorded flow/gate/speed values reproduce the nonlinear mechanical
+output equation within 0.000000162 pu across both modes and intervals. Omitting
+the turbine-head multiplier produces errors exceeding 0.0012 pu. The original
+coupled mechanical-power error reaches 0.00000320033 pu in the fine
+double-derivative profile. Together these controls show that accumulated slow
+hydro-state/output differences feed back into the speed and power inputs of the
+fast coordinates. The input-replay result alone had not distinguished this
+feedback from independent machine/network error.
+
+These are localization results, not a replacement model or a completed
+trajectory gate. The two new discriminators pass; both existing bypass
+comparison groups still fail their original limits. Production equations,
+coefficients, precision, integration methods and accuracy thresholds are
+unchanged. Further accuracy work must resolve the integral/gate/flow recurrence
+and its accepted-state behavior while preserving the independently checked
+mechanical equation and direct bypass observation.
+
+The complete runtime and import matrix runs 74 checks: 65 pass, nine existing
+strict reference comparisons fail, with no errors or skips. All 63 previously
+recorded runtime test identities retain their status; the two new diagnostics
+pass and the nine import checks pass. This does not qualify the complete model.
+
 The isolated HYG3 audit runs 72 tests: 63 pass and nine fail, with no errors or
 skips. All 62 existing test identities retain their previous outcomes (three
 existing failures); the extension adds six failing comparisons. Field-by-field
