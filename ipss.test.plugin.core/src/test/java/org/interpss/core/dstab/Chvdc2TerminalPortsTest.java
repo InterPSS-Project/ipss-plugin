@@ -20,11 +20,14 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
     @TempDir Path folder;
     record Fixture(Cdc6tCoupledNetworkTest.Fixture network,Chvdc2NetworkPreparation.Binding binding,Chvdc2TerminalPorts ports) {}
     private Fixture fixture(boolean dynamic)throws Exception {
+        return fixture(dynamic,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,0);
+    }
+    private Fixture fixture(boolean dynamic,Chvdc2TerminalPorts.ProtectionClock clock,double initialTime)throws Exception {
         var f=Cdc6tCoupledNetworkTest.load(folder);var n=f.context().getDStabilityNet();
         f.ports().rectifierPort().setDStabBus(null);f.ports().inverterPort().setDStabBus(null);
         var o=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);
         var p=new Chvdc2Parameters(o.getName(),Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,dynamic?1:0},Chvdc2ParametersTest.constants());
-        var b=Chvdc2NetworkPreparation.prepare(n,p,.0005,0);var ports=new Chvdc2TerminalPorts(b);ports.attach();
+        var b=Chvdc2NetworkPreparation.prepare(n,p,.0005,initialTime);var ports=new Chvdc2TerminalPorts(b,clock);ports.attach();
         return new Fixture(f,b,ports);
     }
     private static Context context(String stage,double time){return new Context(stage,time-.0005,time,50,1e-10);}
@@ -194,5 +197,64 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         assertEquals(history,m.getIntegrationHistories());assertSame(output,p.getOutputObject());
         p.beginNetworkSolution(new Context("INITIAL",h,h,50,1e-10,true));p.beforeNetworkIteration(0);
         assertTrue(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);assertTrue(m.inverterShorted());
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void explicitProtectionClockAccumulatesOncePerAcceptedOuterInterval(boolean staggered)throws Exception {
+        double h=.0005;var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,-2*h);
+        var a=f.network().context().getDynSimuAlgorithm();var m=f.binding().runtime();
+        a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(.1);
+        a.setSimuOutputHandler(new StateMonitor());a.setSolver(staggered?new StaggeredEulerSolver(a):new DefaultDynamicSimulationSolver(a));
+        assertTrue(a.initialization());a.setSimuTime(-2*h);float clock=(float)(-2*h);
+        assertEquals((double)clock,m.getIntegrationHistories().get("Accepted time (s)"),0);
+        for(int k=0;k<160;k++){
+            assertTrue(a.solveDEqnStep(true));clock+=(float)h;
+            assertEquals((double)clock,m.getIntegrationHistories().get("Accepted time (s)"),0);
+            assertEquals((k-1)*h,a.getSimuTime(),1e-14,"The solver clock remains double precision");
+        }
+        assertNotEquals(a.getSimuTime(),(double)clock);
+        var p=f.ports().rectifierPort();double time=a.getSimuTime();
+        for(int k=0;k<2;k++){
+            p.beginNetworkSolution(new Context("INITIAL",time,time,50,1e-10,true));
+            p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.afterNetworkConvergence();p.endNetworkSolution(true);
+            assertEquals((double)clock,m.getIntegrationHistories().get("Accepted time (s)"),0,"Same-time events do not tick the clock");
+        }
+        initializePorts(f);assertEquals((double)(float)(-2*h),m.getIntegrationHistories().get("Accepted time (s)"),0);
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void failedIntegrationDoesNotConsumeAProtectionClockTick(boolean staggered)throws Exception {
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,0);initializePorts(f);
+        var p=f.ports().rectifierPort();var m=f.binding().runtime();var history=m.getIntegrationHistories();double h=.0005;
+        for(boolean success:new boolean[]{false,true}){
+            if(staggered){
+                double[] x=new double[16],rate=new double[16];p.readStaggeredState(x,0);p.evaluateStaggered(h,rate,0);
+                for(int k=0;k<x.length;k++)x[k]+=h*rate[k];
+                p.applyStaggeredState(x,0,h);p.applyStaggeredState(x,0,h);p.completeStaggeredStep(h,h);
+                p.beginNetworkSolution(context("DIRECT",h));
+            }else{p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0);p.beginNetworkSolution(context("PREDICTOR",h));}
+            p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.afterNetworkConvergence();p.endNetworkSolution(staggered?success:true);
+            if(!staggered){
+                p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);p.beginNetworkSolution(context("CORRECTOR",h));
+                p.beforeNetworkIteration(0);p.applyConvergedNetworkAction();p.afterNetworkConvergence();p.endNetworkSolution(success);
+            }
+            assertEquals(success?(double)(float)h:0,m.getIntegrationHistories().get("Accepted time (s)"),0);
+            if(!success)assertEquals(history,m.getIntegrationHistories());
+        }
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void unrepresentableProtectionClockAdvanceRollsBackWithoutChangingStates(boolean staggered)throws Exception {
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,1e8);initializePorts(f);
+        var p=f.ports().rectifierPort();var m=f.binding().runtime();var history=m.getIntegrationHistories();
+        var states=m.getIntegrationStates();double[] x=new double[16];p.readStaggeredState(x,0);
+        for(int retry=0;retry<2;retry++){
+            if(staggered)assertThrows(IllegalStateException.class,()->p.applyStaggeredState(x,0,.0005));
+            else assertThrows(IllegalStateException.class,()->p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0));
+            assertEquals(states,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
+        }
+        assertThrows(NullPointerException.class,()->new Chvdc2TerminalPorts(f.binding(),null));
+        var b=f.binding();var outside=new Chvdc2NetworkPreparation.Binding(b.owner(),
+                new Chvdc2NetworkPreparation.OperatingPoint(b.operatingPoint().rectifierVolts(),b.operatingPoint().inverterVolts(),
+                        b.operatingPoint().currentAmperes(),Double.MAX_VALUE),b.networkIntervalSeconds(),b.frequencyHz(),b.effectiveHenries(),b.capacitanceFarads(),b.runtime());
+        assertThrows(IllegalArgumentException.class,()->new Chvdc2TerminalPorts(outside,Chvdc2TerminalPorts.ProtectionClock.BINARY32));
+        assertEquals(Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,new Chvdc2TerminalPorts(b).protectionClock());
     }
 }

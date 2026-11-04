@@ -23,6 +23,12 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * model's transaction, not other devices or the whole network's integration history.
  */
 public final class Chvdc2TerminalPorts {
+    /** Arithmetic of the accepted protection clock, independently of state integration.
+     * BINARY32 reproduces accumulated single-precision timestamps; it does not
+     * round states, change integration weights or move scheduled network events. */
+    public enum ProtectionClock { CALLER_TIME, BINARY32 }
+    private final ProtectionClock protectionClock;
+    private double acceptedProtectionTime,trialProtectionTime;
     private final Chvdc2NetworkPreparation.Binding binding;
     private final Chvdc2CoupledRuntime runtime;
     private final BaseDStabBus<?,?> rectifier,inverter;
@@ -39,12 +45,34 @@ public final class Chvdc2TerminalPorts {
     private long sequence,savedSequence;
 
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding) {
+        this(binding,ProtectionClock.CALLER_TIME);
+    }
+    public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding,ProtectionClock protectionClock) {
+        this.protectionClock=Objects.requireNonNull(protectionClock);
         this.binding=Objects.requireNonNull(binding);runtime=Objects.requireNonNull(binding.runtime());
+        initialProtectionTime();
         rectifier=(BaseDStabBus<?,?>)binding.owner().getRectifier().getBus();
         inverter=(BaseDStabBus<?,?>)binding.owner().getInverter().getBus();
         network=(BaseDStabNetwork<?,?>)rectifier.getNetwork();linkName=binding.owner().getName();
         rectifierPort=new Port(binding.owner().getName()+":rectifier",true);
         inverterPort=new Port(binding.owner().getName()+":inverter",false);
+    }
+    public ProtectionClock protectionClock(){return protectionClock;}
+    private double initialProtectionTime(){
+        double time=binding.operatingPoint().initialTimeSeconds();
+        if(protectionClock==ProtectionClock.BINARY32)time=(float)time;
+        if(!Double.isFinite(time))throw new IllegalArgumentException("Initial protection time is not representable");
+        return time;
+    }
+    private void advanceProtectionClock(double h){
+        if(protectionClock!=ProtectionClock.BINARY32)return;
+        double next=(float)((float)acceptedProtectionTime+(float)h);
+        if(!Double.isFinite(next)||next<=acceptedProtectionTime)
+            throw new IllegalStateException("Protection clock cannot advance at this interval and time");
+        trialProtectionTime=next;
+    }
+    private double protectionTime(double callerTime){
+        return protectionClock==ProtectionClock.BINARY32?trialProtectionTime:callerTime;
     }
     /** Register before algorithm initialization. Do not separately net the static
      * link into loads: its solved transfer is replaced by these terminal currents. */
@@ -82,6 +110,7 @@ public final class Chvdc2TerminalPorts {
     private void beginTransaction() {
         if(transaction)throw new IllegalStateException("A terminal transaction is already open");
         runtime.beginTransaction();transaction=true;savedSequence=sequence;
+        trialProtectionTime=acceptedProtectionTime;
         ramlTransitioned=false;commutationTransitioned=false;
         savedRectifierOutput=rectifierOutput;savedInverterOutput=inverterOutput;
     }
@@ -90,7 +119,7 @@ public final class Chvdc2TerminalPorts {
             rectifierOutput=savedRectifierOutput;inverterOutput=savedInverterOutput;}
         integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;
     }
-    private void commit() {runtime.commitTransaction();transaction=false;}
+    private void commit() {runtime.commitTransaction();acceptedProtectionTime=trialProtectionTime;transaction=false;}
     private void requireReady() {
         if(!initialAccepted)throw new IllegalStateException("Accept the initial electrical endpoint before integration");
     }
@@ -114,7 +143,8 @@ public final class Chvdc2TerminalPorts {
             if(bus!=getDStabBus()||!attachmentIntact())return false;
             if(owner){
                 rollback();networkTrial=false;initialAccepted=false;sequence=0;
-                bind();runtime.initialize(binding.operatingPoint().rectifierVolts(),binding.operatingPoint().inverterVolts(),binding.operatingPoint().initialTimeSeconds());
+                acceptedProtectionTime=trialProtectionTime=initialProtectionTime();
+                bind();runtime.initialize(binding.operatingPoint().rectifierVolts(),binding.operatingPoint().inverterVolts(),acceptedProtectionTime);
                 publish();
             }
             return true;
@@ -124,7 +154,7 @@ public final class Chvdc2TerminalPorts {
             beginTransaction();
             try {
                 bind();long before=runtime.staggeredInputDiscontinuityVersion();
-                runtime.acceptBoundary(binding.operatingPoint().initialTimeSeconds(),sequence++);
+                runtime.acceptBoundary(protectionTime(binding.operatingPoint().initialTimeSeconds()),sequence++);
                 boolean changed=before!=runtime.staggeredInputDiscontinuityVersion();
                 if(changed)publish();commit();initialAccepted=true;return changed;
             }catch(RuntimeException failure){rollback();throw failure;}
@@ -144,7 +174,7 @@ public final class Chvdc2TerminalPorts {
             // Refresh live injections without accepting the electrical angle twice.
             clockedTrial=predictorTrial||corrector||sharedEndpointPending
                     ||!direct&&(!initialAccepted||context.externalEventBoundary());
-            evaluationTime=direct&&sharedEndpointPending?sharedEndpoint:context.evaluationTime();
+            evaluationTime=protectionTime(direct&&sharedEndpointPending?sharedEndpoint:context.evaluationTime());
         }
         @Override public void beforeNetworkIteration(int iteration){if(owner&&networkTrial)publish();}
         @Override public boolean applyConvergedNetworkAction(){
@@ -181,7 +211,7 @@ public final class Chvdc2TerminalPorts {
             if(stage==0&&(integrationPending||networkTrial)||stage==1&&(!integrationPending||sharedIntegration||!predictorConverged||h!=interval))
                 throw new IllegalStateException("Matching predictor/network/corrector lifecycle required");
             if(stage==0){beginTransaction();integrationPending=true;interval=h;}
-            try{bind();runtime.step(h,stage);return true;}catch(RuntimeException failure){rollback();throw failure;}
+            try{if(stage==0)advanceProtectionClock(h);bind();runtime.step(h,stage);return true;}catch(RuntimeException failure){rollback();throw failure;}
         }
         @Override public boolean afterStep(double h){return true;}
         @Override public boolean updateAttributes(boolean changed){return attachmentIntact();}
@@ -213,8 +243,9 @@ public final class Chvdc2TerminalPorts {
             requireReady();
             if(!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds()||networkTrial||integrationPending&&!sharedIntegration)
                 throw new IllegalStateException("Shared state proposal requires an idle prepared integration owner");
-            if(h>0&&!transaction){beginTransaction();integrationPending=true;sharedIntegration=true;interval=h;}
-            try{runtime.applyStaggeredState(values,offset,h);}catch(RuntimeException failure){rollback();throw failure;}
+            boolean starting=h>0&&!transaction;
+            if(starting){beginTransaction();integrationPending=true;sharedIntegration=true;interval=h;}
+            try{if(starting)advanceProtectionClock(h);runtime.applyStaggeredState(values,offset,h);}catch(RuntimeException failure){rollback();throw failure;}
         }
         @Override public void completeStaggeredStep(double h,double endpointTime){
             if(!owner||!isOperational())return;

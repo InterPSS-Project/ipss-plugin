@@ -88,7 +88,17 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         assertEquals(digest,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source))));
         compare(source,tag,staggered,true);
     }
+    @ParameterizedTest @MethodSource("protectedProfiles")
+    void completeProtectedNetworkWithAccumulatedBinary32Clock(String archive,String digest,String tag,boolean staggered)throws Exception {
+        Path source=Path.of("testData/private/verification-artifacts").resolve(archive);
+        Assumptions.assumeTrue(Files.isRegularFile(source),"Retain independent protected network captures");
+        assertEquals(digest,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source))));
+        compare(source,tag,staggered,true,Chvdc2TerminalPorts.ProtectionClock.BINARY32);
+    }
     private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile)throws Exception {
+        compare(archive,tag,staggered,protectedProfile,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME);
+    }
+    private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock)throws Exception {
         List<Map<String,Double>> reference;com.fasterxml.jackson.databind.JsonNode manifest;
         Path raw=folder.resolve("network.raw"),dyr=folder.resolve("machines.dyr");
         try(var z=new ZipFile(archive.toFile())) {
@@ -107,7 +117,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         double h=manifest.path("settings").path("step").asDouble();
         var p=new Chvdc2Parameters("1",Chvdc2Parameters.Dialect.CHVDC2U1,
                 JSON.convertValue(manifest.path("settings").path("flags"),int[].class),JSON.convertValue(manifest.path("entered_constants"),double[].class));
-        var binding=Chvdc2NetworkPreparation.prepare(n,p,h,-2*h);var ports=new Chvdc2TerminalPorts(binding);ports.attach();
+        var binding=Chvdc2NetworkPreparation.prepare(n,p,h,-2*h);var ports=new Chvdc2TerminalPorts(binding,clock);ports.attach();
         var recorder=new Recorder(a,binding,ports);a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(.5);
         a.setSimuOutputHandler(new StateMonitor());a.setSolver(staggered?new Shared(recorder):new Ordinary(recorder));
         String faultBus=manifest.path("settings").path("profile").asText().equals("rectifier-fault")?"Bus7":"Bus9";
@@ -151,19 +161,22 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);report.put("limits",LIMITS);
         report.put("automatic_import",false);report.put("full_network_terminal_attachment",true);report.put("recorded_state_or_input_forcing",false);
         report.put("protected_profile",protectedProfile);report.put("fault_bus",faultBus);report.put("fault_reactance_pu",reactance);
+        report.put("protection_clock",clock.name());
         if(protectedProfile){
             int flagMismatches=0;double markerError=0,transitionError=0;
             try(var w=BenchmarkOutputGuard.newWriter(output.resolve("protection.csv"),2*1024*1024)){
-                w.write("time_s,reference_time_s,raml_active,raml_marker_s,reference_marker_s,shorted,reference_shorted,transition_observed,transition_s,reference_transition_s\n");
+                w.write("time_s,reference_time_s,raml_active,raml_marker_s,reference_marker_s,shorted,reference_shorted,transition_observed,transition_s,reference_transition_s,accepted_protection_time_s\n");
                 for(int k=0;k<recorder.rows.size();k++){
                     var history=recorder.histories.get(k);var expected=reference.get(k);
                     double shorted=history.get("Inverter shorted"),sourceShorted=expected.get("VAR22")<0?1:0;
                     if(shorted!=sourceShorted)flagMismatches++;
                     markerError=Math.max(markerError,Math.abs(history.get("RAML timer marker (s)")-expected.get("VAR18")));
                     boolean observed=history.get("Commutation transition observed")!=0,sourceObserved=expected.get("VAR21")!=999;
+                    if(clock==Chvdc2TerminalPorts.ProtectionClock.BINARY32)
+                        checks.add(()->assertEquals(expected.get("time_s"),history.get("Accepted time (s)"),1e-12,"Independently accumulated protection clock"));
                     if(observed!=sourceObserved)flagMismatches++;
                     if(observed&&sourceObserved)transitionError=Math.max(transitionError,Math.abs(history.get("Commutation transition time (s)")-expected.get("VAR21")));
-                    w.write(recorder.rows.get(k)[0]+","+expected.get("time_s")+","+history.get("RAML active")+","+history.get("RAML timer marker (s)")+","+expected.get("VAR18")+","+shorted+","+sourceShorted+","+history.get("Commutation transition observed")+","+history.get("Commutation transition time (s)")+","+expected.get("VAR21")+"\n");
+                    w.write(recorder.rows.get(k)[0]+","+expected.get("time_s")+","+history.get("RAML active")+","+history.get("RAML timer marker (s)")+","+expected.get("VAR18")+","+shorted+","+sourceShorted+","+history.get("Commutation transition observed")+","+history.get("Commutation transition time (s)")+","+expected.get("VAR21")+","+history.get("Accepted time (s)")+"\n");
                 }
             }
             report.put("protection_flag_mismatches",flagMismatches);report.put("maximum_raml_marker_error_s",markerError);report.put("maximum_commutation_clock_error_s",transitionError);

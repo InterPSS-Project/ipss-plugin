@@ -145,6 +145,57 @@ their retained strict gates. All 30 earlier reduced-network comparison traces
 remain byte-identical. This is a lifecycle correction with explicit outstanding
 accuracy failures, not full model acceptance.
 
+### Explicit accepted protection clock
+
+The terminal attachment now accepts an immutable `ProtectionClock` selection.
+The existing constructor keeps `CALLER_TIME`. An explicitly selected `BINARY32`
+clock starts from the prepared initial time, including negative startup time,
+and adds the actual outer integration duration in single precision once per
+accepted interval. Both integrators use the same clock owner. This follows the
+independently observed timestamp recurrence; it does not round numerical states,
+change integration weights, shift recorded samples or move scheduled events.
+
+```java
+var terminals = new Chvdc2TerminalPorts(binding,
+        Chvdc2TerminalPorts.ProtectionClock.BINARY32);
+terminals.attach();
+```
+
+The clock is provisional through predictor/corrector stages and repeated shared
+state proposals. Failed convergence discards its tick; retrying starts from the
+same accepted time. Same-time external events and repeated network passes do
+not advance it. Reinitialization restores the prepared starting time. A clock
+whose next increment is not representable fails explicitly with model rollback.
+The option adds scalar storage and arithmetic without per-step allocation.
+The solver's physical clock remains unchanged; the staggered solver's separate
+participant-clock setting is not needed for this option.
+
+Six new complete protected-network comparisons keep the original default-clock
+controls and strict channel gates. In the valid short-hold commutation profile,
+both methods now reproduce every reference short/release flag and transition
+timestamp (clock error below `5.1e-13 s`). No recorded inputs or states drive the
+coupled simulation. Maximum current error decreases from `107.075` to `61.093 A`
+for modified Euler and from `126.640` to `69.809 A` for staggered integration.
+Those continuous-state errors still fail the unchanged gates. The RAML physical
+trajectories remain byte-identical between the two clock selections, separating
+their unresolved measurement/integration discrepancy from clock precision.
+
+This qualifies the explicit clock and commutation flag sequence for the retained
+profile. It does not establish complete protected-current/power accuracy,
+default-duration or refined commutation acceptance, or automatic source import.
+
+All 18 terminal lifecycle checks pass, including negative startup time, once-only
+clock accumulation, same-time events, reinitialization, failed-step retry and
+unrepresentable-increment rollback under both methods. The core plugin module
+passes 486 tests with four skips. Default-clock complete traces differ from the
+retained preceding checkpoint only by floating-point roundoff, below `4e-12`
+across all exported columns; the original trajectory thresholds remain unchanged.
+The complete registered suite runs 4,589 tests with 168 failures, one error and
+13 skips. All preceding failure identities remain; only the six new explicit-clock
+protected trajectory cases add failures. Full comparisons, executable/source
+snapshots and baseline-difference checks are retained in the private
+`chvdc2-explicit-clock-20261103` validation archive.
+
 ## Preparation from the solved network
 
 `Chvdc2NetworkPreparation.prepare(network, parameters, H, initialTime)` resolves
