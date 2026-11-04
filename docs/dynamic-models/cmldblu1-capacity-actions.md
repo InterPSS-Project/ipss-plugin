@@ -72,7 +72,7 @@ and active fault stamps remain untouched. Internal differential states and
 voltage observations remain frozen while the external network keeps solving.
 A later matrix rebuild reproduces this disconnected topology. Reconnection is
 not supported by this capacity-action API; neither positive restoration nor
-foreign-attached or collapsed topology is silently accepted. Full-trip captures and integrity manifest
+foreign-attached or partly collapsed topology is silently accepted. The fully collapsed extension below is separately qualified. Full-trip captures and integrity manifest
 SHA-256: `dada624db14a401ddda2fa66c6fa9b6f5b320df013c95fa9fd3579bc8e0761b6`.
 
 The matrix-rebuild regression exposed a separate cached-sequence requirement:
@@ -109,3 +109,47 @@ error is `3.88e-6`. The final owner regression also retains an unrelated active
 parent load alongside the parent shunt through disconnection, rebuilding and
 continued simulation. These qualify the represented capacity-action profiles;
 other composite thermal, tap and trajectory gaps remain separate.
+
+
+## Fully omitted distribution: owned removal on an energized parent
+
+A separate paired discriminator sets both feeder impedance and transformer
+reactance to zero. With a static/electronic mixture, the full action removes all
+owned demand and physical shunts while the common parent remains energized.
+This differs from deactivating the represented internal subtree. Stored internal
+voltage observations freeze at the accepted pre-action boundary; they do not
+represent the parent bus voltage after disconnection.
+
+The runtime removes the tracked owned low-side and far-side shunts from the
+physical shunt, prepared sequence cache and live diagonal. It separately removes
+each active owned leaf's equivalent admittance before deactivating that leaf.
+This is necessary even when physical and numerical shunt stamps cancel: the
+next matrix rebuild must also see the correct ownership. It never changes the
+parent's activity, unrelated loads or shunts, or connected generators/branches.
+`Distribution.LowVoltage` and `Distribution.LoadVoltage` expose the composite's
+live/frozen observations separately from the physical bus object.
+
+`CompositeCollapsedFullTripTest` retains all four complete cold traces, two
+control/full-action pairs, including startup records and every event-side
+sample. All nonnegative samples are compared under both methods. Voltage/power
+range-normalized maximum errors are `3.224e-5` for modified Euler and `3.796e-6`
+for staggered integration; peak rotor errors are `5.971e-5` and `3.445e-5` degrees.
+The existing represented-profile envelopes remain unchanged. The new collapsed
+profile uses the same physical envelopes and a `1.5e-6` staggered relay-position
+peak envelope: its control and full-action runs both have the same `1.235e-6`
+position error before operation. Modified Euler retains `5e-5` for position.
+
+A direct owner regression additionally retains unrelated parent load and shunts,
+including a shunt adjustment made after initialization, checks the rebuilt
+matrix diagonal, and resumes the external simulation. Positive restoration is
+still rejected. Partly omitted distribution full removal and collapsed wildcard
+relay routing remain unsupported; this does not expand those contracts. The
+independent trajectory profile is static/electronic, not a claim of every motor
+protection trajectory or full composite-model qualification.
+
+Private complete capture archive:
+`cmldblu1-collapsed-shedding-20261104/captures.zip`, SHA-256
+`79598412cecf97c2c595a46506c012d3d9f61dfdbfe3f2918955a7871344c059`.
+The exact source inputs, probe, simulator provenance, and raw channels are
+retained there. `tools/composite_collapsed_shedding_reference_probe.py` recreates
+the discriminator without changing the shared probe.

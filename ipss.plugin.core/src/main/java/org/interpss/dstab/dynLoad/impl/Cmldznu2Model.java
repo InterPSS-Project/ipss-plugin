@@ -36,6 +36,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private Complex nearCompensation = Complex.ZERO, farCompensation = Complex.ZERO;
     private com.interpss.dstab.dynLoad.DynLoadModel[] capacityLeaves;
     private double remainingCapacity = 1.0;
+    private double disconnectedLowVoltage, disconnectedLoadVoltage;
     private BaseDStabBus<?,?> capacityParent, capacityLowBus, capacityLoadBus;
     private DStabilityNetwork capacityNetwork;
 
@@ -322,7 +323,10 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     }
 
     private boolean canDisconnectOwnedDistribution() {
-        // Full-disconnection evidence covers a distinct owned transformer/feeder subtree.
+        // With both elements omitted, remove only this owner; the common bus stays live.
+        if (distXfr==null && distFdr==null && capacityLowBus==capacityParent && capacityLoadBus==capacityParent)
+            return true;
+        // Partly collapsed distribution remains outside the qualified disconnection path.
         if (distXfr==null || distFdr==null || capacityLowBus==capacityParent
                 || capacityLoadBus==capacityParent || capacityLowBus==capacityLoadBus) return false;
         for (var bus:new BaseDStabBus<?,?>[]{capacityLowBus,capacityLoadBus}) {
@@ -346,6 +350,16 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     }
 
     private void disconnectOwnedDistribution(double factor) {
+        disconnectedLowVoltage=capacityLowBus.getVoltageMag();
+        disconnectedLoadVoltage=capacityLoadBus.getVoltageMag();
+        if (capacityLowBus==capacityParent && capacityLoadBus==capacityParent) {
+            // Remove physical shunts and each active owned leaf's numerical stamp separately.
+            // Their cancellation is model-specific; neither includes unrelated parent equipment.
+            changePhysicalShunt(capacityParent,ownedLowSideShunt.add(farCompensation).negate(),capacityNetwork);
+            int row=capacityParent.getSortNumber();
+            for (var leaf:capacityLeaves) if (leaf.isActive())
+                capacityNetwork.getYMatrix().addToA(leaf.getPosSeqEquivY().negate(),row,row);
+        }
         // Remove live stamps in place, preserving an unrelated active fault's diagonal.
         removeDistributionBranch(distFdr);removeDistributionBranch(distXfr);
         for (var leaf:capacityLeaves) {
@@ -463,6 +477,10 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     @Override
     public Map<String, Double> getNamedStates() {
         Map<String, Double> states = new LinkedHashMap<>();
+        if (getLowVoltBus()!=null && getLoadBus()!=null) {
+            states.put("Distribution.LowVoltage",remainingCapacity==0?disconnectedLowVoltage:getLowVoltBus().getVoltageMag());
+            states.put("Distribution.LoadVoltage",remainingCapacity==0?disconnectedLoadVoltage:getLoadBus().getVoltageMag());
+        }
         addMotorStates(states, "MotorA", getInductionMotorA());
         addMotorStates(states, "MotorB", getInductionMotorB());
         addMotorStates(states, "MotorC", getInductionMotorC());
