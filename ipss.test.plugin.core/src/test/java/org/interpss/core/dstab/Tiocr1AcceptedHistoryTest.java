@@ -230,6 +230,31 @@ public class Tiocr1AcceptedHistoryTest {
         assertNull(relay.getLastActionSnapshot(),"A monitor-only latch is not a committed physical action");
     }
 
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void removedStaticLoadRejectsAllTransferTargetsBeforeMutation(boolean staggered)throws Exception {
+        var a=setup(staggered);var net=a.getNetwork();var host=net.getDStabBus("Bus2");
+        var first=net.getBranchList().get(0);var second=net.getBranchList().get(1);
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+        var relay=new Tiocr1RelayModel(first,true,2,true,host,"1",
+                new com.interpss.core.aclf.AclfBranch[]{first,second,first},curve);
+        assertTrue(a.initialization());var source=host.getContributeLoad("1");assertNotNull(source);
+        var history=relay.getIntegrationHistories();var matrix=net.getYMatrix().getA(0,0);
+        assertTrue(host.getContributeLoadList().remove(source));
+        assertFalse(relay.afterStep(.01));assertEquals(history,relay.getIntegrationHistories());
+        assertTrue(first.isActive());assertTrue(second.isActive());assertEquals(matrix,net.getYMatrix().getA(0,0));
+        assertNull(relay.getLastActionSnapshot());assertEquals(0,relay.getNetworkActionVersion());
+        var replacement=DStabObjectFactory.createDStabLoad("1");host.getContributeLoadList().add(replacement);
+        assertFalse(relay.afterStep(.01),"Matching ID does not restore prepared load ownership");
+        assertTrue(first.isActive());assertTrue(second.isActive());assertEquals(history,relay.getIntegrationHistories());
+        host.getContributeLoadList().remove(replacement);host.getContributeLoadList().add((com.interpss.dstab.DStabLoad)source);
+        assertTrue(relay.afterStep(.01));assertFalse(first.isActive());assertFalse(second.isActive());
+        assertEquals(.25,relay.getShedFraction(),1e-12);assertEquals(1,relay.getNetworkActionVersion());
+        var accepted=relay.getLastActionSnapshot();assertNotNull(accepted);
+        var committed=net.getYMatrix().getA(0,0);assertTrue(relay.afterStep(.01));
+        assertEquals(committed,net.getYMatrix().getA(0,0));assertSame(accepted,relay.getLastActionSnapshot());
+        assertEquals(.25,relay.getShedFraction(),1e-12);assertEquals(1,relay.getNetworkActionVersion());
+    }
+
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("network.raw").toString(),CASE.resolve("tiocr1-0.dyr").toString());

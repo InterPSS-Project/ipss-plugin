@@ -334,3 +334,36 @@ targets, reconnection and additional delay/curve combinations remain unqualified
 The independent controls are retained in
 `testData/private/verification-artifacts/tiocr-delay-transfer-20261104/captures.zip`,
 SHA-256 `47903792e52b8409d98d809c11f5209c06e69eff3986ecaeaf70a6d5d7dce07f`.
+
+## Multiple transfer targets and static-target preflight
+
+A three-circuit synthetic corridor now qualifies simultaneous opening of two
+transfer targets while the third circuit stays connected. A second configuration
+repeats the first target in the third transfer slot. Both have cold-repeat captures;
+the duplicate-target and distinct-target reference trajectories are byte-identical.
+The corresponding Java trajectories are also byte-identical under each method.
+All samples and action sides are retained, both requested branches open once,
+and the remote load fraction and physical action revision advance only once.
+The same strict trajectory and position envelopes used above pass. Maximum
+voltage/power NRMSE is `3.09e-5` for modified Euler and `3.43e-6` for staggered
+integration; maximum rotor-angle RMSE is `2.45e-5` degrees.
+
+The target audit also exposed a separate atomic-preflight defect. A prepared
+single-ID static load could be removed or replaced before operation, yet the
+relay still opened its transfer branches and applied the cached static-load
+contribution. Preparation now retains that load object's identity and stage
+preflight requires the same object to remain attached. Rejection occurs before
+relay history, branch status, matrix, shedding fraction or action snapshot
+changes. Restoring the original object permits the normal action. This change
+does not claim new wildcard or dynamic-target ownership coverage.
+
+Both-method negative controls fail on the old runtime and pass after the fix.
+Repeated accepted callbacks preserve the committed matrix, shed fraction,
+revision and immutable snapshot. The focused group passes 66 tests with no
+failures, errors or skips. Four complete valid trajectories remain unchanged
+apart from roundoff below `3.6e-15` across recorded fields. Reconnection and other
+unqualified curve/delay combinations remain outside this result.
+
+Paired source and reference evidence is retained in
+`testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip`,
+SHA-256 `05760ac11b534f31068cd01d5ad7d71c75a53add35c19b24d54537b747c7b483`.

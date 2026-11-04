@@ -51,12 +51,21 @@ def main():
                         help='Synthetic relay breaker delay in seconds; preserves entered source alongside the control')
     parser.add_argument('--relay-transfer-circuit', choices=['1', '2'],
                         help='First transfer target on the parallel synthetic corridor')
+    parser.add_argument('--relay-transfer-circuits',
+                        help='One to three comma-separated transfer circuits on the synthetic corridor')
+    parser.add_argument('--relay-third-parallel', action='store_true',
+                        help='Add a third synthetic circuit so multiple transfer trips leave a connected corridor')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
     if (args.relay_end != 'from' or args.relay_line_charging != 0.
-            or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None) and not args.fixture.startswith('tiocr1-'):
+            or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
+            or args.relay_transfer_circuits is not None or args.relay_third_parallel) and not args.fixture.startswith('tiocr1-'):
         parser.error('Relay terminal controls require a relay fixture')
+    transfer_circuits = args.relay_transfer_circuits.split(',') if args.relay_transfer_circuits is not None else None
+    if transfer_circuits is not None and (args.relay_transfer_circuit is not None or not 1 <= len(transfer_circuits) <= 3
+            or any(c not in (['1','2','3'] if args.relay_third_parallel else ['1','2']) for c in transfer_circuits)):
+        parser.error('Use one transfer option and one to three existing circuit IDs')
     if args.relay_breaker_time is not None and (not math.isfinite(args.relay_breaker_time) or args.relay_breaker_time < 0.):
         parser.error('--relay-breaker-time must be finite and nonnegative')
     if not math.isfinite(args.relay_line_charging) or not 0. <= args.relay_line_charging <= 1.:
@@ -81,7 +90,9 @@ def main():
         f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else '')
         +(f'-{args.relay_end}-b{args.relay_line_charging:g}' if args.relay_end != 'from' or args.relay_line_charging != 0. else '')
         +(f'-breaker{args.relay_breaker_time:g}' if args.relay_breaker_time is not None else '')
-        +(f'-transfer{args.relay_transfer_circuit}' if args.relay_transfer_circuit is not None else ''))
+        +(f'-transfer{args.relay_transfer_circuit}' if args.relay_transfer_circuit is not None else '')
+        +(f'-targets{args.relay_transfer_circuits.replace(",", "_")}' if transfer_circuits is not None else '')
+        +('-third' if args.relay_third_parallel else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
     if args.fixture == 'acmtblu1' and args.channel_part != 0:
@@ -99,7 +110,8 @@ def main():
     shutil.copy2(dynamic_source, out / 'dynamic.dyr')
     relay_from, relay_to = (1, 2) if args.relay_end == 'from' else (2, 1)
     if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.
-                  or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None):
+                  or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
+                  or transfer_circuits is not None or args.relay_third_parallel):
         shutil.copy2(out / 'network.raw', out / 'original-network.raw')
         shutil.copy2(out / 'dynamic.dyr', out / 'original-dynamic.dyr')
         path = out / 'dynamic.dyr'
@@ -116,6 +128,10 @@ def main():
                 if args.relay_transfer_circuit is not None:
                     assert fields[8:10] == ['1', '2']
                     fields[10] = "'" + args.relay_transfer_circuit + "'"
+                if transfer_circuits is not None:
+                    for slot in range(3):
+                        fields[8+3*slot:11+3*slot] = (['1','2',"'"+transfer_circuits[slot]+"'"]
+                                if slot < len(transfer_circuits) else ['0','0',"'0'"])
                 lines[index] = ' '.join(fields)
                 changed += 1
         assert changed == 1
@@ -131,6 +147,12 @@ def main():
                 lines[index] = ','.join(fields)
                 changed += 1
         assert changed == 1
+        if args.relay_third_parallel:
+            matches = [i for i,line in enumerate(lines) if len(line.split(',')) == 18 and line.split(',')[:3] == ['1','2',"'2'"]]
+            assert len(matches) == 1
+            index = matches[0]
+            fields = lines[index].split(','); fields[2] = "'3'"
+            lines.insert(index+1, ','.join(fields))
         path.write_text('\n'.join(lines) + '\n')
     if args.constant:
         shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')

@@ -31,6 +31,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private final boolean[] operated = new boolean[5];
     private final Hashtable<String, Object> states = new Hashtable<>();
     private Complex initialStaticLoad = Complex.ZERO;
+    private AclfLoad preparedStaticTarget;
     private Complex initialShunt = Complex.ZERO;
     private double elapsedTime;
     private double shedFraction;
@@ -93,11 +94,13 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         // Rebuild target ownership for each preparation. A previous static
         // target must not leave a second shedding stamp after dynamic attachment.
         initialStaticLoad = Complex.ZERO;
+        preparedStaticTarget = null;
         if (wildcard) {
             initialStaticLoad = loadBus.calNetLoadResults();
         } else if (!hasDynamicTarget) {
             AclfLoad load = loadBus.getContributeLoad(loadId);
             if (load == null) return false;
+            preparedStaticTarget = load;
             initialStaticLoad = load.getLoad(loadBus.getVoltageMag());
         }
         initialShunt = data.shedShunt() && loadBus.getShuntY() != null
@@ -144,6 +147,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     protected final boolean canApplyStage(int stageIndex) {
         if (!targetInitialized) return false;
         if (operated[stageIndex]) return true;
+        if (preparedStaticTarget != null && loadBus.getContributeLoad(loadId) != preparedStaticTarget) return false;
         double fraction = Math.min(data.stages().get(stageIndex).fraction(), 1.0 - shedFraction);
         return compositeTarget == null || loadBus.getInfoOnlyDynModel() == compositeTarget
                 && compositeTarget.canChangeLoad(loadId, -fraction);
