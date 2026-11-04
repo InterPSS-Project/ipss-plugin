@@ -46,7 +46,8 @@ public class Tiocr1BreakerTransferReferenceTest {
         assertEquals(3,duplicates,"Fault application, relay trip, fault clearing");assertTrue(action>0);
         var left=actual.get(action-1);var right=actual.get(action);
         assertEquals(1.,left.get("RELAY.Position"));assertTrue(left.get("RELAY.Current")>.4);
-        assertEquals(0.,left.get("RELAY.Operated"));assertEquals(0.,left.get("RELAY.Revision"));
+        assertEquals(1.,left.get("RELAY.Operated"),"Internal operation latch precedes physical commit");
+        assertEquals(0.,left.get("RELAY.Revision"),"Physical revision remains pre-action");
         assertEquals(circuit.equals("1")?0.:1.,right.get("RELAY.Position"));
         assertEquals(Double.parseDouble(delay),left.get("RELAY.Breaker"),1e-12);
         assertEquals(1.,left.get("BRANCH.Bus1->Bus2("+circuit+")"));

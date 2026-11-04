@@ -45,7 +45,8 @@ public class Tiocr1PhysicalTerminalReferenceTest {
         assertEquals(3,duplicates,"Fault application, relay trip, fault clearing");assertTrue(action>0);
         var left=actual.get(action-1);var right=actual.get(action);
         assertEquals(1.,left.get("RELAY.Position"));assertTrue(left.get("RELAY.Current")>.4);
-        assertEquals(0.,left.get("RELAY.Operated"));assertEquals(0.,left.get("RELAY.Revision"));
+        assertEquals(1.,left.get("RELAY.Operated"),"Internal operation latch precedes physical commit");
+        assertEquals(0.,left.get("RELAY.Revision"),"Physical revision remains pre-action");
         assertEquals(0.,right.get("RELAY.Position"));assertEquals(0.,right.get("RELAY.Current"));
         assertEquals(1.,right.get("RELAY.Operated"));assertEquals(.1,right.get("RELAY.ShedFraction"),1e-12);
         for(int i=action;i<actual.size();i++) {

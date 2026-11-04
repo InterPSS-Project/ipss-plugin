@@ -31,7 +31,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     private boolean pickedUp, operated;
     private long networkActionVersion;
     /** Accepted relay coordinates immediately before a physical network action. */
-    public record ActionSnapshot(long revision,double current,double position,double breakerTimer) { }
+    public record ActionSnapshot(long revision,double current,double position,double breakerTimer,boolean operatedLatch) { }
     private ActionSnapshot lastActionSnapshot;
     private final LoadPort loadPort;
     private final Hashtable<String,Object> output=new Hashtable<>();
@@ -127,6 +127,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         operated=true;
         if(!operate)return true;
         double actionCurrent=currentMagnitude(),actionPosition=position,actionBreakerTimer=breakerTimer;
+        boolean actionOperated=operated;
         var network=ownerNetwork;
         boolean networkChanged=false;
         for(var branch:transfers) if(branch!=null&&branch.isActive()) {
@@ -146,7 +147,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         }
         if(networkChanged) {
             networkActionVersion++;
-            lastActionSnapshot=new ActionSnapshot(networkActionVersion,actionCurrent,actionPosition,actionBreakerTimer);
+            lastActionSnapshot=new ActionSnapshot(networkActionVersion,actionCurrent,actionPosition,actionBreakerTimer,actionOperated);
         }
         // A remote action can leave this relay's monitored branch energized.
         // Only opening that branch clears its moving-element coordinate.

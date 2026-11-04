@@ -206,6 +206,7 @@ public class Tiocr1AcceptedHistoryTest {
         }
         var snapshot=relay.getLastActionSnapshot();assertNotNull(snapshot);
         assertEquals(1,snapshot.revision());assertEquals(1.,snapshot.position());
+        assertTrue(snapshot.operatedLatch(),"The accepted pre-action snapshot includes the operation latch");
         assertEquals(current,snapshot.current(),0.);assertEquals(delay,snapshot.breakerTimer(),1e-15);
         assertFalse(target.isActive());assertEquals(otherTarget,monitored.isActive());
         var histories=relay.getIntegrationHistories();
@@ -215,6 +216,18 @@ public class Tiocr1AcceptedHistoryTest {
         var owner=relay.getDStabBus();relay.setDStabBus(setup(staggered).getNetwork().getDStabBus("Bus1"));
         assertFalse(relay.afterStep(.01));assertSame(snapshot,relay.getLastActionSnapshot());
         relay.setDStabBus(owner);assertTrue(relay.initStates(owner));assertNull(relay.getLastActionSnapshot());
+    }
+
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void monitoringOperationLatchDoesNotImplyPhysicalCommit(boolean staggered)throws Exception {
+        var a=setup(staggered);var branch=a.getNetwork().getBranchList().getFirst();
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,0});
+        var relay=new Tiocr1RelayModel(branch,true,2,false,null,null,
+                new com.interpss.core.aclf.AclfBranch[]{branch,null,null},curve);
+        assertTrue(a.initialization());assertTrue(relay.afterStep(.01));
+        assertTrue(relay.isOperated());assertEquals(1.,relay.getPosition());
+        assertTrue(branch.isActive());assertEquals(0,relay.getNetworkActionVersion());
+        assertNull(relay.getLastActionSnapshot(),"A monitor-only latch is not a committed physical action");
     }
 
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {

@@ -123,6 +123,7 @@ public class HspUsageRankedModelTest {
                             var action=relay.getLastActionSnapshot();
                             values.put("RELAY.Current",action.current());values.put("RELAY.Position",action.position());
                             values.put("RELAY.Breaker",action.breakerTimer());
+                            values.put("RELAY.Operated",action.operatedLatch()?1.:0.);
                         }
                 }
                 rows.add(new Captured(t,"EVENT_PRE",values));

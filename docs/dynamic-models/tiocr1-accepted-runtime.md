@@ -309,6 +309,15 @@ action's revision. Repeated reads and rejected callbacks preserve the same
 immutable snapshot; reinitialization clears it. The snapshot is allocated only
 on a physical action. Normal integration steps do not allocate snapshots.
 
+The snapshot also retains the internal operation latch at that same boundary.
+`isOperated()` becomes true after pickup/breaker conditions are satisfied, even
+in monitoring-only mode; it does not mean that a physical action has committed.
+Consequently the pre-action observation has `RELAY.Operated = 1` while its
+physical revision and network topology remain pre-action. The post-action row
+advances the physical revision. This distinction follows the runtime lifecycle,
+not an inferred meaning for a reference diagnostic slot. Monitoring-only tests
+explicitly require the latch to be true with revision zero and no action snapshot.
+
 The recorder combines this exact action snapshot with the retained pre-action
 topology/status observations. The old recorder fails all eight new controls:
 zero-delay position is premature, or nonzero-delay elapsed time is one interval
