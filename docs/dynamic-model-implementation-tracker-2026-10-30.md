@@ -72,7 +72,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
-- Retain the accepted event-boundary electrical-current refresh and its observation/history invariance controls. It removes stale electrical rates at the second disturbance without changing ordinary-step measurement policy. Mechanical/controller event-rate qualification and the earlier coarse thermal-voltage discrepancy remain separate work.
+- Retain the accepted event-boundary electrical-current and mechanical-rate refreshes, observation/history invariance controls and complete mechanical predictor restoration. They remove stale event-left rates without changing ordinary-step measurement policy. Controller event-rate qualification and the earlier coarse thermal-voltage discrepancy remain separate work.
 
 - Retain the separate accepted tap command and applied electrical ratio, transactional rollback and matrix-rebuild checks. Independent command, power and machine-state transition ordering now agrees; complete small-range power trajectory qualification remains open. Do not round machine states or relax gates to absorb the remaining precision-sensitive discrepancy.
 
