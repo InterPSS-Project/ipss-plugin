@@ -1181,6 +1181,8 @@ import org.junit.platform.suite.api.Suite;
     Hyg3StateConformanceTest.class,
     Hyg3LimitConformanceTest.class,
     Hyg3LongDurationConformanceTest.class,
+    org.interpss.dstab.control.gov.psse.hyg3.Hyg3InitialCoordinateReplayTest.class,
+    org.interpss.dstab.control.gov.psse.hyg3.Hyg3MechanicalBoundaryReplayTest.class,
     Hyg3BypassConformanceTest.class,
     Hyg3DerivativePreparationConformanceTest.class,
     Hyg3ParameterValidationTest.class,

@@ -10,6 +10,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## PSS2B
 
+- Retain [complete captured-state recurrence and isolated replay](dynamic-models/pss2b-compiled-runtime.md#complete-captured-state-recurrence-and-isolated-replay): active conditioner, ramp and lead-lag increments match independent captures; bypassed lead-lags expose algebraic output rather than zero numerical storage. Full replay and long-run coupled accuracy remain separate gates; do not change verified equations to compensate for integration or upstream-input differences.
+
 - Retain [independent selector-state recurrence coverage](dynamic-models/pss2b-compiled-runtime.md#independent-selector-state-recurrence-coverage), compiled first-washout rate checks for all selectors and event-history negative control. Host-exciter local refinement does not resolve the quarter-cycle modified-Euler angle gate; finish ramp/lead-lag and sampled-output trajectory qualification without changing equations to compensate.
 
 - Retain [accepted input-path publication](dynamic-models/pss2b-compiled-runtime.md#accepted-input-path-publication), primitive history, automatic standard-record selection, both-method sampled-output gates and pure trial/observation behavior. Extend full controller-state qualification and resolve the long-run modified-Euler gate; the ordinary-evaluation cache experiment remains rejected.
@@ -24,6 +26,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Retain the [compiled runtime contract](dynamic-models/pss2b-compiled-runtime.md), accepted derivative history and zero-duration event checks when extending qualification.
 
 ## HYG3U1
+
+- Use the [initial-coordinate and mechanical-boundary discriminators](dynamic-models/hyg3-prepared-curves.md#initial-coordinate-and-mechanical-boundary-discrimination): reported initial offsets do not explain late drift, and slow hydro-state/output differences feed back into the failed bypass power coordinate. Preserve the independently checked nonlinear mechanical equation and direct power observation; resolve integral/gate/flow recurrence and accepted-state behavior without fitting precision or relaxing the existing gates.
 
 - Retain the [ten-second fault and reversal extension](dynamic-models/hyg3-prepared-curves.md#ten-second-fault-and-reversal-extension), cold repeats and exact final integration tick. Physical boundary gates pass, while late governor-state and recorded-input replay discrepancies remain open; preserve original state envelopes and do not change production precision to fit the retained observations.
 
