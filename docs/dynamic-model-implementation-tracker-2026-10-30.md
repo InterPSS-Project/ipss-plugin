@@ -43,6 +43,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## WSIEG1
 
+- Use the [status-reenable discriminator](dynamic-models/wsieg1-shared-runtime.md#status-reenable-discriminator) to design an explicit model-opt-in inactive lifecycle. Cold pairs show retained stale-derivative state increments becoming physical on reenable; a Java implementation must separate held outputs from retained numerical state, keep sole-primary ownership and define each integrator's dormant policy. The working-case status API diagnostic alone does not qualify hot reconnection.
+
 - Retain [atomic ordinary stages and current-shaft ownership](dynamic-models/wsieg1-shared-runtime.md#atomic-ordinary-stages-and-current-shaft-ownership): reject wrong/replaced owners, repeated predictors and mismatched or nonfinite correctors before state publication; preserve a rejected corrector for valid retry. Both-method trajectory controls remain unchanged; exact zero-primary allocation, hot reconnection and the existing reference gates remain open.
 
 - Retain the independently checked [machine event-history correction](dynamic-models/wsieg1-shared-runtime.md#machine-event-histories-and-integration-refinement) and [controller event-rate contract](dynamic-models/wsieg1-shared-runtime.md#controller-rates-at-scheduled-network-events), separate accepted pre-event rates and older staggered history, and complete both-method state/refinement captures. The controller correction restores the curve/backlash-input gate. Modified Euler passes the refined boundary controls but retains its quarter-cycle failure; do not fit governor equations to that integration difference or weaken the existing gate.
@@ -63,6 +65,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Preserve the distinct extended governor equations, shared turbine ownership and machine-base scaling.
 
 ## CMLDBLU1
+
+- Retain [tap integration ownership validation](dynamic-models/cmldblu1-tap-control.md#integration-ownership-validation): reject overlapping ordinary/shared stages and mismatched correctors, preserve read-only zero-duration refresh and valid retry. Both-method trajectory controls remain unchanged.
 
 - Resolve the coupled heating-input discrepancy identified by the [startup thermal reconstruction](dynamic-models/acmtblu1-startup-clock.md#localizing-the-remaining-startup-thermal-errors). The thermal recurrence is independently reproduced and the finer-step coupled controls pass, but the coarse temperature gates remain unmet. Preserve the original limits, complete frequency/current histories, both motor groups and both integration intervals; do not fit thermal parameters to upstream electrical/frequency errors.
 - Retain the [shared runtime tap controller and independent discriminators](dynamic-models/cmldblu1-tap-control.md): scalar history, compensated voltage, discrete steps, deadband cancellation, matrix updates, rollback and reinitialization under both methods. Tap states match ordinary target controls, but direct full-trajectory gates remain unmet. Reconcile action-sample observation/integration stages and keep the reference's pending-action/deadband lower-bound jump explicit; do not claim complete active-tap qualification from state or physical-balance tests alone.
@@ -93,12 +97,16 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
+- Retain [attachment ownership and atomic rejection](dynamic-models/tiocr1-accepted-runtime.md#attachment-ownership-and-atomic-rejection): validate host and every target before attachment or accepted action, including replaced and cross-network objects. Complete reference trajectories remain unchanged.
+
 - Retain the [accepted-step runtime](dynamic-models/tiocr1-accepted-runtime.md), explicit staggered support, zero-duration history guard, primitive current measurement and post-protection network-discontinuity handling. Base coupled boundary profiles pass under both methods; finish raw relay diagnostic observation-stage qualification while keeping timers and physical actions out of trial derivative evaluations.
 - Retain the independently captured partial-reset/re-pickup checks under both methods; extend them to additional reset settings, protection coordination and transfer-trip combinations.
 - Retain the independent load-only remote static-load trajectory under both methods. Extend independent verification to both monitored branch ends, dynamic-load actions and additional breaker settings.
 - Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2
+
+- Retain stage validation and reusable rollback storage in the [shared integration contract](dynamic-models/svsmo3t2-current-runtime.md#shared-integration-contract). Failed predictor/corrector and shared projection must preserve states and timers for valid retry; repeated shared trial evaluations remain supported. Both-method trajectories remain unchanged.
 
 - Retain the [direct current-controller contract](dynamic-models/svsmo3t2-current-runtime.md), exact named FACTS import and accepted base SMIB fault gates.
 - Retain prepared MSS switching, exact history replay, physical-stamp lifecycle and the coupled staggered/endpoint-clock matrix; finish repeated-operation modified-Euler qualification and extend production-step/duration coverage.
@@ -109,42 +117,48 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## GEWGD1
 
-- Establish the auxiliary role, exact schema and equations from authoritative vendor evidence.
+- Follow the [exact-source implementation gate](dynamic-models/gewgd1-source-contract.md). Obtain the original legacy equations and matching executable; newer identifiers and generic conversion do not establish equivalence.
 - Bind the auxiliary to its converter host before selecting reusable numerical blocks.
 - Add import, initialization, named-state and independent trajectory checks.
 
 ## GEWPLT2
 
-- Add USRMSC identity/ownership and plant-to-unit binding.
-- Implement the exact plant-controller equations, limits and lifecycle after its dependent converter interfaces are available.
-- Add import, initialization, named-state and independent trajectory checks.
+- Retain the [strict miscellaneous-record decoder](dynamic-models/gewplt2-source-contract.md), preserving record identity separately from the monitored machine. Parser support does not establish runtime support.
+- Establish USRMSC record identity separately from the monitored target bus/unit.
+- Implement the exact output-monitoring schema and published observation mappings; do not invent plant-controller equations for this auxiliary.
+- Qualify import, observation stages, target ownership and independent SMIB outputs. Exact legacy output definitions remain required.
 
 ## GEWTA2
 
+- Retain the [strict legacy record foundation](dynamic-models/gewta2-source-contract.md), immutable source constants and rejection of newer-model allocation layouts. Runtime attachment and independent SMIB qualification await exact equations and a matching reference implementation.
 - Establish the exact aerodynamic-controller schema and equations.
 - Implement mechanical-input bindings, initialization and limits with the converter/drive-train host.
 - Add import, named-state, event and independent trajectory checks.
 
 ## GEWTE2
 
+- Follow the [legacy source and qualification gate](dynamic-models/gewte2-source-contract.md); the newer model has a different integer/output layout and is not an established alias.
 - Implement the exact electrical-controller variant and its converter attachment.
 - Verify equations, limits, initialization and state/history lifecycle before reusing another variant's engine.
 - Add independent trajectory checks; do not alias to GEWTECU1 without evidence of equivalence.
 
 ## GEWTG2
 
+- Retain the [strict legacy converter-record decoder](dynamic-models/gewtg2-source-contract.md), distinct integer/output allocation and immutable raw parameters. Complete the exact source contract before runtime attachment or SMIB acceptance.
 - Obtain the authoritative legacy vendor schema/equations and implement the converter host.
 - Define electrical, mechanical and plant-controller interfaces before attaching dependent models.
 - Qualify initialization, named states, current limits, events and coupled trajectories against an independent implementation.
 
 ## GEWTP2
 
+- Retain the [strict legacy pitch-record decoder](dynamic-models/gewtp2-source-contract.md), preserving the integer slot without inventing its semantics. Exact equations and a matching executable remain required for both-method runtime qualification.
 - Establish and implement the exact pitch-controller schema and equations.
 - Verify actuator limits, initialization and state/history lifecycle with its converter host.
 - Add import, named-state, event and independent trajectory checks.
 
 ## GEWTT1
 
+- Retain the [strict legacy shaft-record decoder](dynamic-models/gewtt1-source-contract.md), immutable constants and allocation rejection. Establish exact torque/state coordinates and host contracts before runtime attachment and independent SMIB tests.
 - Implement the exact mechanical/drive-train variant and its converter bindings.
 - Verify initialization, torque/speed conventions, named states and integration lifecycle.
 - Add import, event and independent trajectory checks.
