@@ -396,3 +396,34 @@ trace is retained. Slow-reset controls with zero and doubled current deadband
 retain an output-coordinate residual and nonzero native initialization
 residuals; they are algebraic discriminators only. No undocumented offset is
 introduced to fit those traces.
+
+
+## Recovery clock and local integration discrimination
+
+The overvoltage recovery timer uses accepted endpoint timestamps, including the
+solver's explicitly selected endpoint precision. Its start is the preceding
+accepted boundary when recovery is first observed. Summing nominal `dt` instead
+ignored the declared clock and released one interval early in a half-step
+control. With the explicit single-precision staggered clock, the correction
+reduces peak voltage error from 0.00820631 to 0.00000435 pu and peak current error
+from 0.0399162 to 0.00002063 pu; every blocked/released output row now matches.
+The registered half-step test retains the unchanged 0.001 voltage range-NRMSE
+and 0.01-degree rotor-angle RMSE gates. Default modified Euler continues to use
+its existing double-precision clock; no timing shift or precision default is
+introduced. Its half-step trace retains a one-row clock-policy difference.
+
+Recorded-terminal-input replay localizes about 98% of the coarse modified-Euler
+lag-state peak error to controller integration: 0.0107115 pu versus 0.0109086 pu
+in the coupled run. A test-only shared-state Heun evaluator reproduces the
+ordinary one-step recurrence within 2e-12 at every retained row. With fixed
+outer coefficients and one outer history commit, one/two/four/eight local steps
+give peak errors of 0.0107115/0.0107397/0.0107465/0.0107482 pu respectively, all
+at the first post-hold release endpoint. The diagnostic uses explicitly linear
+interpolation of recorded boundary inputs inside each interval while preserving
+all original event-side samples. It does not qualify that interpolation as a
+production solver policy.
+
+Local refinement does not remove this finite-outer-step method-transition
+residual. No production local-substep option or extra runtime work was added.
+The timestamp defect and the remaining modified-Euler trajectory discrepancy
+are separate findings; neither changes the other method's equations or gates.

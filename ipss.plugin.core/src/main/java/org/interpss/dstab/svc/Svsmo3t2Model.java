@@ -43,6 +43,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private final boolean thermalRatingActive;
     private double initialB, baseRatio, scheduledVoltage, auxiliarySignal;
     private double integrationTime, predictorStep;
+    private double overvoltageRecoveryStart = -1;
     /** Last accepted physical output; trial states cannot start the rating timer early. */
     private double acceptedCurrent;
     private double preparedVrefMin, preparedVrefMax;
@@ -89,6 +90,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         networkDetached = overvoltageRecovery = false;
         deadbandLocked = data.deadband() > 0;
         integrationTime = 0;
+        overvoltageRecoveryStart = -1;
         predictorStep = 0;
         switching.initialize();
         monitor.reset();
@@ -144,7 +146,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
                 || stepSec > 0 && !(endpointTimeSec > integrationTime))
             throw new IllegalArgumentException("SVSMO3T2 requires a finite advancing endpoint time");
         if (networkDetached || stepSec == 0) return;
-        updateHistory(stepSec);
+        updateHistory(stepSec, endpointTimeSec);
         integrationTime = endpointTimeSec;
     }
 
@@ -185,7 +187,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             for (int i = 0; i < x.length; i++) x[i] = start[i] + .5 * dt * (firstRate[i] + rate[i]);
             projectAlgebraicStates();
             if (!acceptFiniteTrial()) return false;
-            updateHistory(dt);
+            updateHistory(dt, integrationTime + dt);
             predictorPending = false;
             if (finiteState()) integrationTime += dt;
         }
@@ -237,7 +239,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         x[4] = Math.max(0, x[4]);
     }
 
-    private void updateHistory(double dt) {
+    private void updateHistory(double dt, double endpointTime) {
         boolean previouslyTripped = tripped;
         double voltage = getDStabBus().getVoltageMag();
         // Undervoltage suppresses output only while outside its envelope.
@@ -246,11 +248,16 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         boolean recoveryHeldThisInterval = overvoltageRecovery;
         if (voltage > data.ov2()) {
             overvoltageRecovery = data.unblockTime() > 0;
+            overvoltageRecoveryStart = -1;
             unblockTimer = 0;
         } else if (overvoltageRecovery) {
-            unblockTimer += dt;
+            // Recovery begins at the preceding accepted boundary. Use the
+            // solver's endpoint clock, including its explicitly selected precision.
+            if (overvoltageRecoveryStart < 0) overvoltageRecoveryStart = integrationTime;
+            unblockTimer = endpointTime - overvoltageRecoveryStart;
             if (unblockTimer >= data.unblockTime()) {
                 overvoltageRecovery = false;
+                overvoltageRecoveryStart = -1;
                 unblockTimer = 0;
             }
         }
@@ -393,6 +400,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         result.put("Deadband elapsed seconds", deadbandTimer);
         result.put("Blocked", blocked ? 1. : 0.);
         result.put("Overvoltage recovery hold", overvoltageRecovery ? 1. : 0.);
+        result.put("Overvoltage recovery start seconds", overvoltageRecoveryStart);
         result.put("Tripped", tripped ? 1. : 0.);
         result.put("Network detached", networkDetached ? 1. : 0.);
         result.put("Thermal rating limited", thermalLimited ? 1. : 0.);

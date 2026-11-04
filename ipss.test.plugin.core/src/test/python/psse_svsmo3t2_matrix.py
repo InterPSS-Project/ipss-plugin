@@ -9,6 +9,7 @@ PROFILES = {
     "short-block-sensor-bypass": ["--fault-ohms", "10", "--fault-clear", ".055", "--stop", ".3", "--con", "2", "0"],
     "long-block-sensed": ["--fault-ohms", "10", "--fault-clear", ".2", "--stop", ".4"],
     "short-overvoltage-zero-delay": ["--fault-ohms", "-1000", "--fault-clear", ".055", "--stop", ".3", "--con", "20", "1.01", "--con", "21", "1.02", "--con", "42", "0"],
+    "short-overvoltage-block-half": ["--step", ".00025", "--fault-ohms", "-1000", "--fault-clear", ".055", "--stop", ".3", "--con", "20", "1.01", "--con", "21", "1.02"],
     "short-overvoltage-block": ["--fault-ohms", "-1000", "--fault-clear", ".055", "--stop", ".3", "--con", "20", "1.01", "--con", "21", "1.02"],
     "short-block": ["--fault-ohms", "10", "--fault-clear", ".055", "--stop", ".3"],
     "short-block-zero-delay": ["--fault-ohms", "10", "--fault-clear", ".055", "--stop", ".3", "--con", "42", "0"],

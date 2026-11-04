@@ -93,6 +93,18 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         System.out.println("SVSMO3T2 directional recovery lifecycle " + output);
     }
 
+    @Test void explicitEndpointClockPreservesHalfStepRecovery() throws Exception {
+        Path matrix = referenceRoot();
+        Path output = Files.createTempDirectory(Path.of("target"), "svsmo3t2-recovery-clock-");
+        var results = new LinkedHashMap<String, Object>();
+        results.put("modified-double", compare(matrix.resolve("short-overvoltage-block-half"),
+                output.resolve("modified-double.csv"), false, "diagnostic"));
+        results.put("staggered-single", compare(matrix.resolve("short-overvoltage-block-half"),
+                output.resolve("staggered-single.csv"), true, "recovery-clock"));
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(), results);
+        System.out.println("SVSMO3T2 explicit recovery clock " + output);
+    }
+
     @Test @Tag("extended") void compareBothMethodsWithoutDroppingLimiterOrEventSamples() throws Exception {
         var mapper = new ObjectMapper();
         Path matrix = referenceRoot();
@@ -126,6 +138,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         extract(root, "ratings.zip", "49c580c091258ea4b208c65dd7d5ff3ba80864a9c07f2c7ec43ca56045a0a741");
         extract(root, "trips.zip", "866afbf13b6782f609d6a6f65b708f5b0f9a2fb6975bb1ac71239e3af5df580d");
         extract(root, "blocking-recovery.zip", "b9156274567854ff430d279d1ce7d5a3a3ec990d914cb43b253621e5a5dee4e0");
+        extract(root, "blocking-recovery-half.zip", "9e5985beb6bdbd3163261836e23eb38bbcaa78edc9aa2c0d20b8f9c3d6226db5");
         return root;
     }
 
@@ -296,10 +309,16 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         var attachedErrors = new LinkedHashMap<String, Object>();
         for (int i = 0; i < 6; i++) attachedErrors.put("STATE_" + i, Map.of("maximum", attachedMaximum[i],
                 "time_s", attachedAt[i], "rmse", Math.sqrt(attachedSquares[i] / attachedSamples)));
-        if (qualification.equals("recovery-lifecycle")) {
+        if (qualification.equals("recovery-lifecycle") || qualification.equals("recovery-clock")) {
             assertEquals(0, blockingOutputMismatches, "Every physical blocking/release row must match");
             assertTrue(prefaultAngleMaximum < .002, "Prefault rotor-angle maximum degrees");
             assertTrue(Math.sqrt(squares[6] / (lines.size() - 1)) < .01, "Rotor-angle RMSE degrees");
+            if (qualification.equals("recovery-clock")) {
+                for (int i = 0; i < 3; i++)
+                    assertTrue(Math.sqrt(squares[i] / (lines.size() - 1)) / (high[i] - low[i]) < .001,
+                            NAMES[i] + " range NRMSE");
+                assertTrue(maximum[7] < .00004, "Physical current maximum under the declared endpoint clock");
+            }
             // Keep complete trajectory errors diagnostic: coarse ordinary integration
             // has a separate accuracy envelope, not an excuse to shift timer actions.
         } else if (qualification.equals("blocking")) {
@@ -407,7 +426,8 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         System.out.println("SVSMO3T2 limiter " + output.getFileName() + " " + errors);
         var result = new LinkedHashMap<String, Object>();
         result.put("blocking_output_mismatches", blockingOutputMismatches);
-        result.putAll(Map.of("status", qualification.equals("recovery-lifecycle") ? "coupled-blocking-lifecycle-accepted-trajectory-diagnostic"
+        result.putAll(Map.of("status", qualification.equals("recovery-clock") ? "coupled-explicit-clock-recovery-accepted"
+                : qualification.equals("recovery-lifecycle") ? "coupled-blocking-lifecycle-accepted-trajectory-diagnostic"
                 : qualification.equals("blocking") ? "coupled-blocking-accepted-cached-mvar-diagnostic"
                 : qualification.equals("rating-onset") ? "rating-onset-accepted-full-trajectory-diagnostic"
                 : qualification.equals("rating") ? "coupled-rating-accepted-cached-mvar-diagnostic"
