@@ -67,6 +67,8 @@ public class Tiocr1PhysicalTerminalReferenceTest {
             double rmse=Math.sqrt(sum/reference.size());
             double error=channel.equals("ANGLE_DEG")?rmse:rmse/(max-min);errors.put(channel,error);
             assertTrue(error<(channel.equals("ANGLE_DEG")?.01:.001),channel+" error="+error);
+            double regressionLimit=channel.equals("ANGLE_DEG")?5e-5:(staggered?8e-6:5e-5);
+            assertTrue(error<regressionLimit,channel+" retained physical-action regression="+error);
         }
         System.out.println("TIOCR physical terminal="+terminal+" staggered="+staggered+" errors="+errors+" position="+positionError);
     }

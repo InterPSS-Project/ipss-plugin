@@ -261,6 +261,12 @@ The largest voltage/power NRMSE is `0.0000311` for modified Euler and `0.0000038
 for staggered integration. The existing terminal-position envelopes also pass:
 maximum errors are `0.0000194` and `0.000000290`, respectively.
 
+After the combined regression reproduced these results, the new physical-action
+tests additionally enforce tighter voltage/power NRMSE envelopes of `5e-5`
+(modified Euler) and `8e-6` (staggered), and rotor-angle RMSE below `5e-5` degrees.
+The original acceptance limits remain explicit; these additional envelopes
+protect the measured accuracy of this synthetic action fixture.
+
 The benchmark recorder previously obtained the pre-trip row in `beforeStep`,
 after the preceding accepted callback had already opened the branch and cleared
 the relay position. It now retains relay observations immediately before that
