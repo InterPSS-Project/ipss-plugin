@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain [corrected-endpoint commutation ownership](dynamic-models/chvdc2-named-link.md#commutation-applies-after-the-corrected-line-update): pickup/release cannot retroactively change the modified-Euler line correction, while RAML retains its separate predictor preview. Keep the physical line-update regressions and rejected old-policy control. Resolve the remaining continuous-state errors and retain moving source machines in protected refinement studies.
+
 - Finish the [explicit terminal attachment](dynamic-models/chvdc2-named-link.md#explicit-terminal-attachment-in-progress): retain both-method equilibrium, ownership, pure state/rate/history diagnostics and once-per-endpoint acceptance. Full-network fault comparisons complete and pass voltage gates, but current, power and internal-state gates remain open. Resolve those errors, audit protected transitions and qualify local-step ownership before enabling automatic import.
 
 - Preserve [accepted event-rate ownership](dynamic-models/chvdc2-named-link.md#accepted-left-endpoint-rates-at-network-events): the staggered event average uses the accepted left endpoint while retaining the older two-step integration rate separately. Keep the non-equilibrium clearing regression and its rejected old-policy control; this lifecycle correction does not resolve the independent trajectory gates.

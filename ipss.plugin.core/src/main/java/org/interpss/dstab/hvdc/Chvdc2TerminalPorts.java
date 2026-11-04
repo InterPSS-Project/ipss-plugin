@@ -181,7 +181,9 @@ public final class Chvdc2TerminalPorts {
             actionDiscontinuity=false;if(!owner||!networkTrial||!clockedTrial)return false;
             bind();long before=runtime.staggeredInputDiscontinuityVersion();
             boolean shorted=runtime.inverterShorted(),raml=runtime.ramlActive();
-            if(predictorTrial)runtime.evaluatePredictorProtection(evaluationTime,sequence++,!ramlTransitioned,!commutationTransitioned);
+            // Commutation switches the line circuit only at the corrected endpoint.
+            // A predictor must not retroactively short/release the interval being corrected.
+            if(predictorTrial)runtime.evaluatePredictorProtection(evaluationTime,sequence++,!ramlTransitioned,false);
             else runtime.evaluateProtectionBoundary(evaluationTime,sequence++,!ramlTransitioned,!commutationTransitioned);
             ramlTransitioned|=raml!=runtime.ramlActive();commutationTransitioned|=shorted!=runtime.inverterShorted();
             actionDiscontinuity=before!=runtime.staggeredInputDiscontinuityVersion();

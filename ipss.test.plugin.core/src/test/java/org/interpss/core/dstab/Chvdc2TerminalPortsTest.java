@@ -177,16 +177,24 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
     void releasedShortCannotRetriggerInsideOneIntegrationEndpoint(boolean staggered)throws Exception {
         var f=initiallyShortedFixture();initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
         assertTrue(m.inverterShorted());double h=.00001;
+        double[] boundary=new double[10];m.readBoundary(boundary,0);
+        double resistance=f.binding().owner().getRdc(org.interpss.numeric.datatype.Unit.UnitType.Ohm);
+        double initialCurrent=boundary[2],initialRate=(boundary[0]-boundary[1]-resistance*boundary[2])/f.binding().effectiveHenries();
         if(staggered){
             double[] x=new double[16],rate=new double[16];p.readStaggeredState(x,0);p.evaluateStaggered(h,rate,0);
             for(int k=0;k<x.length;k++)x[k]+=h*rate[k];p.applyStaggeredState(x,0,h);p.completeStaggeredStep(h,h);
             p.beginNetworkSolution(context("DIRECT",h));
         }else{p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0);p.beginNetworkSolution(context("PREDICTOR",h));}
-        p.beforeNetworkIteration(0);assertTrue(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());
-        p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());
+        p.beforeNetworkIteration(0);assertEquals(staggered,p.applyConvergedNetworkAction());assertEquals(!staggered,m.inverterShorted());
+        p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());assertEquals(!staggered,m.inverterShorted());
         p.afterNetworkConvergence();p.endNetworkSolution(true);
         if(!staggered){
+            m.readBoundary(boundary,0);
+            double predictedRate=(boundary[0]-boundary[1]-resistance*boundary[2])/f.binding().effectiveHenries();
+            double expectedCurrent=initialCurrent+.5*h*(initialRate+predictedRate);
             p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);p.beginNetworkSolution(context("CORRECTOR",h));
+            p.beforeNetworkIteration(0);assertTrue(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());
+            m.readBoundary(boundary,0);assertEquals(expectedCurrent,boundary[2],1e-10,"The interval corrects using its original shorted circuit");
             p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);
         }
         assertFalse(m.inverterShorted(),"Final electrical publication must not introduce a second protection transition");
@@ -197,6 +205,25 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         assertEquals(history,m.getIntegrationHistories());assertSame(output,p.getOutputObject());
         p.beginNetworkSolution(new Context("INITIAL",h,h,50,1e-10,true));p.beforeNetworkIteration(0);
         assertTrue(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);assertTrue(m.inverterShorted());
+    }
+    @Test void commutationPickupDoesNotRetroactivelyShortTheCorrector()throws Exception {
+        var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
+        assertFalse(m.inverterShorted());double h=.00001;double[] boundary=new double[10];m.readBoundary(boundary,0);
+        double resistance=f.binding().owner().getRdc(org.interpss.numeric.datatype.Unit.UnitType.Ohm);
+        double initialCurrent=boundary[2],initialRate=(boundary[0]-boundary[1]-resistance*boundary[2])/f.binding().effectiveHenries();
+        p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0);
+        var inverter=f.ports().inverterPort().getDStabBus();inverter.setVoltage(inverter.getVoltage().multiply(.1));
+        p.beginNetworkSolution(context("PREDICTOR",h));p.beforeNetworkIteration(0);m.readBoundary(boundary,0);
+        assertTrue(Math.toDegrees(boundary[8])<10,"The predictor must cross the entered commutation threshold");
+        assertFalse(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());
+        p.afterNetworkConvergence();p.endNetworkSolution(true);m.readBoundary(boundary,0);
+        double predictedRate=(boundary[0]-boundary[1]-resistance*boundary[2])/f.binding().effectiveHenries();
+        double expectedCurrent=initialCurrent+.5*h*(initialRate+predictedRate);
+        p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);p.beginNetworkSolution(context("CORRECTOR",h));
+        p.beforeNetworkIteration(0);assertTrue(p.applyConvergedNetworkAction());assertTrue(m.inverterShorted());
+        m.readBoundary(boundary,0);assertEquals(expectedCurrent,boundary[2],1e-10);
+        p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);
+        assertTrue(m.inverterShorted());assertEquals(h,m.getIntegrationHistories().get("Commutation transition time (s)"),0);
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void explicitProtectionClockAccumulatesOncePerAcceptedOuterInterval(boolean staggered)throws Exception {

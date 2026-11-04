@@ -13,7 +13,8 @@ last converged currents for output access. Accepting a fresh electrical-angle
 history does not recalculate the already published current. A converged
 protection preview keeps that angle fixed while a changed protection regime
 requests another numerical network pass. Predictor history stays provisional
-through the corrector. A failed network solve restores this model's transaction;
+through the corrector. RAML may change in its predictor preview; commutation
+pickup/release waits until the corrected endpoint. A failed network solve restores this model's transaction;
 it does not roll back other devices, bus voltages or the solver's global history.
 
 The attached state owner exposes numerical coordinates, last-evaluated derivatives
@@ -195,6 +196,51 @@ The complete registered suite runs 4,589 tests with 168 failures, one error and
 protected trajectory cases add failures. Full comparisons, executable/source
 snapshots and baseline-difference checks are retained in the private
 `chvdc2-explicit-clock-20261103` validation archive.
+
+### Commutation applies after the corrected line update
+
+The valid short-hold capture first reports a short at `0.0505000129342 s`.
+The line-current increment reaching that observation is only about `2.970 A`.
+The former modified-Euler path applied commutation during its predictor preview,
+so the corrector already used the newly shorted line circuit. Its current error
+was `45.361 A` at the first shorted observation. Matching only the published
+flag and timer did not expose this intra-interval ownership error.
+
+The terminal owner now allows commutation pickup/release only in the corrected
+endpoint preview. The preceding state update retains its original circuit; the
+new regime requests a network resolve before the endpoint is published. RAML's
+separate predictor preview and the direct component APIs are unchanged. Repeated
+passes still latch each transition, and a failed endpoint still rolls back.
+No new buffers, state equations, integration weights or clock policies are added.
+
+With the independently qualified binary32 protection clock, the modified-Euler
+first-short current error decreases from `45.361` to `2.654 A`. Its complete-run
+maximum decreases from `61.093` to `19.294 A`; the maximum power error decreases
+from `0.358529` to `0.161552 pu`. These remain above the unchanged strict gates.
+Staggered trajectories are unchanged. With the unmatched caller-time clock,
+the modified-Euler maximum instead changes from `107.075` to `110.158 A` and
+the existing flag mismatch remains; that control is not trajectory-qualified.
+Nominal and RAML physical trajectories are unchanged.
+This evidence establishes the terminal owner's corrected-endpoint contract; it
+does not identify the reference's internal substep/publication recurrence.
+
+Focused tests derive the modified-Euler line-current update from its physical
+voltage, resistance and inductance for both pickup and release. Restoring the
+old predictor-commutation policy fails the release regression; the corrected
+build passes all 65 controller/runtime/protection/terminal checks. The small
+source-angle motion in this protected reference also invalidates a frozen-source
+refinement assumption, so that attempted harness is retained as a rejected
+diagnostic. Further numerical-refinement studies must retain the moving source
+machines and distinguish outer history acceptance from local numerical steps.
+
+The registered suite completes with 4,590 tests, 168 failures, one error and
+13 skips. Its failing test identities match the preceding explicit-clock
+baseline; the new pickup regression passes. The core plugin module completes
+486 tests with no failures or errors and four skips. Fourteen of the sixteen
+terminal comparison traces remain numerically unchanged; only the two
+modified-Euler short-hold clock variants change. Full traces, baseline checks,
+the failing negative control, and the rejected refinement harness are retained
+in the private `chvdc2-corrected-commutation-20261103` validation archive.
 
 ## Preparation from the solved network
 
