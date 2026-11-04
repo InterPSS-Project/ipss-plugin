@@ -1396,6 +1396,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tLimitedGammaTest.class,
     LccSourceControlsTest.class,
     Cdc6tBypassSwitchNetworkTest.class,
+    org.interpss.core.dstab.Cdc6tBypassSamplingReferenceTest.class,
     HspUsageRankedModelTest.class,
     HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,

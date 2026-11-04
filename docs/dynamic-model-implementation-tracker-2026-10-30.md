@@ -70,6 +70,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Preserve the [tap-action history discriminator](dynamic-models/cmldblu1-tap-control.md#tap-action-history-discriminator): ordinary source-machine history fits the first responding interval, and a generic discontinuity reset does not fix complete reactive-power trajectories. Resolve command publication, electrical application and state-response stages without installing an unqualified delay or global history reset.
+
 - Retain [tap integration ownership validation](dynamic-models/cmldblu1-tap-control.md#integration-ownership-validation): reject overlapping ordinary/shared stages and mismatched correctors, preserve read-only zero-duration refresh and valid retry. Both-method trajectory controls remain unchanged.
 
 - Resolve the coupled heating-input discrepancy identified by the [startup thermal reconstruction](dynamic-models/acmtblu1-startup-clock.md#localizing-the-remaining-startup-thermal-errors). The thermal recurrence is independently reproduced and the finer-step coupled controls pass, but the coarse temperature gates remain unmet. Preserve the original limits, complete frequency/current histories, both motor groups and both integration intervals; do not fit thermal parameters to upstream electrical/frequency errors.
@@ -113,6 +115,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2
+
+- Retain the [modified-Euler switching discrimination](dynamic-models/svsmo3t2-current-runtime.md#modified-euler-switching-discrimination): separate accepted-clock effects from method-dependent current crossing of pickup thresholds. The remaining first-interval crossings satisfy their declared integration formulas; do not replace ordinary equations or change production precision to erase these diagnostics. Complete repeated-operation qualification remains open.
 
 - Retain stage validation and reusable rollback storage in the [shared integration contract](dynamic-models/svsmo3t2-current-runtime.md#shared-integration-contract). Failed predictor/corrector and shared projection must preserve states and timers for valid retry; repeated shared trial evaluations remain supported. Both-method trajectories remain unchanged.
 
@@ -172,6 +176,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Add import, event and independent trajectory checks.
 
 ## CDC6T
+
+- Use the [bypass observation-stage counterexamples](dynamic-models/cdc6t-runtime-plan.md#bypass-observation-stage-counterexamples) when resolving recovery timing. Base and transferred-source captures require different observed start stages even across delay, threshold and control-mode discriminators; a universal completed-interval rule regresses an existing voltage gate. Preserve source-specific evidence rather than fitting a blanket timer delay.
 
 - Retain [atomic network-trial entry](dynamic-models/cdc6t-runtime-plan.md#atomic-network-trial-entry): validate stage and endpoint before opening a trial or discarding pending protection history. Rejected calls must permit a valid retry; both-method complete recorded trajectories remain unchanged.
 
