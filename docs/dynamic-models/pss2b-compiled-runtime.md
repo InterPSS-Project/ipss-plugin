@@ -445,3 +445,60 @@ This qualifies the sampled-output improvement for the retained profiles. Full
 controller-state qualification remains open. The earlier ten-second
 modified-Euler rotor-angle RMSE remains 0.017025 degrees against the unchanged
 0.01-degree limit; this publication change does not resolve it.
+
+
+## Host-exciter local modified-Euler discriminator
+
+A test-only ST1 overlay checked whether refining the host exciter alone resolves
+the remaining ten-second derivative-input comparison. It retained the outer
+modified-Euler predictor, restored the left exciter states for correction, and
+used the existing numerical kernels with linearly interpolated outer-stage
+voltage and stabilizer inputs. Prepared coefficients, network intervals,
+accepted measurement histories and machine integration were unchanged. This
+experiment only covers the retained fixture with inactive field-current and
+output-injection paths; it is not a general host-exciter implementation.
+
+| Local exciter steps | Quarter-cycle angle RMSE (degrees) | Half-quarter-cycle angle RMSE (degrees) |
+|---:|---:|---:|
+| 1 | 0.0170248 | 0.00650547 |
+| 2 | 0.0168748 | 0.00645351 |
+| 4 | 0.0168391 | 0.00644080 |
+| 10 | 0.0168294 | 0.00643729 |
+
+The unchanged 0.01-degree gate still fails at the quarter-cycle interval.
+Quarter-cycle peak voltage error grows from 0.000558 to 0.001139 pu between
+one and ten local steps. Therefore this candidate is rejected for production;
+the independently established staggered host-exciter setting does not imply
+that local modified-Euler refinement fixes the coupled error.
+
+Full output samples, overlay sources, the driver and provenance manifest are
+retained in the private `pss2b-host-local-euler-20261104/diagnostic.zip` archive,
+SHA-256 `c20230c615e43be398520ebfc8523076de4179d1fe551f37c27557bffa231109`.
+Its manifest explicitly distinguishes actual diagnostic local-step counts from
+the reused production runner's default metadata. No production source was
+modified by the experiment. The existing PSS2B baseline ran 95 tests with only
+the known long-run modified-Euler gate failing; complete controller-state and
+selector/limiter trajectory qualification remain separate outstanding work.
+
+
+## Independent selector-state recurrence coverage
+
+The retained selector matrix now checks the compiled first-washout derivatives
+against independently recorded state increments for all six selectors and both
+input slots. Each sample supplies recorded boundary inputs and differential
+coordinates; the compiled kernels calculate the rates. The check reconstructs
+the reference's accepted two-step recurrence without integrating a replacement
+network or adjusting physical parameters.
+
+Live-input paths retain an averaged pre/post-event rate in the two-step history;
+voltage-derivative paths retain their sampled measurement policy. An unaveraged
+live-input negative control must exceed 0.000001 pu state error. The positive
+check allows four float32 state ULPs plus 0.00000002 pu for observation and
+coefficient rounding. This new equation-observation bound does not replace or
+relax any existing trajectory, output or state acceptance gate. Event duplicates
+remain in the input and establish history; ordinary increments are reconstructed
+only where the three accepted timestamps increase.
+
+This extends selector equation coverage, not full controller-state trajectory
+qualification. Downstream ramp and lead-lag trajectories, limiter combinations
+and complete sampled-output lifecycle comparisons remain required.
