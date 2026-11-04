@@ -48,3 +48,23 @@ trajectory qualification is separate. Full shedding needs independently verified
 disconnection/topology handling; no infinite feeder impedance or artificial
 small admittance is substituted for that missing behavior. This is not a claim
 of complete composite-model or zone-dialect qualification.
+
+## Full-trip discriminator
+
+A subsequent cold pair with a 100% action also matches exactly across all 1,006
+rows. Allocated demand, near/far compensation and effective feeder R/X diagnostics
+become zero. Internal voltage diagnostics stop changing, while the external
+network continues responding. Reconstructing total current into the source load
+bus from both physical lines and subtracting active fault current gives at most
+`5.56e-6 pu` after the trip away from the fault-clearing event. Original event-side
+samples remain in the archive; the boundary check explicitly separates that
+clearing discontinuity rather than treating it as a steady network equation.
+
+This identifies complete disconnection of the composite boundary, including its
+substation contribution, despite unchanged stored transformer/substation
+parameters. It does **not** justify extrapolating partial-capacity equations to
+zero, preserving the energized substation, or inserting a small substitute
+admittance. Production continues to reject zero remaining capacity before
+mutation until expanded-bus deactivation and solver topology lifecycle are
+implemented and independently checked. Full-trip captures and integrity manifest
+SHA-256: `dada624db14a401ddda2fa66c6fa9b6f5b320df013c95fa9fd3579bc8e0761b6`.
