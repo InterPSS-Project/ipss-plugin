@@ -47,3 +47,21 @@ Private evidence archives are retained at
 `07eb605e6e591f02cdd05f47a2dd460e36faebb8c6b420a04872e325f345b36e`)
 and `verification-artifacts/system-default-control-20261104` (SHA-256
 `d81fa2183a9a00de876a453f9d44c7f76d1f1e9f28a02b4db458ee69e269e48b`).
+
+## Relay target ownership
+
+The prepared static-load target is now retained by object identity. Removing it
+or replacing it with a different object under the same ID rejects a pending
+action before relay history, transfer branches or shedding stamps change.
+Restoring the original object permits one accepted action. Independent complete
+trajectories also qualify multiple and duplicate transfer targets under both
+methods. The multiple-target test is registered in the main suite.
+
+The combined relay/composite selection passes 120 tests with no failures,
+errors or skips. These are actual executed XML test counts. Shared preflight is
+exercised through TIOCR1's load port; this does not establish separate LDS3/LVS3
+runtime qualification. No-match selectors are not evidence of coverage.
+
+Private evidence is at
+`verification-artifacts/relay-target-ownership-integration-20261104`, SHA-256
+`b3017c67700c331759b87aa56d2c1419ccac0cdf3fafbefae547c0e1cb0c1549`.
