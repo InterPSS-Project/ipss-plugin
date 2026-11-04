@@ -49,6 +49,11 @@ public class HspUsageRankedModelTest {
     }
     static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile,
             Path rawFile,Path dynamicFile,Path out) throws Exception {
+        run(fixture,flat,staggered,resetProfile,rawFile,dynamicFile,out,.2,"Bus1");
+    }
+    static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile,
+            Path rawFile,Path dynamicFile,Path out,double faultReactance,
+            String faultBus) throws Exception {
         assertFalse(resetProfile && (flat || !fixture.startsWith("tiocr1-")));
         var loader=new PSSEMultiFileLoader();
         var context=loader.loadDStab(rawFile.toString(),dynamicFile.toString());
@@ -61,10 +66,11 @@ public class HspUsageRankedModelTest {
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         var recording=new SmallNetworkRecorder(algorithm,flat,resetProfile);
         algorithm.setSolver(staggered?new StaggeredNetworkRecorder(algorithm,recording):recording);
-        if(!flat)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(fixture.startsWith("cmldblu1")?"Bus2":"Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,fixture.equals("cmldblu1-electronic")?.01:.2),null,.05,resetProfile?.01:.05),"Fault");
+        if(!flat)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(fixture.startsWith("cmldblu1")?"Bus2":faultBus,net,SimpleFaultCode.GROUND_3P,new Complex(0,fixture.equals("cmldblu1-electronic")?.01:faultReactance),null,.05,resetProfile?.01:.05),"Fault");
         if(resetProfile)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,
                 new Complex(0,.2),null,.2,.05),"Second fault");
         assertTrue(algorithm.initialization(),fixture+" initialization");
+        assertEquals(com.interpss.dstab.ConstantCurrentLoadVoltageCurve.ELLIPTIC,net.getConstantCurrentLoadVoltageCurve());
         var machine=net.getMachine("Bus1-mach1");
         double initialV=net.getDStabBus("Bus1").getVoltageMag(),initialAngle=machine.getAngle();
         var initial=capture(net);var columns=new ArrayList<>(initial.keySet());

@@ -43,6 +43,8 @@ def main():
                         help='Clear allocated load diagnostic storage before initialization; retain unmodified captures separately')
     parser.add_argument('--constant', action='append', default=[], metavar='INDEX=VALUE',
                         help='Controlled load-model discriminator; preserve original and modified DYR inputs')
+    parser.add_argument('--relay-fault-bus', type=int, choices=[1,2], default=1,
+                        help='Fault location in the synthetic relay corridor')
     parser.add_argument('--relay-end', choices=['from', 'to'], default='from',
                         help='Monitored terminal of the synthetic relay branch')
     parser.add_argument('--relay-line-charging', type=float, default=0.,
@@ -58,7 +60,7 @@ def main():
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
-    if (args.relay_end != 'from' or args.relay_line_charging != 0.
+    if (args.relay_fault_bus != 1 or args.relay_end != 'from' or args.relay_line_charging != 0.
             or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
             or args.relay_transfer_circuits is not None or args.relay_third_parallel) and not args.fixture.startswith('tiocr1-'):
         parser.error('Relay terminal controls require a relay fixture')
@@ -240,7 +242,7 @@ def main():
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(layout['NCON'])]
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
     if args.profile in ['fault', 'repeated-faults', 'short-repeated-faults']:
-        checked('fault', psspy.dist_bus_fault(2 if load else 1, 3, 230.0 if load or args.fixture=='wsieg1-dual' else 100.0, [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
+        checked('fault', psspy.dist_bus_fault(2 if load else args.relay_fault_bus if relay else 1, 3, 230.0 if load or args.fixture=='wsieg1-dual' else 100.0, [0., args.fault_x_pu*(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))
     if args.profile == 'reference-step':
         checked('reference', psspy.increment_gref(1, '1', .03))
     def change_tap_target(time_s, delta):
@@ -266,7 +268,7 @@ def main():
     if args.profile in ['fault', 'repeated-faults', 'short-repeated-faults']: checked('clear', psspy.dist_clear_fault(1))
     if args.profile in ['repeated-faults', 'short-repeated-faults']:
         checked('recovery', psspy.run(0, .20, 1000000, 1, 0))
-        checked('second fault', psspy.dist_bus_fault(2 if load else 1, 3,
+        checked('second fault', psspy.dist_bus_fault(2 if load else args.relay_fault_bus if relay else 1, 3,
             230.0 if load or args.fixture=='wsieg1-dual' else 100.0,
             [0., (args.second_fault_x_pu if args.second_fault_x_pu is not None else args.fault_x_pu)
              *(230.0 if load or args.fixture=='wsieg1-dual' else 100.0)**2/100.0]))

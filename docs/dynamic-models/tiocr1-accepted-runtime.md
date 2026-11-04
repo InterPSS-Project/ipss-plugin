@@ -392,3 +392,34 @@ independent equation qualification for those relay families. Six exercise TIOCR
 static-definition changes and dynamic replacement/reparenting, including valid
 voltage and capacity changes after restoration. All 26 complete valid trajectory
 files retain every row and event-side sample and compare exactly numerically.
+
+## Low-voltage static-load action
+
+Independent cold pairs now cover the same deep fault at either end of the
+synthetic corridor. The load-bus fault reduces its voltage to `0.3333` pu and
+operates the load-only relay while voltage remains below the `0.5` pu
+constant-current reduction knee. The opposite-end fault leaves the load above
+that knee (`0.7481` pu), providing a location control. Both cold pairs are
+byte-identical across complete native recordings.
+
+The recorder inherits initialization from the production solver; post-initialization
+readback confirms elliptic current reduction for both integration methods. No
+configuration loss or relay equation defect was found. Four new comparisons
+retain all 1,004 nonnegative rows, including exact pre/post shedding observations.
+They preserve the original `0.001` voltage/power NRMSE and `0.01`-degree angle
+RMSE gates, with additional strict envelopes: `6e-5` voltage/power NRMSE for
+modified Euler, `5e-6` for staggered integration, and `9e-5` degrees angle RMSE.
+Complete relay-position peak errors remain below `8e-5` and `3e-7`, respectively.
+
+The measured worst voltage/power NRMSE is `5.18e-5` for modified Euler and
+`3.98e-6` for staggered integration; worst angle RMSE is `8.17e-5` degrees.
+Deliberately substituting the generic sine reduction after initialization fails
+both load-bus profiles (`1.52e-4` and `1.47e-4` voltage NRMSE), while both
+above-knee location controls pass. The final runtime retains elliptic reduction.
+This qualifies a deep-fault crossing and recovery with load shedding, not every
+near-threshold curve point, reset constant, protection coordination or reconnection.
+The earlier independent partial-reset/second-pickup controls remain unchanged.
+
+The paired evidence is retained in
+`testData/private/verification-artifacts/tiocr-low-voltage-20261104/captures.zip`,
+SHA-256 `023e428361fb35e40ede14293dcb361293e02d242e21aab402cff10bbed71285`.
