@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Resolve the [fast algebraic-line numerical sensitivity](dynamic-models/chvdc2-named-link.md#fast-algebraic-line-numerical-sensitivity): one staggered local step amplifies tiny boundary differences before the fault; two or more suppress this sensitivity but do not pass the independent reference gates. Preserve explicit failures and both-method qualification requirements.
+
 - Retain [outer-current sampling for the converter drop supplied to dynamic-line integration](dynamic-models/chvdc2-named-link.md#converter-current-sampling-for-dynamic-line-integration), shared by both numerical methods. Keep live terminal observations/injections, distinct capacitor-terminal samples, current-dependent line resistance and rollback. Independent coarse controls separate this from live commutation-current feedback; complete coupled accuracy, modified-Euler reference gates and multirate network coupling remain open. Preserve nonuniform refinement outcomes and the unchanged strict gates.
 
 - Retain [scheduled-network event averaging across local steps](dynamic-models/chvdc2-named-link.md#scheduled-network-events-across-local-steps), the fixed accepted left derivative and separate two-step history. Coarse independent line/measurement controls distinguish derivative averaging from input averaging. Keep internal protection revisions on their separately qualified policy; resolve protected trajectories and modified-Euler component/network gates without changing precision, coefficients or thresholds.

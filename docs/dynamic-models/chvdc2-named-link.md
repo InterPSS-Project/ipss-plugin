@@ -362,8 +362,40 @@ required to remain unchanged have zero numerical trace difference. The broad
 suite's fast algebraic control differs from the isolated control even though
 this correction does not execute in algebraic mode. Its original report is
 retained separately; isolated runs provide the matched numerical comparison.
-Cross-suite trajectory isolation remains an investigation item, not evidence
-of full-model qualification. Broad and isolated test statuses agree.
+Broad and isolated test statuses agree. Follow-up numerical sensitivity controls
+are described below; neither execution scope establishes full-model qualification.
+
+### Fast algebraic-line numerical sensitivity
+
+The archived broad and isolated executions use the same model source and test
+matrix. Of 38 unique profile comparisons, 37 have a maximum current
+variation below `1e-8 A`. The exception is the fast algebraic-line profile with
+one staggered local step at a `0.5 ms` network interval. The first recorded
+boundary difference is about `2.22e-15 pu` in reactive power. Current differences
+exceed `1e-8 A` at `0.019 s`, reach `0.011319 A` before the fault, and reach
+`1.660961 A` over the complete run. This growth begins before any fault event.
+
+An isolated repeat of the existing 12-profile local-step matrix with
+`-XX:TieredStopAtLevel=1` reproduces one of the archived trajectories exactly for
+each profile, including the sensitive one-step trajectory. Other test classes
+are therefore not required to produce the observed variation. This is evidence
+of numerical sensitivity to execution conditions, rather than proof of leaked
+controller history or a specific faulty JVM intrinsic.
+
+For the same fast algebraic profile, broad/isolated current variation falls to
+`8.30e-12 A`, `7.28e-12 A`, and `8.30e-12 A` with two, four, and ten local steps,
+respectively. All samples and event duplicates are compared without shifting,
+resampling, or tolerance relaxation. The local-step controls support investigating
+the one-step recurrence's stability before treating its exact trajectory as a
+regression fingerprint. They do not qualify the reference trajectory: the run reports eleven reference failures and one
+existing nonconvergence error. The latter retains its incomplete trajectory. Modified Euler was not rerun in this
+compilation-tier diagnostic and its preceding failures remain open.
+
+Private evidence is retained in `chvdc2-jit-stability-20261104/validation.zip`,
+including the comparison script, all twelve recorded traces (including the explicitly incomplete run), test report and bounded
+execution log. Production equations, arithmetic functions, JVM defaults and
+local-step defaults are unchanged. A stable admissibility rule for the algebraic
+controller/line recurrence and full reference accuracy remain required.
 
 ### Scheduled network events across local steps
 
