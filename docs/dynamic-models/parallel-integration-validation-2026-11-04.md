@@ -100,3 +100,19 @@ not independent equation qualification of those relay families.
 The combined relay, composite and motor selection passes 137 tests with no
 failures, errors or skips. Private evidence is retained at
 `verification-artifacts/relay-lifecycle-integration-20261104`.
+
+## Attached battery plant-controller replay
+
+The registered REECC1/REPCA replay checks both integration paths against every
+recorded sample, including duplicate boundaries. The retained capture index and
+each artifact are hash-checked, and cold-repeat output equality is asserted.
+Accepted two-step commands and provisional algebraic commands remain separately
+observable. Analytic remote-sensing checks do not imply independent remote
+qualification: the reference environment normalizes the requested remote
+selector to local sensing.
+
+The integrated replay and shared renewable-controller selection passes 58 tests
+without failures, errors or skips. Full attached-plant network feedback remains
+a separate gate. See [the qualification report](reecc1-plant-and-remote-sensing.md).
+Private validation is retained at
+`verification-artifacts/reecc-plant-integration-20261104`.

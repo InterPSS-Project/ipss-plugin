@@ -1294,6 +1294,7 @@ import org.junit.platform.suite.api.Suite;
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Reecc1NativeConformanceTest.class,
+    org.interpss.core.dstab.ReeccPlantReplayConformanceTest.class,
 	Type3WindAndesTrajectoryTest.class,
 	Type3WindIndependentTrajectoryTest.class,
 	PsseHygovGovernorTest.class,
