@@ -99,3 +99,63 @@ executed test logs are sealed under
 captures remain immutable in their earlier manifests. High-voltage active
 correction profiles, broader model combinations and system/runtime qualification
 remain required before any default-policy change.
+
+## Active high-voltage correction follow-up
+
+The opt-in policy also passes analytic active-correction lifecycle checks for both
+integration schemes. A network trial accumulates the documented power-coordinate
+correction, divides it by decelerated voltage when publishing reactive current,
+and retains it only after convergence. Failed trials restore the previous output;
+reads do not advance history; a subsequent inactive solve starts with zero working
+correction. These checks establish equation and lifecycle behavior, not independent
+trajectory accuracy.
+
+Two distinct accepted event solves at the same timestamp were tested at 0.7 and
+0.6 pu. Saved voltage advances only once, while terminal input becomes the final
+0.6 pu value. The next physical step uses that final input. Repeated acceptance
+notifications are idempotent and completed event trials do not block configuration
+changes. The existing production implementation passes these checks unchanged.
+
+A retained, repeatable fault-recovery capture exercises the high-voltage correction
+in 105 samples. The comparison retains all 2,005 rows, including two startup rows
+and both event-side duplicates. The source clock is mapped to nominal step ordinals;
+its accumulated drift is retained in the exported comparison. The Java runs keep
+50 iterations and the existing 1e-4 voltage-change tolerance. The archived reference
+used a 200-iteration ceiling; this is provenance, not permission to increase the
+Java ceiling. No reference channels, integration method, defaults or limits changed.
+
+| Quantity | Modified Euler maximum / NRMSE | Staggered maximum / NRMSE |
+|---|---:|---:|
+| Terminal voltage (pu) | 0.00320676 / 0.00020164 | 0.00181731 / 0.00005464 |
+| Reactive power (pu) | 0.02142648 / 0.00095264 | 0.01224941 / 0.00027194 |
+| Current-regulator state (pu) | 0.00618547 / 0.00114940 | 0.00021917 / 0.00009562 |
+| Working correction (pu) | 0.02199208 / 0.00460053 | 0.01051027 / 0.00220425 |
+
+NRMSE uses each complete reference channel's range. The correction channel still
+fails a 0.001 criterion in both methods; these diagnostic executions are not an
+accuracy acceptance. The staggered trace closely matches the reference until the
+correction approaches deactivation, where the network iteration sequence diverges.
+
+Read-only observers around the final-output callback leave all reported trajectory
+error maxima unchanged. For active high-voltage samples, the maximum current residual
+against the measured Java branch-end phasors changes from 0.00099920 to 0.00327577 pu
+in modified Euler, and from 0.00099977 to 0.00339702 pu in staggered integration.
+The callback changes current by up to 0.00248336 pu. The solver's voltage-change
+certificate is not a joint final-current certificate.
+
+The archived reference output satisfies its correction/current equation within
+7.90e-8 pu, but lacks the receiving-bus phasor needed to measure its corresponding
+branch-current residual. An assumed internal-source voltage cannot substitute for
+that missing measurement. The public interface flowchart separates network
+iterations from time advancement and warns that implementation details differ.
+Neither this diagram nor the present residual diagnostic justifies deleting the
+final evaluation. Additional measured branch-end reference channels are the next
+discriminator; no production equation change is made here.
+
+Validation: 19 tests across three public classes pass with the extended profile
+(7 accepted-memory, 10 iteration lifecycle, 2 coupled plant tests). A separate
+private diagnostic test executes both complete high-voltage trajectories; its
+successful execution does not imply the numerical errors pass. The private
+`regca-active-hv-lifecycle-20261104` manifest pins the complete traces, diagnostic
+source, logs and metrics; SHA-256
+`5619dc008fb2997a28d82505a067884498c9d290d7352e760e3af5651de56d44`.

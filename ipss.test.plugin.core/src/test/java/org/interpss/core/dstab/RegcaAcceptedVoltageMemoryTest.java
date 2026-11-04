@@ -44,6 +44,52 @@ public class RegcaAcceptedVoltageMemoryTest {
             assertThrows(IllegalStateException.class,()->model.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0));
         }
     }
+    @Test void distinctSameTimeAcceptedEventReplacesTerminalWithoutAdvancingSavedMemory() {
+        for(var scheme:Regca1Model.IntegrationScheme.values()) {
+            var f=fixture(scheme);var model=f.model();model.prepareIntegrationStep(.1,.01);
+            f.bus().setVoltage(new Complex(.7));solve(model,"INITIAL",.1,true);model.acceptNetworkEventInput(.1);
+            double saved=model.getAcceptedVoltageMemoryState().savedVoltage();
+            f.bus().setVoltage(new Complex(.6));solve(model,"INITIAL",.1,true);model.acceptNetworkEventInput(.1);
+            var finalEvent=model.getAcceptedVoltageMemoryState();
+            assertEquals(saved,finalEvent.savedVoltage(),0.,"One saved-memory advance for the physical timestamp");
+            assertEquals(.6,finalEvent.terminalVoltage(),0.,"Next step starts from the final accepted event voltage");
+            model.acceptNetworkEventInput(.1);assertEquals(finalEvent,model.getAcceptedVoltageMemoryState());
+            // A completed repeated event is no longer a pending configuration boundary.
+            model.setNetworkVoltageMemoryPolicy(Regca1Model.NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY);
+            model.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0);
+            solve(model,"CORRECTOR",.1,false);model.afterStep(.01);
+            assertEquals(.68,model.getAcceptedVoltageMemoryState().savedVoltage(),1.e-15);
+            model.setNetworkIterationHighVoltageEnabled(false);
+        }
+    }
+    @Test void activeHighVoltageCorrectionIsTrialLocalAndRetainedOnlyOnSuccess() {
+        for(var scheme:Regca1Model.IntegrationScheme.values()) {
+            var f=fixture(scheme);var model=f.model();model.prepareIntegrationStep(.1,.01);
+            var states=model.getIntegrationStates();var rates=model.getStateDerivativeSnapshot();
+            f.bus().setVoltage(new Complex(1.5));model.beginNetworkSolution(context("INITIAL",.1,true));
+            model.beforeNetworkIteration(0);
+            assertEquals(1.4,model.getNetworkHighVoltageState().deceleratedVoltage(),1.e-15);
+            assertEquals(.14,model.getNetworkHighVoltageState().correction(),1.e-15);
+            f.bus().setVoltage(new Complex(1.4));model.afterNetworkConvergence();model.endNetworkSolution(true);
+            assertEquals(.224,model.getNetworkHighVoltageState().correction(),1.e-15);
+            assertEquals(.1-.224/1.32,model.getIq(),1.e-15,"Power correction is divided by decelerated voltage");
+            model.acceptNetworkEventInput(.1);
+            var accepted=model.getAcceptedVoltageMemoryState();var output=model.getNetworkHighVoltageState();
+            for(int i=0;i<3;i++){model.getIq();model.getOutputObject();model.getStates(null);}
+            assertEquals(accepted,model.getAcceptedVoltageMemoryState());assertEquals(output,model.getNetworkHighVoltageState());
+            assertEquals(states,model.getIntegrationStates());assertEquals(rates,model.getStateDerivativeSnapshot());
+            model.beginNetworkSolution(context("INITIAL",.1,true));
+            assertEquals(0.,model.getNetworkHighVoltageState().correction(),0.,"Each trial starts with zero working correction");
+            f.bus().setVoltage(new Complex(1.8));model.beforeNetworkIteration(0);model.endNetworkSolution(false);
+            assertEquals(output,model.getNetworkHighVoltageState());assertEquals(accepted,model.getAcceptedVoltageMemoryState());
+            assertThrows(IllegalStateException.class,()->model.acceptNetworkEventInput(.1));
+            f.bus().setVoltage(new Complex(1.));solve(model,"INITIAL",.1,true);model.acceptNetworkEventInput(.1);
+            assertEquals(0.,model.getNetworkHighVoltageState().correction(),0.,"Inactive correction does not retain the previous solve's increment");
+            assertEquals(1.,model.getAcceptedVoltageMemoryState().savedVoltage(),0.);
+            assertEquals(states,model.getIntegrationStates());assertEquals(rates,model.getStateDerivativeSnapshot());
+            model.setNetworkIterationHighVoltageEnabled(false);
+        }
+    }
     @Test void rejectedNetworkTrialLeavesCommitUntouchedAndCanBeRetried() {
         for(var scheme:Regca1Model.IntegrationScheme.values()) {
             var f=fixture(scheme);var model=f.model();model.prepareIntegrationStep(-.01,.01);
