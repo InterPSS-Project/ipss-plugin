@@ -284,6 +284,64 @@ repeat checks and restoration checks are retained in the private
 `chvdc2-outer-refinement-20261103` validation archive. This is full-network
 refinement evidence, not qualification of a production local-substep API.
 
+### Fixed-angle line controls and preparation checks
+
+Independent controls now distinguish line integration from angle-controller
+motion. Zero angle-rate limits alone do not freeze the inverter angle: its
+moving upper bound still projects the state. A separate fixed-angle profile
+also disables the two gains driving that bound and disables commutation
+protection. The line resistance, inductances, capacitance and moving classical
+source models remain unchanged. Both cold repeats have identical complete CSVs
+at 0.5 ms and 0.25 ms, including both event-side duplicates.
+
+The first control exposed a separate static preparation difference. With DC
+tap adjustment enabled and a 30-degree static extinction target, the reference
+selects inverter tap 0.9625; the local load-flow path selects 0.95625. The
+resulting initial current and firing angles differ before integration starts.
+This profile cannot qualify the line dynamics. It is retained as a rejected
+preparation control rather than corrected by importing recorded dynamic states.
+
+The probe now records an explicit DC tap-adjustment option. A second independent
+control disables this adjustment in both solvers. The comparison harness
+matches that option, solves the network afresh, and checks solved tap, DC voltage
+and current against the captured equipment before starting dynamics. Existing
+captures retain their enabled policy. All previous terminal trajectories remain
+within `3.2e-12` of the retained baseline comparison columns.
+
+| Fixed-tap network interval | Modified-Euler peak current error (A) | Staggered peak current error (A) |
+| --- | --- | --- |
+| 0.5 ms | 0.285612 | 0.271096 |
+| 0.25 ms | 0.145520 | 0.138333 |
+
+These complete coupled runs preserve every sample and use the production
+shared equations. Their voltage gates pass; the unchanged 0.01 A current gate
+and other continuous-state gates still fail. The current peaks occur immediately
+after application or clearing, and approximately halve with the interval.
+They must not be confused with the earlier preparation offset.
+
+A recorded-voltage scalar replay further separates event inputs and storage.
+Ten local two-step updates with the event-side driving voltage averaged over
+the first outer interval reproduce this fixed-angle control to 0.001221 A and
+0.001832 A when each local current store emulates binary32. Keeping double
+precision instead leaves 0.036045 A and 0.108808 A, respectively; rounding only
+the outer store does not remove that drift. These are diagnostic storage
+controls, not a recommendation to reduce production precision.
+
+The same policy does **not** qualify the general model: independent nominal
+moving-angle replays retain 0.156494 A and 0.076843 A, and the protected control
+retains 30.893799 A. Replacing fresh firing angles with their previous accepted
+values worsens those controls. Thus neither a generic input hold nor an added
+one-step angle delay is established. Continue with joint controller/line stage
+ownership and distinguish published terminal voltages from integration inputs.
+No production equations, precision, local-step default or tolerance are changed.
+
+The private `chvdc2-line-input-20261103` archives retain both repeatable fixed-angle
+families, the unsuccessful zero-rate isolation, rejected fine protected captures,
+complete coupled comparisons, scalar controls and executable source snapshots.
+The focused lifecycle checks pass; full terminal trajectory acceptance remains
+open. The finer protected reference itself reports network nonconvergence and
+is retained as rejected evidence, not used as an accuracy oracle.
+
 ## Preparation from the solved network
 
 `Chvdc2NetworkPreparation.prepare(network, parameters, H, initialTime)` resolves

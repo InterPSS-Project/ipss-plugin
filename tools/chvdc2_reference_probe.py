@@ -39,8 +39,9 @@ def main():
     parser.add_argument('--form', choices=['standard', 'legacy'], required=True)
     parser.add_argument('--control', choices=['inverter-power', 'current'], default='inverter-power')
     parser.add_argument('--network', choices=['coupled', 'stiff'], default='coupled')
-    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited', 'dc-limit', 'ac-limit', 'zero-filters', 'raml', 'commutation'], default='nominal')
+    parser.add_argument('--controller-profile', choices=['nominal', 'angle-limited', 'rate-limited', 'zero-angle-rate-line', 'fixed-angle-line', 'dc-limit', 'ac-limit', 'zero-filters', 'raml', 'commutation'], default='nominal')
     parser.add_argument('--static-gamma', type=float)
+    parser.add_argument('--dc-tap-adjustment', choices=['enabled', 'disabled'], default='enabled')
     parser.add_argument('--fault-reactance', type=float, default=.2, help='Fault reactance in pu on 230 kV / 100 MVA')
     parser.add_argument('--network-iterations', type=int, help='Explicit network iteration ceiling, at most 50')
     parser.add_argument('--commutation-duration', type=float, help='Explicit minimum short duration in seconds')
@@ -93,6 +94,8 @@ def main():
         tag = tag[:-1]+args.boundary_probe+'-'+args.repeat
     if args.event_refresh_count:
         tag = tag[:-1]+f'refresh{args.event_refresh_count}-'+args.repeat
+    if args.dc_tap_adjustment == 'disabled':
+        tag = tag[:-1]+'fixed-dc-taps-'+args.repeat
     out = root/'target'/args.batch/tag.replace('.', 'p')
     if shutil.disk_usage(root/'target').free < 2*1024**3+64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -126,6 +129,13 @@ def main():
         constants[2], constants[3] = 32.74, 32.70
     elif args.controller_profile == 'rate-limited':
         constants[18], constants[19] = .0002, -.0002
+    elif args.controller_profile in ['zero-angle-rate-line', 'fixed-angle-line']:
+        # Isolate the DC-line update without changing its R/L/C coefficients.
+        # Zero angle rates alone do not disable projection to a moving bound.
+        # The nonpositive extinction threshold disables commutation failure.
+        constants[18], constants[19], constants[30] = 0., 0., 0.
+        if args.controller_profile == 'fixed-angle-line':
+            constants[9], constants[12] = 0., 0.
     elif args.controller_profile == 'dc-limit':
         constants[20:24] = [.1, .4, .996, 1.001]
     elif args.controller_profile == 'ac-limit':
@@ -162,7 +172,7 @@ def main():
     library = Path(psspy.__file__).resolve().parents[1]/'PSSBIN/DSMDL.DLL'
     checked('library', psspy.addmodellibrary(str(library)))
     checked('network', psspy.read(0, 'network.raw'))
-    checked('load flow', psspy.fnsl([0, 0, 0, 1, 0, 0, 99, 0])); assert psspy.solved() == 0
+    checked('load flow', psspy.fnsl([0, 0, 0, int(args.dc_tap_adjustment == 'enabled'), 0, 0, 99, 0])); assert psspy.solved() == 0
     equipment = {str(bus): {key: checked('equipment', psspy.dc2dat_2('1', bus, key))
                            for key in ['TAP', 'TR', 'EBASE', 'XC', 'ANGLE', 'KVDC', 'DCCUR']} for bus in [7, 9]}
     Path('solved-equipment.json').write_text(json.dumps(equipment, indent=2)+'\n')

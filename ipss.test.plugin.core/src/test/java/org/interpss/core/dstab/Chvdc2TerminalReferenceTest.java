@@ -38,6 +38,45 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(ARCHIVE))));
     }
     static Stream<Arguments> profiles(){return Stream.of("0p0005","0p00025").flatMap(h->Stream.of(false,true).map(s->Arguments.of(h,s)));}
+    private static final Path LINE_ARCHIVE=Path.of("testData/private/verification-artifacts/chvdc2-line-input-20261103/fixed-tap-captures.zip");
+    private static String lineTag(String interval){return "chvdc2-fixed-tap-line-control-20261103/stiff-legacy-inverter-fault-flags001-h"
+            +interval+"-fixed-angle-line-gamma30-netiter50-fixed-dc-taps-a";}
+    private static void lineIntegrity()throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(LINE_ARCHIVE),"Retain independent fixed-angle line captures");
+        assertEquals("2ef07e630f94d9b53409b5e743af3a619cd7e87e67dbcf9991068ac1cf3dd0af",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(LINE_ARCHIVE))));
+    }
+    @Test void fixedAngleCapturesIsolateExcitedLineWithoutProtection()throws Exception {
+        lineIntegrity();
+        try(var z=new ZipFile(LINE_ARCHIVE.toFile())) {
+            for(String interval:List.of("0p0005","0p00025")) {
+                String tag=lineTag(interval);
+                var manifest=JSON.readTree(z.getInputStream(z.getEntry(tag+"/manifest.json")));
+                assertEquals("complete",manifest.path("status").asText());
+                assertTrue(manifest.path("initialization_and_network_valid").asBoolean());
+                assertEquals("disabled",manifest.path("settings").path("dc_tap_adjustment").asText());
+                assertEquals(manifest.path("entered_constants"),manifest.path("initialized_constants"));
+                for(int k:new int[]{9,12,18,19,30})assertEquals(0,manifest.path("entered_constants").get(k).asDouble());
+                byte[] csv=z.getInputStream(z.getEntry(tag+"/native.csv")).readAllBytes();
+                assertArrayEquals(csv,z.getInputStream(z.getEntry(tag.substring(0,tag.length()-1)+"b/native.csv")).readAllBytes());
+                var rows=Tiocr1ResetReferenceTest.csv(csv);assertEquals(interval.equals("0p0005")?1005:2005,rows.size());
+                int duplicates=0;double min=Double.POSITIVE_INFINITY,max=Double.NEGATIVE_INFINITY;
+                for(int k=0;k<rows.size();k++) {
+                    var row=rows.get(k);
+                    assertEquals(rows.getFirst().get("STATE6"),row.get("STATE6"));
+                    assertEquals(rows.getFirst().get("STATE7"),row.get("STATE7"));
+                    assertEquals(1.,row.get("VAR22"));
+                    if(k>0&&row.get("time_s").equals(rows.get(k-1).get("time_s")))duplicates++;
+                    min=Math.min(min,row.get("VAR5"));max=Math.max(max,row.get("VAR5"));
+                }
+                assertEquals(2,duplicates);assertTrue(max-min>30,"The line must be independently excited");
+            }
+        }
+    }
+    @ParameterizedTest @MethodSource("profiles")
+    void fixedAngleLineNetworkComparedAgainstIndependentCaptures(String interval,boolean staggered)throws Exception {
+        lineIntegrity();compare(LINE_ARCHIVE,lineTag(interval),staggered,false);
+    }
     static Stream<Arguments> protectedProfiles(){
         var raml=Stream.of("0p0005","0p00025").map(h->new String[]{"chvdc2-converter-20261102/protection-captures.zip",
                 "5245279e56e57373bdd8afc23fc5e033b73aef0b5e667f41a9d50c4e7ae53b16",
@@ -99,10 +138,11 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         compare(archive,tag,staggered,protectedProfile,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME);
     }
     private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock)throws Exception {
-        List<Map<String,Double>> reference;com.fasterxml.jackson.databind.JsonNode manifest;
+        List<Map<String,Double>> reference;com.fasterxml.jackson.databind.JsonNode manifest,equipment;
         Path raw=folder.resolve("network.raw"),dyr=folder.resolve("machines.dyr");
         try(var z=new ZipFile(archive.toFile())) {
             manifest=JSON.readTree(z.getInputStream(z.getEntry(tag+"/manifest.json")));
+            equipment=JSON.readTree(z.getInputStream(z.getEntry(tag+"/solved-equipment.json")));
             assertEquals("complete",manifest.path("status").asText());assertTrue(manifest.path("initialization_and_network_valid").asBoolean());
             assertEquals(manifest.path("entered_constants"),manifest.path("initialized_constants"));
             byte[] csv=z.getInputStream(z.getEntry(tag+"/native.csv")).readAllBytes();
@@ -113,11 +153,25 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             var machines=source.lines().filter(line->line.contains("'GENCLS'")).toList();assertEquals(4,machines.size());Files.write(dyr,machines);
         }
         var context=new PSSEMultiFileLoader().loadDStab(raw.toString(),dyr.toString());var a=context.getDynSimuAlgorithm();var n=a.getNetwork();
-        var flow=a.getAclfAlgorithm();flow.setTolerance(1e-10);flow.setMaxIterations(80);flow.getLfAdjAlgo().setApplyAdjustAlgo(false);assertTrue(flow.loadflow());
+        var flow=a.getAclfAlgorithm();flow.setTolerance(1e-10);flow.setMaxIterations(80);
+        // Match the independent preparation's explicit DC tap policy and solve
+        // the equipment. Do not import recorded operating points or states.
+        boolean dcTaps=!"disabled".equals(manifest.path("settings").path("dc_tap_adjustment").asText("enabled"));
+        var adjustment=flow.getLfAdjAlgo();adjustment.setApplyAdjustAlgo(dcTaps);
+        adjustment.getVoltAdjConfig().setXfrTapControl(false);
+        adjustment.getVoltAdjConfig().setSwitchedShuntAdjust(false);
+        adjustment.getVoltAdjConfig().setHvdcTapControl(dcTaps);
+        assertTrue(flow.loadflow());
         double h=manifest.path("settings").path("step").asDouble();
         var p=new Chvdc2Parameters("1",Chvdc2Parameters.Dialect.CHVDC2U1,
                 JSON.convertValue(manifest.path("settings").path("flags"),int[].class),JSON.convertValue(manifest.path("entered_constants"),double[].class));
         var binding=Chvdc2NetworkPreparation.prepare(n,p,h,-2*h);var ports=new Chvdc2TerminalPorts(binding,clock);ports.attach();
+        for(var entry:Map.of("7",binding.owner().getRectifier(),"9",binding.owner().getInverter()).entrySet()) {
+            var expected=equipment.path(entry.getKey());var converter=entry.getValue();
+            assertEquals(expected.path("TAP").asDouble(),converter.getXformerTapSetting(),1e-7,"Solved converter tap");
+            assertEquals(expected.path("KVDC").asDouble()*1000,converter.getDcVoltage(),.5,"Solved converter voltage");
+            assertEquals(expected.path("DCCUR").asDouble(),converter.getIdc(),.002,"Solved converter current");
+        }
         var recorder=new Recorder(a,binding,ports);a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(.5);
         a.setSimuOutputHandler(new StateMonitor());a.setSolver(staggered?new Shared(recorder):new Ordinary(recorder));
         String faultBus=manifest.path("settings").path("profile").asText().equals("rectifier-fault")?"Bus7":"Bus9";

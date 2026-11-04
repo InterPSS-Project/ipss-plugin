@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Use the [fixed-angle line controls](dynamic-models/chvdc2-named-link.md#fixed-angle-line-controls-and-preparation-checks) to separate static DC tap selection, event-input staging and local storage precision. Keep explicit tap-policy metadata and solved-equipment gates. The isolated replay does not generalize to moving-angle or protected controls; resolve joint controller/line stage ownership without adding a fitted delay or reducing production precision. The enabled-tap preparation difference remains separate and open.
+
 - Use the [moving-source full-network refinement](dynamic-models/chvdc2-named-link.md#protected-full-network-refinement-with-moving-sources) to separate numerical resolution from the remaining line-input update boundary. Both methods retain about 19 A peak current error at ten steps; alternative internal averaging and held-voltage policies remain unqualified. Preserve the repeated complete traces and unchanged gates; qualify the input/history contract independently before adding production local-step ownership.
 
 - Retain [corrected-endpoint commutation ownership](dynamic-models/chvdc2-named-link.md#commutation-applies-after-the-corrected-line-update): pickup/release cannot retroactively change the modified-Euler line correction, while RAML retains its separate predictor preview. Keep the physical line-update regressions and rejected old-policy control. Resolve the remaining continuous-state errors and retain moving source machines in protected refinement studies.
