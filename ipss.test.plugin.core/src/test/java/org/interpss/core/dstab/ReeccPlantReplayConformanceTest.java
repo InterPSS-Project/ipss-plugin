@@ -99,7 +99,7 @@ public class ReeccPlantReplayConformanceTest {
             Files.writeString(Path.of("../target/reecc-plant-replay-"+profile+"-"+history+".csv"),trace);
             System.out.println("REECC plant "+profile+" history="+history+" names="+names+" max="+Arrays.toString(maximum)+" at="+Arrays.toString(at));
     }
-    private static void verifyCaptures() throws Exception {
+    static void verifyCaptures() throws Exception {
         Path manifest=CAPTURES.resolve("manifest.json");
         org.junit.jupiter.api.Assumptions.assumeTrue(Files.exists(manifest), "Private independent reference not installed");
         assertEquals("e05fdfb606c947805d7d6157958b9d7c45d7bc71e4da263e2560713e075328d1",sha256(manifest),"Pinned capture index");
