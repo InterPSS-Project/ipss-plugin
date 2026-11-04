@@ -36,14 +36,46 @@ public class Reecc1NativeConformanceTest {
 
     @Test
     void allSevenStatesCommandsAndNetworkBoundaryFollowTheNativeFault() throws Exception {
+        compare(false,1.e-4);
+    }
+
+    @Test
+    @org.junit.jupiter.api.Tag("extended")
+    void staggeredStatesCommandsAndNetworkBoundaryFollowTheSameReference() throws Exception {
+        compare(true,1.e-4);
+    }
+
+    @Test
+    @org.junit.jupiter.api.Tag("extended")
+    void staggeredDefaultNetworkToleranceFollowsTheSameReference() throws Exception {
+        compare(true,1.e-6);
+    }
+
+    private void compare(boolean staggered, double networkTolerance) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("regca_reeca_repca_bus1062_weak.raw").toString(),
                 CASE.resolve("regca_reecc1_bus1062.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        var solver = new CertifiedWeakGridSolver(algorithm);
-        algorithm.setSolver(solver);
+        var solver = staggered ? null : new CertifiedWeakGridSolver(algorithm);
+        if (staggered) {
+            var alternate = new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm) {
+                @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                    boolean accepted=super.networkSolutionStep();
+                    var d=getLastNetworkSolutionDiagnostics();
+                    assertTrue(accepted,d.toString());
+                    assertTrue(d.iterations()<=50,d.toString());
+                    assertEquals(50,d.iterationLimit());
+                    assertEquals(networkTolerance,d.voltageTolerance(),0.);
+                    assertTrue(d.maximumVoltageChange()<=d.voltageTolerance(),d.toString());
+                    return accepted;
+                }
+            };
+            alternate.setNetworkAccelerationEnabled(true);
+            if (networkTolerance == 1.e-4) alternate.setNetworkSolutionTolerance(networkTolerance);
+            algorithm.setSolver(alternate);
+        } else algorithm.setSolver(solver);
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
@@ -67,7 +99,7 @@ public class Reecc1NativeConformanceTest {
             record(actual, algorithm.getSimuTime(), network, converter, model);
         }
 
-        solver.assertAccelerationExercised();
+        if (!staggered) solver.assertAccelerationExercised();
         Csv reference = read(REFERENCE);
         assertTrue(!reference.rows().isEmpty());
         String[] names = {"V_MEAS", "P_MEAS", "Q_PI", "V_PI", "IQ_LAG",
@@ -89,6 +121,7 @@ public class Reecc1NativeConformanceTest {
                 }
             }
         }
+        System.out.println("REECC1 comparison: staggered="+staggered+", network tolerance="+networkTolerance);
         System.out.println("REECC1 native max errors: " + Arrays.toString(maximum));
         System.out.println("REECC1 native max-error times: " + Arrays.toString(maximumTime));
         double[] ceilings = {.00105, .00045, 1.5e-5, .00030, 1.0e-12,

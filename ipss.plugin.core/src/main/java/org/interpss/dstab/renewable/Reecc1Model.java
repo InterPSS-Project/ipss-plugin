@@ -10,11 +10,21 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Published seven-state utility-scale battery electrical controller REECC1. */
 public final class Reecc1Model
-        implements RenewableElectricalController, ICMLStateProvider {
+        implements TwoStepElectricalController, ICMLStateProvider,
+        org.interpss.dstab.control.util.IntegrationStateAccess {
     private static final double EPS = 1.0e-9;
     private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
+    private final TwoStepHistory twoStep = new TwoStepHistory(7);
+    private final org.interpss.dstab.control.util.IntegrationStateMonitor stateMonitor =
+            new org.interpss.dstab.control.util.IntegrationStateMonitor(
+                    "Voltage Measurement Filter", "Real Power Filter", "Reactive Power PI",
+                    "Voltage Error PI", "Reactive Current Lag", "Power Order Lag", "Battery Energy Output");
+    private double twoStepIpcmd, twoStepIqcmd;
+
     private final Reecc1Data data;
+    private final double[] qVoltages, qCurrents, pVoltages, pCurrents;
+    private final int qPointCount, pPointCount;
     private final RenewableConverterHost converter;
     private Repca1Model plantController;
     private WtgwgoaModel weakGridController;
@@ -63,6 +73,12 @@ public final class Reecc1Model
     private Reecc1Model(Reecc1Data data, RenewableConverterHost converter) {
         this.data = data;
         this.converter = converter;
+        qVoltages = new double[]{data.vq1(), data.vq2(), data.vq3(), data.vq4()};
+        qCurrents = new double[]{data.iq1(), data.iq2(), data.iq3(), data.iq4()};
+        pVoltages = new double[]{data.vp1(), data.vp2(), data.vp3(), data.vp4()};
+        pCurrents = new double[]{data.ip1(), data.ip2(), data.ip3(), data.ip4()};
+        qPointCount = validPointCount(qVoltages, qCurrents);
+        pPointCount = validPointCount(pVoltages, pCurrents);
     }
 
     public static Reecc1Model forConverterHost(Reecc1Data data, RenewableConverterHost converter) {
@@ -81,6 +97,8 @@ public final class Reecc1Model
 
     @Override
     public void initialize(double p, double q, double v) {
+        twoStep.reset();
+        stateMonitor.reset();
         resolveSensedBus();
         loadEffectiveParameters();
         double sensedV = sensedVoltage(v);
@@ -106,6 +124,8 @@ public final class Reecc1Model
 
         voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         updateCommands();
+        twoStepIpcmd = ipcmd;
+        twoStepIqcmd = iqcmd;
         if (plantController != null) plantController.initialize(p, q, sensedV);
         if (weakGridController != null) weakGridController.initialize(v, p);
     }
@@ -145,6 +165,103 @@ public final class Reecc1Model
         for (int index = 0; index < substeps; index++) {
             stepControls(controlStep, p, q, sensedV);
         }
+    }
+
+    @Override public void rebaseNextTwoStep() {
+        twoStep.rebaseNextStep();
+        if (plantController != null) plantController.rebaseNextTwoStep();
+        if (weakGridController != null) weakGridController.rebaseNextTwoStep();
+    }
+
+    @Override public double getTwoStepIpcmd() { return twoStepIpcmd; }
+    @Override public double getTwoStepIqcmd() { return twoStepIqcmd; }
+
+    @Override public void refreshTwoStep(double p, double q, double v, double frequency) {
+        double sensedV = sensedVoltage(v);
+        if (plantController != null) plantController.stepTwoStep(0., p, q, sensedV, frequency);
+        if (weakGridController != null) weakGridController.stepTwoStep(0., v, getPlantPowerReference(p0));
+        voltageDip = sensedV < data.vdip() || sensedV > data.vup();
+        if (effectiveTrv <= EPS) vMeasured = sensedV;
+        if (data.pfFlag() == 1 && effectiveTp <= EPS) pMeasured = p;
+        double selectedQ = selectedReactiveReference();
+        double qTarget = limit(selectedQ, effectiveQmin, effectiveQmax);
+        if (data.qFlag() == 0) {
+            if (!voltageDip && effectiveTiq <= EPS) qCurrent = qTarget / nonzero(vMeasured);
+            reactiveOutput = qCurrent;
+        } else {
+            double qError = data.vFlag() == 1 ? qTarget - q : 0.;
+            double voltageCommand = limit(data.vFlag() == 1 ? data.kqp()*qError+qIntegral : selectedQ,
+                    effectiveVmin, effectiveVmax);
+            double headroom = preliminaryReactiveLimit(pOrder/nonzero(vMeasured)+auxiliaryPower);
+            reactiveOutput = limit(data.kvp()*(voltageCommand-vMeasured)+vIntegral,-headroom,headroom);
+        }
+        updateCommands();
+    }
+
+    /** Evaluate one common old boundary; only accepted positive steps consume history. */
+    @Override public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+        if (!Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("Two-step duration must be finite and nonnegative");
+        refreshTwoStep(p,q,v,frequency);
+        if (dt == 0.) return;
+        double sensedV = sensedVoltage(v);
+        double oldPlantReference = getPlantPowerReference(p0);
+        double selectedQ = selectedReactiveReference();
+        double qTarget = limit(selectedQ,effectiveQmin,effectiveQmax);
+        double qError = data.vFlag() == 1 ? qTarget-q : 0.;
+        double voltageCommand = limit(data.vFlag() == 1 ? data.kqp()*qError+qIntegral : selectedQ,
+                effectiveVmin,effectiveVmax);
+        double voltageError = voltageCommand-vMeasured;
+        double headroom = preliminaryReactiveLimit(pOrder/nonzero(vMeasured)+auxiliaryPower);
+        double target = limit(getSelectedPowerReference(p0),effectivePmin,effectivePmax);
+        double orderRate = limit((target-pOrder)/(effectiveTpord<=EPS?dt:effectiveTpord),
+                effectiveDpmin,effectiveDpmax);
+        boolean holdQ = voltageDip || data.qFlag()!=1 || data.vFlag()!=1
+                || integralBlocked(qIntegral,qError,data.kqp(),effectiveVmin,effectiveVmax);
+        boolean holdV = voltageDip || data.qFlag()!=1
+                || integralBlocked(vIntegral,voltageError,data.kvp(),-headroom,headroom);
+        double vRate = effectiveTrv<=EPS?0.:(sensedV-vMeasured)/effectiveTrv;
+        double pRate = data.pfFlag()!=1||effectiveTp<=EPS?0.:(p-pMeasured)/effectiveTp;
+        double qRate = holdQ?0.:data.kqi()*qError;
+        double voltageRate = holdV?0.:data.kvi()*voltageError;
+        double iqRate = voltageDip||data.qFlag()!=0||effectiveTiq<=EPS?0.:
+                (qTarget/nonzero(vMeasured)-qCurrent)/effectiveTiq;
+        double energyRate = p/data.dischargeTime();
+        stateMonitor.begin(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP);
+        stateMonitor.record(0,vMeasured,vRate); stateMonitor.record(1,pMeasured,pRate);
+        stateMonitor.record(2,qIntegral,qRate); stateMonitor.record(3,vIntegral,voltageRate);
+        stateMonitor.record(4,qCurrent,iqRate); stateMonitor.record(5,pOrder,voltageDip?0.:orderRate);
+        stateMonitor.record(6,energyOutput,energyRate);
+        twoStep.begin(dt);
+        vMeasured=effectiveTrv<=EPS?twoStep.hold(0,vMeasured):twoStep.advance(0,vMeasured,vRate);
+        pMeasured=data.pfFlag()!=1||effectiveTp<=EPS?twoStep.hold(1,pMeasured):twoStep.advance(1,pMeasured,pRate);
+        qIntegral=holdQ?twoStep.hold(2,qIntegral):twoStep.advance(2,qIntegral,qRate);
+        vIntegral=holdV?twoStep.hold(3,vIntegral):twoStep.advance(3,vIntegral,voltageRate);
+        qCurrent=voltageDip||data.qFlag()!=0||effectiveTiq<=EPS?twoStep.hold(4,qCurrent):twoStep.advance(4,qCurrent,iqRate);
+        pOrder=voltageDip?twoStep.hold(5,pOrder):limit(twoStep.advance(5,pOrder,orderRate),effectivePmin,effectivePmax);
+        energyOutput=twoStep.advance(6,energyOutput,energyRate);
+        twoStep.observeRates(stateMonitor);
+        // Publish electrical commands before advancing upstream controller states.
+        refreshTwoStep(p,q,v,frequency);
+        twoStepIpcmd=ipcmd; twoStepIqcmd=iqcmd;
+        if (plantController!=null) plantController.stepTwoStep(dt,p,q,sensedV,frequency);
+        if (weakGridController!=null) weakGridController.stepTwoStep(dt,v,oldPlantReference);
+        refreshTwoStep(p,q,v,frequency);
+    }
+
+    private double selectedReactiveReference() {
+        return data.pfFlag()==1 ? pMeasured*powerFactorRatio
+                : reactiveReference+(plantController==null?0.:plantController.getQref());
+    }
+
+    private static boolean integralBlocked(double integral,double error,double kp,double lower,double upper) {
+        double output=kp*error+integral;
+        return output>=upper&&error>0. || output<=lower&&error<0.;
+    }
+
+    @Override public Map<String,Double> getIntegrationStates() { return getNamedStates(); }
+    @Override public org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
     }
 
     private void stepControls(double dt, double p, double q, double sensedV) {
@@ -250,13 +367,9 @@ public final class Reecc1Model
     }
 
     private double tableLimit(double voltage, boolean reactive) {
-        double[] x = reactive
-                ? new double[]{data.vq1(), data.vq2(), data.vq3(), data.vq4()}
-                : new double[]{data.vp1(), data.vp2(), data.vp3(), data.vp4()};
-        double[] y = reactive
-                ? new double[]{data.iq1(), data.iq2(), data.iq3(), data.iq4()}
-                : new double[]{data.ip1(), data.ip2(), data.ip3(), data.ip4()};
-        int count = validPointCount(x, y);
+        double[] x = reactive ? qVoltages : pVoltages;
+        double[] y = reactive ? qCurrents : pCurrents;
+        int count = reactive ? qPointCount : pPointCount;
         if (count == 0) return Double.POSITIVE_INFINITY;
         if (voltage <= x[0]) return Math.max(0.0, y[0]);
         for (int index = 1; index < count; index++) {
