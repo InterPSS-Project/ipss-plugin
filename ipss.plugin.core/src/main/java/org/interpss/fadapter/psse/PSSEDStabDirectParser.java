@@ -556,6 +556,14 @@ public class PSSEDStabDirectParser {
         // attachment. A bus-number lookup would invent an invalid Bus0 owner.
         if (record.hasNamedTarget()) return null;
         if (record.canonicalModelName().equals("TIOCR1")) {
+            int loadBus=Integer.parseInt(record.fields().get(6));
+            String loadId=record.fields().get(7);
+            if(loadBus!=0 && (loadId.equals("*") || loadId.equals("#"))) {
+                var host=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+loadBus);
+                return host!=null && host.getContributeLoad(loadId)!=null
+                        ? "TIOCR1 exact symbolic load IDs are unsupported: runtime typed wildcard semantics cannot represent this exact target"
+                        : "TIOCR1 exact load target does not exist; native import does not expand wildcard load IDs";
+            }
             return relayBranch(builder.getBaseDStabNetwork(),record.busNumber(),
                     Integer.parseInt(record.fields().get(2)),record.fields().get(3)) == null
                     ? "TIOCR1 monitored branch does not exist" : null;
@@ -4432,7 +4440,7 @@ public class PSSEDStabDirectParser {
         BaseDStabBus<?,?> host=network.getDStabBus(BUS_ID_PREFIX+(loadBus==0?from:loadBus));
         if(host==null)return false;
         String loadId=loadBus==0?null:f.get(7);
-        if(loadBus!=0&&!loadId.equals("*")&&host.getContributeLoad(loadId)==null)return false;
+        if(loadBus!=0&&(loadId.equals("*")||loadId.equals("#")||host.getContributeLoad(loadId)==null))return false;
         AclfBranch[] transfers=new AclfBranch[3];
         for(int i=0;i<3;i++) {
             int b=Integer.parseInt(f.get(8+3*i));

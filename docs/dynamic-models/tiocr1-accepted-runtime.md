@@ -474,3 +474,42 @@ fix. Full open diagnostics and five byte-identical cold pairs are retained in
 `testData/private/verification-artifacts/tiocr-reset-contract-20261104/`.
 The capture archive SHA-256 is
 `df3281f92bf68e00e6b34fc397c9fc7f6490a570b3e6e2069adec0afbc720933`.
+
+
+## Exact native load IDs versus typed wildcards
+
+Independent cold pairs now distinguish an exact composite source ID from an
+absent `*` target, using a collapsed composite plus an unrelated static load
+and fixed shunt. The exact-ID action removes 25% of composite capacity and
+preserves the unrelated impedance load. The `*` record instead emits
+`invalid load specified` at operation: its contact closes, but neither load
+is shed. Each pair has identical complete CSV output; event-side duplicates
+remain retained. External current/power reconstruction confirms the unchanged
+static impedance demand within 1.9e-6 pu active power after fault clearing.
+
+The original generic capture quality predicate missed that action-time message.
+Those wildcard captures are retained as rejected-target evidence, not accepted
+trajectory references, irrespective of their original manifest status. The
+model-specific capture wrapper now treats the diagnostic as a quality failure.
+
+The native importer previously exempted `*` from exact load-existence checks
+and passed it to the typed whole-owner runtime. Import now rejects that
+interpretation before attaching either relay or load port. If a literal load
+named `*` or `#` exists, the diagnostic explicitly identifies an unsupported
+exact symbolic target because the runtime cannot distinguish it from its typed
+wildcard API. This does not assert that either symbol is a forbidden source
+load ID. Exact ordinary IDs and load-bus-zero/no-load actions remain supported;
+typed wildcard constructors remain an explicit application choice.
+
+These observations do not qualify native whole-bus wildcard shedding or solve
+typed collapsed-wildcard static-residual allocation. Those scopes remain
+separate. No composite equations, accepted-event scheduling, physical bounds
+or accuracy thresholds change in this import correction.
+
+Focused validation passes 19 tests with zero failures/errors/skips,
+including import atomicity, symbolic literal diagnostics, typed API preservation,
+no-load actions and existing both-method relay/composite checks. Private evidence
+is in `tiocr-exact-target-20261104`; archive SHA-256 values:
+
+- `captures.zip`: `c75503f9a87b2b8cef7532726138fc6434df7b4c88daba35336bef593c493d25`
+- `validation.zip`: `11f77da83e7dd454d2b4a16a7bfef0ee2440eb3124d89c88bc68f4e19f82967f`
