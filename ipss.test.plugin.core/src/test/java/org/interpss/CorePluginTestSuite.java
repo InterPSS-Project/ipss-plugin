@@ -736,6 +736,7 @@ import org.junit.platform.suite.api.Suite;
 	// EDclf
 	IEEE14_Dclf_Test.class,
 	IEEE14_EDclf_Test.class,
+	org.interpss.core.dclf.edclf.IEEE14_EDclfPaperOracleTest.class,
 	IEEE39_EDclf_Test.class,
 	IEEE118_EDclf_Test.class,
 
@@ -1506,6 +1507,7 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_Sample_NB_Rawx_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Aclf_Test.class,
 	org.interpss.core.adapter.psse.raw.nbreaker.NodebreakerConverterAuditTest.class,
+	org.interpss.core.adapter.psse.raw.nbreaker.LccResistanceReferenceTest.class,
 
 	// PowSyBl catalog coverage
 	PSSE_PowSyBl_IEEE_Smoke_Test.class,

@@ -18,7 +18,7 @@ import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 
 /** Independent finite-resistance DC boundary and AC power qualification. */
 @Tag("extended")
-class LccResistanceReferenceTest extends CorePluginTestSetup {
+public class LccResistanceReferenceTest extends CorePluginTestSetup {
     private static final Path ARCHIVE=Path.of("testData/private/lcc-resistance-20261104/reference.zip");
     private static final String PREFIX="lcc-resistance-reference-20261104/";
     @TempDir Path temporary;
