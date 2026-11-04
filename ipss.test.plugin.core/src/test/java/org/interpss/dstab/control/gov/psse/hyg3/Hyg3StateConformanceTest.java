@@ -159,7 +159,7 @@ public class Hyg3StateConformanceTest {
             var manifest = new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
             double step = manifest.path("settings").path("step").asDouble(), duration = manifest.path("settings").path("duration").asDouble();
             var reference = rows(root.resolve("native.csv"));
-            var actual = Hyg3SharedSmibTest.simulate(root.resolve("network.raw"), root.resolve("dynamic.dyr"), staggered, false, step, duration);
+            var actual = Hyg3SharedSmibTest.simulate(root.resolve("network.raw"), root.resolve("dynamic.dyr"), staggered, false, step, comparisonDuration(reference,step));
             var maximum = new LinkedHashMap<String, Double>(); var at = new LinkedHashMap<String, Double>();
             var squared = new LinkedHashMap<String, Double>(); var low = new LinkedHashMap<String, Double>(); var high = new LinkedHashMap<String, Double>();
             assertEquals(0., manifest.path("initialized_constants").get(14).asDouble(), 0., "This matrix bypasses backlash");
@@ -237,7 +237,7 @@ public class Hyg3StateConformanceTest {
         assertEquals(List.of(), failures);
     }
 
-    private static double[] stateTolerances(boolean staggered, double duration) {
+    static double[] stateTolerances(boolean staggered, double duration) {
         if (duration == .5) return new double[]{3.5e-7,7e-6,4.2e-7,1.3e-5,8e-6,
                 staggered ? 1.7e-5 : 1e-4,1e-5,1.8e-7,staggered ? 9e-7 : 1.3e-6};
         return staggered
@@ -245,13 +245,21 @@ public class Hyg3StateConformanceTest {
                 : new double[]{4.5e-6,1.6e-5,1.9e-6,6e-5,6.5e-6,9e-4,6.5e-6,9e-6,8.5e-5};
     }
 
-    private static double[] boundaryTolerances(boolean staggered, double duration) {
+    static double[] boundaryTolerances(boolean staggered, double duration) {
         if (duration == .5) return staggered
                 ? new double[]{5e-5,1.4e-5,4e-5,2.9e-7,.00045,.00015,7.5e-6,2.9e-7,1e-7,8e-6,6e-5}
                 : new double[]{.00015,.0021,4e-5,1.7e-6,.0028,.00075,7.5e-6,1.7e-6,1e-7,8e-6,6e-5};
         return staggered
                 ? new double[]{.00016,.00095,1e-5,2e-6,.0016,.0005,7.5e-6,2e-6,1e-7,6e-6,8.5e-6}
                 : new double[]{.002,.014,1.3e-5,1.6e-5,.028,.008,1.6e-5,1.6e-5,1e-7,6.5e-6,2.3e-5};
+    }
+
+    /** Retain the final reference tick even when its accumulated clock crosses
+     * the requested duration one step later than the double-precision clock. */
+    static double comparisonDuration(List<Map<String,Double>> reference,double step) {
+        long ticks=reference.stream().map(row->row.get("time_s")).filter(time->time>=0.).distinct().count()-1;
+        assertTrue(ticks>0,"Reference must contain positive integration intervals");
+        return ticks*step;
     }
 
     static List<Map<String, Double>> rows(Path path) throws IOException {

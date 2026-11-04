@@ -137,19 +137,25 @@ public class Hyg3LimitConformanceTest {
     void coupledReferenceReversalsRetainCompleteStateAndBoundaryDiagnostics(boolean staggered,@TempDir Path staged) throws Exception {
         var fixture = new Hyg3ReferenceFixture(staged,CONFIG);
         Path output = Files.createTempDirectory(Path.of("target"),staggered ? "hyg3-limit-staggered-" : "hyg3-limit-euler-");
+        compare(fixture,staggered,output,entry -> true);
+    }
+
+    static void compare(Hyg3ReferenceFixture fixture,boolean staggered,Path output,
+            java.util.function.Predicate<com.fasterxml.jackson.databind.JsonNode> include) throws Exception {
         System.out.println("HYG3 active-limit comparison "+output.getFileName());
         var diagnostics = new LinkedHashMap<String,Object>();
         for (var entry : fixture.matrix()) {
-            if (!entry.path("repeat").asText().equals("a")) continue;
+            if (!entry.path("repeat").asText().equals("a") || !include.test(entry)) continue;
             String tag = entry.path("tag").asText(); Path root = fixture.stage(tag);
             var manifest = new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
             var events = new ArrayList<Hyg3SharedSmibTest.ReferenceEvent>();
             for (var event : manifest.path("reference_events")) events.add(new Hyg3SharedSmibTest.ReferenceEvent(event.get(0).asDouble(),event.get(1).asDouble()));
             assertEquals(3,events.size()); double step = entry.path("step_s").asDouble(), duration = entry.path("duration_s").asDouble();
-            var actual = Hyg3SharedSmibTest.simulate(root.resolve("network.raw"),root.resolve("dynamic.dyr"),staggered,false,step,duration,events);
+            var reference = Hyg3StateConformanceTest.rows(root.resolve("native.csv"));
+            var actual = Hyg3SharedSmibTest.simulate(root.resolve("network.raw"),root.resolve("dynamic.dyr"),staggered,false,step,
+                    Hyg3StateConformanceTest.comparisonDuration(reference,step),events);
             assertEquals(manifest.path("initial_reference_from_equilibrium").asDouble(),actual.initial.values().get("REFERENCE_INPUT"),2e-8);
             assertEquals(events.size(),actual.nextEvent,"Every declared input boundary executes once");
-            var reference = Hyg3StateConformanceTest.rows(root.resolve("native.csv"));
             var maximum = new LinkedHashMap<String,Double>(); var at = new LinkedHashMap<String,Double>();
             var squared = new LinkedHashMap<String,Double>(); var low = new LinkedHashMap<String,Double>(); var high = new LinkedHashMap<String,Double>();
             for (String key : reference.getFirst().keySet()) if (!key.equals("time_s")) {

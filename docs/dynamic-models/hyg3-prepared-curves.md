@@ -539,3 +539,62 @@ Private validation retains the executed source/classes, full paired samples,
 prescribed-input traces, independent all-state recurrence audit and old-model
 negative control. These qualify the event-history correction and input
 localization; they do not establish complete HYG3 or system acceptance.
+
+## Ten-second fault and reversal extension
+
+`Hyg3LongDurationConformanceTest` extends both controller modes to ten seconds
+using independently captured fault and large-backlash reversal profiles. Each
+profile has two cold captures; all six pairs have identical channel files and
+unchanged entered constants. Standard faults cover quarter-cycle and half that
+interval; reversals cover quarter-cycle integration. Both shared integration
+methods use the existing state and boundary envelopes without relaxation.
+
+The pinned archive is
+`testData/private/verification-artifacts/hyg3-long-duration-agent-20261104/captures.zip`,
+SHA-256 `0ca02f1095d2a8505158311eac18a9a3b42f674e17476383bad157e975be989b`.
+
+The comparison horizon now derives from the number of distinct nonnegative
+reference integration ticks. At quarter-cycle resolution, the accumulated
+reference clock reaches 9.99989032745 seconds before taking its final step to
+10.0040569305 seconds. Stopping the comparison at exactly 2,400 steps previously
+omitted that final sample. The extended comparison runs 2,401 steps, retains
+startup rows and both sides of every event, and records both clocks separately.
+It does not shift, interpolate or truncate either trajectory. At half the
+interval, the reference completes 4,800 steps at 10.0003261566 seconds.
+
+All standard ten-second fault comparisons pass the existing full-trajectory
+voltage, active/reactive power range-normalized RMSE and rotor-angle gates.
+The largest active-power NRMSE is 0.000288. However, all four method/mode
+standard-state groups exceed their five-second absolute envelopes late in the
+run. One PID backlash comparison also exceeds its gate-state envelope, with
+maximum error 0.0000156594 pu. These failures remain visible; this extension
+does not qualify the model for all longer trajectories.
+
+Prescribing the recorded speed and electrical power still leaves slow-state
+differences. The replay integrates the same nine controller states and retains
+accepted event rates separately from the older integration history:
+
+| Mode | Interval (s) | Maximum gate error (pu) | Maximum flow error (pu) |
+| --- | ---: | ---: | ---: |
+| Double derivative | 1/240 | 0.000007518 | 0.000009138 |
+| Double derivative | 1/480 | 0.000011300 | 0.000014764 |
+| PID | 1/240 | 0.000013577 | 0.000014874 |
+| PID | 1/480 | 0.000020806 | 0.000022785 |
+
+Thus these late differences cannot be attributed solely to coupled machine or
+network inputs. Halving the interval increases the slow-state discrepancy.
+Recorded flow states frequently remain on single-precision plateaus, and a
+preliminary recurrence audit finds defects around one single-precision unit
+in the last place. That observation is diagnostic, not proof of the complete
+cause. Production state precision, equations and test thresholds remain
+unchanged. Further work must distinguish stored-state rounding, exact internal
+reference initialization and controller history before changing equations.
+
+The isolated HYG3 audit runs 72 tests: 63 pass and nine fail, with no errors or
+skips. All 62 existing test identities retain their previous outcomes (three
+existing failures); the extension adds six failing comparisons. Field-by-field
+comparison of all 72 existing exported trajectories finds no numerical changes.
+Raw CSV byte hashes can differ because map-derived column ordering varies
+between processes. Private validation retains the full traces, test reports,
+executed controller classes and a field-based audit. The new failures remain
+qualification work, rather than evidence supporting a production equation fix.
