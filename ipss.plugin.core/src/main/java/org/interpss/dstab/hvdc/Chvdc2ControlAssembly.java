@@ -79,8 +79,12 @@ public final class Chvdc2ControlAssembly implements StaggeredEulerParticipant, I
         ready();if(!pending)throw new IllegalStateException("A controller predictor is required");accept(time,sequence,false);
     }
     private void accept(double time,long sequence,boolean publishElectricalAngle) {
+        acceptNetworkStage(time,sequence,publishElectricalAngle,true,true);
+    }
+    void acceptNetworkStage(double time,long sequence,boolean publishElectricalAngle,boolean allowRaml,boolean allowCommutation) {
+        ready();
         rates();bindProtection();long before=protection.staggeredInputDiscontinuityVersion();
-        if(publishElectricalAngle)protection.acceptBoundary(time,sequence);else protection.acceptProtectionStage(time,sequence);
+        protection.acceptNetworkStage(time,sequence,publishElectricalAngle,allowRaml,allowCommutation);
         long after=protection.staggeredInputDiscontinuityVersion();
         if(after!=before){System.arraycopy(rate,0,leftRate,0,STATE_COUNT);revision=after;}
         bindCurrent();

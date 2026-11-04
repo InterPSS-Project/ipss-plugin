@@ -75,6 +75,11 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
     /** A numerical protection stage may change its trial mode without publishing a new AC reference angle. */
     void acceptProtectionStage(double time,long acceptance){accept(time,acceptance,false);}
     private void accept(double time,long acceptance,boolean publishElectricalAngle) {
+        acceptNetworkStage(time,acceptance,publishElectricalAngle,true,true);
+    }
+    /** A network owner may latch each regime after its first provisional transition.
+     * Later convergence passes still refresh accepted inputs and the electrical angle. */
+    void acceptNetworkStage(double time,long acceptance,boolean publishElectricalAngle,boolean allowRaml,boolean allowCommutation) {
         ready();exclusive();finite(time);
         if(acceptance<0||acceptance<frame.acceptance||time<frame.time)
             throw new IllegalArgumentException("Protection acceptance sequence and time must be monotonic");
@@ -88,7 +93,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
         }
         int phase=frame.ramPhase;double start=frame.ramStart,marker=frame.ramMarker,failureTime=frame.failureTime;
         boolean failed=frame.failed,hadTransition=frame.hadFailureTransition;
-        if(ramlEnabled) {
+        if(ramlEnabled&&allowRaml) {
             if(phase==IDLE&&frame.rectifierVoltage<preparedRamVoltage){phase=HOLD;start=time;marker=time;}
             if(phase==HOLD) {
                 double elapsed=time-start;finite(elapsed);
@@ -96,7 +101,7 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
             }
             if(phase==WAIT_RECOVERY&&frame.rectifierVoltage>preparedRamVoltage)phase=IDLE;
         }
-        if(failureAngle>0) {
+        if(failureAngle>0&&allowCommutation) {
             if(!failed&&frame.gamma<failureAngle){failed=true;failureTime=time;hadTransition=true;}
             else if(failed) {
                 double elapsed=time-failureTime;finite(elapsed);

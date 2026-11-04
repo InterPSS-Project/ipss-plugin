@@ -34,6 +34,7 @@ public final class Chvdc2TerminalPorts {
     private Complex savedRectifierOutput,savedInverterOutput;
     private boolean transaction,networkTrial,predictorTrial,clockedTrial,integrationPending,sharedIntegration,
             sharedEndpointPending,predictorConverged,initialAccepted,actionDiscontinuity;
+    private boolean ramlTransitioned,commutationTransitioned;
     private double evaluationTime,sharedEndpoint,interval;
     private long sequence,savedSequence;
 
@@ -81,6 +82,7 @@ public final class Chvdc2TerminalPorts {
     private void beginTransaction() {
         if(transaction)throw new IllegalStateException("A terminal transaction is already open");
         runtime.beginTransaction();transaction=true;savedSequence=sequence;
+        ramlTransitioned=false;commutationTransitioned=false;
         savedRectifierOutput=rectifierOutput;savedInverterOutput=inverterOutput;
     }
     private void rollback() {
@@ -148,9 +150,10 @@ public final class Chvdc2TerminalPorts {
         @Override public boolean applyConvergedNetworkAction(){
             actionDiscontinuity=false;if(!owner||!networkTrial||!clockedTrial)return false;
             bind();long before=runtime.staggeredInputDiscontinuityVersion();
-            boolean shorted=runtime.inverterShorted();
-            if(predictorTrial)runtime.evaluatePredictorProtection(evaluationTime,sequence++);
-            else runtime.evaluateProtectionBoundary(evaluationTime,sequence++);
+            boolean shorted=runtime.inverterShorted(),raml=runtime.ramlActive();
+            if(predictorTrial)runtime.evaluatePredictorProtection(evaluationTime,sequence++,!ramlTransitioned,!commutationTransitioned);
+            else runtime.evaluateProtectionBoundary(evaluationTime,sequence++,!ramlTransitioned,!commutationTransitioned);
+            ramlTransitioned|=raml!=runtime.ramlActive();commutationTransitioned|=shorted!=runtime.inverterShorted();
             actionDiscontinuity=before!=runtime.staggeredInputDiscontinuityVersion();
             // A new protection regime must be solved before publication; its
             // electrical angle is still the previous accepted boundary's angle.
@@ -163,7 +166,7 @@ public final class Chvdc2TerminalPorts {
             try {
                 if(!converged){rollback();return;}
                 if(predictorTrial){predictorConverged=true;return;}
-                if(clockedTrial){bind();runtime.acceptBoundary(evaluationTime,sequence++);}
+                if(clockedTrial){bind();runtime.acceptNetworkBoundary(evaluationTime,sequence++);}
                 // Do not recalculate outputs after accepting the next electrical angle.
                 commit();integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;
             }catch(RuntimeException failure){rollback();throw failure;}

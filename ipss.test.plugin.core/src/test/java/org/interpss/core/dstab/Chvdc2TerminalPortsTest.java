@@ -28,6 +28,17 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         return new Fixture(f,b,ports);
     }
     private static Context context(String stage,double time){return new Context(stage,time-.0005,time,50,1e-10);}
+    private Fixture initiallyShortedFixture()throws Exception {
+        var f=fixture(true);double[] boundary=new double[10];f.binding().runtime().readBoundary(boundary,0);
+        f.ports().rectifierPort().setDStabBus(null);f.ports().inverterPort().setDStabBus(null);
+        double[] c=Chvdc2ParametersTest.constants();
+        c[Chvdc2Parameters.Constant.GAMMA_CF_DEG.ordinal()]=Math.toDegrees(boundary[8])+1;
+        c[Chvdc2Parameters.Constant.V_AC_UCF_PU.ordinal()]=0;
+        c[Chvdc2Parameters.Constant.T_CF_SEC.ordinal()]=.000001;
+        var params=new Chvdc2Parameters(f.binding().owner().getName(),Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,1},c);
+        var binding=Chvdc2NetworkPreparation.prepare(f.network().context().getDStabilityNet(),params,.0005,0);
+        var ports=new Chvdc2TerminalPorts(binding);ports.attach();return new Fixture(f.network(),binding,ports);
+    }
     private static void initializePorts(Fixture f) {
         var p=f.ports();assertTrue(p.rectifierPort().initStates(p.rectifierPort().getDStabBus()));
         assertTrue(p.inverterPort().initStates(p.inverterPort().getDStabBus()));p.rectifierPort().acceptInitialEndpoint();
@@ -158,5 +169,30 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         p.readStaggeredState(solver.state,0);
         assertTrue(Math.abs(solver.leftRate-solver.olderRate)>1e-5,"The event must distinguish the two retained slopes");
         assertEquals(expected,solver.state[coordinate],1e-12,"Network event uses settled left rate while AB2 retains the older start rate");
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void releasedShortCannotRetriggerInsideOneIntegrationEndpoint(boolean staggered)throws Exception {
+        var f=initiallyShortedFixture();initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
+        assertTrue(m.inverterShorted());double h=.00001;
+        if(staggered){
+            double[] x=new double[16],rate=new double[16];p.readStaggeredState(x,0);p.evaluateStaggered(h,rate,0);
+            for(int k=0;k<x.length;k++)x[k]+=h*rate[k];p.applyStaggeredState(x,0,h);p.completeStaggeredStep(h,h);
+            p.beginNetworkSolution(context("DIRECT",h));
+        }else{p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,0);p.beginNetworkSolution(context("PREDICTOR",h));}
+        p.beforeNetworkIteration(0);assertTrue(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());
+        p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());
+        p.afterNetworkConvergence();p.endNetworkSolution(true);
+        if(!staggered){
+            p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);p.beginNetworkSolution(context("CORRECTOR",h));
+            p.beforeNetworkIteration(0);assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);
+        }
+        assertFalse(m.inverterShorted(),"Final electrical publication must not introduce a second protection transition");
+        var history=m.getIntegrationHistories();Object output=p.getOutputObject();
+        // A distinct same-time external event may switch, but failed convergence rolls it back.
+        p.beginNetworkSolution(new Context("INITIAL",h,h,50,1e-10,true));p.beforeNetworkIteration(0);
+        assertTrue(p.applyConvergedNetworkAction());assertTrue(m.inverterShorted());p.endNetworkSolution(false);
+        assertEquals(history,m.getIntegrationHistories());assertSame(output,p.getOutputObject());
+        p.beginNetworkSolution(new Context("INITIAL",h,h,50,1e-10,true));p.beforeNetworkIteration(0);
+        assertTrue(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);assertTrue(m.inverterShorted());
     }
 }

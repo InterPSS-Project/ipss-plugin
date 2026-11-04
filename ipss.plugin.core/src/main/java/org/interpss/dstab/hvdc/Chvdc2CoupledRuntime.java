@@ -165,19 +165,36 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         accept(time,sequence,true);
     }
     public void evaluatePredictorProtection(double time,long sequence){ready();if(!pending)throw new IllegalStateException("A coupled predictor is required");accept(time,sequence,false);}
+    void evaluatePredictorProtection(double time,long sequence,boolean allowRaml,boolean allowCommutation){
+        ready();if(!pending||!inTransaction)throw new IllegalStateException("A transactional predictor is required");
+        accept(time,sequence,false,allowRaml,allowCommutation);
+    }
     /** Evaluate a converged network's protection branch without publishing its
      * next-boundary electrical angle. The caller owns a transaction and must
      * either accept the final boundary or roll this working history back. */
     public void evaluateProtectionBoundary(double time,long sequence){
+        evaluateProtectionBoundary(time,sequence,true,true);
+    }
+    void evaluateProtectionBoundary(double time,long sequence,boolean allowRaml,boolean allowCommutation){
         ready();exclusive();noSharedProposal();
         if(!inTransaction)throw new IllegalStateException("Protection preview requires a coupled transaction");
-        accept(time,sequence,false);
+        accept(time,sequence,false,allowRaml,allowCommutation);
+    }
+    /** Publish the converged electrical boundary after its protection preview.
+     * This cannot introduce a new regime after the final network solve. */
+    void acceptNetworkBoundary(double time,long sequence){
+        ready();exclusive();noSharedProposal();
+        if(!inTransaction)throw new IllegalStateException("Network acceptance requires a coupled transaction");
+        accept(time,sequence,true,false,false);
     }
     private void accept(double time,long sequence,boolean publishElectricalAngle) {
+        accept(time,sequence,publishElectricalAngle,true,true);
+    }
+    private void accept(double time,long sequence,boolean publishElectricalAngle,boolean allowRaml,boolean allowCommutation) {
         save(write);
         try {
             rates();double gamma=heldGamma();long before=controls.staggeredInputDiscontinuityVersion();
-            if(!publishElectricalAngle)controls.acceptProtectionStage(time,sequence);else controls.acceptBoundary(time,sequence);
+            controls.acceptNetworkStage(time,sequence,publishElectricalAngle,allowRaml,allowCommutation);
             latestSequence=sequence;
             if(controls.staggeredInputDiscontinuityVersion()!=before){
                 System.arraycopy(rate,0,leftRate,0,count);revision=controls.staggeredInputDiscontinuityVersion();
@@ -190,6 +207,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         }catch(RuntimeException failure){restore(write);throw failure;}
     }
     public boolean inverterShorted(){ready();return controls.inverterShorted();}
+    public boolean ramlActive(){ready();return controls.ramlActive();}
     private void rates(){refresh();controls.evaluateStaggered(0,rate,0);line.evaluateStaggered(0,rate,15);}
     private void read(double[] destination){controls.readStaggeredState(destination,0);line.readStaggeredState(destination,15);}
     private void apply(double[] values,int offset,double seconds,boolean advanceLine,double vr,double vi) {

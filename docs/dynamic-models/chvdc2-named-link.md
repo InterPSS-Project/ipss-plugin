@@ -94,6 +94,57 @@ checks pass; the earlier reduced-network traces remain byte-identical and their
 failure identities are unchanged. The complete registered-suite baseline is
 the preceding terminal-attachment checkpoint, not a fresh run for this change.
 
+### Protected network endpoints and repeated convergence passes
+
+Complete attached-network comparisons now include both retained RAML intervals
+and the valid short-hold commutation profile under both integration methods.
+They import the solved network afresh, use the entered controller settings and
+fault impedance, and retain all states, terminal measurements and event sides.
+Rejected reference profiles remain excluded from qualification.
+
+These tests exposed a terminal-lifecycle defect: a preview could release the
+inverter short, then another convergence pass or final publication retriggered
+it at the same integration endpoint. The published flag consequently stayed
+shorted throughout the disturbance, although the independent reference repeatedly
+released it.
+
+The terminal owner now latches each protection family's provisional transition
+separately across the predictor/corrector transaction and its repeated network
+passes. Final electrical publication refreshes the accepted angle and inputs
+without making another protection decision. An independently accepted external
+event can still transition at the same timestamp; a failed solve restores the
+original states, flags, clocks and currents. The direct component acceptance API
+retains its existing semantics. The new latch adds only scalar bookkeeping,
+without another state array, expression evaluation or per-step allocation.
+
+The coupled regression checks release retention through both methods, repeated
+convergence passes, final publication, failed-event rollback and a distinct
+same-time event. All complete protected simulations finish, but remain outside
+the strict trajectory gates. In the commutation profile, maximum current error
+changes from `328.794` to `107.075 A` for modified Euler and from `194.159` to
+`126.640 A` for staggered integration. These improvements do not qualify the
+remaining current, power or internal-state errors.
+
+A separate protection replay isolates the remaining flag discrepancy. It uses
+identical recorded physical inputs with two clocks: the captured accumulated
+clock reproduces every source flag, while nominal double-precision accumulation
+produces 121 differing samples. The latter flag sequence matches the complete
+Java network run at every sample under both methods. The strict minimum-duration
+comparison is sensitive to accumulated-clock rounding; equal nominal step sizes
+do not guarantee equal transition samples. This diagnostic neither forces the
+coupled run's states nor changes production precision or acceptance thresholds.
+Reference clock policy and remaining continuous-state errors require separate
+qualification.
+
+Regression validation for this change includes 58 passing controller/runtime/
+protection/lifecycle checks. The core plugin module completes with 486 tests,
+no failures or errors and four skips. The complete registered suite runs 4,577
+tests with 162 failures, one error and 13 skips. Its previous failure identities
+remain unchanged; the six newly added protected-network reference cases fail
+their retained strict gates. All 30 earlier reduced-network comparison traces
+remain byte-identical. This is a lifecycle correction with explicit outstanding
+accuracy failures, not full model acceptance.
+
 ## Preparation from the solved network
 
 `Chvdc2NetworkPreparation.prepare(network, parameters, H, initialTime)` resolves

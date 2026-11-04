@@ -120,15 +120,21 @@ public class Chvdc2ProtectionReferenceTest {
         var m=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,JSON.convertValue(manifest.path("settings").path("flags"),int[].class),
                 JSON.convertValue(manifest.path("entered_constants"),double[].class)).prepareProtection();
         var first=rows.getFirst();m.initialize(first.get("V7"),first.get("V9"),first.get("VAR4"),first.get("time_s"));
+        var nominalClockModel=new Chvdc2Parameters("clock-control",Chvdc2Parameters.Dialect.CHVDC2U1,
+                JSON.convertValue(manifest.path("settings").path("flags"),int[].class),
+                JSON.convertValue(manifest.path("entered_constants"),double[].class)).prepareProtection();
+        double nominalTime=-2*h;int nominalClockMismatches=0;
+        nominalClockModel.initialize(first.get("V7"),first.get("V9"),first.get("VAR4"),nominalTime);
         int mismatches=0,transitions=0,sourceTransitions=0,duplicates=0;boolean sourceFailed=false;double maximumClockError=0,maximumPowerClosure=0,prior=Double.NaN;
         assertNotNull(equipment);var inverter=new LccConverterBoundary(false,2,equipment.path("EBASE").asDouble()*1000,
                 equipment.path("TR").asDouble(),equipment.path("TAP").asDouble(),equipment.path("XC").asDouble(),1e8);
         double[] x=new double[1],f=new double[1],power=new double[3],powerErrors=new double[2];Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-commutation-"+(staggered?"staggered-":"euler-"));
-        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("replay.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),11))) {
-            w.write("time_s,shorted,reference_shorted,transition_time_s,reference_transition_time_s,source_ac_power_pu,source_dc_power_pu,history_P_pu,P_error_pu,history_Q_pu,Q_error_pu\n");
+        try(var w=BenchmarkOutputGuard.newWriter(out.resolve("replay.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),13))) {
+            w.write("time_s,shorted,reference_shorted,transition_time_s,reference_transition_time_s,source_ac_power_pu,source_dc_power_pu,history_P_pu,P_error_pu,history_Q_pu,Q_error_pu,nominal_time_s,nominal_clock_shorted\n");
             for(int n=0;n<rows.size();n++) {
                 var row=rows.get(n);double time=row.get("time_s");
                 if(n>0&&time!=prior) {
+                    nominalTime+=h;
                     if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(h,f,0);x[0]+=h*f[0];m.applyStaggeredState(x,0,h);}
                     else{m.step(h,0);m.step(h,1);}
                 }else if(n>0)duplicates++;
@@ -138,22 +144,27 @@ public class Chvdc2ProtectionReferenceTest {
                 powerErrors[0]=Math.max(powerErrors[0],Math.abs(pError));powerErrors[1]=Math.max(powerErrors[1],Math.abs(qError));
                 boolean before=m.inverterShorted();m.setInput(row.get("STATE10"),row.get("V9"),row.get("VAR4"));m.acceptBoundary(time,n);
                 if(m.inverterShorted()!=before)transitions++;boolean reference=row.get("VAR22")<0;
+                nominalClockModel.setInput(row.get("STATE10"),row.get("V9"),row.get("VAR4"));nominalClockModel.acceptBoundary(nominalTime,n);
+                if(nominalClockModel.inverterShorted()!=reference)nominalClockMismatches++;
                 if(reference!=sourceFailed)sourceTransitions++;sourceFailed=reference;if(reference!=m.inverterShorted())mismatches++;
                 if(row.get("VAR21")!=999){assertTrue(m.hasCommutationTransition());maximumClockError=Math.max(maximumClockError,Math.abs(m.commutationTransitionTime()-row.get("VAR21")));}
                 else assertFalse(m.hasCommutationTransition());
                 assertFalse(m.ramlActive());assertEquals(0,m.getIntegrationStates().values().iterator().next());
                 double sourcePower=row.get("VAR11")/100,dcPower=-row.get("VAR8")*1000*row.get("VAR7")/1e8;
                 maximumPowerClosure=Math.max(maximumPowerClosure,Math.abs(row.get("M3_P")+row.get("M4_P")-sourcePower));
-                w.write(time+","+(m.inverterShorted()?1:0)+","+(reference?1:0)+","+m.commutationTransitionTime()+","+row.get("VAR21")+","+sourcePower+","+dcPower+","+power[0]+","+pError+","+power[1]+","+qError+"\n");prior=time;
+                w.write(time+","+(m.inverterShorted()?1:0)+","+(reference?1:0)+","+m.commutationTransitionTime()+","+row.get("VAR21")+","+sourcePower+","+dcPower+","+power[0]+","+pError+","+power[1]+","+qError+","+nominalTime+","+(nominalClockModel.inverterShorted()?1:0)+"\n");prior=time;
             }
         }
         var report=new LinkedHashMap<String,Object>();report.put("profile",key);report.put("staggered",staggered);report.put("samples",rows.size());report.put("event_duplicates",duplicates);
         report.put("flag_mismatches",mismatches);report.put("transitions",transitions);report.put("reference_transitions",sourceTransitions);report.put("maximum_clock_error_s",maximumClockError);
         report.put("maximum_source_ac_network_power_closure_pu",maximumPowerClosure);report.put("electrical_circuit_and_default_duration_remain_unqualified",true);
         report.put("maximum_accepted_history_power_errors_pu",powerErrors);
+        report.put("nominal_double_clock_flag_mismatches",nominalClockMismatches);
+        report.put("clock_control_uses_identical_recorded_inputs",true);
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),20000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,report);}
         assertEquals(manifest.path("samples").asInt(),rows.size());assertEquals(2,duplicates);assertTrue(transitions>2);
         assertEquals(0,mismatches);assertEquals(sourceTransitions,transitions);assertEquals(0,maximumClockError,1e-10);assertTrue(maximumPowerClosure<1e-5);
+        assertTrue(nominalClockMismatches>0,"The strict duration comparison must distinguish the two accumulated clocks");
         assertTrue(powerErrors[0]<1e-5,"Committed-history P error "+powerErrors[0]);assertTrue(powerErrors[1]<1e-5,"Committed-history Q error "+powerErrors[1]);
     }
 }
