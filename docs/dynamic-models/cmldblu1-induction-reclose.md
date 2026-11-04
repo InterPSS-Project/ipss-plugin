@@ -112,3 +112,34 @@ voltage/state discriminator, complete zero/cancelled controls, and a capacity
 action while protection is pending, including warm-copy continuation.
 Private timing archive SHA-256:
 `049a8562c7501471918cb23008bc1c586a42a1812478ee85936a2cc7535a9d23`.
+
+
+## Second-stage exact-threshold audit
+
+The installed family diagram describes the composite structure, and its motor
+parameter tables define both protection stages without a comparator/reset
+truth table. The public [component-model notes](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20MOTOR_CMP.htm)
+describe below-threshold pickup, above-threshold reconnection and the analogous
+second stage. They do not independently establish how a pending deadline resets
+at exact equality inside the native implementation.
+
+Three paired flat controls seed a stage-two deadline, then change its threshold
+to the published voltage observation or its adjacent binary32 values. All cold
+pairs match byte-for-byte. The lower and observed-equal thresholds both clear
+the pending deadline and their complete recordings are identical; repickup
+trips at about 0.025 s. The upper threshold retains pickup and trips at about
+0.004 s, including the source startup history. The reported voltage remains
+stationary during the lower/equal hold.
+
+This brackets the comparison relative to the published coordinate; it does not
+prove that coordinate is identical to the hidden internal comparison value.
+The Java adjacent-double diagnostic confirms that below-threshold exposure
+accumulates and above-threshold exposure clears in both stages. At exact Java
+equality, stage one clears while stage two holds its prior timer. That
+asymmetry is recorded as unresolved, not accepted as exact-model behavior.
+No production comparator changed and no waveform was shifted or rounded.
+
+`MotorProtectionThresholdAuditTest` checks source integrity and the observed
+bracket, and reports the analytic equality outcome without claiming native
+equality-reset qualification. Private complete archive SHA-256:
+`a229651baeaedb205ccca472769e9db93da39149325e6d70c0c937cd07e1e23e`.
