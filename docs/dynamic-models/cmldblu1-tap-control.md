@@ -257,3 +257,24 @@ per-field cold comparison, transition analysis and integrity checks. SHA-256:
 The initial diagnostic archive includes the complete cold captures, numeric
 analysis, source snapshot and per-file integrity manifest. Archive SHA-256:
 `b230582a4bedb754c7486bb405308250d55c712b969601b0c508eaf140aff8be`.
+
+## Integration ownership validation
+
+The tap owner now requires a matching positive-duration modified-Euler predictor
+before its corrector. Repeated predictors, orphan or mismatched correctors, and
+shared-step completion during an ordinary predictor are rejected before timers
+or physical taps change. Target-band changes are accepted only between completed
+intervals. Zero-duration event refreshes remain read-only and do not consume a
+pending predictor. A failed predictor network solve permits retry without
+advancing accepted history; a failed corrector retains the existing tap/matrix
+rollback.
+
+The regression first failed against the previous implementation because an orphan
+corrector was accepted. The guarded implementation passes the composite
+initialization, shared-state, shared-SMIB and tap-control tests (80 tests, no skips).
+This is lifecycle validation, not resolution of the full-trajectory discrepancy
+described above. No equations, coefficients, integration ordering or acceptance
+thresholds were changed. All eight complete recorded traces (upward, downward,
+reversal and deadband controls under both methods) are byte-identical to the
+preserved baseline executable. The private lifecycle evidence manifest records
+the distinct production class hashes, actual test classpaths and trace hashes.

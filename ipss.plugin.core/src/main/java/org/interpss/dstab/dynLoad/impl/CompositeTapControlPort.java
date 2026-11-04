@@ -20,7 +20,8 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
     private final double compensationR, compensationX;
     private double sampledVoltage;
     private double voltageMinimum, voltageMaximum;
-    private boolean pending, solving;
+    private boolean pending, solving, predictorPending;
+    private double predictorStep;
 
     CompositeTapControlPort(Cmldznu2Model owner) {
         super(Kind.STATIC, owner.getDStabBus(), owner.getId()+"_Tap", 0, owner.getData(), 0);
@@ -37,12 +38,13 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
     void setVoltageBand(double minimum,double maximum) {
         if (!Double.isFinite(minimum) || !Double.isFinite(maximum) || minimum <= 0 || maximum < minimum)
             throw new IllegalArgumentException("A finite positive ordered voltage band is required");
+        requireCompletedInterval();
         voltageMinimum=minimum; voltageMaximum=maximum;
     }
     @Override public boolean initStates() {
         if (!super.initStates()) return false;
         setTap(initialTap); state.initialize(initialTap); previous.copyFrom(state);
-        pending=false; solving=false; sampledVoltage=controlledVoltage();
+        pending=false; solving=false; predictorPending=false; sampledVoltage=controlledVoltage();
         return true;
     }
     private double controlledVoltage() {
@@ -80,20 +82,43 @@ final class CompositeTapControlPort extends Cmldznu2AlgebraicLoadModel
     }
     @Override public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (method != DynamicSimuMethod.MODIFIED_EULER) throw new IllegalArgumentException("Modified Euler required");
-        if (flag == 0) sampledVoltage=controlledVoltage();
-        else if (flag == 1) advance(dt,sampledVoltage);
-        else throw new IllegalArgumentException("Unknown integration stage");
+        validateInterval(dt);
+        if (flag != 0 && flag != 1) throw new IllegalArgumentException("Unknown integration stage");
+        if (dt == 0) return true;
+        if (flag == 0) {
+            requireCompletedInterval();
+            sampledVoltage=controlledVoltage();
+            predictorStep=dt; predictorPending=true;
+        } else {
+            if (!predictorPending || predictorStep != dt || pending || solving)
+                throw new IllegalStateException("Matching tap predictor required before corrector");
+            advance(dt,sampledVoltage);
+            predictorPending=false;
+        }
         return true;
+    }
+    private static void validateInterval(double dt) {
+        if (!Double.isFinite(dt) || dt < 0) throw new IllegalArgumentException("Finite nonnegative tap interval required");
+    }
+    private void requireCompletedInterval() {
+        if (pending || solving || predictorPending)
+            throw new IllegalStateException("Complete or discard the current tap interval first");
     }
     @Override public int staggeredStateCount() { return 0; }
     @Override public void readStaggeredState(double[] values,int offset) { }
     @Override public void evaluateStaggered(double dt,double[] rates,int offset) { }
     @Override public void applyStaggeredState(double[] values,int offset,double dt) { }
-    @Override public void completeStaggeredStep(double dt,double endpointTime) { advance(dt,controlledVoltage()); }
+    @Override public void completeStaggeredStep(double dt,double endpointTime) {
+        validateInterval(dt);
+        if (dt == 0) return;
+        requireCompletedInterval();
+        advance(dt,controlledVoltage());
+    }
     @Override public void beginNetworkSolution(Context context) { solving=pending; }
     @Override public void endNetworkSolution(boolean converged) {
         if (solving && !converged) { setTap(previous.tap()); state.copyFrom(previous); }
         if (solving) pending=false;
+        if (!converged) predictorPending=false;
         solving=false;
     }
     @Override public Complex getNortonCurInj() { return Complex.ZERO; }

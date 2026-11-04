@@ -144,6 +144,44 @@ public class CompositeTapControlSmibTest {
             System.out.printf("TAP_FULL_TRAJECTORY_QUALIFIED %s %s %s%n",staggered,profile,trajectoryQualified);
         }
     }
+    @Test
+    void stageOwnershipRejectsInvalidCallsWithoutChangingHistory() throws Exception {
+        var a=setup("up",false);var m=model(a);
+        var port=m.getDStabBus().getDynLoadModelList().stream().filter(v->v.getId().endsWith("_Tap")).findFirst().orElseThrow();
+        var participant=(org.interpss.dstab.control.util.StaggeredEulerParticipant)port;
+        var aware=(NetworkIterationAware)port;
+        var observed=(com.interpss.dstab.controller.cml.ICMLStateProvider)port;
+        var initial=observed.getNamedStates();
+        assertThrows(IllegalStateException.class,()->port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertThrows(IllegalArgumentException.class,()->port.nextStep(Double.NaN,DynamicSimuMethod.MODIFIED_EULER,0));
+        port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);
+        assertThrows(IllegalStateException.class,()->port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertThrows(IllegalStateException.class,()->port.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertThrows(IllegalStateException.class,()->participant.completeStaggeredStep(.0005,.0005));
+        assertThrows(IllegalStateException.class,()->m.setTapVoltageBand(1.115,1.145));
+        // Event refresh is read-only, including between predictor and corrector.
+        port.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0);
+        port.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,1);
+        participant.completeStaggeredStep(0,0);
+        assertEquals(initial,observed.getNamedStates());
+        port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);
+        assertThrows(IllegalStateException.class,()->m.setTapVoltageBand(1.115,1.145));
+        assertEquals(initial,observed.getNamedStates());
+        aware.beginNetworkSolution(new NetworkIterationAware.Context("CORRECTOR",0,.0005,50,1e-5));
+        aware.endNetworkSolution(true);
+        assertEquals(.0005,observed.getNamedStates().get("LTC.Time"),0);
+        m.setTapVoltageBand(1.115,1.145);
+        port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);
+        aware.beginNetworkSolution(new NetworkIterationAware.Context("PREDICTOR",.0005,.001,50,1e-5));
+        aware.endNetworkSolution(false);
+        // Failed prediction can be retried without consuming the timer or sampling history.
+        assertEquals(.0005,observed.getNamedStates().get("LTC.Time"),0);
+        port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0);
+        port.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1);
+        aware.beginNetworkSolution(new NetworkIterationAware.Context("CORRECTOR",.0005,.001,50,1e-5));
+        aware.endNetworkSolution(true);
+        assertEquals(.001,observed.getNamedStates().get("LTC.Time"),0);
+    }
     @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
     void failureRestoresTapMatrixAndHistories(boolean staggered) throws Exception {
         var a=setup("up",staggered);var m=model(a);var net=a.getNetwork();
