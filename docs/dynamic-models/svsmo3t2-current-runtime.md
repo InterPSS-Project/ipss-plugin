@@ -525,3 +525,50 @@ commands, logs and reports are retained privately at
 `verification-artifacts/svs-shared-ownership-20261104`; its manifest pins the
 candidate commit and the explicit isolated core dependency.
 Archive SHA-256: `676e6090ac6a0e6ba29a0523a6ff833d9fdad8a7bfc5054c5f50842cd99e061a`.
+
+## Independent first-release stage discriminator
+
+A state-seeded check isolates the selected 0.0750–0.0755 s recovery interval.
+All 605 source rows and event duplicates remain retained and hash-verified.
+At this interval the sensor has no direct feedthrough, the transient gain is
+unity and the current limits are inactive. Source equations evaluated from the
+retained states therefore give an independent derivative calculation.
+
+For interval length `h`, the two-step trial is
+`x + h*(1.5*f_left - 0.5*f_previous)`; the modified-Euler trial is
+`x + 0.5*h*(f_left + f_predictor)`. The preceding held derivative is negative
+because the lag was decaying toward a zero command.
+
+| Selected release lag | Current, pu |
+|---|---:|
+| Supplied reference | 0.0547207407653 |
+| Independent two-step recurrence | 0.0547207390011 |
+| Independent Heun recurrence | 0.0440032873506 |
+
+The independent two-step result differs from this source sample by 1.77e-9 pu.
+The selected-interval method gap is 0.01071745165 pu: 0.00065734363 pu comes
+from subtracting the previous held slope, and 0.01006010802 pu from the remaining
+stage-weight difference. This agrees within 5.95e-6 pu with the previously
+reported full recorded-input replay peak, supporting its localization to this
+release transition. It does **not** prove that the complete overvoltage
+trajectory discrepancy is unavoidable.
+
+The ordinary public predictor/corrector methods reproduce the independent Heun
+calculation within 2e-12. The shared-state checks verify exposed derivatives and
+publication/projection of an externally assembled two-step trial within 2e-12;
+they do not execute or independently certify the staggered solver's integrator.
+Changing only the corrector's terminal voltage between the retained left and
+right values changes the sensor coordinate by its analytic amount and leaves
+the release lag increment exactly unchanged. This isolates this interval's
+stage semantics from instantaneous network feedback; later coupled response
+still depends on the network.
+
+Six focused tests pass, including the existing limiter SMIB checks. A final
+single-test repeat checks the explicit decomposition. No production equation,
+method, clock, coefficient or accuracy gate changes. The coarse modified-Euler
+overvoltage voltage NRMSE of approximately 0.00144985 remains above 0.001;
+full trajectory qualification remains open.
+
+Private evidence: `verification-artifacts/svs-release-stage-discriminator-20261104`.
+Archive SHA-256:
+`dfc2338bdc4dd1d14008e994d79a0c464df866b293a36e19760bae8a226f189b`.
