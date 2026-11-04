@@ -273,6 +273,30 @@ public class PsseReecc1ControllerTest {
         }
     }
 
+    @Test
+    void declaredRemoteSensingUsesSelectedBusForBothMethods(@TempDir Path tempDir) throws Exception {
+        for(boolean history:new boolean[]{false,true}) {
+            var builder=DStabBuilderTestFixture.createBuilder();
+            new org.interpss.fadapter.builder.AclfNetworkBuilder(builder.getDStabNetwork())
+                    .addBus("Bus2","Remote",2L,16500.,.95,0.,null,null,null);
+            Path dyr=tempDir.resolve("remote-"+history+".dyr");
+            Files.writeString(dyr,REGCA+"1 'REECC1' '1' "+PARAMETERS.replaceFirst("0 1 1 1 1","2 1 1 1 1")+" /\n");
+            new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+            Reecc1Model model=(Reecc1Model)controller(builder);model.initialize(.4,.1,1.);
+            assertEquals(2,model.getData().remoteBus(),"Declared remote selection is not silently normalized");
+            assertEquals(.95,model.getMeasuredVoltage(),1.e-14);
+            builder.getDStabNetwork().getDStabBus("Bus1").setVoltage(new org.apache.commons.math3.complex.Complex(.5,0.));
+            builder.getDStabNetwork().getDStabBus("Bus2").setVoltage(new org.apache.commons.math3.complex.Complex(.9,0.));
+            if(history)model.stepTwoStep(.0005,.4,.1,.5,1.);else model.step(.0005,.4,.1,.5,1.);
+            assertTrue(!model.isVoltageDip());
+            assertEquals(.95+(history?1.5:1.)*.0005*(.9-.95)/.023,model.getMeasuredVoltage(),1.e-14);
+            double held=model.getActivePowerOrder();
+            builder.getDStabNetwork().getDStabBus("Bus2").setVoltage(new org.apache.commons.math3.complex.Complex(.8,0.));
+            if(history)model.stepTwoStep(.0005,.4,.1,1.,1.);else model.step(.0005,.4,.1,1.,1.);
+            assertTrue(model.isVoltageDip());assertEquals(held,model.getActivePowerOrder(),0.);
+        }
+    }
+
     private static Reecc1Model parse(Path dyr, String contents) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Files.writeString(dyr, contents);
