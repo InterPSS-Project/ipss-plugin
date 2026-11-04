@@ -20,7 +20,7 @@ public final class Reecc1Model
     private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
-    private double q0;
+    private double reactiveReference;
     private double powerFactorRatio;
     private double dipReference;
     private double vMeasured;
@@ -85,11 +85,11 @@ public final class Reecc1Model
         loadEffectiveParameters();
         double sensedV = sensedVoltage(v);
         p0 = p;
-        q0 = q;
+        reactiveReference = data.qFlag() == 1 && data.vFlag() == 0 ? sensedV : q;
         powerFactorRatio = Math.abs(p) > EPS ? q / p : 0.0;
         dipReference = data.vref0() == 0.0 ? sensedV : data.vref0();
         vMeasured = sensedV;
-        pMeasured = p;
+        pMeasured = data.pfFlag() == 1 ? p : 0.0;
         qIntegral = data.qFlag() == 1 && data.vFlag() == 1 ? sensedV : 0.0;
         vIntegral = q / nonzero(sensedV);
         qCurrent = data.qFlag() == 0 ? q / nonzero(sensedV) : 0.0;
@@ -150,13 +150,13 @@ public final class Reecc1Model
     private void stepControls(double dt, double p, double q, double sensedV) {
         voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         vMeasured = lag(vMeasured, sensedV, effectiveTrv, dt);
-        pMeasured = lag(pMeasured, p, effectiveTp, dt);
+        if (data.pfFlag() == 1) pMeasured = lag(pMeasured, p, effectiveTp, dt);
 
         if (!voltageDip) updatePowerOrder(getSelectedPowerReference(p0), dt);
 
         double plantQref = plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
-                ? pMeasured * powerFactorRatio : q0 + plantQref;
+                ? pMeasured * powerFactorRatio : reactiveReference + plantQref;
         double qTarget = limit(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(vMeasured);
         double rawIp = pOrder / voltage + auxiliaryPower;
@@ -171,7 +171,7 @@ public final class Reecc1Model
                     dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
             double voltageCommand = data.vFlag() == 1
                     ? limit(data.kqp() * qError + qIntegral, effectiveVmin, effectiveVmax)
-                    : 0.0;
+                    : limit(selectedQ, effectiveVmin, effectiveVmax);
             double voltageError = voltageCommand - vMeasured;
             vIntegral = integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqLimit, preliminaryIqLimit, voltageDip);

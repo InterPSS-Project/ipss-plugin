@@ -3,13 +3,14 @@ import csv,json,math,os,shutil,struct,sys
 from pathlib import Path
 from tgov1_limit_probe import checked,sha,STEPS
 
-MODES=('discharge-limit','charge-limit')
+MODES=('discharge-limit','charge-limit','voltage-flat','pf-voltage-flat')
 
 def configuration(mode,grid,repeat):
     if mode not in MODES or grid not in STEPS or repeat not in ('a','b'):raise ValueError('Unknown profile')
     record=Path('ipss.test.plugin.core/testData/adpter/psse/v33/renewable/regca_reecc1_bus1062.dyr').read_text().splitlines()[1].split()[3:-1]
     icons=list(map(int,record[:5]));constants=list(map(float,record[5:]))
-    constants[41:45]=[.2,.55,.6,.5]
+    if mode in ('voltage-flat','pf-voltage-flat'): icons[1:4]=[1 if mode.startswith('pf-') else 0,0,1]
+    else: constants[41:45]=[.2,.55,.6,.5]
     return dict(name=mode+'-'+grid,mode=mode,repeat=repeat,step_s=STEPS[grid],icons=icons,constants=constants,
                 converter=[1,.02,10.,.9,.5,1.22,1.2,.8,.4,-1.3,.02,.7,100.,-100.,.8],
                 fault=False,apply_s=.05,clear_s=.10,end_s=.3,fault_ohms=100.)

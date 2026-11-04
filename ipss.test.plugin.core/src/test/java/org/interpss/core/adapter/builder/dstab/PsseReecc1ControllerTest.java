@@ -118,6 +118,49 @@ public class PsseReecc1ControllerTest {
         }
     }
 
+    @Test
+    void directVoltageSelectorUsesInitializedVoltageBeforeReactiveLimits(@TempDir Path tempDir)
+            throws Exception {
+        Reecc1Model model=parse(tempDir.resolve("voltage.dyr"), REGCA + "1 'REECC1' '1' "
+                + PARAMETERS.replaceFirst("0 1 1 1 1", "0 0 0 1 1") + " /\n");
+        model.initialize(.4,.1,1.01);
+        var initial=model.getNamedStates();
+        for(int i=0;i<100;i++)model.step(.001,.4,.1,1.01,1.);
+        for(String state:initial.keySet()) if(!state.equals("Battery Energy Output"))
+            assertEquals(initial.get(state),model.getNamedStates().get(state),1.e-13,state);
+        assertEquals(-.1/1.01,model.getIqcmd(),1.e-13);
+        // Qmax=.92 must not clip the direct voltage reference of1.01.
+        assertEquals(0.,model.getReactivePowerIntegral(),0.);
+    }
+
+    @org.junit.jupiter.api.Tag("extended")
+    @Test
+    void recordedDirectVoltageControlRemainsFlatWithoutInventedBias(@TempDir Path tempDir)
+            throws Exception {
+        Path profile=Path.of("testData/private/verification-artifacts/reecc1-voltage-selector-20261104/voltage-flat-fine-a");
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.isDirectory(profile),"Private paired selector capture required");
+        var lines=Files.readAllLines(profile.resolve("native.csv"));
+        var columns=java.util.Arrays.asList(lines.get(0).split(","));
+        double[] previous=java.util.Arrays.stream(lines.get(1).split(",")).mapToDouble(Double::parseDouble).toArray();
+        int p=columns.indexOf("P_PU"),q=columns.indexOf("Q_PU"),v=columns.indexOf("V1");
+        Reecc1Model model=parse(tempDir.resolve("voltage-reference.dyr"),Files.readAllLines(profile.resolve("dynamic.dyr")).stream()
+                .filter(line -> line.startsWith("1 ")).collect(java.util.stream.Collectors.joining("\n")));
+        model.initialize(previous[p],previous[q],previous[v]);
+        double maximum=0.;
+        for(int i=1;i<lines.size();i++) {
+            double[] row=java.util.Arrays.stream(lines.get(i).split(",")).mapToDouble(Double::parseDouble).toArray();
+            model.step(row[0]-previous[0],previous[p],previous[q],previous[v],1.);
+            double[] states={model.getMeasuredVoltage(),model.getMeasuredActivePower(),model.getReactivePowerIntegral(),
+                    model.getVoltageIntegral(),model.getReactiveCurrentState(),model.getActivePowerOrder()};
+            for(int k=0;k<states.length;k++)maximum=Math.max(maximum,Math.abs(states[k]-row[columns.indexOf("ELEC_STATE"+k)]));
+            maximum=Math.max(maximum,Math.abs(model.getIpcmd()-row[columns.indexOf("ELEC_VAR2")]));
+            maximum=Math.max(maximum,Math.abs(-model.getIqcmd()-row[columns.indexOf("ELEC_VAR3")]));
+            previous=row;
+        }
+        assertTrue(maximum<1.e-8,"Direct-voltage state/command error="+maximum);
+        System.out.println("Direct-voltage state/command maximum="+maximum);
+    }
+
     private static Reecc1Model parse(Path dyr, String contents) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Files.writeString(dyr, contents);
