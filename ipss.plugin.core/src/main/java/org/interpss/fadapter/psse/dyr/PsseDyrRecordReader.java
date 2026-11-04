@@ -121,7 +121,7 @@ public final class PsseDyrRecordReader {
                 && DynamicModelCatalog.canonicalName(fields.get(2)).equals("WT12A1B");
         boolean userDeviceModel = (wrapper.equals("USRLOD") || wrapper.equals("USRMDL"))
                 && !idlessUserModel;
-        boolean userBusModel = wrapper.equals("USRBUS");
+        boolean userBusModel = wrapper.equals("USRBUS") || wrapper.equals("USRMSC");
         int modelIndex = userDeviceModel ? 3 : userBusModel || idlessUserModel ? 2 : 1;
         if (fields.size() <= modelIndex) {
             throw new IllegalArgumentException("Missing user-model name at " + source + ":" + startLine);
