@@ -49,6 +49,12 @@ public class CompositeLoadChangeTest {
         assertEquals(0,feeder.getZ().subtract(originalZ.divide(.5)).abs(),1e-14);
         assertEquals(.5,model.getInductionMotorA().getFonline(),1e-12);
         assertFalse(model.changeLoad(-.5));assertEquals(.5,model.getRemainingCapacity(),1e-14);
+        var matrix=a.getNetwork().getYMatrix();
+        int lowRow=model.getLowVoltBus().getSortNumber(), loadRow=model.getLoadBus().getSortNumber();
+        var lowDiagonal=matrix.getA(lowRow,lowRow);var loadDiagonal=matrix.getA(loadRow,loadRow);
+        a.getNetwork().formYMatrix4DStab();
+        assertEquals(0,a.getNetwork().getYMatrix().getA(lowRow,lowRow).subtract(lowDiagonal).abs(),1e-12,"Rebuild preserves low-side capacity stamp");
+        assertEquals(0,a.getNetwork().getYMatrix().getA(loadRow,loadRow).subtract(loadDiagonal).abs(),1e-12,"Rebuild preserves load-side capacity stamp");
         for(int i=0;i<20;i++)assertTrue(a.solveDEqnStep(true));
         var load=model.getLoadBus();var voltage=load.getVoltage();
         var current=org.apache.commons.math3.complex.Complex.ZERO;

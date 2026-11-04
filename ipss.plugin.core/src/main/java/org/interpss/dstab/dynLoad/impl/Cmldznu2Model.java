@@ -344,6 +344,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
 
     private static void changePhysicalShunt(BaseDStabBus<?,?> bus,Complex delta,DStabilityNetwork network) {
         bus.setShuntY(bus.getShuntY().add(delta));
+        bus.applyPositiveSequenceShuntAdmittanceChange(delta);
         int row=bus.getSortNumber(); network.getYMatrix().addToA(delta,row,row);
     }
 

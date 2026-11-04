@@ -68,3 +68,13 @@ admittance. Production continues to reject zero remaining capacity before
 mutation until expanded-bus deactivation and solver topology lifecycle are
 implemented and independently checked. Full-trip captures and integrity manifest
 SHA-256: `dada624db14a401ddda2fa66c6fa9b6f5b320df013c95fa9fd3579bc8e0761b6`.
+
+The matrix-rebuild regression exposed a separate cached-sequence requirement:
+updating `ShuntY` and the live sparse matrix alone left the old physical shunt in
+the bus's prepared positive-sequence equivalent. A later fault-clearing rebuild
+restored that old value. The owner now applies the same delta through
+`applyPositiveSequenceShuntAdmittanceChange`, keeping all three representations
+consistent. The test failed under both methods before the correction, then
+passed along with the broader composite/tap tests (40 tests, no skips). It checks
+both internal-bus diagonals before and after rebuilding and resumes simulation
+with endpoint current balance.
