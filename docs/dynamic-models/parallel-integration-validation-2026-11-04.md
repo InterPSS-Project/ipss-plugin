@@ -278,3 +278,15 @@ also pass their complete source-contract checker after integration. They prove
 inactive coordinate advancement and retained-state reactivation in the reference,
 not implementation parity. Engine lifecycle implementation and both-method
 trajectory qualification remain required.
+
+The subsequent measured-branch converter capture adds receiving-end phasors
+and independent branch P/Q while preserving every original channel exactly.
+Its source-contract check establishes that published converter output is not
+a joint network-residual certificate; removing the final evaluation is not
+justified by the output discrepancy alone. The integrated selection passes
+21 tests without failures, errors or skips. Correction-channel trajectory
+qualification remains open under both methods.
+
+Private evidence is retained at
+`verification-artifacts/active-memory-phasor-integrated-20261104`, SHA-256
+`83e8e6a9fd83667ce7ceb6e041ca3fb64c1a527306905cbd69031e42fc035c0b`.
