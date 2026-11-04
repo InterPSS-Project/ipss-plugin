@@ -72,6 +72,7 @@ public final class Cmldblu1Model extends Cmldznu2Model {
             if (low.getInitLoad() == null) low.setInitLoad(Complex.ZERO);
             var shunt = new LegacyDistributionShuntPort(low, getId() + "_lowShunt", getData(), getOwnedLowSideShunt());
             if (!shunt.initStates()) throw new IllegalStateException("Cannot initialize owned distribution shunt");
+            ownedDistributionShuntPort=shunt;
         }
         // The static port cancels the owned shunt numerically. Its first-entry
         // preparation also requires the electronic leaf to use a pure current interface.

@@ -37,6 +37,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private com.interpss.dstab.dynLoad.DynLoadModel[] capacityLeaves;
     private double remainingCapacity = 1.0;
     private double disconnectedLowVoltage, disconnectedLoadVoltage;
+    protected LegacyDistributionShuntPort ownedDistributionShuntPort;
     private BaseDStabBus<?,?> capacityParent, capacityLowBus, capacityLoadBus;
     private DStabilityNetwork capacityNetwork;
 
@@ -326,9 +327,8 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         // With both elements omitted, remove only this owner; the common bus stays live.
         if (distXfr==null && distFdr==null && capacityLowBus==capacityParent && capacityLoadBus==capacityParent)
             return true;
-        // Partly collapsed distribution remains outside the qualified disconnection path.
-        if (distXfr==null || distFdr==null || capacityLowBus==capacityParent
-                || capacityLoadBus==capacityParent || capacityLowBus==capacityLoadBus) return false;
+        // Internal buses may coincide, or the low-side bus may be the energized parent.
+        if (capacityLoadBus==capacityParent) return false;
         for (var bus:new BaseDStabBus<?,?>[]{capacityLowBus,capacityLoadBus}) {
             if (bus==capacityParent) continue;
             if (!bus.getContributeGenList().isEmpty()) return false;
@@ -346,19 +346,24 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     private boolean isOwnedCapacityDevice(Object device) {
         if(device==tapControl)return true;
         for(var leaf:capacityLeaves)if(leaf==device)return true;
-        return device instanceof LegacyDistributionShuntPort shunt && shunt.getId().equals(getId()+"_lowShunt");
+        return device==ownedDistributionShuntPort;
     }
 
     private void disconnectOwnedDistribution(double factor) {
         disconnectedLowVoltage=capacityLowBus.getVoltageMag();
         disconnectedLoadVoltage=capacityLoadBus.getVoltageMag();
-        if (capacityLowBus==capacityParent && capacityLoadBus==capacityParent) {
+        if (capacityLowBus==capacityParent) {
             // Remove physical shunts and each active owned leaf's numerical stamp separately.
             // Their cancellation is model-specific; neither includes unrelated parent equipment.
-            changePhysicalShunt(capacityParent,ownedLowSideShunt.add(farCompensation).negate(),capacityNetwork);
+            Complex parentOwned=ownedLowSideShunt.add(capacityLoadBus==capacityParent?farCompensation:Complex.ZERO);
+            changePhysicalShunt(capacityParent,parentOwned.negate(),capacityNetwork);
             int row=capacityParent.getSortNumber();
-            for (var leaf:capacityLeaves) if (leaf.isActive())
+            for (var leaf:capacityLeaves) if (leaf.isActive() && leaf.getDStabBus()==capacityParent)
                 capacityNetwork.getYMatrix().addToA(leaf.getPosSeqEquivY().negate(),row,row);
+            if (ownedDistributionShuntPort!=null && ownedDistributionShuntPort.isActive()) {
+                capacityNetwork.getYMatrix().addToA(ownedDistributionShuntPort.getPosSeqEquivY().negate(),row,row);
+                ownedDistributionShuntPort.setStatus(false);
+            }
         }
         // Remove live stamps in place, preserving an unrelated active fault's diagonal.
         removeDistributionBranch(distFdr);removeDistributionBranch(distXfr);

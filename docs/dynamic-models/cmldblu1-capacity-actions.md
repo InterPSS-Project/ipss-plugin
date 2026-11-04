@@ -72,7 +72,7 @@ and active fault stamps remain untouched. Internal differential states and
 voltage observations remain frozen while the external network keeps solving.
 A later matrix rebuild reproduces this disconnected topology. Reconnection is
 not supported by this capacity-action API; neither positive restoration nor
-foreign-attached or partly collapsed topology is silently accepted. The fully collapsed extension below is separately qualified. Full-trip captures and integrity manifest
+foreign-attached topology is silently accepted. The omitted-distribution extensions below are separately qualified. Full-trip captures and integrity manifest
 SHA-256: `dada624db14a401ddda2fa66c6fa9b6f5b320df013c95fa9fd3579bc8e0761b6`.
 
 The matrix-rebuild regression exposed a separate cached-sequence requirement:
@@ -142,8 +142,8 @@ position error before operation. Modified Euler retains `5e-5` for position.
 A direct owner regression additionally retains unrelated parent load and shunts,
 including a shunt adjustment made after initialization, checks the rebuilt
 matrix diagonal, and resumes the external simulation. Positive restoration is
-still rejected. Partly omitted distribution full removal and collapsed wildcard
-relay routing remain unsupported; this does not expand those contracts. The
+still rejected. Collapsed wildcard relay routing remains unsupported; the partly omitted
+distribution extension is qualified separately below. The
 independent trajectory profile is static/electronic, not a claim of every motor
 protection trajectory or full composite-model qualification.
 
@@ -153,3 +153,51 @@ Private complete capture archive:
 The exact source inputs, probe, simulator provenance, and raw channels are
 retained there. `tools/composite_collapsed_shedding_reference_probe.py` recreates
 the discriminator without changing the shared probe.
+
+
+## One omitted distribution element
+
+Independent control/full-action cold pairs also cover the feeder omitted with
+its transformer retained, and the transformer omitted with its feeder retained.
+Both profiles remove the entire owned source boundary. The retained internal
+bus is deactivated; the parent remains active. In the transformer-omitted case,
+the owned low-side shunt lives on the parent and must be removed separately from
+the feeder stamp. Its cancelling numerical helper is tracked by object identity,
+removed from the live diagonal and deactivated without touching any unrelated
+parent load. The helper's identity also replaces name matching in ownership
+checks. Stored internal voltage observations freeze at disconnection even when
+the low-side physical bus is the energized parent.
+
+`CompositePartlyCollapsedFullTripTest` compares eight full trajectories across
+both integration methods and provides four parent-preservation/rebuild/resume
+controls. The original physical envelopes remain unchanged: worst normalized
+voltage/power error is `3.236e-5` under modified Euler and `4.320e-6` under
+staggered integration. Peak rotor-angle error is below `5.79e-5` degrees. These
+remain static/electronic profiles, not complete motor-protection qualification.
+
+The source relay schema provides a shedding fraction and breaker action, with
+no restoration setting in this action definition. Motor undervoltage reclose
+settings describe a different component lifecycle. This work does not infer a
+positive whole-owner capacity operation from those settings or implement a
+speculative hot reconnect. Positive `changeLoad` requests remain rejected;
+future restoration support would need its own source/API and state/topology
+qualification.
+
+The eight original captures are retained unchanged in private
+`cmldblu1-partly-collapsed-shedding-20261104/captures.zip`, SHA-256
+`4706733ca0401b507b2dd348d6f3cb16a7c73b2a5254c7f68d134560f4c0b002`.
+One transformer-omitted control pair is numerically repeatable but not byte
+identical: only four inactive Motor A diagnostic variables differ by
+`1.357e-19`; every other channel and timestamp agrees exactly. The full raw
+arrays remain retained and the cold-reference comparison checks every value,
+including those variables. This characterizes source repeatability and does
+not alter any model-accuracy gate or waveform sample.
+
+A third transformer-omitted control is identical numerically to the first in
+every channel. The family schema maps the four tiny differing variables to
+Motor A initial reactive compensation, reactive power, electrical torque and
+speed deviation; the recorded Motor A fraction is zero. The repeatability test
+allows `1e-18` only for those four diagnostics and requires exact equality for
+all other columns. The third raw capture and primary-source audit are in private
+`repeatability.zip`, SHA-256
+`c7dcdfd48be433c222f579d9e51f3913c6b4098bbface27f00a876583aeafbcb`.
