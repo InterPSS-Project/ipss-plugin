@@ -242,6 +242,48 @@ modified-Euler short-hold clock variants change. Full traces, baseline checks,
 the failing negative control, and the rejected refinement harness are retained
 in the private `chvdc2-corrected-commutation-20261103` validation archive.
 
+### Protected full-network refinement with moving sources
+
+A separate diagnostic retains the four dynamic source machines and refines the
+entire numerical network/device grid while keeping coefficient preparation,
+protection evaluation and electrical-history acceptance at the original
+0.5 ms outer interval. It does not prescribe reference states or inputs.
+The source angles move by approximately 0.00014--0.00048 degrees, so this test
+does not use the rejected fixed-source circuit reduction.
+
+| Numerical steps per outer interval | Modified-Euler maximum current error (A) | Staggered maximum current error (A) |
+| --- | --- | --- |
+| 1 | 19.294055 | 69.808659 |
+| 2 | 19.117159 | 23.202012 |
+| 4 | 19.073076 | 19.055435 |
+| 10 | 19.060823 | 19.058004 |
+
+All eight runs complete with matching protection flags and transition clocks.
+Every reference observation and event-side duplicate is compared; separate
+fine-grid traces retain every intermediate observation and source angle.
+The one-step controls reproduce the maintained terminal path within
+`3.2e-12` across the comparison columns. Repeating the matrix produces identical
+comparison CSVs. The unchanged 0.01 A current gate still fails: ordinary
+refinement alone does not close this independent-capture gap.
+
+Two further diagnostic matrices distinguish numerical and input-boundary
+questions. Suppressing only internal-transition derivative averaging changes
+the ten-step staggered peak to 17.806227 A, but worsens the two- and four-step
+controls. Holding only the DC-line driving voltages over each outer interval
+instead gives ten-step errors of 6.287155 A and 9.169584 A for modified Euler
+and staggered integration. Neither experiment passes the strict gates.
+The improvement from holding voltage motivates an independent audit of the
+line-input update boundary; it does not establish that sampled-voltage policy
+as the reference contract. No production equation, averaging policy, default
+step count or acceptance threshold is changed.
+
+The test-only ports, solver registration copy and runtime overlay are removed
+from both the source tree and compiled test output after the experiments.
+Their source/executable snapshots, complete traces, failed first harness,
+repeat checks and restoration checks are retained in the private
+`chvdc2-outer-refinement-20261103` validation archive. This is full-network
+refinement evidence, not qualification of a production local-substep API.
+
 ## Preparation from the solved network
 
 `Chvdc2NetworkPreparation.prepare(network, parameters, H, initialTime)` resolves
