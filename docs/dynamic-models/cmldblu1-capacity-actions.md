@@ -131,8 +131,8 @@ live/frozen observations separately from the physical bus object.
 
 `CompositeCollapsedFullTripTest` retains all four complete cold traces, two
 control/full-action pairs, including startup records and every event-side
-sample. All nonnegative samples are compared under both methods. Voltage/power
-range-normalized maximum errors are `3.224e-5` for modified Euler and `3.796e-6`
+sample. All nonnegative samples are compared under both methods. The largest
+per-channel voltage/power range-normalized RMSE values are `3.224e-5` for modified Euler and `3.796e-6`
 for staggered integration; peak rotor errors are `5.971e-5` and `3.445e-5` degrees.
 The existing represented-profile envelopes remain unchanged. The new collapsed
 profile uses the same physical envelopes and a `1.5e-6` staggered relay-position
