@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain [scheduled-network event averaging across local steps](dynamic-models/chvdc2-named-link.md#scheduled-network-events-across-local-steps), the fixed accepted left derivative and separate two-step history. Coarse independent line/measurement controls distinguish derivative averaging from input averaging. Keep internal protection revisions on their separately qualified policy; resolve protected trajectories and modified-Euler component/network gates without changing precision, coefficients or thresholds.
+
 - Retain [explicit local staggered integration](dynamic-models/chvdc2-named-link.md#explicit-local-staggered-integration), reusable solver-owned histories and once-per-outer-interval current sampling/protection clocks. Local refinement stabilizes the fast algebraic-line network control, but current/power/state reference gates remain open. Qualify event-input handling, multirate modified-Euler network coupling, production steps and longer durations before choosing a default count or enabling automatic attachment; do not hide numerical instability by clamping reverse current.
 
 - Retain [outer-interval current-transducer sampling](dynamic-models/chvdc2-named-link.md#current-transducer-sampling-at-the-outer-interval) in both terminal paths, including live physical currents/injections, zero-lag bypass and transactional rollback. Resolve the remaining protected modified-Euler transducer discrepancy, line event ordering and complete network trajectory gates before qualifying a production local-substep scheduler or automatic attachment. Do not infer complete-model acceptance from the isolated transducer replay.

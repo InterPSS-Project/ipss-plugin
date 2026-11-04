@@ -211,6 +211,48 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         f.network().context().getDStabilityNet().getSpecialBranchList().remove(link);
         assertFalse(p.attachmentIntact());assertFalse(p.updateAttributes(false));
     }
+    @ParameterizedTest @ValueSource(ints={2,4,10})
+    void localEventBlendRetainsLeftRateForWholeOuterIntervalAndExpires(int localSteps)throws Exception {
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,0,localSteps);
+        var a=f.network().context().getDynSimuAlgorithm();var p=f.ports().rectifierPort();
+        double H=.0005,h=H/localSteps,T=Chvdc2ParametersTest.constants()[17];
+        class ObservedSolver extends StaggeredEulerSolver {
+            final double[] state=new double[16];
+            double expected,history,left,firstOnly,largestDiscriminator;
+            boolean recording,event;
+            ObservedSolver(){super(a);setReuseNetworkEndpoint(false);}
+            @Override public void beforeStep(double time)throws com.interpss.dstab.common.DStabSimuException {
+                event=Math.abs(time-.001)<1e-12||Math.abs(time-.004)<1e-12;
+                if(recording)left=(a.getNetwork().getBus("Bus9").getVoltageMag()-expected)/T;
+                super.beforeStep(time);
+            }
+            @Override public boolean networkSolutionStep()throws com.interpss.dstab.common.DStabSimuException {
+                boolean ok=super.networkSolutionStep();
+                if(ok&&recording&&"INITIAL".equals(networkSolutionStage)) {
+                    double u=a.getNetwork().getBus("Bus9").getVoltageMag(),old=history;
+                    firstOnly=expected;
+                    for(int j=0;j<localSteps;j++) {
+                        double rate=(u-expected)/T,negativeRate=(u-firstOnly)/T;
+                        if(event){rate=.5*(rate+left);if(j==0)negativeRate=.5*(negativeRate+left);}
+                        expected+=h*(1.5*rate-.5*history);history=rate;
+                        firstOnly+=h*(1.5*negativeRate-.5*old);old=negativeRate;
+                    }
+                    if(event)largestDiscriminator=Math.max(largestDiscriminator,Math.abs(firstOnly-expected));
+                }
+                return ok;
+            }
+        }
+        var solver=new ObservedSolver();a.setSolver(solver);a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        a.setSimuStepSec(H);a.setTotalSimuTimeSec(.006);a.setSimuOutputHandler(new StateMonitor());
+        a.getNetwork().addDynamicEvent(com.interpss.dstab.DStabObjectFactory.createBusFaultEvent("Bus9",a.getNetwork(),
+                com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.001,.003),"Fault");
+        assertTrue(a.initialization());p.readStaggeredState(solver.state,0);solver.expected=solver.state[11];solver.recording=true;
+        while(a.getSimuTime()<.006-H/2) {
+            assertTrue(a.solveDEqnStep(true));p.readStaggeredState(solver.state,0);
+            assertEquals(solver.expected,solver.state[11],2e-12,"Application, clearing and subsequent ordinary intervals");
+        }
+        assertTrue(solver.largestDiscriminator>1e-6,"Reject first-local-only averaging");
+    }
     @Test void staggeredFaultClearingUsesTheAcceptedLeftRateAndKeepsTwoStepHistorySeparate()throws Exception {
         var f=fixture(true);var a=f.network().context().getDynSimuAlgorithm();var p=f.ports().rectifierPort();
         double h=.0005,clear=.004;int coordinate=11;

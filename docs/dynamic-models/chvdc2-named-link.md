@@ -284,14 +284,78 @@ repeat checks and restoration checks are retained in the private
 `chvdc2-outer-refinement-20261103` validation archive. This is full-network
 refinement evidence, not qualification of a production local-substep API.
 
+### Scheduled network events across local steps
+
+Cold-repeated fixed-angle controls at network intervals of `1/240 s` and
+`1/480 s` distinguish event derivative handling from an input delay. Converter
+angles, prepared coefficients and taps remain fixed. All samples, including
+the application and clearing duplicates, are retained. Two independent
+component replays use production equations: the dynamic DC line driven by
+recorded converter voltages, and the AC-voltage measurement driven by recorded
+terminal voltage.
+
+For the first outer interval after a scheduled network event, the staggered
+reference is consistent with averaging each local right-side derivative with
+the **same accepted left-side derivative**. The local right derivative changes
+with the local state. Averaging the physical voltage input instead gives a
+different damping coefficient and is rejected by the coarse controls.
+The older two-step integration history remains separate from the event slope.
+
+`LocalStaggeredEulerParticipant.averageNetworkEventRatesThroughoutLocalInterval()`
+is an explicit opt-in. CHVDC2 enables it; other participants retain their
+existing first-local-slope policy. The shared solver stores the fixed event
+rate in a reusable buffer, applies the participant's per-coordinate selection,
+and consumes this policy for one outer interval only. One local step is
+unchanged. Production precision, network step, coefficients, recording and
+network-solution count are unchanged.
+
+| Isolated replay, ten local steps | `1/240 s` peak error | `1/480 s` peak error |
+| --- | ---: | ---: |
+| Staggered AC measurement | 0.000001423 pu | 0.000002855 pu |
+| Modified-Euler AC measurement | 0.000083183 pu | 0.000055748 pu |
+| Staggered DC current | 0.001906 A | 0.004725 A |
+| Modified-Euler DC current | 0.242868 A | 0.125428 A |
+
+The four staggered component gates pass. The four modified-Euler gates remain
+explicit failures; this isolated common-RHS replay does not implement or qualify
+multirate modified-Euler network coupling. No state is reset after initialization.
+
+Internal protection transitions retain their separate first-local-step policy.
+An attempted extension of whole-interval averaging to those transitions raised
+the protected ten-local-step current error to 97.40 A and was rejected. With
+the scheduled-network-only correction, nominal full-network peak current error
+falls from 0.297274 A to 0.129918 A. Protected peak current error changes from
+10.721076 A to 11.016815 A; protection flags still match. The fast algebraic-line
+control changes from 0.555660 A to 0.557460 A. These complete trajectories still
+fail their unchanged current/power/state gates and do not qualify the model.
+
+Network regressions cover application, non-equilibrium clearing, subsequent
+ordinary intervals and separate two-step history at two, four and ten local
+steps. All 29 terminal lifecycle and 17 shared-solver checks pass. Default
+one-step trajectories in the isolated comparison remain byte-identical to the frozen local-participant
+checkpoint, including the modified-Euler controls. The private
+`chvdc2-coarse-line-event-20261104` archive retains the raw cold captures,
+probe scripts, rejected protection policy and validation results.
+
+The broader Maven selection plus explicit completion of registered classes
+executes 5,834 checks: 193 failures, two errors and 63 skips. All 4,622 checks
+from the retained registered baseline keep exactly the same outcome. The extra
+coverage includes the four new modified-Euler component failures above, the
+previously added modified-Euler fast-line gate, three static RAWX failures and
+an additional dynamic-load failure. The last four were outside that retained
+baseline and are not classified as regressions or as passing checks. The
+core-plugin module contributes 486 checks with no failures/errors and four
+skips. Full model and full-suite acceptance remain open.
+
 ### Explicit local staggered integration
 
 `LocalStaggeredEulerParticipant` lets an already supported participant request
 local numerical updates inside one network interval. The shared solver owns
 the reusable state, trial, rate and derivative-history arrays; the model does
 not implement a second copy of the staggered equations. Its first local slope
-retains the existing accepted-event policy. Later local slopes use the shared
-RHS, and limiter projections clear only the affected history coordinate.
+retains the accepted-event policy. Later local slopes use the shared RHS and
+the explicit scheduled-event scope described above; limiter projections clear
+only the affected history coordinate.
 The local count is captured during initialization and checked before advancing
 any model. There is no automatic step-count selection or coefficient retuning.
 

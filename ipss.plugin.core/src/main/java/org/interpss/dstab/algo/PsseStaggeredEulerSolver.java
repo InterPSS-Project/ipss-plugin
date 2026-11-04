@@ -315,9 +315,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         final org.interpss.dstab.control.util.LocalStaggeredEulerParticipant local;
         final int localSteps;
         final BooleanSupplier active;
-        final double[] values, rates, history, trial, eventLeftRates;
+        final double[] values, rates, history, trial, eventLeftRates, localEventLeftRates;
         final boolean captureAcceptedNetworkEventRates, captureAcceptedInputEventRates;
-        boolean wasActive, hasEventLeftRates;
+        boolean wasActive, hasEventLeftRates, blendLocalEventRates;
         long appliedInputDiscontinuityVersion;
         Participant(StaggeredEulerParticipant model, BooleanSupplier active) {
             this.model=model;this.active=active;
@@ -331,6 +331,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     || model.providesNetworkEventLeftRates();
             values=new double[size];rates=new double[size];history=new double[size];trial=new double[size];
             eventLeftRates=captureAcceptedInputEventRates || captureAcceptedNetworkEventRates?new double[size]:null;
+            localEventLeftRates=localSteps>1&&local.averageNetworkEventRatesThroughoutLocalInterval()?new double[size]:null;
         }
     }
 
@@ -1184,10 +1185,14 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             // replacing the two-step integration history or allocating a buffer.
             boolean localLeft=!discontinuity&&localDiscontinuity
                     &&p.model.readStaggeredInputDiscontinuityLeftRates(p.trial,0);
+            p.blendLocalEventRates=p.localEventLeftRates!=null&&eventBoundaryThisStep;
             if (discontinuity||localDiscontinuity)
                 for (int i=0;i<p.rates.length;i++)
-                    if (p.model.averageStaggeredRateAtDiscontinuity(i))
-                        p.rates[i]=.5*(p.rates[i]+(discontinuity&&p.hasEventLeftRates?p.eventLeftRates[i]:localLeft?p.trial[i]:p.history[i]));
+                    if (p.model.averageStaggeredRateAtDiscontinuity(i)) {
+                        double left=discontinuity&&p.hasEventLeftRates?p.eventLeftRates[i]:localLeft?p.trial[i]:p.history[i];
+                        if(p.blendLocalEventRates)p.localEventLeftRates[i]=left;
+                        p.rates[i]=.5*(p.rates[i]+left);
+                    }
             p.appliedInputDiscontinuityVersion=inputVersion;
         }
         // Advance ST1 while its physical and upstream controller inputs still
@@ -1217,7 +1222,13 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             for(int sub=0;sub<p.localSteps;sub++) {
                 // The first slope already includes the accepted event policy.
                 // Later slopes use local states with the participant's held inputs.
-                if(sub>0)p.model.evaluateStaggered(localStep,p.rates,0);
+                if(sub>0) {
+                    p.model.evaluateStaggered(localStep,p.rates,0);
+                    if(p.blendLocalEventRates)
+                        for(int i=0;i<p.rates.length;i++)
+                            if(p.model.averageStaggeredRateAtDiscontinuity(i))
+                                p.rates[i]=.5*(p.rates[i]+p.localEventLeftRates[i]);
+                }
                 for (int i=0;i<p.trial.length;i++)
                     p.trial[i]=p.values[i]+localStep*(1.5*p.rates[i]-.5*p.history[i]);
                 p.model.applyStaggeredState(p.trial,0,localStep);

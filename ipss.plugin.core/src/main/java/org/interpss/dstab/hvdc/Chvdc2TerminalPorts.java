@@ -261,6 +261,7 @@ public final class Chvdc2TerminalPorts {
         // The shared solver evaluates our rates after endpoint acceptance. Use that
         // settled left endpoint at a network event, not the older integration slope.
         @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity(){return owner;}
+        @Override public boolean averageNetworkEventRatesThroughoutLocalInterval(){return owner;}
         @Override public long staggeredInputDiscontinuityVersion(){return owner?runtime.staggeredInputDiscontinuityVersion():0;}
         @Override public boolean readStaggeredInputDiscontinuityLeftRates(double[] values,int offset){
             if(owner)return runtime.readStaggeredInputDiscontinuityLeftRates(values,offset);

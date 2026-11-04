@@ -9,6 +9,13 @@ package org.interpss.dstab.control.util;
  */
 public interface LocalStaggeredEulerParticipant extends StaggeredEulerParticipant {
     int staggeredLocalStepCount();
+    /** Keep the captured left event derivative in each local slope blend during
+     * the first outer interval after a scheduled network discontinuity. The left rate is fixed;
+     * the right rate is reevaluated at each local state. This does not replace
+     * two-step history or average the physical input. Existing participants
+     * blend only the first local slope unless they explicitly opt in. Internal
+     * protection/input revisions retain their separate first-local-step policy. */
+    default boolean averageNetworkEventRatesThroughoutLocalInterval() { return false; }
     void beginStaggeredLocalInterval(double outerStepSec);
     void completeStaggeredLocalStep(double localStepSec);
 }

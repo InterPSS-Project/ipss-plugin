@@ -349,6 +349,7 @@ import org.interpss.core.dstab.Chvdc2CapacitanceReferenceTest;
 import org.interpss.core.dstab.Chvdc2RunBoundaryReferenceTest;
 import org.interpss.core.dstab.Chvdc2MeasurementReferenceTest;
 import org.interpss.core.dstab.Chvdc2CurrentSamplingReferenceTest;
+import org.interpss.core.dstab.Chvdc2EventIntervalReferenceTest;
 import org.interpss.core.dstab.Chvdc2NetworkPreparationTest;
 import org.interpss.core.dstab.Chvdc2NetworkPreparationReferenceTest;
 import org.interpss.core.dstab.Chvdc2TerminalPortsTest;
@@ -1377,6 +1378,7 @@ import org.junit.platform.suite.api.Suite;
     Chvdc2RunBoundaryReferenceTest.class,
     Chvdc2MeasurementReferenceTest.class,
     Chvdc2CurrentSamplingReferenceTest.class,
+    Chvdc2EventIntervalReferenceTest.class,
     Chvdc2NetworkPreparationTest.class,
     Chvdc2NetworkPreparationReferenceTest.class,
     Chvdc2TerminalPortsTest.class,
