@@ -312,6 +312,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     }
     private static final class Participant {
         final StaggeredEulerParticipant model;
+        final org.interpss.dstab.control.util.LocalStaggeredEulerParticipant local;
+        final int localSteps;
         final BooleanSupplier active;
         final double[] values, rates, history, trial, eventLeftRates;
         final boolean captureAcceptedNetworkEventRates, captureAcceptedInputEventRates;
@@ -319,6 +321,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         long appliedInputDiscontinuityVersion;
         Participant(StaggeredEulerParticipant model, BooleanSupplier active) {
             this.model=model;this.active=active;
+            local=model instanceof org.interpss.dstab.control.util.LocalStaggeredEulerParticipant p?p:null;
+            localSteps=local==null?1:local.staggeredLocalStepCount();
+            if(localSteps<1||localSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
             appliedInputDiscontinuityVersion=model.staggeredInputDiscontinuityVersion();
             int size=model.staggeredStateCount();
             captureAcceptedNetworkEventRates=model.useAcceptedEndpointRateAtNetworkDiscontinuity();
@@ -1114,6 +1119,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for (var unchanged:attachmentsUnchanged)
             if (!unchanged.getAsBoolean())
                 throw new IllegalStateException("Reinitialize after changing dynamic model attachments");
+        for(var p:participants)
+            if(p.local!=null&&p.local.staggeredLocalStepCount()!=p.localSteps)
+                throw new IllegalStateException("Local integration count changed after initialization");
         timestep=dt;
         boolean discontinuity=eventBoundaryThisStep || inputDiscontinuity;
         if (discontinuity) for (var p:participants) {
@@ -1204,11 +1212,19 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         }
         for (var p:participants) {
             if (!p.wasActive) { java.util.Arrays.fill(p.history,0.);continue; }
-            for (int i=0;i<p.trial.length;i++)
-                p.trial[i]=p.values[i]+dt*(1.5*p.rates[i]-.5*p.history[i]);
-            p.model.applyStaggeredState(p.trial,0,dt);
-            p.model.readStaggeredState(p.values,0);
-            for (int i=0;i<p.trial.length;i++) p.history[i]=p.values[i]!=p.trial[i]?0.:p.rates[i];
+            double localStep=dt/p.localSteps;
+            if(p.localSteps>1)p.local.beginStaggeredLocalInterval(dt);
+            for(int sub=0;sub<p.localSteps;sub++) {
+                // The first slope already includes the accepted event policy.
+                // Later slopes use local states with the participant's held inputs.
+                if(sub>0)p.model.evaluateStaggered(localStep,p.rates,0);
+                for (int i=0;i<p.trial.length;i++)
+                    p.trial[i]=p.values[i]+localStep*(1.5*p.rates[i]-.5*p.history[i]);
+                p.model.applyStaggeredState(p.trial,0,localStep);
+                p.model.readStaggeredState(p.values,0);
+                for (int i=0;i<p.trial.length;i++) p.history[i]=p.values[i]!=p.trial[i]?0.:p.rates[i];
+                if(p.localSteps>1)p.local.completeStaggeredLocalStep(localStep);
+            }
         }
         for (var p:participants)
             if (p.wasActive) p.model.completeStaggeredStep(dt, endpointTime);

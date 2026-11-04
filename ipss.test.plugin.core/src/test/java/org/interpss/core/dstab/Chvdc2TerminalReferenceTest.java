@@ -89,10 +89,10 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
     private static final class Recorder {
         final com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm;
         final Chvdc2NetworkPreparation.Binding binding;final Chvdc2TerminalPorts ports;
-        final List<double[]> rows=new ArrayList<>();boolean enabled;
+        final List<double[]> rows=new ArrayList<>();boolean enabled;int networkSolves;
         final List<Map<String,Double>> histories=new ArrayList<>();
-        final double[] states=new double[16],boundary=new double[10];
-        Recorder(com.interpss.dstab.algo.DynamicSimuAlgorithm a,Chvdc2NetworkPreparation.Binding b,Chvdc2TerminalPorts p){algorithm=a;binding=b;ports=p;}
+        final double[] states,boundary=new double[10];
+        Recorder(com.interpss.dstab.algo.DynamicSimuAlgorithm a,Chvdc2NetworkPreparation.Binding b,Chvdc2TerminalPorts p){algorithm=a;binding=b;ports=p;states=new double[b.runtime().staggeredStateCount()];}
         void before(double time){if(enabled&&(Math.abs(time-.05)<1e-9||Math.abs(time-.1)<1e-9))capture(time);}
         void capture(double time){
             var r=ports.rectifierPort().getDStabBus().getVoltage();var i=ports.inverterPort().getDStabBus().getVoltage();
@@ -100,20 +100,20 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             var rp=r.multiply(((Complex)ports.rectifierPort().getOutputObject()).conjugate()).negate();
             var ip=i.multiply(((Complex)ports.inverterPort().getOutputObject()).conjugate()).negate();
             binding.runtime().readPublishedStates(states,0);binding.runtime().readBoundary(boundary,0);
-            double[] row=new double[27];row[0]=time;row[1]=r.abs();row[2]=i.abs();row[3]=boundary[2];row[4]=boundary[3];
+            double[] row=new double[11+states.length];row[0]=time;row[1]=r.abs();row[2]=i.abs();row[3]=boundary[2];row[4]=boundary[3];
             row[5]=rp.getReal();row[6]=rp.getImaginary();row[7]=ip.getReal();row[8]=ip.getImaginary();row[9]=states[6];row[10]=states[7];
-            System.arraycopy(states,0,row,11,16);rows.add(row);histories.add(binding.runtime().getIntegrationHistories());
+            System.arraycopy(states,0,row,11,states.length);rows.add(row);histories.add(binding.runtime().getIntegrationHistories());
         }
     }
     private static final class Ordinary extends DefaultDynamicSimulationSolver {
         final Recorder r;Ordinary(Recorder r){super(r.algorithm);this.r=r;converge_tol=1e-10;setMaxIterationTimes(50);}
         @Override public void beforeStep(double time)throws DStabSimuException{r.before(time);super.beforeStep(time);}
-        @Override public boolean networkSolutionStep()throws DStabSimuException{boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage))r.capture(dstabAlgo.getSimuTime());return ok;}
+        @Override public boolean networkSolutionStep()throws DStabSimuException{r.networkSolves++;boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage))r.capture(dstabAlgo.getSimuTime());return ok;}
     }
     private static final class Shared extends StaggeredEulerSolver {
         final Recorder r;Shared(Recorder r){super(r.algorithm);this.r=r;converge_tol=1e-10;setMaxIterationTimes(50);setReuseNetworkEndpoint(false);}
         @Override public void beforeStep(double time)throws DStabSimuException{r.before(time);super.beforeStep(time);}
-        @Override public boolean networkSolutionStep()throws DStabSimuException{boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage))r.capture(dstabAlgo.getSimuTime());return ok;}
+        @Override public boolean networkSolutionStep()throws DStabSimuException{r.networkSolves++;boolean ok=super.networkSolutionStep();if(ok&&r.enabled&&"INITIAL".equals(networkSolutionStage))r.capture(dstabAlgo.getSimuTime());return ok;}
     }
     @ParameterizedTest @MethodSource("profiles")
     void completeAttachedNetworkFaultComparedAgainstIndependentCaptures(String interval,boolean staggered)throws Exception {
@@ -138,6 +138,31 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         compare(archive,tag,staggered,protectedProfile,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME);
     }
     private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock)throws Exception {
+        compare(archive,tag,staggered,protectedProfile,clock,1);
+    }
+    static Stream<Arguments> localProfiles() {
+        return Stream.of(
+                new String[]{"chvdc2-controller-20261102/captures.zip","75d8b6a733eb20426dbc8c8fe7c4efdab854c8e11a82da99ee98f6ce76377511","stiff-legacy-inverter-fault-flags001-h0p0005-a"},
+                new String[]{"chvdc2-protection-20261102/captures.zip","32079591003689230139fa893b5c3e07a315dc4d411442372838e10da3b658ea","chvdc2-protection-short-hold-20261102/stiff-legacy-inverter-fault-flags001-h0p0005-gamma12-faultx0p02-netiter50-cfhold0p005-a"},
+                new String[]{"chvdc2-measurements-20261102/captures.zip","d9d055e905044a4de552955beb536267699184eae70fe0498746f1b3409ac707","stiff-legacy-rectifier-fault-flags000-h0p0005-netiter50-meas0p001-a"})
+                .flatMap(p->Stream.of(1,2,4,10).map(n->Arguments.of(p[0],p[1],p[2],n)));
+    }
+    @ParameterizedTest @MethodSource("localProfiles")
+    void localStaggeredNetworkRefinement(String archive,String digest,String tag,int localSteps)throws Exception {
+        Path source=Path.of("testData/private/verification-artifacts").resolve(archive);
+        Assumptions.assumeTrue(Files.isRegularFile(source),"Retain independent local-integration controls");
+        assertEquals(digest,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source))));
+        compare(source,tag,true,tag.contains("cfhold"),Chvdc2TerminalPorts.ProtectionClock.BINARY32,localSteps);
+    }
+    @Test void fastAlgebraicLineModifiedEulerNetworkControl()throws Exception {
+        Path source=Path.of("testData/private/verification-artifacts/chvdc2-measurements-20261102/captures.zip");
+        Assumptions.assumeTrue(Files.isRegularFile(source),"Retain independent fast-line control");
+        assertEquals("d9d055e905044a4de552955beb536267699184eae70fe0498746f1b3409ac707",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source))));
+        compare(source,"stiff-legacy-rectifier-fault-flags000-h0p0005-netiter50-meas0p001-a",false,false,
+                Chvdc2TerminalPorts.ProtectionClock.BINARY32,1);
+    }
+    private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock,int localSteps)throws Exception {
         List<Map<String,Double>> reference;com.fasterxml.jackson.databind.JsonNode manifest,equipment;
         Path raw=folder.resolve("network.raw"),dyr=folder.resolve("machines.dyr");
         try(var z=new ZipFile(archive.toFile())) {
@@ -165,7 +190,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         double h=manifest.path("settings").path("step").asDouble();
         var p=new Chvdc2Parameters("1",Chvdc2Parameters.Dialect.CHVDC2U1,
                 JSON.convertValue(manifest.path("settings").path("flags"),int[].class),JSON.convertValue(manifest.path("entered_constants"),double[].class));
-        var binding=Chvdc2NetworkPreparation.prepare(n,p,h,-2*h);var ports=new Chvdc2TerminalPorts(binding,clock);ports.attach();
+        var binding=Chvdc2NetworkPreparation.prepare(n,p,h,-2*h);var ports=new Chvdc2TerminalPorts(binding,clock,localSteps);ports.attach();
         for(var entry:Map.of("7",binding.owner().getRectifier(),"9",binding.owner().getInverter()).entrySet()) {
             var expected=equipment.path(entry.getKey());var converter=entry.getValue();
             assertEquals(expected.path("TAP").asDouble(),converter.getXformerTapSetting(),1e-7,"Solved converter tap");
@@ -181,12 +206,13 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         Exception stopped=null;
         try{while(a.getSimuTime()<.5-h/2)if(!a.solveDEqnStep(true))throw new IllegalStateException("Attached network step did not converge");recorder.capture(a.getSimuTime());}
         catch(Exception failure){stopped=failure;}
-        Path output=Files.createTempDirectory(Files.createDirectories(Path.of("../target/chvdc2-terminal-reference")),staggered?"staggered-":"euler-");
-        double[] maximum=new double[26],times=new double[26];int duplicates=0,step=0;
+        Path output=Files.createTempDirectory(Files.createDirectories(Path.of(localSteps>1?"../target/chvdc2-terminal-local-reference":"../target/chvdc2-terminal-reference")),staggered?"staggered-":"euler-");
+        int channels=10+recorder.states.length;
+        double[] maximum=new double[channels],times=new double[channels];int duplicates=0,step=0;
         float referenceClock=(float)(-2*h);
         var checks=new ArrayList<org.junit.jupiter.api.function.Executable>();
         try(var w=BenchmarkOutputGuard.newWriter(output.resolve("comparison.csv"),2*1024*1024)) {
-            w.write("time_s,reference_time_s");for(int k=0;k<26;k++)w.write(",actual_"+k+",reference_"+k+",error_"+k);w.write("\n");
+            w.write("time_s,reference_time_s");for(int k=0;k<channels;k++)w.write(",actual_"+k+",reference_"+k+",error_"+k);w.write("\n");
             for(int row=0;row<recorder.rows.size();row++) {
                 var actual=recorder.rows.get(row);var expected=reference.get(row);
                 boolean duplicate=row>0&&actual[0]==recorder.rows.get(row-1)[0];
@@ -203,7 +229,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                 double[] boundary={expected.get("V7"),expected.get("V9"),expected.get("VAR5"),expected.get("VAR7"),
                         expected.get("VAR9")/100,expected.get("VAR10")/100,expected.get("VAR11")/100,expected.get("VAR12")/100,expected.get("STATE6"),expected.get("STATE7")};
                 w.write(actual[0]+","+expected.get("time_s"));
-                for(int k=0;k<26;k++){double target=k<10?boundary[k]:expected.get("STATE"+(k-10)),error=actual[k+1]-target;
+                for(int k=0;k<channels;k++){double target=k<10?boundary[k]:expected.get("STATE"+(k-10)),error=actual[k+1]-target;
                     int channel=k;
                     checks.add(()->assertTrue(Double.isFinite(actual[channel+1])&&Double.isFinite(target),"Finite sample/channel "+index+"/"+channel));
                     if(Math.abs(error)>maximum[k]){maximum[k]=Math.abs(error);times[k]=actual[0];}w.write(","+actual[k+1]+","+target+","+error);}
@@ -211,8 +237,11 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             }
         }
         var report=new LinkedHashMap<String,Object>();report.put("profile",tag);report.put("staggered",staggered);report.put("completed_samples",recorder.rows.size());
+        report.put("local_steps",localSteps);report.put("network_interval_s",h);report.put("local_interval_s",h/localSteps);
+        report.put("network_solution_calls",recorder.networkSolves);
         report.put("reference_samples",reference.size());report.put("event_duplicates",duplicates);report.put("trajectory_complete",stopped==null);
-        report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);report.put("limits",LIMITS);
+        report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);report.put("limits",Arrays.copyOf(LIMITS,channels));
+        report.put("numerical_state_count",recorder.states.length);
         report.put("automatic_import",false);report.put("full_network_terminal_attachment",true);report.put("recorded_state_or_input_forcing",false);
         report.put("protected_profile",protectedProfile);report.put("fault_bus",faultBus);report.put("fault_reactance_pu",reactance);
         report.put("protection_clock",clock.name());
@@ -243,7 +272,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         try(var w=BenchmarkOutputGuard.newWriter(output.resolve("comparison.json"),20000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,report);}
         if(stopped!=null)throw stopped;
         assertEquals(reference.size(),recorder.rows.size());assertEquals(2,duplicates);
-        for(int k=0;k<26;k++){int channel=k;checks.add(()->assertTrue(maximum[channel]<LIMITS[channel],"Channel "+channel+" error "+maximum[channel]+" at "+times[channel]));}
+        for(int k=0;k<channels;k++){int channel=k;checks.add(()->assertTrue(maximum[channel]<LIMITS[channel],"Channel "+channel+" error "+maximum[channel]+" at "+times[channel]));}
         assertAll(tag+" / "+staggered,checks);
     }
 }

@@ -284,6 +284,99 @@ repeat checks and restoration checks are retained in the private
 `chvdc2-outer-refinement-20261103` validation archive. This is full-network
 refinement evidence, not qualification of a production local-substep API.
 
+### Explicit local staggered integration
+
+`LocalStaggeredEulerParticipant` lets an already supported participant request
+local numerical updates inside one network interval. The shared solver owns
+the reusable state, trial, rate and derivative-history arrays; the model does
+not implement a second copy of the staggered equations. Its first local slope
+retains the existing accepted-event policy. Later local slopes use the shared
+RHS, and limiter projections clear only the affected history coordinate.
+The local count is captured during initialization and checked before advancing
+any model. There is no automatic step-count selection or coefficient retuning.
+
+CHVDC2 opts into this contract through an explicit constructor argument:
+
+```java
+var ports = new Chvdc2TerminalPorts(binding,
+        Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME, 4);
+ports.attach();
+algorithm.setSolver(new StaggeredEulerSolver(algorithm));
+```
+
+The count is bounded to `[1,128]`; existing constructors retain one. The prepared
+network interval stays fixed. Current transducers and algebraic-line inputs
+sample once per outer interval, physical dynamic-line states advance locally,
+and protection/accepted-network clocks advance only at the outer boundary.
+No extra network solves or measurement records are inserted. Modified Euler
+retains its existing one-step terminal path; requesting this staggered-only
+setting through its numerical callback is rejected rather than silently ignored.
+Multirate predictor/corrector network coupling remains separate work.
+
+The reverse-current failure in the older reduced-circuit diagnostic is an
+unstable numerical trajectory, not evidence for negative conducting current.
+Its single-step staggered states depart from equilibrium before the fault,
+while the independent current remains flat. A fresh full-network discriminator
+uses independently solved equipment and all moving source machines. Its
+one-step fast algebraic-line run instead fails after the fault, at 58 ms.
+Local refinement completes the same outer sample grid:
+
+| Local steps | Fast algebraic-line result | Peak current error (A) | Protected dynamic-line peak current error (A) |
+| --- | --- | --- | --- |
+| 1 | Stops at 58 ms | Incomplete trajectory | 69.808659 |
+| 2 | Complete | 11.789979 | 25.693890 |
+| 4 | Complete | 2.575491 | 16.403109 |
+| 10 | Complete | 0.555660 | 10.721076 |
+
+These are 0.5 ms network intervals and a half-second fault comparison. The
+completed runs retain all 1,005 samples and both event-side duplicates. The
+refined fast-line runs have at most 0.002503 A prefault current error; protected
+runs retain zero flag mismatches with the explicitly matched protection clock.
+The current, power and controller-state accuracy gates remain unchanged and
+fail. This establishes numerical stability improvement, not complete-model
+acceptance or a qualified default count. In particular, production-step and
+longer-duration qualification remain open.
+
+The modified-Euler control for the same fast algebraic-line profile completes
+all samples with 8.715657 A peak current error and retains its accuracy failure.
+Each completed locally refined staggered run makes 2,005 network-solution API
+calls, independent of whether it uses two, four or ten local steps. This count
+does not equate network iterations or sparse solves across the trajectories.
+
+Local lifecycle tests check a single outer clock, flat operating points,
+rejected partial intervals and rollback of numerical states, samples and model
+histories after a failed final network solve. Model rollback does not restore
+the enclosing solver's other models or multistep buffers: a failed whole-network
+step still requires coherent solver reinitialization. Automatic import remains
+disabled pending full trajectory qualification.
+
+The focused lifecycle/shared-solver checks pass, including the warmed local
+numerical and rollback callbacks allocating zero objects at four and ten steps.
+The full registered run executes 4,622 checks: 184 fail, two error and 13 skip.
+Every one of the 4,590 checks shared with the retained prior registered run has
+the same pass/fail/error/skip status. New comparisons preserve their failed
+trajectory gates, including the one-step fast-line failure. The registered
+evidence archive retains the executed individual reports and tested binaries;
+the empty suite-wrapper XML is not used to infer success. Private archive
+`chvdc2-local-participant-20261103/registered-suite.zip` has SHA-256
+`201f3e54da2211e5a21bb97f82b14b6c349ee913aa30f2ef50c6dba272a1e691`.
+The final duration/zero-duration guards and additional modified-Euler fast-line
+control are checked in the subsequent focused run, separately from that full
+registered run.
+
+Final focused validation executes 142 checks: all 108 lifecycle/shared-solver
+checks pass; the independent trajectory class has one passing discriminator,
+32 failed accuracy checks and the expected one-step fast-line error. The
+plugin-core module run executes 486 checks with no failures or errors and four
+existing skips. All twenty default network CSVs reproduce the committed
+sampling baseline byte-for-byte in the isolated final run; the full-suite
+context differs by at most `3.2e-12` across those comparison columns. Local
+controls repeat with the complete outer grid, including the retained incomplete
+one-step negative control. Source snapshots, repeated complete traces, failure
+reports and file hashes are retained in the private
+`chvdc2-local-participant-20261103/validation.zip` archive (SHA-256
+`5f2e65e44cb86e4506d6cedfd0f8e0fe3ee6e420cfb71f7c442eace08e70901e`).
+
 ### Current-transducer sampling at the outer interval
 
 The coupled runtime now samples each lagged current transducer's input when
@@ -292,8 +385,9 @@ samples until the interval completes. Physical line currents, converter
 voltages, AC injections and zero-lag current observations remain live. The
 samples are included in reusable transaction and predictor checkpoints;
 rollback restores the interval and its progress. Both terminal integration
-paths now bracket their numerical update with this interval contract. This
-does not add a production local-substep scheduler or change prepared coefficients.
+paths bracket their numerical update with this interval contract. Sampling is
+independent of local-step count and does not change prepared coefficients; the
+explicit staggered scheduler above uses the same contract.
 
 Independent recorded-current replay through the production transducer equations
 supports this sampling boundary. It initializes once, retains every sample and

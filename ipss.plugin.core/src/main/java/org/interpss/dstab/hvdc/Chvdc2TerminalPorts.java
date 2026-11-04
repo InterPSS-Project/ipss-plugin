@@ -8,7 +8,7 @@ import org.interpss.dstab.control.util.InitialEndpointAction;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
 import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import org.interpss.dstab.control.util.LocalStaggeredEulerParticipant;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -28,6 +28,8 @@ public final class Chvdc2TerminalPorts {
      * round states, change integration weights or move scheduled network events. */
     public enum ProtectionClock { CALLER_TIME, BINARY32 }
     private final ProtectionClock protectionClock;
+    private final int staggeredLocalSteps;
+    private boolean localIntegration;
     private double acceptedProtectionTime,trialProtectionTime;
     private final Chvdc2NetworkPreparation.Binding binding;
     private final Chvdc2CoupledRuntime runtime;
@@ -48,6 +50,13 @@ public final class Chvdc2TerminalPorts {
         this(binding,ProtectionClock.CALLER_TIME);
     }
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding,ProtectionClock protectionClock) {
+        this(binding,protectionClock,1);
+    }
+    /** Explicit staggered local refinement. The ordinary modified-Euler path
+     * uses count one; this option does not change coefficients or network timing. */
+    public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding,ProtectionClock protectionClock,int staggeredLocalSteps) {
+        if(staggeredLocalSteps<1||staggeredLocalSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
+        this.staggeredLocalSteps=staggeredLocalSteps;
         this.protectionClock=Objects.requireNonNull(protectionClock);
         this.binding=Objects.requireNonNull(binding);runtime=Objects.requireNonNull(binding.runtime());
         initialProtectionTime();
@@ -117,13 +126,13 @@ public final class Chvdc2TerminalPorts {
     private void rollback() {
         if(transaction){runtime.rollbackTransaction();transaction=false;sequence=savedSequence;
             rectifierOutput=savedRectifierOutput;inverterOutput=savedInverterOutput;}
-        integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;
+        integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;localIntegration=false;
     }
     private void commit() {runtime.commitTransaction();acceptedProtectionTime=trialProtectionTime;transaction=false;}
     private void requireReady() {
         if(!initialAccepted)throw new IllegalStateException("Accept the initial electrical endpoint before integration");
     }
-    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,
+    public final class Port extends DynamicBusDeviceImpl implements LocalStaggeredEulerParticipant,NetworkIterationAware,
             ConvergedNetworkAction,IntegrationStepAware,InitialEndpointAction,IntegrationStateAccess {
         private final boolean owner;
         private Port(String id,boolean owner){this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);}
@@ -210,6 +219,7 @@ public final class Chvdc2TerminalPorts {
             if(method!=DynamicSimuMethod.MODIFIED_EULER||stage<0||stage>1||!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds())
                 throw new IllegalArgumentException("Matching modified-Euler stages within the prepared outer interval required");
             if(h==0)return true;
+            if(staggeredLocalSteps!=1)throw new IllegalStateException("Local refinement requires the staggered solver");
             if(stage==0&&(integrationPending||networkTrial)||stage==1&&(!integrationPending||sharedIntegration||!predictorConverged||h!=interval))
                 throw new IllegalStateException("Matching predictor/network/corrector lifecycle required");
             if(stage==0){beginTransaction();integrationPending=true;interval=h;}
@@ -234,6 +244,20 @@ public final class Chvdc2TerminalPorts {
                     IntegrationStateMonitor.Stage.NOT_EVALUATED,Map.of(),Map.of());
         }
         @Override public int staggeredStateCount(){return owner?runtime.staggeredStateCount():0;}
+        @Override public int staggeredLocalStepCount(){return owner?staggeredLocalSteps:1;}
+        @Override public void beginStaggeredLocalInterval(double h){
+            if(!owner||!isOperational())return;requireReady();
+            if(staggeredLocalSteps<=1||transaction||networkTrial||integrationPending||!Double.isFinite(h)||h<=0||h>binding.networkIntervalSeconds())
+                throw new IllegalStateException("Start a fresh prepared local integration interval");
+            beginTransaction();integrationPending=true;sharedIntegration=true;localIntegration=true;interval=h;
+            try{advanceProtectionClock(h);bind();runtime.beginIntegrationInterval(h);}
+            catch(RuntimeException failure){rollback();throw failure;}
+        }
+        @Override public void completeStaggeredLocalStep(double h){
+            if(!owner||!isOperational())return;
+            if(!localIntegration||h!=interval/staggeredLocalSteps)throw new IllegalStateException("Complete the matching local interval");
+            try{runtime.completeStaggeredStep(h);}catch(RuntimeException failure){rollback();throw failure;}
+        }
         // The shared solver evaluates our rates after endpoint acceptance. Use that
         // settled left endpoint at a network event, not the older integration slope.
         @Override public boolean useAcceptedEndpointRateAtNetworkDiscontinuity(){return owner;}
@@ -249,7 +273,8 @@ public final class Chvdc2TerminalPorts {
         @Override public void applyStaggeredState(double[] values,int offset,double h){
             if(!owner){Objects.checkFromIndexSize(offset,0,values.length);return;}
             requireReady();
-            if(!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds()||networkTrial||integrationPending&&!sharedIntegration)
+            if(!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds()||networkTrial||integrationPending&&!sharedIntegration
+                    ||localIntegration&&h>0&&h!=interval/staggeredLocalSteps)
                 throw new IllegalStateException("Shared state proposal requires an idle prepared integration owner");
             boolean starting=h>0&&!transaction;
             if(starting){beginTransaction();integrationPending=true;sharedIntegration=true;interval=h;}
@@ -264,7 +289,7 @@ public final class Chvdc2TerminalPorts {
                     ||h>0&&(!integrationPending||!sharedIntegration||h!=interval||sharedEndpointPending))
                 throw new IllegalStateException("Complete the matching shared integration proposal once");
             if(h==0)return;
-            try{runtime.completeStaggeredStep(h);runtime.completeIntegrationInterval();sharedEndpoint=endpointTime;sharedEndpointPending=true;}
+            try{if(!localIntegration)runtime.completeStaggeredStep(h);runtime.completeIntegrationInterval();localIntegration=false;sharedEndpoint=endpointTime;sharedEndpointPending=true;}
             catch(RuntimeException failure){rollback();throw failure;}
         }
     }

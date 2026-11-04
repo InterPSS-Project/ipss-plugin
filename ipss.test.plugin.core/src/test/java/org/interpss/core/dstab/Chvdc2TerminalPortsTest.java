@@ -2,6 +2,7 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path;
+import java.lang.management.ManagementFactory;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
@@ -12,6 +13,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.device.NetworkIterationAware.Context;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -23,11 +25,14 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         return fixture(dynamic,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,0);
     }
     private Fixture fixture(boolean dynamic,Chvdc2TerminalPorts.ProtectionClock clock,double initialTime)throws Exception {
+        return fixture(dynamic,clock,initialTime,1);
+    }
+    private Fixture fixture(boolean dynamic,Chvdc2TerminalPorts.ProtectionClock clock,double initialTime,int localSteps)throws Exception {
         var f=Cdc6tCoupledNetworkTest.load(folder);var n=f.context().getDStabilityNet();
         f.ports().rectifierPort().setDStabBus(null);f.ports().inverterPort().setDStabBus(null);
         var o=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);
         var p=new Chvdc2Parameters(o.getName(),Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,dynamic?1:0},Chvdc2ParametersTest.constants());
-        var b=Chvdc2NetworkPreparation.prepare(n,p,.0005,initialTime);var ports=new Chvdc2TerminalPorts(b,clock);ports.attach();
+        var b=Chvdc2NetworkPreparation.prepare(n,p,.0005,initialTime);var ports=new Chvdc2TerminalPorts(b,clock,localSteps);ports.attach();
         return new Fixture(f,b,ports);
     }
     private static Context context(String stage,double time){return new Context(stage,time-.0005,time,50,1e-10);}
@@ -70,6 +75,73 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         p.beginNetworkSolution(context("INITIAL",0));p.beforeNetworkIteration(0);assertNotEquals(output,p.getOutputObject());
         p.applyConvergedNetworkAction();p.endNetworkSolution(false);
         assertSame(output,p.getOutputObject());assertEquals(states,m.getIntegrationStates());assertEquals(histories,m.getIntegrationHistories());
+    }
+    @ParameterizedTest @ValueSource(ints={2,4,10})
+    void localStaggeredNetworkKeepsOneOuterClockAndFlatOperatingPoint(int localSteps)throws Exception {
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,-.001,localSteps);
+        var a=f.network().context().getDynSimuAlgorithm();
+        a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.05);
+        a.setSimuOutputHandler(new StateMonitor());a.setSolver(new StaggeredEulerSolver(a));
+        assertTrue(a.initialization());a.setSimuTime(-.001);
+        double[] initial=new double[16],end=new double[16];f.binding().runtime().readStaggeredState(initial,0);
+        float clock=-.001f;
+        for(int k=0;k<100;k++) {
+            assertTrue(a.solveDEqnStep(true));clock+=.0005f;
+            assertEquals((double)clock,f.binding().runtime().getIntegrationHistories().get("Accepted time (s)"),1e-12);
+        }
+        f.binding().runtime().readStaggeredState(end,0);assertArrayEquals(initial,end,1e-4);
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void localStaggeredCancellationRestoresAllStatesAndTheOuterClock(boolean dynamic)throws Exception {
+        var f=fixture(dynamic,Chvdc2TerminalPorts.ProtectionClock.BINARY32,0,4);initializePorts(f);
+        var p=f.ports().rectifierPort();var m=f.binding().runtime();
+        double[] x=new double[p.staggeredStateCount()],rate=new double[x.length];double H=.0005,h=H/4;
+        var states=m.getIntegrationStates();var history=m.getIntegrationHistories();Object output=p.getOutputObject();
+        assertEquals(4,p.staggeredLocalStepCount());assertEquals(1,f.ports().inverterPort().staggeredLocalStepCount());
+        assertThrows(IllegalStateException.class,()->p.completeStaggeredLocalStep(h));
+        p.beginStaggeredLocalInterval(H);assertThrows(IllegalStateException.class,()->p.beginStaggeredLocalInterval(H));
+        assertThrows(IllegalStateException.class,()->p.completeStaggeredLocalStep(2*h));
+        p.readStaggeredState(x,0);assertThrows(IllegalStateException.class,()->p.applyStaggeredState(x,0,H));
+        assertEquals(states,m.getIntegrationStates());
+        for(int local=0;local<4;local++) {
+            p.readStaggeredState(x,0);p.evaluateStaggered(h,rate,0);x[6]+=.00001;
+            for(int k=0;k<x.length;k++)x[k]+=h*rate[k];
+            p.applyStaggeredState(x,0,h);p.completeStaggeredLocalStep(h);
+            assertEquals(history.get("Accepted time (s)"),m.getIntegrationHistories().get("Accepted time (s)"));
+        }
+        p.completeStaggeredStep(H,H);p.beginNetworkSolution(context("DIRECT",H));p.endNetworkSolution(false);
+        assertEquals(states,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());assertSame(output,p.getOutputObject());
+        p.beginStaggeredLocalInterval(H);p.readStaggeredState(x,0);p.applyStaggeredState(x,0,h);p.completeStaggeredLocalStep(h);
+        assertThrows(IllegalStateException.class,()->p.completeStaggeredStep(H,H));
+        assertEquals(states,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
+        assertTrue(p.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(p.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertEquals(states,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
+        assertThrows(IllegalStateException.class,()->p.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0));
+    }
+    @ParameterizedTest @ValueSource(ints={4,10})
+    void warmedLocalNumericalAndRollbackCallbacksAllocateNoObjects(int localSteps)throws Exception {
+        var bean=ManagementFactory.getThreadMXBean();Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);
+        var memory=(com.sun.management.ThreadMXBean)bean;Assumptions.assumeTrue(memory.isThreadAllocatedMemorySupported());
+        memory.setThreadAllocatedMemoryEnabled(true);long thread=Thread.currentThread().threadId();
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,0,localSteps);initializePorts(f);
+        var p=f.ports().rectifierPort();double[] x=new double[p.staggeredStateCount()],rates=new double[x.length];
+        var context=context("DIRECT",.0005);
+        for(int k=0;k<5;k++)localRollbackBatch(p,x,rates,context,localSteps,10000);
+        long before=memory.getThreadAllocatedBytes(thread);localRollbackBatch(p,x,rates,context,localSteps,10000);
+        assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
+    }
+    private static void localRollbackBatch(Chvdc2TerminalPorts.Port port,double[] x,double[] rates,Context context,int localSteps,int count) {
+        double H=.0005,h=H/localSteps;
+        for(int outer=0;outer<count;outer++) {
+            port.beginStaggeredLocalInterval(H);
+            for(int local=0;local<localSteps;local++) {
+                port.readStaggeredState(x,0);port.evaluateStaggered(h,rates,0);
+                for(int k=0;k<x.length;k++)x[k]+=h*rates[k];
+                port.applyStaggeredState(x,0,h);port.completeStaggeredLocalStep(h);
+            }
+            port.completeStaggeredStep(H,H);port.beginNetworkSolution(context);port.endNetworkSolution(false);
+        }
     }
     @Test void pendingPredictorAndCorrectorNetworkFailureRollBackTogether()throws Exception {
         var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
