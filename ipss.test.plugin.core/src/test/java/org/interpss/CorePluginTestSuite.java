@@ -1346,6 +1346,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.dynLoad.Tiocr1CompositeLoadTest.class,
     org.interpss.core.dstab.dynLoad.CompositeCollapsedFullTripTest.class,
     org.interpss.core.dstab.dynLoad.CompositePartlyCollapsedFullTripTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorRecloseTest.class,
     org.interpss.core.dstab.dynLoad.CompositeLoadChangeTest.class,
     Cdc6tReferenceContractTest.class,
     Cdc6tMeasurementsTest.class,

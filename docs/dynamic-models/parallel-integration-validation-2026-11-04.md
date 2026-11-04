@@ -65,3 +65,18 @@ runtime qualification. No-match selectors are not evidence of coverage.
 Private evidence is at
 `verification-artifacts/relay-target-ownership-integration-20261104`, SHA-256
 `b3017c67700c331759b87aa56d2c1419ccac0cdf3fafbefae547c0e1cb0c1549`.
+
+## Repeated motor reconnection
+
+The induction-motor protection now rearms reconnection on each new undervoltage
+trip. Both integration methods complete the second reclose, which previously
+remained blocked by the first reconnection's latch. Seven integrated lifecycle
+tests pass, including independent repeated-fault captures, warm state copies
+and read-only observations. The test is registered in the main suite.
+
+This establishes recurring actions, not exact protection timing: the existing
+one-network-step action delay remains under investigation. See the
+[motor report](cmldblu1-induction-reclose.md) for scope and retained controls.
+Private integrated evidence is at
+`verification-artifacts/motor-reclose-integration-20261104`, SHA-256
+`e202a00e8c0730eaef51e5f628673222cd83b71825c5227ae461936f985696f0`.
