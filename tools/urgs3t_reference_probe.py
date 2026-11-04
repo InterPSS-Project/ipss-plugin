@@ -48,6 +48,8 @@ def main():
     p.add_argument('--reference-steps', action='store_true')
     p.add_argument('--trip-bus', type=int, choices=[1, 2],
                    help='Excite the governor at 0.05 s, then trip the selected machine at 0.15 s')
+    p.add_argument('--reenable-time', type=float, help='Reenable the tripped unit at this dynamic time without reinitialization')
+    p.add_argument('--reenable-control', action='store_true', help='Same run boundary and snapshots, leaving the unit offline')
     p.add_argument('--network-tolerance', type=float,
                    help='Optional diagnostic network tolerance; omitted preserves the engine default')
     p.add_argument('--extra-pause', type=float,
@@ -66,6 +68,10 @@ def main():
         p.error('Choose either flat or reference-step operation')
     if args.trip_bus is not None and (args.flat or args.reference_steps or args.duration <= .15):
         p.error('Machine-trip operation requires a separate profile extending beyond 0.15 s')
+    if args.reenable_time is not None and (args.trip_bus != 1 or not args.machine_states or not .15 < args.reenable_time < args.duration):
+        p.error('Reenable requires the primary trip, complete machine states and an interior time after trip')
+    if args.reenable_control and args.reenable_time is None:
+        p.error('Reenable control requires the same requested reenable time')
     mode = f'trip{args.trip_bus}' if args.trip_bus is not None else 'command' if args.reference_steps else 'flat' if args.flat else 'fault'
     tag = f'{args.profile}-h{args.step:.12g}-t{args.duration:g}-{mode}-{args.repeat}'.replace('.', 'p')
     if args.network_tolerance is not None:
@@ -74,6 +80,8 @@ def main():
         tag = tag[:-1]+f'pause{args.extra_pause:g}-'+args.repeat
     if args.machine_states:
         tag = tag[:-1]+'machines-'+args.repeat
+    if args.reenable_time is not None:
+        tag = ('offline-control-' if args.reenable_control else 'reenable-') + tag
     out = root/'target'/args.batch/tag
     if shutil.disk_usage(root/'target').free < 2*1024**3 + 64*1024**2:
         raise OSError('Free-space reserve and bounded capture budget required')
@@ -113,6 +121,9 @@ def main():
             checked('channel', fn([-1, layout[kind]+i], kind+str(i)))
     for code, name in [(1, 'ANGLE_DEG'), (2, 'P_PU'), (3, 'Q_PU'), (6, 'PMECH'), (7, 'SPEED'), (5, 'EFD')]:
         checked('machine', psspy.machine_array_channel([-1, code, 1], '1', name))
+    if args.reenable_time is not None:
+        for code, name in [(11, 'VREF'), (14, 'GREF')]:
+            checked('reactivation reference channel', psspy.machine_array_channel([-1, code, 1], '1', name))
     machine_layouts = {}
     if args.machine_states:
         for bus in [1, 2]:
@@ -130,11 +141,27 @@ def main():
     checked('step', psspy.dynamics_solution_param_2([di]*8, [df, tolerance, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(33)]
+    reenable_probe = None
     if args.trip_bus is not None:
         checked('reference boundary', psspy.run(0, .05, 1000000, 1, 0))
         checked('reference increment', psspy.increment_gref(1, '1', .2))
         checked('pretrip', psspy.run(0, .15, 1000000, 1, 0))
         checked('machine trip', psspy.dist_machine_trip(args.trip_bus, '1'))
+        if args.reenable_time is not None:
+            checked('offline interval', psspy.run(0, args.reenable_time, 1000000, 1, 0))
+            def snapshot():
+                code, status = psspy.macint(1, '1', 'STATUS')
+                assert code in (0, 3, 4), code
+                return dict(time=checked('time snapshot', psspy.dsrval('TIME', 0)), status=status, status_code=code,
+                        governor_states=[checked('governor state', psspy.dsrval('STATE', layout['STATE']+i)) for i in range(5)],
+                        governor_variables=[checked('governor variable', psspy.dsrval('VAR', layout['VAR']+i)) for i in range(5)],
+                        machine_states={bus:[checked('machine state', psspy.dsrval('STATE', m['STATE']+i)) for i in range(m['NSTATE'])] for bus,m in machine_layouts.items()})
+            before=snapshot()
+            result=None if args.reenable_control else psspy.machine_chng_5(1, '1', [1]+[di]*6, [df]*17, ['', ''])
+            after=snapshot()
+            reenable_probe=dict(api='machine_chng_5', requested_status=1, control=args.reenable_control,
+                    return_code=result, before=before, after=after, reinitialization_called=False)
+            if result is not None: assert result == 0, result
     elif args.reference_steps:
         for time, increment in [(.05, .2), (.25, -.4), (.4, .2)]:
             checked('reference boundary', psspy.run(0, time, 1000000, 1, 0))
@@ -160,7 +187,7 @@ def main():
     checked('model report', psspy.docu(0, 1, [0, 3, 1]))
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and all(t not in log for t in ['Network not converged', 'Incomplete data record'])
-    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout, machine_layouts=machine_layouts,
+    manifest = dict(status='complete' if quality else 'rejected-quality', settings=vars(args), layout=layout, machine_layouts=machine_layouts, reenable_probe=reenable_probe,
             entered_constants=entered, initialized_constants=initialized, samples=len(data['time']), channels=len(keys),
             engine_module=psse3607.__name__, library_sha256=sha(library),
             source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
