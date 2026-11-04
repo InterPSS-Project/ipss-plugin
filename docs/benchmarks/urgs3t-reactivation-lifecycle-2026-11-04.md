@@ -110,12 +110,12 @@ held while allocated coordinates advance. Reconnection releases that hold.
 
 Full independent trajectory gates remain strict. All four method/control runs
 pass voltage and P/Q range-NRMSE below 0.001 and rotor-angle RMSE below 0.01 deg.
-Full controller-coordinate checks still fail:
+Three full controller-coordinate comparisons still fail; the staggered reactivation comparison now passes:
 
 | Method | Reactivation maximum valve error | Offline-control maximum valve error |
 |---|---:|---:|
-| Modified Euler | 9.060e-4 pu | 2.475e-4 pu |
-| Staggered | 8.605e-6 pu | 1.713e-5 pu |
+| Modified Euler | 9.059e-4 pu | 2.475e-4 pu |
+| Staggered | 2.294e-6 pu | 1.713e-5 pu |
 
 The staggered offline engine and average coordinates also exceed 5e-6 pu
 (1.323e-5 and 5.600e-6 pu). No thresholds, samples, or channels were removed.
@@ -123,12 +123,57 @@ These state discrepancies remain qualification failures, separate from passing
 physical boundary and atomic-lifecycle controls. The option is experimental and
 is not enabled by default.
 
-The focused test set contains 36 passing lifecycle/default-off/shared-state
-controls and four retained failing full-reference comparisons. It covers the
+The original focused test set contained 36 passing lifecycle/default-off/shared-state
+controls and four failing full-reference comparisons. The subsequent trip-order
+validation ran 22 tests: 19 passed and three strict reference comparisons remain
+failing. No reference gate was relaxed. It covers the
 first inactive recurrence, later constant increments, zero/rejected trials,
 invalid/mid-stage requests, a deliberately failed reclose with voltage mutation,
 exact rollback of physical statuses and matrix action, retry, duplicate requests,
 and unchanged default frozen-trip behavior.
+
+## Trip publication diagnosis
+
+The test harness previously published the next accepted governor output before
+tripping its primary host. The source sequence first finishes the pre-trip run,
+then trips that host; the offline model does not participate in resumed-run
+publication. Publication for surviving hosts and ordinary run boundaries remains
+unchanged. This is a harness ordering correction, not a swing/governor equation
+change or substitution of a predictor scratch derivative for an accepted rate.
+
+In the staggered control, premature publication changes mechanical power from
+0.530698356 to 0.530936007 pu before the held mechanical rate is sampled. The
+resulting speed derivative changes from 0.002137305 to 0.002155870 pu/s. An
+independent negative control checks that the difference is exactly
+`deltaPm / (speed * 2H)` and that the outage speed difference is the corresponding
+first AB2 plus 99 constant-rate advances. Both methods satisfy these identities
+to 3e-14. The supplied source's observed held derivative is 0.002137254 pu/s.
+
+With the correct trip order, the staggered reactivation trajectory's worst valve
+error falls from 8.605e-6 to 2.294e-6 pu, and its worst speed error falls to
+2.605e-8 pu. All unchanged state and physical trajectory gates pass for this run.
+
+`tools/audit_urgs3t_reactivation_states.py` separates pre-trip, disconnected and
+post-request errors and independently replays the identity-curve fixture using
+its recorded speed/reference inputs and unchanged constants:
+
+- Seeding the recorded reactivation coordinates gives a staggered post-request
+  valve error of 1.636e-7 pu. Including the unrounded disconnected interval gives
+  2.405e-6 pu. No fitted gain, time shift, or state rounding is used.
+- The permanently-offline binary64 replay, initialized from source rows, still
+  accumulates valve/engine/average differences of 1.696e-5, 1.306e-5 and 5.366e-6
+  pu. This reproduces most of the remaining offline discrepancy independently
+  of the Java controller or network. It is consistent with accumulated stored
+  coordinate rounding; these strict reference failures remain visible.
+- Prescribed accepted-input modified-Euler replay still has a 9.146e-4 pu valve
+  difference at reactivation, while the staggered replay is below 2e-7 pu there.
+  The large first resumed-step discrepancy therefore persists with supplied
+  boundary inputs and is a finite-step integration-method difference. The earlier
+  modified-Euler command-step failure also precedes the trip.
+
+These controls do not claim complete machine-state or global solver equivalence.
+They identify and fix the premature publication, while keeping unresolved method
+and numerical agreement requirements separate.
 
 ## Reproduction
 

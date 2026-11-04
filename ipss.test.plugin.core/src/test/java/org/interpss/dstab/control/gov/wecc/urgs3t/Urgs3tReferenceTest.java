@@ -256,6 +256,7 @@ public class Urgs3tReferenceTest {
     static final class Recording {
         final DynamicSimuAlgorithm algorithm;final boolean flat,commands;boolean enabled;int nextCommand;
         double extraPause=Double.NaN;
+        boolean publishBeforeHostTrip; // Negative-control override only.
         int tripBus;Map<String,Double> historiesAtTrip;long evaluationsAtTrip;
         final List<Map<String,Double>> frames=new ArrayList<>();final double[] states=new double[5],vars=new double[5];
         Recording(DynamicSimuAlgorithm a,boolean f,boolean c){algorithm=a;flat=f;commands=c;}
@@ -268,7 +269,9 @@ public class Urgs3tReferenceTest {
             if(!boundary)return false;
             frames.add(capture(t));var machine=algorithm.getNetwork().getMachine("Bus1-mach1");
             var g=(Urgs3tGovernor)machine.getGovernor();
-            if(g.isActive()) {
+            // A tripped host does not participate in the resumed run's publication.
+            // Capture/retain its true left endpoint; surviving hosts still publish normally.
+            if(g.isActive()&&(tripBus!=1||Math.abs(t-.15)>=1e-9||publishBeforeHostTrip)) {
                 if(algorithm.getSolver() instanceof StaggeredEulerSolver solver)solver.notifyAcceptedEndpointDiscontinuity();
                 g.publishAcceptedRunBoundary();machine.setPm(g.getOutput(machine));
             }
