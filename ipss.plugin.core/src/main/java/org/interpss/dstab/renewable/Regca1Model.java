@@ -29,7 +29,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 public final class Regca1Model extends DynamicBusDeviceImpl
         implements DynamicGenDevice, RenewableConverterHost, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
         NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort,
-        org.interpss.dstab.control.util.NetworkEventInput {
+        org.interpss.dstab.control.util.NetworkEventInput,
+        org.interpss.dstab.control.util.IntegrationStepContext {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
@@ -72,6 +73,66 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double oldSavedNetworkVoltage, oldNetworkCorrection, oldDeceleratedNetworkVoltage;
     private double pendingEventVoltage = Double.NaN;
     private double oldPendingEventVoltage;
+    public enum NetworkVoltageMemoryPolicy { PER_NETWORK_SOLVE, ACCEPTED_BOUNDARY }
+    private NetworkVoltageMemoryPolicy voltageMemoryPolicy = NetworkVoltageMemoryPolicy.PER_NETWORK_SOLVE;
+    private double committedSavedVoltage, acceptedTerminalVoltage;
+    private double preparedMemoryTime = Double.NaN, preparedMemoryStep = Double.NaN;
+    private double acceptedMemoryStepTime = Double.NaN, acceptedMemoryEventTime = Double.NaN;
+    private double trialMemoryEventTime = Double.NaN;
+    private boolean positiveMemoryStep, eventMemoryTrial, memoryNetworkAccepted;
+
+    /** Opt-in history policy; configure between accepted steps, preferably before initialization. */
+    public void setNetworkVoltageMemoryPolicy(NetworkVoltageMemoryPolicy policy) {
+        java.util.Objects.requireNonNull(policy);
+        if (networkSolutionInProgress || positiveMemoryStep || eventMemoryTrial && memoryNetworkAccepted)
+            throw new IllegalStateException("Change voltage-memory policy between accepted steps");
+        if (policy == voltageMemoryPolicy) return;
+        voltageMemoryPolicy = policy;
+        resetAcceptedVoltageMemory();
+    }
+    public NetworkVoltageMemoryPolicy getNetworkVoltageMemoryPolicy() { return voltageMemoryPolicy; }
+    public record AcceptedVoltageMemoryState(double savedVoltage, double terminalVoltage,
+            double stepStartTime, double eventTime, boolean positiveStepPending) { }
+    public AcceptedVoltageMemoryState getAcceptedVoltageMemoryState() {
+        return new AcceptedVoltageMemoryState(committedSavedVoltage, acceptedTerminalVoltage,
+                acceptedMemoryStepTime, acceptedMemoryEventTime, positiveMemoryStep);
+    }
+    private boolean acceptedVoltageMemory() {
+        return networkHighVoltageEnabled && voltageMemoryPolicy == NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY;
+    }
+    private void resetAcceptedVoltageMemory() {
+        committedSavedVoltage = savedNetworkVoltage;
+        acceptedTerminalVoltage = getDStabBus() == null ? 1. : Math.max(.01,getDStabBus().getVoltageMag());
+        preparedMemoryTime = preparedMemoryStep = acceptedMemoryStepTime = acceptedMemoryEventTime = trialMemoryEventTime = Double.NaN;
+        positiveMemoryStep = eventMemoryTrial = memoryNetworkAccepted = false;
+    }
+    @Override public void prepareIntegrationStep(double startTimeSec,double stepSec) {
+        if (!acceptedVoltageMemory()) return;
+        if (!Double.isFinite(startTimeSec) || !Double.isFinite(stepSec) || stepSec <= 0. || !Double.isFinite(startTimeSec+stepSec))
+            throw new IllegalArgumentException("Finite physical integration interval required");
+        if (positiveMemoryStep && (startTimeSec != preparedMemoryTime || stepSec != preparedMemoryStep))
+            throw new IllegalStateException("Previous voltage-memory step has not been accepted");
+        if (!Double.isNaN(preparedMemoryTime) && startTimeSec < preparedMemoryTime)
+            throw new IllegalArgumentException("Reinitialize before reversing the physical clock");
+        // Clock only: no terminal sampling, trial state or committed history update.
+        preparedMemoryTime = startTimeSec;preparedMemoryStep = stepSec;
+    }
+    private void startVoltageMemoryStep(double dt,DynamicSimuMethod method,int flag) {
+        if (!acceptedVoltageMemory()) return;
+        if (method != DynamicSimuMethod.MODIFIED_EULER || (flag != 0 && flag != 1)
+                || !Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("Accepted voltage memory requires valid integration stages");
+        if (integrationScheme == IntegrationScheme.TWO_STEP && !(activeController() instanceof TwoStepElectricalController))
+            throw new IllegalStateException("Electrical controller does not provide a two-step integration boundary");
+        if (flag != 0 || dt == 0.) return;
+        if (!Double.isFinite(preparedMemoryTime) || dt != preparedMemoryStep)
+            throw new IllegalStateException("Prepare the physical step before converter integration");
+        if (preparedMemoryTime == acceptedMemoryStepTime)
+            throw new IllegalStateException("Physical voltage-memory step was already accepted");
+        positiveMemoryStep = true;
+        memoryNetworkAccepted = false;
+    }
+
 
     /** Stored algebraic memory, distinct from the converter's differential states. */
     public record NetworkHighVoltageState(boolean enabled, boolean solutionInProgress,
@@ -91,7 +152,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * The default instantaneous behavior is preserved.
      */
     public void setNetworkIterationHighVoltageEnabled(boolean enabled) {
-        if (networkSolutionInProgress) throw new IllegalStateException("Network solution is in progress");
+        if (networkSolutionInProgress || positiveMemoryStep || eventMemoryTrial && memoryNetworkAccepted) throw new IllegalStateException("Configure voltage memory between accepted steps");
         if (networkHighVoltageEnabled == enabled) return;
         networkHighVoltageEnabled = enabled;
         if (!enabled) resetNetworkHighVoltageMemory();
@@ -104,6 +165,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         deceleratedNetworkVoltage = savedNetworkVoltage;
         networkCorrection = 0.0;
         pendingEventVoltage = Double.NaN;
+        resetAcceptedVoltageMemory();
     }
 
     @Override public void beginNetworkSolution(NetworkIterationAware.Context context) {
@@ -120,8 +182,18 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         // lifecycle starts. Advance memory from the captured left endpoint.
         double previousVoltage = Double.isNaN(pendingEventVoltage)
                 ? Math.max(.01, getDStabBus().getVoltageMag()) : pendingEventVoltage;
-        savedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
-                + data.accel() * previousVoltage;
+        if (acceptedVoltageMemory()) {
+            eventMemoryTrial = context.externalEventBoundary() && !positiveMemoryStep;
+            trialMemoryEventTime = eventMemoryTrial ? context.stepStartTime() : Double.NaN;
+            boolean newEvent = eventMemoryTrial && trialMemoryEventTime != acceptedMemoryEventTime;
+            savedNetworkVoltage = positiveMemoryStep || newEvent
+                    ? (1. - data.accel()) * committedSavedVoltage + data.accel() * acceptedTerminalVoltage
+                    : committedSavedVoltage;
+            memoryNetworkAccepted = false;
+        } else {
+            savedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
+                    + data.accel() * previousVoltage;
+        }
         pendingEventVoltage = Double.NaN;
         networkCorrection = 0.0;
     }
@@ -151,6 +223,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             pendingEventVoltage = oldPendingEventVoltage;
         }
         networkSolutionInProgress = false;
+        if (acceptedVoltageMemory()) memoryNetworkAccepted = converged;
     }
 
     private double activeNetworkOutput(double voltage) {
@@ -250,6 +323,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        startVoltageMemoryStep(dt,method,flag);
         if (integrationScheme == IntegrationScheme.TWO_STEP)
             return nextTwoStep(dt, method, flag);
         double v = Math.max(0.01, getDStabBus().getVoltageMag());
@@ -468,6 +542,12 @@ public final class Regca1Model extends DynamicBusDeviceImpl
                 || deviceBaseMva <= EPS || systemBaseMva <= EPS) return;
         if (networkSolutionInProgress)
             throw new IllegalStateException("Event inputs require a completed network solution");
+        if (acceptedVoltageMemory()) {
+            if (positiveMemoryStep) throw new IllegalStateException("Event acceptance precedes positive integration");
+            if (!eventMemoryTrial && physicalTimeSec == acceptedMemoryEventTime) return;
+            if (!eventMemoryTrial || !memoryNetworkAccepted || physicalTimeSec != trialMemoryEventTime)
+                throw new IllegalStateException("Accept an event only after its converged network boundary");
+        }
         // This is the same pure current function used by the network source.
         // Optional iteration memory has already been finalized by convergence.
         Complex voltage = getDStabBus().getVoltage();
@@ -476,10 +556,29 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         double acceptedP = power.getReal(), acceptedQ = power.getImaginary();
         if (!finite(acceptedP) || !finite(acceptedQ))
             throw new IllegalStateException("Nonfinite accepted converter power");
+        if (acceptedVoltageMemory()) {
+            if (!Double.isFinite(savedNetworkVoltage) || !Double.isFinite(voltage.abs()))
+                throw new IllegalStateException("Nonfinite accepted event voltage memory");
+            committedSavedVoltage = savedNetworkVoltage;
+            acceptedTerminalVoltage = Math.max(.01,voltage.abs());
+            acceptedMemoryEventTime = physicalTimeSec;
+            eventMemoryTrial = false;
+        }
         p = acceptedP;
         q = acceptedQ;
     }
     @Override public boolean afterStep(double dt) {
+        if (acceptedVoltageMemory() && positiveMemoryStep) {
+            if (!memoryNetworkAccepted || eventMemoryTrial || dt != preparedMemoryStep)
+                throw new IllegalStateException("Accept voltage memory only after the solved physical step");
+            double terminal = Math.max(.01,getDStabBus().getVoltageMag());
+            if (!Double.isFinite(terminal) || !Double.isFinite(savedNetworkVoltage))
+                throw new IllegalStateException("Nonfinite accepted voltage memory");
+            committedSavedVoltage = savedNetworkVoltage;
+            acceptedTerminalVoltage = terminal;
+            acceptedMemoryStepTime = preparedMemoryTime;
+            positiveMemoryStep = false;
+        }
         var controller=activeController();
         if(controller!=null&&controller.getRepccController()!=null)controller.getRepccController().acceptedEndpoint();
         if(controller!=null&&controller.getHybridController()!=null)controller.getHybridController().owner().acceptedEndpoint();

@@ -21,6 +21,10 @@ public class ReeccPlantReplayConformanceTest {
         for(String profile:new String[]{"plant-flat","plant-fault"})for(boolean history:new boolean[]{false,true})compare(profile,history);
     }
     @Test void activeUpstreamReactiveLimitRetainsAllStatesAndSamples() throws Exception {
+        verifyBoundCaptures();
+        for(boolean history:new boolean[]{false,true})compare("plant-qbound-fault",history);
+    }
+    static void verifyBoundCaptures() throws Exception {
         Path manifest=BOUNDS.resolve("manifest.json");
         org.junit.jupiter.api.Assumptions.assumeTrue(Files.exists(manifest),"Private active-limit reference not installed");
         assertEquals("aeacae80fd8391fbe29d56d759ba4533311d7d848afb364e88c52d0160c031ae",sha256(manifest));
@@ -38,7 +42,6 @@ public class ReeccPlantReplayConformanceTest {
             assertTrue(capture.get("selector_readback_unchanged").getAsBoolean());
             assertEquals(1205,capture.get("sample_count").getAsInt());
         }
-        for(boolean history:new boolean[]{false,true})compare("plant-qbound-fault",history);
     }
     private static void compare(String profile,boolean history) throws Exception {
             boolean bounded=profile.equals("plant-qbound-fault");

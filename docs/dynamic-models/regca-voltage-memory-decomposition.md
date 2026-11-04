@@ -75,8 +75,10 @@ shared accepted-memory contract.
 A common design needs separate committed voltage memory and trial network
 outputs. Only an accepted physical step or accepted event should commit the
 memory recurrence; current/derivative evaluations and repeated network solves
-must not. This design remains pending. No production default changes in this
-slice, and the event-input correction remains a separate committed change.
+must not. The resulting opt-in implementation is documented in
+[Accepted voltage memory](regca-accepted-voltage-memory.md). No production
+default changes in this diagnostic slice, and the event-input correction remains
+a separate committed change.
 
 ## Numerical work and scope
 
