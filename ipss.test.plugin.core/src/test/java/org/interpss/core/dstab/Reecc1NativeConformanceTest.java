@@ -42,6 +42,8 @@ public class Reecc1NativeConformanceTest {
                 CASE.resolve("regca_reecc1_bus1062.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        var solver = new CertifiedWeakGridSolver(algorithm);
+        algorithm.setSolver(solver);
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
@@ -65,6 +67,7 @@ public class Reecc1NativeConformanceTest {
             record(actual, algorithm.getSimuTime(), network, converter, model);
         }
 
+        solver.assertAccelerationExercised();
         Csv reference = read(REFERENCE);
         assertTrue(!reference.rows().isEmpty());
         String[] names = {"V_MEAS", "P_MEAS", "Q_PI", "V_PI", "IQ_LAG",
