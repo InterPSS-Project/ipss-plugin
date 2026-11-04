@@ -101,13 +101,15 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
+- Retain [independent terminal selection with charging current](dynamic-models/tiocr1-accepted-runtime.md#independent-terminal-selection-with-charging-current): both monitored ends pass complete monitoring-only fault trajectories under both methods, with a negative control that rejects the opposite terminal. Extend opposite-end physical actions, remaining breaker settings and production-step timing separately.
+
 - Retain the independently qualified [left-end current and energized relay position](dynamic-models/tiocr1-accepted-runtime.md#left-end-current-and-energized-relay-position): both methods sample the solved interval-start current, and remote load-only actions preserve the latched moving element when the monitored branch stays active. Complete branch-trip observation ordering and the remaining action/configuration matrix separately.
 
 - Retain [attachment ownership and atomic rejection](dynamic-models/tiocr1-accepted-runtime.md#attachment-ownership-and-atomic-rejection): validate host and every target before attachment or accepted action, including replaced and cross-network objects. Complete reference trajectories remain unchanged.
 
 - Retain the [accepted-step runtime](dynamic-models/tiocr1-accepted-runtime.md), explicit staggered support, zero-duration history guard, primitive current measurement and post-protection network-discontinuity handling. Base coupled boundary profiles pass under both methods; finish raw relay diagnostic observation-stage qualification while keeping timers and physical actions out of trial derivative evaluations.
 - Retain the independently captured partial-reset/re-pickup checks under both methods; extend them to additional reset settings, protection coordination and transfer-trip combinations.
-- Retain the independent load-only remote static-load trajectory under both methods. Extend independent verification to both monitored branch ends, dynamic-load actions and additional breaker settings.
+- Retain the independent load-only remote static-load trajectory under both methods. Extend independent verification to dynamic-load actions and additional breaker settings.
 - Preserve the both-method physical-power checks for remote static-load shedding, repeated network rebuilds and voltage-dependent current refresh. Extend to low-voltage curve transitions and dynamic-load targets.
 
 ## SVSMO3T2

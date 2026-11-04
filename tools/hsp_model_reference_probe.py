@@ -43,9 +43,17 @@ def main():
                         help='Clear allocated load diagnostic storage before initialization; retain unmodified captures separately')
     parser.add_argument('--constant', action='append', default=[], metavar='INDEX=VALUE',
                         help='Controlled load-model discriminator; preserve original and modified DYR inputs')
+    parser.add_argument('--relay-end', choices=['from', 'to'], default='from',
+                        help='Monitored terminal of the synthetic relay branch')
+    parser.add_argument('--relay-line-charging', type=float, default=0.,
+                        help='Total charging susceptance of the monitored synthetic branch, pu')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
+    if (args.relay_end != 'from' or args.relay_line_charging != 0.) and not args.fixture.startswith('tiocr1-'):
+        parser.error('Relay terminal controls require a relay fixture')
+    if not math.isfinite(args.relay_line_charging) or not 0. <= args.relay_line_charging <= 1.:
+        parser.error('--relay-line-charging must be finite and between zero and one pu')
     if args.network_tolerance is not None and (not math.isfinite(args.network_tolerance) or args.network_tolerance <= 0):
         parser.error('--network-tolerance must be finite and positive')
     if args.profile.startswith('tap-reference-') and not args.fixture.startswith('cmldblu1'):
@@ -63,7 +71,8 @@ def main():
     root = Path.cwd()
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/HspModels'
     out = root / 'target' / args.batch / (
-        f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else ''))
+        f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else '')
+        +(f'-{args.relay_end}-b{args.relay_line_charging:g}' if args.relay_end != 'from' or args.relay_line_charging != 0. else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
     if args.fixture == 'acmtblu1' and args.channel_part != 0:
@@ -79,6 +88,34 @@ def main():
     dynamic_source = (root / 'ipss.test.plugin.core/testData/reference-fixtures/compressor-current/acmtblu1.dyr'
                       if args.fixture == 'acmtblu1' else source / (args.fixture + '.dyr'))
     shutil.copy2(dynamic_source, out / 'dynamic.dyr')
+    relay_from, relay_to = (1, 2) if args.relay_end == 'from' else (2, 1)
+    if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.):
+        shutil.copy2(out / 'network.raw', out / 'original-network.raw')
+        shutil.copy2(out / 'dynamic.dyr', out / 'original-dynamic.dyr')
+        path = out / 'dynamic.dyr'
+        lines = path.read_text().splitlines()
+        changed = 0
+        for index, line in enumerate(lines):
+            fields = re.findall(r"'[^']*'|[^\s,]+", line)
+            if len(fields) > 2 and fields[1] == "'TIOCR1'":
+                assert fields[0] == '1' and fields[2] == '2'
+                fields[0], fields[2] = str(relay_from), str(relay_to)
+                lines[index] = ' '.join(fields)
+                changed += 1
+        assert changed == 1
+        path.write_text('\n'.join(lines) + '\n')
+        path = out / 'network.raw'
+        lines = path.read_text().splitlines()
+        changed = 0
+        for index, line in enumerate(lines):
+            fields = line.split(',')
+            if len(fields) == 18 and fields[:3] == ['1', '2', "'1'"]:
+                assert float(fields[5]) == 0.
+                fields[5] = format(args.relay_line_charging, '.17g')
+                lines[index] = ','.join(fields)
+                changed += 1
+        assert changed == 1
+        path.write_text('\n'.join(lines) + '\n')
     if args.constant:
         shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')
         path = out / 'dynamic.dyr'
@@ -124,7 +161,7 @@ def main():
     checked('converted', psspy.tysl(0))
     checked('dynamic', psspy.dyre_new([1, 1, 1, 1], 'dynamic.dyr', '', '', ''))
     if relay:
-        index = lambda kind: checked('relay index', psspy.rmodind(1, 2, '1', 1, kind))
+        index = lambda kind: checked('relay index', psspy.rmodind(relay_from, relay_to, '1', 1, kind))
     elif load:
         index = lambda kind: checked('load index', psspy.lmodind(2, '1', 'CHARAC', kind))
     else:

@@ -1339,6 +1339,7 @@ import org.junit.platform.suite.api.Suite;
     Tiocr1AcceptedHistoryTest.class,
     Tiocr1ResetReferenceTest.class,
     Tiocr1LoadOnlyReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1TerminalReferenceTest.class,
     Cdc6tReferenceContractTest.class,
     Cdc6tMeasurementsTest.class,
     Cdc6tTransducerBoundaryTest.class,

@@ -103,8 +103,9 @@ event samples still needs an explicit observation-stage contract; the energized
 load-only position is qualified separately below.
 Protection coordination, additional reset/re-pickup settings, remote-action combinations, reconnection,
 production-step and longer-duration cases remain on the implementation work list.
-The accepted-history tests also exercise both monitored ends, but those additional
-terminal cases are lifecycle tests rather than new independent trajectory captures.
+Both monitored ends now have independent monitoring-only trajectory captures with
+distinct charging currents, as described below. Opposite-end physical actions
+and additional terminal configurations remain separate requirements.
 
 ## Attachment ownership and atomic rejection
 
@@ -158,3 +159,30 @@ left-current reconstruction to pass and its right-current negative control to
 fail. Physical boundary, trip-time and reset checks retain their original gates.
 This does not qualify branch-trip observation ordering, dynamic-load actions,
 reconnection or other configurations listed above.
+
+## Independent terminal selection with charging current
+
+Cold-paired monitoring-only captures select either end of the same synthetic
+branch, with nonzero total line charging. The line remains connected. The
+complete recorded phasors reconstruct the selected terminal current within
+`4.59e-7` pu, whereas substituting the other terminal produces about `0.163` pu
+error. Thus the test distinguishes terminal selection from reversing an
+equivalent series current on a line without charging.
+
+Both imported terminal configurations pass modified-Euler and staggered SMIB
+fault comparisons, retaining every nonnegative grid sample and both sides of
+fault application and clearing. The original negative-time samples remain in
+the immutable reference archive. Voltage and active/reactive power each require
+full-reference-range NRMSE below `0.001`, alongside the existing physical peak
+limits. These checks do not alter model equations or source parameters.
+
+| Complete terminal comparison | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Maximum current error, pu | 0.000522 | 0.000000869 |
+| Maximum moving-element position error | 0.0000194 | 0.000000290 |
+
+New current bounds are `5.8e-4` and `1e-6` pu, and position bounds are `2.2e-5`
+and `3.3e-7`, respectively. Tests pin the reference archive and require exact
+cold-repeat data identity. This closes independent monitoring-terminal
+selection coverage at the tested interval; it does not qualify opposite-end
+physical actions, dynamic-load shedding, reconnection or production-step timing.

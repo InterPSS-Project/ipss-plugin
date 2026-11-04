@@ -43,9 +43,15 @@ public class HspUsageRankedModelTest {
         run(fixture,flat,staggered,false);
     }
     static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile) throws Exception {
+        run(fixture,flat,staggered,resetProfile,
+                CASE.resolve(fixture.startsWith("cmldblu1")?"load-network.raw":fixture.equals("wsieg1-dual")?"dual-network.raw":"network.raw"),
+                CASE.resolve(fixture+".dyr"),Path.of("target/hsp-model-actual-20261030"));
+    }
+    static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile,
+            Path rawFile,Path dynamicFile,Path out) throws Exception {
         assertFalse(resetProfile && (flat || !fixture.startsWith("tiocr1-")));
         var loader=new PSSEMultiFileLoader();
-        var context=loader.loadDStab(CASE.resolve(fixture.startsWith("cmldblu1")?"load-network.raw":fixture.equals("wsieg1-dual")?"dual-network.raw":"network.raw").toString(),CASE.resolve(fixture+".dyr").toString());
+        var context=loader.loadDStab(rawFile.toString(),dynamicFile.toString());
         assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete(),loader.getLastDynamicImportReport().failureSummary());
         var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
@@ -88,7 +94,7 @@ public class HspUsageRankedModelTest {
             rows.add(Double.toString(frame.time())+","+frame.values().values().stream().map(Object::toString).collect(java.util.stream.Collectors.joining(","))
                     +","+frame.kind()+","+frame.time());
         }
-        Path out=Path.of("target/hsp-model-actual-20261030");Files.createDirectories(out);
+        Files.createDirectories(out);
         Files.write(out.resolve(fixture+(resetProfile?"-reset":"")+(staggered?"-staggered":"")+(flat?"-flat":"-fault")+".csv"),rows);
     }
 
