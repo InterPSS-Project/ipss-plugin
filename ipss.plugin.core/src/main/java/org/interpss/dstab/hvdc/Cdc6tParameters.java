@@ -41,6 +41,10 @@ public final class Cdc6tParameters {
     public String linkName(){return linkName;}
     /** Preserve original units and sentinel values; callers cannot mutate prepared coefficients. */
     public double[] copySourceConstants(){return source.clone();}
+    /** A binding initial ceiling is a physical startup transfer from the static solution. */
+    boolean initiallyLimitsCurrent(OperatingPoint point){
+        return ceiling.ceilingAmperes(point.inverterVolts())<point.currentAmperes();
+    }
     /** Assemble the qualified fixed-tap, ordinary dynamic-angle path. Static-network
      * ownership, constant-gamma controls and other converter variants are not inferred here. */
     public Prepared prepare(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,double lineOhms,OperatingPoint point){

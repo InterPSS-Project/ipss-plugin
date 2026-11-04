@@ -1924,3 +1924,46 @@ accepted reference.
 Private convergence captures, including the rejected attempt and its log:
 `verification-artifacts/cdc6t-bypass-convergence-20261104/captures.zip`, SHA-256
 `f3ad33a2cc827504c9c00822ef6d538461a7c018466aca625e50a9831afa33e3`.
+
+### Initially binding current ceiling
+
+An initial voltage-dependent ceiling below the solved static current now requests
+an explicit operating-point transfer. Previously, only the constant-gamma transfer
+requested this lifecycle: the runtime retained the old measured current while its
+current injection immediately used the lower ceiling, allowing network compensation
+to absorb the physical power change. Preparation now preserves the static injection
+until compensation is captured, then solves the limited physical network and settles
+all measurement states through the existing shared initial-endpoint contract.
+
+The decision is made once during model preparation. Entered constants, static
+schedule and protection recovery base are unchanged. An equal or inactive ceiling
+does not request this transfer. Both modified-Euler and staggered integration use
+the same prepared runtime; there is no additional per-step calculation.
+
+Independent cold pairs cover a 900 A initial ceiling against a 1,000 A static
+schedule, with flat and terminal-fault runs. Each pair retains all 1,005 samples
+and event-side duplicates. Both methods initialize to 500,000 V / 900 A /
+504,500 V with zero derivatives. The worst terminal-voltage difference decreases
+from 0.018415 pu to 0.000005004 pu. Complete trajectories pass the existing ordinary
+conducting per-channel envelope and an additional 1e-5 pu terminal-voltage gate.
+The largest fault DC-voltage-state difference is 6.54 V with modified Euler and
+1.37 V with staggered integration; flat DC measurement states match exactly.
+
+All 295 model checks pass, including active/equal/inactive ceiling selection and
+existing initial physical-event/source-compatibility checks. Removing only the
+new preparation trigger reproduces five expected failures: four reference startup
+checks and the active-ceiling preparation check. All 446 preceding CSV artifacts
+are byte-identical between the controlled runs; only the eight new ceiling
+trajectory/error files change. This qualifies the
+initial ceiling preparation for these source/control fixtures, not arbitrary
+startup transfers or complete protected trajectories. Source-dependent bypass
+recovery timing, severe-fault intermediate feasibility, other equipment variants
+and automatic attachment remain open.
+
+Private cold-pair captures:
+`verification-artifacts/cdc6t-initial-ceiling-20261104/captures.zip`, SHA-256
+`9132db7969c3510d50e4efccf9152edcc8eebb5234e6d273dd0872393a54d5d5`.
+
+Complete samples, controlled pre-fix comparison, source snapshots and test reports:
+`verification-artifacts/cdc6t-initial-ceiling-20261104/validation.zip`, SHA-256
+`bb809df9200422fa91e75a8fe7ea4606368131349a222c9d12aae52d9c71ef9a`.

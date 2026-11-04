@@ -66,6 +66,19 @@ public class Cdc6tNetworkPreparationTest extends CorePluginTestSetup {
         assertEquals(501,c.operatingPoint().scheduledKilovolts(),0);
         assertEquals(500000,boundary(c)[7],1e-8);
     }
+    @ParameterizedTest @ValueSource(doubles={900,1000,1100})
+    void onlyBindingInitialCeilingRequestsOperatingPointPreparation(double ceiling)throws Exception{
+        var f=Cdc6tCoupledNetworkTest.load(folder);var n=f.context().getDStabilityNet();
+        var owner=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);
+        double[] constants=parameters(owner.getName()).copySourceConstants();
+        constants[18]=ceiling;constants[20]=ceiling;
+        var parameters=new Cdc6tParameters(owner.getName(),constants);
+        var b=Cdc6tNetworkPreparation.prepare(n,parameters,0);
+        assertEquals(ceiling<1000,b.ports().rectifierPort().isInitialOperatingPointPreparation());
+        assertFalse(b.ports().inverterPort().isInitialOperatingPointPreparation());
+        assertEquals(1000,b.operatingPoint().currentAmperes(),1e-8,"Preserve the static schedule");
+        assertArrayEquals(constants,parameters.copySourceConstants(),0);
+    }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void preparedOwnerInitializesAndMaintainsEquilibriumUnderBothMethods(boolean staggered)throws Exception{
         var f=Cdc6tCoupledNetworkTest.load(folder);var n=f.context().getDStabilityNet();var a=f.context().getDynSimuAlgorithm();

@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     parser.add_argument('--profile', choices=['flat', 'fault', 'modulation'], default='flat')
     parser.add_argument('--control', choices=['inverter-power', 'rectifier-power', 'current'], default='inverter-power')
-    parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope'], default='default')
+    parser.add_argument('--limit-curve', choices=['default', 'active', 'two-slope', 'initial-active'], default='default')
     parser.add_argument('--fault-terminal', choices=['rectifier', 'inverter'], default='rectifier')
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
@@ -163,6 +163,8 @@ def main():
         constants[15:21] = [480, 800, 490, 1000, 500, 1200]
     elif args.limit_curve == 'two-slope':
         constants[15:21] = [480, 800, 490, 980, 500, 1200]
+    elif args.limit_curve == 'initial-active':
+        constants[15:21] = [250, 450, 500, 900, 600, 900]
     if args.inverter_recovery_voltage is not None:
         constants[8] = args.inverter_recovery_voltage
     if args.rectifier_recovery_delay is not None:
