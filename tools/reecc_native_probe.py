@@ -3,7 +3,7 @@ import csv,json,math,os,shutil,struct,sys
 from pathlib import Path
 from tgov1_limit_probe import checked,sha,STEPS
 
-MODES=('discharge-limit','charge-limit','voltage-flat','pf-voltage-flat','remote-flat','remote-fault','plant-flat','plant-fault')
+MODES=('discharge-limit','charge-limit','voltage-flat','pf-voltage-flat','remote-flat','remote-fault','plant-flat','plant-fault','plant-qbound-fault')
 
 def configuration(mode,grid,repeat):
     if mode not in MODES or grid not in STEPS or repeat not in ('a','b'):raise ValueError('Unknown profile')
@@ -19,6 +19,7 @@ def configuration(mode,grid,repeat):
         from repca_native_probe import configuration as plant_configuration
         plant=plant_configuration('q',grid,repeat)
         result['plant']={'icons':plant['icons'],'constants':plant['constants']}
+        if mode=='plant-qbound-fault':result['plant']['constants'][14]=.04
         icons[1]=0
     return result
 

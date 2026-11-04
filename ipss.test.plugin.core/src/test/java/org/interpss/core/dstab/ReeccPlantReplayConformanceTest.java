@@ -15,10 +15,34 @@ import com.interpss.dstab.BaseDStabNetwork;
 @Tag("extended")
 public class ReeccPlantReplayConformanceTest {
     private static final Path CAPTURES=Path.of("testData/private/verification-artifacts/reecc1-plant-remote-20261104");
+    private static final Path BOUNDS=Path.of("testData/private/verification-artifacts/reecc1-plant-qbound-20261104");
     @Test void attachedPlantStatesAndAcceptedPortsFollowAllRecordedSamples() throws Exception {
         verifyCaptures();
-        for(String profile:new String[]{"plant-flat","plant-fault"})for(boolean history:new boolean[]{false,true}) {
-            Path folder=CAPTURES.resolve(profile+"-a");
+        for(String profile:new String[]{"plant-flat","plant-fault"})for(boolean history:new boolean[]{false,true})compare(profile,history);
+    }
+    @Test void activeUpstreamReactiveLimitRetainsAllStatesAndSamples() throws Exception {
+        Path manifest=BOUNDS.resolve("manifest.json");
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.exists(manifest),"Private active-limit reference not installed");
+        assertEquals("aeacae80fd8391fbe29d56d759ba4533311d7d848afb364e88c52d0160c031ae",sha256(manifest));
+        var index=com.google.gson.JsonParser.parseString(Files.readString(manifest)).getAsJsonObject();
+        assertEquals(.04,index.get("QMIN").getAsDouble(),0.);
+        assertEquals(.5,index.get("Kpg").getAsDouble(),0.);
+        for(var entry:index.getAsJsonObject("files").entrySet()) {
+            Path file=BOUNDS.resolve(entry.getKey()).normalize();assertTrue(file.startsWith(BOUNDS));
+            assertEquals(entry.getValue().getAsString(),sha256(file),entry.getKey());
+        }
+        assertArrayEquals(Files.readAllBytes(BOUNDS.resolve("plant-qbound-fault-a/native.csv")),Files.readAllBytes(BOUNDS.resolve("plant-qbound-fault-b/native.csv")));
+        for(String repeat:List.of("a","b")) {
+            var capture=com.google.gson.JsonParser.parseString(Files.readString(BOUNDS.resolve("plant-qbound-fault-"+repeat+"/manifest.json"))).getAsJsonObject();
+            assertEquals("complete",capture.get("status").getAsString());
+            assertTrue(capture.get("selector_readback_unchanged").getAsBoolean());
+            assertEquals(1205,capture.get("sample_count").getAsInt());
+        }
+        for(boolean history:new boolean[]{false,true})compare("plant-qbound-fault",history);
+    }
+    private static void compare(String profile,boolean history) throws Exception {
+            boolean bounded=profile.equals("plant-qbound-fault");
+            Path folder=(bounded?BOUNDS:CAPTURES).resolve(profile+"-a");
             var rows=org.interpss.core.dstab.reference.RepcaNativeVerification.rows(Files.readString(folder.resolve("native.csv")));
             assertEquals(1205,rows.size(),"Full reference row count");
             var context=new PSSEMultiFileLoader().loadDStab(folder.resolve("network.raw").toString(),folder.resolve("dynamic.dyr").toString());
@@ -36,7 +60,7 @@ public class ReeccPlantReplayConformanceTest {
             names.addAll(List.of("ELEC_VAR2","ELEC_VAR3","ELEC_VAR4","PREF_INPUT","QEXT_INPUT"));
             double[] maximum=new double[names.size()],at=new double[names.size()];
             var trace=new StringBuilder("time_s");for(String name:names)trace.append(',').append(name).append("_actual,").append(name).append("_reference");trace.append(",algebraic_ip,algebraic_iq\n");
-            int events=0;
+            int events=0,boundSamples=0,heldSamples=0;double previousRaw=Double.NaN,previousIntegral=Double.NaN;
             for(var row:rows) {
                 double t=row.get("time_s"),old=previous.get("time_s");
                 if(t>=0.&&t>old) {
@@ -46,6 +70,16 @@ public class ReeccPlantReplayConformanceTest {
                 } else if(t>=0.&&row!=first&&t==old) {
                     events++;boundary(network,row);
                     if(history){if(profile.endsWith("fault"))model.rebaseNextTwoStep();model.refreshTwoStep(row.get("P_PU"),row.get("Q_PU"),row.get("V1"),1.+row.get("F1_DEV"));}
+                }
+                if(bounded) {
+                    // Absolute Q-reference PI: Kp * clipped(Q0 - measuredQ) + stored integral.
+                    double integral=row.get("PLANT_STATE2");
+                    double raw=.5*Math.max(-.2,Math.min(.2,q0-row.get("PLANT_STATE1")))+integral;
+                    if(raw<.04-1.e-6)boundSamples++;
+                    if(previousRaw<.04-1.e-6&&previousIntegral==integral)heldSamples++;
+                    previousRaw=raw;previousIntegral=integral;
+                    assertTrue(row.get("QEXT_INPUT")>=.04-1.e-8,"Reference limited path remains above QMIN");
+                    assertTrue(q0+plant.getQref()>=.04-1.e-8,"Implementation uses absolute QMIN");
                 }
                 var values=new ArrayList<Double>(model.getNamedStates().values());
                 for(double value:plant.getNativeStates())values.add(value);
@@ -61,9 +95,9 @@ public class ReeccPlantReplayConformanceTest {
                 trace.append(',').append(model.getIpcmd()).append(',').append(-model.getIqcmd()).append('\n');previous=row;
             }
             assertEquals(2,events,"Both run-segment boundary duplicates are retained");
+            if(bounded){assertEquals(570,boundSamples);assertEquals(569,heldSamples,"Independent anti-windup plateau");}
             Files.writeString(Path.of("../target/reecc-plant-replay-"+profile+"-"+history+".csv"),trace);
             System.out.println("REECC plant "+profile+" history="+history+" names="+names+" max="+Arrays.toString(maximum)+" at="+Arrays.toString(at));
-        }
     }
     private static void verifyCaptures() throws Exception {
         Path manifest=CAPTURES.resolve("manifest.json");

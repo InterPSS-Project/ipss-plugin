@@ -65,7 +65,7 @@ evidence, not accepted as a remote-bus trajectory oracle. Its cause has not been
 established; the implementation does not silently copy that normalization.
 
 Full network feedback with the attached plant, independently exercised remote
-sensing, active upstream limits, and additional attachment configurations remain
+sensing, upper/active-power upstream limits, and additional attachment configurations remain
 open. These replay results do not establish their qualification.
 
 Private immutable inputs, complete output samples, source/readback manifests,
@@ -76,3 +76,33 @@ explicitly skips when those private references are unavailable.
 Validation: 48 focused tests passed with no failures, errors or skips, including
 the existing coupled REECC fault tests and REPCA controller tests. Neutral
 language and whitespace checks passed.
+
+## Active upstream reactive lower limit
+
+A further cold pair sets REPCA QMIN to 0.04 pu while retaining Kpg at 0.5 and
+all other controls. Initial Q is 0.0474446 pu, so initialization lies inside the
+bounds. Readback and pinned hashes identify the exact entered values. The two
+complete 1,205-row captures are byte-identical. The unbounded control remains
+available in the earlier capture set.
+
+The independent PI input crosses the lower bound for 570 samples; 569 following
+transitions retain the integral exactly. The full downstream electrical and
+upstream plant states are replayed for both methods with the same ceilings as
+the preceding plant-fault replay. Default maximum reactive-command error is
+8.89417e-4 pu; two-step maximum is 8.80066e-5 pu. Two-step electrical and plant
+state errors remain below 2.420e-6. The plant reactive integral and lead/lag
+errors are respectively 1.646e-8 and 2.238e-8 in the two-step path. The output
+reference remains above the absolute 0.04 pu bound throughout this profile.
+
+An earlier attempted probe changed the neighboring active PI gain instead of
+QMIN. Its unchanged readback exposed the setup error; that pair is retained as
+rejected-intent evidence and is not used by any qualification test. The corrected
+pair is independently captured under a new profile name and immutable manifest.
+
+Active-limit inputs and readbacks are in
+`verification-artifacts/reecc1-plant-qbound-20261104`; replay traces and the
+46-test passing validation log are retained separately in
+`verification-artifacts/reecc1-plant-qbound-validation-20261104`. No production
+model change or old acceptance-limit change was required for this limit profile.
+The separate accepted-event power correction is documented in
+[Accepted converter power](regca-accepted-event-power.md).
