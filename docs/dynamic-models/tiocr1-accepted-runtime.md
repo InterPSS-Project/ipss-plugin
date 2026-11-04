@@ -367,3 +367,28 @@ unqualified curve/delay combinations remain outside this result.
 Paired source and reference evidence is retained in
 `testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip`,
 SHA-256 `05760ac11b534f31068cd01d5ad7d71c75a53add35c19b24d54537b747c7b483`.
+
+## Prepared target lifecycle
+
+Single-ID static targets retain their active status and nominal load definition
+(code, CP/CI/CZ and distributed-generation settings) as part of preparation.
+Removing, replacing, reparenting, disabling or directly editing that source
+requires preparation again; a pending relay action rejects stale preparation
+before changing timers, transfers, matrix stamps or accepted snapshots. Restoring
+the prepared definition permits retry. Bus-voltage changes remain valid inputs.
+
+Dynamic targets retain object and parent ownership, including the selected
+membership for wildcard targets. Their live state, voltage-dependent power and
+capacity changes are not frozen. Replacement or reparenting requires preparation;
+ordinary capacity changes remain compatible with subsequent shedding. Composite
+capacity validation also runs before accepted-step timer and transfer callbacks.
+This does not establish wildcard static-definition mutation or reconnection support.
+
+The focused group now passes 76 tests with no failures, errors or skips. Ten new
+parameter invocations fail on the previous implementation and pass with these
+checks. Four exercise the actual LDS3BL/LVS3BL accepted callbacks on networks
+prepared with each solver; these are ownership and atomicity controls, not new
+independent equation qualification for those relay families. Six exercise TIOCR
+static-definition changes and dynamic replacement/reparenting, including valid
+voltage and capacity changes after restoration. All 26 complete valid trajectory
+files retain every row and event-side sample and compare exactly numerically.

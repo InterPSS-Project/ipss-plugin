@@ -32,6 +32,20 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private final Hashtable<String, Object> states = new Hashtable<>();
     private Complex initialStaticLoad = Complex.ZERO;
     private AclfLoad preparedStaticTarget;
+    private StaticDefinition preparedStaticDefinition;
+    private BaseDStabNetwork<?, ?> preparedNetwork;
+    private final java.util.IdentityHashMap<DynLoadModel, Boolean> preparedDynamicTargets = new java.util.IdentityHashMap<>();
+    private record StaticDefinition(com.interpss.core.aclf.AclfLoadCode code,Complex cp,Complex ci,Complex cz,
+            boolean distributed,Complex distributedPower) {
+        StaticDefinition(AclfLoad load) {
+            this(load.getCode(),load.getLoadCP(),load.getLoadCI(),load.getLoadCZ(),load.isDistGenStatus(),load.getDistGenPower());
+        }
+        boolean matches(AclfLoad load) {
+            return load.isActive() && code==load.getCode() && java.util.Objects.equals(cp,load.getLoadCP())
+                    && java.util.Objects.equals(ci,load.getLoadCI()) && java.util.Objects.equals(cz,load.getLoadCZ())
+                    && distributed==load.isDistGenStatus() && java.util.Objects.equals(distributedPower,load.getDistGenPower());
+        }
+    }
     private Complex initialShunt = Complex.ZERO;
     private double elapsedTime;
     private double shedFraction;
@@ -74,6 +88,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     public boolean initStates(BaseDStabBus<?, ?> bus) {
         targetInitialized = false;
         if (bus != loadBus || bus.getNetwork() == null) return false;
+        preparedNetwork=(BaseDStabNetwork<?, ?>)bus.getNetwork();
+        preparedDynamicTargets.clear();
         boolean wildcard = loadId.equals("*") || loadId.equals("#");
         compositeTarget = null;
         if (bus.getInfoOnlyDynModel() instanceof Cmldblu1Model composite
@@ -91,16 +107,20 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
                 && loadBus.getDynLoadModelList().stream()
                     .anyMatch(load -> wildcard || loadId.equals(load.getId()));
         hasDynamicTarget |= compositeTarget != null;
+        if(loadBus.getDynLoadModelList()!=null)for(DynLoadModel load:loadBus.getDynLoadModelList())
+            if(selectsExternalDynamicTarget(load))preparedDynamicTargets.put(load,Boolean.TRUE);
         // Rebuild target ownership for each preparation. A previous static
         // target must not leave a second shedding stamp after dynamic attachment.
         initialStaticLoad = Complex.ZERO;
         preparedStaticTarget = null;
+        preparedStaticDefinition = null;
         if (wildcard) {
             initialStaticLoad = loadBus.calNetLoadResults();
         } else if (!hasDynamicTarget) {
             AclfLoad load = loadBus.getContributeLoad(loadId);
-            if (load == null) return false;
+            if (load == null || !load.isActive()) return false;
             preparedStaticTarget = load;
+            preparedStaticDefinition = new StaticDefinition(load);
             initialStaticLoad = load.getLoad(loadBus.getVoltageMag());
         }
         initialShunt = data.shedShunt() && loadBus.getShuntY() != null
@@ -115,7 +135,9 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
 
     @Override
     public boolean afterStep(double dt) {
-        if (!targetInitialized || !Double.isFinite(dt) || dt < 0.0) return false;
+        if (!targetOwnershipIntact() || !Double.isFinite(dt) || dt < 0.0) return false;
+        for(int i=0;i<data.stages().size();i++)
+            if(data.stages().get(i).enabled() && !operated[i] && !canApplyStage(i))return false;
         elapsedTime += dt;
         if (!advanceTransferTrips(dt)) return false;
         double value = monitoredValue();
@@ -145,12 +167,31 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     }
 
     protected final boolean canApplyStage(int stageIndex) {
-        if (!targetInitialized) return false;
+        if (!targetOwnershipIntact()) return false;
         if (operated[stageIndex]) return true;
-        if (preparedStaticTarget != null && loadBus.getContributeLoad(loadId) != preparedStaticTarget) return false;
         double fraction = Math.min(data.stages().get(stageIndex).fraction(), 1.0 - shedFraction);
         return compositeTarget == null || loadBus.getInfoOnlyDynModel() == compositeTarget
                 && compositeTarget.canChangeLoad(loadId, -fraction);
+    }
+
+    private boolean selectsExternalDynamicTarget(DynLoadModel load) {
+        return load!=compositeTarget && (compositeTarget==null || !compositeTarget.ownsCapacityLoad(load))
+                && (loadId.equals("*") || loadId.equals("#") || loadId.equals(load.getId()));
+    }
+
+    private boolean targetOwnershipIntact() {
+        if(!targetInitialized || getDStabBus()!=loadBus || loadBus.getNetwork()!=preparedNetwork
+                || preparedNetwork.getBus(loadBus.getId())!=loadBus)return false;
+        if(preparedStaticTarget!=null && (loadBus.getContributeLoad(loadId)!=preparedStaticTarget
+                || preparedStaticTarget.getParentBus()!=loadBus || !preparedStaticDefinition.matches(preparedStaticTarget)))return false;
+        if(compositeTarget!=null && loadBus.getInfoOnlyDynModel()!=compositeTarget)return false;
+        int matches=0;
+        if(loadBus.getDynLoadModelList()!=null)for(DynLoadModel load:loadBus.getDynLoadModelList())
+            if(selectsExternalDynamicTarget(load)) {
+                if(load.getDStabBus()!=loadBus || !preparedDynamicTargets.containsKey(load))return false;
+                matches++;
+            }
+        return matches==preparedDynamicTargets.size();
     }
 
     protected final void applyStage(int stageIndex) {

@@ -255,6 +255,56 @@ public class Tiocr1AcceptedHistoryTest {
         assertEquals(.25,relay.getShedFraction(),1e-12);assertEquals(1,relay.getNetworkActionVersion());
     }
 
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void staleStaticDefinitionRejectsBeforeAnyAction(boolean staggered)throws Exception {
+        for(String mutation:java.util.List.of("inactive","cp","ci","cz","code","distributed")) {
+            var a=setup(staggered);var net=a.getNetwork();var host=net.getDStabBus("Bus2");var branch=net.getBranchList().getFirst();
+            var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+            var relay=new Tiocr1RelayModel(branch,true,2,true,host,"1",new com.interpss.core.aclf.AclfBranch[]{branch,null,null},curve);
+            assertTrue(a.initialization());var source=host.getContributeLoad("1");
+            var cp=source.getLoadCP();var ci=source.getLoadCI();var cz=source.getLoadCZ();var code=source.getCode();
+            var dg=source.getDistGenPower();boolean dgStatus=source.isDistGenStatus();
+            var history=relay.getIntegrationHistories();var matrix=net.getYMatrix().getA(0,0);
+            switch(mutation) {
+                case "inactive" -> source.setStatus(false);
+                case "cp" -> source.setLoadCP(cp.add(new Complex(.1,0)));
+                case "ci" -> source.setLoadCI(new Complex(.1,.02));
+                case "cz" -> source.setLoadCZ(new Complex(.1,.02));
+                case "code" -> source.setCode(com.interpss.core.aclf.AclfLoadCode.CONST_I);
+                case "distributed" -> {source.setDistGenStatus(true);source.setDistGenPower(new Complex(.1,.02));}
+            }
+            assertFalse(relay.afterStep(.01),mutation);assertTrue(branch.isActive());assertEquals(history,relay.getIntegrationHistories());
+            assertEquals(matrix,net.getYMatrix().getA(0,0));assertEquals(0.,relay.getShedFraction());assertNull(relay.getLastActionSnapshot());
+            source.setStatus(true);source.setLoadCP(cp);source.setLoadCI(ci);source.setLoadCZ(cz);source.setCode(code);source.setDistGenPower(dg);source.setDistGenStatus(dgStatus);
+            host.setVoltage(host.getVoltage().multiply(.95));
+            assertTrue(relay.afterStep(.01),"Voltage changes are operating inputs, not stale nominal load data");
+            assertFalse(branch.isActive());assertEquals(.25,relay.getShedFraction(),1e-12);
+        }
+    }
+
+    @ParameterizedTest @CsvSource({"false,false","true,false","false,true","true,true"})
+    void dynamicReplacementOrReparentingRequiresPreparation(boolean staggered,boolean reparent)throws Exception {
+        var a=setup(staggered);var net=a.getNetwork();var host=net.getDStabBus("Bus2");var branch=net.getBranchList().getFirst();
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+        var relay=new Tiocr1RelayModel(branch,true,2,true,host,"1",new com.interpss.core.aclf.AclfBranch[]{branch,null,null},curve);
+        assertTrue(a.initialization());var port=host.getDynamicBusDeviceList().stream().filter(d->d.getId().contains(relay.getId()+"_LOAD")).findFirst().orElseThrow();
+        var data=new org.interpss.dstab.dynLoad.IeelLoadData(1,0,0,1,0,0,0,0,1,0,0,2,0,0);
+        var original=new org.interpss.dstab.dynLoad.impl.IeelLoadModel("IEEL",host,host.getContributeLoad("1"),data);
+        assertTrue(original.initStates());assertTrue(port.initStates(host));var power=original.effectivePower();
+        org.interpss.dstab.dynLoad.impl.IeelLoadModel replacement=null;
+        if(reparent)original.setDStabBus(net.getDStabBus("Bus1"));
+        else {host.getDynLoadModelList().remove(original);replacement=new org.interpss.dstab.dynLoad.impl.IeelLoadModel("IEEL",host,host.getContributeLoad("1"),data);assertTrue(replacement.initStates());}
+        var history=relay.getIntegrationHistories();var matrix=net.getYMatrix().getA(0,0);
+        assertFalse(relay.afterStep(.01));assertTrue(branch.isActive());assertEquals(matrix,net.getYMatrix().getA(0,0));
+        assertEquals(history,relay.getIntegrationHistories());assertNull(relay.getLastActionSnapshot());assertEquals(0.,relay.getShedFraction());
+        if(reparent)original.setDStabBus(host);else {host.getDynLoadModelList().remove(replacement);host.getDynLoadModelList().add(original);}
+        original.changeLoad(-.1);host.setVoltage(host.getVoltage().multiply(.98));
+        double scale=.65;
+        assertTrue(relay.afterStep(.01));assertFalse(branch.isActive());assertEquals(.25,relay.getShedFraction(),1e-12);
+        // The model owns live voltage and prior capacity changes; the relay adds its fraction once.
+        assertEquals(0.,original.effectivePower().subtract(new Complex(power.getReal()*.98*scale,power.getImaginary()*.98*.98*scale)).abs(),1e-12);
+    }
+
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("network.raw").toString(),CASE.resolve("tiocr1-0.dyr").toString());
