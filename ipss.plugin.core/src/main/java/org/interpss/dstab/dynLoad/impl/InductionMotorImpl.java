@@ -2622,11 +2622,13 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		if(this.lvProtectionTimer1>=this.Ttr1 && !this.lvProtection1Applied ){
 			this.Fuv = this.Fuv -this.Ftr1;
 			this.lvProtection1Applied = true;
+            this.lvReconnect1Applied = false;
 		}
 		
 		if(this.lvProtectionTimer2>=this.Ttr2 && !this.lvProtection2Applied ){
 			this.Fuv = this.Fuv -this.Ftr2;
 			this.lvProtection2Applied = true;
+            this.lvReconnect2Applied = false;
 		}
 		if(this.lvReconnectTimer1>=this.Trc1 && this.lvProtection1Applied && !this.lvReconnect1Applied){
 			this.Fuv = this.Fuv +this.Ftr1;
