@@ -513,3 +513,36 @@ is in `tiocr-exact-target-20261104`; archive SHA-256 values:
 
 - `captures.zip`: `c75503f9a87b2b8cef7532726138fc6434df7b4c88daba35336bef593c493d25`
 - `validation.zip`: `11f77da83e7dd454d2b4a16a7bfef0ee2440eb3124d89c88bc68f4e19f82967f`
+
+
+## Retained reference quality audit
+
+The model-specific archive audit covers 69 retained native logs and CSVs,
+including the original monitor, operating and current-load controls and the
+later relay/composite action profiles. Sixty-seven pass capture-quality
+prerequisites. Only the two already rejected absent-`*` target controls fail;
+no additional claimed qualification depends on an invalid load action, missing
+positive initialization check, network nonconvergence or incomplete/nonfinite
+channel rows in this retained inventory.
+
+`tools/verify_tiocr_reference_quality.py` records archive/log/CSV hashes,
+original manifest status, recorded row counts and event-side duplicates. It
+uses specific failure diagnostics rather than rejecting arbitrary warnings.
+A closed relay contact or historical `complete` manifest cannot override an
+invalid-action diagnostic. Seven unit tests cover those false positives, benign
+messages, initialization, channel completeness, finite values, time ordering, measurement-free headers and streamed archive hashing.
+These checks verify row/channel prerequisites. Without an expected-horizon
+schema they cannot prove that a requested run horizon was completed.
+
+Run `python tools/test_verify_tiocr_reference_quality.py` for the unit checks.
+Run `python tools/verify_tiocr_reference_quality.py --report target/tiocr-quality.json`
+for the read-only archive audit. Its current exit status is 1 because the
+inventory deliberately retains the two rejected-target controls. The report
+identifies those captures individually; they are not deleted or silently
+excluded. No existing trajectory gate is disabled or relaxed. Passing capture
+quality alone does not prove the correct physical action or model trajectory;
+the existing boundary/KCL and full-reference tests remain required.
+
+Private `tiocr-reference-quality-audit-20261104/audit-v2.zip` retains the complete
+hash-indexed inventory, verifier source, unit-test output and audit exit status.
+SHA-256: `11dc21f1f46f9174405d184f37001e9c2d605ff32fc1b71c070a4a8ca7de8d68`.
