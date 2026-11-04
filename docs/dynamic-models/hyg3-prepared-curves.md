@@ -669,3 +669,13 @@ without errors or skips. All 136 complete exported trajectories match the
 baseline field for field, including event-side samples. Existing warmed
 allocation checks pass under both methods. These changes qualify rejection
 behavior only; the coupled bypass and long-duration accuracy gaps above remain.
+
+A warmed equilibrium microbenchmark measures the cost of these checks rather
+than a speedup. Across three interleaved JVM forks per version, complete ordinary
+update cycles increased from approximately 97/103 to 116/121 ns for the two
+controller modes; shared cycles increased from 71/72 to 85/85 ns. Each fork used
+six warmup and nine measured batches of 200,000 cycles, one reported processor
+and a bounded heap, without CPU affinity. These 13–19 ns increases include
+state/output observations and exclude startup; they are not estimates of total
+simulation runtime. Reproducible source, harness and measurements are retained
+in the private `hyg3-runtime-control-20261104` evidence archive.

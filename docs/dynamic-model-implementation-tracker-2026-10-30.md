@@ -27,6 +27,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
+- Retain [atomic integration-stage rejection](dynamic-models/hyg3-prepared-curves.md#atomic-integration-stage-rejection), reusable trial storage and retry preservation under both methods. Valid trajectories remain unchanged; this correctness fix adds a measured small-loop cost and does not close the independent reference-accuracy gates.
+
 - Use the [initial-coordinate and mechanical-boundary discriminators](dynamic-models/hyg3-prepared-curves.md#initial-coordinate-and-mechanical-boundary-discrimination): reported initial offsets do not explain late drift, and slow hydro-state/output differences feed back into the failed bypass power coordinate. Preserve the independently checked nonlinear mechanical equation and direct power observation; resolve integral/gate/flow recurrence and accepted-state behavior without fitting precision or relaxing the existing gates.
 
 - Retain the [ten-second fault and reversal extension](dynamic-models/hyg3-prepared-curves.md#ten-second-fault-and-reversal-extension), cold repeats and exact final integration tick. Physical boundary gates pass, while late governor-state and recorded-input replay discrepancies remain open; preserve original state envelopes and do not change production precision to fit the retained observations.
@@ -69,6 +71,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Preserve the distinct extended governor equations, shared turbine ownership and machine-base scaling.
 
 ## CMLDBLU1
+
+- Retain the accepted event-boundary electrical-current refresh and its observation/history invariance controls. It removes stale electrical rates at the second disturbance without changing ordinary-step measurement policy. Mechanical/controller event-rate qualification and the earlier coarse thermal-voltage discrepancy remain separate work.
 
 - Retain the separate accepted tap command and applied electrical ratio, transactional rollback and matrix-rebuild checks. Independent command, power and machine-state transition ordering now agrees; complete small-range power trajectory qualification remains open. Do not round machine states or relax gates to absorb the remaining precision-sensitive discrepancy.
 
