@@ -834,8 +834,9 @@ The full-trace tests retain every startup and event-side sample at 0.5 ms and
 quarter-cycle steps. All four staggered profiles and both secondary-trip
 modified-Euler profiles pass the preexisting state bounds, voltage/power
 range-NRMSE 0.001 and rotor-angle RMSE 0.01 degree gates. The two modified-Euler
-primary-reclose profiles still fail their original state bounds; their failures
-remain executable. No bounds, coefficients or timestamps were fitted.
+primary-reclose profiles still fail their original state bounds. The quarter-cycle
+profile also retains a secondary-shaft active-power NRMSE of 0.001098 against
+the unchanged 0.001 gate. These failures remain executable. No bounds, coefficients or timestamps were fitted.
 The secondary fine-step staggered rotor maximum difference fell from 0.00873
 degree to 0.0000901 degree after preserving the colocated load.
 
