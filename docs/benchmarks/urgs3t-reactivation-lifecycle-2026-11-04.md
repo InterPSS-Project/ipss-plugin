@@ -38,7 +38,7 @@ voltage regulator: its unowned VREF channel has a 3.31e-38 cold difference in th
 control pair. Those raw samples remain retained and are explicitly reported;
 VREF is not used to infer an excitation-controller state.
 
-## Minimal engine work required next
+## Engine contract
 
 1. Add an explicit, opt-in disconnected-state lifecycle to prepared machine and
    controller participants. On trip, retain accepted coordinates, derivative
@@ -67,9 +67,68 @@ VREF is not used to infer an excitation-controller state.
    and the matched permanently-offline control. Keep the existing active-run
    accuracy gates unchanged; existing command-step discrepancies remain separate.
 
-No runtime semantics were changed by this evidence commit. In particular, the
-existing frozen-disconnected-state implementation is not claimed to reproduce
-hot reactivation. Implementing the lifecycle deliberately is the next task.
+## Opt-in implementation and limitations
+
+The plugin now provides `setHotReactivationMachineIds(Set<String>)` on both
+solver entrypoints, configured before initialization. Select exact machine IDs.
+An empty set preserves the existing inactive behavior. Eligibility is restricted
+to prepared, active round-rotor machines with a source-record URGS3T governor,
+zero speed/power deadbands, and no exciter or stabilizer. Only one selected host
+is accepted, with controller-free classical surviving sources and no active bus
+or branch dynamic devices. Unknown, duplicate, and
+unsupported requested owners are rejected before initialization processing.
+
+`reactivateMachineAtAcceptedEndpoint(id, algorithm.getSimuTime())` is a separate
+hot API. Ordinary generation energization still initializes its device. The hot
+API retains coordinates, rebuilds network stamps, and solves the reconnected
+network. A failed solve restores statuses, voltage coordinates, machine scratch,
+and the disconnected matrix; it can be retried. A duplicate accepted request at
+the same time is inert. Invalid times, unprepared owners, and mid-stage calls are
+rejected. The API does not implement arbitrary reconnection of other models. Surviving
+classical-source accepted rates are captured before the status change, using the
+existing staggered accepted-endpoint protocol; the network uses the existing
+INITIAL solve stage. This restricted experimental scope is not a final general
+architecture. Network-wide accepted-input transactions and rollback for composed
+controllers/bus/branch devices require a separate implementation and independent
+qualification before removing the restriction.
+
+`DisconnectedStateParticipant` separates unprojected coordinate access, connected
+rate observation, disconnection, and reactivation publication. The prepared
+`MachineReactivationLifecycle` stores numerical values in reusable primitive
+arrays. Only active accepted endpoints sample rates, with machine scratch and
+physical outputs restored afterward. Offline intervals use retained rates and
+never call active equations. Inactive state trials are applied after the INITIAL
+network solve and before the endpoint solve, committed only after successful
+integration, and restored on failure. This source-lifecycle AB2-first/constant-rate
+policy is deliberately shared by both methods; it is not described as ordinary
+modified-Euler integration. Active integration formulas remain unchanged.
+
+Reactivation has two distinct observations: the event-side mechanical power is
+the prior accepted output (0.530936182 pu); the following integration step exposes
+the retained engine output (0.554718614 pu). Offline observable variables remain
+held while allocated coordinates advance. Reconnection releases that hold.
+
+Full independent trajectory gates remain strict. All four method/control runs
+pass voltage and P/Q range-NRMSE below 0.001 and rotor-angle RMSE below 0.01 deg.
+Full controller-coordinate checks still fail:
+
+| Method | Reactivation maximum valve error | Offline-control maximum valve error |
+|---|---:|---:|
+| Modified Euler | 9.060e-4 pu | 2.475e-4 pu |
+| Staggered | 8.605e-6 pu | 1.713e-5 pu |
+
+The staggered offline engine and average coordinates also exceed 5e-6 pu
+(1.323e-5 and 5.600e-6 pu). No thresholds, samples, or channels were removed.
+These state discrepancies remain qualification failures, separate from passing
+physical boundary and atomic-lifecycle controls. The option is experimental and
+is not enabled by default.
+
+The focused test set contains 36 passing lifecycle/default-off/shared-state
+controls and four retained failing full-reference comparisons. It covers the
+first inactive recurrence, later constant increments, zero/rejected trials,
+invalid/mid-stage requests, a deliberately failed reclose with voltage mutation,
+exact rollback of physical statuses and matrix action, retry, duplicate requests,
+and unchanged default frozen-trip behavior.
 
 ## Reproduction
 

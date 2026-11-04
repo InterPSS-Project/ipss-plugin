@@ -32,6 +32,65 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
  */
 @Deprecated(since="1.4.8",forRemoval=false)
 public class PsseDStabSolver extends DStabSolverImpl {
+    protected final org.interpss.dstab.algo.MachineReactivationLifecycle reactivation =
+            new org.interpss.dstab.algo.MachineReactivationLifecycle();
+    private java.util.Set<String> hotReactivationIds=java.util.Set.of();
+    private boolean hotReactivationEvent;
+    /** Explicitly select qualified machine IDs before initialization; empty preserves existing behavior. */
+    public void setHotReactivationMachineIds(java.util.Set<String> ids) {
+        if(dstabAlgo.getNetwork().isDStabNetInitialized())throw new IllegalStateException("Configure before initialization");
+        hotReactivationIds=java.util.Set.copyOf(ids);
+    }
+    protected final boolean ownsHotReactivation(Object model){return reactivation.owns(model);}
+    protected Object captureHotReactivationDiscontinuity(){return null;}
+    protected void restoreHotReactivationDiscontinuity(Object saved){}
+    protected void markHotReactivationDiscontinuity(){hotReactivationEvent=true;}
+    /** Hot reconnection preserves differential states; ordinary energization remains unchanged. */
+    public void reactivateMachineAtAcceptedEndpoint(String id,double time) throws DStabSimuException {
+        if(time!=dstabAlgo.getSimuTime())throw new IllegalArgumentException("Reactivation time differs from accepted algorithm time");
+        reactivation.validateReactivationRequest(id,time);
+        reactivation.sampleBeforeEvents(time);
+        if(reactivation.alreadyReactivated(id,time))return;
+        // Capture surviving accepted machine rates before changing physical status.
+        Object eventHistory=captureHotReactivationDiscontinuity();
+        var machine=reactivation.beginReactivation(id,time);
+        if(machine==null){restoreHotReactivationDiscontinuity(eventHistory);return;}
+        var buses=dstabAlgo.getNetwork().getBusList();
+        Complex[] voltages=new Complex[buses.size()];
+        double[] magnitudes=new double[buses.size()],angles=new double[buses.size()];
+        for(int i=0;i<voltages.length;i++){voltages[i]=buses.get(i).getVoltage();magnitudes[i]=buses.get(i).getVoltageMag();angles[i]=buses.get(i).getVoltageAng();}
+        var electrical=machine.captureRoundElectricalState();
+        var mechanical=machine.captureMechanicalIntegrationState();
+        double pe=machine.getPe(),pm=machine.getPm(),efd=machine.getEfd();
+        boolean accepted=false,previousEvent=eventBoundaryThisStep;
+        try {
+            dstabAlgo.getNetwork().formYMatrix4DStab();dstabAlgo.getNetwork().setYMatrixDirty(true);
+            eventBoundaryThisStep=true;requireNetworkSolution(time,time,"INITIAL");
+            reactivation.finishReactivation(machine,true);accepted=true;markHotReactivationDiscontinuity();
+        } finally {
+            eventBoundaryThisStep=previousEvent;
+            if(!accepted) {
+                restoreHotReactivationDiscontinuity(eventHistory);
+                reactivation.finishReactivation(machine,false);
+                machine.restoreRoundElectricalState(electrical);machine.restoreMechanicalIntegrationState(mechanical);
+                machine.setPe(pe);machine.setPm(pm);machine.setEfd(efd);
+                for(int i=0;i<voltages.length;i++){buses.get(i).setVoltage(voltages[i]);buses.get(i).setVoltage(magnitudes[i],angles[i]);}
+                dstabAlgo.getNetwork().formYMatrix4DStab();dstabAlgo.getNetwork().setYMatrixDirty(true);
+            }
+        }
+    }
+    @Override public void nextStep(double time,double dt,com.interpss.dstab.algo.DynamicSimuMethod method)
+            throws DStabSimuException {
+        if(!reactivation.enabled()){super.nextStep(time,dt,method);return;}
+        if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Integration interval must be positive");
+        try {super.nextStep(time,dt,method);reactivation.commit();}
+        catch(RuntimeException|DStabSimuException failure){reactivation.rollback();throw failure;}
+    }
+    @Override public void diffEqnIntegrationStep(double time,double dt,
+            com.interpss.dstab.algo.DynamicSimuMethod method,int flag) throws DStabSimuException {
+        if(flag==0)reactivation.begin(dt);
+        super.diffEqnIntegrationStep(time,dt,method,flag);
+    }
     public enum BusFrequencyMode { REQUIRED, ALL }
     public record BusFrequencyReport(int activeBuses,int measuredBuses,String reason) { }
     /** Frequency is optional at unused buses by default; ALL is an explicit override. */
@@ -101,7 +160,10 @@ public class PsseDStabSolver extends DStabSolverImpl {
         for (var entry : integrationStepInputs)
             if (entry.bus().isActive() && entry.device().isActive())
                 entry.input().prepareIntegrationStep(time, dstabAlgo.getSimuStepSec());
+        reactivation.sampleBeforeEvents(time);
         super.beforeStep(time);
+        reactivation.acceptStatusChanges();
+        if(hotReactivationEvent){eventBoundaryThisStep=true;hotReactivationEvent=false;}
     }
     public static final int DEFAULT_MAXIMUM_NETWORK_ITERATIONS = 50;
     private double parameterTimeStepMultiple = 2.0;
@@ -233,6 +295,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
     @Override
     public boolean initialization() {
         controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();integrationStepInputs.clear();
+        reactivation.prepare(dstabAlgo,hotReactivationIds);hotReactivationEvent=false;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         var validation=validateModelParameters();

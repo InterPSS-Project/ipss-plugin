@@ -17,7 +17,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 /** WECC gas governor with shared numerical states and accepted deadband histories. */
 public final class Urgs3tGovernor extends AbstractGovernor
-        implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess {
+        implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess,
+        org.interpss.dstab.control.util.DisconnectedStateParticipant {
     /** Source-record execution holds the exhaust coordinate, publishes the
      * preceding accepted turbine output, and scales damping with turbine power.
      * Direct Java construction retains the published diagram and machine-base damping. */
@@ -38,6 +39,8 @@ public final class Urgs3tGovernor extends AbstractGovernor
     private final double[] curveX = new double[5], curveY = new double[5];
     private final IntegrationStateMonitor monitor = new IntegrationStateMonitor(NAMES);
     private int points, mode;
+    private boolean disconnectedPublication;
+    private final double[] disconnectedVariables=new double[5];
     private double scale, reference, initialReference, lower, upper, powerMemory, powerInputMemory, initialSpeed;
     private double acceptedTurbinePower, publishedTurbinePower;
     private double predictedStep;
@@ -108,6 +111,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
         lower = c[7]; upper = c[6]; project();
         reference = c[29] > 0 ? valve/c[29] : valve;
         initialReference = reference; referenceJumpPending = false; referenceRevision = 0;
+        disconnectedPublication=false;
         powerMemory = powerInputMemory = curvePower(x); mode = 0; initialSpeed = machine.getSpeed()-1;
         acceptedTurbinePower = publishedTurbinePower = x[0] == valve ? power : powerMemory;
         if (!Double.isFinite(reference) || !Double.isFinite(power)) return false;
@@ -153,6 +157,44 @@ public final class Urgs3tGovernor extends AbstractGovernor
             projectTrial(); commit(); predicted = false;
         }
         return true;
+    }
+    @Override public int disconnectedStateCount() { return 5; }
+    @Override public boolean supportsDisconnectedStateLifecycle() {
+        return runtimeConvention == RuntimeConvention.SOURCE_RECORD && c[16] == 0 && c[17] == 0 && c[18] == 0;
+    }
+    private void requireDisconnectedBoundary() {
+        requireState();
+        if (!supportsDisconnectedStateLifecycle() || predicted || sharedTrialPending)
+            throw new IllegalStateException("Disconnected lifecycle requires a supported accepted governor boundary");
+    }
+    @Override public void readDisconnectedState(double[] values, int offset) {
+        requireDisconnectedBoundary(); Objects.checkFromIndexSize(offset, 5, values.length);
+        System.arraycopy(x, 0, values, offset, 5);
+    }
+    @Override public void readConnectedRates(double[] values, int offset) {
+        requireDisconnectedBoundary(); Objects.checkFromIndexSize(offset, 5, values.length);
+        if (!getMachine().isActive()) throw new IllegalStateException("Do not evaluate disconnected governor rates");
+        derivatives(x, trial); System.arraycopy(trial, 0, values, offset, 5);
+    }
+    @Override public void writeDisconnectedState(double[] values, int offset) {
+        requireDisconnectedBoundary(); Objects.checkFromIndexSize(offset, 5, values.length);
+        for (int i=0;i<5;i++) if (!Double.isFinite(values[offset+i]))
+            throw new IllegalArgumentException("Disconnected coordinates must be finite");
+        System.arraycopy(values, offset, x, 0, 5);
+    }
+    @Override public void acceptHostDisconnection() {
+        requireDisconnectedBoundary();
+        readPublishedVariables(disconnectedVariables,0);disconnectedPublication=true;reference = 0;
+    }
+    @Override public void publishHostReactivation() {
+        requireDisconnectedBoundary();
+        double power = curvePower(x);
+        if (!Double.isFinite(power)) throw new IllegalStateException("Reactivation power must be finite");
+        disconnectedPublication=false;
+        // Zero backlash is required: no ambiguous inactive limiter/history policy.
+        publishedTurbinePower = acceptedTurbinePower;
+        acceptedTurbinePower = power;
+        powerMemory = powerInputMemory = power;
     }
     @Override public int staggeredStateCount() { return 5; }
     @Override public void readStaggeredState(double[] values, int offset) {
@@ -300,6 +342,7 @@ public final class Urgs3tGovernor extends AbstractGovernor
     /** Pure observations of the reference, deadband input/output and turbine curve. */
     public void readPublishedVariables(double[] values, int offset) {
         requireState(); Objects.checkFromIndexSize(offset, 5, values.length);
+        if(disconnectedPublication){System.arraycopy(disconnectedVariables,0,values,offset,5);return;}
         values[offset] = initialReference; values[offset+1] = initialSpeed; values[offset+2] = speedInput();
         values[offset+3] = curvePower(x); values[offset+4] = backlash(values[offset+3]);
     }

@@ -192,6 +192,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private boolean reuseNetworkEndpoint;
     private boolean networkEndpointAvailable;
     private BooleanSupplier ownerActive;
+    private boolean[] retainedSlots=new boolean[0];
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
     private boolean st4EndpointReuseEnabled = true;
@@ -984,6 +985,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 electricalEndpointEligible.add(endpointEligibility(m,exciter,governor,stabilizer));
             }
         }
+        retainedSlots=new boolean[states.size()];
         previous=new double[states.size()];
         wasActive=new boolean[states.size()];
         machineEventStateSlots=machineSlots.stream().mapToInt(Integer::intValue).toArray();
@@ -1148,7 +1150,26 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         }
     }
 
+    private record HotEventHistory(boolean hasLeft,boolean input,boolean endpoint,double[] left,
+            boolean[] valid,long electrical,long mechanical) { }
+    @Override protected Object captureHotReactivationDiscontinuity() {
+        var saved=new HotEventHistory(hasMachineEventLeft,inputDiscontinuity,networkEndpointAvailable,
+                machineEventLeft.clone(),machineEventValid.clone(),machineEventElectricalRefreshCount,machineEventMechanicalRefreshCount);
+        notifyAcceptedEndpointDiscontinuity();return saved;
+    }
+    @Override protected void restoreHotReactivationDiscontinuity(Object snapshot) {
+        var saved=(HotEventHistory)snapshot;
+        hasMachineEventLeft=saved.hasLeft();inputDiscontinuity=saved.input();networkEndpointAvailable=saved.endpoint();
+        System.arraycopy(saved.left(),0,machineEventLeft,0,machineEventLeft.length);
+        System.arraycopy(saved.valid(),0,machineEventValid,0,machineEventValid.length);
+        machineEventElectricalRefreshCount=saved.electrical();machineEventMechanicalRefreshCount=saved.mechanical();
+    }
+    @Override protected void markHotReactivationDiscontinuity(){notifyDiscontinuity();}
     @Override public void nextStep(double time,double dt,DynamicSimuMethod method) throws DStabSimuException {
+        try {advanceWithRetainedInactiveStates(time,dt,method);reactivation.commit();}
+        catch(RuntimeException|DStabSimuException failure){reactivation.rollback();throw failure;}
+    }
+    private void advanceWithRetainedInactiveStates(double time,double dt,DynamicSimuMethod method) throws DStabSimuException {
         requireStep(dt);
         if (previous == null) throw new IllegalStateException("Initialize the solver before advancing");
         if (Double.compare(dt, fixedStep) != 0)
@@ -1189,6 +1210,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             finally { networkSolutionStage = previousStage; }
         }
         networkEndpointAvailable = false;
+        reactivation.begin(dt);
         // Accepted-step relay motion uses the solved left-endpoint current.
         // Sample it before advancing any differential coordinates; the relay's
         // existing afterStep callback remains the sole timer/action owner.
@@ -1208,11 +1230,17 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 stabilizer.synchronizeVoltageDerivativeMemory();
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();
+        if(reactivation.enabled())for(int mi=0;mi<machines.size();mi++)if(ownsHotReactivation(machines.get(mi))) {
+            int offset=machineMechanicalStateSlots[mi];
+            for(int k=0;k<6;k++)retainedSlots[offset+k]=true;
+            if(!machineActive.get(mi).getAsBoolean()||!wasActive[offset])
+                reactivation.readHeldRates(machines.get(mi),previous,offset);
+        }
         for (int i=0;i<states.size();i++) {
             start[i]=states.get(i).value.getAsDouble();
             derivative[i]=states.get(i).derivative.getAsDouble();
             boolean active = states.get(i).active.getAsBoolean();
-            if (active && !wasActive[i]) previous[i]=derivative[i];
+            if (active && !wasActive[i] && !retainedSlots[i]) previous[i]=derivative[i];
             wasActive[i]=active;
             if (discontinuity) derivative[i]=.5*(derivative[i]
                     +(hasMachineEventLeft&&machineEventValid[i]?machineEventLeft[i]:previous[i]));
@@ -1228,7 +1256,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for (var p:participants) {
             p.model.readStaggeredState(p.values,0);
             boolean active=p.active.getAsBoolean();
-            if (active&&!p.wasActive) System.arraycopy(p.rates,0,p.history,0,p.rates.length);
+            if(ownsHotReactivation(p.model)&&(!active||!p.wasActive)) reactivation.readHeldRates(p.model,p.history,0);
+            else if (active&&!p.wasActive) System.arraycopy(p.rates,0,p.history,0,p.rates.length);
             p.wasActive=active;
             long inputVersion=p.model.staggeredInputDiscontinuityVersion();
             boolean localDiscontinuity=inputVersion!=p.appliedInputDiscontinuityVersion;
@@ -1260,7 +1289,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 throw new DStabSimuException("Renewable integration failed: "+r.model.getId());
         for (int i=0;i<states.size();i++) {
             State s=states.get(i);
-            if (!wasActive[i]) { previous[i]=0.; continue; }
+            if (!wasActive[i]) { if(!retainedSlots[i])previous[i]=0.; continue; }
             if (s.frozen.getAsBoolean()) { previous[i]=0.; continue; }
             double trial=start[i]+dt*(1.5*derivative[i]-.5*previous[i]);
             double end=s.project.applyAsDouble(trial);
@@ -1268,7 +1297,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             previous[i]=end!=trial ? 0. : derivative[i];
         }
         for (var p:participants) {
-            if (!p.wasActive) { java.util.Arrays.fill(p.history,0.);continue; }
+            if (!p.wasActive) { if(!ownsHotReactivation(p.model))java.util.Arrays.fill(p.history,0.);continue; }
             double localStep=dt/p.localSteps;
             if(p.localSteps>1)p.local.beginStaggeredLocalInterval(dt);
             for(int sub=0;sub<p.localSteps;sub++) {
