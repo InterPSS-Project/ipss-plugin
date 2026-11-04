@@ -1312,6 +1312,8 @@ import org.junit.platform.suite.api.Suite;
 	RegcaCurrentLimitNativeTest.class,
 	RegcaNetworkIterationTest.class,
 	org.interpss.core.dstab.RegcaReferenceGainMemoryTest.class,
+	org.interpss.core.dstab.RegcaAcceptedVoltageMemoryTest.class,
+	org.interpss.core.dstab.ReeccPlantNetworkConformanceTest.class,
 	PsseNetworkConvergenceTest.class,
 	PsseNetworkIterationLifecycleTest.class,
 	org.interpss.core.dstab.StaticLoadMatrixSplitTest.class,

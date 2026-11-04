@@ -220,3 +220,23 @@ or production equation was changed.
 Private integrated evidence is retained at
 `verification-artifacts/memory-and-dc-contract-integration-20261104`, SHA-256
 `3015ea5aa2241b6cca69c3db90dbe84382a8d115452de1a722ce7242b2896f01`.
+
+## Optional accepted-boundary converter memory
+
+The [accepted-boundary policy](regca-accepted-voltage-memory.md) is integrated
+with shared event/step history under both methods. Trial network solves do not
+commit memory, and repeated solves cannot introduce extra history updates.
+The existing instantaneous and legacy per-solve policies remain unchanged;
+six full-trace opt-out controls match exactly. No default or solver change is
+included.
+
+The integrated renewable regression executes 320 tests: 319 pass and one
+opt-in positive-Q diagnostic is skipped, with no failures or errors. Both new
+public test classes are registered in the main suite. This focused result does
+not replace the earlier full-suite failures or qualify this policy as a global
+default. In particular, high-voltage correction and broader system/runtime
+qualification remain open.
+
+Private executed reports and the skipped-test identity are retained at
+`verification-artifacts/accepted-memory-integrated-renewables-20261104`, SHA-256
+`f1d2e6a0f29041dee76caa11d59a4801c68083f5cac335a6ec645d7ce647b202`.
