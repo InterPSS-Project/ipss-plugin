@@ -109,6 +109,43 @@ public class Tiocr1AcceptedHistoryTest {
         }
     }
 
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void targetsCannotCrossNetworksAndReparentingCannotAcceptProtection(boolean staggered)throws Exception {
+        var a=setup(staggered);var other=setup(staggered);var net=a.getNetwork();var branch=net.getBranchList().getFirst();
+        var foreign=other.getNetwork();var host=net.getDStabBus("Bus2");int count=host.getDynamicBusDeviceList().size();
+        int ownerCount=net.getDStabBus(branch.getFromBus().getId()).getDynamicBusDeviceList().size();
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+        assertThrows(IllegalArgumentException.class,()->new Tiocr1RelayModel(branch,true,2,true,foreign.getDStabBus("Bus2"),"1",
+                new com.interpss.core.aclf.AclfBranch[3],curve));
+        assertThrows(IllegalArgumentException.class,()->new Tiocr1RelayModel(branch,true,2,true,host,null,
+                new com.interpss.core.aclf.AclfBranch[]{branch,foreign.getBranchList().getFirst(),null},curve));
+        assertTrue(branch.isActive());assertTrue(foreign.getBranchList().getFirst().isActive());
+        assertEquals(ownerCount,net.getDStabBus(branch.getFromBus().getId()).getDynamicBusDeviceList().size());
+        assertEquals(count,host.getDynamicBusDeviceList().size(),"Rejected targets must not attach partial relay ports");
+        var relay=new Tiocr1RelayModel(branch,true,2,true,host,null,new com.interpss.core.aclf.AclfBranch[]{branch,null,null},curve);
+        assertTrue(a.initialization());var original=relay.getDStabBus();var history=relay.getIntegrationHistories();
+        relay.setDStabBus(foreign.getDStabBus("Bus1"));
+        assertFalse(relay.initStates(relay.getDStabBus()));assertFalse(relay.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertFalse(relay.afterStep(.01));assertFalse(relay.updateAttributes(true));
+        assertEquals(history,relay.getIntegrationHistories());assertTrue(branch.isActive());assertEquals(0,relay.getNetworkActionVersion());
+        relay.setDStabBus(original);assertTrue(relay.afterStep(.01));assertFalse(branch.isActive());assertEquals(1,relay.getNetworkActionVersion());
+    }
+
+    @ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void removedLaterTargetRejectsEntireAcceptedAction(boolean staggered)throws Exception {
+        var a=setup(staggered);var net=a.getNetwork();var first=net.getBranchList().get(0);var second=net.getBranchList().get(1);
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,0,.25});
+        var relay=new Tiocr1RelayModel(first,true,2,true,net.getDStabBus("Bus2"),"1",
+                new com.interpss.core.aclf.AclfBranch[]{first,second,null},curve);
+        assertTrue(a.initialization());var history=relay.getIntegrationHistories();
+        assertTrue(net.removeBranch(second.getId()));
+        var matrix=net.getYMatrix().getA(first.getFromBus().getSortNumber(),first.getToBus().getSortNumber());
+        assertFalse(relay.afterStep(.01));assertFalse(relay.initStates(relay.getDStabBus()));
+        assertTrue(first.isActive());assertEquals(history,relay.getIntegrationHistories());
+        assertEquals(0,relay.getNetworkActionVersion());assertEquals(0,relay.getShedFraction());
+        assertEquals(matrix,net.getYMatrix().getA(first.getFromBus().getSortNumber(),first.getToBus().getSortNumber()));
+    }
+
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("network.raw").toString(),CASE.resolve("tiocr1-0.dyr").toString());

@@ -24,6 +24,8 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     private final boolean fromEnd, operate;
     private final AclfBranch[] transfers;
     private final Tiocr1Data curve;
+    private final BaseDStabBus<?,?> owner,loadHost;
+    private final BaseDStabNetwork<?,?> ownerNetwork;
     private double position, breakerTimer;
     private boolean pickedUp, operated;
     private long networkActionVersion;
@@ -42,20 +44,44 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
 
     public Tiocr1RelayModel(AclfBranch branch, boolean fromEnd, int slot, boolean operate,
             BaseDStabBus<?,?> host, String loadId, AclfBranch[] transfers, Tiocr1Data curve) {
-        if(slot<1 || slot>2 || transfers.length!=3) throw new IllegalArgumentException("Invalid relay slot/targets");
-        monitored=branch;this.fromEnd=fromEnd;this.operate=operate;
+        if(slot<1 || slot>2 || transfers==null || transfers.length!=3) throw new IllegalArgumentException("Invalid relay slot/targets");
+        monitored=java.util.Objects.requireNonNull(branch);this.fromEnd=fromEnd;this.operate=operate;
+        owner=(BaseDStabBus<?,?>)(fromEnd?branch.getFromAclfBus():branch.getToAclfBus());
+        ownerNetwork=(BaseDStabNetwork<?,?>)java.util.Objects.requireNonNull(owner.getNetwork());
+        loadHost=loadId==null?null:java.util.Objects.requireNonNull(host);
+        if(!belongsToOwnerNetwork(branch)||loadHost!=null&&!busBelongsToOwnerNetwork(loadHost))
+            throw new IllegalArgumentException("Relay terminal and load target must belong to one network");
+        for(var transfer:transfers)if(transfer!=null&&!belongsToOwnerNetwork(transfer))
+            throw new IllegalArgumentException("Transfer-trip target must belong to the monitored network");
+        java.util.Objects.requireNonNull(curve);
         this.transfers=transfers.clone();this.curve=curve;
         String id="TIOCR1_"+branch.getId()+"_"+(fromEnd?"F":"T")+"_"+slot;
         setId(id);setName("TIOCR1");setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
         // Motion is owned by the monitored terminal, independently of the remote load port.
-        var owner=(BaseDStabBus<?,?>)(fromEnd?branch.getFromAclfBus():branch.getToAclfBus());
         setDStabBus(owner);owner.getDynamicBusDeviceList().add(this);
         output.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,id);
         loadPort=loadId==null?null:new LoadPort(id+"_LOAD",host,loadId,curve.loadFraction());
     }
-    @Override public boolean initStates(BaseDStabBus<?,?> bus) { return bus==getDStabBus()&&reset()&&Double.isFinite(currentMagnitude()); }
-    @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {return Double.isFinite(dt)&&dt>=0;}
-    @Override public boolean updateAttributes(boolean changed) {return true;}
+    private boolean busBelongsToOwnerNetwork(BaseDStabBus<?,?> bus) {
+        return bus!=null&&bus.getNetwork()==ownerNetwork&&ownerNetwork.getBus(bus.getId())==bus;
+    }
+    private boolean belongsToOwnerNetwork(AclfBranch branch) {
+        return branch.getFromAclfBus()!=null&&branch.getToAclfBus()!=null
+                &&busBelongsToOwnerNetwork((BaseDStabBus<?,?>)branch.getFromAclfBus())
+                &&busBelongsToOwnerNetwork((BaseDStabBus<?,?>)branch.getToAclfBus())
+                &&ownerNetwork.getBranch(branch.getId())==branch;
+    }
+    private boolean attachmentIntact() {
+        if(getDStabBus()!=owner||!busBelongsToOwnerNetwork(owner)
+                ||(fromEnd?monitored.getFromAclfBus():monitored.getToAclfBus())!=owner
+                ||!belongsToOwnerNetwork(monitored)
+                ||loadPort!=null&&(loadPort.getDStabBus()!=loadHost||!busBelongsToOwnerNetwork(loadHost)))return false;
+        for(var target:transfers)if(target!=null&&!belongsToOwnerNetwork(target))return false;
+        return true;
+    }
+    @Override public boolean initStates(BaseDStabBus<?,?> bus) { return bus==owner&&attachmentIntact()&&Double.isFinite(currentMagnitude())&&reset(); }
+    @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {return attachmentIntact()&&Double.isFinite(dt)&&dt>=0;}
+    @Override public boolean updateAttributes(boolean changed) {return attachmentIntact();}
     @Override public Object getOutputObject() {return Complex.ZERO;}
     @Override public Hashtable<String,Object> getStates(Object ignored) {output.putAll(getNamedStates());return output;}
     @Override public boolean action(double time) {return true;}
@@ -72,7 +98,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         return Math.hypot(real,imag);
     }
     @Override public boolean afterStep(double dt) {
-        if(!Double.isFinite(dt)||dt<0)return false;
+        if(!attachmentIntact()||!Double.isFinite(dt)||dt<0)return false;
         if(dt==0)return true;
         if(operated)return true;
         if(!pickedUp) {
@@ -84,7 +110,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         if(breakerTimer+1e-12<curve.breakerTime())return true;
         operated=true;
         if(!operate)return true;
-        var network=(BaseDStabNetwork<?,?>)getDStabBus().getNetwork();
+        var network=ownerNetwork;
         boolean networkChanged=false;
         for(var branch:transfers) if(branch!=null&&branch.isActive()) {
             // Remove only this branch stamp, preserving active fault and load-relay stamps.

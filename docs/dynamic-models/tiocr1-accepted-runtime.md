@@ -104,3 +104,24 @@ Protection coordination, additional reset/re-pickup settings, remote-action comb
 production-step and longer-duration cases remain on the implementation work list.
 The accepted-history tests also exercise both monitored ends, but those additional
 terminal cases are lifecycle tests rather than new independent trajectory captures.
+
+## Attachment ownership and atomic rejection
+
+The relay binds to its original monitored terminal and network. Construction
+validates every transfer branch and optional remote load host before attaching
+any relay port. Network map identity is checked in addition to endpoint network
+identity, so an unrelated object with the same bus or branch identifier cannot
+be used as a target. These checks use direct map lookups, without network scans.
+
+Initialization, trial callbacks, attribute refresh and accepted-step processing
+reject detached or reparented targets before modifying histories or physical
+outputs. Every configured target is checked before the first transfer trip or
+load action; a missing later target cannot produce a partial trip. Restoring the
+original attachment permits its normal lifecycle to continue. Same-network
+reinitialization still resets protection history as before.
+
+Both integration methods exercise cross-network targets with matching IDs,
+reparenting, restoration and removal of a later transfer target. Existing
+independent trajectory tests retain their original tolerances and samples.
+This ownership correction does not change relay curves, pickup sequencing,
+breaker timing, or extend the qualification scope listed above.
