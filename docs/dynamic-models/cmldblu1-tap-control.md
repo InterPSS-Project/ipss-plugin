@@ -419,3 +419,24 @@ Final focused validation: 62 tests, zero failures/errors/skips. The private
 `cmldblu1-tap-measurement-20261104/validation.zip` retains source, before/after
 logs, exact test reports and reference provenance. SHA-256:
 `19024b74de52ff8027526c8bc14555ac0b9a6cc4e4c189f1b740717f62b4cb8f`.
+
+
+### Remaining derivative-observation limitation
+
+A follow-up audit found no additional identifiable composite equation or
+network-boundary defect in the retained reactive-power decomposition. The
+external dynamics-value reader exposes states and variables, but not state
+derivatives. A separate documented dynamics-model derivative getter has no
+binding in the installed external Python interface. Its accepted, predictor or
+last-evaluated stage ownership is also not established by that API description.
+
+A supported derivative observer would therefore be a new capability requiring
+independent stage and noninterference checks before its measurements could
+justify a correction. Increasing output formatting precision cannot recover
+this missing observable. No new simulation captures, rate fitting, parameter
+changes or trajectory-gate relaxation followed from this audit; full
+reactive-power qualification remains open.
+
+The private `cmldblu1-derivative-api-audit-20261104/audit.zip` retains the exact
+module-discovery command and output, inspected-document hashes and limitations.
+SHA-256: `38e1b987a23abbf31f9c4e22532db773bc3a0658a9489a096cdd83c24fe6cdef`.
