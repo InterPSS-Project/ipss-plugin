@@ -1842,3 +1842,59 @@ match the baseline byte-for-byte, including complete both-method coupled
 trajectories and error tables. Existing comparisons that report reference
 discrepancies diagnostically retain that status; passing this suite does not
 promote those diagnostics into trajectory acceptance.
+
+## Bypass observation-stage counterexamples
+
+New cold pairs change only bypass recovery delay or recovery voltage in the
+base small-network source. Each pair has identical complete output. A separate
+probe option sets the bypass recovery delay without changing the existing
+defaults or conflating it with the inverter-block recovery delay.
+
+| Source/control | Network interval | Recovery delay | First timer observation | Release |
+| --- | ---: | ---: | --- | --- |
+| Base power source | 0.5 ms | 10.4 ms | first endpoint after clearing | 0.111000136 s |
+| Base power source | 0.25 ms | 10.4 ms | first endpoint after clearing | 0.110749461 s |
+| Base power source | 0.5 ms | zero | release at first endpoint after clearing | 0.100500114 s |
+| Base power source | 0.25 ms | zero | release at first endpoint after clearing | 0.100249596 s |
+| Existing transferred source, all three control modes | 0.5 ms | 10 ms | clearing event itself | 0.110000134 s |
+
+For the nonzero-delay base profiles, the deadline is the first observation time
+minus half the network interval plus the entered delay. Zero delay still waits
+until the following endpoint. Changing only the base recovery threshold from
+0.92 pu to 0.90 or 0.93 pu leaves that schedule unchanged, although the converged
+clearing voltage already exceeds each threshold. This excludes a simple rule
+based only on the recorded converged voltage and delay.
+
+The transferred-source captures provide a counterexample: their recovery timer
+is already published on the second clearing observation, with a deadline of
+clearing time minus half an interval plus the delay. This occurs in current,
+inverter-power and rectifier-power control, so the control selector alone does
+not explain the difference. All original timestamps and duplicate event sides
+remain present. These observations do not identify the reference implementation's
+internal event-solve measurement or call sequence.
+
+A trial implementation that applied completed-interval sampling universally to
+bypass recovery was rejected. It delayed the already qualified transferred-current
+release and raised its event-side rectifier-voltage error to about 0.142 pu,
+violating the unchanged 0.000034 pu gate. The trial patch and failing comparisons
+are retained privately. Production protection equations and scheduling remain
+unchanged; neither a universal midpoint rule nor an added fitted delay is
+justified. The next causal discriminator must isolate the source-preparation
+and event-solve boundary before changing accepted protection history.
+
+`Cdc6tBypassSamplingReferenceTest` checks the paired captures, exact timer
+relationships, zero-delay behavior, unchanged states between release sides and
+the transferred-source counterexamples. These are independent observation
+contracts, not complete runtime trajectory acceptance.
+
+All 285 scoped CDC6T checks pass after restoring the original runtime, including
+the seven new reference-contract checks. Existing strict limits are unchanged.
+
+Private complete paired captures:
+`verification-artifacts/cdc6t-bypass-sampling-20261104/captures.zip`, SHA-256
+`b6fb32f608e3559068910af93bbbb0cc53bf326f95fd8558ad28d2386fc3cba5`.
+
+Rejected candidate patch, complete comparison samples, test logs/reports and
+source snapshots:
+`verification-artifacts/cdc6t-bypass-sampling-20261104/validation.zip`, SHA-256
+`38edd35eb05a5c75431a86bbffff5d8a241d8bb99aa3388ef4493c4c5616ab15`.

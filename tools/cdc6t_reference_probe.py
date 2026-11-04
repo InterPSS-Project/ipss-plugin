@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--minimum-current', type=float, default=400.)
     parser.add_argument('--fault-clear', type=float, default=.1)
     parser.add_argument('--inverter-recovery-delay', type=float, default=.01)
+    parser.add_argument('--bypass-recovery-delay', type=float)
     parser.add_argument('--rectifier-recovery-delay', type=float)
     parser.add_argument('--rectifier-recovery-voltage', type=float)
     parser.add_argument('--inverter-recovery-voltage', type=float)
@@ -71,6 +72,8 @@ def main():
         parser.error('Fault clearing must be strictly between application and end time')
     if not math.isfinite(args.inverter_recovery_delay) or args.inverter_recovery_delay < 0:
         parser.error('Inverter recovery delay must be finite and nonnegative')
+    if args.bypass_recovery_delay is not None and (not math.isfinite(args.bypass_recovery_delay) or args.bypass_recovery_delay < 0):
+        parser.error('Bypass recovery delay must be finite and nonnegative')
     if args.rectifier_recovery_delay is not None and not math.isfinite(args.rectifier_recovery_delay):
         parser.error('Rectifier recovery delay must be finite')
     if args.rectifier_recovery_voltage is not None and (not math.isfinite(args.rectifier_recovery_voltage) or args.rectifier_recovery_voltage < 0):
@@ -166,6 +169,8 @@ def main():
     constants[11] = args.restart_current
     if args.recovery_rates is not None:
         constants[12:14] = args.recovery_rates
+    if args.bypass_recovery_delay is not None:
+        constants[30] = args.bypass_recovery_delay
     constants[14] = args.minimum_current
     if constants[14] >= constants[16]:
         parser.error('Minimum current must be below the first current-limit ordinate')
