@@ -123,6 +123,117 @@ public class Pss2bReferenceReplayTest {
         assertTrue(unaveragedEventError > 1e-6, "The retained events must reject unaveraged live-input history");
     }
 
+    @Test void compiledStateRatesMatchIndependentRecurrences() throws Exception {
+        IpssCorePlugin.init();
+        var refs = new Pss2bReferenceFixture(staged);
+        double wrongCoordinatePeak = 0.; int checked = 0;
+        Path replayDirectory=Files.createTempDirectory(Path.of("target"),"pss2b-downstream-replay-");
+        for (var entry : refs.matrix()) {
+            if (!entry.get("repeat").asText().equals("a")) continue;
+            Path root = refs.stage("pss2b-native-" + entry.get("tag").asText());
+            var manifest = new com.fasterxml.jackson.databind.ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+            double h = manifest.get("step_s").asDouble();
+            var icons = manifest.get("components").get("STAB").get("actual_icons");
+            var context = new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(), root.resolve("dynamic.dyr").toString());
+            var algorithm = context.getDynSimuAlgorithm(); algorithm.getAclfAlgorithm().setTolerance(1e-10);
+            assertTrue(algorithm.getAclfAlgorithm().loadflow());
+            var machine = context.getDStabilityNet().getMachine("Bus1-mach1");
+            var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
+            useCapturedCoefficients(pss, manifest); pss.configureIntegrationStep(h);
+            assertTrue(pss.initStates(machine.getDStabBus(), machine));
+            var plan = new Pss2bCompiledStage(pss);
+            var inner = block(pss, "rampFilter", FilterNthOrderBlock.class).getIntegrationBlocks();
+            var downstream = new java.util.ArrayList<com.interpss.dstab.controller.cml.field.adapt.CMLControlBlockAdapter>();
+            for(var child:List.of(pss.inputPath1,pss.inputPath2)) {
+                downstream.add(block(child,"firstWashout",WashoutControlBlock.class));
+                downstream.add(block(child,"secondWashout",WashoutControlBlock.class));
+                downstream.add(block(child,"delayBlock",DelayControlBlock.class));
+            }
+            downstream.addAll(inner);
+            for (int j=1;j<=3;j++) downstream.add(block(pss,"leadLag"+j,FilterControlBlock.class));
+            var samples = rows(root.resolve("native.csv"));
+            double[][] rates = new double[samples.size()][plan.sharedStateCount()];
+            for (int i=0;i<samples.size();i++) {
+                var row=samples.get(i); impose(machine,row);
+                pss.input1Signal=selected(icons.get(0).asInt(),machine,row,1,icons.get(1).asInt()==0?1:2,pss.vsi1max,pss.vsi1min);
+                pss.input2Signal=selected(icons.get(2).asInt(),machine,row,2,icons.get(3).asInt()==0?1:2,pss.vsi2max,pss.vsi2min);
+                injectPublishedStates(pss,row); plan.evaluateShared(rates[i],0);
+                if (i>0 && row.get("time_s").equals(samples.get(i-1).get("time_s"))) {
+                    for(int j=0;j<rates[i].length;j++) if(pss.averageStaggeredRateAtDiscontinuity(j)) rates[i][j]=.5*(rates[i-1][j]+rates[i][j]);
+                }
+            }
+            double[] maxima=new double[17]; double[] times=new double[17];
+            for(int j=0;j<downstream.size();j++) {
+                var state=downstream.get(j); int published=j<6+inner.size()?j:14+j-6-inner.size();
+                double scale=state instanceof FilterControlBlock filter?filter.getT2():1.;
+                if (state instanceof DelayControlBlock delay) {
+                    if (delay.getT()==0.) continue;
+                    scale=1./delay.getK();
+                }
+                if (state instanceof WashoutControlBlock washout && washout.getT()==0.) continue;
+                if(scale==0.) continue;
+                for(int i=2;i<samples.size();i++) {
+                    var a=samples.get(i-2);var b=samples.get(i-1);var c=samples.get(i);
+                    if(!(a.get("time_s")>=0&&a.get("time_s")<b.get("time_s")&&b.get("time_s")<c.get("time_s"))) continue;
+                    double error=Math.abs(c.get("PSS_STATE_"+published)-b.get("PSS_STATE_"+published)-h*scale*(1.5*rates[i-1][j]-.5*rates[i-2][j]));
+                    // Independent exported states are binary32. This equation-observation
+                    // envelope includes coordinate/coefficient rounding; it is not a new
+                    // allowance on any complete simulation trajectory.
+                    assertTrue(error <= 4. * Math.ulp(c.get("PSS_STATE_"+published).floatValue()) + 2e-8,
+                            root.getFileName()+" state "+published+" at "+c.get("time_s")+" residual "+error);
+                    checked++;
+                    if(state instanceof FilterControlBlock) wrongCoordinatePeak=Math.max(wrongCoordinatePeak,
+                            Math.abs(c.get("PSS_STATE_"+published)-b.get("PSS_STATE_"+published)-h*(1.5*rates[i-1][j]-.5*rates[i-2][j])));
+                    if(error>maxima[published]) {maxima[published]=error;times[published]=c.get("time_s");}
+                }
+            }
+            // The independent recurrence has passed at each captured coordinate. This
+            // complete replay measures accumulation separately; its error is diagnostic,
+            // not a substitute for the existing coupled trajectory acceptance gates.
+            // Inject only the initial coordinate and retain every event-side sample.
+            injectPublishedStates(pss,samples.getFirst());
+            double[] numerical=new double[plan.sharedStateCount()]; plan.readSharedState(numerical,0);
+            double[] live=new double[numerical.length], older=new double[numerical.length];
+            double[] replayMaxima=new double[17];
+            var observed=coordinates(pss);
+            try(var csv=org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(
+                    replayDirectory.resolve(root.getFileName()+".csv"),
+                    org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(samples.size(),34))) {
+            csv.write("time_s");
+            for(int j=0;j<17;j++)csv.write(",actual_"+j+",reference_"+j);
+            csv.newLine();
+            for(int i=0;i<samples.size();i++) {
+                var row=samples.get(i);
+                if(i>0 && row.get("time_s")>samples.get(i-1).get("time_s")) {
+                    for(int j=0;j<numerical.length;j++) numerical[j]+=h*(1.5*live[j]-.5*older[j]);
+                    System.arraycopy(live,0,older,0,live.length);
+                    plan.applySharedState(numerical,0);
+                }
+                impose(machine,row);
+                pss.input1Signal=selected(icons.get(0).asInt(),machine,row,1,icons.get(1).asInt()==0?1:2,pss.vsi1max,pss.vsi1min);
+                pss.input2Signal=selected(icons.get(2).asInt(),machine,row,2,icons.get(3).asInt()==0?1:2,pss.vsi2max,pss.vsi2min);
+                double[] next=new double[live.length];plan.evaluateShared(next,0);
+                boolean event=i>0&&row.get("time_s").equals(samples.get(i-1).get("time_s"));
+                for(int j=0;j<live.length;j++) live[j]=event&&pss.averageStaggeredRateAtDiscontinuity(j)?.5*(live[j]+next[j]):next[j];
+                if(i==0)System.arraycopy(live,0,older,0,live.length);
+                csv.write(Double.toString(row.get("time_s")));
+                for(int j=0;j<17;j++) {
+                    double actual=observed[j].getAsDouble(),expected=row.get("PSS_STATE_"+j);
+                    assertTrue(Double.isFinite(actual), "Finite complete replay observation required");
+                    replayMaxima[j]=Math.max(replayMaxima[j],Math.abs(actual-expected));
+                    csv.write(","+actual+","+expected);
+                }
+                csv.newLine();
+            }
+            }
+            System.out.println("SHARED_REPLAY "+root.getFileName()+" "+java.util.Arrays.toString(replayMaxima));
+            System.out.println("DOWNSTREAM "+root.getFileName()+" "+java.util.Arrays.toString(maxima)+" times="+java.util.Arrays.toString(times));
+        }
+        System.out.println("DOWNSTREAM_REPLAY_DIRECTORY "+replayDirectory);
+        assertTrue(checked>1000,"Require complete downstream recurrence coverage");
+        assertTrue(wrongCoordinatePeak>1e-5,"The captures must reject unscaled numerical filter coordinates");
+    }
+
     static void reconstructPublishedOutput(Path root) throws Exception {
         reconstructPublishedOutput(root, false);
     }
@@ -171,6 +282,12 @@ public class Pss2bReferenceReplayTest {
                 expected = bypassedOutput(pss, row);
             }
             double algebraicOutput = pss.getInstantaneousOutput(machine);
+            if (pss.n == 0) {
+                var observations = coordinates(pss);
+                for (int coordinate = 14; coordinate < 17; coordinate++)
+                    assertEquals(row.get("PSS_STATE_" + coordinate), observations[coordinate].getAsDouble(), 1.5e-5,
+                            "Bypassed lead-lag publishes its algebraic output, not zero integration storage");
+            }
             if (previous != null && row.get("time_s").equals(previous.get("time_s")) && pss.n != 0) {
                 // A zero-duration network refresh can update bypassed coordinates while
                 // the sampled output still represents the preceding accepted evaluation.
@@ -408,7 +525,7 @@ public class Pss2bReferenceReplayTest {
         }
         for (int i = 0; i < 3; i++) {
             var state = block(pss, "leadLag" + (i + 1), FilterControlBlock.class);
-            result[14 + i] = () -> state.getT2() * state.getStateX();
+            result[14 + i] = () -> state.getT2() == 0. ? state.getY() : state.getT2() * state.getStateX();
         }
         return result;
     }

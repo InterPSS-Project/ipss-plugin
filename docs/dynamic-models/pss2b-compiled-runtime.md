@@ -502,3 +502,43 @@ only where the three accepted timestamps increase.
 This extends selector equation coverage, not full controller-state trajectory
 qualification. Downstream ramp and lead-lag trajectories, limiter combinations
 and complete sampled-output lifecycle comparisons remain required.
+
+
+## Complete captured-state recurrence and isolated replay
+
+The independent recurrence check now covers every active captured input
+conditioner, ramp-filter section and lead-lag coordinate. It injects recorded
+states and boundary inputs, evaluates the production compiled derivative kernels,
+and reconstructs the accepted two-step update with the existing per-coordinate
+event history. Physical coordinate scales are applied only when observing the
+numerical rates. All retained selector, remote-input, limiter, bypass and
+multi-section profiles pass the same rounding-aware equation-observation bound
+used for the first washouts. A negative control requires unscaled filter rates
+to fail. The largest retained increment residual is below 0.00000016 pu.
+This extends equation coverage for the captured configurations; it does not
+qualify uncaptured ramp orders or complete coupled trajectories.
+
+A separate complete replay injects the initial recorded coordinates once and
+then advances shared numerical storage from the recorded inputs. Every timestamp
+and event-side duplicate is retained. The largest physical-coordinate difference
+is 0.00002859 pu; the worst fine-step difference is larger than its coarse-step
+counterpart. Together with the increment checks, this rules out the previously
+suspected large downstream equation or coordinate-scale mismatch for these
+captures. Cumulative differences remain diagnostic; the experiment neither
+changes production precision nor establishes a new full-trajectory tolerance.
+The existing modified-Euler replay/refinement controls remain separate.
+
+The reference comparison helper previously displayed zero for a bypassed
+lead-lag because it multiplied integration storage by a zero denominator time.
+The independent output reconstruction shows that the published coordinate is
+instead the current algebraic block output. Correcting that observation removes
+an apparent 0.7482 pu discrepancy in the fully bypassed profile; the complete
+shared replay difference is approximately 0.00000511 pu. A negative control with
+the old observation fails against the immutable reference. No controller
+state, derivative, integration method or physical output was changed.
+
+The full focused matrix still has the existing quarter-cycle modified-Euler
+long-run angle failure. Fine-step shared-state replay and equation recurrence
+acceptance do not close that coupled failure or complete model qualification.
+Full replay samples, independent archive identity, negative-control reports and
+validation logs are retained in private evidence.
