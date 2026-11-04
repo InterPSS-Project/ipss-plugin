@@ -27,3 +27,16 @@ errors or skips. These checks cover the combined scoped fixes and their adjacent
 contracts. They do not close the independent full-suite failures above.
 Their logs, XML reports and source identity are retained in the private
 `verification-artifacts/parallel-model-integration-20261104` evidence directory.
+
+The subsequent complete three-phase reactor test run at `a7b571884` passed:
+
+| Module | Tests | Failures/errors | Skipped |
+| --- | ---: | ---: | ---: |
+| Plugin core | 494 | 0 | 4 |
+| Three-phase plugin | 468 | 0 | 28 |
+
+The skips comprise optional native-solver availability checks and opt-in export
+or diagnostic cases. They are not counted as executed successes. This confirms
+adjacent plugin compatibility, not completion of the failed registered dynamic
+model reference gates. Complete reports and the bounded log are retained in
+`verification-artifacts/parallel-plugin-compatibility-20261104`.
