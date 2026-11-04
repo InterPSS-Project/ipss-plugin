@@ -45,7 +45,7 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         c[Chvdc2Parameters.Constant.T_CF_SEC.ordinal()]=.000001;
         var params=new Chvdc2Parameters(f.binding().owner().getName(),Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,1},c);
         var binding=Chvdc2NetworkPreparation.prepare(f.network().context().getDStabilityNet(),params,.0005,0);
-        var ports=new Chvdc2TerminalPorts(binding);ports.attach();return new Fixture(f.network(),binding,ports);
+        var ports=new Chvdc2TerminalPorts(binding,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,1);ports.attach();return new Fixture(f.network(),binding,ports);
     }
     private static void initializePorts(Fixture f) {
         var p=f.ports();assertTrue(p.rectifierPort().initStates(p.rectifierPort().getDStabBus()));
@@ -67,6 +67,11 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         while(a.getSimuTime()<.1-.00025){assertTrue(a.solveDEqnStep(true));worst=Math.max(worst,Math.max(Math.abs(n.getBus("Bus7").getVoltageMag()-vr),Math.abs(n.getBus("Bus9").getVoltageMag()-vi)));}
         f.binding().runtime().readStaggeredState(end,0);assertArrayEquals(initial,end,1e-4);assertTrue(worst<1e-7,"No-event voltage drift "+worst);
     }
+    @Test void defaultAttachmentSelectsLocalIntegration()throws Exception {
+        var f=fixture(true);var defaults=new Chvdc2TerminalPorts(f.binding());
+        assertEquals(10,defaults.rectifierPort().staggeredLocalStepCount());
+        assertEquals(1,defaults.inverterPort().staggeredLocalStepCount());
+    }
     @Test void outputObservationIsPureAndFailedNetworkRestoresItsWorkingHistory()throws Exception {
         var f=fixture(true);initializePorts(f);var p=f.ports().rectifierPort();var m=f.binding().runtime();
         Object output=p.getOutputObject();var states=m.getIntegrationStates();var histories=m.getIntegrationHistories();
@@ -82,6 +87,21 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         var a=f.network().context().getDynSimuAlgorithm();
         a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.05);
         a.setSimuOutputHandler(new StateMonitor());a.setSolver(new StaggeredEulerSolver(a));
+        assertTrue(a.initialization());a.setSimuTime(-.001);
+        double[] initial=new double[16],end=new double[16];f.binding().runtime().readStaggeredState(initial,0);
+        float clock=-.001f;
+        for(int k=0;k<100;k++) {
+            assertTrue(a.solveDEqnStep(true));clock+=.0005f;
+            assertEquals((double)clock,f.binding().runtime().getIntegrationHistories().get("Accepted time (s)"),1e-12);
+        }
+        f.binding().runtime().readStaggeredState(end,0);assertArrayEquals(initial,end,1e-4);
+    }
+    @ParameterizedTest @ValueSource(ints={2,4,10})
+    void localModifiedEulerNetworkKeepsOneOuterClockAndFlatOperatingPoint(int localSteps)throws Exception {
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,-.001,localSteps);
+        var a=f.network().context().getDynSimuAlgorithm();
+        a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.05);
+        a.setSimuOutputHandler(new StateMonitor());a.setSolver(new DefaultDynamicSimulationSolver(a));
         assertTrue(a.initialization());a.setSimuTime(-.001);
         double[] initial=new double[16],end=new double[16];f.binding().runtime().readStaggeredState(initial,0);
         float clock=-.001f;
@@ -117,7 +137,9 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         assertTrue(p.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));
         assertTrue(p.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,1));
         assertEquals(states,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
-        assertThrows(IllegalStateException.class,()->p.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(p.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0));
+        p.beginNetworkSolution(context("PREDICTOR",H));p.endNetworkSolution(false);
+        assertEquals(states,m.getIntegrationStates());assertEquals(history,m.getIntegrationHistories());
     }
     @ParameterizedTest @ValueSource(ints={4,10})
     void warmedLocalNumericalAndRollbackCallbacksAllocateNoObjects(int localSteps)throws Exception {

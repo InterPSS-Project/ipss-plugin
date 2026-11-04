@@ -169,6 +169,13 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         assertEquals(digest,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source))));
         compare(source,tag,true,tag.contains("cfhold"),Chvdc2TerminalPorts.ProtectionClock.BINARY32,localSteps);
     }
+    @ParameterizedTest @MethodSource("localProfiles")
+    void localModifiedEulerNetworkRefinement(String archive,String digest,String tag,int localSteps)throws Exception {
+        Path source=Path.of("testData/private/verification-artifacts").resolve(archive);
+        Assumptions.assumeTrue(Files.isRegularFile(source),"Retain independent local-integration controls");
+        assertEquals(digest,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source))));
+        compare(source,tag,false,tag.contains("cfhold"),Chvdc2TerminalPorts.ProtectionClock.BINARY32,localSteps);
+    }
     @Test void fastAlgebraicLineModifiedEulerNetworkControl()throws Exception {
         Path source=Path.of("testData/private/verification-artifacts/chvdc2-measurements-20261102/captures.zip");
         Assumptions.assumeTrue(Files.isRegularFile(source),"Retain independent fast-line control");

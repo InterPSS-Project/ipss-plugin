@@ -175,6 +175,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CHVDC2U1
 
+- Retain [default local integration for both methods](dynamic-models/chvdc2-named-link.md#default-local-integration-for-both-methods): ten configurable local steps, shared numerical storage and outer protection/clock ownership. Finish independent trajectory qualification; modified-Euler local refinement completes all fault runs but does not pass the strict reference gates.
+
 - Resolve the [fast algebraic-line numerical sensitivity](dynamic-models/chvdc2-named-link.md#fast-algebraic-line-numerical-sensitivity): one staggered local step amplifies tiny boundary differences before the fault; two or more suppress this sensitivity but do not pass the independent reference gates. Preserve explicit failures and both-method qualification requirements.
 
 - Retain [outer-current sampling for the converter drop supplied to dynamic-line integration](dynamic-models/chvdc2-named-link.md#converter-current-sampling-for-dynamic-line-integration), shared by both numerical methods. Keep live terminal observations/injections, distinct capacitor-terminal samples, current-dependent line resistance and rollback. Independent coarse controls separate this from live commutation-current feedback; complete coupled accuracy, modified-Euler reference gates and multirate network coupling remain open. Preserve nonuniform refinement outcomes and the unchanged strict gates.

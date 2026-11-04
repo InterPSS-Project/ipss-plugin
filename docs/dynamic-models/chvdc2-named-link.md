@@ -1,12 +1,61 @@
 # CHVDC2 named-link preparation and shared components
 
+## Default local integration for both methods
+
+`Chvdc2TerminalPorts(binding)` and its clock-selecting overload now use ten local
+steps per outer network interval. The explicit three-argument constructor accepts
+counts from one through 128; one is retained for diagnostic controls. This is a
+CHVDC2 policy, not a change to other devices or the network interval. Ten is an
+operational default, not a claim that the strict reference gates now pass.
+
+Both methods share the same prepared runtime, state arrays, limits and sampled
+outer inputs. Staggered integration retains its existing local recurrence.
+Modified Euler now predicts a complete local trajectory with the left boundary
+inputs held, solves the outer predictor network, then replays the numerical
+states from the left endpoint with linearly interpolated trial-endpoint inputs
+and local predictor/corrector pairs. This interpolates integration inputs; it
+never interpolates or realigns reference recordings. The outer protection preview
+remains provisional, the protection clock advances once per network interval,
+and the corrected network endpoint alone commits the model transaction.
+
+Local steps do not change prepared coefficients, commutation-current samples or
+network solution times. The corrector reuses two additional checkpoints and a
+six-element input buffer allocated at construction. Warmed numerical/rollback
+loops allocate zero bytes for both dynamic and algebraic lines. Terminal current
+publication retains its existing immutable complex-object allocations.
+
+The new runtime checks compare the corrected local trajectory with an explicit
+manual local-step calculation using the same changing boundary inputs. Separate
+checks cover cancellation, transaction rollback, stage diagnostics, one owner,
+flat complete-network operation and outer clock ownership at two, four and ten
+local steps. All 66 runtime/terminal checks pass.
+
+Independent modified-Euler SMIB fault sweeps retain all samples and event-side
+duplicates. All twelve runs complete, but all twelve strict reference gates fail.
+Selected peak current errors at the `0.5 ms` outer interval are:
+
+| Profile | Two local steps | Four local steps | Ten local steps |
+| --- | ---: | ---: | ---: |
+| Nominal dynamic line | 0.282348 A | 0.282347 A | 0.282347 A |
+| Protected short, matched clock | 5.934159 A | 5.945106 A | 5.948029 A |
+| Fast algebraic line | 0.966355 A | 0.895765 A | 0.889659 A |
+
+The local-step limit does not eliminate the remaining model/network-boundary
+mismatch. No gate is relaxed. The targeted CHVDC2/shared-solver regression run
+contains 405 checks, 149 failures and two errors, with no skips. All 385 preceding
+check identities retain their status; eight added lifecycle checks pass and the
+twelve added reference gates remain failures. This is not a new full-repository
+validation. Private sources, executable snapshots, reports and complete traces
+are retained in `chvdc2-local-euler-20261104/validation.zip`.
+
 ## Explicit terminal attachment in progress
 
 `Chvdc2TerminalPorts` connects a prepared runtime to a pair of dynamic buses.
 The rectifier port owns the shared numerical states; the inverter port publishes
 only its terminal injection. The staggered solver recognizes this explicit
 participant. The default solver uses its modified-Euler stages. Automatic
-source import and production local-substep ownership are still unfinished.
+source import and complete reference-trajectory qualification remain unfinished.
+Local integration is available for both methods as described below.
 
 The pair calculates both currents once per network iteration and retains the
 last converged currents for output access. Accepting a fresh electrical-angle

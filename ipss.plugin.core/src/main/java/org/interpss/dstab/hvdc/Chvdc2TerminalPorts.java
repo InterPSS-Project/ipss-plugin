@@ -28,6 +28,7 @@ public final class Chvdc2TerminalPorts {
      * round states, change integration weights or move scheduled network events. */
     public enum ProtectionClock { CALLER_TIME, BINARY32 }
     private final ProtectionClock protectionClock;
+    public static final int DEFAULT_LOCAL_STEPS=10;
     private final int staggeredLocalSteps;
     private boolean localIntegration;
     private double acceptedProtectionTime,trialProtectionTime;
@@ -50,10 +51,10 @@ public final class Chvdc2TerminalPorts {
         this(binding,ProtectionClock.CALLER_TIME);
     }
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding,ProtectionClock protectionClock) {
-        this(binding,protectionClock,1);
+        this(binding,protectionClock,DEFAULT_LOCAL_STEPS);
     }
-    /** Explicit staggered local refinement. The ordinary modified-Euler path
-     * uses count one; this option does not change coefficients or network timing. */
+    /** Explicit local refinement for both integration methods. Count one remains
+     * available for diagnostics; coefficients and network timing are unchanged. */
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding,ProtectionClock protectionClock,int staggeredLocalSteps) {
         if(staggeredLocalSteps<1||staggeredLocalSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
         this.staggeredLocalSteps=staggeredLocalSteps;
@@ -219,14 +220,13 @@ public final class Chvdc2TerminalPorts {
             if(method!=DynamicSimuMethod.MODIFIED_EULER||stage<0||stage>1||!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds())
                 throw new IllegalArgumentException("Matching modified-Euler stages within the prepared outer interval required");
             if(h==0)return true;
-            if(staggeredLocalSteps!=1)throw new IllegalStateException("Local refinement requires the staggered solver");
             if(stage==0&&(integrationPending||networkTrial)||stage==1&&(!integrationPending||sharedIntegration||!predictorConverged||h!=interval))
                 throw new IllegalStateException("Matching predictor/network/corrector lifecycle required");
             if(stage==0){beginTransaction();integrationPending=true;interval=h;}
             try{
                 if(stage==0)advanceProtectionClock(h);
                 bind();if(stage==0)runtime.beginIntegrationInterval(h);
-                runtime.step(h,stage);
+                runtime.step(h,stage,staggeredLocalSteps);
                 if(stage==1)runtime.completeIntegrationInterval();
                 return true;
             }catch(RuntimeException failure){rollback();throw failure;}

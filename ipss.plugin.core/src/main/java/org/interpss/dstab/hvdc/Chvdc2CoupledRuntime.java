@@ -21,7 +21,10 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private final double[] inputs=new double[6],boundary=new double[BOUNDARY_SIZE],accepted=new double[BOUNDARY_SIZE],
             rectifierValues=new double[4],inverterValues=new double[3],injections=new double[4],
             state,rate,firstRate,candidate,leftRate,acceptedState,acceptedInputs=new double[6];
-    private final Checkpoint prediction,transaction,write;
+    private final Checkpoint prediction,transaction,write,localStart,localEnd;
+    private final double[] localRightInputs=new double[6];
+    private int pendingLocalSteps=1;
+    private boolean localKernel;
     private IntegrationStateMonitor monitor;
     private String[] names;
     private boolean inputReady,initialized,pending,inTransaction,acceptedReady,intervalActive,sharedPending;
@@ -52,6 +55,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         conductingResistance=shortedResistance+inverter.commutatingResistanceOhms();finite(conductingResistance);
         count=15+line.staggeredStateCount();state=new double[count];rate=new double[count];firstRate=new double[count];candidate=new double[count];leftRate=new double[count];acceptedState=new double[count];
         prediction=new Checkpoint(count);transaction=new Checkpoint(count);write=new Checkpoint(count);
+        localStart=new Checkpoint(count);localEnd=new Checkpoint(count);
     }
     /** Phasors are on the AC network base; reference and common auxiliary are in amperes. */
     public void setBoundary(double vrReal,double vrImag,double viReal,double viImag,double referenceAmperes,double auxiliaryAmperes) {
@@ -241,6 +245,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         catch(RuntimeException failure){restore(write);throw failure;}
     }
     public void step(double seconds,int stage) {
+        if(!localKernel&&pending&&pendingLocalSteps!=1)throw new IllegalStateException("Complete the matching local predictor");
         ready();noSharedProposal();interval(seconds);if(stage!=0&&stage!=1)throw new IllegalArgumentException("Predictor or corrector required");if(seconds==0)return;
         if(stage==0&&pending||stage==1&&(!pending||seconds!=pendingStep))throw new IllegalStateException("Matching coupled integration stages required");
         verifyAdvance(seconds);
@@ -252,10 +257,46 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         if(stage==1&&intervalActive)intervalAdvanced+=seconds;
         pendingStep=seconds;pending=stage==0;
     }
-    public void cancelPrediction(){ready();if(pending){restore(prediction);pending=false;}}
+    /** Local modified-Euler integration inside an already opened outer interval.
+     * The outer predictor holds the accepted inputs. The outer corrector replays
+     * from the left numerical state with linearly interpolated trial-endpoint
+     * inputs. Protection history remains owned by the outer network transaction.
+     * Coefficients and interval samples are never prepared at the local step. */
+    public void step(double seconds,int stage,int localSteps) {
+        if(localSteps<1||localSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
+        if(localSteps==1){step(seconds,stage);return;}
+        ready();noSharedProposal();interval(seconds);
+        if(stage<0||stage>1)throw new IllegalArgumentException("Predictor or corrector required");
+        if(seconds==0)return;
+        if(!intervalActive||seconds!=intervalSeconds||stage==0&&(pending||intervalAdvanced!=0)
+                ||stage==1&&(!pending||pendingLocalSteps!=localSteps||pendingStep!=seconds))
+            throw new IllegalStateException("Matching local stages require one complete prepared outer interval");
+        if(stage==0)save(localStart);
+        else System.arraycopy(inputs,0,localRightInputs,0,inputs.length);
+        pending=false;localKernel=true;
+        try {
+            if(stage==1){intervalAdvanced=0;localInputs(stage,0);apply(localStart.states,0,0,false,0,0);}
+            double h=seconds/localSteps;
+            for(int k=0;k<localSteps;k++) {
+                localInputs(stage,k/(double)localSteps);step(h,0);
+                localInputs(stage,(k+1)/(double)localSteps);step(h,1);
+            }
+            if(stage==0) {
+                save(localEnd);restore(localStart);save(prediction);restore(localEnd);
+                pending=true;pendingStep=seconds;pendingLocalSteps=localSteps;
+            } else {System.arraycopy(localRightInputs,0,inputs,0,inputs.length);pendingLocalSteps=1;}
+            read(state);rates();record(stage==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
+        } catch(RuntimeException failure) {restore(localStart);pending=false;pendingLocalSteps=1;throw failure;}
+        finally {localKernel=false;}
+    }
+    private void localInputs(int stage,double fraction) {
+        for(int k=0;k<inputs.length;k++)inputs[k]=stage==0?localStart.inputs[k]:
+                localStart.inputs[k]+fraction*(localRightInputs[k]-localStart.inputs[k]);
+    }
+    public void cancelPrediction(){ready();if(pending){restore(pendingLocalSteps==1?prediction:localStart);pending=false;pendingLocalSteps=1;}}
     public void beginTransaction(){ready();exclusive();if(inTransaction)throw new IllegalStateException("Coupled transaction already open");save(transaction);inTransaction=true;}
     public void commitTransaction(){ready();exclusive();noSharedProposal();if(!inTransaction||intervalActive)throw new IllegalStateException("A complete coupled transaction is required");inTransaction=false;}
-    public void rollbackTransaction(){ready();if(!inTransaction)throw new IllegalStateException("No coupled transaction");restore(transaction);pending=false;inTransaction=false;}
+    public void rollbackTransaction(){ready();if(!inTransaction)throw new IllegalStateException("No coupled transaction");restore(transaction);pending=false;pendingLocalSteps=1;inTransaction=false;}
     private void save(Checkpoint c) {
         controls.saveOwnerCheckpoint(c.controls);read(c.states);System.arraycopy(inputs,0,c.inputs,0,6);System.arraycopy(accepted,0,c.accepted,0,BOUNDARY_SIZE);
         System.arraycopy(leftRate,0,c.left,0,count);c.gamma=Math.toRadians(controls.acceptedInverterExtinctionDegrees());c.revision=revision;c.acceptedReady=acceptedReady;

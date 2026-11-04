@@ -23,6 +23,30 @@ public class Chvdc2CoupledRuntimeTest {
         m.setBoundary(1.03,0,1.03,0,1050,0);m.initialize(vr,vi,0);return new Rig(m,r,i,line,vr,vi);
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
+    void localModifiedEulerReplaysEndpointInputsAndRestoresOuterSamples(boolean dynamic) {
+        for(int steps:new int[]{2,4,10}) {
+            var m=rig(dynamic,0).model();var manual=rig(dynamic,0).model();int count=m.staggeredStateCount();
+            double H=.0001,h=H/steps;double[] initial=new double[count],actual=new double[count],expected=new double[count];
+            m.readStaggeredState(initial,0);m.beginTransaction();m.beginIntegrationInterval(H);
+            m.step(H,0,steps);
+            assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR,m.getStateDerivativeSnapshot().stage());
+            assertThrows(IllegalStateException.class,()->m.step(H,1));
+            m.setBoundary(1.029,0,1.031,0,1051,0);m.step(H,1,steps);m.completeIntegrationInterval();
+            manual.beginIntegrationInterval(H);
+            for(int k=0;k<steps;k++) {
+                double a=k/(double)steps,b=(k+1)/(double)steps;
+                manual.setBoundary(1.03+a*(1.029-1.03),0,1.03+a*(1.031-1.03),0,1050+a,0);manual.step(h,0);
+                manual.setBoundary(1.03+b*(1.029-1.03),0,1.03+b*(1.031-1.03),0,1050+b,0);manual.step(h,1);
+            }
+            manual.completeIntegrationInterval();m.readStaggeredState(actual,0);manual.readStaggeredState(expected,0);
+            assertArrayEquals(expected,actual,1e-10,"Local corrector follows the same equations and endpoint input interpolation");
+            m.rollbackTransaction();m.readStaggeredState(actual,0);assertArrayEquals(initial,actual);
+            m.beginIntegrationInterval(H);m.step(H,0,steps);m.cancelPrediction();
+            m.step(H,0,steps);m.step(H,1,steps);m.completeIntegrationInterval();
+            m.readStaggeredState(actual,0);assertArrayEquals(initial,actual,1e-9,"Cancellation preserves flat equilibrium");
+        }
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
     void solvedInitialElectricalBoundaryIsConsistentAndFlat(boolean dynamic) {
         var r=rig(dynamic,0);var m=r.model();double[] b=new double[10],f=new double[m.staggeredStateCount()],inj=new double[4];m.readBoundary(b,0);
         assertEquals(r.vr(),b[0],1e-8);assertEquals(r.vi(),b[1],1e-8);assertEquals(1050,b[2],1e-8);assertEquals(1050,b[3],1e-8);
@@ -282,6 +306,19 @@ public class Chvdc2CoupledRuntimeTest {
     @ParameterizedTest @ValueSource(booleans={false,true})
     void warmedAlgebraicLineSamplingAllocatesNoObjects(boolean staggered) {
         checkAllocation(staggered,false);
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void warmedLocalModifiedEulerStagesAllocateNoObjects(boolean dynamic) {
+        var bean=ManagementFactory.getThreadMXBean();Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);
+        var memory=(com.sun.management.ThreadMXBean)bean;Assumptions.assumeTrue(memory.isThreadAllocatedMemorySupported());
+        memory.setThreadAllocatedMemoryEnabled(true);long thread=Thread.currentThread().threadId();var m=rig(dynamic,0).model();
+        for(int k=0;k<5;k++)localEulerBatch(m,5000);
+        long before=memory.getThreadAllocatedBytes(thread);localEulerBatch(m,5000);
+        assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
+    }
+    private static void localEulerBatch(Chvdc2CoupledRuntime m,int count) {
+        for(int k=0;k<count;k++) {m.beginTransaction();m.beginIntegrationInterval(.0001);
+            m.step(.0001,0,10);m.step(.0001,1,10);m.completeIntegrationInterval();m.rollbackTransaction();}
     }
     private static void checkAllocation(boolean staggered,boolean dynamic) {
         var bean=ManagementFactory.getThreadMXBean();Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);var memory=(com.sun.management.ThreadMXBean)bean;
