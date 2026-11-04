@@ -32,7 +32,8 @@ Archive SHA-256:
 
 ## Network convergence diagnostic
 
-An explicit test-only option, `ipss.smoke.certifiedNetworkAcceleration=true`,
+An explicit fixture-only option, `ipss.smoke.certifiedNetworkAcceleration=true`,
+in the smoke test's `test-config/ipss.test.plugin.core.json` section
 installs the existing bounded-acceleration solver in the imported-system smoke
 fixture. The option is off by default. Each accepted network call is checked
 against its original unmixed voltage correction, 1e-4 pu tolerance and

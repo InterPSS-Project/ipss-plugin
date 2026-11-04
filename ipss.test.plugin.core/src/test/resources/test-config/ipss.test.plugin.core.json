@@ -168,7 +168,11 @@
     "beforeArchive": "testData/private/verification-artifacts/wsieg1-shared-state-20261031/before-validation.zip",
     "beforeArchiveSha256": "d96d02d6d70a3ba34e5cfe00bc2fd31659b67bbbbc35c89d735eccb801bc0c6a"
   },
+  "LccResistanceReferenceTest": {
+    "lcc.audit.output": null
+  },
   "Texas2kSixCaseDynamicSmokeTest": {
+    "ipss.smoke.certifiedNetworkAcceleration": false,
     "texas2k.case.root": null
   },
   "Texas2kSynchronousMachineCoverageTest": {

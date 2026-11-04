@@ -313,7 +313,7 @@ public class Texas2kSixCaseDynamicSmokeTest {
 
     private static void configureSimulation(DynamicSimuAlgorithm algorithm, double endTime) {
         // Explicit diagnostic only: keep the registered default-path gate intact.
-        if (Boolean.getBoolean("ipss.smoke.certifiedNetworkAcceleration")) {
+        if (CONFIG.bool("ipss.smoke.certifiedNetworkAcceleration")) {
             algorithm.setSolver(new CertifiedWeakGridSolver(algorithm));
         }
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

@@ -19,6 +19,8 @@ import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 /** Independent finite-resistance DC boundary and AC power qualification. */
 @Tag("extended")
 public class LccResistanceReferenceTest extends CorePluginTestSetup {
+    private static final org.interpss.test.TestConfig CONFIG=org.interpss.test.TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json","LccResistanceReferenceTest");
     private static final Path ARCHIVE=Path.of("testData/private/lcc-resistance-20261104/reference.zip");
     private static final String PREFIX="lcc-resistance-reference-20261104/";
     @TempDir Path temporary;
@@ -47,7 +49,7 @@ public class LccResistanceReferenceTest extends CorePluginTestSetup {
             algorithm.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
             assertTrue(algorithm.loadflow());
             var line=(HvdcLine2TLCC<?>)network.getSpecialBranchList().get(0);
-            String audit=System.getProperty("lcc.audit.output");
+            String audit=CONFIG.string("lcc.audit.output");
             var data=new java.util.LinkedHashMap<String,double[]>();
             for(var c:java.util.List.of(line.getRectifier(),line.getInverter()))
                 data.put(c.getBus().getId(),new double[]{c.getIdc(),c.getDcVoltage(),c.getXformerTapSetting(),c.getFiringAng(),c.powerIntoConverter().getReal(),c.powerIntoConverter().getImaginary()});
