@@ -199,3 +199,66 @@ rule. Earlier conditional-network probes already exercise forced-state iteration
 budgets, so repeating those or equivalent step-size refinements would not supply
 the missing evidence. Any next production change needs a source-defined lifecycle
 discriminator rather than a fitted iteration count or threshold.
+
+### Acceleration-0.4 weighting discriminator
+
+The retained clean acceleration-0.4 cold pair has now been exercised. Its complete
+2,005-row capture remains repeat-identical, with 97 active correction samples.
+Both the 0.4 and 0.8 reference profiles satisfy the same published-current equation
+within the unchanged 1e-7 pu ceiling. Reconstructing the recorded single-precision
+multiply/add recurrence gives saved voltage within 5e-12 pu (CSV decimal rounding)
+for every row in both profiles. This is a reference storage identity, not a change
+to production precision. Independent analytic tests exercise both weights under
+both production integration schemes, keeping double arithmetic and distinguishing
+voltage weighting from the separate correction gain.
+
+The complete coupled simulations were attempted under the unchanged 50-iteration
+ceiling and 1e-4 pu voltage-change tolerance. Both fail network convergence:
+
+| Method | Failed stage / step start | Iterations | Final voltage change |
+|---|---|---:|---:|
+| Modified Euler | Predictor / 0.1035 s | 50 | 0.000119079 pu |
+| Staggered | Direct / 0.1045 s | 50 | 0.000106077 pu |
+
+No complete Java trajectory is available for this weighting profile, so no full-run
+error or acceptance is claimed. The earlier accuracy limits and failures remain.
+Failed diagnostic runs are preserved separately from the 23 passing equation,
+lifecycle and previously qualified coupled tests across five public classes.
+
+Complete iteration traces for each failing solve show a slowly contracting coupled
+voltage/correction update. Saved voltage is about 1.2083 pu. Although terminal voltage
+has fallen to about 1.1894 pu, the decelerated voltage is still 1.20075--1.20084 pu,
+so the positive correction increment remains active. Successive voltage changes
+contract by 0.94354--0.94378 over the final ten iterations. The final physical current
+residual is 0.00119079 pu for modified Euler and 0.00106077 pu for staggered.
+
+For this zero-active-power, purely reactive synthetic network, the actual linear
+solve reduces to
+
+`Vnext = (Iq_source + 10*V + 1/0.21) / (10 + 1/0.21)`.
+
+The 10 pu term is the converter's existing compensation admittance; the 0.21 pu
+path comprises both 0.1 pu branches and the source's 0.01 pu reactance. This reduced
+solve reproduces every recorded iteration of the failing solves within 4e-13 pu.
+Together with `D = (1-a)*Vs + a*V`,
+`Cnext = C + Khv*max(D-Volim,0)` and `Iq_source = Iq_state-Cnext/D`, the local
+voltage/correction Jacobian has a dominant eigenvalue of approximately 0.9434,
+consistent with the measured contraction. No fitted gain or stopping threshold is
+used in this calculation.
+
+Thus the failure is not explained by an inaccurate sparse solve or an incorrect
+accepted-voltage recurrence. The slow component is the mutable correction inside
+the iteration. Applying generic voltage-only mixing would change the sequence of
+correction increments. A justified solver improvement needs an explicit transactional
+iteration-state contract for both voltage and correction, with admissible limits,
+rollback and a certified residual. It must also establish whether accelerating that
+coupled numerical process preserves the model's intended finite-stop output, rather
+than merely reaching a different member of its possible retained-correction states.
+The reference's internal iteration inputs and stopping decisions remain unobserved;
+endpoint records cannot establish those semantics. No speculative mixing, changed
+correction gain, larger iteration ceiling or new default is introduced here.
+
+The complete failing traces, diagnostic source, contraction summary and passing
+contract-test log are pinned in private `regca-hv-half-contraction-20261104`, manifest
+SHA-256 `74b1d85ac705519963e3ec43289c04439cd25aef63830ca9cd2683d987201cfc`.
+Earlier failed executions remain in `regca-hv-half-weighting-20261104`.

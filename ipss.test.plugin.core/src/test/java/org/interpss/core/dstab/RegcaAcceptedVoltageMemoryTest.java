@@ -90,6 +90,23 @@ public class RegcaAcceptedVoltageMemoryTest {
             model.setNetworkIterationHighVoltageEnabled(false);
         }
     }
+    @Test void acceptedWeightingAndActiveCorrectionStayDistinctForBothMethods() {
+        for(var scheme:Regca1Model.IntegrationScheme.values())for(double acceleration:new double[]{.4,.8}) {
+            var f=fixture(scheme,acceleration);var model=f.model();model.prepareIntegrationStep(.1,.01);
+            f.bus().setVoltage(new Complex(1.6));solve(model,"INITIAL",.1,true);model.acceptNetworkEventInput(.1);
+            assertEquals(1.,model.getAcceptedVoltageMemoryState().savedVoltage(),0.);
+            model.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0);
+            double saved=(1.-acceleration)+acceleration*1.6;
+            f.bus().setVoltage(new Complex(1.5));solve(model,"CORRECTOR",.1,false);
+            double decelerated=(1.-acceleration)*saved+acceleration*1.5;
+            assertEquals(saved,model.getNetworkHighVoltageState().savedVoltage(),1.e-15);
+            assertEquals(decelerated,model.getNetworkHighVoltageState().deceleratedVoltage(),1.e-15);
+            assertEquals(2.*.7*(decelerated-1.2),model.getNetworkHighVoltageState().correction(),1.e-15,
+                    "Correction gain stays Khv; voltage-memory acceleration is a separate parameter");
+            model.afterStep(.01);assertEquals(saved,model.getAcceptedVoltageMemoryState().savedVoltage(),1.e-15);
+            assertEquals(1.5,model.getAcceptedVoltageMemoryState().terminalVoltage(),0.);
+        }
+    }
     @Test void rejectedNetworkTrialLeavesCommitUntouchedAndCanBeRetried() {
         for(var scheme:Regca1Model.IntegrationScheme.values()) {
             var f=fixture(scheme);var model=f.model();model.prepareIntegrationStep(-.01,.01);
@@ -171,11 +188,12 @@ public class RegcaAcceptedVoltageMemoryTest {
         model.afterNetworkConvergence();model.endNetworkSolution(true);
     }
     private record Fixture(DStabBus bus,Regca1Model model) { }
-    private static Fixture fixture(Regca1Model.IntegrationScheme scheme) {
+    private static Fixture fixture(Regca1Model.IntegrationScheme scheme) {return fixture(scheme,.8);}
+    private static Fixture fixture(Regca1Model.IntegrationScheme scheme,double acceleration) {
         var network=DStabObjectFactory.createDStabilityNetwork();network.setBaseKva(100000);
         var bus=(DStabBus)DStabObjectFactory.createDStabBus("B",network).orElseThrow();bus.setVoltage(Complex.ONE);
         var gen=DStabObjectFactory.createDStabGen("1");gen.setGen(new Complex(.2,.1));gen.setMvaBase(100.);gen.setStatus(true);gen.setPosGenZ(Complex.ZERO);bus.getContributeGenList().add(gen);
-        var model=new Regca1Model(gen,bus,"1",new Regca1Data(0,.02,10.,.9,.4,1.2,1.2,.8,.4,-1.3,.02,.7,999.,-999.,.8));
+        var model=new Regca1Model(gen,bus,"1",new Regca1Data(0,.02,10.,.9,.4,1.2,1.2,.8,.4,-1.3,.02,.7,999.,-999.,acceleration));
         model.setStatus(true);model.setActiveElectricalController(new ConverterCurrentCommands());
         model.setIntegrationScheme(scheme);model.setNetworkIterationHighVoltageEnabled(true);
         model.setNetworkVoltageMemoryPolicy(Regca1Model.NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY);
