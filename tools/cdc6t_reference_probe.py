@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--protection', choices=['default', 'rectifier-block', 'delayed-rectifier-block', 'inverter-block', 'dc-bypass', 'ac-bypass', 'coordinated'], default='default')
     parser.add_argument('--inspect-at', type=float, action='append', default=[])
     parser.add_argument('--step', type=float, default=.0005)
+    parser.add_argument('--network-tolerance', type=float, default=1e-6)
     parser.add_argument('--duration', type=float, default=.5)
     parser.add_argument('--machine-diagnostics', action='store_true')
     parser.add_argument('--source-governor', choices=['none', 'tgov1'], default='none')
@@ -48,6 +49,8 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.step) or not .0001 <= args.step <= .005:
         parser.error('Network step must be between 0.1 and 5 ms')
+    if not math.isfinite(args.network_tolerance) or args.network_tolerance<=0:
+        parser.error('Network tolerance must be finite and positive')
     if not math.isfinite(args.duration) or not .5 <= args.duration <= 10:
         parser.error('Duration must be between 0.5 and 10 seconds')
     if not math.isfinite(args.source_inertia) or not .1 <= args.source_inertia <= 99999:
@@ -230,7 +233,7 @@ def main():
             for index in range(count):
                 checked('governor state channel', psspy.state_channel([-1, first+index], f'M{bus}_GOV_STATE{index}'))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
-    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, 1e-6, args.step]+[df]*5))
+    checked('step', psspy.dynamics_solution_param_2([di]*8, [df, args.network_tolerance, args.step]+[df]*5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     initialized = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(32)]
     snapshots = []

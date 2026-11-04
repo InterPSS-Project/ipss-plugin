@@ -1898,3 +1898,29 @@ Rejected candidate patch, complete comparison samples, test logs/reports and
 source snapshots:
 `verification-artifacts/cdc6t-bypass-sampling-20261104/validation.zip`, SHA-256
 `38edd35eb05a5c75431a86bbffff5d8a241d8bb99aa3388ef4493c4c5616ab15`.
+
+### Network-convergence discriminator
+
+The probe can now set network tolerance independently, preserving the original
+1e-6 default. With the base source, unchanged physical parameters and a 0.5 ms
+interval, cold pairs at 1e-4 and 1e-7 both pass the original capture-quality
+checks and retain the same delayed timer publication. Both event-side clearing
+samples still have no recovery timer; the next endpoint publishes the deadline
+at clearing time plus half an interval plus the entered delay.
+
+A 1e-8 attempt changed that observation schedule, but reported repeated network
+nonconvergence starting during startup. Its manifest is explicitly
+`rejected-quality`, the cold pair was stopped, and it is excluded from numerical
+accuracy acceptance. A failed solve cannot establish a causal timing rule or
+justify changing production protection history. The two valid convergence
+controls therefore do not resolve the source-dependent observation discrepancy.
+
+The installed model data sheet defines the recovery voltage threshold and delay,
+but does not specify the internal callback sequence responsible for these
+observations. Production equations and timing remain unchanged. Tests verify the
+valid paired clocks and prevent the rejected attempt from being treated as an
+accepted reference.
+
+Private convergence captures, including the rejected attempt and its log:
+`verification-artifacts/cdc6t-bypass-convergence-20261104/captures.zip`, SHA-256
+`f3ad33a2cc827504c9c00822ef6d538461a7c018466aca625e50a9831afa33e3`.

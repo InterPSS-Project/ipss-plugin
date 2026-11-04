@@ -68,4 +68,35 @@ public class Cdc6tBypassSamplingReferenceTest {
             }
         }
     }
+    @ParameterizedTest @ValueSource(strings={"1e-4","1e-7"})
+    void validConvergenceControlsRetainTheSameBaseObservationSchedule(String tolerance)throws Exception {
+        try(var zip=archive("cdc6t-bypass-convergence-20261104","f3ad33a2cc827504c9c00822ef6d538461a7c018466aca625e50a9831afa33e3")){
+            var rows=paired(zip,tolerance);
+            for(String repeat:List.of("a","b")){
+                String prefix=tolerance+"/"+repeat+"/";
+                var manifest=new com.fasterxml.jackson.databind.ObjectMapper().readTree(zip.getInputStream(zip.getEntry(prefix+"manifest.json")));
+                assertEquals("complete",manifest.get("status").asText());
+                assertEquals(Double.parseDouble(tolerance),manifest.get("settings").get("network_tolerance").asDouble(),0);
+                String log=new String(zip.getInputStream(zip.getEntry(prefix+"native.log")).readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);
+                assertTrue(log.contains("Initial conditions check O.K."));assertFalse(log.contains("Network not converged"));
+            }
+            double h=.0005;
+            var sides=rows.stream().filter(r->Math.abs(r.get("time_s")-.1)<h/4).toList();
+            assertEquals(2,sides.size());double clearing=sides.get(0).get("time_s");
+            for(var side:sides)assertTrue(side.get("VAR17")>90000);
+            var timer=rows.stream().filter(r->r.get("time_s")>clearing&&r.get("VAR17")<.2).findFirst().orElseThrow();
+            assertEquals(clearing+h,timer.get("time_s"),3e-8);
+            assertEquals(clearing+h/2+.01,timer.get("VAR17"),3e-8);
+        }
+    }
+    @Test void nonconvergedTighterControlCannotQualifyAnotherObservationSchedule()throws Exception {
+        try(var zip=archive("cdc6t-bypass-convergence-20261104","f3ad33a2cc827504c9c00822ef6d538461a7c018466aca625e50a9831afa33e3")){
+            String prefix="1e-8/a/";
+            var manifest=new com.fasterxml.jackson.databind.ObjectMapper().readTree(zip.getInputStream(zip.getEntry(prefix+"manifest.json")));
+            assertEquals("rejected-quality",manifest.get("status").asText());
+            String log=new String(zip.getInputStream(zip.getEntry(prefix+"native.log")).readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);
+            assertTrue(log.contains("Network not converged"),"A changed timer in this run is not a valid accuracy oracle");
+            assertNull(zip.getEntry("1e-8/b/manifest.json"),"The quality failure stopped the cold pair");
+        }
+    }
 }
