@@ -201,6 +201,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private double[] machineEventLeft = new double[0];
     private boolean[] machineEventValid = new boolean[0];
     private boolean hasMachineEventLeft;
+    private long machineEventElectricalRefreshCount;
+
+    public long getMachineEventElectricalRefreshCount() { return machineEventElectricalRefreshCount; }
     private final List<Integer> classicalMechanicalOffsets = new ArrayList<>();
     private final List<MachineImpl> classicalMachines = new ArrayList<>();
     private double[] trialMechanicalLeft = new double[0], acceptedMechanicalLeft = new double[0];
@@ -417,6 +420,21 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
 
     private void captureAcceptedMachineEventRates() {
         if (hasMachineEventLeft) return;
+        // A converged network may accept its last voltage correction without
+        // another injection evaluation. Refresh the machine's algebraic current
+        // and electrical rates at that accepted voltage, not the preceding
+        // iteration's cached current. Do not evaluate any controller or advance
+        // the older multistep history at this boundary.
+        for (int i=0;i<machines.size();i++) {
+            if (!machineActive.get(i).getAsBoolean()) continue;
+            Machine machine=machines.get(i);
+            if (machine instanceof DynamicMachineImpl dynamic) {
+                machine.getIgen();
+                if (!dynamic.nextStepElectrical(0.,DynamicSimuMethod.MODIFIED_EULER,dstabAlgo.getNetwork(),0))
+                    throw new IllegalStateException("Accepted machine electrical refresh failed: "+machine.getId());
+                machineEventElectricalRefreshCount++;
+            }
+        }
         for (int slot : machineEventStateSlots) {
             machineEventValid[slot] = states.get(slot).active.getAsBoolean();
             if (machineEventValid[slot])
@@ -451,6 +469,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         machineEventStateSlots = new int[0];
         machineEventLeft = new double[0]; machineEventValid = new boolean[0];
         hasMachineEventLeft = false;
+        machineEventElectricalRefreshCount = 0;
         classicalMechanicalOffsets.clear(); classicalMachines.clear();
         trialMechanicalBoundary = acceptedMechanicalBoundary = false;
         participantEndpointTime = 0;

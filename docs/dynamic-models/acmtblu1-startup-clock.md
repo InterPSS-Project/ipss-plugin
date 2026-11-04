@@ -189,3 +189,55 @@ code changes follow from this diagnostic. The private
 `acmtblu1-thermal-voltage-decomposition-20261104` archive preserves full samples,
 source, independent scripts, bounded test log and file hashes. Archive SHA-256:
 `b9bc7090f05ea3b1dc60bbb318a224d97e408395e42e7735517b496eb46e15ac`.
+
+### Fresh electrical current at an accepted machine event boundary
+
+The upstream audit found a separate event-boundary defect after thermal fractions
+start changing. A network solve can accept its final voltage correction without
+another injection evaluation. The machine's cached current then belongs to the
+preceding network iteration. Ordinary staggered integration explicitly permits
+that last-injection measurement policy; an accepted event-left derivative must
+instead represent the accepted physical endpoint.
+
+The event capture now refreshes machine algebraic current and electrical rates
+at that voltage before preserving the left derivative. It performs no controller
+evaluation, state advancement, history reset, extra network solve or change to
+convergence settings. The ordinary measurement-stage option remains unchanged.
+Controller participant rates retain their existing measurement/publication
+contract; this change does not claim to qualify a different controller boundary.
+
+For the second fault in the filtered coarse control, the old cached damper-state
+rate differs from the accepted-voltage equation by `6.29348e-4` pu/s. Its event
+blend causes a `2.36006e-7` pu state-increment error. Independent reconstruction
+from recorded voltage, power and machine states reduces that increment residual
+to below `1.11e-16` pu across all four complete controls after the correction.
+All physical samples through the second fault are identical before and after,
+including the first fault and clearing; only the diagnostic cached derivatives
+change at second-event preparation.
+
+The correction runs once per active dynamic machine at each captured event.
+A counter-backed regression confirms repeated notifications do not repeat the
+refresh and 40 ordinary intervals add no event-refresh work. No runtime speedup
+is claimed. Separate round-rotor and salient-pole tests compare trajectories with
+and without repeated current observations and notifications. Their states and
+voltages are identical, and exciter state/output checks confirm no controller
+history is advanced.
+
+Thirty focused solver, machine-event, stabilizer and hydro-governor tests pass.
+The broader 65-test run retains exactly the original two coarse compressor
+thermal failures; their peaks precede the repaired second event. The modified
+Euler comparisons remain in that run. Full compressor qualification stays open.
+Private evidence `accepted-machine-event-current-20261104` preserves before/after
+complete samples, read-only cache instrumentation, independent increment scripts,
+negative controls, sources and bounded logs. Archive SHA-256:
+`629cad4f76ae4dc8ad4c071f81358eb3e25ccd6e16aa83915cec24f1bf77197e`.
+
+This repair is deliberately electrical-only. It refreshes dynamic machines with
+an electrical state solver and does not refresh classical-machine injections.
+Mechanical cached derivatives and predictor speed retain their existing contract.
+Regression checks preserve the mechanical predictor record and the electrical
+scratch predictor coordinates, in addition to the externally visible states.
+A separate physical-torque/source-increment audit is required before changing
+mechanical event-left rates; this electrical result does not establish that policy.
+The final electrical-only source and 30-test validation addendum has SHA-256
+`7ce87c2d9208fe9da7b15c968d9104e7880141848a173374adad8a53804e9084`.

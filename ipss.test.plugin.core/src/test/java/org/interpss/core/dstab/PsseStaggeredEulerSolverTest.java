@@ -42,6 +42,69 @@ class PsseStaggeredEulerSolverTest {
         var uninitialized=new StaggeredEulerSolver(algo);
         assertThrows(IllegalStateException.class,uninitialized::notifyAcceptedEndpointDiscontinuity);
     }
+    @Test void acceptedEventRefreshesRoundRotorElectricalRatesWithoutAdvancingStates() throws Exception {
+        assertAcceptedEventRefresh("SMIB_v33_genrou.dyr");
+    }
+
+    @Test void acceptedEventRefreshesSalientElectricalRatesWithoutAdvancingStates() throws Exception {
+        assertAcceptedEventRefresh("SMIB_v33_gensal.dyr");
+    }
+
+    private void assertAcceptedEventRefresh(String file) throws Exception {
+        var plain=loadSubtransient(file); var observed=loadSubtransient(file);
+        for (var algo:java.util.List.of(plain,observed)) {
+            var machine=(com.interpss.dstab.mach.impl.DynamicMachineImpl)algo.getNetwork().getMachine("Bus1-mach1");
+            double[] states=differentialStates(machine);
+            var mechanicalHistory=machine.captureMechanicalIntegrationState();
+            double[] predictor=electricalPredictorCoordinates(machine);
+            // Emulate acceptance of the final network correction without a new
+            // injection request. This intentionally leaves the ordinary cache stale.
+            machine.getDStabBus().setVoltage(machine.getDStabBus().getVoltage().multiply(.85));
+            double[] stale=statorCache(machine);
+            if(algo==observed)for(int i=0;i<3;i++)machine.getIgen();
+            var solver=(StaggeredEulerSolver)algo.getSolver();
+            solver.notifyAcceptedEndpointDiscontinuity();
+            double[] accepted=statorCache(machine);
+            assertTrue(Math.abs(stale[0]-accepted[0])+Math.abs(stale[1]-accepted[1])>1e-3);
+            assertArrayEquals(states,differentialStates(machine),0.,"No state advances at the accepted event boundary");
+            assertEquals(mechanicalHistory,machine.captureMechanicalIntegrationState(),"Mechanical predictor history is outside the electrical refresh");
+            assertArrayEquals(predictor,electricalPredictorCoordinates(machine),0.,"Electrical predictor coordinates do not advance");
+            if(machine instanceof com.interpss.dstab.mach.impl.RoundRotorMachineImpl round) {
+                var e=round.captureRoundElectricalState();
+                assertEquals((-round.getPsikd()-(round.getXd1()-round.getXl())*e.Id()+round.getEq1())/round.getTd011(),e.dx4Psid1(),1e-12);
+            } else {
+                var salient=(com.interpss.dstab.mach.impl.SalientPoleMachineImpl)machine;
+                var e=salient.captureSalientElectricalState();
+                assertEquals((-salient.getPsiq11()+(salient.getXq11()-salient.getXq())*e.Iq())/salient.getTq011(),e.dx5Psiq11(),1e-12);
+            }
+            // Idempotent notification must preserve the first accepted left rates.
+            if(algo==observed)for(int i=0;i<3;i++){machine.getIgen();solver.notifyAcceptedEndpointDiscontinuity();}
+            assertArrayEquals(accepted,statorCache(machine),0.);
+            assertEquals(1,solver.getMachineEventElectricalRefreshCount(),"One electrical refresh per machine per event");
+        }
+        for(int i=0;i<40;i++) {
+            assertTrue(plain.solveDEqnStep(true));assertTrue(observed.solveDEqnStep(true));
+            var a=(com.interpss.dstab.mach.impl.DynamicMachineImpl)plain.getNetwork().getMachine("Bus1-mach1");
+            var b=(com.interpss.dstab.mach.impl.DynamicMachineImpl)observed.getNetwork().getMachine("Bus1-mach1");
+            assertArrayEquals(differentialStates(a),differentialStates(b),0.,"Observation cannot choose the event trajectory");
+            assertEquals(a.getDStabBus().getVoltage(),b.getDStabBus().getVoltage());
+        }
+        assertEquals(1,((StaggeredEulerSolver)plain.getSolver()).getMachineEventElectricalRefreshCount(),"No event refresh work in ordinary steps");
+        assertEquals(1,((StaggeredEulerSolver)observed.getSolver()).getMachineEventElectricalRefreshCount());
+    }
+
+    @Test void acceptedMachineRefreshDoesNotEvaluateExciterHistory() throws Exception {
+        var algo=load();assertTrue(algo.initialization());
+        for(int i=0;i<20;i++)assertTrue(algo.solveDEqnStep(true));
+        var machine=algo.getNetwork().getMachine("Bus36-mach1");
+        var exc=(Ieee1968Type1Exciter)machine.getExciter();
+        double[] before={exc.getSensedVoltage(),exc.getRegulatorOutput(),exc.getFieldVoltageState(),exc.getRateFeedback(),machine.getEfd()};
+        machine.getDStabBus().setVoltage(machine.getDStabBus().getVoltage().multiply(.9));
+        solver.notifyAcceptedEndpointDiscontinuity();solver.notifyAcceptedEndpointDiscontinuity();
+        double[] after={exc.getSensedVoltage(),exc.getRegulatorOutput(),exc.getFieldVoltageState(),exc.getRateFeedback(),machine.getEfd()};
+        assertArrayEquals(before,after,0.,"Accepted machine refresh cannot evaluate controller equations/history");
+    }
+
     @Test void roundRotorRetainsLastInjectionMeasurementsWhenSelected() throws Exception {
         assertLastInjectionBoundary("SMIB_v33_genrou.dyr");
     }
@@ -121,6 +184,15 @@ class PsseStaggeredEulerSolverTest {
         var state = ((com.interpss.dstab.mach.impl.SalientPoleMachineImpl) machine)
                 .captureSalientElectricalState();
         return new double[]{state.Id(), state.Iq(), machine.getPe()};
+    }
+
+    private double[] electricalPredictorCoordinates(com.interpss.dstab.mach.impl.DynamicMachineImpl machine) {
+        if(machine instanceof com.interpss.dstab.mach.impl.RoundRotorMachineImpl round) {
+            var s=round.captureRoundElectricalState();
+            return new double[]{s.x3Eq1(),s.x4Psid1(),s.x5Psiq1(),s.x6Ed1()};
+        }
+        var s=((com.interpss.dstab.mach.impl.SalientPoleMachineImpl)machine).captureSalientElectricalState();
+        return new double[]{s.x3Eq1(),s.x4Psid1(),s.x5Psiq11()};
     }
 
     private double[] differentialStates(com.interpss.dstab.mach.impl.DynamicMachineImpl machine) {
