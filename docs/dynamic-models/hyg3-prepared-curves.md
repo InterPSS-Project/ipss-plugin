@@ -716,3 +716,25 @@ pass and are registered in the core plugin suite. Full reports, source settings
 and the comparison are retained privately in
 `hyg3-initial-bounds-integrated-20261104`. This validates the initialization
 correction without claiming that the remaining trajectory gates pass.
+
+### Remaining discrepancy: required distinguishing evidence
+
+The retained bypass and derivative-preparation controls do not identify another
+hydraulic equation correction. Exact mechanical-power playback leaves the
+coarse modified-Euler active-power gate failing downstream of this governor.
+For the fine staggered bypass case, recorded electrical inputs qualify the fast
+controller coordinates, while mechanical-power playback reduces the coupled
+power error. Initial-coordinate replay and accepted-event recurrence controls
+already exclude the tested initialization and event-history alternatives.
+Repeating those controls cannot distinguish the remaining slow-state cause.
+
+A further correction requires an independently observable accepted hydraulic
+rate together with its evaluation coordinates and integration-history ownership,
+or an authoritative specification of internal state accumulation and rounding.
+The installed external observer exposes recorded states but provides no usable
+supported derivative observer; the separate retained API availability audit
+records that limitation. A new observer would first need noninterference and
+stage-ownership qualification. More decimal places on the existing recorded
+values do not supply that information. No additional equation change, fitted
+coefficient, clock adjustment or relaxed trajectory gate is justified by the
+currently retained evidence.
