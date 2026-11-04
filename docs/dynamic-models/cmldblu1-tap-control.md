@@ -278,3 +278,51 @@ thresholds were changed. All eight complete recorded traces (upward, downward,
 reversal and deadband controls under both methods) are byte-identical to the
 preserved baseline executable. The private lifecycle evidence manifest records
 the distinct production class hashes, actual test classpaths and trace hashes.
+
+## Tap-action history discriminator
+
+A separate staggered-integration experiment tested whether a tap action needs
+an explicit derivative-history discontinuity notification. It covered upward,
+downward and reversing commands, each with immediate or one-interval-delayed
+physical tap application and with or without notification. All 12 runs retained
+every comparison sample and satisfied endpoint current and complex-power balance;
+none satisfied the unchanged complete-trajectory criteria. These are diagnostic
+runs, not 12 newly qualified model profiles.
+
+For the reversing command with delayed physical application, notification changed
+reactive-power range-normalized RMSE from `0.00333947` to `0.00329214`, still above
+`0.001`, while rotor-angle RMSE worsened from `0.0000285250` to `0.0000928993`
+degrees. Without delayed application, reactive-power normalized RMSE remained
+approximately `0.00803`. A blanket history reset is therefore not an established
+fix, and neither the reset nor the diagnostic tap delay was added to production.
+
+The retained independent capture already includes six generator states; new
+captures were unnecessary. At the first action, the tap changes at approximately
+`0.0700 s` while source power and all four electrical states remain unchanged.
+Source power first changes at `0.0705 s`, with the electrical states still
+unchanged; electrical states first respond at `0.0710 s`. This separates command
+publication, electrical application and state response in the observed trace.
+It does not establish that a global state freeze or time shift is the correct
+implementation. The next investigation must distinguish the network/device
+integration stages and their reported outputs, preserving the physical endpoint
+balance and both methods' state ownership. Full trajectory and deadband-boundary
+qualification remain open.
+
+The private evidence archive preserves the diagnostic Java source, all 12 full
+traces, bounded logs (including the initial rejected configuration attempt),
+per-channel metrics, reference state samples and per-file hashes. Archive SHA-256:
+`51f8553b71eca6406694d3192d0c7748db11108552adefbf003133f4e25a83e7`.
+
+An independent reconstruction uses the recorded source voltage phasor, P/Q,
+field voltage and six states with the fixture's guarded unsaturated round-rotor
+equations and 100 MVA machine/system bases. Over the first responding interval,
+`0.0705–0.0710 s`, the largest electrical-state increment residual is
+`3.91e-8` for ordinary two-step Adams–Bashforth history, versus `1.87e-7` for
+a fresh Euler step and `2.86e-7` for the fault-event left/right averaging rule.
+The first result is consistent with the captured state precision. This local
+discriminator supports retaining ordinary derivative history when the internally
+scheduled tap becomes electrically visible; it does not justify treating that
+internal action like an externally imposed network fault. It also does not
+resolve the remaining full-run reactive-power discrepancy. The reconstruction
+script and all per-state candidate residuals are retained separately, SHA-256:
+`7b0b9177c02abe054a7b457270e02e1a84213fe39c7750cdf39c981ba8083245`.
