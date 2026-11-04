@@ -61,6 +61,21 @@ public final class DynamicParameterValidator {
         var uncovered=new TreeMap<String,Integer>();
         var seen=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object,Boolean>());
         for(var bus:network.getBusList()) {
+            if (bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldblu1Model composite
+                    && seen.add(composite)) {
+                var data=composite.getData();
+                for (int motor=0; motor<3; motor++) {
+                    double total=data.value(49+20*motor)+data.value(54+20*motor);
+                    if (total>1) issues.add(new Issue(Severity.WARNING,bus.getId(),"CMLDBLU1",
+                            "Motor"+(char)('A'+motor)+".Ftr1+Ftr2",total,networkStep,
+                            bus.isActive()&&composite.isActive()&&data.value(18+motor)>0,
+                            "Overlapping UV trip fractions exceed unity. Legacy reference behavior can retain a negative "
+                            +"accumulator and a physical response different from full disconnection; this profile is "
+                            +"not trajectory-qualified. Parameters and protection history are not adjusted."));
+                }
+                checked.merge("CMLDBLU1.UvOverlap",1,Integer::sum);
+                uncovered.merge("CMLDBLU1.otherParameters",1,Integer::sum);
+            }
             for(var gen:bus.getContributeGenList()) {
                 Object device=gen.getDynamicGenDevice();
                 if(device==null)continue; // Static/netted generation is handled by network preprocessing.

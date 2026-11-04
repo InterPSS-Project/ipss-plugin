@@ -143,3 +143,46 @@ No production comparator changed and no waveform was shifted or rounded.
 bracket, and reports the analytic equality outcome without claiming native
 equality-reset qualification. Private complete archive SHA-256:
 `a229651baeaedb205ccca472769e9db93da39149325e6d70c0c937cd07e1e23e`.
+
+
+## Overlapping trip fractions
+
+The installed family description says the remaining fraction is bounded to
+[0, 1], including its example of 0.3 and 0.8 tripping fractions. That family
+statement does not match the independently captured legacy realization in this
+profile. Paired no-reclose controls retain every sample and event side. Each
+cold pair is byte-identical. The oversubscribed control publishes its raw
+accumulator as 1, approximately 0.7, then approximately -0.1; the otherwise
+identical 0.3/0.7 control reaches zero.
+
+This is not solely an observation-channel discrepancy. The first difference
+in terminal voltage occurs one accepted interval after the fraction change;
+source electrical states respond one interval later. Network KCL, with the
+known static polynomial demand removed, yields negative active residual
+conductance near -0.01033 pu in the oversubscribed control, versus approximately
+zero in the exact-zero control. A reactive-compensation change alone cannot
+explain that active residual. No negative motor implementation or automatic
+parameter correction is introduced on the strength of this inconsistent
+legacy behavior.
+
+`DynamicParameterValidator` reports a nonmutating warning for each legacy motor
+whose two trip fractions sum to more than one. It checks the info-only composite
+owner before leaf initialization and explicitly leaves other composite
+parameters outside its coverage. Values at or below one do not trigger this
+warning. This warning does not certify trajectories or define recovery from
+an oversubscribed accumulator. In particular, internal trip history must not
+be blindly clipped: that would discard information needed for any subsequent
+reconnection semantics.
+
+`CompositeMotorOverlapTest` preserves strict complete-trajectory gates for both
+methods. Oversubscribed profiles remain failing: peak bus-voltage difference
+is about 0.00109 pu and rotor-angle difference about 0.0433 degrees. The
+exact-zero control passes the staggered gates; modified Euler retains a
+0.000493-degree rotor peak against the unchanged 0.0002-degree limit. No
+threshold was relaxed. `independentPhysicalOverlapDiscriminator` separately
+checks cold repeatability and the causal KCL evidence; it is not an accuracy
+acceptance test. `CompositeMotorOverlapValidationTest` checks below/equal/above
+unity and unchanged model data.
+
+Private full control archive SHA-256:
+`85107e36eaafd1939df3e46cee2b917fec95a5b096975c018aff9cc2c9b1c9c3`.
