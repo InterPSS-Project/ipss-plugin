@@ -423,3 +423,54 @@ The earlier independent partial-reset/second-pickup controls remain unchanged.
 The paired evidence is retained in
 `testData/private/verification-artifacts/tiocr-low-voltage-20261104/captures.zip`,
 SHA-256 `023e428361fb35e40ede14293dcb361293e02d242e21aab402cff10bbed71285`.
+
+## Broader exact-reference parity: run segmentation limitation
+
+New cold pairs vary zero-current reset time between `0` and `0.4` seconds,
+include an operating relay, and introduce a run boundary during a fault with
+no topology change. The no-event split adds a second row at `0.0550000221` seconds
+and advances contact position from `0.234860420` to `0.258940876` while current
+and all physical network measurements remain unchanged. Every common physical
+sample is identical; the extra row is explicitly retained. The scheduled
+breaker deadline advances by another nominal `0.0005`-second interval.
+
+Thus the extra contact update is not uniquely a physical-event rule. Adding
+zero-time state advancement to the Java event handler would encode reference
+run segmentation into the physical integration history. The runtime remains
+unchanged, including read-only zero-time callbacks. An independent source-contract
+regression pins the complete cold captures, checks the extra row and all common
+physical samples, and verifies the deadline shift. It does not treat this source
+behavior as a runtime requirement.
+
+The unresolved full-trajectory diagnostics are retained separately: four
+monitoring comparisons fail the complete contact-history gate (peak differences
+`0.4804` for immediate reset and `0.02262` for the slower reset); two operating
+comparisons fail the physical action clock (`0.224498883` seconds in the reference
+versus `0.225` seconds in Java). A flat first-segment probe also contains native
+pre-zero contact evolution and additional run-boundary samples, so both full-row
+comparisons remain unqualified. No samples were removed and no time or state
+offsets were applied to pass these checks.
+
+The flat probe's ordinary interval slope corresponds to approximately `1800.017`
+seconds to close at `1.05` times pickup, supporting the existing interpolation
+between the threshold anchor and first entered curve point. This is a component
+observation; it does not establish complete history parity with the segmented
+reference run.
+
+Remaining completion criteria are explicit:
+
+- Resolve the startup/run-segmentation observation contract before requiring
+  exact reference contact history for every reset constant. Preserve the
+  elapsed-time integration contract unless an independent specification requires
+  a separate, explicit compatibility behavior.
+- Verify current-knot equality and immediately adjacent values, threshold
+  equality, and saturation independently if exhaustive curve-boundary support
+  is required; the current probes cover representative intervals and reset cases.
+- Qualify any additional protection coordination or reconnection behavior only
+  against an exact supported source contract. No reconnection was introduced.
+
+These are bounded qualification limits, not evidence of a new relay equation
+fix. Full open diagnostics and five byte-identical cold pairs are retained in
+`testData/private/verification-artifacts/tiocr-reset-contract-20261104/`.
+The capture archive SHA-256 is
+`df3281f92bf68e00e6b34fc397c9fc7f6490a570b3e6e2069adec0afbc720933`.

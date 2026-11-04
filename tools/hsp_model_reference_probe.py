@@ -49,6 +49,9 @@ def main():
                         help='Monitored terminal of the synthetic relay branch')
     parser.add_argument('--relay-line-charging', type=float, default=0.,
                         help='Total charging susceptance of the monitored synthetic branch, pu')
+    parser.add_argument('--relay-split-time', type=float, help='Extra run boundary during the first fault, without an event')
+    parser.add_argument('--relay-threshold', type=float, help='Synthetic current pickup threshold on system base')
+    parser.add_argument('--relay-reset-time', type=float, help='Synthetic zero-current reset time in seconds')
     parser.add_argument('--relay-breaker-time', type=float,
                         help='Synthetic relay breaker delay in seconds; preserves entered source alongside the control')
     parser.add_argument('--relay-transfer-circuit', choices=['1', '2'],
@@ -60,14 +63,20 @@ def main():
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
-    if (args.relay_fault_bus != 1 or args.relay_end != 'from' or args.relay_line_charging != 0.
-            or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
+    if (args.relay_split_time is not None or args.relay_fault_bus != 1 or args.relay_end != 'from' or args.relay_line_charging != 0.
+            or args.relay_threshold is not None or args.relay_reset_time is not None or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
             or args.relay_transfer_circuits is not None or args.relay_third_parallel) and not args.fixture.startswith('tiocr1-'):
         parser.error('Relay terminal controls require a relay fixture')
     transfer_circuits = args.relay_transfer_circuits.split(',') if args.relay_transfer_circuits is not None else None
     if transfer_circuits is not None and (args.relay_transfer_circuit is not None or not 1 <= len(transfer_circuits) <= 3
             or any(c not in (['1','2','3'] if args.relay_third_parallel else ['1','2']) for c in transfer_circuits)):
         parser.error('Use one transfer option and one to three existing circuit IDs')
+    if args.relay_split_time is not None and (not math.isfinite(args.relay_split_time) or not .05 < args.relay_split_time < (.06 if args.profile == 'short-repeated-faults' else .10)):
+        parser.error('--relay-split-time must lie strictly inside the first fault interval')
+    if args.relay_threshold is not None and (not math.isfinite(args.relay_threshold) or args.relay_threshold <= 0.):
+        parser.error('--relay-threshold must be finite and positive')
+    if args.relay_reset_time is not None and (not math.isfinite(args.relay_reset_time) or args.relay_reset_time < 0.):
+        parser.error('--relay-reset-time must be finite and nonnegative')
     if args.relay_breaker_time is not None and (not math.isfinite(args.relay_breaker_time) or args.relay_breaker_time < 0.):
         parser.error('--relay-breaker-time must be finite and nonnegative')
     if not math.isfinite(args.relay_line_charging) or not 0. <= args.relay_line_charging <= 1.:
@@ -112,7 +121,7 @@ def main():
     shutil.copy2(dynamic_source, out / 'dynamic.dyr')
     relay_from, relay_to = (1, 2) if args.relay_end == 'from' else (2, 1)
     if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.
-                  or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
+                  or args.relay_threshold is not None or args.relay_reset_time is not None or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
                   or transfer_circuits is not None or args.relay_third_parallel):
         shutil.copy2(out / 'network.raw', out / 'original-network.raw')
         shutil.copy2(out / 'dynamic.dyr', out / 'original-dynamic.dyr')
@@ -125,6 +134,10 @@ def main():
                 assert fields[0] == '1' and fields[2] == '2'
                 fields[0], fields[2] = str(relay_from), str(relay_to)
                 assert len(fields) == 32 and fields[-1] == '/'
+                if args.relay_threshold is not None:
+                    fields[17] = format(args.relay_threshold, '.17g')
+                if args.relay_reset_time is not None:
+                    fields[18] = format(args.relay_reset_time, '.17g')
                 if args.relay_breaker_time is not None:
                     fields[29] = format(args.relay_breaker_time, '.17g')
                 if args.relay_transfer_circuit is not None:
@@ -260,6 +273,8 @@ def main():
         delta = -.1 if args.profile == 'tap-reference-down' else .1
         tap_reference_events.append(change_tap_target(.05, delta))
     first_clear_time = .06 if args.profile == 'short-repeated-faults' else .10
+    if args.relay_split_time is not None:
+        checked('during split without event', psspy.run(0, args.relay_split_time, 1000000, 1, 0))
     checked('during', psspy.run(0, first_clear_time, 1000000, 1, 0))
     if args.profile == 'tap-reference-reversal':
         tap_reference_events.append(change_tap_target(.10, -.2))
