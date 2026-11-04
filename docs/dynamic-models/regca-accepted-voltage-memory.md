@@ -159,3 +159,43 @@ successful execution does not imply the numerical errors pass. The private
 `regca-active-hv-lifecycle-20261104` manifest pins the complete traces, diagnostic
 source, logs and metrics; SHA-256
 `5619dc008fb2997a28d82505a067884498c9d290d7352e760e3af5651de56d44`.
+
+### Measured reference branch endpoints
+
+A new cold pair adds only passive bus-voltage/angle and branch-power observations
+to the retained synthetic profile. All 2,005 original rows and channel values are
+exactly unchanged; the two expanded captures are identical. Their logs pass
+initialization and contain no reported network nonconvergence. The probe, complete
+outputs, logs, repeated-file hashes and independent audit are pinned by private
+`regca-hv-phasors-20261104/manifest.json`, SHA-256
+`62320f2ff351f96855f4a509621406a44d11a2fa98dcfa17f24b994636e19231`.
+
+The measured terminal phasors now establish a 0.00272490 pu maximum difference
+between published converter current and branch-end current, without assuming an
+internal source voltage. Reconstructed branch power agrees with independently
+recorded branch power within 1.44e-6 pu across every row, including the fault.
+The converter output equation agrees within 7.90e-8 pu across every row. At the
+largest high-voltage current difference, published reactive power differs from
+branch reactive power by 0.00328360 pu. Thus published output-equation agreement
+and joint network-current convergence are distinct properties in the independent
+reference too. This does not prove the two implementations have identical internal
+iteration order or stopping behavior.
+
+The public `RegcaReferenceHighVoltageCurrentTest` verifies manifest/file integrity,
+complete cold-repeat and original-channel equality, phasor-to-branch-power agreement,
+and the output equation. Its residual assertion establishes the counterexample to
+joint certification; it is not a relaxed trajectory gate. Together with the existing
+memory, network and plant tests, 21 tests across five classes pass with the extended
+profile, zero failures, errors or skips. Correction trajectory errors reported above
+remain unresolved, and no final callback or model equation is removed.
+
+A causal correction would need evidence of the input voltage and correction before
+each reference network iteration, the stopping decision, and the distinction between
+the last solved injection and final published output. Endpoint observations alone
+do not identify that sequence. The retained clean acceleration-0.4 fault pair offers
+a distinct, not yet rerun accepted-boundary control for whether the mismatch follows
+voltage-memory weighting; however, it cannot by itself identify an internal stop
+rule. Earlier conditional-network probes already exercise forced-state iteration
+budgets, so repeating those or equivalent step-size refinements would not supply
+the missing evidence. Any next production change needs a source-defined lifecycle
+discriminator rather than a fitted iteration count or threshold.
