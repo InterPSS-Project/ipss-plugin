@@ -200,3 +200,52 @@ current correction after voltage changes. The focused relay and reference suite
 passes without changing trajectory tolerances. This preparation fix does not
 establish composite-load shedding support: expanded internal components and
 their equivalent distribution network require model-owned capacity changes.
+
+## Partial composite-load action
+
+The remote load port now resolves an expanded `CMLDBLU1` owner by its original
+source-load identity during initialization. A singleton source or whole-owner
+wildcard is supported; selecting one source from an aggregate is rejected.
+Relay wildcard actions on a collapsed parent/internal bus are also rejected
+until the unrelated static residual can be allocated without counting owned
+components twice. The source-owner API remains distinct from a whole-bus relay.
+The dynamic matrix does not yet exist at that preparation stage, so live-matrix
+and owner validity are checked again before the accepted action. Failed target
+preparation cannot silently become a successful relay action.
+
+The action calls the model's capacity operation once, rather than searching for
+internal leaf IDs or removing an obsolete parent static-load stamp. That operation
+changes demand and the verified distribution equivalent together. The composite
+also updates the bus's cached positive-sequence shunt admittance, preventing fault
+clearing or another matrix rebuild from restoring the old compensation.
+
+Complete shed/no-shed comparisons retain startup evidence and all three pairs
+of event-side samples: fault application, relay operation and fault clearing.
+The internal `VAR29` reference is a prepared-voltage diagnostic: on the relay
+action's pre-solve row it already uses changed feeder parameters with the previous
+solved boundary. The recorder retains physical `Load.V` separately from
+`Load.PreparedV`; it does not change physical voltage to match that diagnostic.
+Independent reconstruction of the mixed-boundary reference row agrees within
+`4.1e-7` pu. Both physical and diagnostic samples remain in the complete recording.
+
+The partial-action comparison passes both integration methods. Maximum
+range-normalized RMSE across external voltage/power and internal voltage
+observations is `3.28e-5` for modified Euler and `5.36e-6` for staggered integration.
+Peak rotor-angle errors are below `4.9e-5` degrees. The matched no-action control
+also passes. Regression envelopes require normalized error below `5e-5` and
+`8e-6`, respectively, with unchanged full reference ranges and all event samples.
+
+## Owned composite disconnection
+
+Full-capacity removal also passes complete independent reference comparisons
+under both integration methods when the composite owns a distinct transformer,
+feeder and internal-bus subtree. The operation removes those branch stamps,
+deactivates owned internal devices and buses, and leaves their last physical
+observations frozen. Parent attachments and active external faults are preserved;
+subsequent matrix rebuilds retain the disconnected topology.
+
+The preparation and action checks reject foreign internal attachments and
+unsupported collapsed topologies before mutation. Full-trip references retain
+all relay and fault event samples. Full-trip voltage/power normalized errors are
+below the same `5e-5` modified-Euler and `8e-6` staggered regression envelopes,
+with rotor-angle peak error below `6e-5` degrees. Restoration remains unsupported.

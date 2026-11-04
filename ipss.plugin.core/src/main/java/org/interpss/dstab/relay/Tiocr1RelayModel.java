@@ -41,6 +41,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         @Override protected double monitoredValue() { return 0; }
         @Override protected boolean violates(LoadSheddingStage stage,double value) { return false; }
         void trigger() { applyStage(0); }
+        boolean canTrigger() { return canApplyStage(0); }
     }
 
     public Tiocr1RelayModel(AclfBranch branch, boolean fromEnd, int slot, boolean operate,
@@ -110,6 +111,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         if(!attachmentIntact()||!Double.isFinite(dt)||dt<0)return false;
         if(dt==0)return true;
         if(operated){intervalCurrent=Double.NaN;return true;}
+        if(operate && loadPort!=null && !loadPort.canTrigger())return false;
         double current=Double.isNaN(intervalCurrent)?currentMagnitude():intervalCurrent;
         intervalCurrent=Double.NaN;
         if(!pickedUp) {

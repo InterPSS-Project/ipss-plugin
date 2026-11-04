@@ -27,6 +27,7 @@ final class Cmldblu1SharedRecording {
     final boolean repeated;
     final List<Frame> frames = new ArrayList<>();
     boolean enabled;
+    boolean recordRelayEvents;
     Cmldblu1Model model;
     Frame initial;
 
@@ -63,12 +64,44 @@ final class Cmldblu1SharedRecording {
         values.put("Load.A", model.getLoadBus().getVoltageAng());
         values.put("Low.V", model.getLowVoltBus().getVoltageMag());
         values.put("Low.A", model.getLowVoltBus().getVoltageAng());
+        if (recordRelayEvents) {
+            // A load diagnostic can use current parameters with the last solved
+            // boundary. Preserve this separately from the physical bus voltage.
+            double prepared=model.getLoadBus().getVoltageMag();
+            var transformer=model.getDistributionTransformer();
+            if (model.getRemainingCapacity()>0 && transformer!=null && model.getLowVoltBus()!=model.getLoadBus()) {
+                var feeder=net.getBranchList().stream().filter(b -> b.getFromBus()==model.getLowVoltBus()
+                        && b.getToBus()==model.getLoadBus()).findFirst().orElseThrow();
+                double tap=transformer.getToTurnRatio();var low=model.getLowVoltBus().getVoltage();
+                var incoming=model.getDStabBus().getVoltage().subtract(low.divide(tap)).divide(transformer.getZ());
+                var feederCurrent=incoming.divide(tap).subtract(model.getLowVoltBus().getShuntY().multiply(low));
+                prepared=low.subtract(feeder.getZ().multiply(feederCurrent)).abs();
+            }
+            values.put("Load.PreparedV",prepared);
+        }
+        for (var bus : net.getBusList()) for (var device : bus.getDynamicBusDeviceList())
+            if (device instanceof org.interpss.dstab.relay.Tiocr1RelayModel relay) {
+                values.put("RELAY.Current", relay.currentMagnitude());
+                values.put("RELAY.Position", relay.getPosition());
+                values.put("RELAY.Shed", relay.getShedFraction());
+                values.put("RELAY.Operated", relay.isOperated() ? 1. : 0.);
+            }
         return new Frame(time, kind, Collections.unmodifiableMap(values));
     }
     void before(double time) {
         if (enabled && !flat && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9
                 || repeated && (Math.abs(time - .2) < 1e-9 || Math.abs(time - .25) < 1e-9)))
             frames.add(capture(time, "EVENT_PRE"));
+    }
+    void afterAcceptedRelayAction(Frame before) {
+        if (before != null && before.values().getOrDefault("RELAY.Operated", 1.) == 0.) {
+            var after=capture(before.time(), "CHECK");
+            if (after.values().getOrDefault("RELAY.Operated", 0.) == 1.) {
+                var values=new TreeMap<>(before.values());
+                values.put("Load.PreparedV",after.values().get("Load.PreparedV"));
+                frames.add(new Frame(before.time(),before.kind(),Collections.unmodifiableMap(values)));
+            }
+        }
     }
     static Cmldblu1SharedRecording simulate(String fixture, boolean staggered, boolean flat, double h) throws Exception {
         return simulate(fixture, Cmldblu1SharedSmibTest.CASE.resolve(fixture + ".dyr"), staggered, flat, h);
@@ -120,6 +153,9 @@ final class Cmldblu1SharedRecording {
         assertTrue(algorithm.initialization());
         result.model = assertInstanceOf(Cmldblu1Model.class,
                 algorithm.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel());
+        result.recordRelayEvents = algorithm.getNetwork().getBusList().stream()
+                .anyMatch(bus -> bus.getDynamicBusDeviceList().stream()
+                        .anyMatch(org.interpss.dstab.relay.Tiocr1RelayModel.class::isInstance));
         result.initial = result.capture(0, "INITIAL"); result.enabled = true;
         while (algorithm.getSimuTime() < endTime - h / 2) assertTrue(algorithm.solveDEqnStep(true));
         result.frames.add(result.capture(algorithm.getSimuTime(), "FINAL"));
@@ -129,6 +165,10 @@ final class Cmldblu1SharedRecording {
         final Cmldblu1SharedRecording recording;
         OrdinaryRecorder(DynamicSimuAlgorithm a, Cmldblu1SharedRecording r) { super(a); recording = r; }
         @Override public void beforeStep(double t) throws DStabSimuException { recording.before(t); super.beforeStep(t); }
+        @Override public void afterStep(double t) throws DStabSimuException {
+            var before=recording.enabled && recording.recordRelayEvents ? recording.capture(t,"RELAY_EVENT_PRE") : null;
+            super.afterStep(t);recording.afterAcceptedRelayAction(before);
+        }
         @Override public boolean networkSolutionStep() throws DStabSimuException {
             boolean solved = super.networkSolutionStep();
             if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
@@ -140,6 +180,10 @@ final class Cmldblu1SharedRecording {
         final Cmldblu1SharedRecording recording;
         SharedRecorder(DynamicSimuAlgorithm a, Cmldblu1SharedRecording r) {
             super(a); recording = r; setReuseNetworkEndpoint(false);
+        }
+        @Override public void afterStep(double t) throws DStabSimuException {
+            var before=recording.enabled && recording.recordRelayEvents ? recording.capture(t,"RELAY_EVENT_PRE") : null;
+            super.afterStep(t);recording.afterAcceptedRelayAction(before);
         }
         @Override public void beforeStep(double t) throws DStabSimuException { recording.before(t); super.beforeStep(t); }
         @Override public boolean networkSolutionStep() throws DStabSimuException {

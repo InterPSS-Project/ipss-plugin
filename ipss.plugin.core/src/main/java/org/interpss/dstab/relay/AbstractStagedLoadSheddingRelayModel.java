@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.dynLoad.impl.Cmldblu1Model;
 
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.BaseDStabBus;
@@ -34,6 +35,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private double elapsedTime;
     private double shedFraction;
     private Object appliedYMatrix;
+    private Cmldblu1Model compositeTarget;
+    private boolean targetInitialized;
     private static final String LEDGER_KEY = AbstractStagedLoadSheddingRelayModel.class.getName()+".admittanceLedger";
 
     protected AbstractStagedLoadSheddingRelayModel(String modelName,
@@ -68,11 +71,25 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
+        targetInitialized = false;
         if (bus != loadBus || bus.getNetwork() == null) return false;
         boolean wildcard = loadId.equals("*") || loadId.equals("#");
+        compositeTarget = null;
+        if (bus.getInfoOnlyDynModel() instanceof Cmldblu1Model composite
+                && (wildcard || composite.getTargetLoadIds().contains(loadId))) {
+            double total = Math.min(1., data.stages().stream().mapToDouble(LoadSheddingStage::fraction).sum());
+            // The dynamic matrix is built after device initialization. Resolve
+            // source ownership here; validate the live matrix at the action boundary.
+            // A collapsed wildcard also requires a separately resolved static
+            // residual; do not count its owned leaves as parent static demand.
+            if (wildcard && composite.getLoadBus()==bus
+                    || !composite.canPrepareLoadChange(loadId,-total)) return false;
+            compositeTarget = composite;
+        }
         boolean hasDynamicTarget = loadBus.getDynLoadModelList() != null
                 && loadBus.getDynLoadModelList().stream()
                     .anyMatch(load -> wildcard || loadId.equals(load.getId()));
+        hasDynamicTarget |= compositeTarget != null;
         // Rebuild target ownership for each preparation. A previous static
         // target must not leave a second shedding stamp after dynamic attachment.
         initialStaticLoad = Complex.ZERO;
@@ -85,7 +102,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         }
         initialShunt = data.shedShunt() && loadBus.getShuntY() != null
                 ? loadBus.getShuntY() : Complex.ZERO;
-        return reset() && Double.isFinite(monitoredValue());
+        return targetInitialized = reset() && Double.isFinite(monitoredValue());
     }
 
     @Override
@@ -95,7 +112,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
 
     @Override
     public boolean afterStep(double dt) {
-        if (!Double.isFinite(dt) || dt < 0.0) return false;
+        if (!targetInitialized || !Double.isFinite(dt) || dt < 0.0) return false;
         elapsedTime += dt;
         if (!advanceTransferTrips(dt)) return false;
         double value = monitoredValue();
@@ -117,25 +134,38 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
                 timers[i] += dt;
             }
             if (pickedUp[i] && timers[i] + TIME_EPS >= stage.pickupTime() + stage.breakerTime()) {
+                if (!canApplyStage(i)) return false;
                 applyStage(i);
             }
         }
         return true;
     }
 
+    protected final boolean canApplyStage(int stageIndex) {
+        if (!targetInitialized) return false;
+        if (operated[stageIndex]) return true;
+        double fraction = Math.min(data.stages().get(stageIndex).fraction(), 1.0 - shedFraction);
+        return compositeTarget == null || loadBus.getInfoOnlyDynModel() == compositeTarget
+                && compositeTarget.canChangeLoad(loadId, -fraction);
+    }
+
     protected final void applyStage(int stageIndex) {
         if (operated[stageIndex]) return;
+        if (!canApplyStage(stageIndex)) throw new IllegalStateException("Load target cannot accept shedding action");
         double fraction = Math.min(data.stages().get(stageIndex).fraction(), 1.0 - shedFraction);
-        operated[stageIndex] = true;
-        if (fraction <= 0.0) return;
+        if (fraction <= 0.0) { operated[stageIndex] = true; return; }
+        if (compositeTarget != null && !compositeTarget.changeLoad(-fraction))
+            throw new IllegalStateException("Composite load rejected a prepared shedding action");
         boolean wildcard = loadId.equals("*") || loadId.equals("#");
         if (loadBus.getDynLoadModelList() != null) {
             for (DynLoadModel load : loadBus.getDynLoadModelList()) {
-                if (load.isActive() && (wildcard || loadId.equals(load.getId()))) {
+                if (load != compositeTarget && (compositeTarget==null || !compositeTarget.ownsCapacityLoad(load))
+                        && load.isActive() && (wildcard || loadId.equals(load.getId()))) {
                     load.changeLoad(-fraction);
                 }
             }
         }
+        operated[stageIndex] = true;
         shedFraction += fraction;
         addAdmittanceDelta(fraction);
     }
