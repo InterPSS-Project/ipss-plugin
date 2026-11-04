@@ -306,10 +306,14 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
 
     /** Prepared whole-owner capacity action, including verified owned-subtree disconnection. */
     protected final boolean canChangeCompositeCapacity(double factor) {
+        return canPrepareCompositeCapacity(factor) && capacityNetwork.getYMatrix()!=null;
+    }
+
+    protected final boolean canPrepareCompositeCapacity(double factor) {
         if (capacityLeaves == null || !Double.isFinite(factor) || factor > 0 || remainingCapacity <= 0 || remainingCapacity + factor < 0
                 || getDStabBus()!=capacityParent || getLowVoltBus()!=capacityLowBus || getLoadBus()!=capacityLoadBus
                 || capacityParent.getNetwork()!=capacityNetwork || capacityLowBus.getNetwork()!=capacityNetwork
-                || capacityLoadBus.getNetwork()!=capacityNetwork || capacityNetwork.getYMatrix()==null) return false;
+                || capacityLoadBus.getNetwork()!=capacityNetwork) return false;
         if (distFdr!=null && (distFdr.getFromBus()!=capacityLowBus || distFdr.getToBus()!=capacityLoadBus)) return false;
         if (distXfr!=null && (distXfr.getFromBus()!=capacityParent || distXfr.getToBus()!=capacityLowBus)) return false;
         for (var leaf:capacityLeaves) if (leaf.getDStabBus()!=capacityLoadBus) return false;
@@ -336,6 +340,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     }
 
     private boolean isOwnedCapacityDevice(Object device) {
+        if(device==tapControl)return true;
         for(var leaf:capacityLeaves)if(leaf==device)return true;
         return device instanceof LegacyDistributionShuntPort shunt && shunt.getId().equals(getId()+"_lowShunt");
     }
@@ -399,6 +404,13 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         bus.setShuntY(bus.getShuntY().add(delta));
         bus.applyPositiveSequenceShuntAdmittanceChange(delta);
         int row=bus.getSortNumber(); network.getYMatrix().addToA(delta,row,row);
+    }
+
+    /** Identity membership for callers that also traverse the source bus's dynamic loads. */
+    public boolean ownsCapacityLoad(com.interpss.dstab.dynLoad.DynLoadModel load) {
+        if (load==null || capacityLeaves==null) return false;
+        for (var leaf:capacityLeaves) if (leaf==load) return true;
+        return false;
     }
 
     public double getRemainingCapacity() { return remainingCapacity; }

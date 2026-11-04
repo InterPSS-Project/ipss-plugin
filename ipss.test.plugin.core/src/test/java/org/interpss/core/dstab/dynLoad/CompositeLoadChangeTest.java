@@ -26,6 +26,11 @@ public class CompositeLoadChangeTest {
         assertTrue(a.initialization());
         var model=(Cmldblu1Model)a.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel();
         assertEquals(java.util.Set.of("1"),model.getTargetLoadIds());
+        assertTrue(model.ownsCapacityLoad(model.getInductionMotorA()));
+        assertTrue(model.ownsCapacityLoad(model.get1PhaseACMotor()));
+        assertFalse(model.ownsCapacityLoad(null));
+        assertFalse(model.ownsCapacityLoad(new org.interpss.dstab.dynLoad.impl.LD1PACImpl()));
+        for(var leaf:model.getLoadBus().getDynLoadModelList())assertTrue(model.ownsCapacityLoad(leaf));
         var feeder=a.getNetwork().getBranchList().stream().filter(b->b.getFromBus()==model.getLowVoltBus()
                 && b.getToBus()==model.getLoadBus()).findFirst().orElseThrow();
         var originalZ=feeder.getZ();var transformerZ=model.getDistributionTransformer().getZ();
@@ -35,6 +40,15 @@ public class CompositeLoadChangeTest {
         model.setDStabBus(a.getNetwork().getDStabBus("Bus1"));
         assertFalse(model.canChangeLoad("1",-.25));assertFalse(model.changeLoad(-.25));
         assertEquals(originalZ,feeder.getZ());model.setDStabBus(parent);
+        assertTrue(model.canPrepareLoadChange("1",-.25));
+        assertTrue(model.canPrepareLoadChange("1",-1));
+        var preparedMatrix=a.getNetwork().getYMatrix();
+        a.getNetwork().setYMatrix(null);
+        try {
+            assertTrue(model.canPrepareLoadChange("1",-1));
+            assertFalse(model.canChangeLoad("1",-1));assertFalse(model.changeLoad(-1));
+        } finally { a.getNetwork().setYMatrix(preparedMatrix); }
+        assertFalse(model.canPrepareLoadChange("other",-.25));
         assertTrue(model.canChangeLoad("1",-.25));assertTrue(model.canChangeLoad("*",-.25));
         assertFalse(model.canChangeLoad("other",-.25));
         assertFalse(model.canChangeLoad(-1.1));assertFalse(model.changeLoad(-1.1));

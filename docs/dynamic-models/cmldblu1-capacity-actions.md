@@ -91,3 +91,10 @@ remaining capacity trip under both methods, with an unrelated parent shunt.
 It checks inactive bus/branch/device ownership, matrix rebuild consistency,
 continued external simulation and frozen internal states. Complete relay-driven
 full-trip reference trajectory qualification remains a separate gate.
+
+Relay integration can use `canPrepareLoadChange(sourceId, factor)` after the
+composite has initialized but before the engine builds its dynamic matrix.
+`canChangeLoad` additionally requires the live matrix and must be checked again
+at the action boundary. `ownsCapacityLoad` tests consuming-leaf identity without
+allocating a collection; a caller that also walks source-bus loads must skip
+these already-owned leaves to avoid applying a wildcard action twice.

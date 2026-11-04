@@ -28,9 +28,17 @@ public final class Cmldblu1Model extends Cmldznu2Model {
 
     /** Source-ID action is unambiguous only for a singleton owner or a whole-owner wildcard. */
     public boolean canChangeLoad(String sourceLoadId, double factor) {
-        boolean matches = "*".equals(sourceLoadId) || "#".equals(sourceLoadId)
+        return matchesCapacitySource(sourceLoadId) && canChangeCompositeCapacity(factor);
+    }
+
+    /** Validate prepared ownership before the engine has constructed its dynamic matrix. */
+    public boolean canPrepareLoadChange(String sourceLoadId, double factor) {
+        return matchesCapacitySource(sourceLoadId) && canPrepareCompositeCapacity(factor);
+    }
+
+    private boolean matchesCapacitySource(String sourceLoadId) {
+        return "*".equals(sourceLoadId) || "#".equals(sourceLoadId)
                 || getTargetLoadIds().size() == 1 && getTargetLoadIds().contains(sourceLoadId);
-        return matches && canChangeCompositeCapacity(factor);
     }
 
     public boolean canChangeLoad(double factor) { return canChangeCompositeCapacity(factor); }
