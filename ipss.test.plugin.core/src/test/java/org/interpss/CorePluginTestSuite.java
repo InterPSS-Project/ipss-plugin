@@ -938,6 +938,7 @@ import org.junit.platform.suite.api.Suite;
     Svsmo3t2MssKernelTest.class,
     Svsmo3t2MssReplayTest.class,
     Svsmo3t2MssBoundaryTest.class,
+    org.interpss.dstab.svc.Svsmo3t2OwnershipMetadataTest.class,
     org.interpss.core.dstab.Svsmo3t2MssTripOrderingTest.class,
     PsseSvsmo3t2ModelTest.class,
 	Wt1g1PsseSmibConformanceTest.class,
