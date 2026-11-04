@@ -160,6 +160,7 @@ public class Tiocr1AcceptedHistoryTest {
         assertTrue(net.removeBranch(second.getId()));
         var matrix=net.getYMatrix().getA(first.getFromBus().getSortNumber(),first.getToBus().getSortNumber());
         assertFalse(relay.afterStep(.01));assertFalse(relay.initStates(relay.getDStabBus()));
+        assertNull(relay.getLastActionSnapshot(),"Rejected target preflight cannot publish an action");
         assertTrue(first.isActive());assertEquals(history,relay.getIntegrationHistories());
         assertEquals(0,relay.getNetworkActionVersion());assertEquals(0,relay.getShedFraction());
         assertEquals(matrix,net.getYMatrix().getA(first.getFromBus().getSortNumber(),first.getToBus().getSortNumber()));
@@ -186,6 +187,34 @@ public class Tiocr1AcceptedHistoryTest {
                 "The dynamic current port owns shedding; no former static stamp may also be removed");
         bus.setVoltage(bus.getVoltage().multiply(.8));
         assertEquals(Complex.ZERO,port.getOutputObject(),"No stale static current correction");
+    }
+
+    @ParameterizedTest @CsvSource({"false,0,false","true,0,false","false,.02,false","true,.02,false",
+            "false,0,true","true,0,true","false,.02,true","true,.02,true"})
+    void actionSnapshotUsesAcceptedPickupBeforeMutation(boolean staggered,double delay,boolean otherTarget)throws Exception {
+        var a=setup(staggered);var net=a.getNetwork();var monitored=net.getBranchList().get(0);
+        var target=net.getBranchList().get(otherTarget?1:0);
+        var curve=new Tiocr1Data(new double[]{.01,0,1.1,.001,1.5,.001,2,.001,3,.001,5,.001,delay,0});
+        var relay=new Tiocr1RelayModel(monitored,true,2,true,null,null,
+                new com.interpss.core.aclf.AclfBranch[]{target,null,null},curve);
+        assertTrue(a.initialization());assertNull(relay.getLastActionSnapshot());
+        double current=relay.currentMagnitude();assertTrue(relay.afterStep(.01));
+        if(delay>0) {
+            assertNull(relay.getLastActionSnapshot());assertTrue(target.isActive());
+            assertTrue(relay.afterStep(.01));assertNull(relay.getLastActionSnapshot());
+            assertTrue(relay.afterStep(.01));
+        }
+        var snapshot=relay.getLastActionSnapshot();assertNotNull(snapshot);
+        assertEquals(1,snapshot.revision());assertEquals(1.,snapshot.position());
+        assertEquals(current,snapshot.current(),0.);assertEquals(delay,snapshot.breakerTimer(),1e-15);
+        assertFalse(target.isActive());assertEquals(otherTarget,monitored.isActive());
+        var histories=relay.getIntegrationHistories();
+        for(int i=0;i<10;i++)assertSame(snapshot,relay.getLastActionSnapshot());
+        assertTrue(relay.afterStep(0));assertTrue(relay.afterStep(.01));assertSame(snapshot,relay.getLastActionSnapshot());
+        assertFalse(relay.afterStep(Double.NaN));assertEquals(histories,relay.getIntegrationHistories());
+        var owner=relay.getDStabBus();relay.setDStabBus(setup(staggered).getNetwork().getDStabBus("Bus1"));
+        assertFalse(relay.afterStep(.01));assertSame(snapshot,relay.getLastActionSnapshot());
+        relay.setDStabBus(owner);assertTrue(relay.initStates(owner));assertNull(relay.getLastActionSnapshot());
     }
 
     private static com.interpss.dstab.algo.DynamicSimuAlgorithm setup(boolean staggered) throws Exception {

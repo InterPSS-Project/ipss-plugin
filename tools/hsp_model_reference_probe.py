@@ -47,11 +47,18 @@ def main():
                         help='Monitored terminal of the synthetic relay branch')
     parser.add_argument('--relay-line-charging', type=float, default=0.,
                         help='Total charging susceptance of the monitored synthetic branch, pu')
+    parser.add_argument('--relay-breaker-time', type=float,
+                        help='Synthetic relay breaker delay in seconds; preserves entered source alongside the control')
+    parser.add_argument('--relay-transfer-circuit', choices=['1', '2'],
+                        help='First transfer target on the parallel synthetic corridor')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
-    if (args.relay_end != 'from' or args.relay_line_charging != 0.) and not args.fixture.startswith('tiocr1-'):
+    if (args.relay_end != 'from' or args.relay_line_charging != 0.
+            or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None) and not args.fixture.startswith('tiocr1-'):
         parser.error('Relay terminal controls require a relay fixture')
+    if args.relay_breaker_time is not None and (not math.isfinite(args.relay_breaker_time) or args.relay_breaker_time < 0.):
+        parser.error('--relay-breaker-time must be finite and nonnegative')
     if not math.isfinite(args.relay_line_charging) or not 0. <= args.relay_line_charging <= 1.:
         parser.error('--relay-line-charging must be finite and between zero and one pu')
     if args.network_tolerance is not None and (not math.isfinite(args.network_tolerance) or args.network_tolerance <= 0):
@@ -72,7 +79,9 @@ def main():
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/HspModels'
     out = root / 'target' / args.batch / (
         f'{args.fixture}-{args.profile}-h{args.step:g}-{args.repeat}'+(f'-part{args.channel_part}' if load_fixture(args.fixture) else '')
-        +(f'-{args.relay_end}-b{args.relay_line_charging:g}' if args.relay_end != 'from' or args.relay_line_charging != 0. else ''))
+        +(f'-{args.relay_end}-b{args.relay_line_charging:g}' if args.relay_end != 'from' or args.relay_line_charging != 0. else '')
+        +(f'-breaker{args.relay_breaker_time:g}' if args.relay_breaker_time is not None else '')
+        +(f'-transfer{args.relay_transfer_circuit}' if args.relay_transfer_circuit is not None else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
     if args.fixture == 'acmtblu1' and args.channel_part != 0:
@@ -89,7 +98,8 @@ def main():
                       if args.fixture == 'acmtblu1' else source / (args.fixture + '.dyr'))
     shutil.copy2(dynamic_source, out / 'dynamic.dyr')
     relay_from, relay_to = (1, 2) if args.relay_end == 'from' else (2, 1)
-    if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.):
+    if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.
+                  or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None):
         shutil.copy2(out / 'network.raw', out / 'original-network.raw')
         shutil.copy2(out / 'dynamic.dyr', out / 'original-dynamic.dyr')
         path = out / 'dynamic.dyr'
@@ -100,6 +110,12 @@ def main():
             if len(fields) > 2 and fields[1] == "'TIOCR1'":
                 assert fields[0] == '1' and fields[2] == '2'
                 fields[0], fields[2] = str(relay_from), str(relay_to)
+                assert len(fields) == 32 and fields[-1] == '/'
+                if args.relay_breaker_time is not None:
+                    fields[29] = format(args.relay_breaker_time, '.17g')
+                if args.relay_transfer_circuit is not None:
+                    assert fields[8:10] == ['1', '2']
+                    fields[10] = "'" + args.relay_transfer_circuit + "'"
                 lines[index] = ' '.join(fields)
                 changed += 1
         assert changed == 1

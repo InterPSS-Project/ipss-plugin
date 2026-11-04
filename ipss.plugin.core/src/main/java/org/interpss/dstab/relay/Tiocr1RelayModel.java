@@ -30,6 +30,9 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     private double intervalCurrent=Double.NaN;
     private boolean pickedUp, operated;
     private long networkActionVersion;
+    /** Accepted relay coordinates immediately before a physical network action. */
+    public record ActionSnapshot(long revision,double current,double position,double breakerTimer) { }
+    private ActionSnapshot lastActionSnapshot;
     private final LoadPort loadPort;
     private final Hashtable<String,Object> output=new Hashtable<>();
     private static final class LoadPort extends AbstractStagedLoadSheddingRelayModel {
@@ -123,6 +126,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         if(breakerTimer+1e-12<curve.breakerTime())return true;
         operated=true;
         if(!operate)return true;
+        double actionCurrent=currentMagnitude(),actionPosition=position,actionBreakerTimer=breakerTimer;
         var network=ownerNetwork;
         boolean networkChanged=false;
         for(var branch:transfers) if(branch!=null&&branch.isActive()) {
@@ -140,13 +144,16 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
             loadPort.trigger();
             networkChanged|=loadPort.getShedFraction()!=previousFraction;
         }
-        if(networkChanged)networkActionVersion++;
+        if(networkChanged) {
+            networkActionVersion++;
+            lastActionSnapshot=new ActionSnapshot(networkActionVersion,actionCurrent,actionPosition,actionBreakerTimer);
+        }
         // A remote action can leave this relay's monitored branch energized.
         // Only opening that branch clears its moving-element coordinate.
         if(!monitored.isActive())position=0;
         return true;
     }
-    @Override public boolean reset() { position=breakerTimer=0;intervalCurrent=Double.NaN;pickedUp=operated=false;if(loadPort!=null)loadPort.reset();return true; }
+    @Override public boolean reset() { position=breakerTimer=0;intervalCurrent=Double.NaN;pickedUp=operated=false;lastActionSnapshot=null;if(loadPort!=null)loadPort.reset();return true; }
     @Override public Map<String,Double> getNamedStates() {
         return Map.of("Relay position",position,"Breaker timer",breakerTimer,
                 "Pickup",pickedUp?1.:0.,"Operated",operated?1.:0.,"Shed fraction",getShedFraction());
@@ -157,6 +164,8 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     public boolean isOperated() { return operated; }
     /** Monotonic accepted physical-action revision; monitoring and reads leave it unchanged. */
     public long getNetworkActionVersion() { return networkActionVersion; }
+    /** Null before an action or after reinitialization; observation does not advance protection. */
+    public ActionSnapshot getLastActionSnapshot() { return lastActionSnapshot; }
     /** Exact accepted-step devices supported without creating trial ODE coordinates. */
     public static boolean isAcceptedStepDevice(Object device) {
         return device instanceof Tiocr1RelayModel || device != null && device.getClass() == LoadPort.class;

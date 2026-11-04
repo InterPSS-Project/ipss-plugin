@@ -290,3 +290,38 @@ transfer targets and reconnection remain separate qualification work.
 The immutable paired captures are retained in
 `testData/private/verification-artifacts/tiocr-physical-terminal-20261104/captures.zip`,
 SHA-256 `76deeda96324b72911d7b6525e352656cb245e478dda1cbc62365886d0cee07c`.
+
+## Zero-delay and separate transfer-target boundaries
+
+Eight additional cold captures cover zero and 0.02-second breaker delays,
+opening either the monitored circuit or its parallel circuit. Paired captures
+are identical. Both integration methods retain every sample and operation side;
+the transfer target alone opens, the requested load fraction is applied once,
+and the monitored position stays at one when its circuit remains energized.
+
+Zero delay reveals a boundary that a pre-callback snapshot cannot represent:
+the accepted callback first reaches pickup and then opens the branch. Its
+pre-action position is one, whereas the earlier snapshot was approximately
+0.99145. `Tiocr1RelayModel.ActionSnapshot` now captures current, position and
+elapsed breaker time after the accepted timer/pickup update, before network
+mutation. It is published only after a physical action commits, with that
+action's revision. Repeated reads and rejected callbacks preserve the same
+immutable snapshot; reinitialization clears it. The snapshot is allocated only
+on a physical action. Normal integration steps do not allocate snapshots.
+
+The recorder combines this exact action snapshot with the retained pre-action
+topology/status observations. The old recorder fails all eight new controls:
+zero-delay position is premature, or nonzero-delay elapsed time is one interval
+short. The physical runtime equations, trip times and integrated trajectories
+remain unchanged to roundoff (maximum observed rotor difference below `1e-12`
+degrees). These observations do not reinterpret raw diagnostic deadline/current
+slots as physical quantities.
+
+The focused relay/composite matrix passes 58 tests with no failures, errors or
+skips. New reference tests keep voltage/power NRMSE below `5e-5` for modified
+Euler and `8e-6` for staggered integration, rotor-angle RMSE below `5e-5` degrees,
+and the existing terminal-position envelopes. Multiple simultaneous transfer
+targets, reconnection and additional delay/curve combinations remain unqualified.
+The independent controls are retained in
+`testData/private/verification-artifacts/tiocr-delay-transfer-20261104/captures.zip`,
+SHA-256 `47903792e52b8409d98d809c11f5209c06e69eff3986ecaeaf70a6d5d7dce07f`.

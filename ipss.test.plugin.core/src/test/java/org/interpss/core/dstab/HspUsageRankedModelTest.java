@@ -116,7 +116,15 @@ public class HspUsageRankedModelTest {
                     ||resetProfile&&(Math.abs(t-.2)<1e-9||Math.abs(t-.25)<1e-9));
             if(enabled&&(scheduled||(t>1e-9&&dstabAlgo.getNetwork().isYMatrixDirty()))) {
                 var values=capture(dstabAlgo.getNetwork());
-                if(protectionLeft!=null&&relayRevision()!=protectionRevision)values.putAll(protectionLeft);
+                if(protectionLeft!=null&&relayRevision()!=protectionRevision) {
+                    values.putAll(protectionLeft);
+                    for(var bus:dstabAlgo.getNetwork().getBusList())for(var device:bus.getDynamicBusDeviceList())
+                        if(device instanceof Tiocr1RelayModel relay&&relay.getLastActionSnapshot()!=null) {
+                            var action=relay.getLastActionSnapshot();
+                            values.put("RELAY.Current",action.current());values.put("RELAY.Position",action.position());
+                            values.put("RELAY.Breaker",action.breakerTimer());
+                        }
+                }
                 rows.add(new Captured(t,"EVENT_PRE",values));
             }
             protectionLeft=null;
@@ -131,10 +139,13 @@ public class HspUsageRankedModelTest {
             if(!enabled)return;
             protectionRevision=relayRevision();
             for(var bus:dstabAlgo.getNetwork().getBusList())for(var device:bus.getDynamicBusDeviceList())
-                if(device instanceof Tiocr1RelayModel relay)protectionLeft=Map.of(
+                if(device instanceof Tiocr1RelayModel relay) {
+                    protectionLeft=new TreeMap<>(Map.of(
                         "RELAY.Current",relay.currentMagnitude(),"RELAY.Position",relay.getPosition(),
                         "RELAY.Breaker",relay.getBreakerTimer(),"RELAY.Operated",relay.isOperated()?1.:0.,
-                        "RELAY.ShedFraction",relay.getShedFraction(),"RELAY.Revision",(double)relay.getNetworkActionVersion());
+                        "RELAY.ShedFraction",relay.getShedFraction(),"RELAY.Revision",(double)relay.getNetworkActionVersion()));
+                    captureBranchStatus(dstabAlgo.getNetwork(),protectionLeft);
+                }
         }
         @Override public void afterStep(double t) throws com.interpss.dstab.common.DStabSimuException {
             captureProtectionLeft();super.afterStep(t);
@@ -185,8 +196,12 @@ public class HspUsageRankedModelTest {
                 values.put("RELAY.Current",relay.currentMagnitude());values.put("RELAY.Position",relay.getPosition());values.put("RELAY.Breaker",relay.getBreakerTimer());
                 values.put("RELAY.Operated",relay.isOperated()?1.:0.);values.put("RELAY.ShedFraction",relay.getShedFraction());
                 values.put("RELAY.Revision",(double)relay.getNetworkActionVersion());
+                captureBranchStatus(net,values);
             }
         return values;
+    }
+    private static void captureBranchStatus(BaseDStabNetwork<?,?> net,Map<String,Double> values) {
+        for(var branch:net.getBranchList())values.put("BRANCH."+branch.getId(),branch.isActive()?1.:0.);
     }
 
     @Test void inverseTimeCurveAndResetUsePhysicalCurrentBase() {
