@@ -304,7 +304,10 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         p.afterNetworkConvergence();p.endNetworkSolution(true);
         if(!staggered){
             m.readBoundary(boundary,0);
-            double predictedRate=(boundary[0]-boundary[1]-resistance*boundary[2])/f.binding().effectiveHenries();
+            var converter=f.binding().owner().getRectifier();
+            double commutation=3/Math.PI*converter.getNBridges()*converter.getCommutingZ().getImaginary();
+            double integrationVoltage=boundary[0]+commutation*(boundary[2]-initialCurrent);
+            double predictedRate=(integrationVoltage-boundary[1]-resistance*boundary[2])/f.binding().effectiveHenries();
             double expectedCurrent=initialCurrent+.5*h*(initialRate+predictedRate);
             p.nextStep(h,DynamicSimuMethod.MODIFIED_EULER,1);p.beginNetworkSolution(context("CORRECTOR",h));
             p.beforeNetworkIteration(0);assertTrue(p.applyConvergedNetworkAction());assertFalse(m.inverterShorted());

@@ -284,6 +284,87 @@ repeat checks and restoration checks are retained in the private
 `chvdc2-outer-refinement-20261103` validation archive. This is full-network
 refinement evidence, not qualification of a production local-substep API.
 
+### Converter-current sampling for dynamic-line integration
+
+The fixed-angle coarse controls also distinguish the current used in the
+converter's commutation-voltage drop. A replay through `LccConverterBoundary`
+and the prepared `Chvdc2DcLine` reconstructs converter voltage from recorded
+AC voltage, constant firing angle, equipment and the replay's own current.
+It never overwrites the current from later reference samples. Sampling the
+commutation current once per outer interval gives these peak errors:
+
+| Common-RHS replay, ten local steps | `1/240 s` | `1/480 s` |
+| --- | ---: | ---: |
+| Staggered, live commutation current | 0.773941 A | 0.384082 A |
+| Staggered, sampled commutation current | 0.001240 A | 0.001152 A |
+| Modified Euler, live commutation current | 0.874261 A | 0.434012 A |
+| Modified Euler, sampled commutation current | 0.237713 A | 0.122319 A |
+
+The staggered component gates pass; the modified-Euler gates remain failures.
+The independent captures, all event duplicates and both cold repeats are the
+same immutable coarse controls used by the preceding event-scope change.
+
+Inside an explicitly bracketed outer interval, the coupled runtime now samples
+only the commutation-current term supplied to dynamic-line integration.
+Rectifier and inverter samples remain separate, including capacitive lines.
+The line resistance continues to use the evolving line state. Firing angles,
+AC voltages, protection shorting, published converter DC voltages, physical
+currents and AC injections remain live. The algebraic-line mode is unchanged.
+Without an outer bracket, the component retains its live-input equation path.
+
+The implementation reuses the current samples and rollback buffers already
+owned by the outer interval. It adds a scalar commutation-drop correction to
+the live voltage calculation, avoiding duplicate trigonometric evaluations
+and per-step allocation. Modified Euler uses this same input boundary in its
+predictor and corrector. An inverter short still gives zero inverter line
+voltage, and protection transitions retain their accepted-endpoint lifecycle.
+Completion restores live line inputs; cancellation/rollback restores the samples.
+
+Matched complete-network runs use the previous committed runtime with the new
+test matrix as a control, then rebuild the working runtime. Coefficients,
+network intervals, source machines, clocks and channel gates are unchanged:
+
+| Profile | Method / local steps | Previous peak current error | Sampled peak current error |
+| --- | --- | ---: | ---: |
+| Fixed angle, quarter cycle | Staggered / 10 | 0.784727 A | 0.016931 A |
+| Fixed angle, half-quarter cycle | Staggered / 10 | 0.389821 A | 0.009242 A |
+| Fixed angle, 0.5 ms | Staggered / 10 | 0.094272 A | 0.020073 A |
+| Fixed angle, 0.25 ms | Staggered / 10 | 0.051169 A | 0.051317 A |
+| Fixed angle, quarter cycle | Modified Euler / 1 | 2.265314 A | 2.399192 A |
+| Fixed angle, half-quarter cycle | Modified Euler / 1 | 1.163485 A | 1.202705 A |
+| Protected short, matched clock | Staggered / 10 | 11.016815 A | 9.472245 A |
+| Protected short, matched clock | Modified Euler / 1 | 6.999057 A | 5.919170 A |
+| Nominal dynamic line, 0.5 ms | Staggered / 10 | 0.129918 A | 0.129506 A |
+
+Improvement is not uniform. All complete-model reference gates remain open;
+the half-quarter-cycle current channel passing alone does not qualify its
+other states/power channels. The expanded matrix also retains the earlier
+single-step fast algebraic-line nonconvergence as an explicit error. No
+precision reduction, trace alignment change, tolerance relaxation or default
+local-count change is included.
+
+Both-method unit checks cover distinct capacitor-terminal samples, zero/nonzero
+measurement lag, live voltage/angle changes and injections, interval completion,
+predictor cancellation, whole-transaction rollback and protected corrector
+ownership. All 58 runtime/terminal lifecycle checks pass. The private
+`chvdc2-line-current-sampling-20261104` evidence directory retains the matched
+previous-runtime executable, complete baseline traces and current validation.
+
+Registered regression validation covers 5,846 checks: 201 failures, two errors
+and 63 skips. All 5,834 preceding test identities retain their status. The
+12 added checks comprise four passing checks and eight failing reference
+trajectory gates; these failures remain visible rather than being skipped or
+relaxed. The explicit completion selection runs 71 checks with no failures and five existing
+skips, including the strengthened separate-terminal sampling regression.
+
+The matched isolated matrix compares 38 unique profiles. All 16 profiles
+required to remain unchanged have zero numerical trace difference. The broad
+suite's fast algebraic control differs from the isolated control even though
+this correction does not execute in algebraic mode. Its original report is
+retained separately; isolated runs provide the matched numerical comparison.
+Cross-suite trajectory isolation remains an investigation item, not evidence
+of full-model qualification. Broad and isolated test statuses agree.
+
 ### Scheduled network events across local steps
 
 Cold-repeated fixed-angle controls at network intervals of `1/240 s` and

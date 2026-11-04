@@ -77,6 +77,21 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
     void fixedAngleLineNetworkComparedAgainstIndependentCaptures(String interval,boolean staggered)throws Exception {
         lineIntegrity();compare(LINE_ARCHIVE,lineTag(interval),staggered,false);
     }
+    @ParameterizedTest @ValueSource(strings={"0p0005","0p00025"})
+    void fixedAngleLineWithLocalIntegration(String interval)throws Exception {
+        lineIntegrity();compare(LINE_ARCHIVE,lineTag(interval),true,false,Chvdc2TerminalPorts.ProtectionClock.BINARY32,10);
+    }
+    static Stream<Arguments> coarseLineProfiles(){return Stream.of("0p00416666666667","0p00208333333333")
+            .flatMap(h->Stream.of(false,true).map(s->Arguments.of(h,s)));}
+    @ParameterizedTest @MethodSource("coarseLineProfiles")
+    void coarseFixedAngleLineNetworkComparedAgainstIndependentCaptures(String interval,boolean staggered)throws Exception {
+        Path archive=Path.of("testData/private/verification-artifacts/chvdc2-coarse-line-event-20261104/captures.zip");
+        Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain coarse fixed-angle controls");
+        assertEquals("ae3e8619df97ad2fb85b6d4704959faf60c057c87a6a8b2ef21d23e0efdd839c",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
+        compare(archive,"stiff-legacy-inverter-fault-flags001-h"+interval+"-fixed-angle-line-gamma30-netiter50-fixed-dc-taps-a",
+                staggered,false,Chvdc2TerminalPorts.ProtectionClock.BINARY32,staggered?10:1);
+    }
     static Stream<Arguments> protectedProfiles(){
         var raml=Stream.of("0p0005","0p00025").map(h->new String[]{"chvdc2-converter-20261102/protection-captures.zip",
                 "5245279e56e57373bdd8afc23fc5e033b73aef0b5e667f41a9d50c4e7ae53b16",

@@ -101,6 +101,37 @@ public class Chvdc2CoupledRuntimeTest {
         m.beginIntegrationInterval(h);m.step(h,0);m.cancelPrediction();m.step(h,0);m.step(h,1);m.completeIntegrationInterval();
         m.readStaggeredState(x,0);assertArrayEquals(initial,x,1e-10);
     }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void lineIntegrationSamplesCommutationCurrentsButKeepsOtherInputsLive(boolean staggered) {
+        for(double capacitance:new double[]{0,.0001})for(double measurementTime:new double[]{0,.01}) {
+            var r=rig(true,capacitance,measurementTime);var m=r.model();int count=m.staggeredStateCount();
+            double h=.000001;double[] initial=new double[count],sample=new double[count],x=new double[count],rates=new double[count],b=new double[10];
+            m.readStaggeredState(initial,0);m.beginTransaction();
+            if(count==18) {m.readStaggeredState(x,0);x[15]+=2;x[17]-=2;m.applyStaggeredState(x,0,0);}
+            m.readStaggeredState(sample,0);m.beginIntegrationInterval(h);
+            m.readStaggeredState(x,0);x[15]+=4;if(count==18)x[17]-=3;
+            x[6]+=.1;x[7]-=.1;m.applyStaggeredState(x,0,0);m.readStaggeredState(x,0);
+            m.setBoundary(1.02,0,1.03,0,1050,0);m.evaluateStaggered(h,rates,0);m.readBoundary(b,0);
+            double lineR=r.rectifier().dcVoltageAtFiringAngle(1.02,sample[15],Math.toRadians(x[6]));
+            double lineI=r.inverter().dcVoltageAtFiringAngle(1.03,sample[count==18?17:15],Math.toRadians(x[7]));
+            assertEquals(r.rectifier().dcVoltageAtFiringAngle(1.02,x[15],Math.toRadians(x[6])),b[0],1e-8);
+            assertEquals(r.inverter().dcVoltageAtFiringAngle(1.03,x[count==18?17:15],Math.toRadians(x[7])),b[1],1e-8);
+            if(count==16)assertEquals((lineR-lineI-5*x[15])/2.5,rates[15],1e-8);
+            else {
+                assertEquals((lineR-x[16]-2.5*x[15])/1.25,rates[15],1e-8);
+                assertEquals((x[15]-x[17])/capacitance,rates[16],1e-7);
+                assertEquals((x[16]-lineI-2.5*x[17])/1.25,rates[17],1e-8);
+            }
+            if(staggered) {for(int k=0;k<count;k++)x[k]+=h*rates[k];m.applyStaggeredState(x,0,h);m.completeStaggeredStep(h);}
+            else {m.step(h,0);m.step(h,1);}
+            m.completeIntegrationInterval();m.readStaggeredState(x,0);m.readBoundary(b,0);m.evaluateStaggered(0,rates,0);
+            double expected=count==16?(b[0]-b[1]-5*x[15])/2.5:(b[0]-x[16]-2.5*x[15])/1.25;
+            assertEquals(expected,rates[15],1e-8,"Completed interval resumes live commutation current");
+            m.rollbackTransaction();m.readStaggeredState(x,0);assertArrayEquals(initial,x);
+            m.beginIntegrationInterval(h);m.step(h,0);m.cancelPrediction();m.step(h,0);m.step(h,1);m.completeIntegrationInterval();
+            m.readStaggeredState(x,0);assertArrayEquals(initial,x,1e-10,"Rollback restores sampled current and interval ownership");
+        }
+    }
     @Test void capacitorCircuitRetainsBothCurrentsAndItsEnergyBalance() {
         var r=rig(true,.0001);var m=r.model();assertEquals(18,m.staggeredStateCount());double[] x=new double[18],f=new double[18],b=new double[10];
         m.readStaggeredState(x,0);x[15]=1060;x[17]=1040;m.applyStaggeredState(x,0,0);m.readBoundary(b,0);m.evaluateStaggered(0,f,0);

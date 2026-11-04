@@ -93,7 +93,15 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double electricalInverterVoltage=inverter.maximumDcVoltage(vi,ii,heldGamma);
         inverter.evaluateDcVoltage(vi,electricalInverterVoltage,ii,inverterValues,0);
         // Line-side shorting and the held-angle AC interface are intentionally distinct.
-        line.setInput(dcR,dcI);
+        // The converter's commutation drop supplied to the line integrator uses
+        // the outer-interval current sample. Local line resistance still sees
+        // its evolving state; terminal observations and AC injections remain live.
+        double lineR=dcR,lineI=dcI;
+        if(intervalActive&&count>15) {
+            lineR+=rectifier.commutatingResistanceOhms()*(ir-intervalRectifierCurrent);
+            if(!controls.inverterShorted())lineI-=inverter.commutatingResistanceOhms()*(ii-intervalInverterCurrent);
+        }
+        line.setInput(lineR,lineI);
         // Lagged current transducers sample the line current once per outer
         // interval. Zero-lag observations, converter voltage and AC injection stay live.
         boolean sampled=intervalActive&&laggedCurrentMeasurement;
@@ -114,7 +122,8 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         algebraicCurrent=current;
     }
     /** Start an outer electrical interval before local state integration. Local
-     * steps retain its algebraic current, sampled voltages and transducer currents; live AC injections
+     * steps retain its algebraic current, sampled voltages, transducer currents
+     * and the commutation-drop current supplied to dynamic-line integration; live AC injections
      * still refresh at every network trial. Coefficient preparation is unchanged.
      * Without this bracket, current-transducer inputs remain live and each
      * completed numerical step publishes the algebraic line. */
