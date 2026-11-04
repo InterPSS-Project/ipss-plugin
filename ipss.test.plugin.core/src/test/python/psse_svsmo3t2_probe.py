@@ -56,6 +56,7 @@ def main():
     parser.add_argument("--con", type=float, nargs=2, action="append", default=[], metavar=("OFFSET", "VALUE"))
     parser.add_argument("--icon", type=int, nargs=2, action="append", default=[], metavar=("OFFSET", "VALUE"))
     parser.add_argument("--fault-ohms", type=float, default=100.)
+    parser.add_argument("--fault-clear", type=float, default=.1)
     parser.add_argument("--trip-rebuild-time", type=float)
     parser.add_argument("--reference-change", type=float, default=.01)
     parser.add_argument("--load-law", choices=("constant-impedance", "constant-power"), default="constant-impedance")
@@ -66,7 +67,9 @@ def main():
     args = parser.parse_args()
     if not 0 < args.step <= .01 or not .1 <= args.stop <= 20:
         parser.error("step and duration exceed the reviewed small-case budget")
-    if args.trip_rebuild_time is not None and (args.profile != "fault" or not .05 < args.trip_rebuild_time < .099):
+    if args.profile == "fault" and not .05 < args.fault_clear <= args.stop:
+        parser.error("fault clearing must follow application and not exceed stop")
+    if args.trip_rebuild_time is not None and (args.profile != "fault" or not .05 < args.trip_rebuild_time < args.fault_clear - .001):
         parser.error("the negligible rebuild discriminator must lie inside the main fault")
     estimated_bytes = (math.ceil(args.stop / args.step) * (2 if args.mss_case else 1) + 16) * 4096
     if estimated_bytes > FILE_LIMIT:
@@ -210,7 +213,7 @@ def main():
             checked("negligible rebuild fault", psspy.dist_bus_fault(1, 3, 230., [0., 1.e12]))
             run_to(args.trip_rebuild_time + .001)
             checked("clear negligible rebuild fault", psspy.dist_clear_fault(2))
-        run_to(.1)
+        run_to(args.fault_clear)
         observe_lifecycle("BEFORE_CLEARING")
         checked("clear", psspy.dist_clear_fault(1))
     elif args.profile == "reference-step":
@@ -253,7 +256,7 @@ def main():
                 "model_document_sha256": sha256(library.parents[1] / "DOCS/ModelLibrary.pdf"),
                 "profile": args.profile, "step_s": args.step, "stop_s": args.stop,
                 "con_overrides": args.con, "icon_overrides": args.icon,
-                "fault_ohms": args.fault_ohms, "reference_change": args.reference_change,
+                "fault_ohms": args.fault_ohms, "fault_clear_s": args.fault_clear, "reference_change": args.reference_change,
                 "trip_rebuild_time": args.trip_rebuild_time,
                 "trip_rebuild_impedance_ohms": 1.e12 if args.trip_rebuild_time is not None else None,
                 "trip_rebuild_duration_s": .001 if args.trip_rebuild_time is not None else None,

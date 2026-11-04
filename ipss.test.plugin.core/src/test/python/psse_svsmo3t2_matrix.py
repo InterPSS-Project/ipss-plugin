@@ -6,6 +6,14 @@ import sys
 from pathlib import Path
 
 PROFILES = {
+    "short-block-sensor-bypass": ["--fault-ohms", "10", "--fault-clear", ".055", "--stop", ".3", "--con", "2", "0"],
+    "long-block-sensed": ["--fault-ohms", "10", "--fault-clear", ".2", "--stop", ".4"],
+    "short-overvoltage-zero-delay": ["--fault-ohms", "-1000", "--fault-clear", ".055", "--stop", ".3", "--con", "20", "1.01", "--con", "21", "1.02", "--con", "42", "0"],
+    "short-overvoltage-block": ["--fault-ohms", "-1000", "--fault-clear", ".055", "--stop", ".3", "--con", "20", "1.01", "--con", "21", "1.02"],
+    "short-block": ["--fault-ohms", "10", "--fault-clear", ".055", "--stop", ".3"],
+    "short-block-zero-delay": ["--fault-ohms", "10", "--fault-clear", ".055", "--stop", ".3", "--con", "42", "0"],
+    "slow-reset-block-zero-deadband": ["--icon", "2", "1", "--con", "12", ".04", "--con", "13", ".2", "--con", "14", "0", "--fault-ohms", "10"],
+    "slow-reset-block-double-deadband": ["--icon", "2", "1", "--con", "12", ".04", "--con", "13", ".2", "--con", "14", ".02", "--fault-ohms", "10"],
     "flat": ["--profile", "flat"],
     "fault": [],
     "half-fault": ["--step", ".00025"],

@@ -58,7 +58,7 @@ constructed only when requested, outside the numerical loop.
 
 Zero-duration event calls can project an active PI constraint. They do not
 integrate derivatives or advance timers. Current limiting uses instantaneous
-terminal voltage, separately from the filtered regulation signal. Blocking
+terminal voltage, separately from the filtered regulation signal. Overvoltage recovery
 duration and exhausted definite-time rating are committed histories. External
 blocking is latched at acceptance, so a zero-time fault network solve retains
 the previously accepted current. The internal output-lag coordinate remains
@@ -354,6 +354,45 @@ trip, accepts electrical detachment, restores and resolves the operating point,
 invalidates cached network initialization and reinitializes the same solver.
 For both ordinary modified Euler and staggered integration, the next forty
 coupled endpoints match a fresh import: all six coordinates and bus voltage
-within 1e-9, with identical accepted histories. This verifies clean solver/model
+within 1e-9, with accepted physical current within 1e-12 and identical
+timer/discrete histories. This verifies clean solver/model
 reuse after explicit reinitialization. It does not introduce an online reconnect
 command or establish an independent reference reconnect trajectory.
+
+
+## Directional blocking recovery
+
+Paired short-fault controls distinguish undervoltage suppression from
+post-overvoltage recovery. Undervoltage releases on voltage recovery without
+starting `Sdelay`. Overvoltage arms a recovery hold; its elapsed duration starts
+when terminal voltage recovers, not at initial blocking. Expiry releases the
+following integration interval while the expiring interval retains its accepted
+zero physical output. A zero duration bypasses this hold. The raw terminal
+voltage still drives the separate trip detector.
+
+The model now implements these distinct histories using a reusable boolean and
+timer. There is no new expression evaluation, per-step allocation, precision
+policy or timing offset. The generic diagram does not specify these directional
+and accepted-output details; paired independent captures establish them.
+A sensor bypass and a long fault reject the alternative hypothesis that the
+recovery timer follows filtered regulation voltage. Every short-block control
+has finite measurements, clean initial conditions and a repeating cold capture.
+
+`directionalBlockingRecoveryMatchesEveryPhysicalOutputStatus` compares every
+blocked/released physical-current row, including event duplicates, under both
+methods. It retains full voltage, angle, current, power and six-state trajectories.
+For the short undervoltage fault, peak bus voltage error falls from 0.180138 pu
+to 0.002949 pu with ordinary modified Euler and 0.000118 pu with staggered
+integration. The corrected overvoltage hold reduces peak voltage error from 0.031586 to
+0.002242 pu and from 0.032671 to 0.00000649 pu respectively. Block/release
+row mismatches fall from 29 to zero for the short undervoltage fault and from
+11 to zero for the short overvoltage fault under each method. Existing accepted blocking, rating,
+trip and MSS gates remain unchanged.
+
+This is lifecycle acceptance, not blanket trajectory acceptance. In particular,
+coarse modified-Euler overvoltage voltage range-NRMSE remains approximately
+0.00145, above the unchanged 0.001 trajectory target. The complete diagnostic
+trace is retained. Slow-reset controls with zero and doubled current deadband
+retain an output-coordinate residual and nonzero native initialization
+residuals; they are algebraic discriminators only. No undocumented offset is
+introduced to fit those traces.

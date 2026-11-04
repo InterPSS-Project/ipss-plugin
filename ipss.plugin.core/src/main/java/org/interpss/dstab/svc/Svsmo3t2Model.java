@@ -48,7 +48,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
     private boolean predictorPending, blocked, tripped, thermalLimited, deadbandLocked, shortRatingExhausted;
-    private boolean initialized, networkDetached;
+    private boolean initialized, networkDetached, overvoltageRecovery;
 
     public Svsmo3t2Model(BaseDStabBus<?, ?> bus, BaseDStabBus<?, ?> remoteBus,
             StaticVarCompensator svc, Svsmo3t2Data data) {
@@ -86,7 +86,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         preparedVrefMax = Math.max(data.vrefMax(), scheduledVoltage);
         shortTimer = unblockTimer = overvoltageTimer = deadbandTimer = 0;
         predictorPending = blocked = tripped = thermalLimited = shortRatingExhausted = false;
-        networkDetached = false;
+        networkDetached = overvoltageRecovery = false;
         deadbandLocked = data.deadband() > 0;
         integrationTime = 0;
         predictorStep = 0;
@@ -240,12 +240,23 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private void updateHistory(double dt) {
         boolean previouslyTripped = tripped;
         double voltage = getDStabBus().getVoltageMag();
-        boolean outside = voltage < data.uv2() || voltage > data.ov2();
-        if (outside && !blocked) { blocked = true; unblockTimer = 0; }
-        if (blocked) {
+        // Undervoltage suppresses output only while outside its envelope.
+        // Overvoltage arms a recovery hold; Sdelay starts on voltage recovery,
+        // not when blocking first begins. Keep the raw-voltage trip independent.
+        boolean recoveryHeldThisInterval = overvoltageRecovery;
+        if (voltage > data.ov2()) {
+            overvoltageRecovery = data.unblockTime() > 0;
+            unblockTimer = 0;
+        } else if (overvoltageRecovery) {
             unblockTimer += dt;
-            if (!outside && unblockTimer >= data.unblockTime()) { blocked = false; unblockTimer = 0; }
+            if (unblockTimer >= data.unblockTime()) {
+                overvoltageRecovery = false;
+                unblockTimer = 0;
+            }
         }
+        // Expiration releases the next interval; retain the physical output
+        // accepted for the interval whose derivatives still used the hold.
+        blocked = voltage < data.uv2() || voltage > data.ov2() || recoveryHeldThisInterval;
         overvoltageTimer = voltage > data.tripVoltage() ? overvoltageTimer + dt : 0;
         if (voltage > data.tripVoltage() && overvoltageTimer >= data.tripTime()) tripped = true;
         if (!thermalRatingActive && !shortRatingExhausted) {
@@ -305,7 +316,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     }
     private boolean effectiveBlocked(double terminalVoltage) {
         return terminalVoltage < data.uv2() || terminalVoltage > data.ov2()
-                || blocked && unblockTimer < data.unblockTime();
+                || overvoltageRecovery;
     }
     private double measurement(double sensed) {
         return data.tb1() == 0 ? sensed : sensorRatio * sensed + (1 - sensorRatio) * x[0];
@@ -381,6 +392,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         result.put("Overvoltage elapsed seconds", overvoltageTimer);
         result.put("Deadband elapsed seconds", deadbandTimer);
         result.put("Blocked", blocked ? 1. : 0.);
+        result.put("Overvoltage recovery hold", overvoltageRecovery ? 1. : 0.);
         result.put("Tripped", tripped ? 1. : 0.);
         result.put("Network detached", networkDetached ? 1. : 0.);
         result.put("Thermal rating limited", thermalLimited ? 1. : 0.);

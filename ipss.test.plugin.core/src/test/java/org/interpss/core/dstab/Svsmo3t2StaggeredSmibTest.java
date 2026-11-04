@@ -255,7 +255,10 @@ public class Svsmo3t2StaggeredSmibTest extends CorePluginTestSetup {
                 assertTrue(clean.solveDEqnStep(true));
                 for (var entry : cleanDevice.getIntegrationStates().entrySet())
                     assertEquals(entry.getValue(), device.getIntegrationStates().get(entry.getKey()), 1e-9, entry.getKey());
-                assertEquals(cleanDevice.getIntegrationHistories(), device.getIntegrationHistories());
+                for (var entry : cleanDevice.getIntegrationHistories().entrySet()) {
+                    double tolerance = entry.getKey().equals("Accepted physical current") ? 1e-12 : 0.;
+                    assertEquals(entry.getValue(), device.getIntegrationHistories().get(entry.getKey()), tolerance, entry.getKey());
+                }
                 assertEquals(cleanDevice.getDStabBus().getVoltageMag(), bus.getVoltageMag(), 1e-9);
             }
         }

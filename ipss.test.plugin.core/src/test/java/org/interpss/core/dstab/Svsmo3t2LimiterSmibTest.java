@@ -79,6 +79,20 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         System.out.println("SVSMO3T2 trip lifecycle acceptance " + output);
     }
 
+    @Test void directionalBlockingRecoveryMatchesEveryPhysicalOutputStatus() throws Exception {
+        Path matrix = referenceRoot();
+        Path output = Files.createTempDirectory(Path.of("target"), "svsmo3t2-recovery-lifecycle-");
+        var results = new LinkedHashMap<String, Object>();
+        for (String profile : new String[]{"short-block", "short-block-zero-delay", "short-block-sensor-bypass",
+                "long-block-sensed", "short-overvoltage-block", "short-overvoltage-zero-delay"})
+            for (boolean staggered : new boolean[]{false, true}) {
+                String key = profile + (staggered ? "-staggered" : "-modified");
+                results.put(key, compare(matrix.resolve(profile), output.resolve(key + ".csv"), staggered, "recovery-lifecycle"));
+            }
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(), results);
+        System.out.println("SVSMO3T2 directional recovery lifecycle " + output);
+    }
+
     @Test @Tag("extended") void compareBothMethodsWithoutDroppingLimiterOrEventSamples() throws Exception {
         var mapper = new ObjectMapper();
         Path matrix = referenceRoot();
@@ -111,6 +125,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         extract(root, "limiters.zip", "2f8edde0aff5b9699cbd0f3cf88aa908a5b584c2154f9b70bf55e332bd12bf28");
         extract(root, "ratings.zip", "49c580c091258ea4b208c65dd7d5ff3ba80864a9c07f2c7ec43ca56045a0a741");
         extract(root, "trips.zip", "866afbf13b6782f609d6a6f65b708f5b0f9a2fb6975bb1ac71239e3af5df580d");
+        extract(root, "blocking-recovery.zip", "b9156274567854ff430d279d1ce7d5a3a3ec990d914cb43b253621e5a5dee4e0");
         return root;
     }
 
@@ -161,7 +176,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         algorithm.setSimuOutputHandler(new StateMonitor());
         if (manifest.get("profile").asText().equals("fault")) {
             net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3", net, SimpleFaultCode.GROUND_3P,
-                    new Complex(0, manifest.get("fault_ohms").asDouble() / 529.), null, .05, .05), "fault");
+                    new Complex(0, manifest.get("fault_ohms").asDouble() / 529.), null, .05, manifest.path("fault_clear_s").asDouble(.1) - .05), "fault");
             var rebuildTime = manifest.get("trip_rebuild_time");
             if (rebuildTime != null && !rebuildTime.isNull())
                 net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net, SimpleFaultCode.GROUND_3P,
@@ -207,7 +222,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         }
         int removalTick = Integer.MAX_VALUE;
         if (firstTripTick != Integer.MAX_VALUE) {
-            removalTick = (int) Math.round(.1 / step);
+            removalTick = (int) Math.round(manifest.path("fault_clear_s").asDouble(.1) / step);
             var rebuild = manifest.get("trip_rebuild_time");
             if (rebuild != null && !rebuild.isNull()) {
                 int eventTick = (int) Math.round(rebuild.asDouble() / step);
@@ -218,6 +233,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         double[] attachedMaximum = new double[6], attachedSquares = new double[6], attachedAt = new double[6];
         double[] detachedState = null;
         int attachedSamples = 0, tripFlagMismatches = 0, removalFlagMismatches = 0, detachedSamples = 0;
+        int blockingOutputMismatches = 0;
         double[] low = new double[NAMES.length], high = new double[NAMES.length];
         Arrays.fill(low, Double.POSITIVE_INFINITY); Arrays.fill(high, Double.NEGATIVE_INFINITY);
         double ratingOnsetMaximum = 0;
@@ -236,6 +252,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
                 boolean repeated = previousClock == clock;
                 previousClock = clock;
                 var actual = repeated && row[0] >= 0 ? starts.getOrDefault(tick, frames.get(tick)) : frames.get(tick);
+                if ((actual[7] == 0) != (row[columns[7]] == 0)) blockingOutputMismatches++;
                 boolean referenceTripped = row[columns[17]] == 0;
                 boolean referenceDetached = tick > removalTick || tick == removalTick && repeated;
                 if ((actual[NAMES.length] == 1) != referenceTripped) tripFlagMismatches++;
@@ -279,7 +296,13 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         var attachedErrors = new LinkedHashMap<String, Object>();
         for (int i = 0; i < 6; i++) attachedErrors.put("STATE_" + i, Map.of("maximum", attachedMaximum[i],
                 "time_s", attachedAt[i], "rmse", Math.sqrt(attachedSquares[i] / attachedSamples)));
-        if (qualification.equals("blocking")) {
+        if (qualification.equals("recovery-lifecycle")) {
+            assertEquals(0, blockingOutputMismatches, "Every physical blocking/release row must match");
+            assertTrue(prefaultAngleMaximum < .002, "Prefault rotor-angle maximum degrees");
+            assertTrue(Math.sqrt(squares[6] / (lines.size() - 1)) < .01, "Rotor-angle RMSE degrees");
+            // Keep complete trajectory errors diagnostic: coarse ordinary integration
+            // has a separate accuracy envelope, not an excuse to shift timer actions.
+        } else if (qualification.equals("blocking")) {
             double count = lines.size() - 1;
             for (int i = 0; i < 3; i++) {
                 assertTrue(Math.sqrt(squares[i] / count) / (high[i] - low[i]) < .001, NAMES[i] + " range NRMSE");
@@ -383,7 +406,9 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         }
         System.out.println("SVSMO3T2 limiter " + output.getFileName() + " " + errors);
         var result = new LinkedHashMap<String, Object>();
-        result.putAll(Map.of("status", qualification.equals("blocking") ? "coupled-blocking-accepted-cached-mvar-diagnostic"
+        result.put("blocking_output_mismatches", blockingOutputMismatches);
+        result.putAll(Map.of("status", qualification.equals("recovery-lifecycle") ? "coupled-blocking-lifecycle-accepted-trajectory-diagnostic"
+                : qualification.equals("blocking") ? "coupled-blocking-accepted-cached-mvar-diagnostic"
                 : qualification.equals("rating-onset") ? "rating-onset-accepted-full-trajectory-diagnostic"
                 : qualification.equals("rating") ? "coupled-rating-accepted-cached-mvar-diagnostic"
                 : qualification.equals("trip") ? "coupled-trip-accepted-inactive-storage-and-cached-mvar-diagnostic" : "diagnostic-not-accepted",
