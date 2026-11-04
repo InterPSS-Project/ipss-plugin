@@ -139,3 +139,47 @@ boundary remain unqualified.
 Private evidence is retained at
 `verification-artifacts/protection-timing-integration-20261104`, SHA-256
 `8e5c75eeb551d73eb907020f937f9fae5e5fde8ebf2a05a1945f0aee28471051`.
+
+## Accepted converter event inputs
+
+REGCA now refreshes P/Q inputs after the event network solution is accepted,
+using the existing event-input callback. Publication is atomic after finite
+checks; converter and controller states, timers and numerical history do not
+advance. Both solvers exercise the actual imported-device callback, and failed
+event solves do not publish inputs. See the
+[event-power report](regca-accepted-event-power.md).
+
+The broad renewable/plant-controller and motor audit selection reports 323 tests:
+322 pass and one opt-in positive-Q diagnostic is skipped. No failures or errors
+remain in this selection. The first attempt exposed an obsolete module test
+that expected an active power-filter state with PFFLAG=0; its expectation now
+matches the previously verified disconnected branch. No production equation
+was changed to satisfy that assertion. The initial failure log is retained.
+
+This also includes the attached plant's reactive lower-limit replay, with
+unchanged existing replay ceilings. Full network event residuals remain separate
+from replay qualification. Private validation is retained at
+`verification-artifacts/converter-event-integration-20261104`, SHA-256
+`4b24e9ea6f2fc349f6e73a85ba1cb5f4a4fbfd2b76386bcea0f30b6b62f3645d`.
+
+A default-path system smoke recheck still reports the same two network
+nonconvergence failures, at the same stages/times and 50-iteration cap. Their
+residuals change because accepted event inputs now affect the trajectory; this
+is not an assertion of full-system reference accuracy. The no-event test passes.
+Evidence is retained at
+`verification-artifacts/converter-event-system-smoke-20261104`.
+
+## Reference run segmentation
+
+A registered source-contract test confirms that adding a RUN boundary at the
+same physical time changes the reference relay's contact history and advances
+its scheduled trip by one interval, while current and other physical channels
+remain identical. The source-contract and Java accepted-history selection
+passes 41 tests. Java zero-duration integration remains unchanged; this evidence
+does not justify artificial clock advancement or full relay reference parity.
+The motor threshold audit likewise bounds the observed comparison but does not
+claim equality with an inaccessible internal voltage coordinate.
+
+Private source-contract integration evidence is retained at
+`verification-artifacts/relay-source-contract-integration-20261104`, SHA-256
+`3a2bc4a2c5ea9425909402099ca1ecd613be914d3c1398df9172cf4d0e4aa39a`.
