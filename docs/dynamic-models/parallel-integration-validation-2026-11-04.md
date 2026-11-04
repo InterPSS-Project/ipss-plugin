@@ -290,3 +290,16 @@ qualification remains open under both methods.
 Private evidence is retained at
 `verification-artifacts/active-memory-phasor-integrated-20261104`, SHA-256
 `83e8e6a9fd83667ce7ceb6e041ca3fb64c1a527306905cbd69031e42fc035c0b`.
+
+The weighting extension passes 23 integrated contract/regression tests with no
+failures, errors or skips. This does not turn the separate acceleration-0.4
+coupled diagnostics into passing trajectories: both methods exceed the unchanged
+50-iteration cap. Complete traces identify slow contraction of the coupled
+voltage/correction iteration. An exact scalar reduction also exhibits multiple
+admissible fixed points, so residual certification alone cannot establish that
+acceleration preserves the history-selected correction. No production mixing,
+parameter, tolerance or iteration-limit change was made.
+
+Private integrated weighting evidence is retained at
+`verification-artifacts/converter-weighting-integrated-20261104`, SHA-256
+`14a7c16dc5b15eadcee55684954d1ff5eb48f50b1bd3933dc1f457522b3fe130`.
