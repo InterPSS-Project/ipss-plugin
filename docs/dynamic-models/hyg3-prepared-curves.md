@@ -840,6 +840,32 @@ independently observed accepted hydraulic rate or an authoritative stage and
 storage contract; no production precision change or gate relaxation follows
 from these trials.
 
+### Accepted-step hydraulic precision discriminator
+
+The retained moving-flow captures favor the documented two-rate hydraulic
+recurrence over a single-rate Euler update. They do not identify the precision
+or rounding stage of the hidden accepted state: alternative arithmetic orders
+produce the same published values. A separate bound check uses the retained
+long-run captures and allows each published flow and gate coordinate to vary
+by half a binary32 unit in the last place. During the three observed late-flow
+plateaus, the documented hydraulic rate remains strictly positive throughout
+those coordinate intervals. Even the largest permitted one-step flow change is
+below half a binary32 flow unit, while repeated unrounded changes exceed the
+strict state limit. Thus rounding of the published coordinates cannot make the
+documented rate zero; it does not reveal any unreported controller history.
+
+Two further trials rounded flow, then gate and flow, only after an accepted
+integration step. Predictor stages remained unrounded. Both retained all three
+moving-flow discriminator passes and the same six failing long-run groups as
+the unchanged baseline across both integration methods. Accepted-only flow
+rounding reduced the largest eighth-cycle flow errors from `0.0000123` to
+`0.0000101` pu and from `0.0000187` to `0.0000167` pu in the two controller
+branches. Rounding accepted gate and flow reduced them further to about
+`0.00000787` and `0.0000144` pu, still above the `0.0000065` pu limit.
+These trials were reverted. No production state policy or accuracy gate changed.
+The next discriminator needs independently observed accepted hydraulic rates
+or a source-backed acceptance-stage contract.
+
 ### Named parameter edits before initialization
 
 The HYG3 data object now applies its generic named-value API to all scalar

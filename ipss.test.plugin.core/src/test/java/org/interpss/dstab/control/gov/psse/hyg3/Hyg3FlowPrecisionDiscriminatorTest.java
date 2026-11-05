@@ -47,9 +47,16 @@ public class Hyg3FlowPrecisionDiscriminatorTest {
                 if(time<5.||next>10.||next<=time)continue;
                 double flow=left.get("STATE6"),gate=left.get("VAR3");
                 double increment=h*(initialHead-Math.pow(flow/gate,2))/waterTime;
+                double flowHalf=.5*Math.ulp((float)flow),gateHalf=.5*Math.ulp((float)gate);
+                // Even if both published coordinates hide half an observation
+                // quantum, the documented hydraulic rate cannot be zero.
+                double slowest=h*(initialHead-Math.pow((flow+flowHalf)/(gate-gateHalf),2))/waterTime;
+                double fastest=h*(initialHead-Math.pow((flow-flowHalf)/(gate+gateHalf),2))/waterTime;
                 assertEquals(flow,right.get("STATE6"),0.,tag+" source flow plateau");
                 assertTrue(increment>0.&&increment<.5*Math.ulp((float)flow),
                         tag+" nonzero hydraulic increment below binary32 half-ULP");
+                assertTrue(slowest>0.&&fastest<flowHalf,
+                        tag+" hidden observed-coordinate rounding cannot create equilibrium");
                 assertEquals((float)flow,(float)(flow+increment),0.f,
                         tag+" one-step binary32 projection");
                 sum+=increment;checked++;
