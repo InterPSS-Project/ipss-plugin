@@ -2147,3 +2147,35 @@ are retained privately in `hvdc-resistance-aux-integrated-20261104/validation.zi
 SHA-256 `945e34277dda16d98aedc06f8d315cdaf2c836ec9e0693df350001f55bab2d01`.
 This focused integration result does not replace full registered validation or
 close the remaining independent trajectory gate.
+
+### First-interval origin of the finite-resistance voltage gate
+
+A retained-data audit localizes the modified-Euler DC-voltage peaks to the first
+accepted interval after fault application: reference time 0.0505000129 seconds.
+The measurement states are continuous across the two fault-application samples.
+The preceding and accepted-left derivatives are zero. Using the independently
+established event-rate average and separate older two-step history,
+`f_event=(f_left+f_right)/2` and
+`x_next=x_event+H*(3*f_event-f_previous)/2`, predicts the reference's next
+measured-voltage states within their binary32 observation bound. Here this
+reduces algebraically to `0.75*H*f_right`; that coefficient is derived from the
+existing integration contract, not fitted to the trace.
+
+For the inverter-voltage measurement, zero resistance gives a reference
+increment of -121.25 V and a modified-Euler increment of -161.0586 V. Rectifier
+resistance increases those increments to -136.875 V and -181.8149 V. The same
+method difference therefore grows with the physical fault-input jump. The
+resulting modified-Euler terminal errors grow from 8.6461/9.0384 V to
+10.1973/10.6411 V. The staggered rectifier-resistance trajectory remains within
+2.3741/2.3985 V for the two DC-terminal channels.
+
+`cdc6t_resistance_first_interval_audit.py` checks the pinned full evidence and
+retains both event sides, preceding and following observations, original clocks,
+step sizes, evaluation inputs and derivative-history reconstruction. Six
+method/profile diagnostics pass without another simulation. The actual
+modified-Euler predictor-stage boundary is not present in these exports; its
+Heun contract is covered by the existing runtime tests, not reconstructed from
+endpoint values alone. This supports a method-origin explanation for this
+selected first interval. It does not qualify every later observation or close
+the unchanged 10 V acceptance gate. No production correction is justified by
+this discriminator.
