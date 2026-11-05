@@ -155,3 +155,27 @@ or the original legacy model. The private stage exports, all comparison rows,
 reference trajectory and focused test log are retained at
 `verification-artifacts/legacy-ge-raw-q-range-20261104/validation.zip`,
 SHA-256 `e48b086036adec2501fb9794e9981c642f1541501e156096a6d13062cfa7924d`.
+
+## Converted numerical-settings discriminator
+
+A separate converted-model SMIB comparison changed only the reference engine's
+integration method from RK2 to Euler, then separately tightened its network
+convergence tolerance from 1e-4 to 1e-5 pu. The model records, fault, 0.5 ms
+interval and all recorded states were identical. Both runs retained every
+sample and both sides of each event; exported options confirm the settings.
+
+At the fault-clearing event-right sample, Euler changed reference active
+power by 0.2410 MW and reactive power by 0.00163 Mvar. The active-power gap
+against the existing modified-Euler converted-model run decreased from 1.7866
+to 1.5456 MW, while the reactive-power gap remained about 0.65 Mvar. Tightening
+the reference network tolerance changed clearing P/Q by less than the exported
+precision. Neither setting meets the unchanged 0.1 MW/Mvar gates, and neither
+supports exact legacy-model equivalence.
+
+The next discriminator is a side-matched comparison of converter current and
+command states at fault clearing, using the already recorded reference states
+and a corresponding local trace. Do not fit a model parameter or change the
+legacy import status based on this converted-model setting trial. Complete
+private inputs, option readbacks and output traces are retained in
+`verification-artifacts/legacy-ge-settings-20261105/validation.zip`, SHA-256
+`b032da3914b0cdd7cef6944100f0fc18ae74351db260d2481cb6e07e136895c6`.
