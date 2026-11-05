@@ -87,3 +87,16 @@ pending complete model qualification and validation of the final combined state.
 
 Private evidence: `verification-artifacts/svs-publication-integrated-20261104/validation.zip`,
 SHA-256 `018cab42fe8b65e8186feaeaf3f96efffe60d3aad914c23c5dddc775eeea8e0d`.
+
+## Current full registered suite
+
+On clean commit `d1fb9d731`, the complete registered core-plugin suite ran
+5,028 tests across 760 report files: 244 failures, two errors and 13 skips.
+Against the preceding 5,017-test run, 11 tests were added, no previously
+passing test failed, and the zero-lag staggered SVS pulse comparison now passes.
+No other existing failure resolved. Main-branch merge remains gated by the
+remaining model accuracy and runtime failures.
+
+Private XML reports, bounded log and exact identity audit:
+`verification-artifacts/full-registered-current-20261104/validation.zip`,
+SHA-256 `011a6bf678737831a6459b1574f5c350c6cfd4b5c53a1546132e7bb1aa86545c`.
