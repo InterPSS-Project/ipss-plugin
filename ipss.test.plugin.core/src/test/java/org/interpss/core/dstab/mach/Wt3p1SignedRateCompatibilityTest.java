@@ -10,6 +10,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.dstab.mach.Wt3g2Model;
+import org.interpss.dstab.mach.Wt3g2IntegrationBundle;
 import org.interpss.dstab.mach.Wt3p1Data;
 import org.interpss.dstab.mach.Wt3p1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -68,11 +69,13 @@ public class Wt3p1SignedRateCompatibilityTest {
         var gen=(DStabGen)net.getBus("Bus1").getContributeGen("1");
         var converter=assertInstanceOf(Wt3g2Model.class,gen.getDynamicGenDevice());
         converter.getDriveTrain().setPitchController(new Wt3p1Model(data),converter.getElectricalController());
+        var bundle=new Wt3g2IntegrationBundle(converter);
         algo.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);
         assertTrue(algo.getAclfAlgorithm().loadflow());
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algo.setSimuStepSec(.0005);algo.setTotalSimuTimeSec(.15);
         algo.setSimuOutputHandler(new StateMonitor());
         List<double[]> rows=new ArrayList<>();
+        List<double[]> stateRows=new ArrayList<>();
         Runnable capture=()-> {
             Complex voltage=net.getBus("Bus1").getVoltage();
             Complex source=(Complex)converter.getOutputObject();
@@ -80,6 +83,10 @@ public class Wt3p1SignedRateCompatibilityTest {
             Complex power=voltage.multiply(current.conjugate()).multiply(net.getBaseMva());
             rows.add(new double[]{algo.getSimuTime(),voltage.abs(),net.getBus("Bus2").getVoltageMag(),
                     power.getReal(),power.getImaginary()});
+            double[] stateRow=new double[bundle.staggeredStateCount()+1];
+            stateRow[0]=algo.getSimuTime();
+            bundle.readStaggeredState(stateRow,1);
+            stateRows.add(stateRow);
         };
         if(staggered)algo.setSolver(new StaggeredEulerSolver(algo) {
             double lastEvent=-1;
@@ -111,6 +118,16 @@ public class Wt3p1SignedRateCompatibilityTest {
         try(var writer=Files.newBufferedWriter(output.resolve("boundary.csv"))) {
             writer.write("time_s,V1,V2,P_MW,Q_MVAR\n");
             for(double[] row:rows)writer.write(row[0]+","+row[1]+","+row[2]+","+row[3]+","+row[4]+"\n");
+        }
+        try(var writer=Files.newBufferedWriter(output.resolve("states.csv"))) {
+            writer.write("time_s");
+            for(int i=0;i<bundle.staggeredStateCount();i++)writer.write(",state_"+(i+1));
+            writer.write("\n");
+            for(double[] row:stateRows) {
+                writer.write(Double.toString(row[0]));
+                for(int i=1;i<row.length;i++)writer.write(","+row[i]);
+                writer.write("\n");
+            }
         }
         System.out.println("Converted WT3 diagnostic: "+output.toAbsolutePath());
     }

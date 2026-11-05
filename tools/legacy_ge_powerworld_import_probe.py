@@ -10,6 +10,10 @@ import subprocess
 from pathlib import Path
 
 NAMES = ('GEWTG2', 'GEWTE2', 'GEWTA2', 'GEWTP2', 'GEWTT1', 'GEWGD1', 'GEWPLT2')
+STATE_RESULTS = tuple("GEN 1 '1'|" + family + ':' + str(index)
+                      for family, count in (('TSMachineState', 5), ('TSExciterState', 10),
+                                            ('TSGovernorState', 4), ('TSStabilizerState', 3))
+                      for index in range(1, count + 1))
 
 
 def sha(path):
@@ -71,6 +75,7 @@ def main():
     parser.add_argument('--runner', required=True, type=Path)
     parser.add_argument('--tag', required=True)
     parser.add_argument('--executable', required=True, type=Path)
+    parser.add_argument('--diagnostic-states', action='store_true')
     args = parser.parse_args()
     if not re.fullmatch('[A-Za-z0-9_-]+', args.tag):
         raise ValueError('Invalid run tag')
@@ -94,6 +99,8 @@ def main():
                     events=[dict(time_s=.05, object='Bus 1', action='FAULT 3PB IMP 0 0.2'),
                             dict(time_s=.1, object='Bus 1', action='CLEARFAULT')]),
                 results=['Bus 1 | TSVpu', 'Bus 2 | TSVpu', "GEN 1 '1'|TSGenP", "GEN 1 '1'|TSGenQ"])
+    if args.diagnostic_states:
+        spec['results'].extend(STATE_RESULTS)
     (out / 'spec.json').write_text(json.dumps(spec, indent=2))
     module = importlib.util.spec_from_file_location('legacy_import_runner', out / 'runner.py')
     runner = importlib.util.module_from_spec(module)
