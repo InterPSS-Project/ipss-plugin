@@ -23,15 +23,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** Complete independent mixed static/electronic response with static frequency coefficients. */
 public class CompositeMixedStaticFrequencyTest {
-    private record Profile(String name,String archive,String sha,Set<String> inactive) { }
+    private record Profile(String name,String archive,String sha,Set<String> inactive,
+            double step,double endTime,int rows) { }
     private static Stream<Arguments> profiles() {
         var merged=new Profile("merged", "cmldblu1-mixed-frequency-20261105",
                 "ad659d1bbf30cc17a2f2b0ea9834f9c08675e0457a8cb9a6f846a1e374aad7cb",
-                Set.of("VAR69","VAR70","VAR71","VAR72"));
+                Set.of("VAR69","VAR70","VAR71","VAR72"),.0005,.5,1005);
         var distributed=new Profile("distributed", "cmldblu1-distributed-frequency-20261105",
-                "40faed43c8f82bfaedfaea9b3b582b09e2bb82696e4b09736a50ed78113cf479",Set.of());
+                "40faed43c8f82bfaedfaea9b3b582b09e2bb82696e4b09736a50ed78113cf479",
+                Set.of(),.0005,.5,1005);
+        var duration=new Profile("distributed-duration", "cmldblu1-distributed-frequency-duration-20261105",
+                "a099a24d1d1403ca7d3d8cdc27e15720323297bba430396e639bade8a56a5f2d",
+                Set.of("VAR69","VAR70","VAR71","VAR72"),1.0/240,10+1.0/240,2406);
         return Stream.of(Arguments.of(merged,false),Arguments.of(merged,true),
-                Arguments.of(distributed,false),Arguments.of(distributed,true));
+                Arguments.of(distributed,false),Arguments.of(distributed,true),
+                Arguments.of(duration,false),Arguments.of(duration,true));
     }
 
     private static List<Map<String,Double>> rows(byte[] raw) throws Exception {
@@ -57,30 +63,32 @@ public class CompositeMixedStaticFrequencyTest {
         try(var zip=new ZipFile(archive.toFile())) {
             var first=rows(zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes());
             var repeat=rows(zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
-            assertEquals(first.size(),repeat.size());assertEquals(1005,first.size());
+            assertEquals(first.size(),repeat.size());assertEquals(profile.rows(),first.size());
             for(int i=0;i<first.size();i++)for(var field:first.get(i).entrySet())
                 if(!profile.inactive().contains(field.getKey()))assertEquals(field.getValue(),repeat.get(i).get(field.getKey()),
                         "Cold-repeat field " + field.getKey() + " row " + i);
             source=first.stream().filter(row->row.get("time_s")>=0).toList();
             Files.write(staged.resolve("dynamic.dyr"),zip.getInputStream(zip.getEntry("a/dynamic.dyr")).readAllBytes());
         }
-        assertEquals(1003,source.size());
+        assertEquals(profile.rows()-2,source.size());
         assertTrue(source.stream().anyMatch(row->row.get("VAR57")>.9));
         assertTrue(source.stream().anyMatch(row->row.get("VAR58")<-.3));
         int duplicateTimes=0;
         for(int i=1;i<source.size();i++)if(source.get(i-1).get("time_s").equals(source.get(i).get("time_s")))duplicateTimes++;
         assertEquals(2,duplicateTimes);
-        var actual=Cmldblu1SharedRecording.simulateStaticControl(staged.resolve("dynamic.dyr"),staggered,.0005,.04,0);
+        var actual=Cmldblu1SharedRecording.simulateStaticControl(staged.resolve("dynamic.dyr"),
+                staggered,profile.step(),.04,0,profile.endTime());
         assertEquals(source.size(),actual.frames.size());
         assertEquals(.5,actual.model.getData().value(22),1e-7);
         assertEquals(.5,actual.model.getData().value(31),1e-7);
         assertEquals(.5,actual.model.getData().value(36),1e-7);
         assertEquals(profile.name().equals("merged"),actual.model.getLoadBus()==actual.model.getDStabBus());
-        double[] clock=new double[1001];float tick=0;
-        for(int i=1;i<clock.length;i++){tick+=(float).0005;clock[i]=tick;}
+        double[] clock=new double[(int)Math.ceil(profile.endTime()/profile.step())+5];float tick=0;
+        for(int i=1;i<clock.length;i++){tick+=(float)profile.step();clock[i]=tick;}
         for(int i=0;i<source.size();i++) {
-            int ordinal=(int)Math.round(actual.frames.get(i).time()/.0005);
-            assertEquals(clock[ordinal],source.get(i).get("time_s"),6e-13);
+            int ordinal=(int)Math.round(actual.frames.get(i).time()/profile.step());
+            assertEquals(clock[ordinal],source.get(i).get("time_s"),
+                    profile.step()<.001 ? 6e-13 : 6e-11);
         }
         for(String[] pair:new String[][]{{"V1","V1"},{"V2","V2"},{"V3","V3"},
                 {"VAR25","STATIC.P"},{"VAR26","STATIC.Q"},

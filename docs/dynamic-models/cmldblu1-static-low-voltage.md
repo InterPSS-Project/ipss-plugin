@@ -61,7 +61,7 @@ fraction without changing the numerical interface.
 `CompositeMixedStaticFrequencyTest` enforces voltage and static P/Q NRMSE
 below 0.001, rotor-angle RMSE below 0.01 degrees, and G/B peak error below
 0.000005 pu for both methods. This qualifies the exercised omitted-distribution
-profile; motors, restoration and longer runs remain separate work.
+profile; motors and restoration remain separate work.
 
 The raw cold-pair inputs, manifests, output and logs are retained in the private
 `verification-artifacts/cmldblu1-mixed-frequency-20261105/captures.zip`,
@@ -86,6 +86,29 @@ The same complete-row and event-side gates pass under both methods. The raw
 reference pair and inputs are retained in the private
 `verification-artifacts/cmldblu1-distributed-frequency-20261105/captures.zip`,
 SHA-256 `40faed43c8f82bfaedfaea9b3b582b09e2bb82696e4b09736a50ed78113cf479`.
+
+### Ten-second represented-distribution control
+
+The same mixed/frequency fault profile has a second cold pair at quarter-cycle
+steps through ten seconds. All active fields repeat exactly over 2,406 rows;
+four inactive allocated storage fields are excluded only from the cold-repeat
+check. Both event sides and the reference's clock-rounded final overshoot are
+retained. Printed timestamps are checked against accumulated binary32 time
+within their 11-decimal-place serialization precision.
+
+| Complete ten-second error | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Worst bus-voltage NRMSE | 0.00015791 | 0.000001711 |
+| Worst static P/Q NRMSE | 0.00027995 | 0.000027031 |
+| Peak low-voltage G/B error, pu | 0.0000001966 | 0.0000001966 |
+| Rotor-angle RMSE, degrees | 0.00069418 | 0.000039315 |
+
+The existing complete-response limits pass under both methods. This adds
+production-step and long-duration evidence for this static/electronic profile;
+motor-containing loads, tap changes, restoration and additional fault regimes
+are still separate qualification work. The private raw pair and inputs are in
+`verification-artifacts/cmldblu1-distributed-frequency-duration-20261105/captures.zip`,
+SHA-256 `a099a24d1d1403ca7d3d8cdc27e15720323297bba430396e639bade8a56a5f2d`.
 
 The port retains the original physical component shunts. Let `Y_c` be only the
 composite's newly added shunt and `Y_aux = -Y_c` its numerical port stamp:
