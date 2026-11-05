@@ -2313,6 +2313,22 @@ control are retained at
 `verification-artifacts/cdc6t-margin-vdcol-negative-20261105/captures.zip`,
 SHA-256 `cfd01930af03dc83b133ee4bb280343d7c2123c44acb95aaed1f3452c3b277b1`.
 
+A converged minimum-angle control now isolates the actual current-margin
+transfer. At fault application the accepted rectifier angle reaches its
+entered five-degree minimum and the current order changes from 1,000 A to
+900 A; it returns to 1,000 A at clearing. The zero-margin control holds
+1,000 A through the fault. Cold repeats are byte-identical and the complete
+event-side capture is retained at
+`verification-artifacts/cdc6t-rectifier-margin-crossover-20261105/captures.zip`,
+SHA-256 `c64c8cd24a846eb55b69052c92717e09b34f23815c411abb8f981445dfc7c386`.
+`Cdc6tRectifierMarginCrossoverTest` pins these source transitions and runs
+the coupled SMIB comparison under both integration methods. Both bus-voltage
+channels pass the earlier strict limits. The earlier state limits remain
+unmet: modified Euler peaks at about 146 V in the first fault interval and
+0.247 A after clearing, while staggered integration peaks near 2.17 V.
+The full crossover trajectory is therefore still unqualified; no margin
+equation, integration stage, default or tolerance changed.
+
 Private failed capture, exact probe inputs and logs:
 `verification-artifacts/cdc6t-margin-intersection-20261105/rejected-capture.zip`,
 SHA-256 `acf0eed717238ec030691bcdeb37d08b8a5bd6a38cce3ae41ee887db140a31ad`.
