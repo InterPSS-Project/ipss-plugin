@@ -330,6 +330,8 @@ conversion checks separately from exact legacy-model qualification.
 
 ## URGS3T
 
+- Retain the [hot reactivation derivative-history discriminator](dynamic-models/urgs3t-shared-runtime.md#hot-reactivation-derivative-history-discriminator): the independent first two valve increments use an averaged event rate and stored preceding rate. This isolates the modified-Euler first-interval state difference without changing the governor equation, solver method or strict coupled gate. Extend qualified hot reconnection separately from the existing trip controls.
+
 - Retain [atomic numerical stages](dynamic-models/urgs3t-shared-runtime.md#atomic-numerical-stages), matching ordinary predictor/corrector intervals and finite trial validation before publication. Preserve valid retry, reusable storage and unchanged full trajectories; existing reference-accuracy failures remain open.
 
 - Retain the independently checked [valve integration coordinate](dynamic-models/urgs3t-shared-runtime.md#retained-valve-coordinate-and-physical-limit-observations), bounded physical observations, pure numerical access and both-method shared equations. Recorded-speed negative controls distinguish premature state projection; all staggered release controller states pass at the checked fine steps. Resolve modified-Euler command-state and small-response voltage/power gates, and extend production-step/long-duration active-limit qualification without changing precision or thresholds.

@@ -449,6 +449,31 @@ suite. No integration formula or numerical precision was changed.
 The immutable private `machine-trip-captures.zip` is pinned to SHA-256
 `234757579e724636ba4d24514a98902db21ffe7bffcd00c20ffde34f9dfc09d9`.
 
+### Hot reactivation derivative-history discriminator
+
+The independent hot-reactivation record holds the valve state at both sides of
+the accepted reactivation time, while the disconnected numerical coordinate
+continues to change. Its preceding accepted increment gives the held left rate
+`dL`. Reconstruct the new right rate `dR` from the recorded valve, speed,
+reference and entered droop/servo constants. The first two source increments
+follow the event-averaged two-step recurrence:
+
+```
+dEvent = (dL + dR) / 2
+x1 = x0 + h * (1.5 * dEvent - 0.5 * dL)
+x2 = x1 + h * (1.5 * dR(x1) - 0.5 * dEvent)
+```
+
+Using the preceding source increment as `dL` reconstructs the two recorded
+states within `2e-8` and `7e-8` pu, respectively. A full right-side first
+step differs by more than `8e-4` pu. The retained duplicate event timestamp and
+cold-repeat identity make this a source-history discriminator, not a fitted
+governor equation. It explains the sharp first modified-Euler valve difference
+after reconnection: the default modified-Euler solver uses its own full
+predictor/corrector interval, while the reference retains an averaged two-step
+history. The strict coupled reactivation comparisons remain open; neither
+integration method or acceptance limit was changed.
+
 ## Validation checkpoint
 
 The initial runtime checkpoint's registered suite executes 4,159 tests, with 36 failures, no errors
