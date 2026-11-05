@@ -12,6 +12,12 @@ The tests use synthetic identities and slot values, rather than supplied case da
 These sources establish record shape; they do not establish the complete model
 equations or meanings of all integer and observable slots.
 
+The second real constant is identified as `XEQ`, the equivalent reactance for
+converter current injection, in a [published utility model listing](https://www.oasis.oati.com/woa/docs/EES/EESdocs/SISR_PID260.pdf).
+`Gewtg2NativeRecord.equivalentReactance()` exposes that source value without
+altering the entered record or registering a runtime alias. This does not
+resolve the remaining legacy equations or auxiliary model behavior.
+
 ## Distinction from newer and converted models
 
 The existing GEWTGCU1 implementation uses `101/1/2/18/3/3`. Although its constant
@@ -28,7 +34,7 @@ does not establish exact legacy trajectory equivalence.
 1. Obtain the matching vendor equation/parameter document and executable library;
    record their hashes and version in private evidence.
 2. Establish all integer meanings, state coordinates, current-limit and recovery
-   equations, source-impedance treatment, initialization and host ownership.
+   equations, remaining source-impedance treatment, initialization and host ownership.
 3. Implement the exact converter and bind its electrical, aerodynamic, pitch and
    drive-train dependencies. Reuse existing kernels only after proving their
    equation and state equivalence.

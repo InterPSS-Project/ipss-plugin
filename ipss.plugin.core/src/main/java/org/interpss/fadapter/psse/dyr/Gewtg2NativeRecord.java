@@ -28,6 +28,9 @@ public record Gewtg2NativeRecord(int generatorBus, String generatorId,
         }
     }
 
+    /** Published second real constant: equivalent converter injection reactance. */
+    public double equivalentReactance() { return constants.get(1); }
+
     /** Decode only the independently published 1/1/4/18/3/5 legacy layout. */
     public static Gewtg2NativeRecord decode(PsseDyrRecord record) {
         Objects.requireNonNull(record, "record");

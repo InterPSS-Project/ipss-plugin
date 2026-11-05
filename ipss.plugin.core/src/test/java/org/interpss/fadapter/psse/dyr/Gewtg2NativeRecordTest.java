@@ -22,6 +22,7 @@ class Gewtg2NativeRecordTest {
         assertEquals(List.of(0, 7, 1, 0), data.integers());
         assertEquals(List.of(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9,
                 10.1, 11.2, 12.3, 13.4, 14.5, 15.6, 16.7, 17.8, 18.9), data.constants());
+        assertEquals(2.2, data.equivalentReactance());
         assertTrue(DynamicModelCatalog.find("GEWTG2").isEmpty());
     }
 

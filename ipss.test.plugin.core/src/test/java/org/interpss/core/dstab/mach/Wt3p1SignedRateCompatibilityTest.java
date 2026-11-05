@@ -3,6 +3,7 @@ package org.interpss.core.dstab.mach;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.StringReader;
 import java.util.List;
 import java.util.ArrayList;
 import org.apache.commons.math3.complex.Complex;
@@ -15,6 +16,7 @@ import org.interpss.dstab.mach.Wt3p1Data;
 import org.interpss.dstab.mach.Wt3p1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
+import org.interpss.fadapter.psse.dyr.Gewtg2NativeRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,6 +74,13 @@ public class Wt3p1SignedRateCompatibilityTest {
         var bundle=new Wt3g2IntegrationBundle(converter);
         algo.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);
         assertTrue(algo.getAclfAlgorithm().loadflow());
+        var sourceRecords=PsseDyrRecordReader.read(new StringReader(
+                Files.readString(input.resolve("source.dyr"))),"synthetic-source.dyr");
+        var legacy=sourceRecords.stream().filter(r->r.sourceModelName().equals("GEWTG2"))
+                .findFirst().orElseThrow();
+        double sourceReactance=Gewtg2NativeRecord.decode(legacy).equivalentReactance();
+        assertTrue(Double.isFinite(sourceReactance)&&sourceReactance>0);
+        gen.setPosGenZ(new Complex(0,sourceReactance));
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algo.setSimuStepSec(.0005);algo.setTotalSimuTimeSec(.15);
         algo.setSimuOutputHandler(new StateMonitor());
         List<double[]> rows=new ArrayList<>();

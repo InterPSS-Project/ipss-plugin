@@ -85,9 +85,10 @@ API, without a large-inertia approximation. A typed pitch attachment selects onl
 the documented compatibility policy. Physical terminal power is measured from
 voltage and net injected current, avoiding cached controller measurements.
 
-The modified-Euler comparison retains every sample and both event-side duplicates.
-It remains **not accepted** under fixed maximum-error gates of 0.001 pu voltage
-and 0.1 MW/Mvar power:
+The earlier modified-Euler diagnostic used the RAW source impedance as its
+converter host reactance. It retained every sample and both event-side
+duplicates, but was **not accepted** under fixed maximum-error gates of 0.001 pu
+voltage and 0.1 MW/Mvar power:
 
 | Channel | Initial absolute error | Maximum absolute error |
 | --- | ---: | ---: |
@@ -101,8 +102,20 @@ These are errors of the converted generic combination, not legacy-model errors.
 channels, timestamp/event-side ordering and the fixed gates; it fails on a rejected
 comparison. No time shifts, fitted parameters or discarded event rows are used.
 
-Staggered integration currently rejects WT3G2 explicitly. Its converter and
-attached electrical, turbine and pitch state bundle still need a shared
-state/derivative/limiter/event owner before a second-method trajectory can be
-claimed. The focused diagnostic preserves this rejection and never falls back to
-another solver. Passing the signed-rate tests is not full model qualification.
+The converted WT3G2, WT3E1, WT3T1 and WT3P1 bundle now runs the complete
+diagnostic under both modified Euler and staggered integration, with all
+samples and event-side duplicates retained. The source record's published
+`XEQ` field is applied to the synthetic generator host for this conversion
+comparison. The equivalent reactance inferred independently from the reference
+initial voltage, reactive power and converter state agrees with that field.
+The original RAW source impedance does not represent the converted host
+reactance in this diagnostic.
+
+With that source-derived host reactance, both terminal-voltage channels pass
+the unchanged 0.001 pu maximum-error limit under both methods; the largest
+terminal-voltage error is below 0.000747 pu. Active- and reactive-power
+maximum errors remain above their unchanged 0.1 MW/Mvar limits, reaching about
+1.793 MW and 0.624 Mvar. The complete converted comparison is therefore still
+rejected. This supports the converted network-interface mapping only; it does
+not establish exact legacy-model equivalence or qualify the remaining power
+response.
