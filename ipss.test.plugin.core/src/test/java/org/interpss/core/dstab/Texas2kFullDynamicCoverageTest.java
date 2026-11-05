@@ -267,11 +267,16 @@ public class Texas2kFullDynamicCoverageTest {
                                     || device.getId().equals(entry.deviceId())))
                     .findFirst().orElse(null);
         }
+        if(category==DynamicModelCategory.HVDC_LINK)
+            return org.interpss.dstab.hvdc.Cdc6tDyrModel.models(network).stream()
+                    .filter(model->model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
         DStabGen generator = (DStabGen) bus
                 .getContributeGen(entry.deviceId());
         assertNotNull(generator, "Missing generator for attached record " + entry);
         var machine = generator.getMach();
         return switch (category) {
+            case HVDC_LINK -> org.interpss.dstab.hvdc.Cdc6tDyrModel.models(network).stream()
+                    .filter(model -> model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
             case SYNCHRONOUS_MACHINE -> machine;
             case COMPENSATOR -> machine instanceof org.interpss.dstab.mach.IeeeVoltageCompensatedMachine
                     compensated && compensated.getIeeeVcData() != null ? compensated : null;

@@ -677,6 +677,8 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
+    org.interpss.core.dstab.Cdc6tDyrImportTest.class,
+    org.interpss.core.adapter.builder.dstab.ReactiveDeviceDyrImportTest.class,
 	// aclf
 	IEEE14_3WXfrTest.class,
 	IEEE9_MultiGenTest.class,

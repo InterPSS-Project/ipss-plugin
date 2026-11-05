@@ -7,6 +7,7 @@ public enum DynamicModelCategory {
     COMPENSATOR,
     SWITCHED_SHUNT,
     FACTS_DEVICE,
+    HVDC_LINK,
     EXCITER,
     GOVERNOR,
     STABILIZER,

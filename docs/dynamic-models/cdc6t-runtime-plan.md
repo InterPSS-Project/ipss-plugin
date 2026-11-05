@@ -6,10 +6,30 @@ record reader now preserves that name and the constant order, including names
 containing commas, escaped quotes and slashes. A quoted numeric name remains a
 link name. Adjacent machine records are retained.
 
-Automatic import provides record-decoding support only. Strict import continues to report CDC6T
-as unsupported, rather than allowing an incomplete dynamic network to appear
-fully supported. The typed conducting runtime described below is tested separately;
-it does not establish complete model support.
+Automatic import now accepts this exact named record, validates its unique
+ordinary LCC owner and retains the immutable source constants before load flow.
+The default dynamic solver prepares and attaches the existing terminal runtime
+from the solved operating point before device initialization. Missing, ambiguous,
+duplicate, inactive or unsupported equipment is rejected. A disabled model does
+not create active terminal ports. Static DC power is not converted into another
+dynamic load, and only the rectifier port owns the three integration states.
+
+Private pre-initialization network copies preserve the source constants and
+captured static owner/terminal identities. The generic branch-copy builder's
+generated name is restored from that explicit captured identity during
+preparation; arbitrary renamed or missing owners are not inferred. Running-state
+checkpoint copies remain unsupported and fail explicitly.
+
+Strict import acceptance establishes record attachment, not complete model
+acceptance. The existing typed runtime, protection policies, equations and
+trajectory tolerances are unchanged. Full independent trajectory qualification
+remains open, including the retained finite-resistance modified-Euler voltage
+gate described below. Imported and explicitly prepared flat/fault runs are
+compared sample-by-sample under both integration methods.
+
+The following sections retain successive implementation checkpoints. Statements
+about automatic attachment being disabled describe those earlier checkpoints;
+the current import path is the one described above.
 
 ## Shared-runtime work
 

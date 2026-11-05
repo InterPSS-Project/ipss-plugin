@@ -4115,4 +4115,8 @@ public class DStabNetworkBuilder {
         }
         return gen.getMach();
     }
+    /** Retain the exact named link before load flow; prepare its terminal equations at initialization. */
+    public org.interpss.dstab.hvdc.Cdc6tDyrModel addCdc6t(org.interpss.dstab.hvdc.Cdc6tParameters parameters) {
+        return org.interpss.dstab.hvdc.Cdc6tDyrModel.attach(getBaseDStabNetwork(),parameters);
+    }
 }

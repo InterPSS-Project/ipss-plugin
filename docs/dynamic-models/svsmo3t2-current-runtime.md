@@ -7,6 +7,11 @@ endpoint clock. Modified Euler retains its single-operation coupled gate.
 Broader limiter combinations, production steps and long-duration qualification
 remain open.
 
+The exact named 20-ICON/44-CON source record is accepted by strict DYR import
+when ownership and parameter validation succeed. This reports successful source
+attachment while preserving the catalog's partial runtime qualification; it does
+not promote the remaining trajectory or limiter acceptance gates.
+
 ## Ownership and execution
 
 The exact record has a quoted FACTS name followed by the model name, twenty

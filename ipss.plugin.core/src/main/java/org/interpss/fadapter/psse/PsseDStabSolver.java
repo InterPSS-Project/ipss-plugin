@@ -332,6 +332,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         reactivation.prepare(dstabAlgo,hotReactivationIds);hotReactivationEvent=false;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
+        org.interpss.dstab.hvdc.Cdc6tDyrModel.prepareNetwork(network);
         var validation=validateModelParameters();
         validation.requireNoErrors();
         if(validation.count(DynamicParameterValidator.Severity.WARNING)>0||!validation.uncoveredModels().isEmpty())

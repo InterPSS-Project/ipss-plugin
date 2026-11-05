@@ -554,7 +554,7 @@ public class PSSEDStabDirectParser {
         if (descriptor.isEmpty()) return null;
         // Named FACTS identity and remote-bus validation are atomic with builder
         // attachment. A bus-number lookup would invent an invalid Bus0 owner.
-        if (record.hasNamedTarget()) return null;
+        if (record.hasNamedTarget() || record.canonicalModelName().equals("CDC6T")) return null;
         if (record.canonicalModelName().equals("TIOCR1")) {
             int loadBus=Integer.parseInt(record.fields().get(6));
             String loadId=record.fields().get(7);
@@ -639,6 +639,8 @@ public class PSSEDStabDirectParser {
         }
 
         switch (type) {
+            case "CDC6T":
+                return builder.addCdc6t(org.interpss.fadapter.psse.dyr.Cdc6tRecordMapper.prepare(record)) != null;
             case "SVSMO3T2":
                 return procSvsmo3t2(record);
             case "IEELBL":
@@ -4611,6 +4613,9 @@ public class PSSEDStabDirectParser {
     }
 
     private DynamicModelImportStatus attachedStatus(PsseDyrRecord record) {
+        // Exact source attachment is separate from the FACTS runtime's remaining qualification.
+        if(record.canonicalModelName().equals("SVSMO3T2"))return DynamicModelImportStatus.ATTACHED;
+
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
                 .map(model -> DynamicModelImportStatus.ATTACHED)
@@ -4618,6 +4623,10 @@ public class PSSEDStabDirectParser {
     }
 
     private String attachedMessage(PsseDyrRecord record) {
+        if(record.canonicalModelName().equals("CDC6T"))return "Exact named 32-constant record; terminal runtime preparation follows solved load flow; trajectory acceptance is scoped separately";
+        if(record.canonicalModelName().equals("SVSMO3T2"))return "Exact named FACTS 20-ICON/44-CON record attached; runtime qualification remains partial";
+        if(record.canonicalModelName().equals("CSVGN5")||record.canonicalModelName().equals("SVSMO1T2"))return "Exact native reactive-device record and resolved runtime owner";
+
         if(record.canonicalModelName().equals("REGFMC1U"))return "PSS/E 36.7 exact USRMDL 101 1 3 34 11 27; hybrid GFM/GFL; machine-base RAW ZSOURCE";
         if(record.canonicalModelName().equals("REGFMB1U"))return "PSS/E 36.7 exact USRMDL 101 1 6 25 14 17; machine-base RAW ZSOURCE";
         if (record.canonicalModelName().equals("REGFMA1"))

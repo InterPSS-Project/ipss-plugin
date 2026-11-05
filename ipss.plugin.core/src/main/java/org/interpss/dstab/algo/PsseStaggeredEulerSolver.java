@@ -608,6 +608,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             for (var device : bus.getDynamicBusDeviceList()) {
                 if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model)
                         && !(device instanceof org.interpss.dstab.hvdc.Cdc6tNormalTerminalPorts.Port)
+                        && !(device instanceof org.interpss.dstab.hvdc.Cdc6tDyrModel)
                         && !(device instanceof org.interpss.dstab.hvdc.Chvdc2TerminalPorts.Port)
                         && !supportedLoad(device)
                         && !org.interpss.dstab.relay.Tiocr1RelayModel.isAcceptedStepDevice(device))
