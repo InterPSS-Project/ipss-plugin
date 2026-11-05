@@ -7,6 +7,17 @@ import org.junit.jupiter.api.Test;
 
 /** Shared WT3E1 equations, trial isolation and ordinary integration controls. */
 public class Wt3e1SharedStateTest {
+    @Test void bypassedVoltageControlStartsVrefAtSolvedEq() throws Exception {
+        for (int limit : new int[]{0, 1, 2}) {
+            Wt3e1Model model = model(1, limit);
+            double[] state = new double[10];
+            model.readStaggeredState(state, 0);
+            double expected = limit == 0
+                    ? model.getGenerator().getInternalVoltageState()
+                    : model.getGenerator().getDStabBus().getVoltageMag();
+            assertEquals(expected, state[6], 1e-12);
+        }
+    }
     @Test void sharedHeunMatchesOrdinaryForAllSelectorBranches() throws Exception {
         double h=.0005;
         for(int mode:new int[]{-1,0,1}) for(int limit:new int[]{0,1,2}) {

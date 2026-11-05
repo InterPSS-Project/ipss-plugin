@@ -43,3 +43,19 @@ both-method trajectory qualification remain separate work.
 
 This generic WT3E1 interface does not implement or qualify the legacy GEWTE2
 model. Any explicit generic conversion must retain that distinction.
+
+## Bypassed voltage-control reference initialization
+
+When terminal-voltage control is bypassed, the Vref integrator directly supplies
+the converter's Eq command. It now starts at the solved converter Eq, preserving
+the initial current and its steady command. For enabled voltage control, its
+existing terminal-voltage initial coordinate remains unchanged. Both branches
+have explicit initialization tests, and the private converted-model reference
+checks the bypass coordinate against its recorded Vref state.
+
+The complete generic converted-suite voltage and power comparison passes its
+unchanged strict gates under both numerical methods after this and the
+separate WT3G2 terminal-angle selection. The
+[before/after evidence](legacy-ge-import-verification.md#converted-terminal-angle-and-bypass-reference-correction)
+retains all samples, event sides and controller states. This does not qualify
+legacy electrical-controller equations.

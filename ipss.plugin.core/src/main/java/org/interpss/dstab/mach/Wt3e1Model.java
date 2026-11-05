@@ -54,8 +54,12 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
         double pOrder = clamp(pControl, data.pmin(), data.pmax());
         double torqueIntegral = pOrder / Math.max(EPS, 1.0 + speedDeviation);
         double qOrder = qControl;
+        // When terminal-voltage control is bypassed, this Vref integrator
+        // directly supplies Eqcmd and must start at the solved converter Eq.
+        double initialVref = data.voltageLimitFlag() == 0
+                ? generator.getInternalVoltageState() : voltage;
         state = new State(qOrder, qOrder, pOrder, torqueIntegral, compensated,
-                speedDeviation, voltage, generator.getInternalVoltageState(),
+                speedDeviation, initialVref, generator.getInternalVoltageState(),
                 0.0, generator.getP());
         oldState = null; predictor = null; monitor.reset();
         initialized = true;

@@ -179,3 +179,37 @@ legacy import status based on this converted-model setting trial. Complete
 private inputs, option readbacks and output traces are retained in
 `verification-artifacts/legacy-ge-settings-20261105/validation.zip`, SHA-256
 `b032da3914b0cdd7cef6944100f0fc18ae74351db260d2481cb6e07e136895c6`.
+
+## Converted terminal-angle and bypass-reference correction
+
+The complete recorded converter-state trace localized the clearing-side power
+gap to two generic WT3 boundary rules. The published
+[WT3G2 machine diagram](https://www.powerworld.com/WebHelp/Content/TransientModels_PDF/Generator/Machine/Machine%20Model%20WT3G2.pdf)
+selects the terminal-voltage angle for the injected current when both PLL
+gains are zero. The stored PLL angle remains a separate, unchanged numerical
+state. The runtime had always rotated the current by that stored angle. This
+cross-coupled active and reactive power when the terminal angle moved at the
+fault boundary. The zero-gain branch now follows terminal angle; the active-PLL
+branch retains its previous equation and has a negative-control regression.
+
+The recorded electrical-controller Vref and Eq command both start at the solved
+converter Eq when terminal-voltage control is bypassed. The generic runtime
+previously initialized its directly published Vref integrator at terminal
+voltage, causing the converter Eq to drift before the event. The bypass branch
+now starts that integrator at Eq. Non-bypass initialization remains at terminal
+voltage and has an explicit regression.
+
+With both corrections, the same complete converted-model comparison passes
+the unchanged 0.001 pu voltage and 0.1 MW/Mvar power maximum-error limits
+under modified Euler and staggered integration. The worst terminal-voltage
+error is below 0.000075 pu under both methods. Modified Euler has at most
+0.00465 MW and 0.07473 Mvar error; staggered has at most 0.08973 MW and
+0.07426 Mvar. All event-side samples and state rows are retained. The broader
+WT3G2/WT3E1 focused suite passes with no skips.
+
+These are generic converted-interface results. They do not establish exact
+equations or runtime support for any legacy GE identifier or auxiliary.
+Complete private before/after traces, the unmodified source records, the
+converted record export, option readbacks and test log are retained at
+`verification-artifacts/legacy-ge-zero-pll-vref-20261105/validation.zip`,
+SHA-256 `38bcb823927fd7f75fc9bdb6fdc03015fd4ef69a0a546b2d71c9266d6e17f540`.

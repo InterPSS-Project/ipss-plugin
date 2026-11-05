@@ -129,6 +129,18 @@ public class Wt3p1SignedRateCompatibilityTest {
         });
         net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"Fault");
         assertTrue(algo.initialization());
+        String stateReference=System.getProperty("legacy.ge.state.reference");
+        if(stateReference!=null) {
+            String first=Files.readAllLines(Path.of(stateReference)).stream()
+                    .dropWhile(line->!line.startsWith("Results,"))
+                    .skip(1).findFirst().orElseThrow();
+            String[] fields=first.split(",");
+            assertTrue(fields.length>10,"Recorded reference must include controller states");
+            double[] initial=new double[bundle.staggeredStateCount()];
+            bundle.readStaggeredState(initial,0);
+            assertEquals(Double.parseDouble(fields[10]),initial[11],1e-6,
+                    "Bypassed voltage controller must start Vref at solved Eq");
+        }
         capture.run();
         while(algo.getSimuTime()<.15-.00025) { assertTrue(algo.solveDEqnStep(true));capture.run(); }
         assertEquals(303,rows.size(),"Both event-side duplicates must be retained");
