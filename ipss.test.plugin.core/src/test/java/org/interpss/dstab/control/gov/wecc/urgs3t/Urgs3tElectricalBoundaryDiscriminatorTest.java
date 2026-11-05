@@ -21,6 +21,40 @@ public class Urgs3tElectricalBoundaryDiscriminatorTest {
     private static final String SHA="3b920c8cd7d5f5607ca31a7ec8b34265604d1768640b5161236929dcb7f42e2e";
     private static final String SUFFIX="-h0p0005-t0p5-fault-machines-";
 
+    @Test void sourceRotorAngleUsesAcceptedSpeedHistory(@TempDir Path staged) throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE));
+        assertEquals(SHA,hash(Files.readAllBytes(ARCHIVE)));
+        try(var zip=new ZipFile(ARCHIVE.toFile())) {
+            String tag="standard"+SUFFIX;
+            byte[] first=zip.getInputStream(zip.getEntry(tag+"a/native.csv")).readAllBytes();
+            assertArrayEquals(first,zip.getInputStream(zip.getEntry(tag+"b/native.csv")).readAllBytes());
+            Path csv=staged.resolve("native.csv");
+            Files.write(csv,first);
+            var rows=Urgs3tReferenceTest.rows(csv);
+                int right=-1;
+                for(int i=1;i<rows.size();i++)
+                    if(rows.get(i).get("time_s").equals(rows.get(i-1).get("time_s"))
+                            &&Math.abs(rows.get(i).get("time_s")-.05)<2e-6)right=i;
+                assertTrue(right>0,"Retain both fault application sides");
+                double step=.0005,degreesPerSecond=360.*60.;
+                for(int interval=1;interval<=3;interval++) {
+                    var before=rows.get(right+interval-1);
+                    var after=rows.get(right+interval);
+                    double priorSpeed=interval==1?rows.get(right-1).get("SPEED")
+                            :rows.get(right+interval-2).get("SPEED");
+                    double predicted=before.get("ANGLE_DEG")+step*degreesPerSecond*
+                            (1.5*before.get("SPEED")-.5*priorSpeed);
+                    assertEquals(predicted,after.get("ANGLE_DEG"),1e-6,
+                            "Accepted two-step rotor angle at fault interval "+interval);
+                }
+                double correctedFirst=rows.get(right).get("ANGLE_DEG")+
+                        .5*step*degreesPerSecond*(rows.get(right).get("SPEED")+
+                                rows.get(right+1).get("SPEED"));
+                assertTrue(Math.abs(correctedFirst-rows.get(right+1).get("ANGLE_DEG"))>1e-5,
+                        "Within-step corrected speed remains distinguishable");
+        }
+    }
+
     @Test void firstFaultOnDifferencePrecedesTheGovernorAndIsMethodDependent(@TempDir Path staged)throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent complete machine-state captures");
         assertEquals(SHA,hash(Files.readAllBytes(ARCHIVE)));

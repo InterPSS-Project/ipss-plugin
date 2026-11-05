@@ -494,6 +494,18 @@ governor power output, at the coupled machine/network electrical boundary.
 Changing the URGS3T servo or turbine equations would not address this first
 error. This does not establish the precise machine integration defect or close
 the later command and production-step gates; those remain unchanged.
+
+The same independent capture also resolves the first three fault-on rotor
+increments. The first angle stays fixed while speed changes. The next two
+increments follow the accepted-speed two-step formula
+`h * 360 * 60 * (1.5 * speed_left - 0.5 * speed_previous)` within
+`0.000001` degree; a within-step corrected-speed first increment differs by
+more than `0.00001` degree. The registered source-only test preserves both
+event sides and the cold-repeat identity. This confirms a machine integration
+method difference, while the larger damper-flux and reactive-power errors
+still require their own electrical-stage explanation. It does not justify a
+governor equation change or acceptance-limit adjustment.
+
 The private complete-input archive is
 `verification-artifacts/urgs3t-electrical-boundary-20261105/captures.zip`,
 SHA-256 `3b920c8cd7d5f5607ca31a7ec8b34265604d1768640b5161236929dcb7f42e2e`.
