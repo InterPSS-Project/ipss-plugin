@@ -799,12 +799,17 @@ approximately in proportion to the interval:
 
 The bus-voltage figures refer to the rectifier terminal and include every
 reference row. The fixed peak occurs at the release discontinuity; halving the
-step shrinks its time contribution, not its amplitude. The short mode-return
-peak likewise remains near 0.002306 pu at an internal transition with duplicate
-reference observations. Our recorder does not yet expose both observations of
-that internally generated transition. This is distinct from the bypass's
-one-interval release difference. No duplicate rows, event windows, or channels
-are removed to obtain these metrics, and no trajectory is shifted.
+step shrinks its time contribution, not its amplitude. The older nearest-row
+short mode-return diagnostic reported about 0.002306 pu because it paired the
+pre-action physical regime with the post-action reference side. The accepted
+internal-transition observer now supplies both converged sides. Across both
+methods and 0.5/0.25 ms intervals, side-matched rectifier and inverter voltage
+errors stay below 0.000005 and 0.000006 pu; rectifier active-power error stays
+below 0.00003 pu. Both sources retain unchanged continuous states across that
+action. `Cdc6tBypassSwitchNetworkTest` gates the ordered side mapping and the
+single accepted transition. This resolves the apparent short-return peak,
+separately from the bypass's one-interval release difference. No duplicate rows,
+event windows, or channels are removed, and no trajectory is shifted.
 
 The focused CDC6T suite passes 143 tests without failures, errors or skips.
 These additional checks constrain the diagnosis; complete protected trajectory

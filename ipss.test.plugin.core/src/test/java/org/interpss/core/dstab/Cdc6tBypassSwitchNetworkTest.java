@@ -60,6 +60,8 @@ public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
             parameters=Cdc6tRecordMapper.prepare(dc.get(0));
         }
         var f=Cdc6tCoupledNetworkTest.load(folder,raw,parameters);
+        var transitions=new ArrayList<Cdc6tNetworkTransition>();
+        if(profile.equals("short"))f.ports().setTransitionObserver(transitions::add);
         var owner=(com.interpss.core.aclf.hvdc.HvdcLine2TLCC<?>)f.context().getDStabilityNet().getSpecialBranchList().get(0);
         assertEquals(modeThreshold,((LccSourceControls)owner.getExtensionObject()).modeTransferKilovolts(),0);
         var a=f.context().getDynSimuAlgorithm();var n=f.context().getDStabilityNet();
@@ -114,6 +116,43 @@ public class Cdc6tBypassSwitchNetworkTest extends CorePluginTestSetup {
         }
         assertEquals(expectedActive,firstActive,2.2*step,"First protected transition");
         assertEquals(expectedReturn,firstReturn,2.2*step,"Return from protected operation");
+        if(profile.equals("short")){
+            var sourceSides=reference.stream().filter(r->Math.abs(r.get("time_s")-expectedReturn)<step/4).toList();
+            assertEquals(2,sourceSides.size(),"Retain both independent return observations");
+            for(String state:List.of("STATE0","STATE1","STATE2"))
+                assertEquals(sourceSides.get(0).get(state),sourceSides.get(1).get(state),0,
+                        "The independent internal action does not integrate continuous state");
+            assertEquals(1000.,sourceSides.get(0).get("VAR11"),0);
+            assertTrue(sourceSides.get(1).get("VAR11")>1000.,"The post-action current order changes on the second side");
+            var returns=transitions.stream().filter(t->t.beforeMode()==OperatingMode.POWER_TO_CURRENT
+                    &&t.afterMode()==OperatingMode.NORMAL).toList();
+            assertEquals(1,returns.size(),"Return must publish one accepted internal transition");
+            var transition=returns.get(0);
+            assertEquals(expectedReturn,transition.time(),2.2*step);
+            assertEquals(transition.before().measuredInverterVolts(),transition.after().measuredInverterVolts(),0,
+                    "An internal mode switch cannot advance continuous measurement storage");
+            assertEquals(transition.before().measuredAmperes(),transition.after().measuredAmperes(),0);
+            assertEquals(transition.before().measuredRectifierVolts(),transition.after().measuredRectifierVolts(),0);
+            double beforeVoltage=Math.hypot(transition.before().rectifierReal(),transition.before().rectifierImaginary());
+            double afterVoltage=Math.hypot(transition.after().rectifierReal(),transition.after().rectifierImaginary());
+            double beforeInverter=Math.hypot(transition.before().inverterReal(),transition.before().inverterImaginary());
+            double afterInverter=Math.hypot(transition.after().inverterReal(),transition.after().inverterImaginary());
+            assertTrue(Math.abs(beforeVoltage-sourceSides.get(0).get("V7"))<5e-6);
+            assertTrue(Math.abs(afterVoltage-sourceSides.get(1).get("V7"))<5e-6);
+            assertTrue(Math.abs(beforeInverter-sourceSides.get(0).get("V9"))<6e-6);
+            assertTrue(Math.abs(afterInverter-sourceSides.get(1).get("V9"))<6e-6);
+            assertTrue(Math.abs(transition.before().rectifierP()-sourceSides.get(0).get("VAR5"))<3e-5);
+            assertTrue(Math.abs(transition.after().rectifierP()-sourceSides.get(1).get("VAR5"))<3e-5);
+            assertTrue(Math.abs(beforeVoltage-sourceSides.get(1).get("V7"))>.002,
+                    "The previous nearest-side diagnostic paired different physical regimes");
+            System.out.println("CDC6T short return sides staggered="+staggered+" h="+step+
+                    " before/after V7="+beforeVoltage+"/"+afterVoltage+
+                    " reference="+sourceSides.get(0).get("V7")+"/"+sourceSides.get(1).get("V7")+
+                    " V9="+beforeInverter+"/"+afterInverter+
+                    " reference="+sourceSides.get(0).get("V9")+"/"+sourceSides.get(1).get("V9")+
+                    " Pr="+transition.before().rectifierP()+"/"+transition.after().rectifierP()+
+                    " reference="+sourceSides.get(0).get("VAR5")+"/"+sourceSides.get(1).get("VAR5"));
+        }
         assertTrue(activeSamples>=35);assertEquals(OperatingMode.NORMAL,f.protection().operatingMode());
         System.out.println("CDC6T coupled "+profileName+" staggered="+staggered+" active/return="+firstActive+"/"+firstReturn);
     }
