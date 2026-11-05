@@ -98,6 +98,26 @@ pair and inputs are retained in
 `verification-artifacts/tiocr-reset03-20261105/captures.zip`, SHA-256
 `301eb34c56e7fbd735ab2160235e2748b11b879591ccb7d15c820d953024a57d`.
 
+### Longer-reset event-side discrepancy
+
+Another cold pair retains partial moving-element travel throughout the gap
+between faults. Both complete source recordings repeat exactly over 1,008
+rows. The moving element reaches pickup near 0.2185 seconds and the source
+records its physical trip at 0.2285 seconds. The current Java accepted-step
+path trips at 0.2290 seconds under both methods, one integration interval
+later. The event-right row consequently differs in time and stage; the full
+trajectory gate is open and no event-side sample is discarded or shifted to
+make it pass.
+
+`Tiocr1ResetReferenceTest` retains the source cold-repeat, nonzero recovery
+position and action-time control separately from the passing short-reset
+comparison. The source pair and entered data are retained privately in
+`verification-artifacts/tiocr-reset20-20261105/captures.zip`, SHA-256
+`8974e0f1a6204bfb010b4211d9be3a930f8cd00ae6f8e015e76416bbde3863f7`.
+Resolve pickup-interval breaker-time accumulation and event-side publication
+against this and the previously accepted timing controls before changing the
+runtime action threshold.
+
 ## Remaining qualification
 
 An additional cold-repeated independent SMIB profile isolates remote static-load

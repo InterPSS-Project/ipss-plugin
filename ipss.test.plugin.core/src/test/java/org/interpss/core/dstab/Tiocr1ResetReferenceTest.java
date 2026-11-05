@@ -7,18 +7,40 @@ import java.security.MessageDigest;
 import java.util.*;
 import java.util.zip.ZipFile;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 /** Complete independent reset/re-pickup boundaries and accepted protection milestones. */
 public class Tiocr1ResetReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/tiocr-reset-20261101/captures.zip");
     private static final Path ALTERNATE=Path.of("testData/private/verification-artifacts/tiocr-reset03-20261105/captures.zip");
     private static final String ALTERNATE_SHA="301eb34c56e7fbd735ab2160235e2748b11b879591ccb7d15c820d953024a57d";
+    private static final Path LONG_RESET=Path.of("testData/private/verification-artifacts/tiocr-reset20-20261105/captures.zip");
+    private static final String LONG_SHA="8974e0f1a6204bfb010b4211d9be3a930f8cd00ae6f8e015e76416bbde3863f7";
 
-    @ParameterizedTest @ValueSource(booleans={false,true})
+    @Test void longResetSourceCarriesMovingElementIntoSecondFault() throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(LONG_RESET));
+        assertEquals(LONG_SHA,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(LONG_RESET))));
+        try(var zip=new ZipFile(LONG_RESET.toFile())) {
+            var first=csv(zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes());
+            var repeat=csv(zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
+            assertEquals(1008,first.size());assertEquals(first,repeat);
+            var active=first.stream().filter(row->row.get("time_s")>=0).toList();
+            assertEquals(.2185,active.stream().filter(row->row.get("time_s")>=.2 && row.get("VAR1")>=1)
+                    .findFirst().orElseThrow().get("time_s"),.00051);
+            assertEquals(.2285,tripTime(active),.00051);
+            var recovery=active.stream().filter(row->row.get("time_s")>=.09 && row.get("time_s")<.19)
+                    .mapToDouble(row->row.get("VAR1")).toArray();
+            assertTrue(recovery.length>100);
+            assertTrue(Arrays.stream(recovery).min().orElseThrow()>.07);
+            assertTrue(Arrays.stream(recovery).max().orElseThrow()<.4);
+        }
+    }
+
+    @ParameterizedTest @CsvSource({"false","true"})
     void alternateResetRetainsCompleteTripTrajectory(boolean staggered,@TempDir Path staged) throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ALTERNATE));
         assertEquals(ALTERNATE_SHA,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -45,8 +67,10 @@ public class Tiocr1ResetReferenceTest {
             String position=rows==reference?"VAR1":"RELAY.Position";
             assertTrue(rows.stream().filter(row->row.get("time_s")>=.05 && row.get("time_s")<.09)
                     .mapToDouble(row->row.get(position)).max().orElseThrow()>.4);
-            assertTrue(rows.stream().filter(row->row.get("time_s")>=.09 && row.get("time_s")<.19)
-                    .allMatch(row->row.get(position)==0));
+            var recovery=rows.stream().filter(row->row.get("time_s")>=.09 && row.get("time_s")<.19)
+                    .mapToDouble(row->row.get(position)).toArray();
+            assertTrue(recovery.length>100);
+            assertTrue(Arrays.stream(recovery).allMatch(value->value==0));
             assertTrue(rows.stream().filter(row->row.get("time_s")>=.2 && row.get("time_s")<.229)
                     .mapToDouble(row->row.get(position)).max().orElseThrow()>=1);
         }
@@ -59,7 +83,8 @@ public class Tiocr1ResetReferenceTest {
                 sum+=error*error;min=Math.min(min,value);max=Math.max(max,value);
             }
             double rmse=Math.sqrt(sum/reference.size()),nrmse=rmse/(max-min);
-            System.out.printf("TIOCR_RESET03 %s %s rmse=%.12g nrmse=%.12g%n",staggered,channel,rmse,nrmse);
+            System.out.printf("TIOCR_RESET03 %s %s rmse=%.12g nrmse=%.12g%n",
+                    staggered,channel,rmse,nrmse);
             if(channel.equals("ANGLE_DEG"))assertTrue(rmse<.01,channel+" RMSE="+rmse);
             else assertTrue(nrmse<.001,channel+" NRMSE="+nrmse);
         }
