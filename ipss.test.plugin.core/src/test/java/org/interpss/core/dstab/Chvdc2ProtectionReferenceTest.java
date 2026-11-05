@@ -39,6 +39,28 @@ public class Chvdc2ProtectionReferenceTest {
         assertEquals(2,VALID.size());
     }
     static Stream<Arguments> profiles(){return VALID.keySet().stream().flatMap(k->Stream.of(false,true).map(shared->Arguments.of(k,shared)));}
+    @ParameterizedTest @MethodSource("ramlCaptures")
+    void capturedRamlPickupChangesLimitBeforeElectricalBoundary(String key)throws Exception {
+        List<Map<String,Double>> rows;
+        try(var z=new ZipFile(ARCHIVE.toFile())){
+            rows=Tiocr1ResetReferenceTest.csv(z.getInputStream(z.getEntry(key+"/native.csv")).readAllBytes());
+        }
+        int pickup=-1;
+        for(int i=1;i<rows.size();i++)if(rows.get(i-1).get("VAR18")==0&&rows.get(i).get("VAR18")>0){
+            assertEquals(-1,pickup,"One first RAML pickup");pickup=i;
+        }
+        assertTrue(pickup>0&&pickup+1<rows.size());
+        var before=rows.get(pickup-1);var marker=rows.get(pickup);var electrical=rows.get(pickup+1);
+        assertEquals(marker.get("time_s"),marker.get("VAR18"),1e-9);
+        assertTrue(marker.get("VAR19")>30&&before.get("VAR19")<10,"The RAML limit changes at pickup");
+        assertEquals(0.,marker.get("STATE14"),1e-8,"The published washout is still its left state");
+        assertTrue(marker.get("STATE10")>marker.get("VAR23"),"The published voltage has not crossed the RAML threshold");
+        assertTrue(Math.abs(marker.get("STATE6")-before.get("STATE6"))<.01,"The firing angle remains on the old boundary");
+        assertTrue(Math.abs(marker.get("VAR9")-before.get("VAR9"))<.3,"Rectifier power remains on the old boundary");
+        assertTrue(electrical.get("STATE6")-marker.get("STATE6")>5,"The next row publishes the RAML firing angle");
+        assertTrue(marker.get("VAR9")-electrical.get("VAR9")>40,"The next row publishes the electrical power change");
+    }
+    static Stream<String> ramlCaptures(){return VALID.keySet().stream();}
     @ParameterizedTest @MethodSource("profiles")
     void replayCompleteRamlStateAndMinimumAngle(String key,boolean staggered)throws Exception {
         var manifest=VALID.get(key);double h=manifest.path("settings").path("step").asDouble();

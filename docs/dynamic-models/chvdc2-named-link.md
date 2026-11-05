@@ -1865,3 +1865,23 @@ second under the two methods. The largest marker error, 0.05575 second, occurs
 at one event-side sample; it is retained as a diagnostic. The rerun still has
 20 failed comparisons and one one-step numerical error. Changing the metric
 does not establish trajectory acceptance.
+
+### RAML pickup has distinct limit and electrical publication stages
+
+The independent 0.25 ms and 0.5 ms RAML captures both change the timer marker
+and rectifier minimum-angle output at pickup while the firing-angle state and
+rectifier power still show the preceding electrical regime. Their firing angle
+and power change in the following row. At pickup, the displayed rectifier AC
+voltage measurement remains above the entered 1.025 pu RAML threshold and the
+published washout state remains zero. At 0.5 ms the minimum-angle output has
+already advanced within the accepted row, so it cannot be reconstructed by
+subtracting the displayed washout state from the entered maximum.
+
+`Chvdc2ProtectionReferenceTest.capturedRamlPickupChangesLimitBeforeElectricalBoundary`
+checks that sequence in both immutable captures without feeding recorded values
+into the runtime. Both checks pass. The current attached-network path evaluates
+the protection transition and immediately re-solves its electrical injection
+at the same boundary. A correction must separate protection preview, electrical
+application and output publication while preserving event-side rows and
+transaction rollback; changing the voltage threshold or shifting a trace would
+not establish the required stage contract. The coupled RAML gates remain open.
