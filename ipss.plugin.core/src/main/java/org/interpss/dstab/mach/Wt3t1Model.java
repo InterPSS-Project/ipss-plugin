@@ -124,12 +124,16 @@ public final class Wt3t1Model implements ICMLStateProvider {
     }
 
     /** Leaf state boundary; the converter owner supplies live electrical power.
-     * Pitch-controller participation is intentionally unavailable until its own
-     * states share the enclosing solver's integration lifecycle. */
+     * Attached pitch requires the explicit managed-owner overloads. */
     public int staggeredStateCount() { return 4; }
 
     public void readStaggeredState(double[] values, int offset) {
-        requireSharedState(values, offset);
+        readStaggeredState(values, offset, null);
+    }
+
+    /** The composite owner must identify the exact pitch participant it integrates. */
+    public void readStaggeredState(double[] values, int offset, Wt3p1Model managedPitch) {
+        requireSharedState(values, offset, managedPitch);
         values[offset] = state.shaftAngle;
         values[offset + 1] = state.turbineSpeed;
         values[offset + 2] = state.generatorSpeed;
@@ -138,7 +142,12 @@ public final class Wt3t1Model implements ICMLStateProvider {
 
     /** Pure RHS evaluation: does not step the pitch controller or publish history. */
     public void evaluateStaggered(double electricalPower, double[] rates, int offset) {
-        requireSharedState(rates, offset);
+        evaluateStaggered(electricalPower, rates, offset, null);
+    }
+
+    public void evaluateStaggered(double electricalPower, double[] rates, int offset,
+            Wt3p1Model managedPitch) {
+        requireSharedState(rates, offset, managedPitch);
         if (!Double.isFinite(electricalPower)) {
             throw new IllegalArgumentException("WT3T1 electrical power must be finite");
         }
@@ -153,7 +162,12 @@ public final class Wt3t1Model implements ICMLStateProvider {
 
     /** State projection and rollback use the same atomic path; there is no clock history. */
     public void applyStaggeredState(double[] values, int offset, double stepSec) {
-        requireSharedState(values, offset);
+        applyStaggeredState(values, offset, stepSec, null);
+    }
+
+    public void applyStaggeredState(double[] values, int offset, double stepSec,
+            Wt3p1Model managedPitch) {
+        requireSharedState(values, offset, managedPitch);
         if (!Double.isFinite(stepSec) || stepSec < 0.0) {
             throw new IllegalArgumentException("WT3T1 shared interval must be finite and nonnegative");
         }
@@ -171,13 +185,13 @@ public final class Wt3t1Model implements ICMLStateProvider {
         aerodynamicPower = mechanicalPower;
     }
 
-    private void requireSharedState(double[] values, int offset) {
+    private void requireSharedState(double[] values, int offset, Wt3p1Model managedPitch) {
         if (!initialized) throw new IllegalStateException("WT3T1 is not initialized");
         if (oldState != null || predictor != null) {
             throw new IllegalStateException("WT3T1 ordinary predictor is pending");
         }
-        if (pitchController != null) {
-            throw new UnsupportedOperationException("WT3T1 shared pitch-controller integration is not available");
+        if (pitchController != managedPitch) {
+            throw new UnsupportedOperationException("WT3T1 requires its exact managed pitch participant");
         }
         java.util.Objects.requireNonNull(values, "values");
         java.util.Objects.checkFromIndexSize(offset, 4, values.length);
@@ -220,7 +234,9 @@ public final class Wt3t1Model implements ICMLStateProvider {
     public double getGeneratorAngleDeviation() { return state.generatorAngle; }
     public double getAerodynamicPower() { return aerodynamicPower; }
     public double getInitialPitch() { return initialPitch; }
+    public double getPitch() { return pitch; }
     public Wt3p1Model getPitchController() { return pitchController; }
+    public Wt3e1Model getElectricalController() { return electricalController; }
     public void setPitchController(Wt3p1Model value, Wt3e1Model electrical) {
         pitchController = value;
         electricalController = electrical;

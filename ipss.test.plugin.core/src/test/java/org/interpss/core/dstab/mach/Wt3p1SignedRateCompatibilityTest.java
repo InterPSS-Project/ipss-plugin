@@ -81,7 +81,17 @@ public class Wt3p1SignedRateCompatibilityTest {
             rows.add(new double[]{algo.getSimuTime(),voltage.abs(),net.getBus("Bus2").getVoltageMag(),
                     power.getReal(),power.getImaginary()});
         };
-        if(staggered)algo.setSolver(new StaggeredEulerSolver(algo));
+        if(staggered)algo.setSolver(new StaggeredEulerSolver(algo) {
+            double lastEvent=-1;
+            @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                boolean solved=super.networkSolutionStep(); double time=algo.getSimuTime();
+                if(solved && "INITIAL".equals(networkSolutionStage) && time!=lastEvent
+                        && (Math.abs(time-.05)<1e-9 || Math.abs(time-.1)<1e-9)) {
+                    capture.run();lastEvent=time;
+                }
+                return solved;
+            }
+        });
         else algo.setSolver(new DefaultDynamicSimulationSolver(algo) {
             double lastEvent=-1;
             @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
@@ -94,15 +104,10 @@ public class Wt3p1SignedRateCompatibilityTest {
             }
         });
         net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"Fault");
-        if(staggered) {
-            var rejection=assertThrows(IllegalArgumentException.class,()->algo.initialization());
-            assertTrue(rejection.getMessage().contains("Unsupported staggered-Euler generator"));
-            Files.writeString(output.resolve("unsupported.txt"),rejection.getMessage());
-            return;
-        }
         assertTrue(algo.initialization());
         capture.run();
         while(algo.getSimuTime()<.15-.00025) { assertTrue(algo.solveDEqnStep(true));capture.run(); }
+        assertEquals(303,rows.size(),"Both event-side duplicates must be retained");
         try(var writer=Files.newBufferedWriter(output.resolve("boundary.csv"))) {
             writer.write("time_s,V1,V2,P_MW,Q_MVAR\n");
             for(double[] row:rows)writer.write(row[0]+","+row[1]+","+row[2]+","+row[3]+","+row[4]+"\n");

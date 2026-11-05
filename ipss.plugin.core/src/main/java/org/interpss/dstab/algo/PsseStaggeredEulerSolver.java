@@ -33,6 +33,7 @@ import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.mach.IeeeVcEConstMachine;
 import org.interpss.dstab.mach.Wt3g2Model;
+import org.interpss.dstab.mach.Wt3g2IntegrationBundle;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
@@ -624,8 +625,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 // dynamic model as static negative loads during initialization.
                 if (gen.getDynamicGenDevice()==null&&dstabAlgo.getNetwork().isAllowGenWithoutMach()) continue;
                 if (gen.getDynamicGenDevice() instanceof Wt3g2Model r) {
-                    if (r.getElectricalController()!=null || r.getDriveTrain()!=null)
-                        throw new IllegalArgumentException("WT3G2 attached controls require shared integration owners: "+gen.getId());
+                    new Wt3g2IntegrationBundle(r); // Validate the complete attachment graph before initialization.
                     continue;
                 }
                 if (gen.getDynamicGenDevice() instanceof Regfma1Model r) {
@@ -942,11 +942,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 }
                 if (gen.getDynamicGenDevice() instanceof Wt3g2Model r) {
                     extendedStack=true;
-                    Participant participant=new Participant(r,()->bus.isActive()&&gen.isActive()&&r.isActive());
+                    Wt3g2IntegrationBundle bundle=new Wt3g2IntegrationBundle(r);
+                    Participant participant=new Participant(bundle,()->bus.isActive()&&gen.isActive()&&r.isActive());
                     participants.add(participant);
                     type3Converters.add(participant);
-                    attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==r
-                            &&r.getElectricalController()==null&&r.getDriveTrain()==null);
+                    attachmentsUnchanged.add(bundle::attachmentsUnchanged);
                     continue;
                 }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {

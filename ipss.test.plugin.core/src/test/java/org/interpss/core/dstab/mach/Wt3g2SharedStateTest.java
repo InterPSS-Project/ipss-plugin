@@ -95,13 +95,11 @@ public class Wt3g2SharedStateTest {
         assertFalse(f.model.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 1));
     }
 
-    @Test void unsupportedAttachedControlsAreRejectedBeforeIntegration() throws Exception {
+    @Test void foreignAttachedControllerIsRejectedBeforeIntegration() throws Exception {
         var f = fixture(true, true, .0005);
-        assertThrows(IllegalArgumentException.class, () -> f.algorithm.initialization());
-        var mechanical = fixture(true, false, .0005);
-        mechanical.model.setDriveTrain(new org.interpss.dstab.mach.Wt3t1Model(
-                new org.interpss.dstab.mach.Wt3t1Data(1, 4, 0, .01, 20, .8, 2, 1)));
-        assertThrows(IllegalArgumentException.class, () -> mechanical.algorithm.initialization());
+        var other = fixture(false, true, .0005);
+        f.model.setElectricalController(other.model.getElectricalController());
+        assertThrows(IllegalStateException.class, () -> f.algorithm.initialization());
     }
 
     @Test void projectionPreservesLimiterDirectionsAndReinitializationClearsPendingStage() throws Exception {

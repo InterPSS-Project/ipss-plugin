@@ -122,10 +122,14 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     @Override public int staggeredStateCount() { return 5; }
 
     private void requireSharedBoundary(double step) {
-        if (!initialized || oldState != null || !finite(step) || step <= 0.0)
-            throw new IllegalStateException("WT3G2 shared integration requires an initialized idle interval");
+        requireConverterBoundary(step);
         if (electricalController != null || driveTrain != null)
             throw new IllegalStateException("WT3G2 attached controls require shared integration owners");
+    }
+
+    private void requireConverterBoundary(double step) {
+        if (!initialized || oldState != null || !finite(step) || step <= 0.0)
+            throw new IllegalStateException("WT3G2 shared integration requires an initialized idle interval");
         if (parentGen == null || parentGen.getDynamicGenDevice() != this)
             throw new IllegalStateException("WT3G2 generator ownership changed");
     }
@@ -142,6 +146,11 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
 
     @Override public void evaluateStaggered(double step, double[] rates, int offset) {
         requireSharedBoundary(step);
+        evaluateConverter(step, rates, offset);
+    }
+
+    void evaluateConverter(double step, double[] rates, int offset) {
+        requireConverterBoundary(step);
         java.util.Objects.checkFromIndexSize(offset, 5, rates.length);
         Derivative d = derivatives(state());
         if (!finite(d.ip) || !finite(d.eq) || !finite(d.pllIntegral)
@@ -156,6 +165,11 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
 
     @Override public void applyStaggeredState(double[] values, int offset, double step) {
         requireSharedBoundary(step);
+        applyConverterState(values, offset, step);
+    }
+
+    void applyConverterState(double[] values, int offset, double step) {
+        requireConverterBoundary(step);
         java.util.Objects.checkFromIndexSize(offset, 5, values.length);
         for (int i = 0; i < 5; i++) if (!finite(values[offset + i]))
             throw new IllegalArgumentException("WT3G2 trial state is not finite");
@@ -325,6 +339,11 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     public double getPllAngleState() { return angle; }
     public double getFilteredVoltageState() { return filteredVoltage; }
     public double getDeltaQ() { return deltaQ; }
+    double activeCommand() { return ipCommand; }
+    double internalVoltageCommand() { return eqCommand; }
+    void restoreMeasurements(double activePower, double reactivePower, double correction) {
+        p = activePower; q = reactivePower; deltaQ = correction;
+    }
     @Override public Wt3e1Model getElectricalController() { return electricalController; }
     @Override public void setElectricalController(Wt3e1Model value) { electricalController = value; }
     @Override public Wt3t1Model getDriveTrain() { return driveTrain; }

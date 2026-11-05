@@ -239,6 +239,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
     }
 
     public Wt3e1Data getData() { return data; }
+    public Wt3GeneratorModel getGenerator() { return generator; }
     public double getSpeedDeviation() { return speedDeviation; }
     public double getPowerOrder() { return state == null ? 0.0 : state.torqueFilter; }
     public double getSpeedReferenceState() {
