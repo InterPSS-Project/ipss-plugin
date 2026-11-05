@@ -1733,3 +1733,31 @@ The retained archive is `verification-artifacts/chvdc2-resistance-20261104`.
 It includes raw paired captures, exact provenance and full Java comparisons.
 This slice establishes explicit physical preparation, not full controller or
 trajectory qualification.
+
+
+### Finite-resistance angle audit across the complete trajectory
+
+Applying the physical signed-voltage equation to the reported inverter angle
+leaves a 4,000.098 V residual in the inverter-resistance flat control and a
+4,095.168 V maximum residual during its fault control. An alternate
+angle-coordinate diagnostic with the opposite resistance term reduces these
+to 0.085 V and 2.157 V respectively; the unchanged zero-resistance fault
+control has a 2.290 V maximum residual. All 1,005 samples, including duplicate
+boundary timestamps, are retained for each control. This identifies a
+persistent coordinate discrepancy, not merely an initialization offset. It
+does not justify changing the shared physical converter equation.
+
+The missing authoritative contract is the finite-resistance mapping between
+controller firing angle and electrical firing angle: initialization, extinction
+margin and angle limits, DC-line voltage publication, and the input values used
+at each integration stage. The available diagrams expose controller angle and
+terminal voltage separately without specifying this mapping. The existing
+zero-resistance fault measurement/history discrepancy remains a separate open
+issue. No further equivalent timing, precision or sign sweeps were performed.
+Full model qualification remains unresolved; these diagnostics do not satisfy
+the outstanding trajectory gates or authorize automatic attachment.
+
+The private [coordinate audit](../../ipss.test.plugin.core/testData/private/verification-artifacts/chvdc2-finite-r-coordinate-audit-20261104/audit.zip)
+contains the reproducible calculation, complete residual traces, inspected
+diagrams and source provenance. Its SHA-256 is
+`5981af0b5952e3fba8aec956c48af16c7b4b5635b9e6aebd32019c5aedfdfe7c`.
