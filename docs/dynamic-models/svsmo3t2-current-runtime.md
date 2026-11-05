@@ -628,3 +628,8 @@ The explicit isolated core dependency remains unchanged.
 
 Private evidence: `verification-artifacts/svs-deadband-relock-20261104/evidence.zip`.
 SHA-256: `5256ade80291462e357fc8e729569d5ca4236f3b7f734c72482e30f8c396b5c4`.
+
+The unequal lead-lag and zero-output-lag controls are orthogonal tests. Their
+combination (zero output lag with nonzero retained proportional gain memory)
+has no independent capture here and remains unqualified. In particular, these
+tests do not certify instantaneous inside-band output for that combination.
