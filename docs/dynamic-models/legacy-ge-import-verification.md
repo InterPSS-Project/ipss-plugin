@@ -119,3 +119,13 @@ maximum errors remain above their unchanged 0.1 MW/Mvar limits, reaching about
 rejected. This supports the converted network-interface mapping only; it does
 not establish exact legacy-model equivalence or qualify the remaining power
 response.
+
+An independent synthetic input control changed only the entered generator
+reactive power from 0 to 1 Mvar. The complete reference output CSV was
+byte-identical, including the initial 0.2 Mvar output and both event sides.
+Thus the entered RAW reactive-power field does not determine the remaining
+initial offset in this preparation path. The control does not identify which
+initialization or network rule produces that offset. Private input/output
+evidence and the exact byte audit are retained at
+`verification-artifacts/legacy-ge-qg-discriminator-20261104/validation.zip`,
+SHA-256 `5edc5ac69578e39e91c363f65b507df1323898419e254df8495e57d5dd90a303`.
