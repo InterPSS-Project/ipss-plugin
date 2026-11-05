@@ -63,8 +63,38 @@ public class Tiocr1SeparatedIslandReferenceTest {
                 assertEquals(entry.getValue(),source.get(referenceAction).get("time_s"),5e-6);
                 assertEquals(source.get(referenceAction).get("time_s"),
                         actual.get(actualAction).get("time_s"),5e-6);
+                assertEquals(3,eventSideCount(source));
+                assertEquals(3,eventSideCount(actual));
+                assertTrue(source.get(referenceAction).get("V1")>.5);
+                assertTrue(source.get(referenceAction).get("V3")>.5);
+                for(int i=referenceAction;i<actual.size();i++) {
+                    assertEquals(0.,actual.get(i).get("V2"),1e-8);
+                    assertEquals(1.,actual.get(i).get("BRANCH.Bus1->Bus3(1)"));
+                    for(String circuit:List.of("1","2","3"))
+                        assertEquals(0.,actual.get(i).get("BRANCH.Bus1->Bus2("+circuit+")"));
+                }
+                for(String channel:List.of("V1","V2","V3","P_PU","Q_PU","ANGLE_DEG"))
+                    assertTrue(trajectoryError(source,actual,channel)<(channel.equals("ANGLE_DEG")?.01:.001),
+                            channel+" full-trajectory error for breaker delay "+tag);
             }
         }
+    }
+    private static int eventSideCount(List<Map<String,Double>> rows) {
+        int count=0;
+        for(int i=1;i<rows.size();i++)
+            if(rows.get(i).get("time_s").equals(rows.get(i-1).get("time_s")))count++;
+        return count;
+    }
+    private static double trajectoryError(List<Map<String,Double>> reference,
+            List<Map<String,Double>> actual,String channel) {
+        double sum=0,min=Double.POSITIVE_INFINITY,max=Double.NEGATIVE_INFINITY;
+        for(int i=0;i<reference.size();i++) {
+            double value=reference.get(i).get(channel);
+            double delta=actual.get(i).get(channel)-value;
+            sum+=delta*delta;min=Math.min(min,value);max=Math.max(max,value);
+        }
+        double rmse=Math.sqrt(sum/reference.size());
+        return channel.equals("ANGLE_DEG")?rmse:rmse/(max-min);
     }
     private static int actionIndex(List<Map<String,Double>> rows,String position) {
         int action=-1;
@@ -125,14 +155,7 @@ public class Tiocr1SeparatedIslandReferenceTest {
                 assertEquals(0.,row.get("BRANCH.Bus1->Bus2("+circuit+")"));
         }
         for(String channel:List.of("V1","V2","V3","P_PU","Q_PU","ANGLE_DEG")) {
-            double sum=0,min=Double.POSITIVE_INFINITY,max=Double.NEGATIVE_INFINITY;
-            for(int i=0;i<reference.size();i++) {
-                double value=reference.get(i).get(channel);
-                double delta=actual.get(i).get(channel)-value;
-                sum+=delta*delta;min=Math.min(min,value);max=Math.max(max,value);
-            }
-            double rmse=Math.sqrt(sum/reference.size());
-            double error=channel.equals("ANGLE_DEG")?rmse:rmse/(max-min);
+            double error=trajectoryError(reference,actual,channel);
             double limit=step>.001?(channel.equals("ANGLE_DEG")?.01:.001)
                     :channel.equals("ANGLE_DEG")?1e-4:staggered?8e-6:5e-5;
             assertTrue(error<limit,

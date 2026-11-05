@@ -645,7 +645,11 @@ nearest eligible post-pickup endpoint. The pickup interval itself does not
 consume the breaker delay. The accepted-step relay callback now compares the
 elapsed delay at the interval midpoint; zero delay still acts at pickup. This
 single callback is shared by modified Euler and staggered integration. The
-0.5 ms trajectory controls remain within their original strict gates.
+four delay controls also pass complete event-side, voltage, power, and
+rotor-angle trajectory gates under both methods: range-normalized voltage and
+power RMSE below 0.001, and rotor-angle RMSE below 0.01 degrees. Every action
+keeps the source-side two-bus island energized and zeros the isolated opposite
+bus. The 0.5 ms trajectory controls remain within their original strict gates.
 
 These controls qualify this connected source-side island and the exercised
 delay range. General disconnected-component detection, multi-generator islands,
