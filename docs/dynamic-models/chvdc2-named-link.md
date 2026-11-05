@@ -1848,3 +1848,20 @@ retains the partial traces, exact executed error identities and source archive
 hashes. SHA-256:
 `96f06bffa96b3858d11dffbaca49b57e21e7583840bf4a0cbf743680cbd1023b`.
 No simulation or equivalent parameter sweep was repeated for this diagnosis.
+
+### Physical RMSE for RAML angle and timer comparisons
+
+The complete attached-network RAML comparisons now check rectifier firing
+angles with period RMSE in degrees and the RAML timer marker with period RMSE
+in seconds. Fault-on and nonfault samples remain separate, including both
+event sides. The angle limit is 0.1 degree and the marker limit is 0.001 second;
+maximum absolute errors remain in the comparison report for diagnosis. Other
+electrical channels keep their existing range-normalized gates.
+
+In the focused 54-test rerun, the 0.5 ms RAML control has fault-on rectifier
+angle RMSE 0.706 degree under modified Euler and 0.281 degree under staggered
+integration. The 0.25 ms control has fault-on marker RMSE 0.00394 and 0.00418
+second under the two methods. The largest marker error, 0.05575 second, occurs
+at one event-side sample; it is retained as a diagnostic. The rerun still has
+20 failed comparisons and one one-step numerical error. Changing the metric
+does not establish trajectory acceptance.

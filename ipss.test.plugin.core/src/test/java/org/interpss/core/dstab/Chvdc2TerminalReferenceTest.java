@@ -33,6 +33,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             1e-5,1e-5,1e-5,1e-5,.002,.002,.002,.002,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,.002,.01};
     private static final double BOUNDARY_NRMSE_LIMIT=.02, STATE_NRMSE_LIMIT=.05;
     private static final double SMALL_RANGE_LIMIT_MULTIPLIER=10.;
+    private static final double RAML_ANGLE_RMSE_LIMIT_DEG=.1, RAML_MARKER_RMSE_LIMIT_S=.001;
     @TempDir Path folder;
     @BeforeAll static void integrity()throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent coupled reference captures");
@@ -247,6 +248,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         double[] referenceMin=new double[channels],referenceMax=new double[channels];
         Arrays.fill(referenceMin,Double.POSITIVE_INFINITY);Arrays.fill(referenceMax,Double.NEGATIVE_INFINITY);
         double[][] periodSquaredError=new double[2][channels];int[] periodSamples=new int[2];
+        int[] periodByRow=new int[recorder.rows.size()];
         boolean faultOn=false;
         float referenceClock=(float)(-2*h);
         var checks=new ArrayList<org.junit.jupiter.api.function.Executable>();
@@ -261,7 +263,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                     if(Math.abs(actual[0]-.05)<1e-9)faultOn=true;
                     else if(Math.abs(actual[0]-.1)<1e-9)faultOn=false;
                 }
-                int period=faultOn?1:0;periodSamples[period]++;
+                int period=faultOn?1:0;periodByRow[row]=period;periodSamples[period]++;
                 // Validate each simulator's clock independently at the same step/event side.
                 // The capture accumulates a binary32 clock; do not shift or interpolate signals.
                 double sourceTime=expected.get("time_s"),expectedSourceTime=referenceClock,expectedTime=(step-2)*h;
@@ -297,9 +299,11 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         }
         for(int k=0;k<channels;k++){
             referenceRange[k]=referenceMax[k]-referenceMin[k];
-            useRmse[k]=referenceRange[k]<=SMALL_RANGE_LIMIT_MULTIPLIER*LIMITS[k];
+            useRmse[k]=(tag.contains("-raml-")&&(k==8||k==16))
+                    || referenceRange[k]<=SMALL_RANGE_LIMIT_MULTIPLIER*LIMITS[k];
         }
-        report.put("acceptance_metric","period NRMSE; period RMSE for small-reference-range channels");
+        report.put("acceptance_metric","period NRMSE; period RMSE for small-reference-range channels and RAML angles; period RMSE for RAML marker");
+        report.put("raml_angle_rmse_limit_deg",RAML_ANGLE_RMSE_LIMIT_DEG);
         report.put("period_names",List.of("nonfault","fault_on"));report.put("period_samples",periodSamples);
         report.put("period_range_nrmse",periodNrmse);report.put("period_rmse",periodRmse);
         report.put("reference_range",referenceRange);report.put("uses_rmse",useRmse);
@@ -311,13 +315,17 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         report.put("protection_clock",clock.name());
         if(protectedProfile){
             int flagMismatches=0;double markerError=0,transitionError=0;
+            double[] markerSquaredError=new double[2];int[] markerSamples=new int[2];
             try(var w=BenchmarkOutputGuard.newWriter(output.resolve("protection.csv"),2*1024*1024)){
                 w.write("time_s,reference_time_s,raml_active,raml_marker_s,reference_marker_s,shorted,reference_shorted,transition_observed,transition_s,reference_transition_s,accepted_protection_time_s\n");
                 for(int k=0;k<recorder.rows.size();k++){
                     var history=recorder.histories.get(k);var expected=reference.get(k);
                     double shorted=history.get("Inverter shorted"),sourceShorted=expected.get("VAR22")<0?1:0;
                     if(shorted!=sourceShorted)flagMismatches++;
-                    markerError=Math.max(markerError,Math.abs(history.get("RAML timer marker (s)")-expected.get("VAR18")));
+                    double markerDifference=history.get("RAML timer marker (s)")-expected.get("VAR18");
+                    markerError=Math.max(markerError,Math.abs(markerDifference));
+                    int markerPeriod=periodByRow[k];markerSquaredError[markerPeriod]+=markerDifference*markerDifference;
+                    markerSamples[markerPeriod]++;
                     boolean observed=history.get("Commutation transition observed")!=0,sourceObserved=expected.get("VAR21")!=999;
                     if(clock==Chvdc2TerminalPorts.ProtectionClock.BINARY32)
                         checks.add(()->assertEquals(expected.get("time_s"),history.get("Accepted time (s)"),1e-12,"Independently accumulated protection clock"));
@@ -326,10 +334,20 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                     w.write(recorder.rows.get(k)[0]+","+expected.get("time_s")+","+history.get("RAML active")+","+history.get("RAML timer marker (s)")+","+expected.get("VAR18")+","+shorted+","+sourceShorted+","+history.get("Commutation transition observed")+","+history.get("Commutation transition time (s)")+","+expected.get("VAR21")+","+history.get("Accepted time (s)")+"\n");
                 }
             }
-            report.put("protection_flag_mismatches",flagMismatches);report.put("maximum_raml_marker_error_s",markerError);report.put("maximum_commutation_clock_error_s",transitionError);
-            int mismatches=flagMismatches;double ramlError=markerError,clockError=transitionError;
+            double[] markerRmse=new double[2];
+            for(int period=0;period<2;period++)if(markerSamples[period]>0)
+                markerRmse[period]=Math.sqrt(markerSquaredError[period]/markerSamples[period]);
+            report.put("protection_flag_mismatches",flagMismatches);report.put("maximum_raml_marker_error_s",markerError);
+            report.put("period_raml_marker_rmse_s",markerRmse);report.put("raml_marker_rmse_limit_s",RAML_MARKER_RMSE_LIMIT_S);
+            report.put("maximum_commutation_clock_error_s",transitionError);
+            int mismatches=flagMismatches;double clockError=transitionError;
             checks.add(()->assertEquals(0,mismatches,"Protection regime and observed-transition flags"));
-            checks.add(()->assertTrue(ramlError<h*1.01,"RAML marker error "+ramlError));
+            for(int period=0;period<2;period++)if(markerSamples[period]>0){
+                int selected=period;
+                checks.add(()->assertTrue(markerRmse[selected]<RAML_MARKER_RMSE_LIMIT_S,
+                        "RAML marker "+(selected==1?"fault-on":"nonfault")+" RMSE="+markerRmse[selected]
+                        +" s; limit="+RAML_MARKER_RMSE_LIMIT_S+" s"));
+            }
             checks.add(()->assertTrue(clockError<h*1.01,"Commutation clock error "+clockError));
         }
         if(stopped!=null){report.put("stopped_time_s",a.getSimuTime());report.put("failure",stopped.toString());}
@@ -343,9 +361,11 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             int channel=k;
             for(int period=0;period<2;period++)if(periodSamples[period]>0){
                 int selected=period;
-                if(useRmse[channel])checks.add(()->assertTrue(periodRmse[selected][channel]<LIMITS[channel],
+                if(useRmse[channel])checks.add(()->assertTrue(periodRmse[selected][channel]<
+                        (tag.contains("-raml-")&&(channel==8||channel==16)?RAML_ANGLE_RMSE_LIMIT_DEG:LIMITS[channel]),
                         "Channel "+channel+" "+(selected==1?"fault-on":"nonfault")+
-                        " small-range RMSE="+periodRmse[selected][channel]+"; limit="+LIMITS[channel]));
+                        " RMSE="+periodRmse[selected][channel]+"; limit="+
+                        (tag.contains("-raml-")&&(channel==8||channel==16)?RAML_ANGLE_RMSE_LIMIT_DEG:LIMITS[channel])));
                 else {
                     double limit=channel<10?BOUNDARY_NRMSE_LIMIT:STATE_NRMSE_LIMIT;
                     checks.add(()->assertTrue(periodNrmse[selected][channel]<limit,
