@@ -132,6 +132,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## SVSMO3T2
 
+- Keep full coupled deadband pulse acceptance separate from passing equation diagnostics. Resolve accepted-projection derivative history and zero-lag algebraic-state versus physical-current publication; unchanged strict voltage gates remain unmet for enabled, middle-band, unequal-gain and zero-lag controls under both methods.
+
 - Retain [deadband input and accepted state projection](dynamic-models/svsmo3t2-current-runtime.md#deadband-input-accepted-reset-and-live-lead-lag-storage): preserve evolving lead-lag storage, pure trial evaluations and source-observed integral projection at held endpoints. Complete coupled pulse and unequal-gain trajectories and the combined zero-lag/unequal-gain branch; ratio/delay behavior outside the exercised controls remains unqualified.
 
 - Retain independently verified peer-trip removal at MSS bank events, prepared peer ownership and exact stamp-failure rollback under both methods. Keep disconnected physical current separate from stored output-lag state. Later failed-network-solve rollback and full trajectory gates remain open; repeated reference continuation calls cannot substitute for uninterrupted event controls.
@@ -238,6 +240,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 
 ## CHVDC2U1
+
+- Retain explicit finite commutating-resistance preparation and independently checked initial physical losses. Resolve the inverter angle-coordinate discrepancy and full fault trajectory gates without fitting resistance signs or relaxing thresholds. Automatic attachment remains unqualified.
 
 - Retain [explicit auxiliary current commands](dynamic-models/chvdc2-named-link.md), independently checked shared ampere routing, accepted physical-time boundaries, transactional publication and retry after failed solves. Keep protection clocks separate from command timestamps and preserve uncommanded trajectories. Extend complete commanded network-trajectory qualification; the existing strict fault gates remain open.
 
