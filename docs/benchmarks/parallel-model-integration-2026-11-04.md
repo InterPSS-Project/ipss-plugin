@@ -121,3 +121,13 @@ isolate it. Converted-model behavior does not establish exact legacy equations.
 Private integrated XML and bounded log:
 `verification-artifacts/wt3-bundle-integrated-20261104/validation.zip`, SHA-256
 `c1f1726342936b6bdf410a9e640242115c64e39724a827169defd73157c33064`.
+
+The complete registered suite on `e8dbfc5af` then executed 5,054 tests across
+767 report files: 244 failures, two errors and 13 skips. Compared with the
+preceding full run, 26 tests were added and passed; no existing test was
+removed, newly failed or resolved. The strict converted WT3 trajectory remains
+failed, so this full-suite result does not qualify that reference comparison.
+
+Private reports, bounded log and exact identity audit:
+`verification-artifacts/full-wt3-bundle-20261104/validation.zip`, SHA-256
+`5216eadd16613424db105dd408f6b8e104d939d2955a91cf8decbd5b7fa29979`.
