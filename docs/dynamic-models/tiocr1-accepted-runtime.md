@@ -380,9 +380,9 @@ and `2.04603e-5` degrees, respectively. The unchanged strict envelopes are
 `5e-5` degrees for rotor angle.
 
 Opening all three circuits without a surviving path is a separate island
-control. The reference de-energizes both buses at the action while the current
-network solver retains energized island voltages. That topology difference
-remains open; the connected-corridor result does not qualify full islanding.
+control. Its once-failing reference trajectory now passes with the accepted
+singleton-island solver lifecycle described below. The connected-corridor
+result alone did not establish that behavior.
 The paired connected-corridor evidence is retained in
 `testData/private/verification-artifacts/tiocr-fourth-survivor-20261104/captures.zip`,
 SHA-256 `1c4087c09e497647464aa72d552a3bf546ed833ee0e4ccaefa1c5b23e8ce0440`.
@@ -601,8 +601,9 @@ static-residual allocation or broaden composite source ownership.
 The focused import, peer-load, composite and lifecycle selection passes 23
 tests. The broader relay/parser regression selection passes 114 tests, with
 zero failures, errors or skips. The new both-method controls are registered in
-the core plugin suite. These checks use the corrected isolated core candidate;
-default dependency versions are unchanged.
+the core plugin suite. The accepted core lifecycle is integrated on main; the
+focused main check passes all 24 selected core tests and 53 selected plugin
+tests, including the complete both-method island and reconnection controls.
 
 ### All-target-open island reference gate
 
