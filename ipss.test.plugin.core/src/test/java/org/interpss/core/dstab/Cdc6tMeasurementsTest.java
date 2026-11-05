@@ -97,4 +97,32 @@ public class Cdc6tMeasurementsTest {
             assertEquals(initial[i]+(input[i]-initial[i])*(ratio-.5*ratio*ratio),state[i],1e-9);
         }
     }
+
+    @Test void faultBoundaryRetainsModifiedEulerPredictorCorrectorEquation(){
+        double h=.0005,tau=.05,initial=500000,rightInput=484000;
+        var model=new Cdc6tMeasurements(tau,tau,tau);
+        model.configureIntegrationStep(h);model.initialize(initial,1000,initial);
+        double[] state=new double[3],leftRate=new double[3],rightRate=new double[3];
+        model.readBoundaryRates(leftRate,0);
+        model.setInput(rightInput,1000,rightInput);
+        model.readStaggeredState(state,0);
+        assertEquals(initial,state[0],0,"An event changes input, not the continuous state");
+        model.readBoundaryRates(rightRate,0);
+        assertEquals(0,leftRate[0],0);
+        assertEquals((rightInput-initial)/tau,rightRate[0],0);
+
+        model.step(h,0);model.readStaggeredState(state,0);
+        assertEquals(initial+h*rightRate[0],state[0],1e-9,"Predictor uses the event's right-side input");
+        model.step(h,1);model.readStaggeredState(state,0);
+        double heun=initial+h*rightRate[0]*(1-.5*h/tau);
+        assertEquals(heun,state[0],1e-9,"Corrector retains the prepared physical lag");
+
+        // The independently observed two-step event rule first averages the
+        // left/right rates while retaining the older, prefault zero rate.
+        double eventRate=.5*(leftRate[0]+rightRate[0]);
+        double twoStep=initial+.5*h*(3*eventRate-leftRate[0]);
+        assertEquals(initial+.75*h*rightRate[0],twoStep,1e-9);
+        assertTrue(Math.abs(state[0]-twoStep)>30,
+                "A method-specific first interval must not be hidden by changing controller lag or tolerance");
+    }
 }

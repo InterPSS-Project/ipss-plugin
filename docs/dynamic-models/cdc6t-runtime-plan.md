@@ -2204,3 +2204,13 @@ endpoint values alone. This supports a method-origin explanation for this
 selected first interval. It does not qualify every later observation or close
 the unchanged 10 V acceptance gate. No production correction is justified by
 this discriminator.
+
+`Cdc6tMeasurementsTest.faultBoundaryRetainsModifiedEulerPredictorCorrectorEquation`
+now makes that method distinction executable. It holds the continuous state
+through an input jump, checks the right-side predictor and corrector separately,
+and compares their first-interval result with the independently observed
+left/right-rate two-step rule. The focused measurement suite passes seven tests.
+The separate full resistance comparison retains its strict 10 V gate and its
+known modified-Euler fault failure. An accepted production change needs a
+predictor-stage boundary capture or another independent discriminator showing
+an incorrect event handoff within the selected integration method.
