@@ -1923,6 +1923,18 @@ step. The residual from the half-input estimate remains several micro-pu and
 does not vanish under the finer outer interval. Do not install a generic
 whole-interval ramp or change the controller's lag equation based on this
 source-only observation. The coupled state, current and power gates remain open.
+
+The complete 0.5 ms coupled control further separates the two integration
+methods at the first postfault sample. With ten local steps, staggered
+integration differs in the voltage-filter state by `2.30e-8` pu, while modified
+Euler differs by `-1.63e-4` pu. Repeating modified Euler with two, four and ten
+local steps leaves its maximum filter-state error near `1.63e-4` pu. This points
+to outer event-input stage ownership rather than local step resolution. A trial
+that replaced the staggered first event substep with a single Euler update
+worsened its first postfault error to `8.71e-6` pu and was reverted. The
+existing period-level state gate still passes; the tighter first-event
+component discrepancy remains open. No production equation or limit changed.
+
 ### Controller-only initialization discriminator
 
 `Chvdc2AngleCoordinateReplayTest` isolates the finite-resistance discrepancy
