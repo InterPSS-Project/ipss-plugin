@@ -1994,3 +1994,42 @@ trajectory failures remain open.
 added snapshot coordinates; this is an observation/lifecycle discriminator,
 not an accuracy acceptance test. Private complete paired archive SHA-256:
 `137a2a509fb94fadeda7c9ffd96abbd15c1a0c3d01549bf09e8fd39fbe2c50eb`.
+
+
+## Overlapping terminal blocking causes
+
+Independent controls apply a first terminal fault from 0.05 to 0.10 seconds
+and an opposite-terminal fault from 0.07 to 0.16 seconds. Both blocking causes
+are enabled and bypass is disabled. Both application orders have exact cold
+repeat channel files with accepted initialization. A rejected harness attempt
+used an invalid remaining-fault index and is retained separately; the corrected
+captures use the actual remaining fault index after the first removal.
+
+For rectifier-first blocking, the link resumes current at about 0.110 seconds
+while the inverter fault remains. Its inverter communication timer starts only
+at that release, and current is blocked again at about 0.130 seconds. Final
+recovery occurs near 0.1705 seconds. This contradicts an independently retained
+inverter request starting during the rectifier block: the existing coordinator's
+cause-specific suppression/reset is supported by this control. Inverter-first
+blocking remains continuous until approximately 0.1705 seconds as the cause
+transfers to the rectifier. No production change is justified.
+
+`Cdc6tOverlappingProtectionTest` reproduces both current transition sequences
+under both integration methods, checks blocked terminal powers, and checks the
+independent absence of an inverter timer during the first rectifier block.
+The same sampled lifecycle envelope as the existing protected-network tests is
+used. Every reference sample and event-side duplicate remains in the exported
+comparison; full state and terminal-trajectory acceptance is separate.
+
+The generic nearest-side diagnostic is ambiguous where internal transitions
+and external events supply different numbers of same-time observations. Its
+retained voltage maxima include approximately 0.1116 pu at the first internal
+restart and 0.1857 pu at final rectifier-fault clearing. These numbers are not
+claimed as aligned physical trajectory errors or removed from the evidence.
+An event-owner-aware comparison is required before interpreting those rows as
+full waveform agreement. No sample shifts, collapsed duplicates, adjusted
+parameters or weakened existing accuracy gates are introduced.
+
+Private cold captures and full Java comparisons are retained in
+`cdc6t-overlap-20261104`. This closes the tested cross-cause lifecycle uncertainty,
+not complete protected model qualification or automatic attachment.
