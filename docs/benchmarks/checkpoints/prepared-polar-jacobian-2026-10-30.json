@@ -1,0 +1,528 @@
+{
+  "schema": 1,
+  "feature": "prepared-polar-nr-jacobian",
+  "status": "implemented-accuracy-qualified-performance-target-not-met",
+  "core_feature_commit": "1c0e8a4af9548193e6040de9f899c4209affc006",
+  "core_experiment_commit": "9014b6a6e",
+  "benchmark_base_commits": {
+    "core": "730d52fa7f414fd051b025436c0f954dad995623",
+    "plugin": "e5bec06b326d43ae7a1359d796ad7e2e80ee79f3"
+  },
+  "source_state": "Measured working tree included unrelated uncommitted network-copy changes. Feature sources match retained snapshots except line endings/trailing whitespace. Core feature commits exclude that unrelated work; measurements are not claimed to be a clean-checkout benchmark.",
+  "protocol": {
+    "forks_per_implementation": 3,
+    "cpu": 2,
+    "affinity_mask": 4,
+    "tolerance_pu": 1e-06,
+    "maximum_iterations": 20,
+    "start": "compensated-flat-before-every-solve",
+    "small_warmup_per_fork": 50000,
+    "small_timed_per_fork": 10000,
+    "large_warmup_per_fork": 50,
+    "large_timed_per_fork": 100,
+    "outliers_removed": false,
+    "timed_solves_total": 180900
+  },
+  "packages": {
+    "rustpower": "0.5.2",
+    "pandapower": "3.5.4",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "numba": "0.68.1"
+  },
+  "timings": [
+    {
+      "case": "case39",
+      "backend": "rustpower-klu",
+      "samples": 30000,
+      "mean_ms": 0.013396496666666667,
+      "median_ms": 0.0122,
+      "min_ms": 0.0118,
+      "p95_ms": 0.0152,
+      "max_ms": 0.2504,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.01254484,
+          "median_ms": 0.0121,
+          "min_ms": 0.0118,
+          "p95_ms": 0.0142,
+          "max_ms": 0.1756
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.015149369999999999,
+          "median_ms": 0.0148,
+          "min_ms": 0.0133,
+          "p95_ms": 0.0154,
+          "max_ms": 0.2504
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.01249528,
+          "median_ms": 0.0122,
+          "min_ms": 0.0119,
+          "p95_ms": 0.0125,
+          "max_ms": 0.2345
+        }
+      ]
+    },
+    {
+      "case": "case118",
+      "backend": "rustpower-klu",
+      "samples": 30000,
+      "mean_ms": 0.029043723333333337,
+      "median_ms": 0.0277,
+      "min_ms": 0.027,
+      "p95_ms": 0.03,
+      "max_ms": 1.7841,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.029708830000000002,
+          "median_ms": 0.029,
+          "min_ms": 0.0279,
+          "p95_ms": 0.0302,
+          "max_ms": 0.7542
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.028939060000000006,
+          "median_ms": 0.0274,
+          "min_ms": 0.027,
+          "p95_ms": 0.0312,
+          "max_ms": 1.1916
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.028483279999999996,
+          "median_ms": 0.0276,
+          "min_ms": 0.0271,
+          "p95_ms": 0.0285,
+          "max_ms": 1.7841
+        }
+      ]
+    },
+    {
+      "case": "case9241pegase",
+      "backend": "rustpower-klu",
+      "samples": 300,
+      "mean_ms": 12.575509666666667,
+      "median_ms": 12.452,
+      "min_ms": 12.0007,
+      "p95_ms": 13.457840000000001,
+      "max_ms": 15.1377,
+      "iterations": [
+        6
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 100,
+          "mean_ms": 12.593775,
+          "median_ms": 12.4809,
+          "min_ms": 12.0418,
+          "p95_ms": 13.509955,
+          "max_ms": 14.8503
+        },
+        {
+          "fork": 1,
+          "samples": 100,
+          "mean_ms": 12.558672999999999,
+          "median_ms": 12.448799999999999,
+          "min_ms": 12.0007,
+          "p95_ms": 13.28902,
+          "max_ms": 15.1377
+        },
+        {
+          "fork": 2,
+          "samples": 100,
+          "mean_ms": 12.574080999999996,
+          "median_ms": 12.4082,
+          "min_ms": 12.0316,
+          "p95_ms": 13.529395,
+          "max_ms": 14.1355
+        }
+      ]
+    },
+    {
+      "case": "case39",
+      "backend": "generic",
+      "samples": 30000,
+      "mean_ms": 0.1882405615,
+      "median_ms": 0.174601,
+      "min_ms": 0.160201,
+      "p95_ms": 0.23660594999999993,
+      "max_ms": 8.8364,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.1889892047,
+          "median_ms": 0.175301,
+          "min_ms": 0.1623,
+          "p95_ms": 0.2359,
+          "max_ms": 8.6629
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.18759381600000002,
+          "median_ms": 0.17465,
+          "min_ms": 0.1616,
+          "p95_ms": 0.23361904999999972,
+          "max_ms": 6.291701
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.1881386638,
+          "median_ms": 0.174,
+          "min_ms": 0.160201,
+          "p95_ms": 0.24040499999999992,
+          "max_ms": 8.8364
+        }
+      ]
+    },
+    {
+      "case": "case118",
+      "backend": "generic",
+      "samples": 30000,
+      "mean_ms": 0.6955725661333333,
+      "median_ms": 0.6608,
+      "min_ms": 0.6117,
+      "p95_ms": 0.8897058999999999,
+      "max_ms": 17.024,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.6981804078,
+          "median_ms": 0.6628,
+          "min_ms": 0.616701,
+          "p95_ms": 0.8995249999999996,
+          "max_ms": 5.8263
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.698763766,
+          "median_ms": 0.6621,
+          "min_ms": 0.612499,
+          "p95_ms": 0.9016490499999993,
+          "max_ms": 17.024
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.6897735246,
+          "median_ms": 0.6577,
+          "min_ms": 0.6117,
+          "p95_ms": 0.8611049999999999,
+          "max_ms": 6.552299
+        }
+      ]
+    },
+    {
+      "case": "case9241pegase",
+      "backend": "generic",
+      "samples": 300,
+      "mean_ms": 619.1592295966667,
+      "median_ms": 500.50595,
+      "min_ms": 176.9389,
+      "p95_ms": 1354.91776995,
+      "max_ms": 1962.9889,
+      "iterations": [
+        6
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 100,
+          "mean_ms": 625.929002,
+          "median_ms": 499.40755,
+          "min_ms": 177.93,
+          "p95_ms": 1358.65710405,
+          "max_ms": 1765.5893
+        },
+        {
+          "fork": 1,
+          "samples": 100,
+          "mean_ms": 681.8136769299999,
+          "median_ms": 613.8320995,
+          "min_ms": 179.177301,
+          "p95_ms": 1370.9687699999997,
+          "max_ms": 1733.2422
+        },
+        {
+          "fork": 2,
+          "samples": 100,
+          "mean_ms": 549.73500986,
+          "median_ms": 472.1671495,
+          "min_ms": 176.9389,
+          "p95_ms": 1216.0397600000001,
+          "max_ms": 1962.9889
+        }
+      ]
+    },
+    {
+      "case": "case39",
+      "backend": "prepared",
+      "samples": 30000,
+      "mean_ms": 0.1558295269,
+      "median_ms": 0.144501,
+      "min_ms": 0.1386,
+      "p95_ms": 0.1842,
+      "max_ms": 27.364099,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.1556342221,
+          "median_ms": 0.1444,
+          "min_ms": 0.138999,
+          "p95_ms": 0.1871049999999999,
+          "max_ms": 7.117501
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.1560561712,
+          "median_ms": 0.1455,
+          "min_ms": 0.1399,
+          "p95_ms": 0.1846049499999999,
+          "max_ms": 8.8996
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.1557981874,
+          "median_ms": 0.1434,
+          "min_ms": 0.1386,
+          "p95_ms": 0.18200999999999984,
+          "max_ms": 27.364099
+        }
+      ]
+    },
+    {
+      "case": "case118",
+      "backend": "prepared",
+      "samples": 30000,
+      "mean_ms": 0.5904375644666666,
+      "median_ms": 0.5628,
+      "min_ms": 0.5192,
+      "p95_ms": 0.71449905,
+      "max_ms": 10.7392,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.5846597839,
+          "median_ms": 0.5625994999999999,
+          "min_ms": 0.5192,
+          "p95_ms": 0.6953449999999993,
+          "max_ms": 2.964499
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.585048514,
+          "median_ms": 0.5622,
+          "min_ms": 0.5219,
+          "p95_ms": 0.703901,
+          "max_ms": 2.141699
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.6016043954999999,
+          "median_ms": 0.563701,
+          "min_ms": 0.5223,
+          "p95_ms": 0.7508149999999998,
+          "max_ms": 10.7392
+        }
+      ]
+    },
+    {
+      "case": "case9241pegase",
+      "backend": "prepared",
+      "samples": 300,
+      "mean_ms": 425.72622569333333,
+      "median_ms": 277.85875050000004,
+      "min_ms": 132.6307,
+      "p95_ms": 1214.938970000001,
+      "max_ms": 2764.6619,
+      "iterations": [
+        6
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 100,
+          "mean_ms": 393.16517193999994,
+          "median_ms": 263.62975,
+          "min_ms": 132.9723,
+          "p95_ms": 1041.2851449999998,
+          "max_ms": 2764.6619
+        },
+        {
+          "fork": 1,
+          "samples": 100,
+          "mean_ms": 492.42550101000006,
+          "median_ms": 323.2950505,
+          "min_ms": 144.0591,
+          "p95_ms": 1400.7202599999998,
+          "max_ms": 1879.3959
+        },
+        {
+          "fork": 2,
+          "samples": 100,
+          "mean_ms": 391.58800413000006,
+          "median_ms": 290.4187,
+          "min_ms": 132.6307,
+          "p95_ms": 1107.612895,
+          "max_ms": 1439.276
+        }
+      ]
+    }
+  ],
+  "target": {
+    "required_ratio": 1.2,
+    "cases": {
+      "case39": {
+        "mean_ratio": 11.632110302967266,
+        "per_fork_ratios": [
+          12.406234124946991,
+          10.301165738245222,
+          12.468563121434656
+        ]
+      },
+      "case118": {
+        "mean_ratio": 20.329265559041612,
+        "per_fork_ratios": [
+          19.67966371950696,
+          20.216569370255975,
+          21.121317330728765
+        ]
+      },
+      "case9241pegase": {
+        "mean_ratio": 33.85359615457865,
+        "per_fork_ratios": [
+          31.219008751545896,
+          39.20999463956105,
+          31.142475074719194
+        ]
+      }
+    },
+    "target_met": false,
+    "affinity_before_and_after": 4
+  },
+  "accuracy": {
+    "maximum_independent_mismatch_pu": 5.320347503392309e-08,
+    "maximum_complex_voltage_error_pu": 4.525880907691287e-09
+  },
+  "tests": {
+    "broad": {
+      "passed": 175,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    "final_focused": {
+      "passed": 61,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    "jacobian_cases": 37,
+    "public_api_cases": 11
+  },
+  "source_fingerprints": {
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/aclf/IAclfBusFunc.java": {
+      "measured_sha256": "736523f7266879193a7e88bf3f0e868a340a6774a01091c90b3e0e3dc6e35a22",
+      "current_working_source_sha256": "736523f7266879193a7e88bf3f0e868a340a6774a01091c90b3e0e3dc6e35a22"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/INrSolver.java": {
+      "measured_sha256": "64eed9621df3e45eb759df1d2604ad7b43ca486c31eb51f6526703c019e5b730",
+      "current_working_source_sha256": "64eed9621df3e45eb759df1d2604ad7b43ca486c31eb51f6526703c019e5b730"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/LoadflowAlgorithm.java": {
+      "measured_sha256": "0869558389222d997c3390b36566d60533a970aa71257f999beb1101837e3114",
+      "current_working_source_sha256": "0b24dca22cb9388733300539f22f729e204d79e9a1a74286a7999290602706f6"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/BaseAclfBusImpl.java": {
+      "measured_sha256": "ca67b001931dafc7cc58bdd263494d68be7f7f82626665025a0cbe7093864567",
+      "current_working_source_sha256": "aee6f84755437edc4bd6a96d704cdeb87e4810d3022eb7b72e795b98a4ec0174"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/LoadflowAlgorithmImpl.java": {
+      "measured_sha256": "b0f1c4d46f900f5ef9ddf6f425c3097c28e34b34a2a075858ba977569c1269fe",
+      "current_working_source_sha256": "b0f1c4d46f900f5ef9ddf6f425c3097c28e34b34a2a075858ba977569c1269fe"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcNrEngine.java": {
+      "measured_sha256": "68236adef0fd339ebfe29b4d2a87eaffcc127698faaef9abc57bbf8f31a09bd9",
+      "current_working_source_sha256": "68236adef0fd339ebfe29b4d2a87eaffcc127698faaef9abc57bbf8f31a09bd9"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/DefaultNrSolver.java": {
+      "measured_sha256": "d88db057f17bf0c5f749dcf1db6cb370df4cb348cd6f04419529b70c462287b3",
+      "current_working_source_sha256": "d88db057f17bf0c5f749dcf1db6cb370df4cb348cd6f04419529b70c462287b3"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/PreparedPolarJacobian.java": {
+      "measured_sha256": "afbbcdd1fbe684ecb819d21e7e676599bb8076814b5f3442c42d30f24eeb31c8",
+      "current_working_source_sha256": "afbbcdd1fbe684ecb819d21e7e676599bb8076814b5f3442c42d30f24eeb31c8"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/sparse/impl/klu/KLUSparseEqnMatrix2x2Impl.java": {
+      "measured_sha256": "a716dc8af3965020c27b7695ce8032968af1904c019fd8336340b72501b9b2b5",
+      "current_working_source_sha256": "a716dc8af3965020c27b7695ce8032968af1904c019fd8336340b72501b9b2b5"
+    },
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/sparse/solver/klu/BaseKLUEqnDoubleSolver.java": {
+      "measured_sha256": "26afaf092e154804b15c1372071086f102fead2803919031cec786fc11b0db20",
+      "current_working_source_sha256": "26afaf092e154804b15c1372071086f102fead2803919031cec786fc11b0db20"
+    },
+    "plugin/tools/benchmark_prepared_newton.py": {
+      "measured_sha256": "410630a2de3e752fdc0afc9e4474ef45df63bda5d490b541c9bfb3d106701e85",
+      "current_working_source_sha256": "410630a2de3e752fdc0afc9e4474ef45df63bda5d490b541c9bfb3d106701e85"
+    },
+    "plugin/tools/rustpower_benchmark.py": {
+      "measured_sha256": "a2171eb5852dddc02bb2de00fce66160713448df41041aa4dea299c040b8492e",
+      "current_working_source_sha256": "a2171eb5852dddc02bb2de00fce66160713448df41041aa4dea299c040b8492e"
+    },
+    "plugin/tools/benchmarks/PreparedNewtonApiBenchmark.java": {
+      "measured_sha256": "3413945f6cfa286ea60477ac9ba5143c9f1ed9ba5fbbfb08c1db153cc9959003",
+      "current_working_source_sha256": "3413945f6cfa286ea60477ac9ba5143c9f1ed9ba5fbbfb08c1db153cc9959003"
+    }
+  },
+  "retained_evidence": {
+    "directory": "ipss.test.plugin.core/target/prepared-jacobian-comparison-20261030-b",
+    "checksum_manifest_sha256": "c5f1a031c24176a67e2b035658cf2cf43d84c8ce07b3abf388ab77ff792c873f",
+    "audit": "ipss.test.plugin.core/target/prepared-jacobian-completion-audit-20261030.json",
+    "audit_sha256": "e53f57ae256e8c12429f93292d71c4cc62be5388de4e7993f30197a169213c24",
+    "final_focused_gate": "ipss.test.plugin.core/target/prepared-jacobian-commit-gate-20261030.log",
+    "final_focused_gate_sha256": "a9eecef492711678d48bef877da5c211c4565bd262a7e2b2090c66f41121b31b",
+    "recorded_checksum_files": 65,
+    "runtime_classpath_entries": 108
+  }
+}

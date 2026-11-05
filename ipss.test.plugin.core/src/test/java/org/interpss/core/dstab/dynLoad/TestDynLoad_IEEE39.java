@@ -89,7 +89,9 @@ public class TestDynLoad_IEEE39 {
 		assertEquals(0.033, ac_504.getTstall(), 1.0E-9);
 		assertEquals(0.40, ac_504.getTrst(), 1.0E-9);
 		assertEquals(0.02, ac_504.getTv(), 1.0E-9);
-		assertEquals(100.0, ac_504.getLoadPercent(), 1.0E-9);
+		// The imported motor owns load ID 2 (200 MW) of this bus's 500 MW.
+		// LoadPercent is the selected source load's bus share, not its own rating.
+		assertEquals(40.0, ac_504.getLoadPercent(), 1.0E-9);
 		assertEquals(1.0, ac_504.getLoadFactor(), 1.0E-9);
 		assertEquals(0.98, ac_504.getPowerFactor(), 1.0E-9);
 		assertEquals(0.5, ac_504.getVstall(), 1.0E-9);
@@ -158,12 +160,10 @@ public class TestDynLoad_IEEE39 {
 		}
 		System.out.println("Minimum Bus 507 voltage after fault clearing = "+minPostFaultVolt);
 
-		// With all ten machine records participating, the three-cycle fault stalls
-		// the monitored compressor motor and Bus507 remains depressed at 1.245 s.
-        // Internal regression checkpoint with full-gain frequency measurement and
-        // corrected exciter saturation and simultaneous controller stage sampling.
-        // This is not a native PSS/E acceptance value.
-		assertEquals(0.59024405, minPostFaultVolt, 1.0E-6);
+		// The source-owned compressor represents only load ID 2's 40% bus share.
+        // Keep this as an internal regression checkpoint for the resulting
+        // depressed post-fault voltage; independent SMIB tests qualify the model.
+		assertEquals(0.75290779, minPostFaultVolt, 1.0E-6);
 		Hashtable<Integer, MonitorRecord> motorState =
 				sm.getAcMotorStateTable().get("ACMotor_2@Bus504");
 		assertTrue(motorState != null);

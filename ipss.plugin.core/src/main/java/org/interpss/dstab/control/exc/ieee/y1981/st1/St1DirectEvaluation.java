@@ -346,6 +346,16 @@ final class St1DirectEvaluation {
         prepare(false);
         prepare(false);
     }
+    /** Ordinary predictor/corrector stages; the caller owns the network endpoint. */
+    void modifiedEulerStep(boolean predictor,double dt) {
+        for(Node node:nodes)if(node.wrapper.getField()!=node.block)
+            throw new IllegalStateException("ST1 structure changed; reinitialize the controller");
+        prepare(true);
+        for(Node node:controls)
+            node.kernel.advance(predictor,node.input,dt,null,null,states,rates,node.id);
+        prepare(false);
+        prepare(false);
+    }
     void prepare(boolean capture) {
         // Fixed call sites retain the ordered traversal and all three preparation
         // passes. Alternate graphs and ordinary evaluations keep the node loop.

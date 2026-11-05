@@ -232,6 +232,11 @@ public class Texas2kFullDynamicCoverageTest {
 
     private static Object runtimeModelFor(BaseDStabNetwork<?, ?> network,
             DynamicModelImportEntry entry, DynamicModelCategory category) {
+        if (category == DynamicModelCategory.FACTS_DEVICE) {
+            return network.getBusList().stream().flatMap(candidate -> candidate.getDynamicBusDeviceList().stream())
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && device.getId().equals(entry.deviceId())).findFirst().orElse(null);
+        }
         var bus = network.getDStabBus("Bus" + entry.busNumber());
         if (category == DynamicModelCategory.LOAD_CHARACTERISTIC) {
             return bus.getDynLoadModelList().stream()
@@ -262,11 +267,16 @@ public class Texas2kFullDynamicCoverageTest {
                                     || device.getId().equals(entry.deviceId())))
                     .findFirst().orElse(null);
         }
+        if(category==DynamicModelCategory.HVDC_LINK)
+            return org.interpss.dstab.hvdc.Cdc6tDyrModel.models(network).stream()
+                    .filter(model->model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
         DStabGen generator = (DStabGen) bus
                 .getContributeGen(entry.deviceId());
         assertNotNull(generator, "Missing generator for attached record " + entry);
         var machine = generator.getMach();
         return switch (category) {
+            case HVDC_LINK -> org.interpss.dstab.hvdc.Cdc6tDyrModel.models(network).stream()
+                    .filter(model -> model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
             case SYNCHRONOUS_MACHINE -> machine;
             case COMPENSATOR -> machine instanceof org.interpss.dstab.mach.IeeeVoltageCompensatedMachine
                     compensated && compensated.getIeeeVcData() != null ? compensated : null;
@@ -304,10 +314,14 @@ public class Texas2kFullDynamicCoverageTest {
                     "load characteristics are resolved before generator models");
             case LOAD_PROTECTION -> throw new IllegalStateException(
                     "load protection is resolved before generator models");
+            case BRANCH_PROTECTION -> throw new IllegalStateException(
+                    "branch protection requires a branch-specific coverage resolver");
             case GENERATOR_PROTECTION -> throw new IllegalStateException(
                     "generator protection is resolved before generator controllers");
             case SWITCHED_SHUNT -> throw new IllegalStateException(
                     "switched shunts are resolved before generator models");
+            case FACTS_DEVICE -> throw new IllegalStateException(
+                    "named FACTS devices are resolved before bus/generator models");
         };
     }
 

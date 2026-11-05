@@ -22,18 +22,24 @@ import com.interpss.dstab.device.NetworkIterationAware;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /**
- * Positive-sequence WECC REGC_A converter model. REECB1 and REPCA1 are
- * composed as controllers while this device owns the network current source.
+ * Positive-sequence WECC REGC_A converter kernels. REGCA1 uses a current
+ * coordinate; REGCAU2 retains a distinct optional effective-reactance interface.
+ * Electrical and plant controls are composed while this device owns the source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
-        NetworkIterationAware {
+        implements DynamicGenDevice, RenewableConverterHost, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
+        NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort,
+        org.interpss.dstab.control.util.NetworkEventInput,
+        org.interpss.dstab.control.util.IntegrationStepContext {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
-    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
-            "Filtered Voltage", "Active Current Regulator", "Reactive Current Regulator");
+    private final IntegrationStateMonitor stateMonitor;
     private final Regca1Data data;
+    private final String modelName;
+    private final double effectiveReactance;
+    private final boolean removableCompensation;
+    private final String voltageKey, activeCurrentKey, reactiveCurrentKey, activePowerKey, reactivePowerKey;
     private final Hashtable<String, Object> states = new Hashtable<>();
     private DStabGen parentGen;
     private RenewableElectricalController electricalController;
@@ -43,7 +49,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double vFiltered;
     /** Output of the REGC_A active-current regulator, before algebraic LVG. */
     private double ipState;
-    /** Output of the REGC_A reactive-current regulator, before algebraic HV logic. */
+    /** Reactive regulator coordinate: current, or voltage for nonzero REGCAU2 Xe. */
     private double iqState;
     private double p;
     private double q;
@@ -67,6 +73,66 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double oldSavedNetworkVoltage, oldNetworkCorrection, oldDeceleratedNetworkVoltage;
     private double pendingEventVoltage = Double.NaN;
     private double oldPendingEventVoltage;
+    public enum NetworkVoltageMemoryPolicy { PER_NETWORK_SOLVE, ACCEPTED_BOUNDARY }
+    private NetworkVoltageMemoryPolicy voltageMemoryPolicy = NetworkVoltageMemoryPolicy.PER_NETWORK_SOLVE;
+    private double committedSavedVoltage, acceptedTerminalVoltage;
+    private double preparedMemoryTime = Double.NaN, preparedMemoryStep = Double.NaN;
+    private double acceptedMemoryStepTime = Double.NaN, acceptedMemoryEventTime = Double.NaN;
+    private double trialMemoryEventTime = Double.NaN;
+    private boolean positiveMemoryStep, eventMemoryTrial, memoryNetworkAccepted;
+
+    /** Opt-in history policy; configure between accepted steps, preferably before initialization. */
+    public void setNetworkVoltageMemoryPolicy(NetworkVoltageMemoryPolicy policy) {
+        java.util.Objects.requireNonNull(policy);
+        if (networkSolutionInProgress || positiveMemoryStep || eventMemoryTrial && memoryNetworkAccepted)
+            throw new IllegalStateException("Change voltage-memory policy between accepted steps");
+        if (policy == voltageMemoryPolicy) return;
+        voltageMemoryPolicy = policy;
+        resetAcceptedVoltageMemory();
+    }
+    public NetworkVoltageMemoryPolicy getNetworkVoltageMemoryPolicy() { return voltageMemoryPolicy; }
+    public record AcceptedVoltageMemoryState(double savedVoltage, double terminalVoltage,
+            double stepStartTime, double eventTime, boolean positiveStepPending) { }
+    public AcceptedVoltageMemoryState getAcceptedVoltageMemoryState() {
+        return new AcceptedVoltageMemoryState(committedSavedVoltage, acceptedTerminalVoltage,
+                acceptedMemoryStepTime, acceptedMemoryEventTime, positiveMemoryStep);
+    }
+    private boolean acceptedVoltageMemory() {
+        return networkHighVoltageEnabled && voltageMemoryPolicy == NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY;
+    }
+    private void resetAcceptedVoltageMemory() {
+        committedSavedVoltage = savedNetworkVoltage;
+        acceptedTerminalVoltage = getDStabBus() == null ? 1. : Math.max(.01,getDStabBus().getVoltageMag());
+        preparedMemoryTime = preparedMemoryStep = acceptedMemoryStepTime = acceptedMemoryEventTime = trialMemoryEventTime = Double.NaN;
+        positiveMemoryStep = eventMemoryTrial = memoryNetworkAccepted = false;
+    }
+    @Override public void prepareIntegrationStep(double startTimeSec,double stepSec) {
+        if (!acceptedVoltageMemory()) return;
+        if (!Double.isFinite(startTimeSec) || !Double.isFinite(stepSec) || stepSec <= 0. || !Double.isFinite(startTimeSec+stepSec))
+            throw new IllegalArgumentException("Finite physical integration interval required");
+        if (positiveMemoryStep && (startTimeSec != preparedMemoryTime || stepSec != preparedMemoryStep))
+            throw new IllegalStateException("Previous voltage-memory step has not been accepted");
+        if (!Double.isNaN(preparedMemoryTime) && startTimeSec < preparedMemoryTime)
+            throw new IllegalArgumentException("Reinitialize before reversing the physical clock");
+        // Clock only: no terminal sampling, trial state or committed history update.
+        preparedMemoryTime = startTimeSec;preparedMemoryStep = stepSec;
+    }
+    private void startVoltageMemoryStep(double dt,DynamicSimuMethod method,int flag) {
+        if (!acceptedVoltageMemory()) return;
+        if (method != DynamicSimuMethod.MODIFIED_EULER || (flag != 0 && flag != 1)
+                || !Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("Accepted voltage memory requires valid integration stages");
+        if (integrationScheme == IntegrationScheme.TWO_STEP && !(activeController() instanceof TwoStepElectricalController))
+            throw new IllegalStateException("Electrical controller does not provide a two-step integration boundary");
+        if (flag != 0 || dt == 0.) return;
+        if (!Double.isFinite(preparedMemoryTime) || dt != preparedMemoryStep)
+            throw new IllegalStateException("Prepare the physical step before converter integration");
+        if (preparedMemoryTime == acceptedMemoryStepTime)
+            throw new IllegalStateException("Physical voltage-memory step was already accepted");
+        positiveMemoryStep = true;
+        memoryNetworkAccepted = false;
+    }
+
 
     /** Stored algebraic memory, distinct from the converter's differential states. */
     public record NetworkHighVoltageState(boolean enabled, boolean solutionInProgress,
@@ -86,7 +152,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * The default instantaneous behavior is preserved.
      */
     public void setNetworkIterationHighVoltageEnabled(boolean enabled) {
-        if (networkSolutionInProgress) throw new IllegalStateException("Network solution is in progress");
+        if (networkSolutionInProgress || positiveMemoryStep || eventMemoryTrial && memoryNetworkAccepted) throw new IllegalStateException("Configure voltage memory between accepted steps");
         if (networkHighVoltageEnabled == enabled) return;
         networkHighVoltageEnabled = enabled;
         if (!enabled) resetNetworkHighVoltageMemory();
@@ -99,6 +165,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         deceleratedNetworkVoltage = savedNetworkVoltage;
         networkCorrection = 0.0;
         pendingEventVoltage = Double.NaN;
+        resetAcceptedVoltageMemory();
     }
 
     @Override public void beginNetworkSolution(NetworkIterationAware.Context context) {
@@ -115,8 +182,18 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         // lifecycle starts. Advance memory from the captured left endpoint.
         double previousVoltage = Double.isNaN(pendingEventVoltage)
                 ? Math.max(.01, getDStabBus().getVoltageMag()) : pendingEventVoltage;
-        savedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
-                + data.accel() * previousVoltage;
+        if (acceptedVoltageMemory()) {
+            eventMemoryTrial = context.externalEventBoundary() && !positiveMemoryStep;
+            trialMemoryEventTime = eventMemoryTrial ? context.stepStartTime() : Double.NaN;
+            boolean newEvent = eventMemoryTrial && trialMemoryEventTime != acceptedMemoryEventTime;
+            savedNetworkVoltage = positiveMemoryStep || newEvent
+                    ? (1. - data.accel()) * committedSavedVoltage + data.accel() * acceptedTerminalVoltage
+                    : committedSavedVoltage;
+            memoryNetworkAccepted = false;
+        } else {
+            savedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
+                    + data.accel() * previousVoltage;
+        }
         pendingEventVoltage = Double.NaN;
         networkCorrection = 0.0;
     }
@@ -146,6 +223,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             pendingEventVoltage = oldPendingEventVoltage;
         }
         networkSolutionInProgress = false;
+        if (acceptedVoltageMemory()) memoryNetworkAccepted = converged;
     }
 
     private double activeNetworkOutput(double voltage) {
@@ -167,11 +245,28 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     public Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id, Regca1Data data) {
+        this(parentGen, bus, id, data, "REGCA1", 0.);
+    }
+
+    /** REGCAU2 shares the control kernels but retains its explicit network reactance. */
+    public Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id, Regcau2Data data) {
+        this(parentGen, bus, id, data.controls(), "REGCAU2", data.xe());
+    }
+
+    private Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
+            Regca1Data data, String modelName, double effectiveReactance) {
         this.data = data;
+        this.modelName = modelName;
+        this.effectiveReactance = effectiveReactance;
+        removableCompensation = modelName.equals("REGCA1");
+        voltageKey=modelName+"_V";activeCurrentKey=modelName+"_IP";reactiveCurrentKey=modelName+"_IQ";
+        activePowerKey=modelName+"_P";reactivePowerKey=modelName+"_Q";
+        stateMonitor = new IntegrationStateMonitor("Filtered Voltage", "Active Current Regulator",
+                reactiveStateName());
         setParentGen(parentGen);
         setDStabBus(bus);
         setId(id);
-        setExtendedDeviceId("REGCA1_" + id + "@" + bus.getId());
+        setExtendedDeviceId(modelName + "_" + id + "@" + bus.getId());
     }
 
     @Override
@@ -195,7 +290,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         ipState = lvg > EPS ? p / v / lvg : 1.0;
         // The WECC REGC_A block uses positive Iq for positive reactive-power output.
         // REEC_B supplies the opposite-signed Iqcmd to the -1/(1+sTg) regulator.
-        iqState = q / v;
+        iqState = effectiveReactance > 0. ? v + effectiveReactance * q / v : q / v;
         controller.initialize(p, q, v);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(iqState);
@@ -219,14 +314,16 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     /** Rebase bundle histories on the next positive two-step integration call. */
     public void rebaseNextTwoStep() {
-        if (integrationScheme == IntegrationScheme.TWO_STEP && reeca1Controller != null) {
+        if (integrationScheme == IntegrationScheme.TWO_STEP) {
             twoStep.rebaseNextStep();
-            reeca1Controller.rebaseNextTwoStep();
+            if(activeController() instanceof TwoStepElectricalController controller)
+                controller.rebaseNextTwoStep();
         }
     }
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        startVoltageMemoryStep(dt,method,flag);
         if (integrationScheme == IntegrationScheme.TWO_STEP)
             return nextTwoStep(dt, method, flag);
         double v = Math.max(0.01, getDStabBus().getVoltageMag());
@@ -277,8 +374,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private boolean nextTwoStep(double dt, DynamicSimuMethod method, int flag) {
-        if (reeca1Controller == null)
-            throw new IllegalStateException("Two-step REGCA1 requires a REECA1 controller");
+        if (!(activeController() instanceof TwoStepElectricalController controller))
+            throw new IllegalStateException("Electrical controller does not provide a two-step integration boundary");
         if (method != DynamicSimuMethod.MODIFIED_EULER || (flag != 0 && flag != 1)
                 || !Double.isFinite(dt) || dt < 0.0)
             throw new IllegalArgumentException("Two-step REGCA1 requires finite dt and stages 0/1");
@@ -287,18 +384,18 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         if (!updateAttributes(false)) return false;
         double v = Math.max(0.01, getDStabBus().getVoltageMag());
         double frequency = getDStabBus().getFreq();
-        double controlVoltage = reeca1Controller.getWeakGridController() == null
+        double controlVoltage = activeController().getWeakGridController() == null
                 ? v : getDStabBus().getVoltageMag();
-        reeca1Controller.refreshTwoStep(p, q, controlVoltage, frequency);
+        controller.refreshTwoStep(p,q,controlVoltage,frequency);
         if (flag == 0 && dt > 0.0) {
             double dv = derivative(v, vFiltered, data.tfltr());
-            double dip = activeCurrentDerivative(reeca1Controller.getTwoStepIpcmd(), ipState);
-            double diq = reactiveCurrentDerivative(reeca1Controller.getTwoStepIqcmd(), iqState);
+            double dip = activeCurrentDerivative(controller.getTwoStepIpcmd(), ipState);
+            double diq = reactiveCurrentDerivative(controller.getTwoStepIqcmd(), iqState);
             stateMonitor.begin(Stage.TWO_STEP);
             stateMonitor.record(0, vFiltered, dv);
             stateMonitor.record(1, ipState, dip);
             stateMonitor.record(2, iqState, diq);
-            reeca1Controller.stepTwoStep(dt, p, q, controlVoltage, frequency);
+            controller.stepTwoStep(dt,p,q,controlVoltage,frequency);
             twoStep.begin(dt);
             vFiltered = twoStep.advance(0, vFiltered, dv);
             ipState = twoStep.advance(1, ipState, dip);
@@ -317,7 +414,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private double reactiveCurrentDerivative(double command, double state) {
-        double derivative = derivative(-command, state, data.tg());
+        double derivative = derivative(reactiveRegulatorTarget(command), state, data.tg());
         // REGCA1 selects one recovery-rate boundary from the initialized
         // machine Q sign. Exact zero selects neither directional boundary;
         // for nonzero Q, zero-valued limits remain active bounds, not disable flags.
@@ -363,9 +460,26 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return timeConstant <= EPS ? state : state + dt * rate;
     }
 
+    @Override public boolean supportsUncompensatedNetworkSolve() {
+        return removableCompensation && !networkHighVoltageEnabled && supportsDeferredCurrentPublication();
+    }
+    @Override public Complex networkCompensationAdmittance() {
+        var z=parentGen.getPosGenZ();
+        if(z==null)return Complex.ZERO;
+        z=z.multiply(parentGen.getZMultiFactor());
+        return z.abs()>EPS?Complex.ONE.divide(z):Complex.ZERO;
+    }
+    @Override public Complex uncompensatedNetworkCurrent(){return injectedCurrent(getDStabBus().getVoltage());}
     @Override public boolean supportsDeferredCurrentPublication() {
-        // Algebraic bypass can call a replaceable controller while assembling current.
-        return getClass() == Regca1Model.class && data.tg() > EPS;
+        // A bypass may read replaceable commands. These two final implementations
+        // expose stored command values; custom callbacks retain ordinary dispatch.
+        var controller = activeController();
+        return removableCompensation && getClass() == Regca1Model.class && (data.tg() > EPS
+                || controller instanceof Reeca1Model || controller instanceof ConverterCurrentCommands);
+    }
+
+    @Override public boolean supportsNetworkIterationAcceleration() {
+        return removableCompensation && getClass() == Regca1Model.class && data.tg() > EPS && !networkHighVoltageEnabled;
     }
 
     @Override
@@ -395,11 +509,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public Hashtable<String, Object> getStates(Object ref) {
         // Inactive devices can be observed before dynamic initialization.
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
-        states.put("REGCA1_V", getFilteredVoltage());
-        states.put("REGCA1_IP", getIp());
-        states.put("REGCA1_IQ", getIq());
-        states.put("REGCA1_P", p);
-        states.put("REGCA1_Q", q);
+        states.put(voltageKey, getFilteredVoltage());
+        states.put(activeCurrentKey, getIp());
+        states.put(reactiveCurrentKey, getIq());
+        states.put(activePowerKey, p);
+        states.put(reactivePowerKey, q);
         return states;
     }
 
@@ -420,7 +534,51 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         }
         return finite(p) && finite(q);
     }
+    /** Publish solved event inputs without advancing any converter/controller history. */
+    @Override public void acceptNetworkEventInput(double physicalTimeSec) {
+        if (!Double.isFinite(physicalTimeSec)) throw new IllegalArgumentException("Invalid event time");
+        if (!isActive() || getDStabBus() == null || !getDStabBus().isActive()
+                || parentGen == null || !parentGen.isActive()
+                || deviceBaseMva <= EPS || systemBaseMva <= EPS) return;
+        if (networkSolutionInProgress)
+            throw new IllegalStateException("Event inputs require a completed network solution");
+        if (acceptedVoltageMemory()) {
+            if (positiveMemoryStep) throw new IllegalStateException("Event acceptance precedes positive integration");
+            if (!eventMemoryTrial && physicalTimeSec == acceptedMemoryEventTime) return;
+            if (!eventMemoryTrial || !memoryNetworkAccepted || physicalTimeSec != trialMemoryEventTime)
+                throw new IllegalStateException("Accept an event only after its converged network boundary");
+        }
+        // This is the same pure current function used by the network source.
+        // Optional iteration memory has already been finalized by convergence.
+        Complex voltage = getDStabBus().getVoltage();
+        Complex power = voltage.multiply(injectedCurrent(voltage).conjugate())
+                .multiply(systemBaseMva / deviceBaseMva);
+        double acceptedP = power.getReal(), acceptedQ = power.getImaginary();
+        if (!finite(acceptedP) || !finite(acceptedQ))
+            throw new IllegalStateException("Nonfinite accepted converter power");
+        if (acceptedVoltageMemory()) {
+            if (!Double.isFinite(savedNetworkVoltage) || !Double.isFinite(voltage.abs()))
+                throw new IllegalStateException("Nonfinite accepted event voltage memory");
+            committedSavedVoltage = savedNetworkVoltage;
+            acceptedTerminalVoltage = Math.max(.01,voltage.abs());
+            acceptedMemoryEventTime = physicalTimeSec;
+            eventMemoryTrial = false;
+        }
+        p = acceptedP;
+        q = acceptedQ;
+    }
     @Override public boolean afterStep(double dt) {
+        if (acceptedVoltageMemory() && positiveMemoryStep) {
+            if (!memoryNetworkAccepted || eventMemoryTrial || dt != preparedMemoryStep)
+                throw new IllegalStateException("Accept voltage memory only after the solved physical step");
+            double terminal = Math.max(.01,getDStabBus().getVoltageMag());
+            if (!Double.isFinite(terminal) || !Double.isFinite(savedNetworkVoltage))
+                throw new IllegalStateException("Nonfinite accepted voltage memory");
+            committedSavedVoltage = savedNetworkVoltage;
+            acceptedTerminalVoltage = terminal;
+            acceptedMemoryStepTime = preparedMemoryTime;
+            positiveMemoryStep = false;
+        }
         var controller=activeController();
         if(controller!=null&&controller.getRepccController()!=null)controller.getRepccController().acceptedEndpoint();
         if(controller!=null&&controller.getHybridController()!=null)controller.getHybridController().owner().acceptedEndpoint();
@@ -435,6 +593,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     public Regca1Data getData() { return data; }
+    public String getModelName() { return modelName; }
+    public double getEffectiveReactance() { return effectiveReactance; }
     public IntegrationScheme getIntegrationScheme() { return integrationScheme; }
     /**
      * Select before initialization for fixed-step TWO_STEP diagnostics. This
@@ -450,6 +610,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * its commercial lag identities are verified, full fleet/event parity is open.
      */
     public void setIntegrationScheme(IntegrationScheme scheme) {
+        if (effectiveReactance > 0. && scheme == IntegrationScheme.TWO_STEP)
+            throw new IllegalArgumentException("Nonzero REGCAU2 Xe currently requires modified Euler");
         if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getHybridController()!=null)throw new IllegalArgumentException("Shared hybrid composition currently requires staged modified Euler");
         if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getRepccController()!=null)
             throw new IllegalArgumentException("REPCC uses staged modified Euler, not the converter two-step path");
@@ -493,9 +655,21 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return data.tg() <= EPS ? limitedActiveCommand(activeController().getIpcmd()) : ipState;
     }
     private double reactiveCurrentOutput() {
-        return data.tg() <= EPS ? -activeController().getIqcmd() : iqState;
+        double value = data.tg() <= EPS ? reactiveRegulatorTarget(activeController().getIqcmd()) : iqState;
+        return effectiveReactance > 0.
+                ? (value - getDStabBus().getVoltageMag()) / effectiveReactance : value;
+    }
+
+    private double reactiveRegulatorTarget(double command) {
+        return effectiveReactance > 0.
+                ? activeController().getReactiveVoltageCommand(getDStabBus().getVoltageMag(), effectiveReactance, command) : -command;
+    }
+
+    private String reactiveStateName() {
+        return effectiveReactance > 0. ? "Reactive Voltage Regulator" : "Reactive Current Regulator";
     }
     public double getIpRegulatorState() { return ipState; }
+    /** Stored current coordinate, or internal voltage when REGCAU2 Xe is nonzero. */
     public double getIqRegulatorState() { return iqState; }
     public double getIp() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
@@ -511,7 +685,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         Map<String, Double> named = new LinkedHashMap<>();
         named.put("Filtered Voltage", getFilteredVoltage());
         named.put("Active Current Regulator", ipState);
-        named.put("Reactive Current Regulator", iqState);
+        named.put(reactiveStateName(), iqState);
         named.put("Active Power", p);
         named.put("Reactive Power", q);
         RenewableElectricalController controller = activeController();
@@ -543,7 +717,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     @Override public java.util.Map<String, Double> getIntegrationStates() {
         return java.util.Map.of("Filtered Voltage", vFiltered,
                 "Active Current Regulator", ipState,
-                "Reactive Current Regulator", iqState);
+                reactiveStateName(), iqState);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
         return stateMonitor.snapshot();

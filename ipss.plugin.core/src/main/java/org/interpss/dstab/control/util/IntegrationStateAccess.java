@@ -15,4 +15,11 @@ public interface IntegrationStateAccess {
      * across the event; those rates are not an instantaneous RHS at those states.
      */
     IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot();
+
+    /**
+     * Detached observation of exposed committed histories and limiter flags.
+     * Empty means that history is not exposed, not that a model is memoryless.
+     * Reading this map must not advance a timer, evaluate an input or commit a step.
+     */
+    default Map<String, Double> getIntegrationHistories() { return Map.of(); }
 }

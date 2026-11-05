@@ -1,0 +1,281 @@
+{
+  "feature": "Fixed-base/live-device split in maintained polar NR",
+  "date": "2026-10-30",
+  "full_suite_green": false,
+  "new_regressions": 0,
+  "performance_requalified": false,
+  "baseline": {
+    "run": "fixed-base-live-device-baseline-direct-20261030",
+    "surefire_totals": {
+      "ipss.core.test": {
+        "tests": 3212,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ipss.plugin.core": {
+        "tests": 457,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 4
+      },
+      "ipss.plugin.3phase": {
+        "tests": 478,
+        "failures": 0,
+        "errors": 3,
+        "skipped": 28
+      },
+      "ipss.test.plugin.core": {
+        "tests": 3440,
+        "failures": 10,
+        "errors": 2,
+        "skipped": 59
+      }
+    },
+    "unique_test_ids": 7587,
+    "runner_status": {
+      "state": "completed",
+      "min_free_bytes": 2147483648,
+      "max_log_bytes": 16777216,
+      "captured_bytes": 9047276,
+      "exit_code": 0,
+      "reason": null
+    },
+    "log_sha256": "62969322d4406a507e707022dbe67391f19c98e11384d4dfcf15f1fe14937e16"
+  },
+  "final": {
+    "run": "fixed-base-live-device-verified-direct-20261030",
+    "surefire_totals": {
+      "ipss.core.test": {
+        "tests": 3219,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ipss.plugin.core": {
+        "tests": 457,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 4
+      },
+      "ipss.plugin.3phase": {
+        "tests": 478,
+        "failures": 0,
+        "errors": 3,
+        "skipped": 28
+      },
+      "ipss.test.plugin.core": {
+        "tests": 3441,
+        "failures": 10,
+        "errors": 2,
+        "skipped": 59
+      }
+    },
+    "unique_test_ids": 7595,
+    "runner_status": {
+      "state": "completed",
+      "min_free_bytes": 2147483648,
+      "max_log_bytes": 16777216,
+      "captured_bytes": 9047322,
+      "exit_code": 0,
+      "reason": null
+    },
+    "log_sha256": "dfd3bdf145ac59e30a1634f718ccb99f3d43534481c6bf0ff5a49e048143ab7a"
+  },
+  "existing_failures": [
+    {
+      "module": "ipss.core.test",
+      "classname": "com.interpss.test.core.ca.dclf.DclfMultiOutageTest1",
+      "name": "multiOpenOutageSkipsPrunedIslandBranchFactors",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.plugin.3phase",
+      "classname": "org.interpss.multiNet.trans_dist.IEEE9_3Phase_1PAC_2SubNet_test",
+      "name": "test_IEEE9_addFeeder_1pac_Positive_Seq_Dstab",
+      "kind": "error",
+      "type": "java.lang.ClassCastException"
+    },
+    {
+      "module": "ipss.plugin.3phase",
+      "classname": "org.interpss.multiNet.unit.IEEE9_3Phase_1PAC_mnet_3ph3seq_test",
+      "name": "test_multiNet_Dstab_IEEE9_1Feeder",
+      "kind": "error",
+      "type": "java.lang.NullPointerException"
+    },
+    {
+      "module": "ipss.plugin.3phase",
+      "classname": "org.interpss.multiNet.unit.investigate_3PHSubNetYabc",
+      "name": "test_phaseShift_SeqEquiv_IEEE9Bus_1port",
+      "kind": "error",
+      "type": "com.interpss.common.exp.InterpssException"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.core.adapter.psse.raw.aclf.RealEDTestCases",
+      "name": "testCase1",
+      "kind": "error",
+      "type": "com.interpss.common.exp.InterpssException"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.core.adapter.psse.raw.aclf.RoseHulman_UserTestCases",
+      "name": "odm_testCase",
+      "kind": "error",
+      "type": "java.lang.NullPointerException"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.core.dstab.EndpointAlignedStateMonitorTest",
+      "name": "fullSolverVoltageAndMachineSpeedMatchSynchronousStateSnapshotsAtFaultEdges",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.core.dstab.Reecc1NativeConformanceTest",
+      "name": "allSevenStatesCommandsAndNetworkBoundaryFollowTheNativeFault",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+      "name": "allSixCasesRideThroughThreeCycleFault",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+      "name": "allSixCasesRideThroughGeneratorTrip",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+      "name": "testCase1",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+      "name": "testCase2",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+      "name": "testCase4",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+      "name": "testCase2_1",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+      "name": "testCase2_2",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+      "name": "testCase4_1",
+      "kind": "failure",
+      "type": "org.opentest4j.AssertionFailedError"
+    }
+  ],
+  "source_sha256": {
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/func/bus/AclfBusYMatrixHelper.java": "a4ce5f0c5ad5da2928c229d3fef01625f639da8fa3c4ec5a679ea9d6ae5c034c",
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/PreparedPolarJacobian.java": "fe2b68918ef57840396ee5aaa4a8d945f172bd2b7471eab55def682cd9e09cfe",
+    "core/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcNrEngine.java": "c3614b8c240ff26d7443cd44f285d37e57b43418eede9600f7c00a2561e1bd88",
+    "core/ipss.test.core/src/test/java/com/interpss/core/algo/impl/calc/PreparedCompensationCacheTest.java": "b42ee7a334857369051d9fc8519c22555b3822a404337fa6915dffd6262dcae5",
+    "core/ipss.test.core/pom.xml": "4f310415020a992a14b79ea908e5e6bbba387730ebae9e659ea860d530c84170",
+    "ipss-plugin/ipss.test.plugin.core/src/test/java/org/interpss/core/aclf/PreparedNewtonLoadflowTest.java": "72b826a8a43d5019195c5abb05530c5aa0dd55a756f6c6dc41bc90162c6c28ea"
+  },
+  "runtime_sha256": {
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\aclf\\impl\\func\\bus\\AclfBusYMatrixHelper.class": "dd01fcfdb62d8413f9b3bf470749ee32db4418f1b10c7dc6cb58419fe21a5e43",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\calc\\LfCalcNrEngine$NrMatrixAction.class": "70aea8a7ad1d5665f07ee6797738c9e3538ce9301310b2c78ed4cc76904e8bb0",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\calc\\LfCalcNrEngine$NrReusePolicy.class": "931495ff2954dbde2468d3d2e484fe8fe608ef2432877c95234a493b06c6c889",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\calc\\LfCalcNrEngine.class": "07dd2e9a8b4d531758be36441b63c7b86cb94f24aa18b8e18298b6d1dc419b25",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\solver\\PreparedPolarJacobian$BranchState.class": "c9981b8e4bae1011ce1d9d5ac28efb1e8770b2361bb81ce870e7c28ec4505321",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\solver\\PreparedPolarJacobian$BusState.class": "52b2b4f9f4c22ef8ed3959c0d84c8e0faa990dbbbf671bce00eafadb9fb66d5b",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\solver\\PreparedPolarJacobian$LoadState.class": "7dd229cdd6a889acab1a9889a682b999fce459f3a473a46b54b1c79a713093c8",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.lib\\classes\\com\\interpss\\core\\algo\\impl\\solver\\PreparedPolarJacobian.class": "cb60bb74fe26f3d9890081856b9367380b5a44df06c083ab02a5d36003ce24b2",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.test\\test-classes\\com\\interpss\\core\\algo\\impl\\calc\\PreparedCompensationCacheTest$Fixture.class": "1138ac92c005c2a0eb870f48b8ff058e4986cebd527f3bf4d9d3fe4dbc026802",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.core.test\\test-classes\\com\\interpss\\core\\algo\\impl\\calc\\PreparedCompensationCacheTest.class": "88a6578c1340d8b5d794c674bec79793ac1cdde9951c173a0f2e448843556c35",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.test.plugin.core\\test-classes\\org\\interpss\\core\\aclf\\PreparedNewtonLoadflowTest$1.class": "ed739f8b297168d329f43f0e13de03a1810e0b00c65ff60708d7554900b507fd",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.test.plugin.core\\test-classes\\org\\interpss\\core\\aclf\\PreparedNewtonLoadflowTest$2.class": "245700bcc3d504fe3016af34c2a9241cc28b6c2acbd6e1f44064e458c85b6224",
+    ".verification-build\\fixed-base-live-device-verified-20261030\\ipss.test.plugin.core\\test-classes\\org\\interpss\\core\\aclf\\PreparedNewtonLoadflowTest.class": "926b52c7e46b592459c3a5e1409aeedb2962bf3f3768faca4a8e71ff9392a4fd"
+  },
+  "removed_test_ids": [],
+  "added_test_ids": [
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "adjustmentRefactorsPreparedFactorsAndRetainsSymbolicStructure"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "baseEditsAndLiveEditsHaveIndependentRevisions"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "largeLiveSusceptanceCannotContaminateTheFixedBase"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "liveInjectionAndJacobianMatchIndependentFiniteDifferences"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "publicTotalYiiAndSharedDevicesRetainTheirPhysicalMeaning"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "retainedNumericalWorkspaceUsesTheSameSplitEquations"
+    ],
+    [
+      "ipss.core.test",
+      "com.interpss.core.algo.impl.calc.PreparedCompensationCacheTest",
+      "trialRollbackRestoresLiveInjectionWithoutTouchingBase"
+    ],
+    [
+      "ipss.test.plugin.core",
+      "org.interpss.core.aclf.PreparedNewtonLoadflowTest",
+      "liveSwitchedShuntsAndSvcMatchTheStandardAssemblerAcrossRepeatedSolves"
+    ]
+  ],
+  "suite_observed_test_ids_missing_from_direct": [],
+  "audit_path": "ipss.test.plugin.core\\target\\fixed-base-live-device-20261030\\test-audit.json",
+  "audit_sha256": "dc5b79df0bec5e69c1943d0c1a9e275bf8356a8ca3acac27423e7e6d81efa570",
+  "focused_core_tests": 148,
+  "focused_plugin_tests": 12,
+  "core_source_parent": "745ef2f40ca46574b38f23e35c8819fda8d393f4",
+  "plugin_source_parent": "3579500f1b36615169244e630e48082dbeacd4f8",
+  "core_implementation_commit": "1c61b087a35e6f29f70735b4f278416daa68f51c",
+  "result_summary": {
+    "tests": 7595,
+    "passed": 7488,
+    "skipped": 91,
+    "failures": 11,
+    "errors": 5,
+    "new_failing_test_ids": 0
+  }
+}

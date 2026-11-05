@@ -204,10 +204,12 @@ public class Cmldznu2ModelTest {
         Cmldznu2Model model = assertInstanceOf(Cmldznu2Model.class,
                 network.getDStabBus("Bus5").getInfoOnlyDynModel());
         var motorA = model.getInductionMotorA();
-        assertEquals(0.8400438116205978, motorA.getNamedState("EPrimeQ"), 1.0e-12);
-        assertEquals(-0.21162634927156448, motorA.getNamedState("EPrimeD"), 1.0e-12);
-        assertEquals(0.8892794025809891, motorA.getNamedState("EDoublePrimeQ"), 1.0e-12);
-        assertEquals(-0.19474031161006025, motorA.getNamedState("EDoublePrimeD"), 1.0e-12);
+        // Fresh independent cold pairs establish these initial coordinates;
+        // the former constants were snapshots of the old internal initializer.
+        assertEquals(0.841580688953, motorA.getNamedState("EPrimeQ"), 2.0e-5);
+        assertEquals(-0.211601868272, motorA.getNamedState("EPrimeD"), 2.0e-5);
+        assertEquals(0.890871703625, motorA.getNamedState("EDoublePrimeQ"), 2.0e-5);
+        assertEquals(-0.194755464792, motorA.getNamedState("EDoublePrimeD"), 2.0e-5);
         double minimumVoltage = network.getDStabBus("Bus5").getVoltageMag();
         double minimumOnlineFraction = model.getInductionMotorA().getFonline();
         int checkpointIndex = 0;

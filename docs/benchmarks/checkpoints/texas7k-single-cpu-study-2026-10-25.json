@@ -1,0 +1,349 @@
+{
+  "schema": 1,
+  "status": "single-cpu-baseline-established",
+  "goal_seconds": 20,
+  "goal_complete": false,
+  "logical_processors": 1,
+  "integration_workers": 1,
+  "parallel_integration_threads": 0,
+  "java_only": true,
+  "measurements": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/measured-batch-1",
+      "whole_seconds": 26.4859082,
+      "phase_times": {
+        "import_and_setup_s": 0.2395804,
+        "power_flow_s": 0.6582197,
+        "dynamic_configuration_and_initialization_s": 0.2404594,
+        "fixed_current_binding_and_controller_compilation_s": 0.011994,
+        "recording_setup_s": 0.0003828,
+        "stepping_and_in_memory_recording_s": 25.1668047,
+        "network_s": 11.427909,
+        "device_and_measurement_integration_s": 11.9490473,
+        "raw_binary_encode_write_s": 0.0725734,
+        "recovery_time_series_compute_write_s": 0.083554,
+        "serialization_and_recovery_tables_s": 0.1684423
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/measured-batch-2",
+      "whole_seconds": 26.5523977,
+      "phase_times": {
+        "import_and_setup_s": 0.0885585,
+        "power_flow_s": 0.5298551,
+        "dynamic_configuration_and_initialization_s": 0.0658718,
+        "fixed_current_binding_and_controller_compilation_s": 0.0101802,
+        "recording_setup_s": 0.0003419,
+        "stepping_and_in_memory_recording_s": 25.6900221,
+        "network_s": 11.4694627,
+        "device_and_measurement_integration_s": 12.4230079,
+        "raw_binary_encode_write_s": 0.0643947,
+        "recovery_time_series_compute_write_s": 0.083205,
+        "serialization_and_recovery_tables_s": 0.1675446
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/measured-batch-3",
+      "whole_seconds": 28.4764068,
+      "phase_times": {
+        "import_and_setup_s": 0.1614365,
+        "power_flow_s": 0.52885,
+        "dynamic_configuration_and_initialization_s": 0.1509242,
+        "fixed_current_binding_and_controller_compilation_s": 0.0042523,
+        "recording_setup_s": 0.0004001,
+        "stepping_and_in_memory_recording_s": 27.4687016,
+        "network_s": 12.8730564,
+        "device_and_measurement_integration_s": 12.8926284,
+        "raw_binary_encode_write_s": 0.0686954,
+        "recovery_time_series_compute_write_s": 0.0831708,
+        "serialization_and_recovery_tables_s": 0.1618083
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/measured-control-1",
+      "whole_seconds": 26.0380534,
+      "phase_times": {
+        "import_and_setup_s": 0.0759209,
+        "power_flow_s": 0.6926967,
+        "dynamic_configuration_and_initialization_s": 0.0735365,
+        "fixed_current_binding_and_controller_compilation_s": 0.0279939,
+        "recording_setup_s": 0.0004167,
+        "stepping_and_in_memory_recording_s": 25.0008294,
+        "network_s": 11.7949681,
+        "device_and_measurement_integration_s": 11.3070369,
+        "raw_binary_encode_write_s": 0.0715714,
+        "recovery_time_series_compute_write_s": 0.0841266,
+        "serialization_and_recovery_tables_s": 0.1666303
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/measured-control-2",
+      "whole_seconds": 24.2867772,
+      "phase_times": {
+        "import_and_setup_s": 0.0884847,
+        "power_flow_s": 0.6113667,
+        "dynamic_configuration_and_initialization_s": 0.0544558,
+        "fixed_current_binding_and_controller_compilation_s": 0.0049988,
+        "recording_setup_s": 0.0002364,
+        "stepping_and_in_memory_recording_s": 23.3545066,
+        "network_s": 11.102658,
+        "device_and_measurement_integration_s": 10.7016182,
+        "raw_binary_encode_write_s": 0.0714108,
+        "recovery_time_series_compute_write_s": 0.0834107,
+        "serialization_and_recovery_tables_s": 0.1727009
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/measured-control-3",
+      "whole_seconds": 24.6031416,
+      "phase_times": {
+        "import_and_setup_s": 0.2341789,
+        "power_flow_s": 0.4682758,
+        "dynamic_configuration_and_initialization_s": 0.0414887,
+        "fixed_current_binding_and_controller_compilation_s": 0.0033633,
+        "recording_setup_s": 0.0002144,
+        "stepping_and_in_memory_recording_s": 23.6998234,
+        "network_s": 11.2989333,
+        "device_and_measurement_integration_s": 10.7808539,
+        "raw_binary_encode_write_s": 0.0635867,
+        "recovery_time_series_compute_write_s": 0.0829719,
+        "serialization_and_recovery_tables_s": 0.1557753
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/profiled-batch",
+      "whole_seconds": 29.8987559,
+      "phase_times": {
+        "import_and_setup_s": 0.0837756,
+        "power_flow_s": 1.0221474,
+        "dynamic_configuration_and_initialization_s": 0.1538921,
+        "fixed_current_binding_and_controller_compilation_s": 0.0500006,
+        "recording_setup_s": 0.000493,
+        "stepping_and_in_memory_recording_s": 28.407159,
+        "network_s": 12.9719374,
+        "device_and_measurement_integration_s": 13.5674254,
+        "raw_binary_encode_write_s": 0.0741103,
+        "recovery_time_series_compute_write_s": 0.0838087,
+        "serialization_and_recovery_tables_s": 0.1806073
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/profiled-control",
+      "whole_seconds": 69.1785823,
+      "phase_times": {
+        "import_and_setup_s": 2.9622969,
+        "power_flow_s": 7.6449387,
+        "dynamic_configuration_and_initialization_s": 2.8210974,
+        "fixed_current_binding_and_controller_compilation_s": 19.8407395,
+        "recording_setup_s": 0.0164157,
+        "stepping_and_in_memory_recording_s": 35.5500038,
+        "network_s": 16.8854003,
+        "device_and_measurement_integration_s": 15.0578604,
+        "raw_binary_encode_write_s": 0.1075849,
+        "recovery_time_series_compute_write_s": 0.097485,
+        "serialization_and_recovery_tables_s": 0.3421919
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/warmup-batch-1",
+      "whole_seconds": 50.9665603,
+      "phase_times": {
+        "import_and_setup_s": 0.4936297,
+        "power_flow_s": 2.5714362,
+        "dynamic_configuration_and_initialization_s": 0.8355682,
+        "fixed_current_binding_and_controller_compilation_s": 0.477628,
+        "recording_setup_s": 0.0017303,
+        "stepping_and_in_memory_recording_s": 26.0243109,
+        "network_s": 11.756167,
+        "device_and_measurement_integration_s": 12.3275894,
+        "raw_binary_encode_write_s": 0.0830816,
+        "recovery_time_series_compute_write_s": 19.7365521,
+        "serialization_and_recovery_tables_s": 20.5622066
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/warmup-batch-2",
+      "whole_seconds": 27.2567064,
+      "phase_times": {
+        "import_and_setup_s": 0.1316527,
+        "power_flow_s": 0.7107609,
+        "dynamic_configuration_and_initialization_s": 0.0814836,
+        "fixed_current_binding_and_controller_compilation_s": 0.0170758,
+        "recording_setup_s": 0.0003848,
+        "stepping_and_in_memory_recording_s": 26.1210695,
+        "network_s": 11.727239,
+        "device_and_measurement_integration_s": 12.4787051,
+        "raw_binary_encode_write_s": 0.0823735,
+        "recovery_time_series_compute_write_s": 0.0844502,
+        "serialization_and_recovery_tables_s": 0.1936365
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/warmup-batch-3",
+      "whole_seconds": 26.7507023,
+      "phase_times": {
+        "import_and_setup_s": 0.1765495,
+        "power_flow_s": 0.5564504,
+        "dynamic_configuration_and_initialization_s": 0.2044889,
+        "fixed_current_binding_and_controller_compilation_s": 0.0052284,
+        "recording_setup_s": 0.0002007,
+        "stepping_and_in_memory_recording_s": 25.6254117,
+        "network_s": 11.7174644,
+        "device_and_measurement_integration_s": 12.2579305,
+        "raw_binary_encode_write_s": 0.0800146,
+        "recovery_time_series_compute_write_s": 0.0834046,
+        "serialization_and_recovery_tables_s": 0.1823422
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 2020800
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/warmup-control-1",
+      "whole_seconds": 41.6907086,
+      "phase_times": {
+        "import_and_setup_s": 2.8229707,
+        "power_flow_s": 7.5157447,
+        "dynamic_configuration_and_initialization_s": 0.947714,
+        "fixed_current_binding_and_controller_compilation_s": 0.1129844,
+        "recording_setup_s": 0.0042779,
+        "stepping_and_in_memory_recording_s": 27.8145616,
+        "network_s": 13.2944866,
+        "device_and_measurement_integration_s": 12.2488023,
+        "raw_binary_encode_write_s": 0.1015628,
+        "recovery_time_series_compute_write_s": 2.2452532,
+        "serialization_and_recovery_tables_s": 2.4723562
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/warmup-control-2",
+      "whole_seconds": 40.5958134,
+      "phase_times": {
+        "import_and_setup_s": 0.3092546,
+        "power_flow_s": 1.5347621,
+        "dynamic_configuration_and_initialization_s": 0.1431483,
+        "fixed_current_binding_and_controller_compilation_s": 0.0180563,
+        "recording_setup_s": 0.0003459,
+        "stepping_and_in_memory_recording_s": 24.037233,
+        "network_s": 11.360061,
+        "device_and_measurement_integration_s": 10.9227552,
+        "raw_binary_encode_write_s": 0.1142581,
+        "recovery_time_series_compute_write_s": 14.4272459,
+        "serialization_and_recovery_tables_s": 14.5525704
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-single-cpu-warmed-20261025-1/warmup-control-3",
+      "whole_seconds": 26.6640317,
+      "phase_times": {
+        "import_and_setup_s": 0.1097146,
+        "power_flow_s": 1.4828659,
+        "dynamic_configuration_and_initialization_s": 0.1049251,
+        "fixed_current_binding_and_controller_compilation_s": 0.0372982,
+        "recording_setup_s": 0.0003936,
+        "stepping_and_in_memory_recording_s": 24.7519635,
+        "network_s": 11.7631101,
+        "device_and_measurement_integration_s": 11.3702718,
+        "raw_binary_encode_write_s": 0.0694424,
+        "recovery_time_series_compute_write_s": 0.0841062,
+        "serialization_and_recovery_tables_s": 0.1768412
+      },
+      "network_iterations": 26803,
+      "network_maximum_iterations": 6,
+      "endpoint_reuses": 2397,
+      "owned_machine_advances": 0
+    }
+  ],
+  "timing_summary": {
+    "control": {
+      "seconds": [
+        26.0380534,
+        24.2867772,
+        24.6031416
+      ],
+      "median_seconds": 24.6031416,
+      "minimum_seconds": 24.2867772,
+      "maximum_seconds": 26.0380534
+    },
+    "batch": {
+      "seconds": [
+        26.4859082,
+        26.5523977,
+        28.4764068
+      ],
+      "median_seconds": 26.5523977,
+      "minimum_seconds": 26.4859082,
+      "maximum_seconds": 28.4764068
+    }
+  },
+  "preferred_update_mode": "ordinary serial",
+  "full_trace_sha256": "cf74add8e7a177512da3d7296a1460f59dd79b2ad2dda056dea493ff3bae9c09",
+  "samples": 2403,
+  "bus_voltage_channels": 6717,
+  "selected_machine_channels": 15,
+  "recorded_values": 16176996,
+  "all_fourteen_traces_identical": true,
+  "independent_complete_network_acceptance": false,
+  "limitations": [
+    "This is an experimental runtime baseline, not a production-promotion claim.",
+    "All JVM threads are restricted to logical CPU 6; the batch plan has one synchronous worker and creates no integration worker threads.",
+    "Profiled runs are excluded from timing medians. Recording instrumentation causes substantial additional compilation in the control profile.",
+    "Profile results are sample counts, not elapsed CPU seconds. Stepping-only samples exclude import and export stacks.",
+    "Complete-network accuracy inherits the previously checked identical endpoint trajectory against the tighter internal control; no independent full-network reference is claimed.",
+    "Earlier four-processor timings do not qualify the updated single-CPU objective."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas7k-single-cpu-study/manifest.json",
+  "manifest_sha256": "8bdd2b18350fd41a28fcf4d789e8eaeff735833c42c2034ed62e05b24c567188",
+  "requested_affinity_mask": 64,
+  "verified_affinity_mask_before": 64,
+  "verified_affinity_mask_after": 64
+}

@@ -43,6 +43,8 @@ public class PsseHyg3GovernorTest extends CorePluginTestSetup {
         assertNotNull(governor);
         assertEquals(PsseHyg3GovernorData.PID_CONTROL,
                 governor.getData().getControlFlag());
+        assertEquals(PsseHyg3GovernorData.BacklashConvention.PER_UNIT_GATE,
+                governor.getData().getBacklashConvention());
         assertEquals(0.0, governor.getData().getRgate(), TOL);
         assertEquals(.0527, governor.getData().getRelec(), TOL);
         assertEquals(2.0, governor.getData().getTt(), TOL);
@@ -60,6 +62,21 @@ public class PsseHyg3GovernorTest extends CorePluginTestSetup {
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
         assertEquals(1, parser.getLastImportReport().aliasConversionCount());
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void builderPreservesIndependentTypedAndImportedBacklashConventions() throws Exception {
+        assertEquals(PsseHyg3GovernorData.BacklashConvention.MW_ON_GOVERNOR_BASE,
+                new PsseHyg3GovernorData().getBacklashConvention());
+        for (var convention : PsseHyg3GovernorData.BacklashConvention.values()) {
+            var builder=DStabBuilderTestFixture.createWithMachine();
+            var data=data(PsseHyg3GovernorData.PID_CONTROL); data.setDb2(.02); data.setBacklashConvention(convention);
+            data.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.HZ_HYSTERESIS);
+            var governor=builder.addGovHyg3("Bus1","1",data);
+            assertEquals(convention,governor.getData().getBacklashConvention());
+            assertEquals(data.getFrequencyDeadbandConvention(),governor.getData().getFrequencyDeadbandConvention());
+            assertEquals(.02,governor.getData().getDb2(),0.);
+        }
     }
 
     @Test

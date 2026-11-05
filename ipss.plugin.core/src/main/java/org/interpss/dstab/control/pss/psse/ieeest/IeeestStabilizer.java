@@ -17,7 +17,32 @@ import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 /** PSS/E IEEEST stabilizer following the PowerWorld/WECC block ordering. */
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
-public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant {
+public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant,
+        org.interpss.dstab.control.util.AcceptedVoltageMeasurement {
+    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
+            throws com.interpss.common.exp.InterpssException {
+        if (getClass() != IeeestStabilizer.class) return super.bindCompiledParameter(name);
+        return switch (name) {
+            case "speedGain" -> () -> speedGain;
+            case "speedRef" -> () -> speedRef;
+            case "peGain" -> () -> peGain;
+            case "peRef" -> () -> peRef;
+            case "pmGain" -> () -> pmGain;
+            case "pmRef" -> () -> pmRef;
+            case "ks" -> () -> ks;
+            case "one" -> () -> one;
+            default -> bindPublicDoubleParameter(name);
+        };
+    }
+
+    @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
+        if((!preparedDirectStage&&!Boolean.getBoolean("ipss.experiment.directIeeestStage")) || getClass()!=IeeestStabilizer.class)return null;
+        try{return new IeeestDirectStage(this);}catch(IllegalArgumentException unsupported){return null;}
+    }
+    private boolean preparedDirectStage;
+    /** Select typed stages for a solver-qualified standard graph before compilation. */
+    public void setPreparedDirectStage(boolean enabled){preparedDirectStage=enabled;}
+    @Override public void invalidateRuntimePlan(){preparedDirectStage=false;super.invalidateRuntimePlan();}
     private final IeeestData data;
     private double constantInputBias;
     private boolean initializingBias;

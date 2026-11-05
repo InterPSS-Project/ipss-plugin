@@ -4,12 +4,27 @@ package org.interpss.dstab.mach;
 public record Wt3p1Data(double bladeTime, double speedProportionalGain,
         double speedIntegralGain, double compensationProportionalGain,
         double compensationIntegralGain, double thetaMin, double thetaMax,
-        double thetaRateMax, double powerSetpoint) {
+        double thetaRateMax, double powerSetpoint, RateLimitPolicy rateLimitPolicy) {
+    public enum RateLimitPolicy { NONNEGATIVE, SIGNED_MAGNITUDE }
+
+    /** Native records retain strict nonnegative rate validation. */
+    public Wt3p1Data(double bladeTime, double speedProportionalGain,
+            double speedIntegralGain, double compensationProportionalGain,
+            double compensationIntegralGain, double thetaMin, double thetaMax,
+            double thetaRateMax, double powerSetpoint) {
+        this(bladeTime, speedProportionalGain, speedIntegralGain,
+                compensationProportionalGain, compensationIntegralGain,
+                thetaMin, thetaMax, thetaRateMax, powerSetpoint, RateLimitPolicy.NONNEGATIVE);
+    }
+
+    /** Prepared rate magnitude; entered data remains unchanged. */
+    public double preparedRateMagnitude() { return Math.abs(thetaRateMax); }
     public Wt3p1Data {
         if (!finite(bladeTime, speedProportionalGain, speedIntegralGain,
                 compensationProportionalGain, compensationIntegralGain,
                 thetaMin, thetaMax, thetaRateMax, powerSetpoint)
-                || bladeTime < 0.0 || thetaMax < thetaMin || thetaRateMax < 0.0) {
+                || bladeTime < 0.0 || thetaMax < thetaMin || rateLimitPolicy == null
+                || (rateLimitPolicy == RateLimitPolicy.NONNEGATIVE && thetaRateMax < 0.0)) {
             throw new IllegalArgumentException("invalid WT3P1 data");
         }
     }

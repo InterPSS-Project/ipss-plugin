@@ -2,7 +2,7 @@
 
 ## Accepted matched-settings result
 
-The production `PsseStaggeredEulerSolver` passes all **246 compared channels**
+The production `StaggeredEulerSolver` passes all **246 compared channels**
 in both five-second flat and fault cases. Both simulators use a **0.00025 s
 integration step**, **1e-6 dynamic network tolerance**, 100 maximum network
 iterations, a 50 ms bus-frequency filter and constant-impedance loads. The
@@ -60,7 +60,7 @@ history. Final algebraic measurements are refreshed after the network solve.
 No model gains, limits or physical initial states were fitted to trajectories.
 
 ```java
-algorithm.setSolver(new PsseStaggeredEulerSolver(algorithm));
+algorithm.setSolver(new StaggeredEulerSolver(algorithm));
 algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 algorithm.setSimuStepSec(0.00025);
 ```

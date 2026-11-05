@@ -1,0 +1,82 @@
+{
+  "status": "regression_gate_passed_with_existing_baseline_failures",
+  "executed_tests": 7853,
+  "totals": {
+    "passed": 7746,
+    "failure": 11,
+    "skipped": 91,
+    "error": 5
+  },
+  "fork_dumps": [],
+  "diagnostic_reviews": {
+    "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase1:0": {
+      "classification": "same baseline assertion with sub-tolerance numerical variation",
+      "comparison_value_deltas": [
+        0.0,
+        1.284528039491306e-13
+      ],
+      "existing_assertion_tolerance": 1e-10,
+      "exception_and_assertion_site_unchanged": true
+    },
+    "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2_1:0": {
+      "classification": "same baseline assertion with sub-tolerance numerical variation",
+      "comparison_value_deltas": [
+        1.1113332476497817e-13,
+        0.0
+      ],
+      "existing_assertion_tolerance": 1e-10,
+      "exception_and_assertion_site_unchanged": true
+    },
+    "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2_2:0": {
+      "classification": "same baseline assertion with sub-tolerance numerical variation",
+      "comparison_value_deltas": [
+        1.1113332476497817e-13,
+        0.0
+      ],
+      "existing_assertion_tolerance": 1e-10,
+      "exception_and_assertion_site_unchanged": true
+    },
+    "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase4_1:0": {
+      "classification": "same baseline assertion with sub-tolerance numerical variation",
+      "comparison_value_deltas": [
+        1.1157741397482823e-13,
+        0.0
+      ],
+      "existing_assertion_tolerance": 1e-10,
+      "exception_and_assertion_site_unchanged": true
+    }
+  },
+  "unresolved_changed_failures": [],
+  "required_focused_gate": {
+    "expected": 453,
+    "not_passed": []
+  },
+  "regression_gate_passed": true,
+  "comparison": {
+    "missing": [],
+    "new_failures": [],
+    "new_skips": [],
+    "changed_failures": [
+      "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase1:0",
+      "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2_1:0",
+      "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2_2:0",
+      "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase4_1:0"
+    ]
+  },
+  "added_test_count": 170,
+  "verification_run": "nr-consolidation-preparation-full-fixed-20261030",
+  "source_changes_since_snapshot": [
+    "plugin/ipss.plugin.core/src/main/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Ieee1992PSS2BStabilizer.java",
+    "plugin/ipss.plugin.core/src/main/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Pss2bCompiledStage.java",
+    "plugin/ipss.plugin.core/src/main/java/org/interpss/fadapter/builder/DStabNetworkBuilder.java",
+    "plugin/ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/BusFrequencySelection.java",
+    "plugin/ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/ModifiedEulerControllerPreparation.java",
+    "plugin/ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/PSSEDStabDirectParser.java",
+    "plugin/ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/ModifiedEulerControllerPreparationTest.java",
+    "plugin/ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/OptionalBusFrequencyIntegrationTest.java",
+    "plugin/ipss.test.plugin.core/src/test/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Pss2bCompiledStageTest.java",
+    "plugin/ipss.test.plugin.core/src/test/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Pss2bReferenceReplayTest.java"
+  ],
+  "evidence_root": "ipss.test.plugin.core\\target\\nr-consolidation-20261030",
+  "consolidation_complete": false
+}

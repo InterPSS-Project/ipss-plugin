@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
@@ -16,7 +17,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /** Published WT3G2 Type-3 converter with LVPL, HVRC, and PLL dynamics. */
 public final class Wt3g2Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, ICMLStateProvider, Wt3GeneratorModel {
+        implements DynamicGenDevice, ICMLStateProvider, Wt3GeneratorModel, StaggeredEulerParticipant {
     private static final double EPS = 1.0e-10;
 
     private final Wt3g2Data data;
@@ -37,6 +38,7 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     private double deltaQ;
     private State oldState;
     private Derivative predictor;
+    private double predictorStep;
     private boolean initialized;
     private Wt3e1Model electricalController;
     private Wt3t1Model driveTrain;
@@ -72,6 +74,9 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         ipCommand = ipState;
         eqCommand = eqState;
         deltaQ = 0.0;
+        oldState = null;
+        predictor = null;
+        predictorStep = 0.0;
         initialized = true;
         if (electricalController != null) electricalController.initialize();
         if (driveTrain != null) driveTrain.initialize(p,
@@ -84,8 +89,10 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-        if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
+        if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || !finite(dt) || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
+        if (flag == 0 && oldState != null || flag == 1
+                && (oldState == null || Double.compare(dt, predictorStep) != 0)) return false;
         if (driveTrain != null) {
             driveTrain.step(dt, p, flag);
             if (electricalController != null) {
@@ -98,6 +105,7 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         if (flag == 0) {
             oldState = current;
             predictor = derivative;
+            predictorStep = dt;
             apply(advance(oldState, predictor, dt));
         } else {
             apply(advance(oldState, predictor.add(derivative), .5 * dt));
@@ -108,6 +116,66 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         pllIntegral = clamp(pllIntegral, -data.pllMaximum(), data.pllMaximum());
         return finite(ipState) && finite(eqState) && finite(pllIntegral)
                 && finite(angle) && finite(filteredVoltage);
+    }
+
+    /** Shared converter coordinates only; attached controllers need their own owners. */
+    @Override public int staggeredStateCount() { return 5; }
+
+    private void requireSharedBoundary(double step) {
+        requireConverterBoundary(step);
+        if (electricalController != null || driveTrain != null)
+            throw new IllegalStateException("WT3G2 attached controls require shared integration owners");
+    }
+
+    private void requireConverterBoundary(double step) {
+        if (!initialized || oldState != null || !finite(step) || step <= 0.0)
+            throw new IllegalStateException("WT3G2 shared integration requires an initialized idle interval");
+        if (parentGen == null || parentGen.getDynamicGenDevice() != this)
+            throw new IllegalStateException("WT3G2 generator ownership changed");
+    }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        if (!initialized) throw new IllegalStateException("WT3G2 is not initialized");
+        java.util.Objects.checkFromIndexSize(offset, 5, values.length);
+        values[offset] = ipState;
+        values[offset + 1] = eqState;
+        values[offset + 2] = pllIntegral;
+        values[offset + 3] = angle;
+        values[offset + 4] = filteredVoltage;
+    }
+
+    @Override public void evaluateStaggered(double step, double[] rates, int offset) {
+        requireSharedBoundary(step);
+        evaluateConverter(step, rates, offset);
+    }
+
+    void evaluateConverter(double step, double[] rates, int offset) {
+        requireConverterBoundary(step);
+        java.util.Objects.checkFromIndexSize(offset, 5, rates.length);
+        Derivative d = derivatives(state());
+        if (!finite(d.ip) || !finite(d.eq) || !finite(d.pllIntegral)
+                || !finite(d.angle) || !finite(d.filteredVoltage))
+            throw new IllegalStateException("WT3G2 derivative is not finite");
+        rates[offset] = d.ip;
+        rates[offset + 1] = d.eq;
+        rates[offset + 2] = d.pllIntegral;
+        rates[offset + 3] = d.angle;
+        rates[offset + 4] = d.filteredVoltage;
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double step) {
+        requireSharedBoundary(step);
+        applyConverterState(values, offset, step);
+    }
+
+    void applyConverterState(double[] values, int offset, double step) {
+        requireConverterBoundary(step);
+        java.util.Objects.checkFromIndexSize(offset, 5, values.length);
+        for (int i = 0; i < 5; i++) if (!finite(values[offset + i]))
+            throw new IllegalArgumentException("WT3G2 trial state is not finite");
+        apply(new State(Math.min(values[offset], lowVoltagePowerLimit(values[offset + 4])),
+                values[offset + 1], clamp(values[offset + 2], -data.pllMaximum(), data.pllMaximum()),
+                values[offset + 3], values[offset + 4]));
     }
 
     private Derivative derivatives(State s) {
@@ -271,6 +339,11 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     public double getPllAngleState() { return angle; }
     public double getFilteredVoltageState() { return filteredVoltage; }
     public double getDeltaQ() { return deltaQ; }
+    double activeCommand() { return ipCommand; }
+    double internalVoltageCommand() { return eqCommand; }
+    void restoreMeasurements(double activePower, double reactivePower, double correction) {
+        p = activePower; q = reactivePower; deltaQ = correction;
+    }
     @Override public Wt3e1Model getElectricalController() { return electricalController; }
     @Override public void setElectricalController(Wt3e1Model value) { electricalController = value; }
     @Override public Wt3t1Model getDriveTrain() { return driveTrain; }

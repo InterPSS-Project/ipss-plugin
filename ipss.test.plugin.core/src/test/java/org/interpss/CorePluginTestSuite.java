@@ -76,6 +76,15 @@ import org.interpss.core.dstab.Pss4bPsseSmibConformanceTest;
 import org.interpss.core.dstab.PsssbIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St2cutPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss2bIndependentSmibConformanceTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCompiledStageTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bSharedStateTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledBoundaryConformanceTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bLongRunConformanceTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledPlaybackTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bInputLagPreparationTest;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bAcceptedPathHistoryTest;
+import org.interpss.core.adapter.builder.dstab.Pss2bImportValidationTest;
 import org.interpss.core.dstab.Pss3cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss5cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss4cIndependentSmibConformanceTest;
@@ -142,6 +151,39 @@ import org.interpss.core.adapter.builder.dstab.PsseExst1FieldLimitTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseH6eGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseHyg3GovernorTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3PreparedCurveTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedStateTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedSmibTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3StateConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LimitConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LongDurationConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3BypassConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3DerivativePreparationConformanceTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3ParameterValidationTest;
+import org.interpss.dstab.control.gov.psse.hyg3.Hyg3FastFeedbackReferenceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedStateTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tSharedStateTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReferenceTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tCommandBoundaryTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tPowerBoundaryTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tRunBoundaryTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tProductionStepTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tValveLimitsTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tMachineTripTest;
+import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tValveReleaseTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedSmibTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1StateConformanceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BypassLimitConformanceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1TimePreparationTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1TimeReferenceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InitialLimitsTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InitialReferenceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1ShaftInitializationTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BaseConformanceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InactiveReferenceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BoundaryPlaybackTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1MachineEventConformanceTest;
+import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1MeasurementDependenciesTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
 import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
@@ -238,6 +280,88 @@ import org.interpss.fadapter.psse.PsseNetworkConvergenceTest;
 import org.interpss.fadapter.psse.PsseNetworkIterationLifecycleTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
 import org.interpss.core.dstab.dynLoad.Cmldznu2ModelTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1SharedStateTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1SharedSmibTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1StateConformanceTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1InitializationTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1CompressorLifecycleTest;
+import org.interpss.core.dstab.dynLoad.LD1PACParameterBindingTest;
+import org.interpss.core.dstab.dynLoad.Cmldblu1CompressorInitializationTest;
+import org.interpss.core.dstab.dynLoad.CompressorCurrentConformanceTest;
+import org.interpss.core.dstab.dynLoad.Acmtblu1SharedSmibTest;
+import org.interpss.core.dstab.dynLoad.CompressorFrequencyInputTest;
+import org.interpss.core.dstab.dynLoad.CompressorProtectionConformanceTest;
+import org.interpss.core.dstab.dynLoad.CompressorThermalConformanceTest;
+import org.interpss.core.dstab.dynLoad.CompressorStartupFrequencyTest;
+import org.interpss.core.dstab.dynLoad.CompressorThermalBypassTest;
+import org.interpss.core.dstab.dynLoad.CompressorShortLagTest;
+import org.interpss.core.dstab.dynLoad.CompositeStaticPolynomialSmibTest;
+import org.interpss.core.dstab.dynLoad.CompositeOmittedDistributionTest;
+import org.interpss.core.dstab.dynLoad.CompositeStaticLowVoltageTest;
+import org.interpss.core.dstab.dynLoad.ElectronicFullRecoverySmibTest;
+import org.interpss.core.dstab.dynLoad.DistributedStaticPortLifecycleTest;
+import org.interpss.core.dstab.dynLoad.CompositeTapControlSmibTest;
+import org.interpss.core.dstab.Tiocr1AcceptedHistoryTest;
+import org.interpss.core.dstab.Tiocr1ResetReferenceTest;
+import org.interpss.core.dstab.Tiocr1LoadOnlyReferenceTest;
+import org.interpss.core.dstab.Cdc6tReferenceContractTest;
+import org.interpss.core.dstab.Cdc6tMeasurementsTest;
+import org.interpss.core.dstab.Cdc6tTransducerBoundaryTest;
+import org.interpss.core.dstab.Cdc6tCurrentOrderTest;
+import org.interpss.core.dstab.Cdc6tVoltageCurrentLimitTest;
+import org.interpss.core.dstab.Cdc6tConverterBoundaryTest;
+import org.interpss.core.dstab.Cdc6tConductingLinkTest;
+import org.interpss.core.dstab.Cdc6tRecoveryRampTest;
+import org.interpss.core.dstab.Cdc6tRecoveryBaseTest;
+import org.interpss.core.dstab.Cdc6tTransferredModeBaseTest;
+import org.interpss.core.dstab.Cdc6tDeepRecoveryTest;
+import org.interpss.core.dstab.Cdc6tLongRunTest;
+import org.interpss.core.dstab.Cdc6tInitialBalanceLifecycleTest;
+import org.interpss.core.dstab.Cdc6tGovernedSourceTest;
+import org.interpss.core.dstab.Cdc6tRectifierProtectionTest;
+import org.interpss.core.dstab.Cdc6tInverterProtectionTest;
+import org.interpss.core.dstab.Cdc6tBypassTest;
+import org.interpss.core.dstab.Cdc6tModeSwitchTest;
+import org.interpss.core.dstab.Cdc6tNormalRuntimeTest;
+import org.interpss.core.dstab.Cdc6tNetworkOwnershipTest;
+import org.interpss.core.dstab.Cdc6tTerminalPortsTest;
+import org.interpss.core.dstab.Cdc6tCoupledNetworkTest;
+import org.interpss.core.dstab.Cdc6tCoupledReferenceTest;
+import org.interpss.core.dstab.Cdc6tOperatingBoundaryTest;
+import org.interpss.core.dstab.Cdc6tProtectionCoordinatorTest;
+import org.interpss.core.dstab.Cdc6tProtectedNetworkTest;
+import org.interpss.core.dstab.Cdc6tMinimumCurrentTest;
+import org.interpss.core.dstab.Cdc6tParametersTest;
+import org.interpss.core.dstab.Chvdc2ParametersTest;
+import org.interpss.core.dstab.Chvdc2DcLineTest;
+import org.interpss.core.dstab.Chvdc2CurrentControlsTest;
+import org.interpss.core.dstab.Chvdc2CurrentControlsReferenceTest;
+import org.interpss.core.dstab.Chvdc2OrderControlsTest;
+import org.interpss.core.dstab.Chvdc2OrderControlsReferenceTest;
+import org.interpss.core.dstab.Chvdc2ConverterBoundaryTest;
+import org.interpss.core.dstab.Chvdc2ConverterReferenceTest;
+import org.interpss.core.dstab.Chvdc2ProtectionTest;
+import org.interpss.core.dstab.Chvdc2ProtectionReferenceTest;
+import org.interpss.core.dstab.Chvdc2ControlAssemblyTest;
+import org.interpss.core.dstab.Chvdc2ControlAssemblyReferenceTest;
+import org.interpss.core.dstab.Chvdc2CoupledRuntimeTest;
+import org.interpss.core.dstab.Chvdc2CoupledReferenceTest;
+import org.interpss.core.dstab.Chvdc2CapacitanceReferenceTest;
+import org.interpss.core.dstab.Chvdc2RunBoundaryReferenceTest;
+import org.interpss.core.dstab.Chvdc2MeasurementReferenceTest;
+import org.interpss.core.dstab.Chvdc2CurrentSamplingReferenceTest;
+import org.interpss.core.dstab.Chvdc2EventIntervalReferenceTest;
+import org.interpss.core.dstab.Chvdc2NetworkPreparationTest;
+import org.interpss.core.dstab.Chvdc2NetworkPreparationReferenceTest;
+import org.interpss.core.dstab.Chvdc2TerminalPortsTest;
+import org.interpss.core.dstab.Chvdc2TerminalReferenceTest;
+import org.interpss.core.dstab.Cdc6tNetworkPreparationTest;
+import org.interpss.core.dstab.Cdc6tConstantGammaTest;
+import org.interpss.core.dstab.Cdc6tLimitedGammaTest;
+import org.interpss.core.dstab.LccSourceControlsTest;
+import org.interpss.core.dstab.Cdc6tBypassSwitchNetworkTest;
+import org.interpss.core.dstab.HspUsageRankedModelTest;
+import org.interpss.core.dstab.HspModelReferenceConformanceTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
 import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -307,6 +431,13 @@ import org.interpss.core.dstab.Csvgn5PsseSmibConformanceTest;
 import org.interpss.core.dstab.Dera1NativeSmibConformanceTest;
 import org.interpss.core.dstab.Regcb1NativeSmibConformanceTest;
 import org.interpss.core.dstab.Svsmo1t2PsseConformanceTest;
+import org.interpss.core.dstab.Svsmo3t2CoupledSmibTest;
+import org.interpss.core.dstab.Svsmo3t2StaggeredSmibTest;
+import org.interpss.core.dstab.Svsmo3t2LimiterSmibTest;
+import org.interpss.core.dstab.Svsmo3t2MssKernelTest;
+import org.interpss.core.dstab.Svsmo3t2MssReplayTest;
+import org.interpss.dstab.svc.Svsmo3t2MssBoundaryTest;
+import org.interpss.core.adapter.builder.dstab.PsseSvsmo3t2ModelTest;
 import org.interpss.core.dstab.mach.Wt1g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt2g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt2e1PsseSmibConformanceTest;
@@ -546,6 +677,8 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
+    org.interpss.core.dstab.Cdc6tDyrImportTest.class,
+    org.interpss.core.adapter.builder.dstab.ReactiveDeviceDyrImportTest.class,
 	// aclf
 	IEEE14_3WXfrTest.class,
 	IEEE9_MultiGenTest.class,
@@ -605,6 +738,7 @@ import org.junit.platform.suite.api.Suite;
 	// EDclf
 	IEEE14_Dclf_Test.class,
 	IEEE14_EDclf_Test.class,
+	org.interpss.core.dclf.edclf.IEEE14_EDclfPaperOracleTest.class,
 	IEEE39_EDclf_Test.class,
 	IEEE118_EDclf_Test.class,
 
@@ -682,6 +816,18 @@ import org.junit.platform.suite.api.Suite;
 	PsssbIndependentSmibConformanceTest.class,
 	St2cutPsseSmibConformanceTest.class,
 	Pss2bIndependentSmibConformanceTest.class,
+    Pss2bCompiledStageTest.class,
+    Pss2bSharedStateTest.class,
+    Pss2bReferenceReplayTest.class,
+    Pss2bCoupledBoundaryConformanceTest.class,
+    Pss2bLongRunConformanceTest.class,
+    Pss2bCoupledPlaybackTest.class,
+    Pss2bInputLagPreparationTest.class,
+    Pss2bAcceptedPathHistoryTest.class,
+    Pss2bImportValidationTest.class,
+    org.interpss.core.adapter.builder.dstab.Gewta2NativeRecordTest.class,
+    org.interpss.core.adapter.builder.dstab.Gewtp2NativeRecordTest.class,
+    org.interpss.core.adapter.builder.dstab.Gewtt1NativeRecordTest.class,
 	Pss3cPsseSmibConformanceTest.class,
     Pss4cIndependentSmibConformanceTest.class,
     Pss5cIndependentSmibConformanceTest.class,
@@ -788,6 +934,22 @@ import org.junit.platform.suite.api.Suite;
 	Regcb1NativeSmibConformanceTest.class,
 	Regcb1ModelTest.class,
 	Svsmo1t2PsseConformanceTest.class,
+    Svsmo3t2CoupledSmibTest.class,
+    Svsmo3t2StaggeredSmibTest.class,
+    org.interpss.dstab.algo.AcceptedProjectionHistoryContractTest.class,
+    Svsmo3t2LimiterSmibTest.class,
+    org.interpss.core.dstab.Svsmo3t2ReleaseStageDiscriminatorTest.class,
+    org.interpss.core.dstab.Svsmo3t2DeadbandRelockTest.class,
+    org.interpss.core.dstab.Svsmo3t2DeadbandCoupledTest.class,
+    org.interpss.core.dstab.Svsmo3t2PhysicalPublicationTest.class,
+    org.interpss.core.dstab.Svsmo3t2ZeroLagStageDiscriminatorTest.class,
+    org.interpss.core.dstab.PhysicalStepTrialDispatchTest.class,
+    Svsmo3t2MssKernelTest.class,
+    Svsmo3t2MssReplayTest.class,
+    Svsmo3t2MssBoundaryTest.class,
+    org.interpss.dstab.svc.Svsmo3t2OwnershipMetadataTest.class,
+    org.interpss.core.dstab.Svsmo3t2MssTripOrderingTest.class,
+    PsseSvsmo3t2ModelTest.class,
 	Wt1g1PsseSmibConformanceTest.class,
 	Wt2g1PsseSmibConformanceTest.class,
 	Wt2e1PsseSmibConformanceTest.class,
@@ -795,6 +957,12 @@ import org.junit.platform.suite.api.Suite;
 	Wt3g2PsseSmibConformanceTest.class,
 	Wt3t1PsseSmibConformanceTest.class,
 	Wt3p1PsseSmibConformanceTest.class,
+	org.interpss.core.dstab.mach.Wt3p1SignedRateCompatibilityTest.class,
+	org.interpss.core.dstab.mach.Wt3g2SharedStateTest.class,
+	org.interpss.core.dstab.mach.Wt3g2BundleTest.class,
+	org.interpss.core.dstab.mach.Wt3t1SharedStateTest.class,
+	org.interpss.core.dstab.mach.Wt3p1SharedStateTest.class,
+	org.interpss.core.adapter.builder.dstab.Wt3e1SharedStateTest.class,
 	Wt4g1PsseSmibConformanceTest.class,
 	Wt4e1PsseSmibConformanceTest.class,
 	GenqejPsseSmibConformanceTest.class,
@@ -1025,6 +1193,46 @@ import org.junit.platform.suite.api.Suite;
 	PsseGgov1GovernorTest.class,
 	PsseH6eGovernorTest.class,
 	PsseHyg3GovernorTest.class,
+    Hyg3PreparedCurveTest.class,
+    Hyg3SharedStateTest.class,
+    Hyg3SharedSmibTest.class,
+    Hyg3StateConformanceTest.class,
+    Hyg3LimitConformanceTest.class,
+    Hyg3LongDurationConformanceTest.class,
+    org.interpss.dstab.control.gov.psse.hyg3.Hyg3InitialCoordinateReplayTest.class,
+    org.interpss.dstab.control.gov.psse.hyg3.Hyg3InitialBoundReferenceTest.class,
+    org.interpss.dstab.control.gov.psse.hyg3.Hyg3MechanicalBoundaryReplayTest.class,
+    Hyg3BypassConformanceTest.class,
+    Hyg3DerivativePreparationConformanceTest.class,
+    Hyg3ParameterValidationTest.class,
+    Hyg3FastFeedbackReferenceTest.class,
+    Wsieg1SharedStateTest.class,
+    Urgs3tSharedStateTest.class,
+    Urgs3tReferenceTest.class,
+    Urgs3tCommandBoundaryTest.class,
+    Urgs3tPowerBoundaryTest.class,
+    Urgs3tRunBoundaryTest.class,
+    Urgs3tProductionStepTest.class,
+    Urgs3tValveLimitsTest.class,
+    Urgs3tMachineTripTest.class,
+    Urgs3tValveReleaseTest.class,
+    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationLifecycleTest.class,
+    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationReferenceTest.class,
+    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tTripPublicationOrderTest.class,
+    Wsieg1SharedSmibTest.class,
+    Wsieg1StateConformanceTest.class,
+    org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1ReactivationTest.class,
+    Wsieg1BypassLimitConformanceTest.class,
+    Wsieg1TimePreparationTest.class,
+    Wsieg1TimeReferenceTest.class,
+    Wsieg1InitialLimitsTest.class,
+    Wsieg1InitialReferenceTest.class,
+    Wsieg1ShaftInitializationTest.class,
+    Wsieg1BaseConformanceTest.class,
+    Wsieg1InactiveReferenceTest.class,
+    Wsieg1BoundaryPlaybackTest.class,
+    Wsieg1MachineEventConformanceTest.class,
+    Wsieg1MeasurementDependenciesTest.class,
 	PsseHygovrGovernorTest.class,
 	Lcfb1PrefControllerTest.class,
 	PsseRegca1ConverterTest.class,
@@ -1109,6 +1317,7 @@ import org.junit.platform.suite.api.Suite;
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Reecc1NativeConformanceTest.class,
+    org.interpss.core.dstab.ReeccPlantReplayConformanceTest.class,
 	Type3WindAndesTrajectoryTest.class,
 	Type3WindIndependentTrajectoryTest.class,
 	PsseHygovGovernorTest.class,
@@ -1125,11 +1334,125 @@ import org.junit.platform.suite.api.Suite;
 	RegcaZeroQRecoveryTest.class,
 	RegcaCurrentLimitNativeTest.class,
 	RegcaNetworkIterationTest.class,
+	org.interpss.core.dstab.RegcaReferenceGainMemoryTest.class,
+	org.interpss.core.dstab.RegcaReferenceHighVoltageCurrentTest.class,
+	org.interpss.core.dstab.RegcaAcceptedVoltageMemoryTest.class,
+	org.interpss.core.dstab.ReeccPlantNetworkConformanceTest.class,
 	PsseNetworkConvergenceTest.class,
 	PsseNetworkIterationLifecycleTest.class,
 	org.interpss.core.dstab.StaticLoadMatrixSplitTest.class,
 	Perc1ModelTest.class,
 	Cmldznu2ModelTest.class,
+    Cmldblu1SharedStateTest.class,
+    Cmldblu1SharedSmibTest.class,
+    Cmldblu1StateConformanceTest.class,
+    Cmldblu1InitializationTest.class,
+    Cmldblu1CompressorLifecycleTest.class,
+    LD1PACParameterBindingTest.class,
+    Cmldblu1CompressorInitializationTest.class,
+    CompressorCurrentConformanceTest.class,
+    Acmtblu1SharedSmibTest.class,
+    CompressorFrequencyInputTest.class,
+    CompressorProtectionConformanceTest.class,
+    CompressorThermalConformanceTest.class,
+    CompressorStartupFrequencyTest.class,
+    CompressorThermalBypassTest.class,
+    CompressorShortLagTest.class,
+    CompositeStaticPolynomialSmibTest.class,
+    CompositeOmittedDistributionTest.class,
+    CompositeStaticLowVoltageTest.class,
+    ElectronicFullRecoverySmibTest.class,
+    DistributedStaticPortLifecycleTest.class,
+    CompositeTapControlSmibTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeTapMeasurementCoordinateTest.class,
+    Tiocr1AcceptedHistoryTest.class,
+    Tiocr1ResetReferenceTest.class,
+    Tiocr1LoadOnlyReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1TerminalReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1PhysicalTerminalReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1BreakerTransferReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1MultipleTransferReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1LowVoltageReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1ReferenceSegmentationContractTest.class,
+    org.interpss.core.dstab.StagedRelayTargetLifecycleTest.class,
+    org.interpss.core.dstab.dynLoad.Tiocr1CompositeLoadTest.class,
+    org.interpss.core.dstab.Tiocr1ExactLoadImportTest.class,
+    org.interpss.core.dstab.Tiocr1LiteralTargetReferenceTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeCollapsedFullTripTest.class,
+    org.interpss.core.dstab.dynLoad.CollapsedWildcardLoadRelayTest.class,
+    org.interpss.core.dstab.dynLoad.CompositePartlyCollapsedFullTripTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorRecloseTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorProtectionTimingTest.class,
+    org.interpss.core.dstab.dynLoad.MotorProtectionThresholdAuditTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorOverlapValidationTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeMotorOverlapTest.class,
+    org.interpss.core.dstab.dynLoad.CompositeLoadChangeTest.class,
+    Cdc6tReferenceContractTest.class,
+    Cdc6tMeasurementsTest.class,
+    Cdc6tTransducerBoundaryTest.class,
+    Cdc6tCurrentOrderTest.class,
+    Cdc6tVoltageCurrentLimitTest.class,
+    Cdc6tConverterBoundaryTest.class,
+    Cdc6tConductingLinkTest.class,
+    Cdc6tRecoveryRampTest.class,
+    Cdc6tRecoveryBaseTest.class,
+    Cdc6tTransferredModeBaseTest.class,
+    Cdc6tDeepRecoveryTest.class,
+    Cdc6tLongRunTest.class,
+    Cdc6tInitialBalanceLifecycleTest.class,
+    Cdc6tGovernedSourceTest.class,
+    Cdc6tRectifierProtectionTest.class,
+    Cdc6tInverterProtectionTest.class,
+    Cdc6tBypassTest.class,
+    Cdc6tModeSwitchTest.class,
+    Cdc6tNormalRuntimeTest.class,
+    Cdc6tNetworkOwnershipTest.class,
+    Cdc6tTerminalPortsTest.class,
+    Cdc6tCoupledNetworkTest.class,
+    Cdc6tCoupledReferenceTest.class,
+    Cdc6tOperatingBoundaryTest.class,
+    Cdc6tProtectionCoordinatorTest.class,
+    Cdc6tProtectedNetworkTest.class,
+    org.interpss.core.dstab.Cdc6tOverlappingProtectionTest.class,
+    Cdc6tMinimumCurrentTest.class,
+    Cdc6tParametersTest.class,
+    Chvdc2ParametersTest.class,
+    Chvdc2DcLineTest.class,
+    Chvdc2CurrentControlsTest.class,
+    Chvdc2CurrentControlsReferenceTest.class,
+    Chvdc2OrderControlsTest.class,
+    Chvdc2OrderControlsReferenceTest.class,
+    Chvdc2ConverterBoundaryTest.class,
+    Chvdc2ConverterReferenceTest.class,
+    Chvdc2ProtectionTest.class,
+    Chvdc2ProtectionReferenceTest.class,
+    Chvdc2ControlAssemblyTest.class,
+    Chvdc2ControlAssemblyReferenceTest.class,
+    Chvdc2CoupledRuntimeTest.class,
+    Chvdc2CoupledReferenceTest.class,
+    Chvdc2CapacitanceReferenceTest.class,
+    Chvdc2RunBoundaryReferenceTest.class,
+    Chvdc2MeasurementReferenceTest.class,
+    Chvdc2CurrentSamplingReferenceTest.class,
+    Chvdc2EventIntervalReferenceTest.class,
+    Chvdc2NetworkPreparationTest.class,
+    Chvdc2NetworkPreparationReferenceTest.class,
+    Chvdc2TerminalPortsTest.class,
+    org.interpss.core.dstab.Chvdc2AuxiliaryRouteReferenceTest.class,
+    org.interpss.core.dstab.Chvdc2ResistanceReferenceTest.class,
+    Chvdc2TerminalReferenceTest.class,
+    Cdc6tNetworkPreparationTest.class,
+    org.interpss.core.dstab.Cdc6tConverterResistanceTest.class,
+    org.interpss.core.dstab.Cdc6tResistanceReferenceTest.class,
+    org.interpss.core.dstab.Cdc6tInitialCeilingTest.class,
+    Cdc6tConstantGammaTest.class,
+    Cdc6tLimitedGammaTest.class,
+    LccSourceControlsTest.class,
+    Cdc6tBypassSwitchNetworkTest.class,
+    org.interpss.core.dstab.Cdc6tBypassSamplingReferenceTest.class,
+    org.interpss.core.dstab.Cdc6tCallBoundaryReferenceTest.class,
+    HspUsageRankedModelTest.class,
+    HspModelReferenceConformanceTest.class,
 	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,
@@ -1211,6 +1534,8 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_Sample_NB_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Rawx_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Aclf_Test.class,
+	org.interpss.core.adapter.psse.raw.nbreaker.NodebreakerConverterAuditTest.class,
+	org.interpss.core.adapter.psse.raw.nbreaker.LccResistanceReferenceTest.class,
 
 	// PowSyBl catalog coverage
 	PSSE_PowSyBl_IEEE_Smoke_Test.class,

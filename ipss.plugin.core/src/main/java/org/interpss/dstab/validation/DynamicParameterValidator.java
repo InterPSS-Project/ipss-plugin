@@ -61,6 +61,21 @@ public final class DynamicParameterValidator {
         var uncovered=new TreeMap<String,Integer>();
         var seen=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object,Boolean>());
         for(var bus:network.getBusList()) {
+            if (bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldblu1Model composite
+                    && seen.add(composite)) {
+                var data=composite.getData();
+                for (int motor=0; motor<3; motor++) {
+                    double total=data.value(49+20*motor)+data.value(54+20*motor);
+                    if (total>1) issues.add(new Issue(Severity.WARNING,bus.getId(),"CMLDBLU1",
+                            "Motor"+(char)('A'+motor)+".Ftr1+Ftr2",total,networkStep,
+                            bus.isActive()&&composite.isActive()&&data.value(18+motor)>0,
+                            "Overlapping UV trip fractions exceed unity. Legacy reference behavior can retain a negative "
+                            +"accumulator and a physical response different from full disconnection; this profile is "
+                            +"not trajectory-qualified. Parameters and protection history are not adjusted."));
+                }
+                checked.merge("CMLDBLU1.UvOverlap",1,Integer::sum);
+                uncovered.merge("CMLDBLU1.otherParameters",1,Integer::sum);
+            }
             for(var gen:bus.getContributeGenList()) {
                 Object device=gen.getDynamicGenDevice();
                 if(device==null)continue; // Static/netted generation is handled by network preprocessing.
@@ -291,6 +306,66 @@ public final class DynamicParameterValidator {
                 limits("G",d.getGmin(),d.getGmax());
                 if(!c.validateParameters())add(Severity.ERROR,"model constraints",0,"Existing HYGOV parameter validation rejects this data");
                 add(Severity.INFO,"initialization policy",h,"Existing governor may increase small time constants and expand initial limits; imported values are unchanged by this report.");return true;
+            }
+            if(controller instanceof org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor c) {
+                var d=c.getData();finiteData(d);
+                time("Tt",d.getTt(),true);time("Td",d.getTd(),true);time("Tp",d.getTp(),true);
+                time("Tw",d.getTw(),true);time("Tf",d.getTf(),true);
+                limits("gate",d.getPmin(),d.getPmax());limits("valve",d.getVelclose(),d.getVelopen());
+                if(!c.validateParameters())add(Severity.ERROR,"model constraints",0,"HYG3 parameter validation rejects this data, including selectors, gate curves or physical limits");
+                double tf=d.getTf();
+                if(tf==0.&&d.getZeroDerivativeFilterConvention()==org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS) {
+                    tf=4*h;
+                    add(Severity.INFO,"Tf preparation",tf,"Zero imported Tf uses four outer integration intervals; entered data remain unchanged");
+                    time("effective Tf",tf,false);
+                }
+                if(d.getTw()==0.)add(Severity.WARNING,"Tw",0.,"Zero water time selects an algebraic runtime extension; independent source-model trajectory acceptance is unavailable for this setting");
+                if(d.getControlFlag()==org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData.PID_CONTROL&&d.getTd()<=1e-9) {
+                    double denominator=1.+d.getRgate()*(d.getK2()+(tf>1e-9?d.getK1()/tf:0.));
+                    if(!Double.isFinite(denominator)||denominator==0.)
+                        add(Severity.ERROR,"PID algebraic feedback denominator",denominator,"Bypassed input filter requires a finite, nonzero algebraic-feedback denominator");
+                }
+                // A frozen-integral input/derivative subsystem can be faster than
+                // either entered lag. This screen is not a complete coupled-stability proof.
+                if(d.getControlFlag()==org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData.PID_CONTROL
+                        &&d.getTd()>0.&&tf>0.&&d.getRgate()>=0.&&d.getK1()>=0.&&d.getK2()>=0.) {
+                    double derivativeGain=d.getK1()/tf;
+                    double a=(1.+d.getRgate()*(d.getK2()+derivativeGain))/d.getTd();
+                    double b=d.getRgate()*derivativeGain/d.getTd(), inverseTf=1./tf;
+                    double fastestTime=2./(a+inverseTf+Math.hypot(a-inverseTf,2.*Math.sqrt(b*inverseTf)));
+                    if(Double.isFinite(fastestTime)&&fastestTime>0.&&fastestTime/h<multiple)
+                        add(Severity.WARNING,"PID derivative/input screening time",fastestTime,
+                                "Frozen-integral input/derivative feedback is faster than the configured step margin; review the integration interval and internal-state response. This is not a complete coupled-stability proof.");
+                }
+                add(Severity.INFO,"initialization policy",h,"HYG3 prepares water/turbine coefficients and initial limits separately; validation does not initialize states or change imported data");
+                return true;
+            }
+            if(controller instanceof org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor c) {
+                double[] d=c.getConstants();
+                for(int i=0;i<d.length;i++)finite(org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.CONSTANT_NAMES.get(i),d[i]);
+                for(int index:new int[]{1,8,11,14,17}) {
+                    String name=org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.CONSTANT_NAMES.get(index);
+                    if(d[index]>0.&&d[index]<=2.*h)
+                        add(Severity.INFO,name+" preparation",d[index],"Lag is bypassed at initialization when its entered time is at most two outer intervals; entered constants remain unchanged");
+                    else time(name,d[index],true);
+                }
+                time("T3",d[3],false);
+                positive("primary turbine fraction sum",d[9]+d[12]+d[15]+d[18],false);
+                add(Severity.INFO,"initialization policy",h,"WSIEG1 prepares lag bypasses and Iblock-dependent bounds before either integrator; other bounds are retained and initial valve/turbine residuals remain observable. The rate-limited servo time is not bypassed or floored");
+                return true;
+            }
+            if(controller instanceof org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor c) {
+                double[] d=c.getConstants();
+                time("T1",d[1],false);time("B*T2",d[15]*d[2],false);time("Tltr",d[12],false);
+                if(c.getRuntimeConvention()==org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor.RuntimeConvention.PUBLISHED_DIAGRAM)
+                    time("T3",d[3],false);
+                if(d[29]>0)time("T5",d[31],false);
+                add(Severity.INFO,"preparation policy",h,"URGS3T prepares immutable lead-lag coefficients without changing entered constants or integration intervals; a source-record exhaust coordinate is held and the disabled governor lead-lag has no active pole");
+                return true;
+            }
+            if(org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.isSecondaryShaft(controller)) {
+                add(Severity.INFO,"shared turbine owner",h,"Passive secondary shaft has no independent states or time constants; its primary governor is validated separately");
+                return true;
             }
             if(controller instanceof PsseGgov1Governor c) {
                 var d=c.getData();finiteData(d);

@@ -7,7 +7,7 @@ step**, following the user's acceptance of the plotted one-versus-ten-step
 tradeoff. Ten steps remain available through `setSt1Substeps(10)`.
 
 ```java
-var solver = new PsseStaggeredEulerSolver(algorithm);
+var solver = new StaggeredEulerSolver(algorithm);
 solver.setSt1Substeps(4);
 solver.setSt1Substeps("Bus1-mach1", 10); // This machine keeps ten local steps.
 algorithm.setSolver(solver);

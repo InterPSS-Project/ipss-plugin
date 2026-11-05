@@ -110,6 +110,9 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 			refPoint="0.0"
 	)
 	class CustomExciter extends AbstractChildAnnotateController {
+        private boolean belongsTo(Ieee1992PSS2AStabilizer owner) {
+            return Ieee1992PSS2AStabilizer.this == owner;
+        }
         java.util.function.DoubleSupplier directOutput;
         @Override public double getOutput(Machine machine) {
             return directOutput==null?super.getOutput(machine):directOutput.getAsDouble();
@@ -238,6 +241,22 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	private double input2PreviousVoltage;
 	private BaseDStabBus<?, ?> input1Bus;
 	private BaseDStabBus<?, ?> input2Bus;
+
+    /** Keep configured signal buses warm even if an input selector changes to frequency. */
+    public java.util.Set<String> requiredBusFrequencyIds() {
+        var ids=new java.util.HashSet<String>();
+        if(input1Bus!=null)ids.add(input1Bus.getId());
+        if(input2Bus!=null)ids.add(input2Bus.getId());
+        return java.util.Set.copyOf(ids);
+    }
+
+    /** Built-in child equations consume the parent's scalar input, not bus frequency. */
+    public final boolean isBuiltInSignalConditioner(Object controller) {
+        return getClass() == Ieee1992PSS2AStabilizer.class && controller != null
+                && controller.getClass() == CustomExciter.class
+                && (controller == customBlock1 || controller == customBlock2)
+                && ((CustomExciter) controller).belongsTo(this);
+    }
 	private double integrationStep;
 	private double minimumTimeConstantMultiplier = 1.0;
 
@@ -263,6 +282,15 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	}
 
     private Pss2aDirectEvaluation directEvaluation;
+    /** Release parent and child bindings before reinitializing or changing the graph. */
+    public void clearDirectEvaluation() {
+        if(directEvaluation!=null) {
+            directEvaluation.first.model.directOutput=null;
+            directEvaluation.second.model.directOutput=null;
+        }
+        directEvaluation=null;
+    }
+    @Override public void invalidateRuntimePlan(){clearDirectEvaluation();super.invalidateRuntimePlan();}
     public void enableDirectEvaluationExperiment() {
         if(getClass()!=Ieee1992PSS2AStabilizer.class)throw new IllegalStateException("Exact PSS2A required");
         directEvaluation=new Pss2aDirectEvaluation(this);

@@ -180,7 +180,7 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS2B"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(27, 31), DynamicModelCatalog.find("PSS2B").orElseThrow()
+        assertEquals(Set.of(27, 29, 31), DynamicModelCatalog.find("PSS2B").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS2C"))
@@ -516,8 +516,12 @@ class DynamicModelCatalogTest {
                     "Missing parameter schema length for " + model.canonicalName());
             assertTrue(model.recordSchema().accepts(model.parameterCount()),
                     "Primary layout is not accepted for " + model.canonicalName());
-            assertEquals(DynamicModelSupportStatus.LOADABLE, model.supportStatus(),
-                    "Catalog must not hide an incomplete model: " + model.canonicalName());
+            // The FACTS runtime loads, but its remaining selector/trajectory
+            // qualification must stay visible instead of implying completion.
+            var expectedStatus = model.canonicalName().equals("SVSMO3T2")
+                    ? DynamicModelSupportStatus.PARTIAL : DynamicModelSupportStatus.LOADABLE;
+            assertEquals(expectedStatus, model.supportStatus(),
+                    "Unexpected catalog qualification: " + model.canonicalName());
             assertEquals(model.runtimeClassName(),
                     Class.forName(model.runtimeClassName()).getName(),
                     "Runtime class is not loadable for " + model.canonicalName());

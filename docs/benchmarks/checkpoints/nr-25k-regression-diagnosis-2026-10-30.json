@@ -1,0 +1,951 @@
+{
+  "status": "partial_performance_recovery_regression_gate_passed",
+  "case": "activsg25k",
+  "core_commits": {
+    "old": "5309d648648378f7bec22226fe5ef6c8d80c52be",
+    "new": "6e7e66180b424dbeee066c869aaeff92bad8069e",
+    "fixed": "2e83b268f31055c4654144387bcc7b7de001e644"
+  },
+  "scope": "Maintained polar NR, Java KLU, same equations and numerical policy",
+  "environment": {
+    "jdk": "Temurin 21.0.6",
+    "cpu": 2,
+    "affinity_mask": 4,
+    "jvm_heap": [
+      "-Xms256m",
+      "-Xmx2g"
+    ],
+    "input_sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60"
+  },
+  "historical": {
+    "old_warmed": {
+      "warmups_total": 51,
+      "forks": 3,
+      "measured_per_fork": 100,
+      "interpss_mean_ms": 48.262114,
+      "rustpower_mean_ms": 44.467043
+    },
+    "old_minimal": {
+      "warmups_total": 1,
+      "measured": 1,
+      "interpss_ms": 88.6434,
+      "rustpower_ms": 43.2994
+    },
+    "consolidated_minimal": {
+      "warmups_total": 1,
+      "measured": 1,
+      "interpss_ms": 201.4729,
+      "rustpower_ms": 47.1063
+    }
+  },
+  "crossover_one_warmup_one_solve_per_jvm": {
+    "old_runtime_old_driver": [
+      90.124,
+      124.2276
+    ],
+    "new_runtime_old_driver": [
+      192.3549,
+      181.9583
+    ],
+    "new_runtime_new_driver": [
+      191.1143,
+      183.0378
+    ],
+    "old_runtime_new_driver": [
+      91.3279,
+      89.1466
+    ]
+  },
+  "followup_one_warmup_one_solve_per_jvm": {
+    "old": [
+      86.2432,
+      90.0294
+    ],
+    "regressed": [
+      220.2366,
+      183.0308
+    ],
+    "fixed": [
+      138.4255,
+      140.9354
+    ]
+  },
+  "initial_warmed_diagnostic_50_warmups_10_measured": {
+    "old": {
+      "samples_ms": [
+        47.2262,
+        46.4368,
+        47.3394,
+        46.0192,
+        50.2898,
+        47.7654,
+        47.1625,
+        46.7088,
+        46.7195,
+        50.8492
+      ],
+      "mean_ms": 47.65168,
+      "median_ms": 47.19435,
+      "minimum_ms": 46.0192,
+      "maximum_ms": 50.8492,
+      "main_thread_allocated_bytes": [
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088
+      ],
+      "compilation_counter_ms": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "gc_count": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gc_ms": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "new": {
+      "samples_ms": [
+        57.5704,
+        56.8011,
+        59.3191,
+        58.7568,
+        61.098,
+        57.9228,
+        57.6831,
+        57.2916,
+        58.3981,
+        56.9496
+      ],
+      "mean_ms": 58.17906,
+      "median_ms": 57.80295,
+      "minimum_ms": 56.8011,
+      "maximum_ms": 61.098,
+      "main_thread_allocated_bytes": [
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216
+      ],
+      "compilation_counter_ms": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "gc_count": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gc_ms": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "followup_warmed_diagnostic_50_warmups_10_measured": {
+    "old": {
+      "samples_ms": [
+        54.3508,
+        64.7085,
+        54.9556,
+        73.9371,
+        55.0296,
+        55.0103,
+        59.9171,
+        65.792,
+        51.3154,
+        53.7891
+      ],
+      "mean_ms": 58.88055,
+      "median_ms": 55.01995,
+      "minimum_ms": 51.3154,
+      "maximum_ms": 73.9371,
+      "main_thread_allocated_bytes": [
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088,
+        19088
+      ],
+      "compilation_counter_ms": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "gc_count": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gc_ms": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "regressed": {
+      "samples_ms": [
+        74.7199,
+        77.5803,
+        73.079,
+        72.3135,
+        67.7361,
+        76.0923,
+        67.5253,
+        68.7726,
+        72.47,
+        69.5474
+      ],
+      "mean_ms": 71.98364,
+      "median_ms": 72.39175,
+      "minimum_ms": 67.5253,
+      "maximum_ms": 77.5803,
+      "main_thread_allocated_bytes": [
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216,
+        1868216
+      ],
+      "compilation_counter_ms": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "gc_count": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gc_ms": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "fixed": {
+      "samples_ms": [
+        58.5328,
+        57.1878,
+        59.7326,
+        61.285,
+        61.2842,
+        60.8366,
+        60.6771,
+        67.9152,
+        59.2606,
+        60.4795
+      ],
+      "mean_ms": 60.719139999999996,
+      "median_ms": 60.5783,
+      "minimum_ms": 57.1878,
+      "maximum_ms": 67.9152,
+      "main_thread_allocated_bytes": [
+        19624,
+        19624,
+        19624,
+        19624,
+        19624,
+        19624,
+        19624,
+        19624,
+        19624,
+        19624
+      ],
+      "compilation_counter_ms": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "gc_count": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gc_ms": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "separate_profiled_cold_diagnostic": {
+    "old": [
+      {
+        "phase": "measured",
+        "call": 1,
+        "elapsed_ms": 107.2997,
+        "main_thread_cpu_ms": 109.375,
+        "process_cpu_ms": 109.375,
+        "compilation_counter_ms": 12,
+        "gc_count": 0,
+        "gc_ms": 0,
+        "main_thread_allocated_bytes": 19088,
+        "loaded_classes": 0,
+        "iterations": 6,
+        "mismatch_pu": 3.027930617349739e-08
+      }
+    ],
+    "regressed": [
+      {
+        "phase": "measured",
+        "call": 1,
+        "elapsed_ms": 196.0992,
+        "main_thread_cpu_ms": 109.375,
+        "process_cpu_ms": 187.5,
+        "compilation_counter_ms": 94,
+        "gc_count": 0,
+        "gc_ms": 0,
+        "main_thread_allocated_bytes": 1868216,
+        "loaded_classes": 0,
+        "iterations": 6,
+        "mismatch_pu": 3.027930617349739e-08
+      }
+    ],
+    "fixed": [
+      {
+        "phase": "measured",
+        "call": 1,
+        "elapsed_ms": 143.0597,
+        "main_thread_cpu_ms": 109.375,
+        "process_cpu_ms": 156.25,
+        "compilation_counter_ms": 49,
+        "gc_count": 0,
+        "gc_ms": 0,
+        "main_thread_allocated_bytes": 19624,
+        "loaded_classes": 0,
+        "iterations": 6,
+        "mismatch_pu": 3.027930617349739e-08
+      }
+    ]
+  },
+  "unchanged_positive_path_checks": {
+    "preparations": 1,
+    "scalarEquations": 50000,
+    "structuralEntries": 335468,
+    "factorizedEntries": 773350,
+    "preparedResidualEvaluations": 16,
+    "preparedWorkspaceScopes": 2,
+    "stableSolveScopes": 2,
+    "retainedSymbolicAcrossSolves": 1,
+    "loadflowCalls": 2,
+    "warmupLoadflowCalls": 1,
+    "measuredLoadflowCalls": 1,
+    "initialSolveCountedAsWarmup": 1
+  },
+  "followup_accuracy": [
+    {
+      "residual_pu": 3.0279286633572156e-08,
+      "voltage_error_pu": 5.495898477540642e-09
+    },
+    {
+      "residual_pu": 3.0279286633572156e-08,
+      "voltage_error_pu": 5.495898477540642e-09
+    },
+    {
+      "residual_pu": 3.0279286633572156e-08,
+      "voltage_error_pu": 5.495898477540642e-09
+    },
+    {
+      "residual_pu": 3.0279286633572156e-08,
+      "voltage_error_pu": 5.495898477540642e-09
+    },
+    {
+      "residual_pu": 3.0279286633572156e-08,
+      "voltage_error_pu": 5.495898477540642e-09
+    },
+    {
+      "residual_pu": 3.0279286633572156e-08,
+      "voltage_error_pu": 5.495898477540642e-09
+    }
+  ],
+  "focused_tests": {
+    "executed": 456,
+    "passed": 456,
+    "failure": 0,
+    "error": 0,
+    "skipped": 0
+  },
+  "full_regression": {
+    "status": "regression_gate_passed_with_reviewed_test_replacement_and_existing_failures",
+    "executed_tests": 7868,
+    "totals": {
+      "passed": 7761,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "required_focused_gate": {
+      "expected": 456,
+      "not_passed": []
+    },
+    "fork_dumps": [],
+    "regression_gate_passed": true,
+    "unresolved_changed_failures": [],
+    "source_changes_since_snapshot": [
+      "plugin/ipss.test.plugin.core/src/test/java/org/interpss/dstab/control/gov/psse/hyg3/Hyg3PreparedCurveTest.java"
+    ],
+    "test_identity_reviews": {
+      "ipss.test.plugin.core:org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest#replayRetainsAllRowsAndChecksAcceptedDerivativeMemory:0": {
+        "classification": "concurrent PSS2B qualification test replacement, independent of the NR admission change",
+        "replacement_identities": [
+          "ipss.test.plugin.core:org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest#derivativeReplayReportsBothIndependentStepSizes:0",
+          "ipss.test.plugin.core:org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest#publishedStatesReconstructTheOutputForEveryCapturedProfile:0",
+          "ipss.test.plugin.core:org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest#multiSectionRampReplayUsesPublishedStorageCoordinates:0"
+        ],
+        "source_review": "The former single configured-directory replay is replaced by archive-backed multi-profile replay. The replay helper still traverses every supplied row, executes predictor/corrector stages and checks accepted voltage memory and derivatives; new tests also check both step sizes, state/output reconstruction and multi-section storage coordinates. This is reviewed coverage replacement, not an assertion that the fixture bytes are identical.",
+        "historical_source": {
+          "path": "ipss.test.plugin.core/target/nr-consolidation-20261030/preparation-full-fixed-new-sources/plugin/ipss.test.plugin.core/src/test/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Pss2bReferenceReplayTest.java",
+          "sha256": "6458085f79bee1109181d19882c7ba095e55b99ca7beb8a951f9a08230e544b4"
+        },
+        "compiled_source": {
+          "path": "ipss.test.plugin.core/src/test/java/org/interpss/dstab/control/pss/ieee/y1992/pss2b/Pss2bReferenceReplayTest.java",
+          "sha256": "ae69d970e7b38d33dea3cdf9079e02a1ab53b845791f83a9eb5c32f92e7e3052"
+        },
+        "compiled_source_matches_frozen_manifest": true,
+        "owning_plugin_commits": [
+          "cf4101785",
+          "25d4453b7"
+        ],
+        "replacement_tests_all_passed": true,
+        "raw_missing_identity_preserved": true
+      }
+    },
+    "unresolved_missing_identities": [],
+    "run_id": "nr-admission-full-20261030",
+    "comparison": {
+      "missing": [
+        "ipss.test.plugin.core:org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest#replayRetainsAllRowsAndChecksAcceptedDerivativeMemory:0"
+      ],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": []
+    },
+    "added_test_count": 16
+  },
+  "limits": [
+    "Two cold observations per runtime; ten warmed observations in a separate diagnostic protocol.",
+    "Absolute timings drift between batches; comparisons use contemporaneous samples.",
+    "JFR instrumentation runs are separate from timing comparisons.",
+    "No RustPower or 70k rerun; no new RustPower ratio or <=1.2 qualification.",
+    "Cold regression remains; final consolidation and release qualification are incomplete."
+  ],
+  "local_evidence_root": "ipss.test.plugin.core/target/nr-25k-regression-20261030",
+  "evidence_files": {
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-0-old/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-0-old/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-0-old/execution-prepared-0.json": {
+      "sha256": "e4170ee751d557567601806582d6cc1cd7d52ccbbf911f908a3e3e66620308d7",
+      "bytes": 318
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-0-old/interpss-prepared-0.csv": {
+      "sha256": "e15dd9c0f02e241a8a189cb08bb77ed55cffa2a6b1f9f9d4c58ddcc866271d98",
+      "bytes": 122
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-1-regressed/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-1-regressed/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-1-regressed/execution-prepared-0.json": {
+      "sha256": "9a5fe2dc359c525ee809ef8f6c13031ccafb4042401eedffacbc94850512914f",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-1-regressed/interpss-prepared-0.csv": {
+      "sha256": "8b5df6d10f93c83b03954421e8cba33cd903f83bf784ea4f11bb42fba800bd9b",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-2-fixed/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-2-fixed/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-2-fixed/execution-prepared-0.json": {
+      "sha256": "9bc084590641256e5ec8463d037e5d853a6b0bc63e5a99fd7f95fc0c1f68ff45",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-2-fixed/interpss-prepared-0.csv": {
+      "sha256": "8041715e449d93bc9e64163c8655aa2d70ed4ca03e2c3a725dd956d9249975c9",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-3-fixed/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-3-fixed/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-3-fixed/execution-prepared-0.json": {
+      "sha256": "db91edc6ee042a786a5e825507dba87c2a6a98b7b371033be33316f1bcb8b4d1",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-3-fixed/interpss-prepared-0.csv": {
+      "sha256": "570fcedb0b00c3a87cca855717a82227bbef17af15409604d898efc3e4c19301",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-4-regressed/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-4-regressed/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-4-regressed/execution-prepared-0.json": {
+      "sha256": "6fca547390c0838d4c75132a3d9d5b2239c2a626d2bdcfb8235d26405508d8b1",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-4-regressed/interpss-prepared-0.csv": {
+      "sha256": "ed38ec1077eeea51839958e9458adb7eda42b2a8df76053d1a4500b5b6eb2856",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-5-old/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-5-old/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-5-old/execution-prepared-0.json": {
+      "sha256": "8bcb2829341204cfaa1008033c2e6a2f4ab73d14651cbeb49b163ffa11d9a171",
+      "bytes": 318
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/cold-5-old/interpss-prepared-0.csv": {
+      "sha256": "598fcc2c5647d8a1c6c13d616c3a8df5f49f12a44afc097607b9fe8ec3c04f7c",
+      "bytes": 122
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/profiled-fixed.jfr": {
+      "sha256": "2e8f5783d95e166d8b8c2c263f6a8b7289cb98ab1e8308dfcdac52a569ab555e",
+      "bytes": 984612
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/profiled-fixed.json": {
+      "sha256": "1fecbd9413dd058a7fdc1eca0f2069edf76ee1b7ab9ce691b20993edd626f957",
+      "bytes": 1237
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/profiled-fixed.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/profiled-fixed.summary.json": {
+      "sha256": "8db01dd9dcd5840c2458b7bf6ef8fc971bb2e78948405e42fd10d2e0d4434306",
+      "bytes": 3030
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/runs.json": {
+      "sha256": "74e13111610f118e6fc7fd9ffa56119c095ce8af052b3fcb8eeec163858b4a66",
+      "bytes": 153186
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/warmed-fixed.json": {
+      "sha256": "0cda80a9b8940b1715d755c3a896670764ccdce57a396f604f18669428867fd2",
+      "bytes": 22178
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/warmed-fixed.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/warmed-old.json": {
+      "sha256": "fe99e7d21cbe1e8ad1ee8e65118ac852f29bcf5559fdca8170c0e095387f81f6",
+      "bytes": 22182
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/warmed-old.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/warmed-regressed.json": {
+      "sha256": "04bb74c97a01af4b5e40a7f90155b60f250943b00f3b97280aa61e45510a9676",
+      "bytes": 22362
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix/warmed-regressed.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/after-fix.log.status.json": {
+      "sha256": "ae53ebef591fad7ceaffae9dcf59aacbeccbdff5e5e25ba00a33a07e2172fb7f",
+      "bytes": 158
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/audit_full.py": {
+      "sha256": "2c06ea7cc4df4cfeb8852383053f180ac81a3d05df6b23a409992d6a0c36c74e",
+      "bytes": 3507
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/diagnosis.log.status.json": {
+      "sha256": "a3b8eb09d705c0a051be77cb167232982dbf9d53f6a56ce81591f50d0cec9c47",
+      "bytes": 158
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-0-old-old/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-0-old-old/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-0-old-old/interpss-prepared-0.csv": {
+      "sha256": "5fa192d92560f702657b22a66cd7a04c239644537dcdf0b8fe29198710f77a05",
+      "bytes": 122
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-1-new-old/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-1-new-old/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-1-new-old/interpss-prepared-0.csv": {
+      "sha256": "6ba415d0abd001e9bbc07ea81d7121c2a7d24900e0c5bb80cca4df68874c38ac",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-2-new-new/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-2-new-new/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-2-new-new/execution-prepared-0.json": {
+      "sha256": "09c52c3ae023c6e8e83d3421e5cad4d98c061a77c2c10e846b9a8e99b6bd6599",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-2-new-new/interpss-prepared-0.csv": {
+      "sha256": "54e615d07251a1d9be62108da4bfbbde5084d6204262e11dd900f1a2a77de02b",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-3-old-new/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-3-old-new/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-3-old-new/execution-prepared-0.json": {
+      "sha256": "2dc0f7df99b54f4636d94b0cb3addb8bd59856378b3476620f3deccf5bd36349",
+      "bytes": 318
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-3-old-new/interpss-prepared-0.csv": {
+      "sha256": "d3bd6ee29db9bdd7ccc1143b28877c358b82993c82a6188b53f64045eaec70e6",
+      "bytes": 122
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-4-old-new/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-4-old-new/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-4-old-new/execution-prepared-0.json": {
+      "sha256": "6d250a06ce208df5ac43e83f62fff7cdb32c540f5243d6a1c0720b16cd729dc8",
+      "bytes": 318
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-4-old-new/interpss-prepared-0.csv": {
+      "sha256": "6a54f3a4e2eae0922d853c1f388778c28e4282b0c06e1e9bbc876bf7c219daa2",
+      "bytes": 122
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-5-new-new/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-5-new-new/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-5-new-new/execution-prepared-0.json": {
+      "sha256": "e2bebde3b08d2ae212df276f463963245c8ba24efafce66b3bb998afefb92d3b",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-5-new-new/interpss-prepared-0.csv": {
+      "sha256": "139a7d85f0a642702b6503c3b1f0d7c8b64c2fdb11b9993656ef7b8ae8609449",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-6-new-old/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-6-new-old/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-6-new-old/interpss-prepared-0.csv": {
+      "sha256": "439f9551779027cddfbfe8131c9464eb486906ecaf8acc6728fc7e915a26c67b",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-7-old-old/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-7-old-old/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/cold-7-old-old/interpss-prepared-0.csv": {
+      "sha256": "84bd04d36853f6171ae9500df70b57520adb04fdd63699ae831085fab765a989",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-cold-new.jfr": {
+      "sha256": "8ebf4a50ddbe967286a445f4986144583ed775266b553f57b1d1b9b440e895fd",
+      "bytes": 978997
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-cold-new.json": {
+      "sha256": "657ba52bbf1c01841b0c405337911a5147c356ef1434a9b3e7168fbf4d99f1f8",
+      "bytes": 1253
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-cold-new.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-cold-old.jfr": {
+      "sha256": "c980573e9ac0bb624143f08c587c4c4a4d95f5425c9c041f03825b75887e56a5",
+      "bytes": 951556
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-cold-old.json": {
+      "sha256": "a723f82840464d0f5a765530cc3ae068cbf170d033d619734c5d9656672c330d",
+      "bytes": 1233
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-cold-old.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-driver/NrSolveDiagnostic.java": {
+      "sha256": "64322d330931b2ce7815e6f9ec00f0eacba52668b8e3386efff108d83b8ef1d0",
+      "bytes": 7395
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-warmed-new.json": {
+      "sha256": "b1a8efb191a7f4d97366bb92b4570293ad717d0067a5eb6ba462311fae0bd992",
+      "bytes": 22251
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-warmed-new.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-warmed-old.json": {
+      "sha256": "ffb4ac844e9fddefd11f214726f39496cfd1f1e5e01f84bfbbd7d674c2728011",
+      "bytes": 22264
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/diagnostic-warmed-old.json-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/driver-new/PreparedNewtonApiBenchmark.java": {
+      "sha256": "10e96e9e2f90d39a7bf4c383aab85ad9393e3d8e1a155c268cf14ff25223d938",
+      "bytes": 12407
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/driver-old/PreparedNewtonApiBenchmark.java": {
+      "sha256": "fd77074a74c41d5ef471973c43e78cb6ed8b397e25e13b5e3bc352527e2ccb3e",
+      "bytes": 8763
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/jfr-summary-new.json": {
+      "sha256": "ed85d33b8e174eaffbcdb091611be4dd8fed967c99135334282c4684e7f5954f",
+      "bytes": 4238
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/jfr-summary-old.json": {
+      "sha256": "26979c6f9a2389b3813d504b02533932c314a4ab492757e39e19cf8f087e075a",
+      "bytes": 2243
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/evidence/runs.json": {
+      "sha256": "999776e14274b92906b7953e58085c6410735098583772c12c3b3d8515ab2c14",
+      "bytes": 181528
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/executed-sources/ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/DefaultNrSolver.java": {
+      "sha256": "66978441f873dd2df00b8bfaccedba2d65cb34993bce7a4b28432d865c1a62ff",
+      "bytes": 21211
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/executed-sources/ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/NrExecutionModeTest.java": {
+      "sha256": "e323f7fcc13df2cf7732c55f9eb99d75289324e531344cba0a6aaa0d2ea9a0ed",
+      "bytes": 13145
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/fix_admission.py": {
+      "sha256": "0ff7a077fd2f8450cbcb398564b56fb90e6ba20b3d48632a066705d9d7ee0073",
+      "bytes": 5462
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/focused-test-audit.json": {
+      "sha256": "c5a22718451a1d16c8dc0806482877b5f7a0fc8eb931230705fdbab7b21d9142",
+      "bytes": 87759
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/full-test-audit.json": {
+      "sha256": "534bd395dc44c7f969487624feabb87ba17a3b5f2f6150decad31f1e1bc49bdd",
+      "bytes": 2548041
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/full-test-audit.raw.json": {
+      "sha256": "183348258515aae756ffbfb1abba6b45ac2f89114bdf43b1c1f45ef8212f34b7",
+      "bytes": 2545786
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/measure_fix.py": {
+      "sha256": "1104f234d52c470d70bef5382d41346224f1ef3088f120c9265427b1ec37a065",
+      "bytes": 4155
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/publish_checkpoint.py": {
+      "sha256": "d43483c069584f62f70164a7dc553bb8b8b461b568ae4c6c6f273d323d6347d2",
+      "bytes": 5595
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/review_identity_replacement.py": {
+      "sha256": "0b52ad614f390dc7c906f68fb9a851a52573ea5d13c9fc7b69df84f0243c8b11",
+      "bytes": 3146
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/run_diagnosis.py": {
+      "sha256": "3327decc9eeef53a2be083b9e1c1e921d6f1aec688261ac92b0792064a4a703b",
+      "bytes": 5594
+    },
+    "ipss.test.plugin.core/target/nr-25k-regression-20261030/update_core_document.py": {
+      "sha256": "567bf089ab82eae721c91288b0e6b571b708ccddea12145ab8a6dbb7c167dcc7",
+      "bytes": 2928
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-admission-full-source-manifest.json": {
+      "sha256": "b2ca9abce9ced9674d808be889de09e0b852c893e2362d92884c26e291e38337",
+      "bytes": 1143976
+    },
+    "tools/benchmarks/NrSolveDiagnostic.java": {
+      "sha256": "64322d330931b2ce7815e6f9ec00f0eacba52668b8e3386efff108d83b8ef1d0",
+      "bytes": 7395
+    }
+  }
+}

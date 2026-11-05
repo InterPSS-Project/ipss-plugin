@@ -112,6 +112,7 @@ public class Texas2kSixCaseDynamicSmokeTest {
 
         assertTrue(algorithm.initialization(), source.directory() + " trip initialization");
         assertTrue(algorithm.performSimulation(), source.directory() + " trip simulation");
+        assertNetworkDiagnostic(algorithm);
         assertTrue(!network.getBus("Bus1051").getContributeGen("1").isActive(),
                 source.directory() + " generator remained active after trip");
         for (String busId : List.of("Bus1051", "Bus2056")) {
@@ -142,6 +143,7 @@ public class Texas2kSixCaseDynamicSmokeTest {
 
         assertTrue(algorithm.initialization(), source.directory() + " fault initialization");
         assertTrue(algorithm.performSimulation(), source.directory() + " fault simulation");
+        assertNetworkDiagnostic(algorithm);
         var faultVoltage = monitor.getBusVoltTable().get("Bus7159");
         assertTrue(faultVoltage.values().stream().allMatch(value -> Double.isFinite(value.value)),
                 source.directory() + " finite fault-bus voltage");
@@ -177,6 +179,7 @@ public class Texas2kSixCaseDynamicSmokeTest {
 
         assertTrue(algorithm.initialization(), source.directory() + " initialization");
         assertTrue(algorithm.performSimulation(), source.directory() + " no-event simulation");
+        assertNetworkDiagnostic(algorithm);
         for (var bus : network.getBusList()) {
             if (!bus.isActive()) continue;
             Complex voltage = bus.getVoltage();
@@ -302,7 +305,17 @@ public class Texas2kSixCaseDynamicSmokeTest {
                 + " REGCA1 initial P/Q base mismatches: " + failures);
     }
 
+    private static void assertNetworkDiagnostic(DynamicSimuAlgorithm algorithm) {
+        if (algorithm.getSolver() instanceof CertifiedWeakGridSolver certified) {
+            certified.assertCertifiedSolutions();
+        }
+    }
+
     private static void configureSimulation(DynamicSimuAlgorithm algorithm, double endTime) {
+        // Explicit diagnostic only: keep the registered default-path gate intact.
+        if (CONFIG.bool("ipss.smoke.certifiedNetworkAcceleration")) {
+            algorithm.setSolver(new CertifiedWeakGridSolver(algorithm));
+        }
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(1.0 / 240.0);
         algorithm.setTotalSimuTimeSec(endTime);

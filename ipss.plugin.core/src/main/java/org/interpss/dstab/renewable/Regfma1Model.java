@@ -394,6 +394,11 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         return internal.divide(impedance);
     }
 
+    /** Current limiting refreshes electrical outputs without advancing integration coordinates. */
+    @Override public boolean supportsNetworkIterationAcceleration() {
+        return getClass() == Regfma1Model.class;
+    }
+
     @Override
     public Hashtable<String, Object> getStates(Object ref) {
         states.put("REGFMA1_ANGLE", angle);

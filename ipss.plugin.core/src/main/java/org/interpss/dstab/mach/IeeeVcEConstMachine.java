@@ -9,6 +9,30 @@ public final class IeeeVcEConstMachine extends EConstMachineImpl
         implements IeeeVoltageCompensatedMachine {
     static { IeeeVcMachineState.register(IeeeVcEConstMachine.class,IeeeVcEConstMachine::new); }
     private IeeeVcData ieeeVcData;
+    @Override public boolean supportsDeferredCurrentPublication(){return true;}
+
+    /** Fixed-emf preparation supports governors declaring the explicit initial
+     * shaft-power contract; other active control types remain unqualified. */
+    public boolean supportsInitialOperatingPointBalance() {
+        return (getGovernor() == null || !getGovernor().isActive()
+                    || getGovernor() instanceof org.interpss.dstab.control.util.InitialMechanicalPowerPreparation)
+                && (getExciter() == null || !getExciter().isActive())
+                && (getStabilizer() == null || !getStabilizer().isActive());
+    }
+
+    /** Set shaft power from the converged initial electrical boundary, retaining
+     * internal emf, angle and speed. Never call this for a running-network event. */
+    public void reconcileInitialOperatingPointBalance() {
+        if (!supportsInitialOperatingPointBalance())
+            throw new IllegalStateException("Initial source balance with active classical-machine controls is not qualified");
+        getIgen(); // Publish electrical air-gap power using the final initial voltage.
+        if (!Double.isFinite(getPe()))throw new IllegalStateException("Nonfinite initial electrical power");
+        setPm(getPe());
+        if (getGovernor() != null && getGovernor().isActive()
+                && !((org.interpss.dstab.control.util.InitialMechanicalPowerPreparation)getGovernor())
+                    .initializeMechanicalOperatingPoint(getDStabBus(), this))
+            throw new IllegalStateException("Could not initialize governor from settled initial shaft power");
+    }
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {

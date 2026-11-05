@@ -1,0 +1,296 @@
+{
+  "schema": 1,
+  "status": "prepared-recording-and-live-passive-traversal-experiment",
+  "goal_seconds": 20,
+  "goal_complete": false,
+  "production_promotion": false,
+  "plugin_commit": "91413ccc0e096a0be80a01ac0cd434ad7cb0815a",
+  "logical_processors": 1,
+  "affinity_mask": 64,
+  "active_buses": 6717,
+  "measured_frequency_buses": 704,
+  "samples": 2403,
+  "recorded_channels": 6732,
+  "recorded_values": 16176996,
+  "full_trace_sha256": "cf74add8e7a177512da3d7296a1460f59dd79b2ad2dda056dea493ff3bae9c09",
+  "full_warmups": 9,
+  "measurements_per_mode": 3,
+  "timing_summary": {
+    "control": {
+      "rows": [
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-control-1",
+          "total_seconds": 20.3173899,
+          "phase_times": {
+            "import_and_setup_s": 0.0847972,
+            "power_flow_s": 0.639674,
+            "dynamic_configuration_and_initialization_s": 0.0674017,
+            "fixed_current_binding_and_controller_compilation_s": 0.004808,
+            "recording_setup_s": 0.0001972,
+            "stepping_and_in_memory_recording_s": 19.357393,
+            "network_s": 11.7144279,
+            "device_and_measurement_integration_s": 6.0954539,
+            "raw_binary_encode_write_s": 0.0609752,
+            "recovery_time_series_compute_write_s": 0.08489,
+            "serialization_and_recovery_tables_s": 0.1630722
+          },
+          "compilation_ms": 170,
+          "process_cpu_seconds": 19.765625,
+          "main_thread_cpu_seconds": 19.265625,
+          "outer_wall_seconds": 20.3189465
+        },
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-control-2",
+          "total_seconds": 21.1317249,
+          "phase_times": {
+            "import_and_setup_s": 0.0591397,
+            "power_flow_s": 0.7345944,
+            "dynamic_configuration_and_initialization_s": 0.0571045,
+            "fixed_current_binding_and_controller_compilation_s": 0.0037305,
+            "recording_setup_s": 0.00018,
+            "stepping_and_in_memory_recording_s": 20.1105357,
+            "network_s": 12.0594986,
+            "device_and_measurement_integration_s": 6.4488025,
+            "raw_binary_encode_write_s": 0.059406,
+            "recovery_time_series_compute_write_s": 0.0853192,
+            "serialization_and_recovery_tables_s": 0.1664109
+          },
+          "compilation_ms": 249,
+          "process_cpu_seconds": 20.203125,
+          "main_thread_cpu_seconds": 19.75,
+          "outer_wall_seconds": 21.1392984
+        },
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-control-3",
+          "total_seconds": 20.8399619,
+          "phase_times": {
+            "import_and_setup_s": 0.132191,
+            "power_flow_s": 0.7197373,
+            "dynamic_configuration_and_initialization_s": 0.0481447,
+            "fixed_current_binding_and_controller_compilation_s": 0.0244537,
+            "recording_setup_s": 0.000331,
+            "stepping_and_in_memory_recording_s": 19.7633597,
+            "network_s": 11.858368,
+            "device_and_measurement_integration_s": 6.1948337,
+            "raw_binary_encode_write_s": 0.0577199,
+            "recovery_time_series_compute_write_s": 0.0862112,
+            "serialization_and_recovery_tables_s": 0.1516967
+          },
+          "compilation_ms": 325,
+          "process_cpu_seconds": 19.75,
+          "main_thread_cpu_seconds": 19.234375,
+          "outer_wall_seconds": 20.8422062
+        }
+      ],
+      "median_total_seconds": 20.8399619,
+      "median_outer_seconds": 20.8422062,
+      "median_network_seconds": 11.858368,
+      "median_device_seconds": 6.1948337,
+      "range_seconds": [
+        20.3173899,
+        21.1317249
+      ]
+    },
+    "recording": {
+      "rows": [
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-recording-1",
+          "total_seconds": 20.317529,
+          "phase_times": {
+            "import_and_setup_s": 0.2379261,
+            "power_flow_s": 0.4859792,
+            "dynamic_configuration_and_initialization_s": 0.070244,
+            "fixed_current_binding_and_controller_compilation_s": 0.0041183,
+            "recording_setup_s": 0.0002725,
+            "stepping_and_in_memory_recording_s": 19.3461125,
+            "network_s": 11.723157,
+            "device_and_measurement_integration_s": 6.18012,
+            "raw_binary_encode_write_s": 0.0648163,
+            "recovery_time_series_compute_write_s": 0.0906057,
+            "serialization_and_recovery_tables_s": 0.17284
+          },
+          "compilation_ms": 220,
+          "process_cpu_seconds": 19.65625,
+          "main_thread_cpu_seconds": 19.265625,
+          "outer_wall_seconds": 20.3184652
+        },
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-recording-2",
+          "total_seconds": 21.1160036,
+          "phase_times": {
+            "import_and_setup_s": 0.0730558,
+            "power_flow_s": 0.6863352,
+            "dynamic_configuration_and_initialization_s": 0.1255829,
+            "fixed_current_binding_and_controller_compilation_s": 0.0038909,
+            "recording_setup_s": 0.0001812,
+            "stepping_and_in_memory_recording_s": 20.056951,
+            "network_s": 12.0432439,
+            "device_and_measurement_integration_s": 6.4145699,
+            "raw_binary_encode_write_s": 0.0622945,
+            "recovery_time_series_compute_write_s": 0.0873491,
+            "serialization_and_recovery_tables_s": 0.1699655
+          },
+          "compilation_ms": 268,
+          "process_cpu_seconds": 20.359375,
+          "main_thread_cpu_seconds": 19.859375,
+          "outer_wall_seconds": 21.1175337
+        },
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-recording-3",
+          "total_seconds": 20.837415,
+          "phase_times": {
+            "import_and_setup_s": 0.5132356,
+            "power_flow_s": 0.5014551,
+            "dynamic_configuration_and_initialization_s": 0.1017187,
+            "fixed_current_binding_and_controller_compilation_s": 0.003319,
+            "recording_setup_s": 0.0002054,
+            "stepping_and_in_memory_recording_s": 19.561481,
+            "network_s": 11.7475955,
+            "device_and_measurement_integration_s": 6.2945255,
+            "raw_binary_encode_write_s": 0.0619157,
+            "recovery_time_series_compute_write_s": 0.0856377,
+            "serialization_and_recovery_tables_s": 0.1559751
+          },
+          "compilation_ms": 507,
+          "process_cpu_seconds": 20.078125,
+          "main_thread_cpu_seconds": 19.390625,
+          "outer_wall_seconds": 20.8404254
+        }
+      ],
+      "median_total_seconds": 20.837415,
+      "median_outer_seconds": 20.8404254,
+      "median_network_seconds": 11.7475955,
+      "median_device_seconds": 6.2945255,
+      "range_seconds": [
+        20.317529,
+        21.1160036
+      ]
+    },
+    "fast": {
+      "rows": [
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-fast-1",
+          "total_seconds": 20.4687209,
+          "phase_times": {
+            "import_and_setup_s": 0.1478448,
+            "power_flow_s": 0.7061414,
+            "dynamic_configuration_and_initialization_s": 0.1857887,
+            "fixed_current_binding_and_controller_compilation_s": 0.0045233,
+            "recording_setup_s": 0.0001931,
+            "stepping_and_in_memory_recording_s": 19.2710612,
+            "network_s": 11.6615231,
+            "device_and_measurement_integration_s": 6.1360425,
+            "raw_binary_encode_write_s": 0.057318,
+            "recovery_time_series_compute_write_s": 0.085951,
+            "serialization_and_recovery_tables_s": 0.1526731
+          },
+          "compilation_ms": 407,
+          "process_cpu_seconds": 19.734375,
+          "main_thread_cpu_seconds": 19.09375,
+          "outer_wall_seconds": 20.4814124
+        },
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-fast-2",
+          "total_seconds": 19.6972691,
+          "phase_times": {
+            "import_and_setup_s": 0.1352371,
+            "power_flow_s": 0.5152313,
+            "dynamic_configuration_and_initialization_s": 0.1041378,
+            "fixed_current_binding_and_controller_compilation_s": 0.0038209,
+            "recording_setup_s": 0.0001959,
+            "stepping_and_in_memory_recording_s": 18.7542367,
+            "network_s": 11.4267513,
+            "device_and_measurement_integration_s": 6.045205,
+            "raw_binary_encode_write_s": 0.0650038,
+            "recovery_time_series_compute_write_s": 0.0870304,
+            "serialization_and_recovery_tables_s": 0.1702286
+          },
+          "compilation_ms": 190,
+          "process_cpu_seconds": 18.890625,
+          "main_thread_cpu_seconds": 18.421875,
+          "outer_wall_seconds": 19.6983133
+        },
+        {
+          "path": "ipss.test.plugin.core/testData/private/texas7k-prepared-passive-warmed-20261025-1/measured-fast-3",
+          "total_seconds": 20.8190342,
+          "phase_times": {
+            "import_and_setup_s": 0.1168204,
+            "power_flow_s": 0.5313019,
+            "dynamic_configuration_and_initialization_s": 0.0602285,
+            "fixed_current_binding_and_controller_compilation_s": 0.00421,
+            "recording_setup_s": 0.0001844,
+            "stepping_and_in_memory_recording_s": 19.936158,
+            "network_s": 12.1176219,
+            "device_and_measurement_integration_s": 6.3994755,
+            "raw_binary_encode_write_s": 0.0641591,
+            "recovery_time_series_compute_write_s": 0.0861916,
+            "serialization_and_recovery_tables_s": 0.1701054
+          },
+          "compilation_ms": 124,
+          "process_cpu_seconds": 19.890625,
+          "main_thread_cpu_seconds": 19.46875,
+          "outer_wall_seconds": 20.8202225
+        }
+      ],
+      "median_total_seconds": 20.4687209,
+      "median_outer_seconds": 20.4814124,
+      "median_network_seconds": 11.6615231,
+      "median_device_seconds": 6.1360425,
+      "range_seconds": [
+        19.6972691,
+        20.8190342
+      ]
+    }
+  },
+  "rejected_row_scale_kernel": {
+    "cleared": {
+      "maximum_scaled_error": 7.771561172376096e-16,
+      "candidate_coverage": {
+        "enabled": true,
+        "solves": 7200,
+        "dimension": 6717,
+        "reciprocal_rows": 6717
+      },
+      "kernel_median_seconds": {
+        "division": 0.1139029,
+        "reciprocal-input-scale": 0.1144622
+      }
+    },
+    "fault": {
+      "maximum_scaled_error": 6.135274380859679e-16,
+      "candidate_coverage": {
+        "enabled": true,
+        "solves": 7200,
+        "dimension": 6717,
+        "reciprocal_rows": 6717
+      },
+      "kernel_median_seconds": {
+        "division": 0.1143538,
+        "reciprocal-input-scale": 0.1111183
+      }
+    },
+    "prefault": {
+      "maximum_scaled_error": 7.771561172376096e-16,
+      "candidate_coverage": {
+        "enabled": true,
+        "solves": 7200,
+        "dimension": 6717,
+        "reciprocal_rows": 6717
+      },
+      "kernel_median_seconds": {
+        "division": 0.1155228,
+        "reciprocal-input-scale": 0.1134338
+      }
+    }
+  },
+  "limitations": [
+    "The retained experimental whole-runtime path has not been fully promoted to production. This study uses the existing prepared-monitor API and one isolated solver traversal shortcut.",
+    "All full recordings are byte-identical to the retained control. This proves nonregression for recorded channels, not independent complete-network reference accuracy.",
+    "Four existing independent small-case profiles pass unchanged. Live device/generator attachment and activation and custom-bus callback order are checked separately.",
+    "All reported measurements include residual compilation, recording and binary/recovery exports. Cold trials and kernel microbenchmarks do not qualify the whole-run timing objective.",
+    "The reciprocal row-scale trial shows a small, inconsistent kernel-level difference; it is excluded from all whole-run timings.",
+    "Failed source-matching/compilation and fixture-classification attempts are retained. The final fixture explicitly exercises a dynamic load rather than the default generator classification."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas7k-prepared-recording-study/manifest.json",
+  "manifest_sha256": "8e632afe1ca3fc8601f0b488b7ecb1e5340107142dd21ac214fd10c46dd630af"
+}

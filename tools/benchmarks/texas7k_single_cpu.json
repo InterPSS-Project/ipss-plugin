@@ -1,0 +1,26 @@
+{
+  "optimization_properties": {
+    "ipss.experiment.primitiveCurrentHandoff": "true",
+    "ipss.experiment.packedNetworkIteration": "true",
+    "ipss.experiment.fusedPackedConvergence": "true",
+    "ipss.experiment.removeConverterCompensation": "true",
+    "ipss.experiment.acceptedEndpointReuse": "true",
+    "ipss.experiment.serialTraversal": "true",
+    "ipss.experiment.directIeeestStage": "true",
+    "ipss.experiment.preparedRecording": "true",
+    "ipss.experiment.skipPassiveBusUpdates": "true",
+    "ipss.experiment.foldedZip": "true",
+    "ipss.experiment.jdkVoltageAngle": "true",
+    "ipss.experiment.ownedMachineStage": "false",
+    "ipss.experiment.parallelPackedRows": "false",
+    "ipss.experiment.networkAnderson": "false",
+    "ipss.experiment.bindIeeestParameters": "false",
+    "ipss.experiment.scalarShortExpressions": "false",
+    "ipss.experiment.ownedMachineWorkers": "1",
+    "ipss.profile.rectangular": "true",
+    "ipss.profile.compiledControllers": "true",
+    "ipss.profile.frequencyAll": "false",
+    "jklu.complex.factor.columnKernelMinN": "0",
+    "ipss.jklu.rowSolve": "true"
+  }
+}

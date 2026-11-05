@@ -484,19 +484,34 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         if(directEvaluation==null)return super.eulerStep(predictor,dt,machine);
         beginFixedMachineObservation();
         try {
+            if(modifiedEulerEvaluation) {
+                directEvaluation.modifiedEulerStep(predictor,dt);modifiedEulerStages++;return true;
+            }
             if(predictor&&dt==0.) {directEvaluation.evaluate();return true;}
             return super.eulerStep(predictor,dt,machine);
         }
         finally {endFixedMachineObservation();}
     }
     private St1DirectEvaluation directEvaluation;
+    private boolean modifiedEulerEvaluation;
+    private long modifiedEulerStages;
+    /** Compile the ordinary staged equations without changing the integration rule. */
+    public void enableModifiedEulerEvaluation() {
+        enableDirectEvaluationExperiment();modifiedEulerEvaluation=true;modifiedEulerStages=0;
+    }
+    public long getModifiedEulerStageCount(){return modifiedEulerStages;}
+    /** Release bindings before reinitializing or changing the graph. */
+    public void clearDirectEvaluation(){directEvaluation=null;modifiedEulerEvaluation=false;modifiedEulerStages=0;}
+    @Override public void invalidateRuntimePlan(){clearDirectEvaluation();super.invalidateRuntimePlan();}
     public void enableDirectEvaluationExperiment() {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        modifiedEulerEvaluation=false;
         directEvaluation=new St1DirectEvaluation(this);
     }
     /** Select local evaluation optimizations explicitly for this controller instance. */
     public void enableDirectEvaluationExperiment(boolean boundaryReuse,boolean fixedSchedule) {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        modifiedEulerEvaluation=false;
         directEvaluation=new St1DirectEvaluation(this,true,boundaryReuse,fixedSchedule);
     }
     /** Default local integration count; higher counts remain explicitly configurable. */

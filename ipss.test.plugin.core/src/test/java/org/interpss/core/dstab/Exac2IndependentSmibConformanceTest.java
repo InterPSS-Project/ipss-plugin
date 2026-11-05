@@ -14,7 +14,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -28,17 +29,19 @@ public class Exac2IndependentSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
-    @Test
-    void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates() throws Exception {
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates(boolean optimized) throws Exception {
+        double step=StaggeredExciterFixture.referenceStep(optimized,STEP);
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_exac2.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        StaggeredExciterFixture.configure(algorithm,optimized);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + EXAC2 SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuStepSec(step);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
@@ -53,7 +56,7 @@ public class Exac2IndependentSmibConformanceTest {
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,
                 initialRelativeAngle);
-        while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
+        while (algorithm.getSimuTime() < 1.0 - step / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
                     "GENROU + EXAC2 solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,

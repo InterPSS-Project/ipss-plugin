@@ -18,7 +18,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /** Published behind-impedance renewable converter model REGCB1. */
 public final class Regcb1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider {
+        implements DynamicGenDevice, RenewableConverterHost, IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
     private static final int IP = 0, IQ = 1, V = 2, EQ = 3, ED = 4;
 

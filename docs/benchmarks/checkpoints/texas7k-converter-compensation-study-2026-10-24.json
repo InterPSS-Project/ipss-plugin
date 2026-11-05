@@ -1,0 +1,443 @@
+{
+  "schema": 1,
+  "status": "experimental-matched-converter-compensation-removal",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-converter-compensation-study/manifest.json",
+  "manifest_sha256": "143ca22dcaacde9616ebc3b72373235875539c6dd34d182d57e480c7673fde21",
+  "production_promoted": false,
+  "goal_complete": false,
+  "goal_seconds": 20,
+  "network": {
+    "ordinary_iterations": 130955,
+    "candidate_iterations": 31599,
+    "calls": 7200,
+    "candidate_maximum_iterations": 6,
+    "iteration_limit": 50,
+    "step_s": 0.004166666666666667,
+    "tolerance_pu": 0.0001,
+    "sources": 167,
+    "factorizations": 3
+  },
+  "measurements": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-factor-degree-full-20261024-1/measured-control",
+      "status": "completed",
+      "whole_seconds": 61.2385628,
+      "network_seconds": 38.9712672,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-factor-degree-full-20261024-1/measured-specialized",
+      "status": "completed",
+      "whole_seconds": 60.4083892,
+      "network_seconds": 40.5383458,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-factor-degree-full-20261024-1/warmup-control",
+      "status": "completed",
+      "whole_seconds": 71.4474162,
+      "network_seconds": 39.4409782,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-factor-degree-full-20261024-1/warmup-specialized",
+      "status": "completed",
+      "whole_seconds": 65.7581721,
+      "network_seconds": 40.1902443,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fused-packed-full-20261024-1/measured-control",
+      "status": "completed",
+      "whole_seconds": 70.9999468,
+      "network_seconds": 44.2068736,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fused-packed-full-20261024-1/measured-fused",
+      "status": "completed",
+      "whole_seconds": 56.501247,
+      "network_seconds": 37.4207277,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fused-packed-full-20261024-1/warmup-control",
+      "status": "completed",
+      "whole_seconds": 71.120318,
+      "network_seconds": 39.4979309,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fused-packed-full-20261024-1/warmup-fused",
+      "status": "completed",
+      "whole_seconds": 64.3404602,
+      "network_seconds": 38.0861593,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-packed-full-20261024-1/measured-control",
+      "status": "completed",
+      "whole_seconds": 59.784295,
+      "network_seconds": 37.890195,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-packed-full-20261024-1/measured-direct",
+      "status": "completed",
+      "whole_seconds": 57.1766273,
+      "network_seconds": 36.9483049,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-packed-full-20261024-1/warmup-control",
+      "status": "completed",
+      "whole_seconds": 69.7592997,
+      "network_seconds": 38.0345348,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-direct-packed-full-20261024-1/warmup-direct",
+      "status": "completed",
+      "whole_seconds": 57.049104,
+      "network_seconds": 37.3868795,
+      "network_iterations": 130955,
+      "network_maximum_iterations": 27,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": null,
+      "factorizations": null
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-converter-uncompensated-full-20261024-1",
+      "status": "completed",
+      "whole_seconds": 45.483096,
+      "network_seconds": 14.9656876,
+      "network_iterations": 31440,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 1
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-converter-uncompensated-full-20261024-2",
+      "status": "completed",
+      "whole_seconds": 46.0494776,
+      "network_seconds": 15.4193379,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-converter-compensation-tight-20261024-1/control",
+      "status": "failed",
+      "whole_seconds": 15.1714859,
+      "network_seconds": 0.952238,
+      "network_iterations": 593,
+      "network_maximum_iterations": 50,
+      "tolerance_pu": 1e-07,
+      "samples": 30,
+      "sources": 0,
+      "factorizations": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-converter-compensation-tight-20261024-2/control",
+      "status": "failed",
+      "whole_seconds": 15.4110807,
+      "network_seconds": 1.07026,
+      "network_iterations": 839,
+      "network_maximum_iterations": 50,
+      "tolerance_pu": 1e-06,
+      "samples": 34,
+      "sources": 0,
+      "factorizations": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-compensation-accurate-control-20261024-1/control",
+      "status": "failed",
+      "whole_seconds": 34.5067015,
+      "network_seconds": 16.4284484,
+      "network_iterations": 25293,
+      "network_maximum_iterations": 50,
+      "tolerance_pu": 1e-08,
+      "samples": 410,
+      "sources": 0,
+      "factorizations": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-compensation-accurate-control-20261024-2/control",
+      "status": "completed",
+      "whole_seconds": 96.5295617,
+      "network_seconds": 64.4756488,
+      "network_iterations": 96494,
+      "network_maximum_iterations": 33,
+      "tolerance_pu": 1e-07,
+      "samples": 2403,
+      "sources": 0,
+      "factorizations": 0
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-compensation-accurate-control-20261024-2/uncompensated",
+      "status": "completed",
+      "whole_seconds": 46.0964695,
+      "network_seconds": 18.5557371,
+      "network_iterations": 50141,
+      "network_maximum_iterations": 10,
+      "tolerance_pu": 1e-07,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fast-compensation-warmed-20261024-1/measured-1",
+      "status": "completed",
+      "whole_seconds": 39.5656554,
+      "network_seconds": 13.7992017,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fast-compensation-warmed-20261024-1/measured-2",
+      "status": "completed",
+      "whole_seconds": 31.1202095,
+      "network_seconds": 14.8325217,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fast-compensation-warmed-20261024-1/profiled",
+      "status": "completed",
+      "whole_seconds": 50.157058,
+      "network_seconds": 16.6158854,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-fast-compensation-warmed-20261024-1/warmup",
+      "status": "completed",
+      "whole_seconds": 42.9675173,
+      "network_seconds": 15.3252953,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-cached-compensation-warmed-20261024-1/measured-1",
+      "status": "completed",
+      "whole_seconds": 39.4061267,
+      "network_seconds": 12.6513277,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-cached-compensation-warmed-20261024-1/measured-2",
+      "status": "completed",
+      "whole_seconds": 27.7412049,
+      "network_seconds": 12.3958059,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-cached-compensation-warmed-20261024-1/warmup",
+      "status": "completed",
+      "whole_seconds": 42.0549894,
+      "network_seconds": 14.331537,
+      "network_iterations": 31599,
+      "network_maximum_iterations": 6,
+      "tolerance_pu": 0.0001,
+      "samples": 2403,
+      "sources": 167,
+      "factorizations": 3
+    }
+  ],
+  "period_metrics": {
+    "prefault": {
+      "samples": 24,
+      "voltage_channels": 6717,
+      "defined_voltage_nrmse_channels": 6717,
+      "zero_range_voltage_channels": 0,
+      "maximum_voltage_nrmse": 2.1891357916967017e-12,
+      "worst_voltage_nrmse_channel": "V_pu__Bus220194",
+      "voltage_nrmse_threshold": 0.001,
+      "voltage_channels_exceeding_threshold": 0,
+      "maximum_voltage_abs_error_pu": 2.3092638912203256e-14
+    },
+    "fault_and_postfault": {
+      "samples": 2379,
+      "voltage_channels": 6717,
+      "defined_voltage_nrmse_channels": 6717,
+      "zero_range_voltage_channels": 0,
+      "maximum_voltage_nrmse": 0.0005780169423586776,
+      "worst_voltage_nrmse_channel": "V_pu__Bus190070",
+      "voltage_nrmse_threshold": 0.005,
+      "voltage_channels_exceeding_threshold": 0,
+      "maximum_voltage_abs_error_pu": 0.000710301513960343
+    },
+    "full_ten_seconds": {
+      "samples": 2403,
+      "voltage_channels": 6717,
+      "defined_voltage_nrmse_channels": 6717,
+      "zero_range_voltage_channels": 0,
+      "maximum_voltage_nrmse": 0.0005751232223429233,
+      "worst_voltage_nrmse_channel": "V_pu__Bus190070",
+      "voltage_nrmse_threshold": 0.005,
+      "voltage_channels_exceeding_threshold": 0,
+      "maximum_voltage_abs_error_pu": 0.000710301513960343
+    },
+    "selected_rotor_angles": {
+      "channels": 3,
+      "maximum_full_rmse_deg": 0.0003942535666170512,
+      "maximum_prefault_abs_error_deg": 0.0
+    }
+  },
+  "profile": {
+    "samples": 1600,
+    "network_inclusive_samples": 870,
+    "integration_inclusive_samples": 549,
+    "triangular_solve_leaf_samples": 269,
+    "profiled_timing_excluded": true,
+    "allocation_sample_weights_not_actual_byte_totals": true
+  },
+  "limitations": [
+    "Only two unprofiled measurements per candidate batch; timing variability is material.",
+    "Closed-case prototype: exact source types, no arbitrary observers, and no iteration-dependent converter voltage memory.",
+    "General mutation, exception cleanup and lifecycle contracts remain unqualified.",
+    "Only three machines have recorded rotor-angle channels in the full-network study.",
+    "No independent full-network acceptance or production promotion is claimed."
+  ],
+  "steady_timing": {
+    "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-compensation-steady-timing/manifest.json",
+    "manifest_sha256": "7e10597d0dbecf0721c120a326ffb5db4b34441e2cc9d4c7b17b67419f409507",
+    "schema": 1,
+    "status": "three-full-warmups-three-unprofiled-measurements",
+    "production_promoted": false,
+    "goal_complete": false,
+    "goal_seconds": 20,
+    "measurements": [
+      {
+        "phase": "warmup-1",
+        "whole_seconds": 41.6047814,
+        "dynamic_seconds": 28.4593996,
+        "network_seconds": 14.0234097
+      },
+      {
+        "phase": "warmup-2",
+        "whole_seconds": 39.5745075,
+        "dynamic_seconds": 26.9710933,
+        "network_seconds": 12.9588421
+      },
+      {
+        "phase": "warmup-3",
+        "whole_seconds": 26.9042644,
+        "dynamic_seconds": 24.7026147,
+        "network_seconds": 12.1180305
+      },
+      {
+        "phase": "measured-1",
+        "whole_seconds": 33.0188049,
+        "dynamic_seconds": 24.6633627,
+        "network_seconds": 12.1619924
+      },
+      {
+        "phase": "measured-2",
+        "whole_seconds": 26.5804414,
+        "dynamic_seconds": 24.8567038,
+        "network_seconds": 12.0780539
+      },
+      {
+        "phase": "measured-3",
+        "whole_seconds": 26.4805751,
+        "dynamic_seconds": 25.3491949,
+        "network_seconds": 12.4358901
+      }
+    ],
+    "median_whole_seconds": 26.5804414,
+    "minimum_whole_seconds": 26.4805751,
+    "maximum_whole_seconds": 33.0188049,
+    "trace_sha256": "ee24dbcc84ecc755c0c5675393def9d8af8e31af408464991cd14a58322d3b07",
+    "recorded_values": 16176996,
+    "timing_variability_retained": true,
+    "physical_bytes_saved": 129464040
+  }
+}

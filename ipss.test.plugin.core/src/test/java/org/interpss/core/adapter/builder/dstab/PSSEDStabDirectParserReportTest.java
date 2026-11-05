@@ -33,6 +33,56 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     Path tempDir;
 
     @Test
+    void namedChvdcRecordsDistinguishInvalidDataFromMissingRuntime() throws Exception {
+        for(boolean legacy:new boolean[]{false,true}) {
+            var builder=DStabBuilderTestFixture.createBuilder();
+            Path dyr=tempDir.resolve("named-chvdc.dyr");
+            String valid=org.interpss.core.dstab.Chvdc2ParametersTest.text(legacy);
+            Files.writeString(dyr,valid+" 1 'GENCLS' '1' 3 0 /\n");
+            var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+            assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+            var report=parser.getLastImportReport();
+            assertEquals(2,report.totalRecordCount());
+            assertEquals(1,report.count(DynamicModelImportStatus.UNSUPPORTED));
+            assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
+            assertEquals(legacy?"CHVDC2U1":"CHVDC2",report.failures().getFirst().sourceModelName());
+            assertTrue(report.failures().getFirst().message().contains("runtime attachment is not implemented"));
+            Files.writeString(dyr,valid.replace("3500.0","NaN"));
+            assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+            assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+        }
+    }
+
+    @Test
+    void userDcWrapperCannotBorrowAGeneratorModelRuntime() throws Exception {
+        Path dyr=tempDir.resolve("wrong-dc-family.dyr");
+        Files.writeString(dyr,"'link' 'USRDCL' 'GENCLS' 3 0 / 1 'GENCLS' '1' 3 0 /\n");
+        var parser=new PSSEDStabDirectParser(DStabBuilderTestFixture.createBuilder()).setStrictImport(true);
+        assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+        assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertTrue(parser.getLastImportReport().failures().getFirst().message().contains("generator aliases cannot be used"));
+    }
+
+    @Test
+    void missingNamedDcOwnerIsReportedWithoutLosingFollowingMachine() throws Exception {
+        var builder=DStabBuilderTestFixture.createBuilder();
+        Path dyr=tempDir.resolve("named-dc.dyr");
+        Files.writeString(dyr,"'North DC' 'CDC6T' "
+                +"5 20 .05 .05 .2 .3 .02 .2 .3 .02 250 500 99 99 400 250 450 500 2000 425 2000 .02 -999 999 -999 0 0 999 999 0 999 .05 "
+                +"/ 1 'GENCLS' '1' 3 0 /\n");
+        var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+        assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+        var report=parser.getLastImportReport();
+        assertEquals(2,report.totalRecordCount());
+        assertEquals(1,report.count(DynamicModelImportStatus.ERROR));
+        assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
+        assertEquals("CDC6T",report.failures().getFirst().sourceModelName());
+        assertTrue(report.failures().getFirst().message().contains("No static DC-link owner named North DC"));
+        assertFalse(report.isStrictlyComplete());
+    }
+
+    @Test
     void directPssEDynamicParserRejectsPslfDydInput() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyd = tempDir.resolve("wrong-format.dyd");

@@ -29,7 +29,8 @@ import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 		           + "-this.ratingScale*this.dt*mach.speed+this.ratingScale*this.dt",
 		   refPoint="this.rGainBlock.u0",
 		   display= {})
-public class PsseTGov1SteamTurGovernor extends AnnotateGovernor{
+public class PsseTGov1SteamTurGovernor extends AnnotateGovernor
+        implements org.interpss.dstab.control.util.InitialMechanicalPowerPreparation {
 	public double k=1,
 		loadLimit =1.0;
 	public double dt =0.0;
@@ -99,6 +100,11 @@ public FilterControlBlock t2t3FilterBlock;
 	    public PsseTGov1SteamTurGovernorData getData() {
 	        return (PsseTGov1SteamTurGovernorData)_data;
 	    }
+
+        @Override
+        public boolean initializeMechanicalOperatingPoint(BaseDStabBus<?, ?> bus, Machine machine) {
+            return initStates(bus, machine);
+        }
 	    
 	    /**
 	     *  Init the controller states

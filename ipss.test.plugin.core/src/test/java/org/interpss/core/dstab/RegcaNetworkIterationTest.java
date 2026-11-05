@@ -241,6 +241,87 @@ public class RegcaNetworkIterationTest {
         assertEquals(accepted, model.getNetworkHighVoltageState());
     }
 
+    @Test void acceptedEventPowerIsPureIdempotentAndAtomicForBypassedCurrent() {
+        var f=fixture();var model=f.model();
+        model.setNetworkIterationHighVoltageEnabled(true);
+        model.beginNetworkSolution(CONTEXT);
+        assertThrows(IllegalStateException.class,()->model.acceptNetworkEventInput(.1));
+        model.beforeNetworkIteration(0);model.afterNetworkConvergence();model.endNetworkSolution(true);
+        var memory=model.getNetworkHighVoltageState();var states=model.getIntegrationStates();
+        var rates=model.getStateDerivativeSnapshot();
+        f.bus().setVoltage(new Complex(1.21,.03));
+        Complex expected=f.bus().getVoltage().multiply(model.uncompensatedNetworkCurrent().conjugate());
+        model.acceptNetworkEventInput(.1);
+        assertEquals(expected.getReal(),((Number)model.getStates(null).get("REGCA1_P")).doubleValue(),1.e-15);
+        assertEquals(expected.getImaginary(),((Number)model.getStates(null).get("REGCA1_Q")).doubleValue(),1.e-15);
+        var accepted=new java.util.HashMap<>(model.getStates(null));
+        model.acceptNetworkEventInput(.1);
+        assertEquals(accepted,model.getStates(null));assertEquals(memory,model.getNetworkHighVoltageState());
+        assertEquals(states,model.getIntegrationStates());assertEquals(rates,model.getStateDerivativeSnapshot());
+        assertThrows(IllegalArgumentException.class,()->model.acceptNetworkEventInput(Double.NaN));
+        f.bus().setVoltage(new Complex(Double.NaN,0.));
+        assertThrows(IllegalStateException.class,()->model.acceptNetworkEventInput(.2));
+        assertEquals(accepted,model.getStates(null),"Rejected refresh cannot partially publish P/Q");
+        f.bus().setVoltage(new Complex(.7));model.setStatus(false);model.acceptNetworkEventInput(.2);
+        assertEquals(accepted,model.getStates(null),"Tripped converter is not refreshed");
+        model.setStatus(true);model.getParentGen().setStatus(false);model.acceptNetworkEventInput(.2);
+        assertEquals(accepted,model.getStates(null),"Inactive parent is not refreshed");
+        model.getParentGen().setStatus(true);f.bus().setStatus(false);model.acceptNetworkEventInput(.2);
+        assertEquals(accepted,model.getStates(null),"Inactive bus is not refreshed");
+    }
+
+    @Test void importedConvertersReceiveOnlyConvergedEventInputsInBothSolvers() throws Exception {
+        for(boolean history:new boolean[]{false,true})for(boolean fail:new boolean[]{false,true}) {
+            String base="testData/adpter/psse/v33/renewable/";
+            var context=new org.interpss.fadapter.psse.PSSEMultiFileLoader().loadDStab(
+                    base+"regca_reeca_repca_bus1062.raw",base+"regca_reecc1_bus1062.dyr");
+            var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
+            var device=(Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
+            assertTrue(network.getBus("Bus1").getDynamicBusDeviceList().contains(device),"Actual imported-device event registry");
+            var cold=new java.util.HashMap<>(device.getStates(null));device.acceptNetworkEventInput(0.);
+            assertEquals(cold,device.getStates(null),"Before initialization the event input is ignored");
+            AtomicInteger callbacks=new AtomicInteger();
+            Runnable check=()->{
+                Complex expected=network.getBus("Bus1").getVoltage().multiply(device.uncompensatedNetworkCurrent().conjugate());
+                assertEquals(expected.getReal(),((Number)device.getStates(null).get("REGCA1_P")).doubleValue(),1.e-13);
+                assertEquals(expected.getImaginary(),((Number)device.getStates(null).get("REGCA1_Q")).doubleValue(),1.e-13);
+                callbacks.incrementAndGet();
+            };
+            org.interpss.dstab.algo.DefaultDynamicSimulationSolver solver=history?
+                new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm){
+                    @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                        boolean ok=super.networkSolutionStep();if(ok&&eventBoundaryThisStep&&"INITIAL".equals(networkSolutionStage))check.run();return ok;
+                    }
+                }:new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm){
+                    @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                        boolean ok=super.networkSolutionStep();if(ok&&eventBoundaryThisStep&&"INITIAL".equals(networkSolutionStage))check.run();return ok;
+                    }
+                };
+            algorithm.setSolver(solver);network.setBypassDataCheck(true);network.setAllowGenWithoutMach(true);
+            assertTrue(algorithm.getAclfAlgorithm().loadflow());
+            algorithm.setSimuMethod(com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER);
+            algorithm.setSimuStepSec(.001);algorithm.setTotalSimuTimeSec(.006);
+            algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+            network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",network,
+                    com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0.,.2),null,.002,.002),"AcceptedPower");
+            assertTrue(algorithm.initialization());device.setNetworkIterationHighVoltageEnabled(true);
+            for(int i=0;i<2;i++)assertTrue(algorithm.solveDEqnStep(true));
+            assertEquals(0,callbacks.get(),"Ordinary steps never dispatch an event input");
+            if(fail) {
+                var before=new java.util.HashMap<>(device.getStates(null));
+                var states=device.getIntegrationStates();var memory=device.getNetworkHighVoltageState();
+                solver.setMaxIterationTimes(1);boolean accepted=algorithm.solveDEqnStep(true);
+                assertFalse(accepted,"Deliberately under-iterated fault must fail");assertEquals(0,callbacks.get());
+                var after=new java.util.HashMap<>(device.getStates(null));before.remove("Time");after.remove("Time");
+                assertEquals(before,after,"Failed event does not publish inputs; recorder time is metadata");
+                assertEquals(states,device.getIntegrationStates());assertEquals(memory,device.getNetworkHighVoltageState());
+            } else {
+                for(int i=0;i<4;i++)assertTrue(algorithm.solveDEqnStep(true));
+                assertEquals(2,callbacks.get(),"Application and clearing use real solver dispatch");
+            }
+        }
+    }
+
     private record Fixture(DStabilityNetwork network, DStabBus bus, Regca1Model model, Control control) {}
     private Fixture fixture() {
         return fixture(1.3, .4);

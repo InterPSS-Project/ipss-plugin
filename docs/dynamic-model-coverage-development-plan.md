@@ -2,6 +2,368 @@
 
 ## Current checkpoint
 
+The [CHVDC2 solved-network preparation](dynamic-models/chvdc2-named-link.md#preparation-from-the-solved-network)
+resolves and validates the static owner, prepares immutable physical coefficients
+using the outer interval, and initializes the shared runtime without changing
+network ownership. Independent initial states/boundaries and both-method
+fixed-terminal equilibrium pass. Production terminal attachment, local-step
+ownership and complete coupled trajectory acceptance remain unfinished.
+
+The [CHVDC2 same-time event controls](dynamic-models/chvdc2-named-link.md#same-time-event-calls-and-the-measurement-equation)
+rule out zero-duration `RUN` calls as a way to prepare the missing post-event
+measurement stage. Cold repeats leave complete trajectories and public snapshots
+unchanged at both time grids. Retain the documented first-order lag equation and
+investigate positive-time event/integration history without adding a fitted delay.
+
+The [CHVDC2 sampled-current lifecycle](dynamic-models/chvdc2-named-link.md#sampled-algebraic-current-and-accepted-integration-intervals)
+separates live network observations from accepted algebraic-line history under
+both integration methods. Independent component replays pass the current gate;
+explicit outer intervals reduce refined coupled current errors substantially,
+but full trajectories remain unaccepted. Preserve the unchanged dynamic-line
+traces, strict gates and explicit failed-run artifacts while resolving remaining
+controller trajectories, local-step ownership and automatic attachment.
+
+The [shared CHVDC2 published-state accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates)
+expose live bypassed measurements without projecting numerical coordinates or
+advancing history. Independent input-driven checks qualify these observations
+under both integration methods. Line-mode controls isolate the first filter
+increment from DC-line inductance; complete coupled trajectories and physical
+input/history sequencing remain unaccepted.
+
+The [CHVDC2 run-boundary clock checks](dynamic-models/chvdc2-named-link.md#independent-run-boundary-clock-checks)
+separate pure public observations from pause/resume effects on controller
+history. Cold controls at both network intervals retain every sample and show
+that changing run segmentation changes subsequent states. Use this evidence
+when resolving accepted input/history stages; it does not qualify the current
+coupled trajectories or justify a fitted time shift.
+
+The [CHVDC2 network-interval capacitance preparation](dynamic-models/chvdc2-named-link.md#network-interval-capacitance-preparation)
+now freezes the source suppression decision before allocating line states,
+preserves entered constants and keeps local refinement separate. Cold independent
+controls verify suppression/retention; a retained tiny-capacitance reference
+becomes nonfinite and remains rejected. Complete capacitive coupled comparisons
+are retained but still fail strict gates. Production attachment and full
+trajectory qualification remain open.
+
+The [coupled CHVDC2 controller and DC-line runtime](dynamic-models/chvdc2-named-link.md#coupled-controller-and-dc-line-runtime)
+uses shared numerical coordinates, live converter injections and transactional
+electrical/protection histories under both integration methods. Repeated
+electrical acceptance is idempotent. Complete synthetic coupled faults now
+evolve without recorded trajectory forcing, but all eight strict reference
+comparisons remain unaccepted. Event/stage sequencing, protected and capacitive
+profiles, production attachment and full model qualification remain open.
+
+The [joint CHVDC2 controller owner](dynamic-models/chvdc2-named-link.md#joint-controller-state-ownership-and-raml-limit-separation)
+connects shared controller coordinates under both integration methods, provides
+predictor/outer-transaction rollback and preserves accepted electrical history.
+Independent RAML evidence separates the entered PI limit from the moving firing-
+angle floor, eliminating an artificial PI rebase. Strict complete joint replay,
+event/input staging and full coupled network attachment remain open.
+
+The [CHVDC2 named-link foundation](dynamic-models/chvdc2-named-link.md) preserves
+standard/legacy source identity and exact allocation, validates immutable
+parameters, and provides a shared physical DC-line component for both integration
+methods. Automatic attachment remains unsupported. Stiff-source native controls
+now initialize and cold-repeat successfully; the original coupled startup
+failure remains diagnostic. Complete controller, protection, network and SMIB
+qualification is still required.
+
+The [shared CHVDC2 current-controller component](dynamic-models/chvdc2-named-link.md#shared-current-controller-component)
+adds direct PI/angle equations, the bounded PI output, reusable numerical
+storage and both-method lifecycle checks. Cold-repeated active-limit captures
+expose rectifier-state discrepancies under the unchanged strict replay gate.
+A separate binary32 sub-update diagnostic localizes the PI discrepancy to
+reference stepping/precision; production precision remains unchanged and
+complete model qualification remains open.
+
+The [shared CHVDC2 measurement/current-order component](dynamic-models/chvdc2-named-link.md#shared-measurement-and-current-order-component)
+adds asymmetric DC-voltage filters, AC current-limit integrators, the DC VDCOL
+curve and calculated inverter angle bound. Cold controls exercise active limits
+and zero-time filters. The zero-down-time observation correction preserves the
+remaining dynamic coordinate. Both-method analytic/allocation checks pass;
+strict finite-lag replay, observation timing, protection and complete coupled
+attachment remain open.
+
+The [signed CHVDC2 converter boundary](dynamic-models/chvdc2-named-link.md#signed-conducting-converter-boundary)
+shares prepared conducting-bridge equations with the existing current-order
+converter. Both-method bridge/line analytic convergence, energy balance,
+initial independent boundaries and recorded-input rectifier P/Q gates pass.
+Inverter channel publication, protection, local integration and full coupled
+SMIB qualification remain open; no telemetry time shift is applied.
+
+The [accepted CHVDC2 protection and extinction history](dynamic-models/chvdc2-named-link.md#accepted-protection-and-extinction-angle-history)
+adds the shared RAML state, explicit accepted-event sequencing and transactional
+rollback. The valid commutation control qualifies short/release histories under
+both methods. Committed extinction history resolves measured-input inverter
+P/Q through an explicit boundary evaluation order. Strict RAML replay, rejected
+reference regimes and complete coupled attachment remain open.
+
+The [mixed static/electronic current interface](dynamic-models/cmldblu1-static-electronic-interface.md)
+extends low-voltage static preparation to eligible motor-free composites with
+omitted distribution, fully represented transformer/feeder boundaries, and
+either individually omitted element. Owned low-side shunt cancellation
+preserves unrelated parent loads and shunts in the transformer-omitted case.
+The latter retain accepted terminal-current history and condition the network
+with independently prepared G/B. Failed-solve rollback, matrix rebuild and
+repeated-leaf-initialization tests cover both integration methods.
+The electronic numerical interface survives leaf
+reinitialization, while physical shunt current and unrelated load ownership
+remain intact. Moderate represented-distribution reference trajectories pass;
+deep-fault convergence and passive balance are tested separately while the
+deep reference terminal-current mapping remains unresolved.
+
+The [electronic full-recovery path](dynamic-models/cmldblu1-electronic-recovery.md)
+uses the present voltage fraction directly, avoiding unnecessary minimum-history
+updates. Whole-electronic coupled ramp, dropout and repeated-recovery controls
+pass under both methods with omitted or represented distribution, including
+internal bus voltages. Mixed-component, tap-action and longer-run qualification
+remains open.
+
+The [legacy static current port](dynamic-models/cmldblu1-static-low-voltage.md)
+implements independently established low-voltage admittance preparation for
+whole static composites with omitted distribution and zero frequency
+coefficients. Both integration methods share the core network-iteration
+lifecycle and scalar current kernel. Numerical shunt cancellation preserves
+physical capacitor current and unrelated load ownership; mixed/distributed,
+frequency-dependent and restoration/production-duration qualification stay open.
+
+The [dynamic-model implementation tracker](dynamic-model-implementation-tracker-2026-10-30.md)
+preserves implementation priorities, model-specific tasks and scoped verification
+status.
+
+The [standalone compressor import correction](dynamic-models/acmtblu1-shared-import.md)
+binds the complete source load and all constants, reuses the shared motor
+equations and exposes accepted-timer precision explicitly. Independent
+preparation, flat and coupled controls pass through both integration methods.
+The [frequency-input correction](dynamic-models/acmtblu1-frequency-input.md)
+adds accepted phase/clock history, explicit scheduled-event preparation and
+documented running P/Q sensitivity through the same numerical engine. Independent
+replay and expanded coupled controls pass; method-specific state differences
+and the raw bypass observation error remain explicit. The
+[electrical-input correction](dynamic-models/acmtblu1-electrical-inputs.md)
+qualifies accepted voltage/heating samples, voltage bypass and prepared pre-event
+derivatives without duplicating continuous storage. Independent replay and
+strict coupled staggered voltage/temperature gates pass. The
+[UV/contactor correction](dynamic-models/acmtblu1-protection.md) integrates the
+five legacy timers as shared differential states, fixes raw-voltage pickup and
+contactor hysteresis, and independently qualifies UV shedding, opening and
+reclosure through replay and coupled controls under both methods. Thermal
+actions now have [separate qualification](dynamic-models/acmtblu1-thermal.md),
+including initial shedding after operating-point compensation, irreversible
+fractions, complete-trip temperature projection and restart-pending behavior.
+Independent replay and paired coupled controls retain method-specific criteria;
+parameter validation, restoration and production-step/long-duration work remain open;
+the separate severe composite/static-load discrepancy remains diagnostic.
+The [startup-clock correction](dynamic-models/acmtblu1-startup-clock.md) separates
+physical endpoint time from integration duration. Phase memory waits through
+nonpositive startup endpoints while other coordinates integrate; independent
+active-frequency replay and coupled controls qualify the stated policy under
+both methods without suppressing numerical-method differences.
+The [thermal-bypass correction](dynamic-models/acmtblu1-thermal-bypass.md) accepts
+zero thermal time constant, projects algebraic temperature through shared
+numerical storage and preserves the separately accepted input for trip actions.
+Independent replay, coupled faults and composite attachment checks cover both
+methods; complete composite and remaining validation/restoration work stays open.
+The [outer-interval lag preparation](dynamic-models/acmtblu1-short-lags.md)
+resolves the identified production-step voltage-filter instability through
+independently established voltage/frequency/thermal bypass boundaries. Shared
+preinitialization discovery reaches standalone and unexpanded composite motors;
+raw constants and local-stage intervals remain separate. Both-method coupled
+controls retain method-specific state evidence; strict differential
+modified-Euler state parity and complete composite qualification stay open.
+The [static-component qualification](dynamic-models/cmldblu1-static-kernel.md)
+independently distinguishes the legacy mixed-polynomial normalization and
+qualifies a shared constant-admittance specialization under both integration
+methods. Fresh trial-voltage power and exact generic fallbacks remain intact;
+the severe low-voltage static-admittance and internal-observation discrepancy
+requires separate diagnosis.
+
+The [omitted-distribution correction](dynamic-models/cmldblu1-omitted-distribution.md)
+collapses exactly absent transformer/feeder elements onto existing bus objects.
+Explicit component operating points preserve unrelated parent loads and shunts
+when both elements are absent. Independent two-step-size coupled controls and
+merged-bus flat checks cover both integration methods; complete zone/state,
+severe low-voltage and restoration qualification remain open.
+
+The [compressor current-law correction](dynamic-models/cmldblu1-compressor-current.md)
+fixes the legacy running impedance branch, transition preparation and heating;
+every trial network voltage refreshes current through shared reusable numerical
+storage. Independent recorded-state controls pass under both methods. Complete
+composite trajectories and complete standalone protection/restoration remain unqualified.
+
+The [compressor loading and operating-point correction](dynamic-models/cmldblu1-compressor-initialization.md)
+unifies parameter storage, separates the legacy/zone characteristic policies,
+and corrects shared distribution geometry and reactive accounting. Independent
+legacy initialization and fault gates pass under both integration methods;
+complete internal-state, protection and warm-restoration qualification remains
+open.
+
+The [composite-load initialization correction](dynamic-models/cmldblu1-shared-runtime.md)
+adds separate legacy distribution preparation, allocated reactive-demand matching
+and internal current-balance gates under both integration methods. Complete
+independent boundary comparisons satisfy the declared voltage and rotor-angle
+limits; internal motor, protection and feeder-floor qualification remain open.
+
+The [REGCC state-reset investigation](benchmarks/regcc-state-reset-2026-10-30.md)
+localizes the cross-coordinate anomaly to active-PI clipping/history, using
+natural faults and state/memory controls. No runtime reset rule is added;
+the likely reference implementation defect still requires vendor confirmation.
+
+The [REGCC local-integration and PI-limit audit](benchmarks/regcc-substeps-2026-10-30.md)
+separates prepared network coefficients from local steps and fixes independently
+observed PI output/integral bounds. The 1/2/4/8 coupled comparison retains one
+step as the default. Unqualified trajectories remain explicit diagnostics.
+
+The [REGCC implementation](benchmarks/regcc-model-2026-10-28.md) adds the distinct
+nine-state PLL converter and exact fifteen-field native parameter schema.
+Bounded standalone trajectories and explicitly unqualified stress diagnostics
+are separate; full model and complete control-chain acceptance remain open.
+
+The [converter source-impedance contract](benchmarks/converter-source-impedance-2026-10-25.md)
+adds exact REGCAU2 wrapper import and explicit effective-reactance behavior while
+preserving REGCA1 current-source and REGCB1 voltage-source treatment. Nonzero
+reactance retains a reactive-voltage state; fixed-command fault profiles at two
+steps have independent coupled evidence. Full model verification remains open.
+
+The maintained core 1.4.6/plugin 1.4.8 profile completes the full ten-second
+study in a **19.935-second warmed median on one logical CPU**, including
+recording and export. Five measurements span 19.485–20.716 seconds after four
+complete warmups. This meets the 20-second median objective, while individual
+runs can exceed 20 seconds. All nine full recordings match the qualified
+trajectory. Full core/plugin validation executes 7,356 tests with zero failures
+and 86 existing skips; eight additional optimized-path checks pass. Required
+frequency measurement retains 704 of 6,717 buses by default. The exact runtime
+and source are frozen with a maintained benchmark launcher. Independent
+full-network reference acceptance remains open. See the
+[maintained single-CPU milestone](benchmarks/texas7k-maintained-single-cpu-2026-10-25.md).
+
+## Earlier checkpoints
+
+The new three-mode recording/traversal study has a best outer invocation median
+of 20.481 seconds (20.469 seconds on the internal timer), preserving every
+recorded value. Prepared recording alone has essentially unchanged timing;
+the exact passive-bus shortcut removes 28.86 million no-op visits. Its combined
+timing ranges overlap the control, and it remains experimental. The 20-second
+objective is still open. See the
+[recording and traversal study](benchmarks/texas7k-prepared-recording-study-2026-10-25.md).
+
+The latest matched single-CPU control measures a 20.796-second whole-run median
+with full recording/export. New affine-network variants reduce outer iterations
+to 17,555 and pass all-channel internal accuracy and independent small-case
+checks, but their matched medians of 21.545 and 21.264 seconds do not establish
+a speedup. Cached publication and passive-bus dispatch checks are retained;
+the 20-second objective and whole-runtime promotion remain open. See the
+[affine network study](benchmarks/texas7k-affine-network-study-2026-10-25.md).
+
+Imported-case simulations now select required bus-frequency measurements by
+default, with conservative all-bus fallback for unclassified/custom consumers.
+The final production gate retains 704 of 6,717 Texas7k buses; the complete
+recorded trajectory is unchanged. All 3,109 core and 36 focused plugin tests
+pass. Matched experimental timing saves 0.902 seconds in device integration
+and changes the whole-run median from 25.713 to 25.437 seconds, with overlapping
+ranges. The 20-second objective remains open. See the
+[frequency selection and validation](benchmarks/bus-frequency-selection-2026-10-25.md).
+
+The new typed-controller study records a complete single-CPU median of 21.407
+seconds with default JVM inlining (three measurements). A subsequent combined
+load/angle-kernel batch measures 24.302 seconds after six full warmups; it does
+not establish an additional speedup. Full recordings, two tighter internal
+accuracy comparisons and focused state/history/independent small-case checks
+pass. All new kernels remain experimental; whole-runtime promotion, independent
+full-network acceptance and the 20-second goal remain open. The initialized 7K
+inventory contains 630 generating units and 1,759 machine/bundle/controller
+objects, versus 429 and 1,428 in Texas2k Case 1. See the
+[compiled-kernel study](benchmarks/texas7k-compiled-kernel-study-2026-10-25.md).
+
+Direct live IEEEST parameter bindings now avoid repeated named lookups in the
+compiled standard model while preserving parameter writes and custom-provider
+fallback. All 43 focused tests pass; the actual production controller class
+reproduces the complete retained 7K trajectory. A matched single-CPU batch
+measures 29.089 versus 36.144 seconds, with substantial timing variation and
+unchanged network work also varying. It does not supersede the earlier
+24.603-second baseline or meet the 20-second target. Exact traversal changes
+and accuracy-checked network accelerators remain experimental; chord methods
+do not establish a warmed whole-run gain. See the
+[serial network and controller study](benchmarks/texas7k-serial-network-controller-study-2026-10-25.md).
+
+The active performance objective is now a complete ten-second simulation in
+20 seconds on **one logical CPU**, including recording and export. The verified
+single-CPU baseline uses ordinary serial updates: 24.603-second median,
+24.287–26.038 seconds across three measurements after six complete warmups.
+The one-worker batch plan is slower at a 26.552-second median. Process affinity
+is verified as CPU 6 only before and after the run, and all fourteen complete
+traces remain identical. Earlier four-processor measurements are historical
+evidence and do not qualify this updated objective. See the
+[single-CPU study](benchmarks/texas7k-single-cpu-study-2026-10-25.md).
+
+Fingerprint-checked accepted-endpoint reuse measures 22.744 and 23.610 seconds
+for the complete ten-second run, including recording (23.177-second median in
+a small matched batch). It reduces network iterations to 26,803, and all 6,717
+voltage channels pass the period-specific limits against the tighter internal
+control. Four independent small-case converter profiles and 182 invalidation
+checks pass. A production change removes a redundant INITIAL stabilizer scan;
+32 focused tests and the unchanged full control traces pass. A further
+closed-case shortcut preserves the reused trajectory but fails to establish a
+timing benefit and is not preferred. Whole-runtime promotion, independent full
+network acceptance and the 20-second target remain open. See the
+[accepted-endpoint study](benchmarks/texas7k-accepted-endpoint-study-2026-10-25.md).
+
+A guarded direct converter-current frame passes 603,456 component comparisons,
+four independent small-case profiles and all-channel internal accuracy checks.
+It does not establish a whole-run timing gain: after six warmups, three-run
+medians are 25.432 seconds for the candidate and 25.057 seconds for its control,
+with overlapping ranges. It remains experimental and is not preferred. See the
+[converter current-frame study](benchmarks/texas7k-rectangular-converter-study-2026-10-25.md).
+
+The preceding whole-run experimental path measures 23.792 and 24.436 seconds
+(24.114-second median in a two-measurement batch) while preserving the complete
+numerical control trace. An exact frequency-angle shortcut is committed to
+core as `4b87c8724`; all 3,099 core tests and both independent converter
+checkpoint methods pass. The actual production class also preserves the
+complete recorded full-case trajectory through the experimental runtime.
+Whole-runtime promotion and the 20-second goal remain open. See the
+[device, frequency and recording study](benchmarks/texas7k-owned-update-study-2026-10-24.md).
+
+An event-safe converter compensation prototype reduces the complete run from
+130,955 to 31,599 network iterations. After three full warmups, the cached
+variant records a 26.580-second whole-run median (26.481–33.019 s, three
+measurements); timing variability and the 20-second objective remain open.
+All bus voltages pass the configured period-specific
+NRMSE limits against a tighter internal control. Existing independent small-case
+checkpoints also pass, but complete independent network acceptance and production
+promotion remain open. See the
+[compensation, convergence and whole-run study](benchmarks/texas7k-converter-compensation-study-2026-10-24.md).
+
+A numerical network-iteration workspace preserves the complete ordinary trace
+and measures 57.135 seconds in one warmed matched pair. It passes 14,880
+state/history comparisons and observer-triggered fallback checks. A separate
+fixed Norton-source cache preserves the result but measures slower and is not
+the preferred experimental baseline. See the
+[whole-run timings, CPU profile and remaining contracts](benchmarks/texas7k-packed-network-study-2026-10-24.md).
+The 20-second objective remains open; production runtime code is unchanged.
+
+Additional row-kernel experiments retain every ordinary full-case measurement.
+Four-worker dispatch is slower than the scalar prototype, and a direct ST4
+timing pair does not establish a stable speedup. A static-row snapshot probe
+passes 64,416 raw-bit comparisons; full runs and timing evidence are retained
+in the [row-kernel checkpoint](benchmarks/texas7k-row-kernel-study-2026-10-24.md).
+No experimental runtime path is promoted, and the 20-second objective remains open.
+
+A separate indexed-current experiment preserves all recorded full-case values
+and reduces one warmed in-process measurement from 106.459 to 77.337 seconds.
+It remains an isolated prototype; the 20-second objective is still open.
+Local timestep refinement also identifies the explicit two-step quarter-cycle
+response as numerically unresolved for the bus-150510 equivalent. See the
+[full recording, timing limits and next engine work](benchmarks/texas7k-indexed-current-study-2026-10-24.md).
+
+The opt-in staggered solver now binds all 137 additional active Texas7k
+exciters across eight families. The complete ten-second no-event test passes
+with all models active and 9,541 checked coordinates. An initialized-pole
+resolution check selects two local steps for one EXAC2 unit; the other 136
+use one. Independent SMIB comparisons pass at a refined step, while a large
+full-network fault-response difference remains open at a renewable bundle.
+See the [integration scope, counterexamples and timing](benchmarks/texas7k-optimized-exciters-2026-10-24.md).
+
 WTTQA1 native-record import now feeds raw electrical power to its speed curve,
 removing the extra 20 ms lag identified by all-row SMIB replay. The power-error
 branch retains its filtered-power input, and typed clients retain the published

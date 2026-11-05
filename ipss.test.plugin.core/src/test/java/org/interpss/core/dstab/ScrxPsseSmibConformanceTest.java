@@ -21,7 +21,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -34,8 +35,9 @@ public class ScrxPsseSmibConformanceTest {
     private static final Path REFERENCE = Path.of(
             "testData", "reference", "psse", "smib-genrou-scrx", "psse.csv");
 
-    @Test
-    void voltageReferencePulseMatchesPsseBoundaryAndTwoExciterStates() throws Exception {
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void voltageReferencePulseMatchesPsseBoundaryAndTwoExciterStates(boolean optimized) throws Exception {
+        double step=StaggeredExciterFixture.referenceStep(optimized,STEP);
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -48,9 +50,10 @@ public class ScrxPsseSmibConformanceTest {
                 CASE.resolve("SMIB_v33_genrou_scrx.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        StaggeredExciterFixture.configure(algorithm,optimized);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "SCRX SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuStepSec(step);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization(), "SCRX SMIB initialization");
@@ -66,13 +69,15 @@ public class ScrxPsseSmibConformanceTest {
                 exciter, initialRelativeAngle);
         boolean raised = false;
         boolean restored = false;
-        while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
-            if (!raised && algorithm.getSimuTime() >= 0.05 - STEP / 2.0) {
+        while (algorithm.getSimuTime() < 1.0 - step / 2.0) {
+            if (!raised && algorithm.getSimuTime() >= 0.05 - step / 2.0) {
                 exciter.setRefPoint(exciter.getRefPoint() + 0.01);
+                StaggeredExciterFixture.discontinuity(algorithm);
                 raised = true;
             }
-            if (!restored && algorithm.getSimuTime() >= 0.10 - STEP / 2.0) {
+            if (!restored && algorithm.getSimuTime() >= 0.10 - step / 2.0) {
                 exciter.setRefPoint(exciter.getRefPoint() - 0.01);
+                StaggeredExciterFixture.discontinuity(algorithm);
                 restored = true;
             }
             assertTrue(algorithm.solveDEqnStep(true));

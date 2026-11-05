@@ -34,6 +34,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     private final Repca1Data data;
     private final Regca1Model converter;
     private final Regcb1Model behindImpedanceConverter;
+    private RenewableConverterHost additionalHost;
     private final Regfma1Model gridFormingConverter;
     private final Regfmb1Model virtualSynchronousConverter;
     private final boolean nativeRecordConvention;
@@ -133,6 +134,11 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     }
     public static Repca1Model fromNativeRecord(Repca1Data data, Regcb1Model converter) {
         return new Repca1Model(data, null, converter, null, null, true);
+    }
+    public static Repca1Model forConverterHost(Repca1Data data, RenewableConverterHost host) {
+        var controller=fromNativeRecord(data);
+        controller.additionalHost=java.util.Objects.requireNonNull(host);
+        return controller;
     }
     public static Repca1Model fromNativeRecord(Repca1Data data, Regfma1Model converter) {
         return new Repca1Model(data, null, null, converter, null, true);
@@ -483,16 +489,18 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
         branchStoredInRequestedDirection = false;
         zeroBranchFallback = missingBranchFallback = false;
         if (converter == null && behindImpedanceConverter == null
-                && gridFormingConverter == null && virtualSynchronousConverter == null) return;
+                && gridFormingConverter == null && virtualSynchronousConverter == null && additionalHost == null) return;
         BaseDStabBus<?, ?> localBus = converter != null ? converter.getDStabBus()
                 : behindImpedanceConverter != null ? behindImpedanceConverter.getDStabBus()
-                : gridFormingConverter!=null?gridFormingConverter.getDStabBus():virtualSynchronousConverter.getDStabBus();
+                : gridFormingConverter!=null?gridFormingConverter.getDStabBus()
+                : virtualSynchronousConverter!=null?virtualSynchronousConverter.getDStabBus():additionalHost.getDStabBus();
         systemBaseMva = localBus.getNetwork().getBaseMva();
         double configuredBase = converter != null
                 ? converter.getParentGen().getMvaBase()
                 : behindImpedanceConverter != null
                         ? behindImpedanceConverter.getParentGen().getMvaBase()
-                        : gridFormingConverter!=null?gridFormingConverter.getParentGen().getMvaBase():virtualSynchronousConverter.getParentGen().getMvaBase();
+                        : gridFormingConverter!=null?gridFormingConverter.getParentGen().getMvaBase()
+                        : virtualSynchronousConverter!=null?virtualSynchronousConverter.getParentGen().getMvaBase():additionalHost.getParentGen().getMvaBase();
         deviceBaseMva = configuredBase > EPS ? configuredBase : systemBaseMva;
         BaseDStabNetwork<?, ?> network = (BaseDStabNetwork<?, ?>) localBus.getNetwork();
         regulatedBus = data.remoteBus() == 0 ? localBus : network.getDStabBus(busId(data.remoteBus()));
@@ -525,7 +533,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
 
     private Measurement measure(double localP, double localQ, double localV, double localFrequency) {
         if (converter == null && behindImpedanceConverter == null
-                && gridFormingConverter == null && virtualSynchronousConverter == null) {
+                && gridFormingConverter == null && virtualSynchronousConverter == null && additionalHost == null) {
             Complex voltage = regulatedBus == null ? new Complex(localV, 0.0) : regulatedBus.getVoltage();
             double f = regulatedBus == null ? localFrequency : regulatedBus.getFreq();
             return new Measurement(localP, localQ, voltage, Complex.ZERO, f);

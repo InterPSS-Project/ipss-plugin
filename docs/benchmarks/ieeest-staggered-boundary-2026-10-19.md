@@ -2,7 +2,7 @@
 
 ## Implemented, without replacing the controller
 
-The existing opt-in `PsseStaggeredEulerSolver` now binds IEEEST. The failing-before
+The existing opt-in `StaggeredEulerSolver` now binds IEEEST. The failing-before
 test rejects its unsupported controller; after the adapter is added, the same
 GENROU/GENCLS/ESST1A/IEEEST SMIB binds both existing core machines and twenty
 allocated integration coordinates. No substitute generator or duplicate filter
@@ -35,7 +35,7 @@ two-history rule. IEEEST does not silently select this rule when imported.
 Select the solver explicitly before initialization:
 
 ```java
-algorithm.setSolver(new PsseStaggeredEulerSolver(algorithm));
+algorithm.setSolver(new StaggeredEulerSolver(algorithm));
 algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 ```
 

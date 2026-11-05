@@ -17,6 +17,21 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     /** PSS/E/PowerWorld DYR flag: zero selects the lower double-derivative path. */
     public static final int DOUBLE_DERIVATIVE_CONTROL = 0;
 
+    public enum FrequencyDeadbandConvention { HZ_HYSTERESIS, PER_UNIT_SCALED_ERROR }
+    private FrequencyDeadbandConvention frequencyDeadbandConvention=FrequencyDeadbandConvention.HZ_HYSTERESIS;
+    public FrequencyDeadbandConvention getFrequencyDeadbandConvention() { return frequencyDeadbandConvention; }
+    public void setFrequencyDeadbandConvention(FrequencyDeadbandConvention value) { frequencyDeadbandConvention=java.util.Objects.requireNonNull(value); }
+    public enum BacklashConvention { PER_UNIT_GATE, MW_ON_GOVERNOR_BASE }
+    private BacklashConvention backlashConvention = BacklashConvention.MW_ON_GOVERNOR_BASE;
+    public BacklashConvention getBacklashConvention() { return backlashConvention; }
+    public void setBacklashConvention(BacklashConvention value) { backlashConvention = java.util.Objects.requireNonNull(value); }
+    /** Typed bypass and imported zero-time preparation are distinct model contracts. */
+    public enum ZeroDerivativeFilterConvention { BYPASS, FOUR_OUTER_INTERVALS }
+    private ZeroDerivativeFilterConvention zeroDerivativeFilterConvention = ZeroDerivativeFilterConvention.BYPASS;
+    public ZeroDerivativeFilterConvention getZeroDerivativeFilterConvention() { return zeroDerivativeFilterConvention; }
+    public void setZeroDerivativeFilterConvention(ZeroDerivativeFilterConvention value) {
+        zeroDerivativeFilterConvention = java.util.Objects.requireNonNull(value);
+    }
     private int controlFlag = PID_CONTROL;
     private double rgate = 0.05;
     private double relec;
@@ -35,6 +50,10 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     private double db2;
     private final double[] gv = {0.1, 0.25, 0.5, 0.7, 0.85, 1.0};
     private final double[] pgv = {0.0, 0.2, 0.5, 0.75, 0.9, 1.0};
+    private long gateCurveRevision;
+
+    /** Changes only when a gate-curve point is written; numerical gains remain live. */
+    public long getGateCurveRevision() { return gateCurveRevision; }
     private double h0 = 1.0;
     private double qnl;
     private double tw = 1.0;
@@ -78,18 +97,20 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     public double getDb2() { return db2; }
     public void setDb2(double value) { db2 = value; }
     public double getGv(int index) { return gv[index]; }
-    public void setGv(int index, double value) { gv[index] = value; }
+    public void setGv(int index, double value) { gv[index] = value; gateCurveRevision++; }
     public double[] getGv() { return gv.clone(); }
     public void setGv(double[] values) {
         if (values.length != gv.length) throw new IllegalArgumentException("HYG3 requires six GV points");
         System.arraycopy(values, 0, gv, 0, gv.length);
+        gateCurveRevision++;
     }
     public double getPgv(int index) { return pgv[index]; }
-    public void setPgv(int index, double value) { pgv[index] = value; }
+    public void setPgv(int index, double value) { pgv[index] = value; gateCurveRevision++; }
     public double[] getPgv() { return pgv.clone(); }
     public void setPgv(double[] values) {
         if (values.length != pgv.length) throw new IllegalArgumentException("HYG3 requires six PGV points");
         System.arraycopy(values, 0, pgv, 0, pgv.length);
+        gateCurveRevision++;
     }
     public double getH0() { return h0; }
     public void setH0(double value) { h0 = value; }

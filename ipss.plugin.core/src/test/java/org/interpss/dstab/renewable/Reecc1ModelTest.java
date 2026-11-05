@@ -18,7 +18,8 @@ class Reecc1ModelTest {
 
         assertEquals(Map.of(
                 "Voltage Measurement Filter", 1.0,
-                "Real Power Filter", .40,
+                // The power-factor branch is disconnected with PFFLAG=0.
+                "Real Power Filter", 0.0,
                 "Reactive Power PI", 0.0,
                 "Voltage Error PI", .10,
                 "Reactive Current Lag", .10,
@@ -26,6 +27,7 @@ class Reecc1ModelTest {
                 "Battery Energy Output", 0.0), model.getNamedStates());
 
         model.step(1.0, .40, .10, 1.0, 1.0);
+        assertEquals(0.0, model.getNamedStates().get("Real Power Filter"), TOL);
         assertEquals(.04, model.getEnergyOutput(), TOL);
         assertEquals(.56, model.getStateOfCharge(), TOL);
         assertThrows(UnsupportedOperationException.class,

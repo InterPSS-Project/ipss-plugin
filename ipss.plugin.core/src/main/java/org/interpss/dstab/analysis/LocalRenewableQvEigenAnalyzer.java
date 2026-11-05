@@ -53,12 +53,12 @@ public final class LocalRenewableQvEigenAnalyzer {
             throws IpssNumericException {
         Objects.requireNonNull(network, "network");
         List<String> selectedBuses = validateBuses(network, busIds);
-        double[][] coupling = voltageMagnitudeSensitivity(network, selectedBuses);
         List<Device> devices = discoverDevices(network, selectedBuses);
         if (devices.isEmpty()) {
             throw new IllegalArgumentException(
                     "No eligible local-voltage REPC_A/REEC_A/REGC_A devices");
         }
+        double[][] coupling = voltageMagnitudeSensitivity(network, selectedBuses);
         double[][] stateMatrix = stateMatrix(coupling, devices, null, null);
         List<OperatingPointConstraint> constraints = operatingPointConstraints(devices);
         RegionSet regions = limiterRegions(coupling, devices, constraints);
@@ -118,6 +118,9 @@ public final class LocalRenewableQvEigenAnalyzer {
                         || !(gen.getDynamicGenDevice() instanceof Regca1Model converter)) {
                     continue;
                 }
+                if (converter.getEffectiveReactance() > 0.)
+                    throw new IllegalArgumentException("Local current-coordinate Q/V analysis does not support nonzero REGCAU2 Xe: "
+                            + busId + "/" + gen.getId());
                 Reeca1Model reeca = converter.getReeca1Controller();
                 if (reeca == null || reeca.getData().qFlag() != 1
                         || reeca.getData().vFlag() != 1) continue;

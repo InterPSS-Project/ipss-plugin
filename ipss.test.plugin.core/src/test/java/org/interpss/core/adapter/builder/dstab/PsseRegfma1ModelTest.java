@@ -31,6 +31,25 @@ import com.interpss.core.net.OriginalDataFormat;
 public class PsseRegfma1ModelTest extends CorePluginTestSetup {
 
     @Test
+    void frozenCurrentMapIsRepeatableThroughVoltageAndCurrentLimitExcursions() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Regfma1Model model = builder.addRegfma1("Bus1", "1",
+                new Regfma1Data(0, .02, .02, .02, 1.25, 1.2, 0, 1, 0, 1, -1,
+                        .01, .05, .01, .1, 3, 20, 0, 6));
+        assertTrue(model.initStates(model.getDStabBus()));
+        assertTrue(model.supportsNetworkIterationAcceleration());
+        var before = model.getIntegrationStates();
+        Complex original = model.getDStabBus().getVoltage();
+        Complex current = (Complex) model.getOutputObject();
+        for (Complex voltage : new Complex[]{new Complex(.1), new Complex(1.15, .1), original}) {
+            model.getDStabBus().setVoltage(voltage);
+            model.getOutputObject();
+            assertEquals(before, model.getIntegrationStates());
+        }
+        assertEquals(current, model.getOutputObject());
+    }
+
+    @Test
     void directParserMapsTheNineteenParameterPsseRecord(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("regfma1.dyr");

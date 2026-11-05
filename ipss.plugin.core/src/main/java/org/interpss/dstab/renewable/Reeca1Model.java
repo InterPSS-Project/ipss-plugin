@@ -13,7 +13,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
-public final class Reeca1Model implements RenewableElectricalController, ICMLStateProvider, IntegrationStateAccess {
+public final class Reeca1Model implements TwoStepElectricalController, ICMLStateProvider, IntegrationStateAccess {
     /** Native PSS/E retains PFLAG's speed input even when WTTQA1 is connected. */
     public enum WindSpeedConvention { PSSE_GENERATOR_SPEED, WTTQA_POWER_REFERENCE }
     private static final double EPS = 1.0e-9;
@@ -25,11 +25,17 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
             "Measured Voltage", "Measured Active Power", "Active Power Order", "Reactive Current", "Reactive Control Integral", "Voltage Control Integral");
     private final Reeca1Data data;
-    private final Regca1Model converter;
+    private final RenewableConverterHost converter;
     private final boolean nativeRecordConvention;
     private double initializedVoltageBias;
     private Repca1Model plantController;
     private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
+    private boolean twoStepAuxiliaryManaged;
+    /** The enclosing solver must evaluate and integrate the shared upstream group once. */
+    public void setTwoStepAuxiliaryManaged(boolean managed){
+        if(managed&&auxiliaryController==null)throw new IllegalStateException("No auxiliary control to manage");
+        twoStepAuxiliaryManaged=managed;
+    }
     private RepccModel repccController;
     private HplntdCoordinator.Port hybridController;
     private WtgwgoaModel weakGridController;
@@ -84,7 +90,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         this(data, converter, false);
     }
 
-    private Reeca1Model(Reeca1Data data, Regca1Model converter, boolean nativeRecord) {
+    private Reeca1Model(Reeca1Data data, RenewableConverterHost converter, boolean nativeRecord) {
         this.data = java.util.Objects.requireNonNull(data);
         this.converter = converter;
         nativeRecordConvention = nativeRecord;
@@ -93,6 +99,10 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     /** Native calculated-bias rules remain separate from the historical typed input convention. */
     public static Reeca1Model fromNativeRecord(Reeca1Data data, Regca1Model converter) {
+        return new Reeca1Model(data, converter, true);
+    }
+
+    public static Reeca1Model forConverterHost(Reeca1Data data, RenewableConverterHost converter) {
         return new Reeca1Model(data, converter, true);
     }
 
@@ -110,6 +120,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     @Override
     public void initialize(double p, double q, double v) {
+        twoStepAuxiliaryManaged=false;
         stateMonitor.reset();
         twoStep.reset();
         resolveSensedBus();
@@ -403,8 +414,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
 
     /** Refresh upstream algebraic signals without consuming derivative history. */
-    void refreshTwoStep(double p, double q, double v, double frequency) {
-        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
+    public void refreshTwoStep(double p, double q, double v, double frequency) {
+        if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
         p = snapToInitial(p, p0);
         q = snapToInitial(q, q0);
         v = snapToInitial(v, localVoltage0);
@@ -424,7 +435,9 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
      * Endpoint output refreshes occur only after all states have advanced.
      */
     public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
-        if(auxiliaryController!=null)throw new UnsupportedOperationException("Shared auxiliary references require staged modified Euler");
+        if (!Double.isFinite(dt) || dt < 0.)
+            throw new IllegalArgumentException("Two-step duration must be finite and nonnegative");
+        if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
         if (dt <= 0.0) {
             refreshTwoStep(p, q, v, frequency);
             return;
@@ -733,8 +746,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     public boolean isVoltageDip() { return previousDip; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
-    double getTwoStepIpcmd() { return twoStepIpcmd; }
-    double getTwoStepIqcmd() { return twoStepIqcmd; }
+    public double getTwoStepIpcmd() { return twoStepIpcmd; }
+    public double getTwoStepIqcmd() { return twoStepIqcmd; }
 
 
     @Override public java.util.Map<String, Double> getIntegrationStates() {

@@ -115,6 +115,8 @@ public class EndpointAlignedStateMonitorTest {
                 root + "regca_reeca_repca_bus1062_weak.raw", root + "regca_reeca_repca_bus1062.dyr");
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        var solver = new CertifiedWeakGridSolver(algorithm);
+        algorithm.setSolver(solver);
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
@@ -136,6 +138,7 @@ public class EndpointAlignedStateMonitorTest {
             assertTrue(algorithm.solveDEqnStep(true));
             monitor.endStep(algorithm.getSimuTime());
         }
+        solver.assertAccelerationExercised();
         var frames = monitor.frames();
         assertEquals(18,frames.size()); // initial + 15 integrated endpoints + 2 event-pre samples
         assertEquals(.15,frames.get(frames.size()-1).time(),1.e-12);

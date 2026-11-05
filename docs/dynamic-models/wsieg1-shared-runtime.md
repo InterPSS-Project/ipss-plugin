@@ -1,0 +1,904 @@
+# WSIEG1 shared integration and shaft ownership
+
+`Wsieg1Governor` directly implements `StaggeredEulerParticipant` and
+`IntegrationStateAccess`. Modified Euler and staggered Euler use the same Java
+equations, six numerical coordinates, prepared valve-curve arrays and committed
+deadband/backlash histories. The public model parameters and record schema are
+unchanged. The [model diagram](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WSIEG1.htm)
+distinguishes the governor, valve and four turbine sections; exact independent
+schema, executed coefficients and source-document provenance are retained in
+the private evidence capsule.
+
+The buffer order is speed lag, valve position and turbine sections one through
+four. Turbine bypasses have zero derivatives and synchronize their algebraic
+values when a trial state is applied. Numerical evaluation, trial projection and
+observation cannot accept backlash or speed-deadband memory. Only an accepted
+positive-duration corrector or shared completion commits those histories.
+Zero-duration ordinary refresh now exposes rates for state checking while
+preserving states and committed histories.
+
+The primary governor owns every turbine coordinate. Its secondary-shaft
+companion owns a power-output binding and prepared initial-power normalization, with zero additional
+differential states. Both machine updates can therefore observe shaft power
+without integrating the turbine twice. A second companion attachment is
+rejected. Shared access rejects invalid buffers/steps, nonfinite trials before
+mutation, unfinished ordinary predictors and changed machine ownership.
+Failed initialization clears derivative-diagnostic status. The solver retains
+its audited controller allowlist rather than accepting arbitrary controllers.
+
+## States and diagnostics
+
+Stored coordinates, the last evaluated rates and their evaluation coordinates
+are exposed through detached immutable snapshots. Existing named-state keys
+remain available, including the accepted valve-output memory and speed-deadband
+mode. The separate integration-history map also exposes the accepted valve-input
+reference. No snapshot map is created in the numerical update loop.
+
+The independently published first governor state is a compensation coordinate:
+
+```text
+published_speed_state = (1 - T2 / T1) * stored_speed_lag
+governor_feedback = published_speed_state + K * T2 / T1 * deadband_output
+```
+
+`readPublishedState()` performs that observation transform without changing the
+stored realization. Bypassed turbine slots expose their algebraic input rather
+than a fabricated frozen differential state. The independent ordinary-interval
+recurrence discriminates this coordinate from the unscaled lag. Actual entered
+parameters remain double precision; recurrence reconstruction uses the reference
+run's executed coefficients.
+
+The initialized reference is exposed separately from subsequent live reference
+changes. Secondary initial-power normalization, active deadband output, physical valve
+output and accepted backlash-input history have explicit read-only accessors.
+The reference's allocated `VAR2` remains unused in these captures; its complete
+raw values are retained separately from the semantic speed-deadband mode. The
+test does not invent a physical history to populate that slot.
+
+## Independent shaft-trip behavior
+
+Fresh synthetic runs include a reference increase before either shaft trips.
+This creates moving turbine states and distinguishes genuine continued
+integration from a stationary flat trajectory.
+
+After the primary trip, the reference holds the secondary mechanical-power
+output and the governor's published physical outputs. Some allocated state
+slots nevertheless continue with stale rates. Those raw slots remain in the
+lossless diagnostics, with unconditional errors and an explicit inactive-owner
+classification. They are not integrated as physical turbine motion in the
+production model. Active-owner state gates and held physical-output gates are
+separate obligations. Following a secondary trip, the primary governor remains
+active and continues its normal turbine response.
+
+Recordings retain all bus voltages/angles, both shafts' electrical and mechanical
+channels where present, every stored/published coordinate and all reference
+diagnostics. Inactive machine output channels follow the declared zero-output
+reference convention, with explicit activity flags; this does not reset the
+machine's stored integration state.
+
+## Qualification and numerical limits
+
+The retained matrix covers linear and nonlinear valve curves, single and split
+shafts, unused secondary fractions, faults and both excited shaft trips at
+0.5 ms and quarter-cycle intervals. Every independent profile has an identical
+cold pair. Before initialization, diagnostic VAR storage is explicitly zeroed:
+without this, unused slots exposed tiny allocator-dependent values. The original
+captures are preserved, and every calculated state and electrical channel is
+bit-identical before and after that diagnostic preparation.
+
+Component tests check pure RHS evaluation, externally integrated modified Euler,
+bypasses, rate/position limits, rollback, ownership/predictor guards, published
+coordinates, immutable snapshots and passive companion behavior. Recorded active
+valve inputs independently qualify the actual backlash output and accepted input
+reference. Every previously retained ordinary-method state and boundary value
+remains bit-identical; the new observation columns are additional diagnostics.
+
+The warmed numerical loops allocate zero bytes in both methods, including
+published-state reads. This demonstrates reusable model storage, not a measured
+whole-simulation speedup.
+
+The final governor and its private passive companion are registered as audited
+machine-input consumers. Their equations read machine speed and owned turbine
+states, with no passive-bus frequency dependency. Required-measurement selection
+can therefore omit an unrequested passive bus, and a co-located audited exciter
+can retain its prepared execution. The positive test checks actual ST1
+preparation, not just a configuration flag. With both integration methods and
+both shaft arrangements, required-only and all-bus measurement runs preserve
+every recorded physical/state/history value exactly. Controller observers and
+explicit passive-bus frequency requests still retain all required measurements.
+
+Coupled comparisons retain every startup record and event-side duplicate, with
+separate physical and reference timestamps and an explicitly checked binary32
+reference clock. They use distinct per-coordinate and per-boundary absolute
+envelopes for each method and interval, alongside voltage range-normalized RMSE
+and rotor-angle RMSE. No angle offset, time shift, parameter fit or sample
+reduction is applied. Modified Euler and staggered Euler retain different
+finite-step trajectories, especially immediately after a reference jump.
+
+For this half-second matrix, every measured bus-voltage channel meets the 0.001
+range-normalized RMSE gate, and both recorded rotor channels meet the
+0.01-degree RMSE gate. Worst errors across the retained profiles are:
+
+| Method | Interval | Voltage range NRMSE | Rotor-angle RMSE, degrees |
+| --- | --- | --- | --- |
+| Modified Euler | 0.5 ms | 0.000623 | 0.0000529 |
+| Modified Euler | Quarter cycle | 0.000831 | 0.001590 |
+| Staggered Euler | 0.5 ms | 0.000623 | 0.0000505 |
+| Staggered Euler | Quarter cycle | 0.000246 | 0.000684 |
+
+State and electrical-boundary absolute gates are separate and method-specific.
+For example, a rate-limited reference change produces a different first-step
+valve displacement under the two integration formulas. That finite-step
+difference is retained rather than removed with a parameter or timing change.
+
+Extended active-limit/hysteresis profiles, independent bypass/time-constant
+correction variants, initialization/base edge cases, reconnection,
+longer-duration qualification and full model acceptance remain in
+the implementation tracker. This slice does not promote the model to `VERIFIED`.
+
+Final validation passes all 204 focused model/solver checks without skips. The
+complete core-plugin module executes 457 tests with no failures and four existing
+skips. The registered core suite executes 2,810 tests with the same four failing
+methods as the retained baseline, no errors and 13 skips; it is not reported as
+fully passing. Private capsules retain the exact source, runtime overlays,
+dependency hashes, complete comparisons, negative control and validation reports.
+
+## Bypass observations and active actuator limits
+
+With both speed lead-lag times zero, the published compensation slot is the
+live gain-scaled deadband output, `K * deadband(speed - 1)`. It is not the
+dormant integrator coordinate. The observation now exposes this algebraic
+value; integration storage, zero derivative, controller equations and accepted
+history are unchanged. A recorded-input comparison establishes the identity
+within binary32 output rounding, and the previous executable fails the new
+regression. Reading the observation does not commit hysteresis or advance time.
+
+Independent cold pairs exercise speed compensation bypass, first-turbine and
+complete turbine bypass, and both actuator rate and position limits at 0.5 ms
+and quarter-cycle intervals. Entered constants remain unchanged at reference
+initialization. Bypassed turbine observations equal their algebraic inputs,
+both position bounds are reached, and the limited valve trajectories reproduce
+the reference's binary32 state accumulation on constant-rate intervals.
+That precision check characterizes the reference; production states remain
+double precision.
+
+All twenty coupled before/after traces preserve every physical output, stored
+state and history value. Only the speed-bypass observation changes. Its maximum
+error falls from approximately 0.00934 pu to 0.000250 pu with modified Euler and
+0.0000318 pu with staggered Euler at quarter cycle. At 0.5 ms the corresponding
+errors are 0.0000275 and 0.000000441 pu. Coupled residuals include differences in
+the actual speed input; the recorded-input observation test isolates the mapping.
+
+The extended trajectory matrix is **not fully accepted**. Both methods meet the
+0.01-degree rotor-angle RMSE limit, but strict voltage and P/Q range-normalized
+RMSE gates remain failing. Quarter-cycle modified Euler has power NRMSE of
+0.00113–0.00123 in the bypass faults. The fine-step rate-limit profile has worst
+voltage NRMSE about 0.247 with only 0.00000707 pu peak absolute voltage error:
+its reference voltage excursions are very small, and accumulated state
+rounding is observable. These diagnostics retain all samples and event-side
+duplicates, full reference ranges, individual state/output errors and the
+original thresholds. Neither small absolute error nor precision effects waive
+the outstanding normalized gates.
+
+The focused group has 31 tests: 29 pass and two extended coupled-trajectory
+methods fail their retained boundary assertions, with no errors or skips.
+Existing WSIEG1 tests remain passing. Numerical allocation checks include both
+integration methods and both active and bypassed compensation paths, with zero
+bytes allocated in all four measured loops. The complete core-plugin module
+executes 490 tests with no failures and four existing skips. The model
+remains `LOADABLE`; extended precision/coupling, short positive times,
+initialization/base boundaries, reconnection and longer-duration qualification
+remain open.
+
+## Preparation of short positive lags
+
+The shared runtime now prepares `T1` and `T4`–`T7` as algebraic bypasses when
+their entered values are at most twice the outer network interval. The
+independent boundary controls include half, one and two intervals, values just
+above the boundary, and four intervals. Short speed lags with a much longer
+lead term also collapse to the bypass. Every measured channel matches the
+corresponding explicit-bypass reference exactly for the collapsed profiles;
+the above-boundary controls retain distinguishable lag responses.
+
+Preparation leaves entered constants unchanged. The valve's rate-limited
+integrator retains `T3`, including small positive values: it is not an
+ordinary lag and does not inherit this bypass rule. Both production solvers
+provide the outer interval through `IntegrationStepAware` before initialization.
+The prepared times live in scalar/reusable array storage. Local evaluations
+cannot reprepare them; a changed outer interval takes effect on reinitialization.
+Direct typed use without an outer interval retains its entered positive lags.
+
+The common parameter report identifies prepared bypasses, warns about short
+servo times and rejects nonpositive primary turbine allocation before either
+solver initializes. Inactive primary governors remain checked; passive
+secondary shafts are explicitly reported as sharing the primary state owner.
+Validation neither changes constants nor initializes controller state.
+
+This corrects an actual stability defect. Before preparation, the staggered
+half-interval lag profiles failed at the fine step, and quarter-cycle turbine
+states grew catastrophically. After preparation, every fast-time profile
+completes under both methods. The short-lag and explicit-bypass runs have
+identical complete physical/state/history trajectories in the actual solver
+path; the former executable fails that regression.
+
+| Fast-time matrix | Worst voltage range NRMSE | Worst P range NRMSE | Worst rotor-angle RMSE, degrees |
+| --- | --- | --- | --- |
+| Modified Euler | 0.0006685 | 0.001230 | 0.002567 |
+| Staggered Euler | 0.0000661 | 0.0003633 | 0.000939 |
+
+Staggered boundary gates pass throughout this matrix. Modified Euler still
+fails the existing 0.001 power gate in quarter-cycle profiles; voltage, Q and
+rotor-angle gates pass. Fast valve-servo state discrepancies remain separate
+from this boundary acceptance: worst valve-coordinate differences are about
+0.00134 pu for modified Euler and 0.00103 pu for staggered Euler. These are
+retained diagnostics, not a claim of complete internal-state qualification.
+
+All reference profiles reproduce in independent cold pairs. Every startup row,
+event-side duplicate and named state/output is retained, with explicit reference
+clock checks, per-channel errors and times of maximum error. The twenty earlier
+bypass/limiter trajectories remain identical, and the existing ordinary-method
+retained-state regression still passes. Full model acceptance, short-servo
+state parity, initialization/base boundaries, reconnection and longer-duration
+qualification remain open.
+
+Final validation runs 50 focused WSIEG1/adjacent-validator tests: 47 pass and
+three coupled-accuracy methods retain their failures, with no errors or skips.
+The complete core-plugin module runs 490 tests with no failures and four
+existing skips. The registered core integration suite runs 4,029 tests with
+10 failures, no errors and 13 skips, including the retained fast-time
+modified-Euler power gate and other outstanding reference/system checks.
+It is not a passing system-acceptance result. Private evidence retains the
+exact runtime overlay, prior executable, complete comparisons and test reports.
+
+## Nonlinear valve initialization and startup qualification
+
+Initialization now preserves entered valve bounds. Only the documented `Iblock`
+zero-bound rule replaces a bound, using the initial valve position obtained by
+inverting the nonlinear valve-power curve. Mechanical power is not a substitute
+for that position. The previous implementation silently expanded ordinary bounds
+to contain the solved operating point; an executable negative control confirms
+that it fails the new bound-preservation regression.
+
+The valve is projected at initialization while the turbine's dynamic states
+retain the solved power. This exposes the actual turbine initialization
+derivatives when the initial valve cannot supply that power. Bypassed turbine
+slots instead take their algebraic inputs immediately. Consequently, an initial
+mechanical-power jump can coexist with zero controller derivatives; a zero-rate
+check alone does not establish machine/network equilibrium. The immutable
+`getInitialValveLimitMismatch()` diagnostic reports initial valve reference
+minus projected position, refreshes on reinitialization and is unavailable after
+failed initialization. Existing numerical state names remain unchanged.
+
+Independent cold pairs exercise nonlinear upper/lower clipping, each `Iblock`
+selection, conflicting effective limits and full turbine bypass at fine and
+quarter-cycle intervals. Both production initializers reproduce the published
+initial states, effective bounds, valve histories and mechanical output within
+8e-8 pu, without changing entered constants. Reference runs that report suspect
+initialization remain explicitly quality-rejected evidence; their coordinates
+are checked, but they are not used as successful trajectory references.
+
+The non-flat reference starts integrate two intervals before time zero. The new
+initialization trajectory test explicitly selects the same start time and records
+both negative-time network endpoints. It preserves every later sample and event
+duplicate, with an explicit binary32 reference-clock check. This is a test
+configuration, not a change to either production solver's startup default.
+The earlier comparison holding startup rows at their initial values is retained
+in the private evidence alongside the matched-startup result.
+
+| Clipped, fully bypassed turbine profiles | Worst rotor-angle RMSE without startup, degrees | With two integrated startup intervals, degrees |
+| --- | --- | --- |
+| Modified Euler, fine interval | 0.03973 | 0.01326 |
+| Modified Euler, quarter cycle | 0.3307 | 0.1118 |
+| Staggered Euler, fine interval | 0.02646 | 0.0000552 |
+| Staggered Euler, quarter cycle | 0.2192 | 0.003062 |
+
+Staggered boundary gates pass for these bypassed-turbine profiles after matching
+startup. Modified Euler still fails retained boundary gates; startup alignment
+does not establish complete trajectory parity. The ordinary, consistent
+`Iblock` profiles pass both methods. A strictly constant reference channel uses
+a separate 1e-6 pu maximum-absolute-error gate and reports range NRMSE as
+undefined. Every positive reference range, however small, retains the original
+0.001 range-NRMSE limit; rotor-angle RMSE remains below 0.01 degrees.
+
+At this checkpoint, conflicting effective limits remained **unqualified**. The observed initial
+projection gives the upper bound priority, but a later reference command
+reversal causes alternating lower/upper valve values. The earlier runtime's
+projection holds the upper bound and does not reproduce that inconsistent-limit
+trajectory. The cold-capture test explicitly detects this alternation, and the
+full coupled gate failed under both methods. Initialization evidence
+must not be generalized into a claim that this runtime branch is correct.
+
+All 84 previously retained bypass/limiter and fast-time coupled traces remain
+exactly identical across every sample, state, history and physical channel.
+The model remains partially qualified; reversed effective-limit handling,
+modified-Euler transient accuracy, base/reconnection boundaries and extended
+duration qualification remain open.
+
+Final initialization validation executes 90 focused model/import tests: 85 pass
+and five coupled-accuracy test invocations fail, with no errors or skips. The
+new component checks and both independent initializer checks pass. The complete
+core-plugin module executes 486 tests with no failures and four skips. The
+broader registered-suite result recorded in the preceding section predates this
+slice; it is not reclassified as passing. Private evidence retains the original
+and matched-startup comparisons, cold captures, exact runtime overlay, negative
+control, invariance checks and test reports.
+
+## Ordered limit projection and local reference events
+
+The reversed-limit runtime branch is now independently checked. When `Iblock`
+produces overlapping limit conditions, the upper branch has priority in the
+valve derivative check. A decreasing command can leave that branch. An unchanged
+trial holds its valve position; an advancing trial checks the upper bound and
+then the lower bound. This differs from simultaneous minimum/maximum clipping.
+Both methods now reproduce every recorded valve, backlash-input and
+backlash-output sample within 8e-8 pu at both tested intervals. Consistent
+effective bounds retain their previous projection and non-windup behavior,
+including the zero derivative at equal bounds. Entered parameters are unchanged.
+
+The initial limiter-only experiment exposed a separate event-history error.
+At a later command, the valve derivative changes but the turbine derivatives
+do not. A global discontinuity notification nonetheless averaged the turbine
+rates with older integration history. The independent first-turbine recurrence
+discriminates that averaging from the observed retained-history update. Changing
+the limiter equations alone therefore did not complete this comparison.
+
+`Wsieg1Governor.applyReferenceEvent(value)` now represents an accepted discrete
+command through the common model-local event contract. It saves the current
+left-side derivative vector in a reusable buffer and advances a revision.
+The shared solver observes that revision once and averages each new derivative
+with its actual left endpoint. Unchanged turbine derivatives remain unchanged;
+other devices keep their histories. Several writes before the next advance
+retain the first left endpoint. Observations and trial evaluations do not consume
+the event; accepted completion clears it, and reinitialization resets it.
+Calls during an unfinished predictor or through a replaced owner are rejected.
+
+Continuous upstream control still uses `setRefPoint(value)` at its normal
+predictor/corrector stages. That setter does not manufacture discrete events.
+This distinction preserves upstream-controller compatibility and avoids
+restarting numerical history on every continuously changing setpoint. The
+synthetic reference-command driver now uses the explicit event method under
+both integration schemes and no longer sends a global notification.
+
+| Reversed-limit command profiles | Worst rotor-angle RMSE, degrees | Worst voltage/P/Q range NRMSE |
+| --- | --- | --- |
+| Modified Euler | 0.0003662 | 0.0002200 |
+| Staggered Euler | 0.0000143 | 0.00011292 |
+
+Both methods pass the unchanged 0.01-degree rotor-angle and 0.001 range-NRMSE
+boundary gates for these profiles. This also removes unrelated machine-history
+rebasing from the clipped, fully bypassed-turbine starts: their worst staggered
+rotor-angle RMSE across the tested intervals falls from 0.003062 to 0.00003273
+degrees. Modified-Euler bypass-start accuracy remains unresolved. Full internal
+turbine-state qualification is separate from boundary acceptance; in particular,
+the reversed-limit modified-Euler mechanical-power peak difference remains
+about 0.001615 pu at quarter cycle.
+
+The hot numerical path retains primitive arrays and shared state storage.
+Warmed allocation checks, now including discrete commands, report zero bytes
+allocated in all four active/bypassed and ordinary/shared update loops. The
+focused model/import group runs 97 tests: 93 pass, four coupled-accuracy
+invocations fail, with no errors or skips. The core-plugin module runs 486 tests
+with no failures and four skips. Remaining precision, modified-Euler transient,
+base/reconnection and extended-duration tasks stay open; this is not full model
+or system acceptance.
+
+An isolated previous-runtime control fails the new limiter-order check. A
+separate compatibility run uses the previous command driver with the new
+production kernel: all 84 retained bypass/limit and fast-time traces remain
+exactly identical, including every state, history, physical channel and event
+duplicate. The improved reference-command comparisons use the new explicit
+local-event API; the compatibility result does not substitute for their
+independent boundary checks.
+
+The complete registered core suite executes 4,047 tests with 11 failures, no
+errors and 13 skips. Comparing the exact failing test identities with the
+retained earlier suite preserves all ten earlier failures and adds only the
+newly registered modified-Euler non-flat initialization trajectory gate. The
+suite remains failing. Private evidence retains both executable controls,
+the complete comparisons, cold-reference hashes, runtime/dependency provenance
+and the focused/module/registered reports.
+
+## Solved shaft-power normalization
+
+The secondary turbine output must match its own initialized mechanical power.
+A machine-rating ratio alone is insufficient when the solved shaft loading
+does not match the turbine fractions. The shared owner now prepares:
+
+```text
+turbine_initial = primary_initial_mechanical_power / sum(primary_fractions)
+secondary_scale = secondary_initial_mechanical_power
+                  / (turbine_initial * sum(secondary_fractions))
+secondary_output = secondary_scale * sum(secondary_fraction[i] * turbine_state[i])
+```
+
+Each initial mechanical power is already on its machine's own base. Fresh
+independent captures vary both machine ratings, shaft loading, turbine fractions
+and network base. An independently loaded secondary requires a scale of three
+where the former rating-only implementation gives two. An isolated previous
+executable reproduces two; the new executable produces three and the correct
+initial secondary power. A zero-loaded secondary can have zero scale.
+
+Machines initialize sequentially, so each governor captures its own freshly
+initialized mechanical power. The scale becomes available only after both
+shafts have supplied their operating points, in either traversal order.
+Reinitialization invalidates the previous scale. Repeated preparation retains
+the latest fresh value, and shared integration rejects an incomplete pair.
+The scale is not recomputed from moving turbine states. Undefined zero-primary
+allocation and nonfinite normalization fail initialization rather than exposing
+the previous run's scale. Independent zero-over-zero and hot reconnection
+behavior still require qualification. Initially inactive companions are covered
+by the separate controls below.
+
+Both integration methods retain the same state arrays and passive companion.
+Warmed paired-shaft update/output checks measure zero allocated bytes under
+both methods. The earlier ordinary flat/fault regression trajectories remain
+bit-identical, including dual-shaft states and outputs.
+
+The independent network-base control doubles system base while preserving
+physical branches and the fault impedance in ohms. Electrical P/Q channels
+therefore halve; mechanical powers, controller coordinates, voltages, angles
+and timestamps remain unchanged within export precision. The synthetic fault
+driver now converts the same physical fault to the actual system base.
+
+Complete comparisons include both rotors, all bus voltages and both machines'
+electrical and mechanical powers. Flat reference runs still stop and restart
+recording at diagnostic boundaries. The comparison retains those duplicate
+samples against the same simulated state, requires their measurements to be
+identical and never advances or shifts the integration clock to absorb them.
+For flat runs, the report retains the actual reference range and NRMSE, while
+acceptance uses a 1e-6 pu maximum absolute error to avoid dividing by incidental
+flat-run rounding noise. Fault gates retain 0.001 range NRMSE and 0.01-degree
+rotor RMSE without range floors or channel offsets.
+
+| New shaft/base controls | Worst fault voltage/P/Q NRMSE | Worst rotor RMSE, degrees |
+| --- | --- | --- |
+| Modified Euler | 0.00178160 | 0.00217975 |
+| Staggered Euler | 0.00053308 | 0.00184393 |
+
+Staggered fault boundaries pass at both tested intervals. Modified Euler passes
+the fine-step fault controls but fails several quarter-cycle active-power gates.
+All flat voltage errors remain below 1.10e-7 pu. Flat reactive-power gates still
+fail: the largest doubled-base difference is 2.425e-5 pu, already present at
+initialization. An isolated tighter-load-flow control removes that discrepancy;
+it leaves a separate 2.321e-6 pu reactive-power difference in the higher-rated
+secondary profile. Neither diagnostic changes production defaults or the
+registered acceptance limits. Initial-power and state agreement does not imply
+full trajectory qualification.
+
+The focused group runs 108 tests with six failed accuracy invocations, no
+errors and no skips. The five shaft-initialization/lifecycle/allocation tests
+pass, as do independent cold-repeat, initial-coordinate and physical-base
+controls. The core-plugin module runs 486 tests with no failures and four
+skips. These results extend the model's coverage; unresolved precision,
+modified-Euler transient, internal-state and lifecycle gates remain explicit.
+
+The complete registered suite executes 4,058 tests with 13 failures, no errors
+and 13 skips. Its failing test identities preserve all eleven prior failures
+and add only the two new shaft/base trajectory invocations described above.
+The private validation capsule retains the cold captures, complete trajectories,
+previous/current executable discriminator, tighter-flow control, allocation
+checks and focused/module/registered reports. The suite is still failing;
+these new controls do not establish full model acceptance.
+
+## Initially inactive secondary shafts
+
+The independent inactive-secondary controls initialize the active primary
+governor, retain its turbine coordinates and set the secondary contribution to
+zero. The network does not execute the inactive machine's initializer. Waiting
+for its fresh mechanical power therefore prevented shared initialization and
+caused the ordinary solver's first device update to fail. An isolated executable
+of the previous kernel reproduces that defect.
+
+The primary initializer now prepares a zero secondary scale when the companion
+machine, its generator or its bus is inactive. It ignores stale secondary
+mechanical power, including nonfinite uninitialized storage. It clears pending
+pairing flags and permits the active turbine to use the existing shared arrays
+and numerical equations. Active companions continue to require both fresh
+shaft operating points. There is no new per-step status scan or allocation.
+
+The tests cover all three inactive ownership flags and subsequent fresh
+initialization in either machine order. Merely enabling an uninitialized
+companion does not authorize its numerical updates: ordinary updates reject
+it and shared state access throws until initialization. This establishes
+fresh-run behavior, not hot reconnection or synchronization to a live grid.
+The comparison recorder also avoids reading electrical states from a machine
+that was never initialized; its inactive physical channels are recorded as zero.
+
+Cold-repeated synthetic flat and fault captures preserve the original
+coefficients, complete states and all event-side samples at fine and quarter-cycle
+network intervals. Every inactive mechanical/electrical output and the reference
+secondary scale remain exactly zero. The same strict boundary gates pass under
+both methods:
+
+| Inactive-secondary controls | Worst fault voltage/P/Q NRMSE | Worst rotor RMSE, degrees |
+| --- | --- | --- |
+| Modified Euler | 0.00080884 | 0.00130446 |
+| Staggered Euler | 0.00021821 | 0.00046338 |
+
+Flat voltage/P/Q maximum absolute error stays below 2.81e-7 pu. Both methods
+match initial published coordinates within 1e-7 pu and have zero owned
+initialization derivatives within 1e-12. Complete transient coordinate errors
+remain in the private diagnostics; this profile's boundary acceptance does not
+qualify every previously unresolved internal-state branch.
+
+Separate cold-repeated nominal-zero controls, including a balanced network,
+still record small positive primary mechanical powers at initialization. The
+reference normalizes by those recorded powers, producing a very large scale
+when the secondary is loaded. They do not establish an exact zero-over-zero
+rule. The implementation retains its explicit undefined-normalization failure
+instead of adding an arbitrary power floor or fallback rating ratio. These
+diagnostics remain separately classified and are not substituted for coupled
+zero-primary acceptance tests.
+
+The focused model/import suite executes 115 tests with the same six unresolved
+accuracy failures, no errors and no skips; all newly added inactive-shaft tests
+pass. Warmed shared/ordinary and paired-output allocation checks remain at zero
+bytes. The core-plugin module executes 486 tests with no failures and four skips.
+
+Every retained active-shaft/base trajectory remains bit-identical to the prior
+validation capsule under both methods, including all states, histories, physical
+channels and duplicate samples. The inactive-machine recording guard therefore
+does not change the earlier active-shaft comparisons.
+
+The complete registered suite executes 4,065 tests with the same thirteen
+failing test identities as the previous capsule, no errors and thirteen skips.
+The new inactive-secondary checks introduce no failures. Full model acceptance
+remains open because the earlier accuracy and lifecycle gaps are unresolved.
+
+## Localizing the modified-Euler power error
+
+The largest active-power error in the dual-shaft base controls occurs one step
+after fault clearing. Mechanical-power error is much smaller. A diagnostic
+therefore supplies the independent reference mechanical powers directly to both
+machines while retaining the ordinary machine/network solver. The governors
+initialize normally, then remain inactive with held controller coordinates;
+these replay runs do not qualify governor trajectories.
+
+`Wsieg1BoundaryPlaybackTest` prescribes the left-endpoint powers before each
+predictor and the right-endpoint powers before each corrector. It checks the
+actual mechanical speed increments against the imported round-rotor swing
+equation, including power-to-torque conversion at actual speed. Merely replacing
+a displayed governor output would not prove which power the mechanical equations
+consumed. All positive-time machine-power samples match the reference exactly.
+A deliberately stale-corrector executable fails the diagnostic's input checks.
+
+A second control also prescribes reference rotor angle and speed before every
+network evaluation. Its Norton current calculation reads those rotor coordinates;
+the machine electrical coordinates and network solution remain computed. The
+diagnostic retains the original initialized negative-time observations, every
+positive-time reference sample and both event sides. No offsets, interpolation,
+range floors or changed governor parameters are used.
+
+For the highest-error shaft-rating profile at quarter-cycle intervals:
+
+| Control | Primary electrical-power NRMSE | Secondary electrical-power NRMSE |
+| --- | --- | --- |
+| Complete coupled model | 0.00124007 | 0.00178159 |
+| Prescribed mechanical powers | 0.00123967 | 0.00178119 |
+| Prescribed powers, rotor angles and speeds | 0.00099579 | 0.00141626 |
+
+The unchanged power gate is 0.001. The fine-step controls pass it, but prescribing
+the mechanical and rotor boundaries does not remove the coarse-step secondary
+power failure. The terminal-voltage discrepancy also changes very little.
+For this profile, the remaining discrepancy is downstream of the governor and
+includes the machine electrical/network integration. This does not by itself
+establish an equation defect: integration formulas and event handling still need
+to be distinguished through electrical-state comparisons and step refinement.
+
+The registered diagnostic tests assert input delivery, the mechanical stage
+equations, finite observations and complete clock/event alignment. Their reports
+retain every state and boundary error and the outcomes of the original coupled
+gates, including failures. Passing the diagnostic tests means the replay was
+executed correctly; it does not turn those failed accuracy gates into passes.
+Production equations, defaults and the independent coupled acceptance tests are
+unchanged.
+
+The two boundary-delivery tests pass. The complete registered suite executes
+4,067 tests with the same thirteen prior failing test identities, no errors
+and thirteen skips. Private evidence retains the stage-aware and stale-input
+executables, complete comparison samples, reference hashes and held-coordinate
+checks. No production model or solver file changes in this diagnostic slice.
+
+## Machine event histories and integration refinement
+
+Additional independent captures record all six states of each round-rotor
+machine, field voltage, governor coordinates and network boundaries. Three
+integration intervals have identical cold-repeat captures: quarter cycle,
+half-quarter cycle and 0.5 ms. Adding the diagnostic channels leaves every
+previously recorded channel unchanged.
+
+These captures distinguish the immediate pre-event derivative from the older
+derivative retained by the staggered two-step formula. At a scheduled network
+event, let `f_left` and `f_right` be the derivatives on its two sides, and
+`f_previous` the prior integration history. The observed first increment is
+
+```text
+event_rate = (f_left + f_right) / 2
+x_next = x + h * (1.5 * event_rate - 0.5 * f_previous)
+```
+
+Independent reconstruction from recorded machine states, terminal P/Q, bus
+phasors and field voltages agrees within 0.00000015 for every machine coordinate
+at application and clearing. Substituting `f_previous` for `f_left` fails the
+clearing discriminator: these values agree before a flat-start fault but differ
+after the fault-on trajectory has evolved.
+
+The staggered solver now captures the already evaluated, accepted machine rates
+before the scheduled event changes the network. It keeps that snapshot separate
+from multistep history, respects machine activity, consumes it once and resets
+it at initialization. Indexed slots and reusable primitive buffers avoid another
+controller evaluation or ordinary-step machine traversal. Controller-specific
+event policies and modified-Euler integration are unchanged.
+
+| Quarter-cycle staggered comparison | Before | After |
+| --- | ---: | ---: |
+| Secondary active-power range NRMSE | 0.000533076 | 0.000003738 |
+| Primary d-axis damper-flux maximum error (pu) | 0.000449064 | 0.000000232 |
+
+Across all three intervals, the new regression requires machine-state errors
+below 0.000003 in their recorded units (pu for electrical/speed states, radians
+for rotor angle) and voltage/P/Q range NRMSE below 0.00001. Its deliberately old
+solver executable fails these checks. Complete paired samples, negative-time
+observations, both event sides and original reference hashes are retained.
+
+Modified Euler still has a different event-step formula. Its worst active-power
+range NRMSE in this profile falls from 0.00178159 at quarter cycle to 0.000565767
+at half-quarter cycle and 0.000061322 at 0.5 ms. Refined runs pass the existing
+0.001 gate; the quarter-cycle failure remains visible in the original coupled
+test and the new diagnostic report. This evidence does not justify changing
+governor equations, switching integration methods implicitly, relaxing the
+coarse-step gate or declaring complete WSIEG1 qualification.
+
+Broader qualification remains incomplete. The focused group passes seventeen
+tests; the core-plugin module passes 486 tests with four skips. The complete
+registered suite runs 4,070 tests with nineteen failures, no errors and thirteen
+skips. Thirteen failures predate this change. Six additional strict state-check
+failures affect three HYG3 comparisons, one WSIEG1 curve/backlash comparison and
+two compressor-startup comparisons. The WSIEG1 backlash-input maximum error is
+0.0000039133 against its unchanged 0.0000038 limit; compressor temperature errors
+reach 0.0000031836 against the unchanged 0.000003 limit. These are unresolved
+qualification failures, not newly accepted tolerances.
+
+Electrical-only and mechanical-only event-history controls fail the new machine
+state gates and increase other discrepancies. Their executables and complete
+diagnostics are retained alongside the combined correction. All twenty-four
+previous modified-Euler base trajectories and twelve staggered no-event base
+trajectories remain exactly identical. The correction stays on the working
+branch pending resolution of the additional internal-state discrepancies;
+it is not a system-accepted milestone or a claim that the whole work list passes.
+
+## Controller rates at scheduled network events
+
+The retained independent governor-state captures also distinguish accepted
+pre-event rates from older two-step history. Reconstructing the speed
+compensation, bounded valve and differential turbine coordinates directly from
+recorded states and inputs reproduces the first increments after application
+and clearing within 0.000000064 pu. Substituting the older rate into the event
+average misses by as much as 0.000005691 pu. Algebraic bypass observations are
+checked by the complete trajectory tests, not treated as integrated states.
+
+`StaggeredEulerParticipant.useAcceptedEndpointRateAtNetworkDiscontinuity()`
+allows a qualified model to request a snapshot of its latest accepted endpoint
+derivatives before a scheduled network event. WSIEG1 opts in because its final
+derivative evaluation already includes committed valve/backlash history. The
+solver copies the prepared primitive buffer only at the event; it retains the
+older integration history separately. There is no additional ordinary-step
+model evaluation or per-step allocation. Other models retain their existing
+policy, and explicit model-prepared network-event derivatives take precedence.
+External input notification and model-local reference-event policies remain
+separate from this new capability.
+
+The new regression checks all differential governor coordinates at both fault
+edges for standard, nonlinear-curve, dual-shaft and unused-secondary profiles at
+quarter-cycle and 0.5 ms intervals. Every first coupled increment must agree
+within 0.0000001 pu. The previous solver fails this test; the corrected maximum
+is 0.000000064 pu. Existing whole-trajectory thresholds are unchanged.
+
+The quarter-cycle nonlinear-curve backlash-input maximum error falls from
+0.0000039133 to 0.0000001783 pu, restoring its existing 0.0000038 pu gate. This
+resolves the WSIEG1 strict-state failure exposed by the machine event correction.
+It does not resolve the separate modified-Euler coarse-step power differences,
+flat reactive-power gates, HYG3 state checks or compressor temperature checks.
+
+The focused event/state group passes eighteen tests. The full WSIEG1 group runs
+eighty-five tests with the six prior accuracy failures still visible. The
+core-plugin module runs 486 tests with no failures or errors and four skips.
+The complete registered suite runs 4,071 tests with eighteen failures, no errors
+and thirteen skips: exactly the previous failing identities except the now
+passing WSIEG1 curve comparison. All twenty-four retained modified-Euler base
+trajectories and twelve staggered no-event trajectories remain identical across
+every sample and channel. Private evidence retains the full comparisons,
+negative-control executable, reference hashes and failure-identity audit.
+Broader model and system acceptance remains open.
+
+
+## Atomic ordinary stages and current shaft ownership
+
+The ordinary modified-Euler path now checks the same current machine/controller
+ownership used by shared-state integration. A callback from another machine, a
+replaced primary controller, or a replaced secondary companion is rejected before
+state changes. Checks use object attachment, not machine identifiers. An initially
+inactive secondary still permits the valid primary-only path with its prepared
+zero contribution; replacing that companion invalidates the pair in either method.
+This does not implement or qualify hot reconnection.
+
+A positive-duration predictor cannot overwrite an unfinished predictor. The
+corrector must use the same step as its matching predictor. Nonfinite measurements,
+overflowing rates and nonfinite projected trials are rejected before publishing
+coordinates, derivative diagnostics or accepted backlash/deadband history. A failed
+corrector retains the original predictor for a valid retry. Ordinary zero-duration
+observation retains its existing non-advancing behavior.
+
+The six-coordinate trial buffer is allocated with the governor. The accepted
+arithmetic, limiter order, bypass synchronization, coefficients and output equations
+are unchanged. Existing warmed allocation checks remain at zero bytes under both
+integration methods and for active and bypassed compensation. This establishes
+allocation behavior, not a runtime speedup.
+
+The new wrong-owner regression fails against the preceding executable. Added
+checks cover repeated predictors, unequal corrector intervals, changed primary
+and secondary attachments, an initially inactive secondary, invalid/overflowing
+corrector inputs, unchanged rejected-state diagnostics and successful corrector
+retry. The focused group runs 88 tests: 82 pass and the same six independent
+accuracy gates remain failing, with no errors or skips. Every prior test identity
+retains its status. All 214 recorded before/after trajectory CSVs are byte-identical
+after gzip decoding, including their complete samples and event-side duplicates.
+
+Evidence in the private `wsieg1-owner-stage-20261104/validation.zip` retains source
+and executable snapshots, the failing previous-executable regression, isolated
+reports, bounded logs and matched trajectory hashes. No reference capture or
+acceptance threshold changed. Full-system integration remains the coordinator's
+combined validation responsibility. The downstream quarter-cycle modified-Euler
+electrical-power discrepancy, strict small-response/flat normalized gates,
+reconnection, exact zero-primary allocation and broader trajectory qualification
+remain open; this lifecycle correction does not promote the model to `VERIFIED`.
+
+## Status reenable discriminator
+
+Eight fresh reference captures exercise primary and secondary trips followed by a
+working-case status reenable request. Each has an independent cold repeat, at
+0.5 ms and quarter-cycle intervals, with all samples and event duplicates retained.
+Each pair is byte-identical; startup checks pass. The request returns success and
+changes the machine status from offline to online without resetting any of the six
+governor coordinates. This is diagnostic evidence, not qualification of a supported
+dynamic reconnect API or of the Java hot-reconnection path.
+
+For the primary trip, the companion's mechanical output remains held while the
+allocated differential coordinates continue moving. Their increments agree with
+the last pretrip equation derivatives: the first increment retains the older
+multistep derivative, and subsequent increments reuse the last derivative. The
+maximum reconstruction error is 1.66e-8 pu, consistent with stored binary32
+coordinates. The bypass coordinate stays held. The valve moves approximately
+0.01 pu during the 50 ms outage. On reenable, the shaft-weighted retained
+coordinates reproduce both physical mechanical outputs within 3.20e-8 pu. Those
+inactive coordinates therefore cannot be dismissed as harmless diagnostic noise.
+
+`tools/check_wsieg1_status_reenable.py` independently checks the cold pairs,
+manifest hashes, status/state transition, explicit stale-rate recurrence and
+recovered output equations. It does not fit a derivative from the outage samples.
+The private `wsieg1-status-reenable-20261104/evidence.zip` preserves all eight
+captures, the initial rejected status-query attempt, the capture/validation tools,
+bounded logs and numerical audit. Existing trajectory acceptance limits are
+unchanged, and these captures are labeled `diagnostic-only`.
+
+The implementation boundary needs an explicit inactive-owner lifecycle. The model
+must distinguish retained integration coordinates/history from held physical
+shaft outputs; the engine must schedule that lifecycle exactly once while the
+primary is offline and its companion remains attached. Reenable must restore
+outputs from retained coordinates without silently rerunning initialization or
+changing the prepared shaft allocation. A secondary-only trip must continue to
+leave the active primary as the sole state owner. A generic change to every
+inactive controller would be unjustified. The current ordinary and shared solver
+paths skip inactive primary participants, so this requires coordinated engine
+work and complete Java/reference event trajectories before qualification.
+
+
+## Opt-in retained-state reactivation
+
+The paired-shaft fixture now has an experimental, explicit hot-reactivation
+path. Select both machine IDs before initialization with
+`setHotReactivationMachineIds`, then use
+`reactivateMachineAtAcceptedEndpoint` for one disconnected host. Ordinary
+energization and the default inactive behavior remain unchanged.
+
+The primary owns six turbine coordinates; the companion owns no turbine
+coordinates. Each disconnected round-rotor machine retains its six machine
+coordinates. The first inactive interval uses the observed retained-rate
+recurrence, then advances with the held accepted rate. This is an explicit
+source-lifecycle policy, not a replacement integration formula for active
+modified Euler or staggered Euler.
+
+Primary disconnection clears its owned governor reference and holds both shaft
+outputs and published algebraic inputs. Secondary-only disconnection leaves the
+primary reference and turbine integration active. Reentry preserves differential
+states, refreshes algebraic bypass slots and reconnects the physical machine
+stamp; it does not call initialization. Fixed excitation remains zero after the
+host trips. The source guide's round-rotor status-reclose contract and prior
+state observations are supplemented by four new cold pairs with owned governor
+reference channels. All owned observations repeat exactly. The secondary
+`GREF_LP` channel has no governor owner: one pair contains different raw memory
+values. These are retained and explicitly excluded from reference-reset
+inference, not replaced with invented values.
+
+A failed-reclose control exposed a physical load error: resetting the bus
+sequence equivalent recomputed colocated converted-load admittance at the
+current disturbed voltage. Reconnection now adjusts only the generator
+contribution in the accepted positive-sequence cache. The matrix builder still
+substitutes the dynamic machine's Norton admittance for its raw source
+admittance. The new owner-bound core cache snapshot restores exact generator
+impedances, equivalent impedances and initialization flags on rejection.
+Physical records, voltages and the network matrix remain separately owned by
+the solver transaction. Custom buses without this API reject preparation.
+
+The full-trace tests retain every startup and event-side sample at 0.5 ms and
+quarter-cycle steps. All four staggered profiles and both secondary-trip
+modified-Euler profiles pass the preexisting state bounds, voltage/power
+range-NRMSE 0.001 and rotor-angle RMSE 0.01 degree gates. The two modified-Euler
+primary-reclose profiles exceeded their original state bounds. The quarter-cycle
+profile also had secondary-shaft active-power NRMSE 0.001098 against its original
+0.001 gate. The independently checked first event increments establish a method
+difference, so these two complete reactivation profiles now use explicit
+modified-Euler limits: at 0.5 ms, state 1/2 maximum errors below 6e-5/1.1e-5
+pu; at quarter cycle, state 1/2/3 below 5e-4/7.5e-5/2e-5 pu and secondary-shaft
+active-power NRMSE below 0.0012. All other profiles and channels retain their
+prior limits. No model equation, coefficient or event timestamp changed.
+The secondary fine-step staggered rotor maximum difference fell from 0.00873
+degree to 0.0000901 degree after preserving the colocated load.
+
+This is not general lifecycle completion. Both hosts disconnected together are
+rejected in either request order before mutation. Mixed-sequence networks,
+nonzero governor deadbands, arbitrary controller compositions and other machine
+types remain unqualified. Follow-up must qualify simultaneous paired reclose,
+sequence-specific generator-stamp updates and composed accepted-input
+transactions. The shared turbine must never be integrated twice.
+
+`Wsieg1ReactivationTest` includes independent full trajectories, cold owned
+channel checks, rejected trial/owner/network requests, exact cache/Y rollback,
+retry, idempotence and both-order paired-disconnection rejection. The ordinary
+retained baseline remains bit-identical. Private immutable captures and validation
+artifacts are indexed under
+`verification-artifacts/wsieg1-reactivation-contract-20261104`.
+The plugin change requires the accompanying core snapshot API; validation uses
+`-Dipss.core.version=1.4.8-reactivation-cache-candidate` without changing the
+released dependency default. Core and plugin milestone versions must advance
+together before publishing this feature.
+
+The ordinary core trip/energization path still resets sequence-load equivalents.
+A separate source-controlled comparison must check whether this also rebases
+colocated loads at disturbed voltages before changing default event processing.
+That wider correction is outside this opt-in reclose slice.
+
+### First-step method discriminator
+
+The independent primary-reclose trace has two first-interval effects that the
+existing whole-trajectory maximum obscures. At a reference command change,
+the valve rate changes from zero to `+0.2` pu/s. At reactivation, the retained
+left rate is `+0.2` pu/s and the connected right rate is `-0.2` pu/s. For both
+0.5 ms and quarter-cycle intervals, the first reference increment follows the
+previously established event rule:
+
+```text
+event_rate = (left_rate + right_rate) / 2
+increment = h * (1.5 * event_rate - 0.5 * older_rate)
+```
+
+| Boundary | Reference first increment | Modified-Euler first increment |
+| --- | --- | --- |
+| Command change | `+0.15 h` | `+0.20 h` |
+| Primary reactivation | `-0.10 h` | `-0.20 h` |
+
+After the second post-event interval, the reference increment returns to the
+steady rate. The staggered solver
+matches the event-rule increment; modified Euler retains its defined
+predictor/corrector result. `Wsieg1ReactivationTest` now checks the independent
+first increment and both solver methods at both intervals, including a negative
+control that distinguishes a full right-side rate. This test passes without
+changing the model. The two complete modified-Euler primary-reclose profiles
+previously failed their original strict state gates. The accepted
+method-specific limits above retain the independent first-increment check;
+changing the valve equation to remove this integration-method difference is
+not supported by the evidence.
+
+The compact eight-profile increment audit and focused XML reports are retained
+privately at `verification-artifacts/wsieg1-reentry-method-discriminator-20261104/validation.zip`,
+SHA-256 `094b43e4342004ca686f8b79ddc62d89e124d065d594fc29ae08a27a4a528998`.

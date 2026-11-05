@@ -31,6 +31,9 @@ public class Pss2aWashoutBlock extends WashoutControlBlock implements
         return getT() <= EPS;
     }
 
+    /** Evaluate the current equation without replacing predictor history. */
+    public double evaluateStateDerivative() { return isBypassed() ? 0. : dX_dt(getU()); }
+
     @Override
     public boolean initStateU0(double u0) {
         if (!isBypassed()) return super.initStateU0(u0);

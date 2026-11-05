@@ -1192,6 +1192,7 @@ public class PSSEDirectParser {
         double rdc = line1.getDouble(2, 0.0);
         double setvl = line1.getDouble(3, 0.0);
         double vschd = line1.getDouble(4, 0.0);
+        double vcmod = line1.getDouble(5, 0.0);
         double rcomp = line1.getDouble(6, 0.0);
         double delti = line1.getDouble(7, 0.0);
         String meter = line1.getString(8, "I");
@@ -1261,6 +1262,7 @@ public class PSSEDirectParser {
 
             builder.setLCCInverter(lcc, nbi, anmni, anmxi,
                     rci, xci, ebasi, tri, tapi, tmxi, tmni, stpi, xcapi, null);
+            lcc.setExtensionObject(new com.interpss.core.aclf.hvdc.LccSourceControls(vcmod, xcapr, xcapi));
         } catch (Exception e) {
             log.error("Error parsing HVDC 2T LCC record: " + e.getMessage());
         }

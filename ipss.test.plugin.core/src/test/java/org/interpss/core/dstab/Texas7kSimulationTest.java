@@ -16,11 +16,22 @@ public class Texas7kSimulationTest {
     private static final Path ROOT=Path.of("testData/private/texas7k");
     @BeforeAll static void initialize() { IpssCorePlugin.init(); IpssCorePlugin.configureSparseSolver("java-klu"); }
     @Test void completeCaseHoldsAllBusAndControllerStatesForTenSeconds(@TempDir Path directory)throws Exception {
+        assertCompleteCaseEquilibrium(false,directory);
+    }
+    @Test void optimizedCaseHoldsAllBusAndControllerStatesForTenSeconds(@TempDir Path directory)throws Exception {
+        assertCompleteCaseEquilibrium(true,directory);
+    }
+    private void assertCompleteCaseEquilibrium(boolean optimized,Path directory)throws Exception {
         assumeTrue(Files.isRegularFile(ROOT.resolve("Texas7k_20210804.dyr")),"Private Texas7k inputs unavailable");
         Path output=directory.resolve("flat");
-        var result=org.interpss.core.dstab.reference.Texas7kFlatStartAudit.run(ROOT,output,10,1e-4);
+        var result=org.interpss.core.dstab.reference.Texas7kFlatStartAudit.run(ROOT,output,10,1e-4,optimized);
         assertEquals(true,result.get("import_complete"));assertEquals(120,result.get("bsg_entries"));
         assertEquals(java.util.List.of(),result.get("disabled_controllers"));
+        if(optimized) {
+            var counts=(java.util.Map<?,?>)result.get("resolved_exciter_substeps");
+            assertEquals(137,counts.size(),"Every additional active exciter must be bound");
+            assertEquals(2,counts.get("Bus200169-mach1"),"The stiff EXAC2 mode requires local resolution");
+        }
         assertTrue((double)result.get("max_voltage_drift_pu")<1e-6);
         assertTrue((double)result.get("max_speed_drift_pu")<1e-8);
         assertTrue((double)result.get("max_angle_drift_deg")<.002);

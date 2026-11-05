@@ -14,7 +14,8 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  * Seven-state PLNTBU1 plant controller shared by the associated REAXB devices.
  * Outputs are incremental commands on the system MVA base.
  */
-public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess {
+public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess,
+        org.interpss.dstab.control.util.StaggeredEulerParticipant {
     private static final double EPS = 1.0e-12;
     private static final String[] STATE_NAMES={"Voltage measurement filter","Reactive power measurement filter",
             "Reactive power PI integrator","Reactive power lead-lag state","Real power measurement filter",
@@ -124,6 +125,29 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
     }
     /** Start a new simulation operating point, including shared attached units. */
     public boolean reinitialize(){initialized=false;return initialize();}
+
+    @Override public int staggeredStateCount(){return 7;}
+    @Override public void readStaggeredState(double[] values,int offset){
+        if(!initialized)throw new IllegalStateException("Initialize plant control first");
+        values[offset]=voltageMeasurement;values[offset+1]=reactiveMeasurement;values[offset+2]=reactiveIntegral;
+        values[offset+3]=reactiveLeadLagState;values[offset+4]=activeMeasurement;
+        values[offset+5]=activeIntegral;values[offset+6]=activeLagState;
+    }
+    @Override public void evaluateStaggered(double stepSec,double[] values,int offset){
+        if(!initialized||!refreshBoundary())throw new IllegalStateException("Invalid plant control boundary");
+        if(predictorStart!=null)throw new IllegalStateException("Unaccepted plant predictor");
+        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED;
+        Rates r=rates(state(),measurement());
+        values[offset]=r.voltageMeasurement();values[offset+1]=r.reactiveMeasurement();values[offset+2]=r.reactiveIntegral();
+        values[offset+3]=r.reactiveLeadLagState();values[offset+4]=r.activeMeasurement();
+        values[offset+5]=r.activeIntegral();values[offset+6]=r.activeLagState();updateOutputs();
+    }
+    @Override public void applyStaggeredState(double[] values,int offset,double stepSec){
+        if(!initialized||!refreshBoundary())throw new IllegalStateException("Invalid plant control boundary");
+        if(predictorStart!=null)throw new IllegalStateException("Unaccepted plant predictor");
+        apply(withBypasses(new State(values[offset],values[offset+1],values[offset+2],values[offset+3],
+                values[offset+4],values[offset+5],values[offset+6]),measurement()));updateOutputs();
+    }
 
     /** Modified-Euler stage; repeated calls from other turbines are idempotent. */
     public boolean step(double dt, int flag) {

@@ -162,6 +162,7 @@ public class PSSEDStabDirectParser {
     private static final String BUS_ID_PREFIX = "Bus";
 
     private final DStabNetworkBuilder builder;
+    private final List<PsseDyrRecord> pendingWsieg1 = new ArrayList<>();
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
@@ -262,6 +263,7 @@ public class PSSEDStabDirectParser {
                     == org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER).orElse(false))
                 declaredElectricalGenerators.add(targetGeneratorKey(record));
         }
+        pendingWsieg1.clear();
         pendingSt2cut.clear();
         pendingIeeest.clear();
         pendingRepca1.clear();
@@ -285,13 +287,14 @@ public class PSSEDStabDirectParser {
         // Establish converter/electrical hosts before mechanical and auxiliary
         // controllers. Stable sorting preserves all remaining source ordering.
         var orderedRecords=new ArrayList<>(records);
-        orderedRecords.sort(java.util.Comparator.comparingInt(r->r.canonicalModelName().equals("REGCA1")?0:
+        orderedRecords.sort(java.util.Comparator.comparingInt(r->(r.canonicalModelName().equals("REGCA1")
+                || r.canonicalModelName().equals("REGCAU2") || r.canonicalModelName().equals("REGCC"))?0:
                 r.canonicalModelName().equals("REECA1")?1:2));
         for (PsseDyrRecord record : orderedRecords) {
             try {
                 String type = record.canonicalModelName();
                 GeneratorKey key = targetGeneratorKey(record);
-                boolean generatorTarget = !type.equals("HPLNTDU") && DynamicModelCatalog.find(type)
+                boolean generatorTarget = !record.hasNamedTarget() && !type.equals("HPLNTDU") && DynamicModelCatalog.find(type)
                         .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT)
@@ -318,6 +321,21 @@ public class PSSEDStabDirectParser {
                 if(org.interpss.fadapter.psse.dyr.HplntdImporter.recognizes(record)){
                     hybridRecords.add(record);continue;
                 }
+                if (type.equals("CHVDC2") || type.equals("CHVDC2U1")) {
+                    try {
+                        org.interpss.fadapter.psse.dyr.Chvdc2RecordMapper.prepare(record);
+                        report.add(record, DynamicModelImportStatus.UNSUPPORTED,
+                                "Named-link schema decoded; CHVDC2 controller/network runtime attachment is not implemented");
+                    } catch (IllegalArgumentException invalid) {
+                        report.add(record, DynamicModelImportStatus.REJECTED, invalid.getMessage());
+                    }
+                    continue;
+                }
+                if (record.hasNamedTarget() && record.fields().get(1).equalsIgnoreCase("USRDCL")) {
+                    report.add(record, DynamicModelImportStatus.UNSUPPORTED,
+                            "User DC-link model requires an exact named-link runtime; generator aliases cannot be used");
+                    continue;
+                }
                 if (!hasExpectedParameterCount(record)) {
                     report.add(record, DynamicModelImportStatus.REJECTED,
                             rejectionMessage(type, record));
@@ -328,7 +346,7 @@ public class PSSEDStabDirectParser {
                     report.add(record, DynamicModelImportStatus.MISSING_TARGET, missingTarget);
                     continue;
                 }
-                boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
+                boolean deferred = type.equals("WSIEG1") || type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C") || type.equals("OEL3C") || type.equals("BASOEL2")
@@ -345,6 +363,14 @@ public class PSSEDStabDirectParser {
                 report.add(record, DynamicModelImportStatus.ERROR, e.getMessage());
             }
         }
+        for(PsseDyrRecord record:pendingWsieg1) {
+            try {
+                boolean attached=procGovWsieg1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact extended steam governor with resolved shaft ownership":"WSIEG1 requires valid curves and available shaft machines");
+            } catch(RuntimeException invalid) {report.add(record,DynamicModelImportStatus.REJECTED,invalid.getMessage());}
+        }
+        pendingWsieg1.clear();
         // Electrical controls must attach after their converter but before
         // deferred plant controls, regardless of source-record ordering.
         for(PsseDyrRecord record:pendingReece) {
@@ -526,6 +552,21 @@ public class PSSEDStabDirectParser {
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
+        // Named FACTS identity and remote-bus validation are atomic with builder
+        // attachment. A bus-number lookup would invent an invalid Bus0 owner.
+        if (record.hasNamedTarget() || record.canonicalModelName().equals("CDC6T")) return null;
+        if (record.canonicalModelName().equals("TIOCR1")) {
+            int loadBus=Integer.parseInt(record.fields().get(6));
+            String loadId=record.fields().get(7);
+            if(loadBus!=0 && (loadId.equals("*") || loadId.equals("#"))) {
+                var host=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+loadBus);
+                if(host==null || host.getContributeLoad(loadId)==null)
+                    return "TIOCR1 exact load target does not exist; native import does not expand wildcard load IDs";
+            }
+            return relayBranch(builder.getBaseDStabNetwork(),record.busNumber(),
+                    Integer.parseInt(record.fields().get(2)),record.fields().get(3)) == null
+                    ? "TIOCR1 monitored branch does not exist" : null;
+        }
         if (record.canonicalModelName().equals("IEELAR")) {
             return ieelTargets(record).isEmpty()
                     ? "no active load matches IEELAR area " + record.busNumber()
@@ -598,11 +639,19 @@ public class PSSEDStabDirectParser {
         }
 
         switch (type) {
+            case "CDC6T":
+                return builder.addCdc6t(org.interpss.fadapter.psse.dyr.Cdc6tRecordMapper.prepare(record)) != null;
+            case "SVSMO3T2":
+                return procSvsmo3t2(record);
             case "IEELBL":
             case "IEELAR":
                 return procIeel(type, record);
             case "PERC1":
                 return procPerc1(busId, genId, fields);
+            case "TIOCR1":
+                return procTiocr1(record);
+            case "CMLDBLU1":
+                return procCmldblu1(record);
             case "CMLDZNU2":
                 return procCmldznu2(record);
             case "IEEEVC":
@@ -814,6 +863,8 @@ public class PSSEDStabDirectParser {
             case "SEXS":
                 return procExcSexs(busId, genId, fields);
 
+            case "WSIEG1":
+                pendingWsieg1.add(record);return true;
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
             case "IEEEG1D":
@@ -826,6 +877,11 @@ public class PSSEDStabDirectParser {
                 return procGovTgov1d(busId, genId, fields);
             case "GAST":
                 return procGovGast(busId, genId, fields);
+            case "URGS3T":
+                if (fields.length != 36 || !"URGS3T".equalsIgnoreCase(fields[1])) return false;
+                double[] urgs3t = new double[33];
+                for (int i = 0; i < urgs3t.length; i++) urgs3t[i] = getDouble(fields, i+3, Double.NaN);
+                return builder.addGovUrgs3t(busId, genId, urgs3t) != null;
             case "GASTD":
             case "GASTDU":
                 return procGovGastd(busId, genId, fields);
@@ -930,14 +986,18 @@ public class PSSEDStabDirectParser {
                 return procGeneratorTripRelay(type, record);
 
             case "ACMTBLU1":
-                return procAcmtblu1(busId, genId, fields);
+                return procAcmtblu1(record);
 
             case "REGCA1":
             case "REGCAU1":
                 return procRegca1(busId, genId, fields);
+            case "REGCAU2":
+                return procRegcau2(busId, genId, fields);
             case "REGCB1":
             case "REGCBU1":
                 return procRegcb1(busId, genId, fields);
+            case "REGCC":
+                return procRegcc(busId, genId, fields);
             case "DERA1":
                 return procDera1(busId, genId, fields);
             case "REGFMA1":
@@ -1008,62 +1068,82 @@ public class PSSEDStabDirectParser {
         }
     }
 
-    // USRLOD/ACMTBLU1:
-    // IBUS, 'USRLOD', LID, 'ACMTBLU1', seven model-library fields,
-    // then the 35 LD1PAC parameters.
-    private boolean procAcmtblu1(String busId, String loadId, String[] f) {
-        if (f.length < 46) {
-            log.warn("Incomplete ACMTBLU1 record at bus {}: expected 46 fields, found {}", busId, f.length);
-            return false;
+    // One exact bus/load record: seven allocation fields followed by 35 constants.
+    private boolean procAcmtblu1(PsseDyrRecord record) {
+        if (!record.fields().get(1).equalsIgnoreCase("USRLOD") || record.parameterCount() != 42) return false;
+        int[] allocation = {12, 1, 0, 35, 9, 29, 16};
+        for (int i = 0; i < allocation.length; i++) if (record.intParameter(i) != allocation[i]) return false;
+        double[] c = new double[35];
+        for (int i = 0; i < c.length; i++) {
+            c[i] = record.doubleParameter(7 + i);
+            if (!Double.isFinite(c[i])) return false;
         }
-
-        BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
-        if (bus == null) {
-            log.warn("Cannot attach ACMTBLU1 model {}: bus {} was not found", loadId, busId);
-            return false;
+        if (c[4] == 0 || c[4] > 1) c[4] = 1;
+        if (!(c[4] > 0) || !(c[5] > 0 && c[5] <= 1)
+                || c[7] < 0 || c[8] < 0 || c[7] + c[8] == 0 || c[27] < 0) return false;
+        if (c[5] == 1 && c[22] != 0) return false;
+        var bus = builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX + record.busNumber());
+        var targets = new ArrayList<LoadTarget>();
+        boolean wildcard = record.deviceId().equals("*");
+        addMatchingLoads(targets, bus, record.deviceId(), wildcard);
+        if (targets.isEmpty()) return false;
+        for (var target : targets) {
+            Complex power = target.load().getLoad(bus.getVoltageMag());
+            if (power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary()) || power.getReal() <= 0) return false;
+            if (bus.getInfoOnlyDynModel() instanceof Cmldznu2Model composite && composite.getTargetLoadIds().contains(target.load().getId())) return false;
+            for (var existing : target.bus().getDynLoadModelList())
+                if (existing.isActive() && existing.getId().equals(target.load().getId())) return false;
         }
-
-        double compLf = getDouble(f, 15, 1.0);
-        if (compLf <= 0.0) {
-            compLf = 1.0;
+        double totalP = 0;
+        for (Object object : bus.getContributeLoadList()) {
+            var load = (AclfLoad) object;
+            if (load.isActive()) totalP += load.getLoad(bus.getVoltageMag()).getReal();
         }
-
-        LD1PAC acMotor = new LD1PACImpl(bus, trimQuote(loadId));
-        acMotor.setTstall(getDouble(f, 11, 0.0));
-        acMotor.setTrst(getDouble(f, 12, 0.0));
-        acMotor.setTv(getDouble(f, 13, 0.0));
-        acMotor.setLoadPercent(compLf * 100.0);
-        acMotor.setLoadFactor(compLf);
-        acMotor.setPowerFactor(getDouble(f, 16, 0.0));
-        acMotor.setVstall(getDouble(f, 17, 0.0));
-        acMotor.setRstall(getDouble(f, 18, 0.0));
-        acMotor.setXstall(getDouble(f, 19, 0.0));
-        acMotor.setLFadj(getDouble(f, 20, 0.0));
-        acMotor.setKp1(getDouble(f, 21, 0.0));
-        acMotor.setNp1(getDouble(f, 22, 0.0));
-        acMotor.setKq1(getDouble(f, 23, 0.0));
-        acMotor.setNq1(getDouble(f, 24, 0.0));
-        acMotor.setKp2(getDouble(f, 25, 0.0));
-        acMotor.setNp2(getDouble(f, 26, 0.0));
-        acMotor.setKq2(getDouble(f, 27, 0.0));
-        acMotor.setNq2(getDouble(f, 28, 0.0));
-        acMotor.setVbrk(getDouble(f, 29, 0.0));
-        acMotor.setFrst(getDouble(f, 30, 0.0));
-        acMotor.setVrst(getDouble(f, 31, 0.0));
-        acMotor.setCmpKpf(getDouble(f, 32, 0.0));
-        acMotor.setCmpKqf(getDouble(f, 33, 0.0));
-        acMotor.setVc1off(getDouble(f, 34, 0.0));
-        acMotor.setVc2off(getDouble(f, 35, 0.0));
-        acMotor.setVc1on(getDouble(f, 36, 0.0));
-        acMotor.setVc2on(getDouble(f, 37, 0.0));
-        acMotor.setTth(getDouble(f, 38, 0.0));
-        acMotor.setTh1t(getDouble(f, 39, 0.0));
-        acMotor.setTh2t(getDouble(f, 40, 0.0));
-        acMotor.setFuvr(getDouble(f, 41, 0.0));
-        acMotor.setUVtr1(getDouble(f, 42, 0.0));
-        acMotor.setTtr1(getDouble(f, 43, 0.0));
-        acMotor.setUVtr2(getDouble(f, 44, 0.0));
-        acMotor.setTtr2(getDouble(f, 45, 0.0));
+        if (!(totalP > 0)) return false;
+        for (var target : targets) {
+            var acMotor = new LD1PACImpl(target.bus(), target.load().getId());
+            acMotor.setParentLoad(target.load());
+            acMotor.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.LEGACY_COMPOSITE);
+            acMotor.setAcceptedTimerPrecision(LD1PACImpl.AcceptedTimerPrecision.BINARY32);
+            acMotor.setFrequencyInputMode(LD1PACImpl.FrequencyInputMode.TERMINAL_PHASE_BINARY32);
+            acMotor.setElectricalInputMode(LD1PACImpl.ElectricalInputMode.ACCEPTED_ENDPOINT);
+            acMotor.setLoadPercent(100 * target.load().getLoad(bus.getVoltageMag()).getReal() / totalP);
+            acMotor.setTstall(c[0]);
+            acMotor.setTrst(c[1]);
+            acMotor.setTv(c[2]);
+            acMotor.setTf(c[3]);
+            acMotor.setLoadFactor(c[4]);
+            acMotor.setPowerFactor(c[5]);
+            acMotor.setVstall(c[6]);
+            acMotor.setRstall(c[7]);
+            acMotor.setXstall(c[8]);
+            acMotor.setLFadj(c[9]);
+            acMotor.setKp1(c[10]);
+            acMotor.setNp1(c[11]);
+            acMotor.setKq1(c[12]);
+            acMotor.setNq1(c[13]);
+            acMotor.setKp2(c[14]);
+            acMotor.setNp2(c[15]);
+            acMotor.setKq2(c[16]);
+            acMotor.setNq2(c[17]);
+            acMotor.setVbrk(c[18]);
+            acMotor.setFrst(c[19]);
+            acMotor.setVrst(c[20]);
+            acMotor.setCmpKpf(c[21]);
+            acMotor.setCmpKqf(c[22]);
+            acMotor.setVc1off(c[23]);
+            acMotor.setVc2off(c[24]);
+            acMotor.setVc1on(c[25]);
+            acMotor.setVc2on(c[26]);
+            acMotor.setTth(c[27]);
+            acMotor.setTh1t(c[28]);
+            acMotor.setTh2t(c[29]);
+            acMotor.setFuvr(c[30]);
+            acMotor.setUVtr1(c[31]);
+            acMotor.setTtr1(c[32]);
+            acMotor.setUVtr2(c[33]);
+            acMotor.setTtr2(c[34]);
+        }
         return true;
     }
 
@@ -2520,6 +2600,34 @@ public class PSSEDStabDirectParser {
     //         T8 T9 Ks1 T1 T2 T3 T4 T10 T11 VSI1MAX VSI1MIN VSI2MAX VSI2MIN
     //         VSTMAX VSTMIN A Ta Tb Ks4
     private boolean procPss2b(String busId, String genId, String[] f) {
+        // The standard record and the two existing typed layouts have distinct cardinalities.
+        if (f.length != 30 && f.length != 32 && f.length != 34) return false;
+        if (f.length == 32) {
+            int first = Integer.parseInt(f[3]), remote1 = Integer.parseInt(f[4]);
+            int second = Integer.parseInt(f[5]), remote2 = Integer.parseInt(f[6]);
+            if ((remote1 != 0 && (first == 1 || first == 3 || first == 4))
+                    || (remote2 != 0 && (second == 1 || second == 3 || second == 4))) return false;
+            var network = builder.getBaseDStabNetwork();
+            BaseDStabBus<?, ?> b1 = network.getDStabBus(remote1 == 0 ? busId : BUS_ID_PREFIX + remote1);
+            BaseDStabBus<?, ?> b2 = network.getDStabBus(remote2 == 0 ? busId : BUS_ID_PREFIX + remote2);
+            if (b1 == null || b2 == null) return false;
+            int m = Integer.parseInt(f[7]), n = Integer.parseInt(f[8]);
+            if ((long) m * n > 8) return false;
+            var pss = builder.addPss2b(busId, genId, first, second,
+                    m, n,
+                    getDouble(f,9,0),getDouble(f,10,0),getDouble(f,11,0),
+                    getDouble(f,12,0),getDouble(f,13,0),getDouble(f,14,0),
+                    getDouble(f,15,0),getDouble(f,16,0),getDouble(f,17,0),getDouble(f,18,0),
+                    getDouble(f,19,0),getDouble(f,20,0),getDouble(f,21,0),
+                    getDouble(f,22,0),getDouble(f,23,0),getDouble(f,24,0),getDouble(f,25,0),
+                    getDouble(f,26,0),getDouble(f,27,0),getDouble(f,28,0),getDouble(f,29,0),
+                    getDouble(f,30,0),getDouble(f,31,0),1.0,0.0,0.0,1.0);
+            if (pss == null) return false;
+            pss.getData().setStandardInputLagPreparation(true);
+            pss.getData().setSampledInputPathOutputs(true);
+            pss.setInputSignalBuses(b1, b2);
+            return true;
+        }
         return builder.addPss2b(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0),
                 getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
@@ -2645,6 +2753,27 @@ public class PSSEDStabDirectParser {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss7c(busId, genId, parameters) != null;
+    }
+
+    private boolean procGovWsieg1(String busId, String genId, PsseDyrRecord record) {
+        double[] constants = new double[34];
+        for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 2);
+        var bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen generator = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (generator == null || !(generator.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine machine)) return false;
+        com.interpss.dstab.mach.Machine secondary=null;
+        int secondaryBus=record.intParameter(0);
+        if(secondaryBus!=0) {
+            var secondBus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+secondaryBus);
+            DStabGen second=secondBus==null?null:(DStabGen)secondBus.getContributeGen(record.parameter(1));
+            if(second==null || !(second.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine other)
+                    || other==machine || other.getGovernor()!=null)return false;
+            secondary=other;
+        }
+        var governor = new org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor(machine.getId()+"_Gov", constants);
+        governor.setMachine(machine);
+        if(secondary!=null)governor.attachSecondaryShaft(secondary);
+        return true;
     }
 
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
@@ -3000,8 +3129,24 @@ public class PSSEDStabDirectParser {
     // PSS/E HYG3U1 conversion order: one controller ICON followed by 36 CONs.
     // ICON 1 selects PID and ICON 0 selects the double-derivative branch.
     private boolean procGovHyg3(String busId, String genId, String[] f) {
-        if (f.length < 40) return false;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            int[] allocation = {5, 0, 2, 36, 9, 5};
+            if (f.length != 48) return false;
+            for (int i = 0; i < allocation.length; i++)
+                if (Integer.parseInt(f[4+i]) != allocation[i]) return false;
+            // The second allocated ICON is internal storage, initialized to zero.
+            if (Integer.parseInt(f[11]) != 0) return false;
+            String[] normalized = new String[40];
+            System.arraycopy(f, 0, normalized, 0, 3);
+            normalized[3] = f[10];
+            System.arraycopy(f, 12, normalized, 4, 36);
+            f = normalized;
+        }
+        if (f.length != 40) return false;
         PsseHyg3GovernorData d = new PsseHyg3GovernorData();
+        d.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR);
+        d.setBacklashConvention(PsseHyg3GovernorData.BacklashConvention.PER_UNIT_GATE);
+        d.setZeroDerivativeFilterConvention(PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS);
         d.setControlFlag(getInt(f, 3, 0));
         d.setRgate(getDouble(f, 4, 0)); d.setRelec(getDouble(f, 5, 0));
         d.setTt(getDouble(f, 6, 0)); d.setTd(getDouble(f, 7, 0));
@@ -3480,7 +3625,7 @@ public class PSSEDStabDirectParser {
     // REGCA1: IBUS MODEL ID LVPLSW Tg Rrpwr Brkpt Zerox Lvpl1 Volim
     //         Lvpnt1 Lvpnt0 Iolim Tfltr Khv Iqrmax Iqrmin Accel
     private boolean procRegca1(String busId, String genId, String[] f) {
-        if (f.length < 18) return false;
+        if (f.length != 18) return false;
         Regca1Data data = new Regca1Data(
                 getInt(f, 3, 1), getDouble(f, 4, 0.02), getDouble(f, 5, 10.0),
                 getDouble(f, 6, 0.9), getDouble(f, 7, 0.4), getDouble(f, 8, 1.22),
@@ -3489,6 +3634,22 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
         var converter = builder.addRegca1(busId, genId, data);
         if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId, genId)))
+            converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+        return converter != null;
+    }
+
+    private boolean procRegcau2(String busId, String genId, String[] f) {
+        if (f.length != 26 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f,4,-1)!=101 || getInt(f,5,-1)!=1
+                || getInt(f,6,-1)!=1 || getInt(f,7,-1)!=15
+                || getInt(f,8,-1)!=3 || getInt(f,9,-1)!=4) return false;
+        var controls = new Regca1Data(getInt(f,10,1),getDouble(f,11,0.),getDouble(f,12,0.),
+                getDouble(f,13,0.),getDouble(f,14,0.),getDouble(f,15,0.),getDouble(f,16,0.),
+                getDouble(f,17,0.),getDouble(f,18,0.),getDouble(f,19,0.),getDouble(f,20,0.),
+                getDouble(f,21,0.),getDouble(f,22,0.),getDouble(f,23,0.),getDouble(f,24,0.));
+        var converter = builder.addRegcau2(busId,genId,
+                new org.interpss.dstab.renewable.Regcau2Data(controls,getDouble(f,25,0.)));
+        if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId,genId)))
             converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
         return converter != null;
     }
@@ -3515,6 +3676,15 @@ public class PSSEDStabDirectParser {
                 getDouble(f, offset + 6, 0.0), getDouble(f, offset + 7, 0.0),
                 getDouble(f, offset + 8, 0.0));
         return builder.addRegcb1(busId, genId, data) != null;
+    }
+
+    private boolean procRegcc(String busId,String genId,String[] f) {
+        if(f.length!=18 || "USRMDL".equalsIgnoreCase(f[1]))return false;
+        int rate=Integer.parseInt(f[3]),priority=Integer.parseInt(f[4]);
+        double[] c=new double[13];
+        for(int i=0;i<c.length;i++)c[i]=Double.parseDouble(f[i+5].replace('D','E').replace('d','e'));
+        return builder.addRegcc(busId,genId,new org.interpss.dstab.renewable.RegccData(rate,priority,
+                c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]))!=null;
     }
 
     // DERA1 flat form, or DERAU1 wrapper with six ICONs, 41 CONs,
@@ -4148,6 +4318,25 @@ public class PSSEDStabDirectParser {
         return !targets.isEmpty();
     }
 
+    private boolean procCmldblu1(PsseDyrRecord record) {
+        if(!record.fields().get(1).equalsIgnoreCase("USRLOD")) return false;
+        int[] allocation={12,1,0,132,27,146,48};
+        for(int i=0;i<allocation.length;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+record.busNumber());
+        if(bus==null || bus.getInfoOnlyDynModel()!=null)return false;
+        var targets=new ArrayList<LoadTarget>();
+        addMatchingLoads(targets,bus,record.deviceId(),record.deviceId().equals("*")||record.deviceId().equals("#"));
+        if(targets.isEmpty())return false;
+        for(var target:targets)for(var existing:bus.getDynLoadModelList())
+            if(existing.isActive()&&existing.getId().equals(target.load().getId()))return false;
+        var ids=new java.util.LinkedHashSet<String>();Complex power=Complex.ZERO;
+        for(var target:targets){ids.add(target.load().getId());power=power.add(target.load().getLoad(bus.getVoltageMag()));}
+        double[] constants=new double[132];
+        for(int i=0;i<132;i++)constants[i]=record.doubleParameter(i+7);
+        new org.interpss.dstab.dynLoad.impl.Cmldblu1Model("CMLDBLU1_"+record.deviceId(),bus,ids,power,constants);
+        return true;
+    }
+
     private boolean procCmldznu2(PsseDyrRecord record) {
         int[] allocation = {12, 3, 2, 133, 27, 146, 48, 0, 0};
         for (int i = 0; i < allocation.length; i++) {
@@ -4242,6 +4431,32 @@ public class PSSEDStabDirectParser {
                 : bus.getZone() != null ? Math.toIntExact(bus.getZone().getNumber()) : 0;
     }
 
+    private boolean procTiocr1(PsseDyrRecord record) {
+        var f=record.fields();var network=builder.getBaseDStabNetwork();
+        int from=record.busNumber(),to=Integer.parseInt(f.get(2)),slot=Integer.parseInt(f.get(4));
+        int mode=Integer.parseInt(f.get(5)),loadBus=Integer.parseInt(f.get(6));
+        if(mode<0||mode>1||slot<1||slot>2)return false;
+        AclfBranch monitored=relayBranch(network,from,to,f.get(3));
+        if(monitored==null)return false;
+        BaseDStabBus<?,?> host=network.getDStabBus(BUS_ID_PREFIX+(loadBus==0?from:loadBus));
+        if(host==null)return false;
+        String loadId=loadBus==0?null:f.get(7);
+        if(loadBus!=0&&host.getContributeLoad(loadId)==null)return false;
+        AclfBranch[] transfers=new AclfBranch[3];
+        for(int i=0;i<3;i++) {
+            int b=Integer.parseInt(f.get(8+3*i));
+            if(b==0)continue;
+            transfers[i]=relayBranch(network,b,Integer.parseInt(f.get(9+3*i)),f.get(10+3*i));
+            if(transfers[i]==null)return false;
+        }
+        double[] constants=new double[14];
+        for(int i=0;i<14;i++)constants[i]=Double.parseDouble(f.get(17+i));
+        org.interpss.dstab.relay.Tiocr1RelayModel.forExactLoad(monitored,
+                monitored.getFromBusId().equals(BUS_ID_PREFIX+from),slot,mode==1,host,loadId,
+                transfers,new org.interpss.dstab.relay.Tiocr1Data(constants));
+        return true;
+    }
+
     private boolean procLds3bl(String busId, String loadId, PsseDyrRecord record) {
         BaseDStabBus<?, ?> loadBus = builder.getBaseDStabNetwork().getDStabBus(busId);
         int transferBusNumber = record.intParameter(0);
@@ -4317,6 +4532,23 @@ public class PSSEDStabDirectParser {
 
     // ==================== Utility Methods ====================
 
+    private boolean procSvsmo3t2(PsseDyrRecord record) {
+        if (!record.hasNamedTarget() || record.parameterCount() != 64) return false;
+        var mss = new ArrayList<org.interpss.dstab.svc.Svsmo3t2Data.MssDevice>();
+        for (int i = 0; i < 8; i++) mss.add(new org.interpss.dstab.svc.Svsmo3t2Data.MssDevice(
+                record.intParameter(4 + 2 * i), record.parameter(5 + 2 * i)));
+        double[] c = new double[44];
+        for (int i = 0; i < c.length; i++) c[i] = record.doubleParameter(20 + i);
+        var data = new org.interpss.dstab.svc.Svsmo3t2Data(record.intParameter(0),
+                record.intParameter(1), record.intParameter(2), record.intParameter(3), mss,
+                c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10],
+                c[11], c[12], c[13], c[14], c[15], c[16], c[17], c[18], c[19], c[20],
+                c[21], c[22], c[23], c[24], c[25], c[26], c[27], c[28], c[29], c[30],
+                c[31], c[32], c[33], c[34], c[35], c[36], c[37], c[38], c[39], c[40],
+                c[41], c[42], c[43]);
+        return builder.addSvsmo3t2(record.deviceId(), data) != null;
+    }
+
     private GeneratorKey targetGeneratorKey(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isPresent()
@@ -4381,6 +4613,9 @@ public class PSSEDStabDirectParser {
     }
 
     private DynamicModelImportStatus attachedStatus(PsseDyrRecord record) {
+        // Exact source attachment is separate from the FACTS runtime's remaining qualification.
+        if(record.canonicalModelName().equals("SVSMO3T2"))return DynamicModelImportStatus.ATTACHED;
+
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
                 .map(model -> DynamicModelImportStatus.ATTACHED)
@@ -4388,6 +4623,10 @@ public class PSSEDStabDirectParser {
     }
 
     private String attachedMessage(PsseDyrRecord record) {
+        if(record.canonicalModelName().equals("CDC6T"))return "Exact named 32-constant record; terminal runtime preparation follows solved load flow; trajectory acceptance is scoped separately";
+        if(record.canonicalModelName().equals("SVSMO3T2"))return "Exact named FACTS 20-ICON/44-CON record attached; runtime qualification remains partial";
+        if(record.canonicalModelName().equals("CSVGN5")||record.canonicalModelName().equals("SVSMO1T2"))return "Exact native reactive-device record and resolved runtime owner";
+
         if(record.canonicalModelName().equals("REGFMC1U"))return "PSS/E 36.7 exact USRMDL 101 1 3 34 11 27; hybrid GFM/GFL; machine-base RAW ZSOURCE";
         if(record.canonicalModelName().equals("REGFMB1U"))return "PSS/E 36.7 exact USRMDL 101 1 6 25 14 17; machine-base RAW ZSOURCE";
         if (record.canonicalModelName().equals("REGFMA1"))

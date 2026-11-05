@@ -1,0 +1,881 @@
+{
+  "schema": 1,
+  "date": "2026-10-30",
+  "status": "implemented_and_validated",
+  "timing_interpretation": "Same-build configuration comparison; overlapping ranges and residual compilation do not establish a general speedup or a previous-release improvement.",
+  "evidence_root": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030",
+  "completed_study": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified",
+  "source_at_execution": {
+    "core": "1c61b087a35e6f29f70735b4f278416daa68f51c",
+    "plugin": "9062de5d901ccb8ed88a71f062b9c0aadd147292"
+  },
+  "runtime_includes_preexisting_uncommitted_core_work": true,
+  "source_provenance": {
+    "core-working.patch": {
+      "path": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/core-working.patch",
+      "sha256": "f86aeb350aa74bfe62eb5764dddfdfa703254fec071a27a9f28a6e100e67cb13"
+    },
+    "plugin-working.patch": {
+      "path": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/plugin-working.patch",
+      "sha256": "2f7ee764965a1d44c7e98097e25785555662962b2f2e475cdc99b7745f9f2bde"
+    },
+    "directory-runtime.json": {
+      "path": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/directory-runtime.json",
+      "sha256": "dee632469c328483f66f86ddf7a04feb89a5f9c5abb5eae8feac823779ebfb1a"
+    },
+    "launch.json": {
+      "path": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/launch.json",
+      "sha256": "90fd073f04093452368922fdcd0e249ed07f556f31b8fa7d08abe9876596e5bd"
+    },
+    "configuration.json": {
+      "path": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/configuration.json",
+      "sha256": "bb8d6303a1d1678ef1f0f50d926a57226b3a4889576dbfe22e31761ad220e088"
+    }
+  },
+  "test_audit": {
+    "path": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/test-audit.json",
+    "sha256": "0003111a5eda1b8ba85c40d4b356930a420631cff479d45cb12022b8554ddee2",
+    "tests": 7610,
+    "passed": 7503,
+    "skipped": 91,
+    "baseline_failures_and_errors": 16,
+    "new_failures": [],
+    "removed_tests": [],
+    "added_tests": [
+      [
+        "ipss.core.test",
+        "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+        "configuredCompensationFactoriesAcceptDynamicParentAndRemoteBuses"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+        "dynamicCaseMutationsUseTheSameStructureAndCoefficientRules"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+        "initializedDynamicNetworkInvalidatesAnExistingPreparedPlan"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+        "optOutAndSpecializedTypesRetainTheGenericPath"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+        "ordinaryDynamicPreparationUsesTheMaintainedNrHooks"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "exactPatternCheckRejectsARealHashCollision"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "failedPreparationCannotLeaveAPartialPlan"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "insertionRemovalRetargetingAndDimensionChangesRebuildSlots"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "liveMutableRowsAndReplacementRemainVisible"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "nullAndZeroCoefficientsRetainTheirStructuralSlots"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "numericalChangesReuseCscArraysAndSymbolicFactors"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "optOutUsesTheLegacyConversionAndKeepsNumericalResults"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "rowOrderChangesReprepareSlotsButRetainTheLogicalSymbolicPattern"
+      ],
+      [
+        "ipss.core.test",
+        "com.interpss.test.core.sparse.klu.PreparedComplexCscTest",
+        "transferredSymbolicHintsAreValidatedAgainstTheReceivingMatrix"
+      ],
+      [
+        "ipss.test.plugin.core",
+        "org.interpss.core.dstab.DynamicPowerFlowTransferTest",
+        "initializationFaultClearingAndLivePhysicalShuntsMatchTheGenericPath"
+      ]
+    ],
+    "modules": {
+      "ipss.core.test": {
+        "tests": 3233,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ipss.plugin.3phase": {
+        "tests": 478,
+        "failures": 0,
+        "errors": 3,
+        "skipped": 28
+      },
+      "ipss.plugin.core": {
+        "tests": 457,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 4
+      },
+      "ipss.test.plugin.core": {
+        "tests": 3442,
+        "failures": 10,
+        "errors": 2,
+        "skipped": 59
+      }
+    },
+    "full_run": "dynamic-pf-transfer-full-final-20261030",
+    "baseline_run": "fixed-base-live-device-verified-direct-20261030",
+    "baseline_failure_identities": [
+      {
+        "module": "ipss.core.test",
+        "classname": "com.interpss.test.core.ca.dclf.DclfMultiOutageTest1",
+        "name": "multiOpenOutageSkipsPrunedIslandBranchFactors",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.plugin.3phase",
+        "classname": "org.interpss.multiNet.trans_dist.IEEE9_3Phase_1PAC_2SubNet_test",
+        "name": "test_IEEE9_addFeeder_1pac_Positive_Seq_Dstab",
+        "kind": "error",
+        "type": "java.lang.ClassCastException"
+      },
+      {
+        "module": "ipss.plugin.3phase",
+        "classname": "org.interpss.multiNet.unit.IEEE9_3Phase_1PAC_mnet_3ph3seq_test",
+        "name": "test_multiNet_Dstab_IEEE9_1Feeder",
+        "kind": "error",
+        "type": "java.lang.NullPointerException"
+      },
+      {
+        "module": "ipss.plugin.3phase",
+        "classname": "org.interpss.multiNet.unit.investigate_3PHSubNetYabc",
+        "name": "test_phaseShift_SeqEquiv_IEEE9Bus_1port",
+        "kind": "error",
+        "type": "com.interpss.common.exp.InterpssException"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.adapter.psse.raw.aclf.RealEDTestCases",
+        "name": "testCase1",
+        "kind": "error",
+        "type": "com.interpss.common.exp.InterpssException"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.adapter.psse.raw.aclf.RoseHulman_UserTestCases",
+        "name": "odm_testCase",
+        "kind": "error",
+        "type": "java.lang.NullPointerException"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.EndpointAlignedStateMonitorTest",
+        "name": "fullSolverVoltageAndMachineSpeedMatchSynchronousStateSnapshotsAtFaultEdges",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.Reecc1NativeConformanceTest",
+        "name": "allSevenStatesCommandsAndNetworkBoundaryFollowTheNativeFault",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+        "name": "allSixCasesRideThroughThreeCycleFault",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest",
+        "name": "allSixCasesRideThroughGeneratorTrip",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase1",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase2",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase4",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase2_1",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase2_2",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "module": "ipss.test.plugin.core",
+        "classname": "org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise",
+        "name": "testCase4_1",
+        "kind": "failure",
+        "type": "org.opentest4j.AssertionFailedError"
+      }
+    ]
+  },
+  "logical_cpu": 6,
+  "affinity": {
+    "pid": 11568,
+    "requested_mask": 64,
+    "observed_mask_before": 64,
+    "observed_mask_after": 64,
+    "system_mask": 16777215,
+    "exit_code": 0
+  },
+  "timed_boundary": "Fresh import, load flow, initialization, controller preparation, stepping, full selected recording and exports; hashing/comparison/sharing excluded.",
+  "case_settings": {
+    "ieee9": {
+      "warmups_per_mode": 32,
+      "measured_pairs": 15,
+      "method": "MODIFIED_EULER",
+      "step_s": 0.005,
+      "duration_s": 0.2,
+      "power_flow_tolerance": 1e-10,
+      "physical_shunt_switch": true
+    },
+    "texas7k": {
+      "warmups_per_mode": 4,
+      "measured_pairs": 5,
+      "method": "MODIFIED_EULER",
+      "step_s": 0.004166666666666667,
+      "duration_s": 10,
+      "network_tolerance_pu": 0.0001,
+      "profile": "tools/benchmarks/texas7k_single_cpu.json",
+      "prepared_nr_used": false,
+      "nr_solver": "CoordinatedControlZbrNrSolver",
+      "network_iterations": 26803,
+      "compensated_operator_factorizations": 3
+    }
+  },
+  "timing": {
+    "ieee9": {
+      "on": {
+        "minimum_s": 0.006531599,
+        "median_s": 0.0120286,
+        "all_s": [
+          0.0076187,
+          0.021127,
+          0.006546,
+          0.0074671,
+          0.006531599,
+          0.024161,
+          0.077366699,
+          0.036480501,
+          0.011227101,
+          0.0069113,
+          0.045231199,
+          0.018381301,
+          0.0157737,
+          0.0120286,
+          0.0095086
+        ],
+        "maximum_s": 0.077366699
+      },
+      "on_over_off": 0.9125642017737519,
+      "off": {
+        "minimum_s": 0.0063435,
+        "median_s": 0.0131811,
+        "all_s": [
+          0.0159765,
+          0.0131811,
+          0.0089968,
+          0.013272699,
+          0.007911799,
+          0.017052801,
+          0.0199968,
+          0.0256643,
+          0.008470401,
+          0.007444199,
+          0.0173209,
+          0.0067521,
+          0.070892099,
+          0.0063435,
+          0.0092661
+        ],
+        "maximum_s": 0.070892099
+      }
+    },
+    "texas7k": {
+      "on": {
+        "minimum_s": 19.317060699,
+        "median_s": 20.7045259,
+        "all_s": [
+          20.7045259,
+          22.5339057,
+          25.924693001,
+          19.317060699,
+          19.929957299
+        ],
+        "maximum_s": 25.924693001
+      },
+      "on_over_off": 1.02639742445105,
+      "off": {
+        "minimum_s": 19.5692344,
+        "median_s": 20.172036101,
+        "all_s": [
+          20.172036101,
+          19.931633899,
+          20.5186536,
+          19.5692344,
+          20.4484028
+        ],
+        "maximum_s": 20.5186536
+      }
+    }
+  },
+  "numerical": {
+    "ieee9": {
+      "runs": 94,
+      "samples_per_run": 43,
+      "channels": 72,
+      "maximum_absolute_difference": 3.774758283725532e-15,
+      "worst": {
+        "sample": 23,
+        "channel": "Bus2-mach1/Pe",
+        "time": 0.10500000000000002
+      },
+      "event_pre_samples": 2,
+      "trace_sha256_by_mode": {
+        "off": [
+          "7c3943b6222cbbac3267ddc06fdb567a4e4f70f1077adbc89095570a3d12fb06"
+        ],
+        "on": [
+          "7860ec5f4d5097bc224ed20cba358fb4e7893a5bb5834969b0b9cf31185a7303"
+        ]
+      },
+      "compiler_ms_measured": {
+        "off": [
+          8,
+          6,
+          3,
+          7,
+          1,
+          0,
+          14,
+          8,
+          2,
+          2,
+          1,
+          1,
+          64,
+          1,
+          7
+        ],
+        "on": [
+          2,
+          14,
+          0,
+          1,
+          0,
+          8,
+          61,
+          29,
+          4,
+          1,
+          24,
+          2,
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    "texas7k": {
+      "runs": 18,
+      "samples_per_run": 2403,
+      "channels": 6732,
+      "maximum_absolute_difference": 0.0,
+      "worst": null,
+      "event_pre_samples": 2,
+      "trace_sha256_by_mode": {
+        "off": [
+          "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8"
+        ],
+        "on": [
+          "858c877c21e8c75917ac57444479272952a1e4817fac707f62ff377ea5f8d3a8"
+        ]
+      },
+      "compiler_ms_measured": {
+        "off": [
+          127,
+          611,
+          441,
+          125,
+          12
+        ],
+        "on": [
+          569,
+          486,
+          103,
+          185,
+          45
+        ]
+      },
+      "initial_power_flow_buses": 6717,
+      "initial_power_flow_maximum_absolute_difference": 0.0,
+      "initial_power_flow_sha256": [
+        "33fd9d26827e2094ffd3fab26471f6d872907957f8c1d56518f598899b9ec8d8"
+      ]
+    }
+  },
+  "loaded_class_sha256": {
+    "com.interpss.core.algo.impl.solver.PreparedPolarJacobian": "75ffc1f489672a4891812de98632dd052bc93ba2a8940dbb73b5b39b0020eec1",
+    "com.interpss.core.sparse.impl.AbstractSparseEqnComplexImpl": "814ee4a8d2a5a44f7b01e2a9dcee81c42f7642b0b0f638b20b2ff2a7360ce44f",
+    "com.interpss.core.sparse.solver.klu.BaseJKLUEqnComplexSolver": "e4f64f0a2344ff0b7b6dbcb796d3a7653d0ab4a6085b322b619fd13b9c6891a9",
+    "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver": "6a649cb0b2a735efc60d405eedf51a6737cb8b32c175cee2a08f9c4830ef90f6"
+  },
+  "measurement_cpu_and_compilation": [
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 32,
+      "whole_s": 0.0159765,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 8
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 32,
+      "whole_s": 0.0076187,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 2
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 33,
+      "whole_s": 0.021127,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 14
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 33,
+      "whole_s": 0.0131811,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 6
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 34,
+      "whole_s": 0.0089968,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 3
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 34,
+      "whole_s": 0.006546,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 0
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 35,
+      "whole_s": 0.0074671,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 35,
+      "whole_s": 0.013272699,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 7
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 36,
+      "whole_s": 0.007911799,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 36,
+      "whole_s": 0.006531599,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 0
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 37,
+      "whole_s": 0.024161,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 8
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 37,
+      "whole_s": 0.017052801,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 0
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 38,
+      "whole_s": 0.0199968,
+      "process_cpu_s": 0.03125,
+      "main_thread_cpu_s": 0.03125,
+      "compiler_ms": 14
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 38,
+      "whole_s": 0.077366699,
+      "process_cpu_s": 0.078125,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 61
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 39,
+      "whole_s": 0.036480501,
+      "process_cpu_s": 0.046875,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 29
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 39,
+      "whole_s": 0.0256643,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 8
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 40,
+      "whole_s": 0.008470401,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 2
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 40,
+      "whole_s": 0.011227101,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 4
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 41,
+      "whole_s": 0.0069113,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 41,
+      "whole_s": 0.007444199,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 2
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 42,
+      "whole_s": 0.0173209,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 42,
+      "whole_s": 0.045231199,
+      "process_cpu_s": 0.046875,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 24
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 43,
+      "whole_s": 0.018381301,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 2
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 43,
+      "whole_s": 0.0067521,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 44,
+      "whole_s": 0.070892099,
+      "process_cpu_s": 0.0625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 64
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 44,
+      "whole_s": 0.0157737,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 45,
+      "whole_s": 0.0120286,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 6
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 45,
+      "whole_s": 0.0063435,
+      "process_cpu_s": 0.0,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 1
+    },
+    {
+      "system": "ieee9",
+      "mode": "off",
+      "pair": 46,
+      "whole_s": 0.0092661,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.0,
+      "compiler_ms": 7
+    },
+    {
+      "system": "ieee9",
+      "mode": "on",
+      "pair": 46,
+      "whole_s": 0.0095086,
+      "process_cpu_s": 0.015625,
+      "main_thread_cpu_s": 0.015625,
+      "compiler_ms": 2
+    },
+    {
+      "system": "texas7k",
+      "mode": "off",
+      "pair": 4,
+      "whole_s": 20.172036101,
+      "process_cpu_s": 19.8125,
+      "main_thread_cpu_s": 19.4375,
+      "compiler_ms": 127
+    },
+    {
+      "system": "texas7k",
+      "mode": "on",
+      "pair": 4,
+      "whole_s": 20.7045259,
+      "process_cpu_s": 20.25,
+      "main_thread_cpu_s": 19.546875,
+      "compiler_ms": 569
+    },
+    {
+      "system": "texas7k",
+      "mode": "on",
+      "pair": 5,
+      "whole_s": 22.5339057,
+      "process_cpu_s": 22.140625,
+      "main_thread_cpu_s": 21.421875,
+      "compiler_ms": 486
+    },
+    {
+      "system": "texas7k",
+      "mode": "off",
+      "pair": 5,
+      "whole_s": 19.931633899,
+      "process_cpu_s": 19.484375,
+      "main_thread_cpu_s": 18.84375,
+      "compiler_ms": 611
+    },
+    {
+      "system": "texas7k",
+      "mode": "off",
+      "pair": 6,
+      "whole_s": 20.5186536,
+      "process_cpu_s": 19.96875,
+      "main_thread_cpu_s": 19.296875,
+      "compiler_ms": 441
+    },
+    {
+      "system": "texas7k",
+      "mode": "on",
+      "pair": 6,
+      "whole_s": 25.924693001,
+      "process_cpu_s": 25.0,
+      "main_thread_cpu_s": 24.5625,
+      "compiler_ms": 103
+    },
+    {
+      "system": "texas7k",
+      "mode": "on",
+      "pair": 7,
+      "whole_s": 19.317060699,
+      "process_cpu_s": 18.984375,
+      "main_thread_cpu_s": 18.6875,
+      "compiler_ms": 185
+    },
+    {
+      "system": "texas7k",
+      "mode": "off",
+      "pair": 7,
+      "whole_s": 19.5692344,
+      "process_cpu_s": 19.0625,
+      "main_thread_cpu_s": 18.765625,
+      "compiler_ms": 125
+    },
+    {
+      "system": "texas7k",
+      "mode": "off",
+      "pair": 8,
+      "whole_s": 20.4484028,
+      "process_cpu_s": 20.015625,
+      "main_thread_cpu_s": 19.765625,
+      "compiler_ms": 12
+    },
+    {
+      "system": "texas7k",
+      "mode": "on",
+      "pair": 8,
+      "whole_s": 19.929957299,
+      "process_cpu_s": 19.21875,
+      "main_thread_cpu_s": 18.953125,
+      "compiler_ms": 45
+    }
+  ],
+  "whole_runtime_receipts": {
+    "launch": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/launch.json",
+    "directory_runtime": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-qualified/directory-runtime.json"
+  },
+  "preserved_preliminary_attempts": [
+    {
+      "folder": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study",
+      "reason": "Storage identity accounting counted verified hardlinks repeatedly; small timings retained separately with substantial compilation."
+    },
+    {
+      "folder": "ipss.test.plugin.core/target/dynamic-pf-transfer-20261030/matched-study-final",
+      "reason": "Sandbox denied hardlink creation during small warmup."
+    }
+  ],
+  "accuracy_limits": [
+    "Internal parity is separate from independent reference acceptance.",
+    "Large trace records all bus voltage magnitudes but only three rotor-angle channels.",
+    "Full large-case independent reference qualification remains open.",
+    "The existing 123 buses outside the final 2% recovery band remain unchanged."
+  ],
+  "final_package_build": {
+    "run": "dynamic-pf-transfer-package-final-20261030",
+    "status": "passed",
+    "runtime_comparison": {
+      "full_test_runtime": ".verification-build\\dynamic-pf-transfer-full-final-20261030",
+      "final_package_runtime": ".verification-build\\dynamic-pf-transfer-package-final-20261030",
+      "class_count_tested": 7076,
+      "class_count_packaged": 7076,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "ipss.test.plugin.core/test-classes/org/interpss/core/dstab/DynamicPowerFlowTransferBenchmark.class"
+      ],
+      "changed_class_sha256": {
+        "ipss.test.plugin.core/test-classes/org/interpss/core/dstab/DynamicPowerFlowTransferBenchmark.class": {
+          "tested": "7703de94968925331e89895106b8452c8a06615f4aa34adcbf27b7733588359e",
+          "packaged": "a6a3b3faceaeaa8ddfe0a3b04c65a29e9ff9999a3da69cb0de61709079f175a4"
+        }
+      }
+    },
+    "runtime_comparison_sha256": "51bff2dbed176ca8667c813f1a49f0b1aa89b38c8411a5cbbfd567944f958641"
+  },
+  "implemented_core_commit": "fcd07b033d2684c09ab9bcc1c53b69013bc2128c",
+  "plugin_feature_commit": "Commit containing this checkpoint; execution-time parent and source patches are recorded above."
+}

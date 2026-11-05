@@ -53,14 +53,16 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     root = Path.cwd()
     step = float(entered_step)
     permitted_steps = (.0005, .00025)
+    if directory_prefix == 'pss2b-native-':
+        permitted_steps += (1/240, 1/480)
     if cfg.get('pss5c_observation_diagnostic', False):
         assert directory_prefix == 'pss5c-native-', 'Fine steps are an explicit PSS5C diagnostic only'
         permitted_steps += (.00005, .000025)
     assert step in permitted_steps
     end = cfg.get('end_s', .5)
-    assert end in (.5, 3.)
+    assert end in (.5, 3.) or directory_prefix == 'pss2b-native-' and end == 10.
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-', 'esst1a-bypass-', 'ieeest-input-', 'pss5c-native-')
+    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-', 'esst1a-bypass-', 'ieeest-input-', 'pss5c-native-', 'pss2b-native-')
     out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
     probe_source = Path(probe_source or __file__).resolve()
@@ -129,8 +131,14 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             len(spec['constants']), len(spec['icons']) + reserved_icons, len(spec['states']), spec.get('variable_count', len(spec.get('variables', ())))), allocation
         constants = [checked('constant ' + kind, psspy.dsrval('CON', allocation['CON'] + i)) for i in range(allocation['NCON'])]
         icons = [checked('selector ' + kind, psspy.dsival('ICON', allocation['ICON'] + i)) for i in range(allocation['NICON'])]
-        assert constants == [f32(v) for v in spec['constants']] and icons[:len(spec['icons'])] == list(spec['icons'])
+        assert constants == [f32(v) for v in spec['constants']], (spec['model'], 'loaded constants', constants,
+                                                                 'expected', [f32(v) for v in spec['constants']])
+        assert icons[:len(spec['icons'])] == list(spec['icons']), (spec['model'], 'loaded selectors', icons)
         components[kind] = dict(model=spec['model'], layout=allocation, actual_constants=constants, actual_icons=icons[:len(spec['icons'])])
+        if spec.get('initialize_diagnostic_variables', False):
+            assert spec['model'] == 'PSS2B'
+            for index in range(allocation['NVAR']):
+                checked('initialize diagnostic storage', psspy.change_var(allocation['VAR'] + index, 0.0))
         if reserved_icons:
             components[kind].update(reserved_icon_count=reserved_icons,reserved_icons_initial=icons[len(spec['icons']):])
         for i, name in enumerate(spec['states']):

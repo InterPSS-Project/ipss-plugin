@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "status": "bounded-converter-impedance-contracts-with-baseline-suite-failures",
+  "source_commit": "b55cdfc6f71de60e1bf35f6123e06230c59ccaed",
+  "core_commit": "730d52fa7f414fd051b025436c0f954dad995623",
+  "source_state": "Tracked-source patch, new source/resources and final plugin jar retained before the scoped commit.",
+  "reference_runs": 26,
+  "fixed_command_profiles": 4,
+  "reference_samples_per_profile": [
+    405,
+    805
+  ],
+  "validation": {
+    "full_plugin_reactor": [
+      {
+        "tests": 457,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 4
+      },
+      {
+        "tests": 468,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 28
+      },
+      {
+        "tests": 3340,
+        "failures": 4,
+        "errors": 0,
+        "skipped": 54
+      }
+    ],
+    "final_focused": [
+      {
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "tests": 62,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "baseline_failure_audit": "same-four-failures-in-frozen-baseline-and-current"
+  },
+  "texas2k_recording_parity": {
+    "1": {
+      "recording_hashes": {
+        "full-network.bin": "464c31afa696759b5b0bf2353b2bd0d4f3f0675c4a7e2d9c21fb649b2631bf63",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "351030667780a4ea0e82614a4c9208343d576865313d92638467d682657ed9c7"
+      },
+      "samples": 2405,
+      "channels": 6190
+    },
+    "2": {
+      "recording_hashes": {
+        "full-network.bin": "d5cea1575eb7a04e695cfc617a66f75e528a4ae7dfdd8006fef3bd1e5afdf332",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+        "interpss.csv": "e3f764e2c8a2501d0d035bfdae8688d47f1ff5bf4d6b9a457397c19772f4c72b"
+      },
+      "samples": 2405,
+      "channels": 4810
+    }
+  },
+  "limitations": [
+    "Fixed-command V/P/Q/IP/Eq fault profiles at two steps are bounded evidence, not complete model verification.",
+    "Filtered-voltage history, remaining electrical-controller selectors/limit combinations, lifecycle and full-system REGCAU2 acceptance remain open.",
+    "REGC_C remains unsupported; no alias or current-source substitute is introduced.",
+    "Four full-suite convergence failures recur in the frozen pre-change jar and current jar. The full reactor is not reported as passing.",
+    "Final focused checks include the later Q/V analyzer guard and active-rate test. No new full-suite pass is claimed.",
+    "Texas2k checks prove complete recording identity, not a new warmed timing result."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-converter-source-impedance/manifest.json",
+  "manifest_sha256": "c9b6eebe8b83b6bc64c38cb684cecb66f0f737eba9321b8197cd411b31df620e"
+}

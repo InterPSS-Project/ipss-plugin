@@ -27,8 +27,19 @@ public final class Texas7kFlatStartAudit {
         return run(input,output,duration,1e-8);
     }
     public static Map<String,Object> run(Path input,Path output,double duration,double tolerance)throws Exception {
+        return run(input,output,duration,tolerance,false);
+    }
+    public static Map<String,Object> run(Path input,Path output,double duration,double tolerance,boolean optimized)throws Exception {
+        return run(input,output,duration,tolerance,optimized,0.);
+    }
+    public static Map<String,Object> run(Path input,Path output,double duration,double tolerance,boolean optimized,double diagnosticInterval)throws Exception {
+        return run(input,output,duration,tolerance,optimized,diagnosticInterval,1./240);
+    }
+    public static Map<String,Object> run(Path input,Path output,double duration,double tolerance,boolean optimized,double diagnosticInterval,double step)throws Exception {
         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite duration required");
         if(!Double.isFinite(tolerance)||tolerance<=0)throw new IllegalArgumentException("Positive finite network tolerance required");
+        if(!Double.isFinite(diagnosticInterval)||diagnosticInterval<0)throw new IllegalArgumentException("Nonnegative diagnostic interval required");
+        if(!Double.isFinite(step)||step<=0)throw new IllegalArgumentException("Positive integration step required");
         if(Files.exists(output))throw new IllegalArgumentException("Refusing to replace audit evidence");
         Files.createDirectories(output);var result=new LinkedHashMap<String,Object>();
         long started=System.nanoTime();
@@ -47,11 +58,19 @@ public final class Texas7kFlatStartAudit {
             lf.setNonDivergent(true);lf.setMaxIterations(50);lf.setTolerance(.001);
             if(!lf.loadflow())throw new IllegalStateException("Power flow failed: "+net.maxMismatch(com.interpss.core.algo.AclfMethodType.NR));
             result.put("power_flow_mismatch",net.maxMismatch(com.interpss.core.algo.AclfMethodType.NR).toString());
-            algorithm.setSimuStepSec(1./240);algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-            algorithm.setTotalSimuTimeSec(duration);algorithm.setSolver(new AuditSolver(algorithm,tolerance));
+            algorithm.setSimuStepSec(step);algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+            algorithm.setTotalSimuTimeSec(duration);
+            if(optimized){
+                var solver=new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm);
+                solver.setNetworkSolutionTolerance(tolerance);solver.setReuseNetworkEndpoint(true);algorithm.setSolver(solver);
+            }else algorithm.setSolver(new AuditSolver(algorithm,tolerance));
+            result.put("integration_scheme",optimized?"STAGGERED_EULER":"MODIFIED_EULER");
+            result.put("integration_step_s",step);
             result.put("network_voltage_correction_tolerance_pu",tolerance);
             algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
             if(!algorithm.initialization())throw new IllegalStateException("Dynamic initialization failed");
+            if(algorithm.getSolver() instanceof org.interpss.dstab.algo.PsseStaggeredEulerSolver staggered)
+                result.put("resolved_exciter_substeps",staggered.getResolvedExciterSubsteps());
             var disabled=new ArrayList<String>();var machines=new ArrayList<Machine>();
             for(var bus:net.getBusList())for(var gen:bus.getContributeGenList())if(gen.isActive()&&gen.getMach()!=null) {
                 var m=gen.getMach();machines.add(m);
@@ -63,10 +82,13 @@ public final class Texas7kFlatStartAudit {
             for(int i=0;i<initialV.length;i++)initialV[i]=net.getBusList().get(i).getVoltageMag();
             for(int i=0;i<machines.size();i++)initialAngle[i]=machines.get(i).getAngle();
             double maxV=0,maxSpeed=0,maxAngle=0;String worstV="",worstSpeed="",worstAngle="";
-            int ticks=(int)Math.ceil(duration*240),progressInterval=Math.max(1,ticks/10);
+            int ticks=(int)Math.ceil(duration/step),progressInterval=Math.max(1,ticks/10);
+            int diagnosticTicks=diagnosticInterval==0?0:Math.max(1,(int)Math.round(diagnosticInterval/step));
             for(int tick=0;tick<ticks;tick++) {
                 if(!algorithm.solveDEqnStep(true))throw new IllegalStateException("Simulation failed at "+algorithm.getSimuTime());
                 if(tick==0)Texas2kInitializationAudit.write(net,output.resolve("first-step-states.json"));
+                if(diagnosticTicks>0&&(tick+1)%diagnosticTicks==0)
+                    Texas2kInitializationAudit.write(net,output.resolve(String.format(java.util.Locale.ROOT,"states-%08d.json",tick+1)));
                 for(int i=0;i<initialV.length;i++) {
                     var bus=net.getBusList().get(i);if(!bus.isActive())continue;
                     double error=Math.abs(bus.getVoltageMag()-initialV[i]);

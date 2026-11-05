@@ -276,7 +276,7 @@ correction, decelerated voltage and lifecycle flags separately from differential
 states and stored derivatives. Enabling after initialization retains the seeded
 voltage memory; disabling resets it at the current terminal voltage.
 
-`PsseStaggeredEulerSolver.setReuseNetworkEndpoint(true)` optionally uses the
+`StaggeredEulerSolver.setReuseNetworkEndpoint(true)` optionally uses the
 preceding solved endpoint when evaluating ordinary-step derivatives. Events,
 explicit discontinuities, unavailable endpoints and a dirty network matrix
 require a fresh solve. External voltage, input or activation changes require

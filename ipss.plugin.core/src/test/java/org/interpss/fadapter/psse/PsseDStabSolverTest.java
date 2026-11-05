@@ -16,6 +16,33 @@ import com.interpss.dstab.DStabObjectFactory;
 
 class PsseDStabSolverTest {
     @Test
+    void preparesBusMotorOnceAcrossItsTwoMembershipLists() {
+        var network = DStabObjectFactory.createDStabilityNetwork();
+        var bus = DStabObjectFactory.createDStabBus("Bus1", network).get();
+        bus.setLoadCode(com.interpss.core.aclf.AclfLoadCode.CONST_P);
+        class Motor extends org.interpss.dstab.dynLoad.impl.LD1PACImpl {
+            int preparations;
+            @Override public void configureIntegrationStep(double interval) {
+                preparations++;
+                super.configureIntegrationStep(interval);
+            }
+        }
+        var motor = new Motor();
+        motor.setDStabBus(bus);
+        motor.setCharacteristicPolicy(org.interpss.dstab.dynLoad.impl.LD1PACImpl.CharacteristicPolicy.LEGACY_COMPOSITE);
+        motor.setTv(.004); motor.setTf(.004); motor.setTth(.004);
+        bus.addDynamicLoadModel(motor);
+        if (!bus.getDynamicBusDeviceList().contains(motor)) bus.getDynamicBusDeviceList().add(motor);
+        PsseDStabSolver.configureIntegrationStepAwareModels(network, 1.0 / 240);
+        assertEquals(1, motor.preparations);
+        assertEquals(0, motor.getEffectiveTv()); assertEquals(0, motor.getEffectiveTf()); assertEquals(0, motor.getEffectiveTth());
+        assertEquals(.004, motor.getTv()); assertEquals(.004, motor.getTf()); assertEquals(.004, motor.getTth());
+        PsseDStabSolver.configureIntegrationStepAwareModels(network, .0005);
+        assertEquals(2, motor.preparations);
+        assertEquals(.004, motor.getEffectiveTv()); assertEquals(.004, motor.getEffectiveTf()); assertEquals(.004, motor.getEffectiveTth());
+    }
+
+    @Test
     void retainsSubThresholdInitialConditionCompensation() {
         Hashtable<String, Complex> compensation = new Hashtable<>();
         PsseDStabSolver.retainNonzeroCompensation(compensation, "Bus1",

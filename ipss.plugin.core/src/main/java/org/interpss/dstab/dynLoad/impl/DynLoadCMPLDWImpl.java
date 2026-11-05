@@ -158,6 +158,8 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	}
     	
     	this.getDistEquivalent().setMva(this.mvaBase);
+        double mvaConvFactor = systemMVABase / this.mvaBase;
+        if (initializeOmittedDistribution(mvaConvFactor)) return initializeMotorComponents();
     	
     	//1. create the low-voltage bus and the load bus
   
@@ -210,23 +212,11 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    //distXfr.setToBus(lowBus);
   	    
   	    
-  	    double  mvaConvFactor = systemMVABase/this.mvaBase;
   	    
   	    double Xxf = this.getDistEquivalent().getXXf();
   	    
   	    distXfr.setZ(new Complex(0, Xxf*mvaConvFactor));
   	    
-  	    double Tfixls =this.getDistEquivalent().getTFixLS();
-  	    double Tfixhs =this.getDistEquivalent().getTFixHS();
-  	    double tap = 1.0;
-  	    double tap_step = this.getDistEquivalent().getStep();
-  	    double Tmin = this.getDistEquivalent().getTMin();
-  	    double Tmax = this.getDistEquivalent().getTMax();
-  	    
-  	    double Vmin = this.getDistEquivalent().getVMin();
-	    double Vmax = this.getDistEquivalent().getVMax();
-	    
-  	
   	  	//map distribution feeder data, need to convert data to system base, if mva_base is not system mva.
     	
     	try {
@@ -258,6 +248,27 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    
   	    Complex ItransBus = this.totalLoad.divide(VtransBus).conjugate();
     	
+        initializeDistributionEquivalent(VtransBus, ItransBus, mvaConvFactor);
+        return initializeMotorComponents();
+    }
+
+    /** A model dialect may attach leaves directly where distribution elements are omitted. */
+    protected boolean initializeOmittedDistribution(double mvaConvFactor) { return false; }
+
+    /** Initialize the distribution voltages before attaching component devices. */
+    protected void initializeDistributionEquivalent(Complex VtransBus, Complex ItransBus, double mvaConvFactor) {
+        double Tfixls =this.getDistEquivalent().getTFixLS();
+        double Tfixhs =this.getDistEquivalent().getTFixHS();
+        double tap = 1.0;
+        double tap_step = this.getDistEquivalent().getStep();
+        double Tmin = this.getDistEquivalent().getTMin();
+        double Tmax = this.getDistEquivalent().getTMax();
+
+        double Vmin = this.getDistEquivalent().getVMin();
+        double Vmax = this.getDistEquivalent().getVMax();
+
+
+        double Vmag_trans = VtransBus.abs();
     	//3. calculate tap = 1.0 such that Vmag_lowBus = (Vmin + Vmax)/2
     	
   	     double Xxfr_pu = distXfr.getAdjustedZ().getImaginary()*Tfixhs*Tfixhs;
@@ -480,12 +491,11 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    this.loadBus.setLoadQ(PQLoadBus.getImaginary());
   	    this.loadBus.setInitLoad(PQLoadBus);
     	
-    	//5. connect dynamic load models to the load bus
-    	// initialize the dynamic models, obtain the reactive power Qi after initialization
-    	// NOTE: the load percentages, the loading factor for calculating the mvaBase should be input by the model data mapper
-    	
-    	
+    }
 
+    /** Attach and initialize each leaf exactly once. */
+    protected boolean initializeMotorComponents() {
+        boolean initflag = true;
     	if(this.fMotorA > 0){
     		if(this.motorAType == 3){
     			this.indMotorA.setDStabBus(loadBus);
@@ -493,7 +503,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			loadBus.addDynamicLoadModel(indMotorA);
     			this.indMotorA.setLoadPercent(fMotorA*100.0);
     			//this.indMotorA.setLoadFactor(loadingFactor); should be set during the data input stage
-    			this.indMotorA.initStates();
+                initflag = initializeInductionMotor(this.indMotorA) && initflag;
     		}
     		else{
     			 log.error(" The motor A should be a three-phase induction motor. Type = "+this.motorAType);
@@ -510,7 +520,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			loadBus.addDynamicLoadModel(indMotorB);
     			this.indMotorB.setLoadPercent(fMotorB*100.0);
     			
-    			this.indMotorB.initStates();
+                initflag = initializeInductionMotor(this.indMotorB) && initflag;
     		}
     		else{
     			 log.error(" The motor B should be a three-phase induction motor. Type = "+this.motorBType);
@@ -528,7 +538,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			loadBus.addDynamicLoadModel(indMotorC);
     			this.indMotorC.setLoadPercent(fMotorC*100.0);
     			
-    			this.indMotorC.initStates();
+                initflag = initializeInductionMotor(this.indMotorC) && initflag;
     		}
     		else{
     			 log.error(" The motor C should be a three-phase induction motor. Type = "+this.motorCType);
@@ -548,7 +558,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			 //TODO only a temporal solution
     			//this.indMotorD.setTpp0(0.0);
     			
-    			this.ac1PMotor.initStates();
+                initflag = initializeSinglePhaseMotor(this.ac1PMotor) && initflag;
     		}
     		else{
     			 log.error(" The motor D should be a 1-phase air conditioner motor. Type = "+this.motorDType);
@@ -558,39 +568,12 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     		this.ac1PMotor = null;
     	}
     	
-    	//7. calculate the reactive power deficiency, dQ = Qint - sum{Qi}.
-    	double dynLoadTotalQ = 0.0;
-    	if(this.indMotorA!=null){
-    		dynLoadTotalQ = this.indMotorA.getInitLoadPQ().getImaginary();  // this.indMotorA.getMotorLoadQ() returns power in motor mvabase
-    	}
-    	
-    	if(this.indMotorB!=null){
-    		dynLoadTotalQ = dynLoadTotalQ + this.indMotorB.getInitLoadPQ().getImaginary();
-    	}
-    	
-    	if(this.indMotorC!=null){
-    		dynLoadTotalQ = dynLoadTotalQ + this.indMotorC.getInitLoadPQ().getImaginary();
-    	}
-    	
-    	if(this.ac1PMotor!=null){
-    		dynLoadTotalQ = dynLoadTotalQ + this.ac1PMotor.getInitLoadPQ().getImaginary();
-    	}
-    	
-    	
-    	//8. Add capacitor bank at load bus side to compensate dQ, i.e., Bfdr = abs(dQ);
-    	
-    	//TODO since the remaining loads are represented as constant impedance, it is not necessary to calculate the compensation here
-    	// if the remaining loads are as Volt/freq depedent loads, then the compensation should be calculated, and the dstabBus initialization process needs to be updated.
-    	
-//    	double compensateQ = dynLoadTotalQ - PQLoadBus.getImaginary();
-//    	double shuntB = compensateQ/VloadBus.abs()/VloadBus.abs();  
-//    	
-//    	this.loadBus.setShuntY(new Complex(0, shuntB));
-    	
-  	    
-		return initflag ;
-    	
+        return initflag;
     }
+
+    /** Family-specific operating-point demand may differ from the physical motor circuit. */
+    protected boolean initializeInductionMotor(InductionMotor motor) { return motor.initStates(); }
+    protected boolean initializeSinglePhaseMotor(LD1PAC motor) { return motor.initStates(); }
 
 	/** Load represented by this composite container before its parent-bus loads are detached. */
 	protected Complex resolveCompositeLoad() {

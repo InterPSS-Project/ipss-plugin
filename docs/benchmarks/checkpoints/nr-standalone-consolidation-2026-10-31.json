@@ -1,0 +1,639 @@
+{
+  "status": "standalone_migration_verified_performance_work_remains",
+  "consolidation_complete": false,
+  "final_release_qualified": false,
+  "core_source_commit": "1942c231edb0bcce00a00e35cd2dedc38e7c1b79",
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 7941,
+    "totals": {
+      "passed": 7834,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 528,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#certificateRetriesFreshPivotsAndRecordsActualBackendWork:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#retainedFactorCertificateFailureDoesNotRetryWhenPolicyForbidsIt:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#validatesInstancePoliciesWithoutWeakeningDefaultGuards:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#verificationRejectsUncertifiableRhsAndRequiresSequentialSingleRhs:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#absoluteMagnitudeJacobianMatchesIndependentFiniteDifferences:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#checksReferencePowerFinitenessAndAllowsHugeFiniteVoltageAtSolvedStart:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#commonKernelReplacesFormerLargeFusedImplementation:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#instancePolicyAndOwnedBackendDoNotConsultOrMutateGlobals:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#largeFiniteMismatchUsesInstanceDivergencePolicy:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#negativeMagnitudeKeepsLegacyUnwrappedAngleConvention:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#ownsOperatorCopiesAndRejectsInvalidShapesAndOptions:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesCancellationWithMidRowDiagonalAndSignedZero:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#supportsMultipleReferencesAndNoPqEquations:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#zeroBudgetAndExactToleranceApplyNoCorrectionAndNeedNoFactors:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_standalone_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#certificateRetriesFreshPivotsAndRecordsActualBackendWork": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#retainedFactorCertificateFailureDoesNotRetryWhenPolicyForbidsIt": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#validatesInstancePoliciesWithoutWeakeningDefaultGuards": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrLinearCertificateTest#verificationRejectsUncertifiableRhsAndRequiresSequentialSingleRhs": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#absoluteMagnitudeJacobianMatchesIndependentFiniteDifferences": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#checksReferencePowerFinitenessAndAllowsHugeFiniteVoltageAtSolvedStart": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#commonKernelReplacesFormerLargeFusedImplementation": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#instancePolicyAndOwnedBackendDoNotConsultOrMutateGlobals": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#largeFiniteMismatchUsesInstanceDivergencePolicy": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#negativeMagnitudeKeepsLegacyUnwrappedAngleConvention": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#ownsOperatorCopiesAndRejectsInvalidShapesAndOptions": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesCancellationWithMidRowDiagonalAndSignedZero": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#preservesNonsymmetricOperatorsFreshStartsTargetsAndReuseOptions(int, boolean)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#supportsMultipleReferencesAndNoPqEquations": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrStandaloneConsolidationTest#zeroBudgetAndExactToleranceApplyNoCorrectionAndNeedNoFactors": "passed"
+    }
+  },
+  "implementation": {
+    "iteration_owner": "LfCalcMethodRunner / LfCalcIterOrchestrator / LfCalcNrEngine",
+    "electrical_owners": [
+      "NrPowerEvaluation",
+      "NrBusEquations",
+      "PolarNrFormulation"
+    ],
+    "standalone_facade": "PreparedNewtonSolver / FixedOperatorNrSolver",
+    "fixed_operator_logical_degree_count_preserved": true,
+    "internal_matrix_layout": "2N with fixed-variable identity rows",
+    "default_maintained_policies_preserved": true,
+    "old_standalone_math": "test-only FrozenStandaloneNewtonSolver"
+  },
+  "matched_before_after": {
+    "case118": {
+      "before": {
+        "samples": 20000,
+        "mean_ms": 0.040532615,
+        "median_ms": 0.0382,
+        "min_ms": 0.0376,
+        "max_ms": 0.7582
+      },
+      "after": {
+        "samples": 20000,
+        "mean_ms": 0.04142093,
+        "median_ms": 0.0397,
+        "min_ms": 0.0391,
+        "max_ms": 0.775
+      },
+      "mean_reduction_percent": -2.19160545156043,
+      "byte_identical_voltages_sha256": "081a09d4c0db179b842da519d326462f9ae45f015bb869eaf3817161dd472f16"
+    },
+    "case9241pegase": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 14.885153,
+        "median_ms": 14.652750000000001,
+        "min_ms": 13.3459,
+        "max_ms": 24.3657
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 15.6038,
+        "median_ms": 15.1517,
+        "min_ms": 13.5004,
+        "max_ms": 32.3197
+      },
+      "mean_reduction_percent": -4.827944999960687,
+      "byte_identical_voltages_sha256": "25c9574689f76b0c234580bda2b9138f419692d4e3f9a7ccb13965cb37d1e32d"
+    },
+    "activsg25k": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 51.756824,
+        "median_ms": 50.684349999999995,
+        "min_ms": 46.7386,
+        "max_ms": 75.5804
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 52.4414025,
+        "median_ms": 51.4694,
+        "min_ms": 48.1025,
+        "max_ms": 72.9093
+      },
+      "mean_reduction_percent": -1.3226825896426764,
+      "byte_identical_voltages_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+    }
+  },
+  "one_warmup_25k_ms": {
+    "before": [
+      114.933,
+      116.2366
+    ],
+    "after": [
+      116.0818,
+      109.1147
+    ]
+  },
+  "current_external_comparison": {
+    "target": {
+      "required_ratio": 1.2,
+      "cases": {
+        "case39": {
+          "mean_ratio": 1.2045864590630047,
+          "per_fork_ratios": [
+            1.2018621851269842,
+            1.1825574768408964,
+            1.2304931494061961
+          ]
+        },
+        "case118": {
+          "mean_ratio": 1.4202284320253589,
+          "per_fork_ratios": [
+            1.3984249399456712,
+            1.4267752573555257,
+            1.435336730731283
+          ]
+        },
+        "case9241pegase": {
+          "mean_ratio": 1.1496762580470508,
+          "per_fork_ratios": [
+            1.141346358771264,
+            1.1711462763753635,
+            1.136551071819025
+          ]
+        },
+        "activsg25k": {
+          "mean_ratio": 1.2519412255395517,
+          "per_fork_ratios": [
+            1.220810306326102,
+            1.2597113816345602,
+            1.2760305058256478
+          ]
+        },
+        "activsg70k": {
+          "mean_ratio": 1.0834838747357651,
+          "per_fork_ratios": [
+            1.0856938571608594,
+            1.0613646026264913,
+            1.1035874750898043
+          ]
+        }
+      },
+      "target_met": false,
+      "separate_cohorts": true,
+      "cpu": 2,
+      "affinity_mask": 4
+    },
+    "summary": [
+      {
+        "case": "case39",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.012738803333333331,
+        "median_ms": 0.0122,
+        "min_ms": 0.0117,
+        "p95_ms": 0.013,
+        "max_ms": 0.7853,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.01275276,
+            "median_ms": 0.0122,
+            "min_ms": 0.0118,
+            "p95_ms": 0.0128,
+            "max_ms": 0.7637
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.01303699,
+            "median_ms": 0.0125,
+            "min_ms": 0.012,
+            "p95_ms": 0.0133,
+            "max_ms": 0.7853
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.012426659999999999,
+            "median_ms": 0.012,
+            "min_ms": 0.0117,
+            "p95_ms": 0.0124,
+            "max_ms": 0.4908
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.028464193333333332,
+        "median_ms": 0.0276,
+        "min_ms": 0.027,
+        "p95_ms": 0.0289,
+        "max_ms": 1.5089,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.028320190000000002,
+            "median_ms": 0.0274,
+            "min_ms": 0.027,
+            "p95_ms": 0.0289,
+            "max_ms": 1.5089
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.028591769999999996,
+            "median_ms": 0.0278,
+            "min_ms": 0.0271,
+            "p95_ms": 0.0289,
+            "max_ms": 0.5116
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.028480620000000005,
+            "median_ms": 0.0276,
+            "min_ms": 0.0272,
+            "p95_ms": 0.0289,
+            "max_ms": 0.5109
+          }
+        ]
+      },
+      {
+        "case": "case9241pegase",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 12.652772666666666,
+        "median_ms": 12.433900000000001,
+        "min_ms": 12.0231,
+        "p95_ms": 14.165655,
+        "max_ms": 18.8604,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 12.565566000000004,
+            "median_ms": 12.346599999999999,
+            "min_ms": 12.0307,
+            "p95_ms": 13.403035000000001,
+            "max_ms": 16.4016
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 12.659398999999999,
+            "median_ms": 12.4498,
+            "min_ms": 12.0659,
+            "p95_ms": 13.664364999999998,
+            "max_ms": 16.4758
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 12.733353,
+            "median_ms": 12.47805,
+            "min_ms": 12.0231,
+            "p95_ms": 14.555319999999998,
+            "max_ms": 18.8604
+          }
+        ]
+      },
+      {
+        "case": "case39",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.01534499,
+        "median_ms": 0.0147,
+        "min_ms": 0.0144,
+        "p95_ms": 0.017,
+        "max_ms": 0.885,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.01532706,
+            "median_ms": 0.0147,
+            "min_ms": 0.0144,
+            "p95_ms": 0.0164,
+            "max_ms": 0.885
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.015416989999999998,
+            "median_ms": 0.0148,
+            "min_ms": 0.0145,
+            "p95_ms": 0.0174,
+            "max_ms": 0.4794
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.01529092,
+            "median_ms": 0.0146,
+            "min_ms": 0.0144,
+            "p95_ms": 0.0167,
+            "max_ms": 0.6299
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.04042565666666667,
+        "median_ms": 0.0389,
+        "min_ms": 0.0381,
+        "p95_ms": 0.0436,
+        "max_ms": 1.7093,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.03960366,
+            "median_ms": 0.0385,
+            "min_ms": 0.0381,
+            "p95_ms": 0.0425,
+            "max_ms": 0.7405
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.040794029999999995,
+            "median_ms": 0.0391,
+            "min_ms": 0.0385,
+            "p95_ms": 0.0435,
+            "max_ms": 1.7093
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.04087928,
+            "median_ms": 0.039,
+            "min_ms": 0.0384,
+            "p95_ms": 0.0448,
+            "max_ms": 0.7296
+          }
+        ]
+      },
+      {
+        "case": "case9241pegase",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 14.546592333333335,
+        "median_ms": 14.32165,
+        "min_ms": 13.4288,
+        "p95_ms": 15.949309999999999,
+        "max_ms": 21.2212,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 14.341663,
+            "median_ms": 14.15185,
+            "min_ms": 13.5331,
+            "p95_ms": 15.492339999999999,
+            "max_ms": 19.5527
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 14.826008,
+            "median_ms": 14.745899999999999,
+            "min_ms": 13.4288,
+            "p95_ms": 16.23995,
+            "max_ms": 21.2212
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 14.472105999999998,
+            "median_ms": 14.29275,
+            "min_ms": 13.6287,
+            "p95_ms": 15.75521,
+            "max_ms": 19.9958
+          }
+        ]
+      },
+      {
+        "case": "activsg25k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 40.657863666666664,
+        "median_ms": 40.21095,
+        "min_ms": 37.9972,
+        "p95_ms": 43.858765,
+        "max_ms": 50.4695,
+        "iterations": [
+          5
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 41.283227,
+            "median_ms": 41.2353,
+            "min_ms": 38.2701,
+            "p95_ms": 44.540575,
+            "max_ms": 50.4695
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 40.356821999999994,
+            "median_ms": 39.99445,
+            "min_ms": 38.2836,
+            "p95_ms": 42.778825,
+            "max_ms": 45.7719
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 40.333542,
+            "median_ms": 39.82355,
+            "min_ms": 37.9972,
+            "p95_ms": 43.69941,
+            "max_ms": 44.7789
+          }
+        ]
+      },
+      {
+        "case": "activsg70k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 217.90609333333333,
+        "median_ms": 216.8986,
+        "min_ms": 210.5805,
+        "p95_ms": 225.04577500000002,
+        "max_ms": 262.8682,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 216.88130999999993,
+            "median_ms": 216.0469,
+            "min_ms": 210.5805,
+            "p95_ms": 224.479455,
+            "max_ms": 237.5011
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 219.343195,
+            "median_ms": 217.97305,
+            "min_ms": 213.3085,
+            "p95_ms": 230.34124,
+            "max_ms": 239.5967
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 217.493775,
+            "median_ms": 216.22195,
+            "min_ms": 212.1417,
+            "p95_ms": 224.73467,
+            "max_ms": 262.8682
+          }
+        ]
+      },
+      {
+        "case": "activsg25k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 50.90125566666667,
+        "median_ms": 49.6413,
+        "min_ms": 46.8542,
+        "p95_ms": 57.01965500000001,
+        "max_ms": 72.8497,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 50.398989,
+            "median_ms": 49.35235,
+            "min_ms": 46.8542,
+            "p95_ms": 54.897045,
+            "max_ms": 70.0744
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 50.837948000000004,
+            "median_ms": 49.697050000000004,
+            "min_ms": 47.0035,
+            "p95_ms": 55.02126,
+            "max_ms": 70.6112
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 51.46683000000001,
+            "median_ms": 50.023849999999996,
+            "min_ms": 48.0656,
+            "p95_ms": 60.23562,
+            "max_ms": 72.8497
+          }
+        ]
+      },
+      {
+        "case": "activsg70k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 236.0977383333333,
+        "median_ms": 234.7779,
+        "min_ms": 223.655,
+        "p95_ms": 248.85413,
+        "max_ms": 266.2611,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 235.46670600000002,
+            "median_ms": 234.1265,
+            "min_ms": 223.655,
+            "p95_ms": 245.54564,
+            "max_ms": 265.6885
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 232.80310300000002,
+            "median_ms": 230.2234,
+            "min_ms": 225.2049,
+            "p95_ms": 247.66644,
+            "max_ms": 266.2611
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 240.023406,
+            "median_ms": 239.2757,
+            "min_ms": 231.6948,
+            "p95_ms": 251.673775,
+            "max_ms": 257.0895
+          }
+        ]
+      }
+    ],
+    "audited_measured_samples": 121800,
+    "result_audit": "ipss.test.plugin.core/target/nr-standalone-rustpower-final-20261031/result-audit.json",
+    "small_rust_warmup_evidence": "Executed source range(-warmups,repeats) and per-fork launch flags; the small-case validation format has no separate warmup counters."
+  },
+  "initial_migration_comparison_retained": "ipss.test.plugin.core/target/nr-standalone-consolidation-20261031/matched-summary.json",
+  "profile_scope": "Diagnostic JFR only, separate from timing; OS counter warnings are not attribution evidence.",
+  "full_and_measured_production_entries_identical": 108,
+  "evidence_root": "ipss.test.plugin.core/target/nr-standalone-consolidation-20261031",
+  "external_evidence_root": "ipss.test.plugin.core/target/nr-standalone-rustpower-final-20261031",
+  "remaining": [
+    "Specialized coefficient/capability contracts and extension handoff coverage",
+    "Complete the plan coverage matrix and final generic/frozen comparisons",
+    "Remove measured migration overhead and meet the <=1.2 criterion on every external case"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "status": "validated-bounded-network-convergence-repair",
+  "core_version": "1.4.5",
+  "plugin_version": "1.4.7",
+  "source_bases": {
+    "core": "4b87c8724e3d26d39425f1918fc87a7b1b60f233",
+    "plugin": "b19903cc96c2686547387b51e4e32d490ee40c46"
+  },
+  "source_files": {
+    "core": {
+      "pom.xml": "ea6181c34a07a11f6a664ae0d8b4ad4cb5c922a7342fc8fdb32ba8dee8d4afa5",
+      "ipss.core_EMF/src/main/java/com/interpss/dstab/algo/defaultImpl/AndersonOne.java": "5f7e0b8e91914aa12111ccb336f82a6a172bfbb0985d482fe3312d8fc8b3f7d5",
+      "ipss.core_EMF/src/main/java/com/interpss/dstab/algo/defaultImpl/DStabSolverImpl.java": "ba6e3d1305bed0ab8a8dfd0f1b539cb5805c99bc4e983fbc918e41df5ef0cbe9",
+      "ipss.core_EMF/src/main/java/com/interpss/dstab/device/DynamicDevice.java": "cba37f6c1acecd3c6fcdd4237c08e638cf70b0f94bdf7ee921688c95a7e78474",
+      "ipss.test.core/src/test/java/com/interpss/dstab/algo/defaultImpl/BoundedAndersonTest.java": "10922cf56561e48147fc5068870aa5d30d1b40323b8c5bb9ee92336133ac9763",
+      "ipss.test.core/src/test/java/com/interpss/test/dstab/BoundedNetworkAccelerationTest.java": "82da106080d06c4ca59494398adb1c6a224d59f7e17aff004db7a1b53eef97c4"
+    },
+    "plugin": {
+      "pom.xml": "3af89bdab3ec50df487f8839392d5358d414c641432ca9cb8af1067848608962",
+      "ipss.plugin.core/src/main/java/org/interpss/dstab/renewable/Regca1Model.java": "9dd4b962a44ac7efe9e378b12bf4d45a5f5e3046db4529e438e85a323102e72b",
+      "ipss.plugin.core/src/main/java/org/interpss/dstab/renewable/Regfma1Model.java": "0ae9a16ecc76eda8279f0e0059ab186f21c8fd8f621bc6ad9afa228428aa66fb",
+      "ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/PsseDStabSolver.java": "6071befad28c4ef9c74a19ec34bb9537c1104d219dc5a5cf683e1e45ef2d4f1f",
+      "ipss.plugin.core/src/test/java/org/interpss/fadapter/psse/PsseNetworkAccelerationTest.java": "cf23a53acf8b2554ddecba77650ee70ed71c8fc20734f8b5167fc54a62985308",
+      "ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/builder/dstab/PsseRegfma1ModelTest.java": "2eafdd25f3178bdef4f75cc94b57e4be0d4f7b30ce614650d7a7f94cd8faa2ce"
+    }
+  },
+  "original_assertions_unchanged": true,
+  "core_tests": [
+    {
+      "module": "ipss.core.test",
+      "tests": 3106,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "plugin_tests": [
+    {
+      "module": "ipss.plugin.3phase",
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    {
+      "module": "ipss.plugin.core",
+      "tests": 445,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 6
+    },
+    {
+      "module": "ipss.test.plugin.core",
+      "tests": 3343,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 54
+    }
+  ],
+  "ordinary_control_maximum_iterations": 90,
+  "candidate_maximum_iterations": 50,
+  "unchanged_wind_control_maximum_iterations": 12,
+  "numerical_policy": {
+    "iteration_limit": 50,
+    "ordinary_fraction": "1/3",
+    "minimum_ordinary_iterations": 8,
+    "contraction_history": 4,
+    "history_depth": 3,
+    "maximum_extrapolation_multiple": 4,
+    "acceptance": "fresh ordinary voltage correction; original tolerance and norm"
+  },
+  "new_native_reference_artifacts": false,
+  "model_equations_changed": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-network-convergence-repair/manifest.json",
+  "manifest_sha256": "68644967b4212b5ecf3c3444dcb38ab93b3d2ea38eae90655133678202783d62"
+}

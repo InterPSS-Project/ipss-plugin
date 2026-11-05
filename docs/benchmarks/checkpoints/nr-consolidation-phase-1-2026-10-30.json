@@ -1,0 +1,222 @@
+{
+  "status": "phase_1_verified_consolidation_incomplete",
+  "baseline": {
+    "executed": 7683,
+    "totals": {
+      "passed": 7576,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "failures": [
+      {
+        "identity": "ipss.core.test:com.interpss.test.core.ca.dclf.DclfMultiOutageTest1#multiOpenOutageSkipsPrunedIslandBranchFactors:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.plugin.3phase:org.interpss.multiNet.trans_dist.IEEE9_3Phase_1PAC_2SubNet_test#test_IEEE9_addFeeder_1pac_Positive_Seq_Dstab:0",
+        "exception": "java.lang.ClassCastException"
+      },
+      {
+        "identity": "ipss.plugin.3phase:org.interpss.multiNet.unit.IEEE9_3Phase_1PAC_mnet_3ph3seq_test#test_multiNet_Dstab_IEEE9_1Feeder:0",
+        "exception": "java.lang.NullPointerException"
+      },
+      {
+        "identity": "ipss.plugin.3phase:org.interpss.multiNet.unit.investigate_3PHSubNetYabc#test_phaseShift_SeqEquiv_IEEE9Bus_1port:0",
+        "exception": "com.interpss.common.exp.InterpssException"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.core.adapter.psse.raw.aclf.RealEDTestCases#testCase1:0",
+        "exception": "com.interpss.common.exp.InterpssException"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.core.adapter.psse.raw.aclf.RoseHulman_UserTestCases#odm_testCase:0",
+        "exception": "java.lang.NullPointerException"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.core.dstab.EndpointAlignedStateMonitorTest#fullSolverVoltageAndMachineSpeedMatchSynchronousStateSnapshotsAtFaultEdges:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.core.dstab.Reecc1NativeConformanceTest#allSevenStatesCommandsAndNetworkBoundaryFollowTheNativeFault:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest#allSixCasesRideThroughThreeCycleFault:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest#allSixCasesRideThroughGeneratorTrip:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase1:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase4:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2_1:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase2_2:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      },
+      {
+        "identity": "ipss.test.plugin.core:org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise#testCase4_1:0",
+        "exception": "org.opentest4j.AssertionFailedError"
+      }
+    ]
+  },
+  "mode_gate": {
+    "totals": {
+      "tests": 117,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports": [
+      {
+        "name": "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest.xml",
+        "sha256": "95f72c976941384794bdf680f8836baad2c29b177fdda6a09d6eb7e8c83f1351",
+        "tests": 19,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest.xml",
+        "sha256": "1683928b04db10b18fec83c01db3be75662809473ef710d4223a79f44597b874",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest.xml",
+        "sha256": "9faf2caa9b6aa85093d25da6918e864b452610995529fe428a42a3c6a323531d",
+        "tests": 55,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.interpss.core.algo.impl.solver.ContinuousShuntNrIntegrationTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.ContinuousShuntNrIntegrationTest.xml",
+        "sha256": "2ccd7126ea5e4aac2a2fa9130ce08094545dd523dca127ff910e2601e8ff4bc7",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.interpss.core.algo.impl.solver.FixedGenerationShuntNrTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.FixedGenerationShuntNrTest.xml",
+        "sha256": "9969160a6a44cd264e4bcda5c93dea671c811ce8addde165ff4f25c6eaa5fc7d",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.interpss.core.algo.impl.solver.NrExecutionModeTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrExecutionModeTest.xml",
+        "sha256": "a1a99b817b7076c1d9f1729ebafac46aab47ca9f299d2d10103d41172695a61f",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "org.interpss.core.aclf.PreparedNewtonLoadflowTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.aclf.PreparedNewtonLoadflowTest.xml",
+        "sha256": "ce682e9edb27a6b67e86abf0908b3428099fb18179c93dc4cf223912053c9c4c",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "org.interpss.core.dstab.DynamicPowerFlowTransferTest",
+        "path": ".verification-build\\nr-consolidation-mode-final-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.dstab.DynamicPowerFlowTransferTest.xml",
+        "sha256": "7f564211363dc0daf98189043855caf881764ac72cf97541006fd0aaa7aaf146",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "evidence_root": "ipss.test.plugin.core\\target\\nr-consolidation-20261030",
+  "remaining": "Shared polar/rectangular equations, workspace/contributors, retirement of duplication, full post-change testing and performance qualification remain open.",
+  "core_commit": "400e588e0",
+  "completed_plan_items": {
+    "BASE-01": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "BASE-02": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "BASE-03": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "BASE-04": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "BASE-05": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "BASE-07": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "BASE-08": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-01": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-02": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-04": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-05": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-07": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-08": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    },
+    "MODE-09": {
+      "core_commit": "400e588e0",
+      "evidence": "docs/nr-consolidation-progress.md"
+    }
+  }
+}

@@ -218,6 +218,9 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	    }
 
     private St4DirectEvaluation directEvaluation;
+    /** Release bindings before reinitializing or changing the graph. */
+    public void clearDirectEvaluation(){directEvaluation=null;}
+    @Override public void invalidateRuntimePlan(){clearDirectEvaluation();super.invalidateRuntimePlan();}
     private int bridgeScopeDepth;
     private boolean bridgeCached;
     private double fixedBridge;

@@ -92,6 +92,8 @@ import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.svc.Csvgn5Model;
 import org.interpss.dstab.svc.Svsmo1t2Data;
 import org.interpss.dstab.svc.Svsmo1t2Model;
+import org.interpss.dstab.svc.Svsmo3t2Data;
+import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -1263,9 +1265,16 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2B: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0) {
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0
+                || (m == 0 && n > 0)) {
             log.warn("Invalid PSS2B selectors/filter orders at {} {}: ICS1={}, ICS2={}, M={}, N={}",
                     busId, genId, ics1, ics2, m, n);
+            return null;
+        }
+        if (java.util.stream.DoubleStream.of(tw1,tw2,t6,tw3,tw4,t7,ks2,ks3,t8,t9,ks1,
+                t1,t2,t3,t4,t10,t11,vsi1max,vsi1min,vsi2max,vsi2min,vstmax,vstmin,a,ta,tb,ks4)
+                .anyMatch(value -> !Double.isFinite(value))) {
+            log.warn("Non-finite PSS2B parameter at {} {}", busId, genId);
             return null;
         }
         if (tw1 < 0.0 || tw2 < 0.0 || t6 < 0.0 || tw3 < 0.0 || tw4 < 0.0
@@ -2711,9 +2720,23 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /** Attach the exact standard-record WECC gas governor. */
+    public org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor addGovUrgs3t(
+            String busId, String genId, double[] constants) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) return null;
+        var governor = new org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor(machine.getId()+"_Gov", constants,
+                org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor.RuntimeConvention.SOURCE_RECORD);
+        governor.setMachine(machine);
+        return governor;
+    }
+
     private static void copyHyg3Data(PsseHyg3GovernorData source,
             PsseHyg3GovernorData target) {
         target.setControlFlag(source.getControlFlag());
+        target.setFrequencyDeadbandConvention(source.getFrequencyDeadbandConvention());
+        target.setBacklashConvention(source.getBacklashConvention());
+        target.setZeroDerivativeFilterConvention(source.getZeroDerivativeFilterConvention());
         target.setRgate(source.getRgate()); target.setRelec(source.getRelec());
         target.setTt(source.getTt()); target.setTd(source.getTd());
         target.setK2(source.getK2()); target.setKi(source.getKi());
@@ -3564,6 +3587,15 @@ public class DStabNetworkBuilder {
         return new Regca1Model(gen, bus, genId, data);
     }
 
+    /** Attach the distinct effective-reactance variant without modifying RAW source data. */
+    public Regca1Model addRegcau2(String busId, String genId,
+            org.interpss.dstab.renewable.Regcau2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) return null;
+        return new Regca1Model(gen, bus, genId, data);
+    }
+
     /** Attach the published behind-impedance renewable converter model. */
     public Regcb1Model addRegcb1(String busId, String genId, Regcb1Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
@@ -3573,6 +3605,18 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regcb1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the nine-state PLL converter, retaining the physical source impedance. */
+    public org.interpss.dstab.renewable.RegccModel addRegcc(String busId,String genId,
+            org.interpss.dstab.renewable.RegccData data) {
+        var bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(gen==null || gen.getMach()!=null || gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getPosGenZ()==null || gen.getPosGenZ().abs()<1e-12
+                || (gen.getXfrZ()!=null && gen.getXfrZ().abs()>0))
+            throw new IllegalArgumentException("REGCC requires nonzero source impedance and no implicit transformer");
+        return new org.interpss.dstab.renewable.RegccModel(gen,bus,genId,data);
     }
 
     /** Attach the combined DERA1 converter and controls to a renewable generator. */
@@ -3657,7 +3701,34 @@ public class DStabNetworkBuilder {
         return new Svsmo1t2Model(bus, remoteBus, shunt, shunt.getId(), data);
     }
 
+    /** Bind a named shunt FACTS controller once during import, never by bus number zero. */
+    public Svsmo3t2Model addSvsmo3t2(String factsName, Svsmo3t2Data data) {
+        BaseDStabBus<?, ?> host = null;
+        com.interpss.core.aclf.facts.StaticVarCompensator match = null;
+        for (Object item : network.getBusList()) {
+            BaseDStabBus<?, ?> candidate = (BaseDStabBus<?, ?>) item;
+            for (var device : candidate.getStaticVarCompensatorList()) {
+                if (!factsName.equals(device.getId())) continue;
+                if (match != null) throw new IllegalArgumentException("Ambiguous FACTS name: " + factsName);
+                host = candidate;
+                match = device;
+            }
+        }
+        if (match == null || !match.isActive() || !host.isActive()) return null;
+        BaseDStabBus<?, ?> remote = data.remoteBusNumber() == 0 ? host
+                : network.getDStabBus("Bus" + data.remoteBusNumber());
+        if (remote == null || !remote.isActive()) return null;
+        for (var device : host.getDynamicBusDeviceList()) {
+            if (device instanceof Svsmo3t2Model existing && existing.getStaticDevice() == match)
+                throw new IllegalArgumentException("Duplicate FACTS controller: " + factsName);
+        }
+        return new Svsmo3t2Model(host, remote, match, data);
+    }
+
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reecb1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECB1: bus={}, gen={}", busId, genId);
@@ -3669,6 +3740,9 @@ public class DStabNetworkBuilder {
     }
 
     public Reecc1Model addReecc1(String busId, String genId, Reecc1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reecc1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECC1: bus={}, gen={}", busId, genId);
@@ -3695,6 +3769,11 @@ public class DStabNetworkBuilder {
             converter.setActiveElectricalController(controller);
             return controller;
         }
+        if (gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel converter) {
+            if(converter.getActiveElectricalController()!=null)return null;
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
         log.warn("REGCA1/REGCB1 not found for REECD1: bus={}, gen={}", busId, genId);
         return null;
     }
@@ -3710,10 +3789,15 @@ public class DStabNetworkBuilder {
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
+        if(gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         return null;
     }
 
     public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reeca1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECA1: bus={}, gen={}", busId, genId);
@@ -3778,6 +3862,11 @@ public class DStabNetworkBuilder {
     }
 
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null && pll.getActiveElectricalController()!=null){
+            if(pll.getActiveElectricalController().getPlantController()!=null)return null;
+            var controller=Repca1Model.forConverterHost(data,pll);pll.getActiveElectricalController().setPlantController(controller);return controller;
+        }
         Regca1Model converter = findRegca1(busId, genId);
         if (converter != null && converter.getActiveElectricalController() != null) {
             Repca1Model controller = Repca1Model.fromNativeRecord(data, converter);
@@ -3955,6 +4044,11 @@ public class DStabNetworkBuilder {
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
     }
 
+    private org.interpss.dstab.renewable.RegccModel findRegcc(String busId,String genId) {
+        var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        return gen!=null && gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel model?model:null;
+    }
+
     private Regcb1Model findRegcb1(String busId, String genId) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
@@ -4020,5 +4114,9 @@ public class DStabNetworkBuilder {
             return null;
         }
         return gen.getMach();
+    }
+    /** Retain the exact named link before load flow; prepare its terminal equations at initialization. */
+    public org.interpss.dstab.hvdc.Cdc6tDyrModel addCdc6t(org.interpss.dstab.hvdc.Cdc6tParameters parameters) {
+        return org.interpss.dstab.hvdc.Cdc6tDyrModel.attach(getBaseDStabNetwork(),parameters);
     }
 }

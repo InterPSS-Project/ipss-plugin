@@ -71,6 +71,9 @@ public final class Pss2aLeadLagBlock extends CMLControlBlockAdapter
         return tb > EPS ? (input - state) / tb : 0.0;
     }
 
+    /** Evaluate the current equation without replacing predictor history. */
+    public double evaluateStateDerivative() { return derivative(u, stateX); }
+
     @Override
     public double getY() {
         double output;

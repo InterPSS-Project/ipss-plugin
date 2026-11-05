@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "source_base": "fb44103035750811a6b639980204ce72886e4028",
+  "source_changes": [
+    "docs/benchmarks/bus-frequency-selection-2026-10-25.md",
+    "docs/benchmarks/configurable-controller-substeps-2026-10-21.md",
+    "docs/benchmarks/hplntd-fault-event-frequency-2026-10-18.md",
+    "docs/benchmarks/ieee39-benchmark-2026-10-15.md",
+    "docs/benchmarks/ieeest-staggered-boundary-2026-10-19.md",
+    "docs/benchmarks/ieeest-voltage-derivative-2026-10-19.md",
+    "docs/benchmarks/modified-euler-controller-preparation-2026-10-25.md",
+    "docs/benchmarks/network-iteration-lifecycle-2026-10-17.md",
+    "docs/benchmarks/texas2k-optional-frequency-2026-10-25.md",
+    "ipss.plugin.core/src/main/java/org/interpss/dstab/algo/DefaultDynamicSimulationSolver.java",
+    "ipss.plugin.core/src/main/java/org/interpss/dstab/algo/PsseStaggeredEulerSolver.java",
+    "ipss.plugin.core/src/main/java/org/interpss/dstab/algo/StaggeredEulerSolver.java",
+    "ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/ModifiedEulerControllerPreparation.java",
+    "ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/PSSEMultiFileLoader.java",
+    "ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/PsseDStabSolver.java",
+    "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/ModifiedEulerControllerPreparationTest.java",
+    "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/OptionalBusFrequencyIntegrationTest.java",
+    "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/PsseStaggeredEulerSolverTest.java",
+    "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/StaggeredExciterFixture.java",
+    "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/benchmark/Texas7kSingleCpuBenchmark.java",
+    "ipss.test.plugin.core/src/test/java/org/interpss/core/dstab/benchmark/Texas7kSingleCpuCaseRun.java"
+  ],
+  "preferred_entrypoints": [
+    "org.interpss.dstab.algo.DefaultDynamicSimulationSolver",
+    "org.interpss.dstab.algo.StaggeredEulerSolver"
+  ],
+  "validation": {
+    "ipss.plugin.core": {
+      "tests": 456,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.test.plugin.core": {
+      "tests": 64,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "legacy_api_types_verified": 6,
+  "frozen_baseline": {
+    "path": "ipss.test.plugin.core\\testData\\private\\verification-artifacts\\2026-10-25-modified-euler-controller-preparation\\runtime\\jars\\ipss.plugin.core-1.4.8.jar",
+    "bytes": 3911635,
+    "sha256": "594501c65425e794b7885a0ce3449bf9709341727b32ce294479763fbbdea6b9"
+  },
+  "performance_measurements": "Existing frozen measurements are historical; this naming update does not claim new timings.",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-neutral-solver-api/manifest.json",
+  "manifest_sha256": "5128ef08d668b90eda69d39b5511dc50c4fb56e6f84032606922472aec779715"
+}
