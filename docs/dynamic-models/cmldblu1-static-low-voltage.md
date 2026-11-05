@@ -29,17 +29,17 @@ power-factor convention.
 ## Numerical port and physical current
 
 `Cmldblu1Model` selects `LegacyStaticLoadPort` automatically for its static
-portion when transformer and feeder are omitted, no motor fractions are active,
-and either both static frequency coefficients are zero or the load bus is merged
-with its parent bus. The merged-bus configuration may also contain the legacy
-full-recovery electronic portion with active static frequency coefficients, using the
+portion when no motor fractions are active and the load bus is merged with its
+parent or belongs to the represented distribution path. The composite may also
+contain the legacy full-recovery electronic portion with active static frequency
+coefficients, using the
 [mixed current interface](cmldblu1-static-electronic-interface.md).
 The combined configuration preserves the owned-shunt current balance and the
-electronic leaf's pure-current interface in focused controls. An independent
-half-second mixed/frequency fault trajectory with omitted distribution now
-passes under both integration methods, including all event-side samples.
-Other configurations retain their existing runtime and low-voltage
-qualification remains open.
+electronic leaf's pure-current interface in focused controls. Independent
+half-second mixed/frequency fault trajectories with omitted and represented
+distribution pass under both integration methods, including all event-side
+samples. Motor-containing configurations retain their existing runtime and
+low-voltage qualification remains open.
 
 ### Mixed static/electronic frequency qualification
 
@@ -61,12 +61,31 @@ fraction without changing the numerical interface.
 `CompositeMixedStaticFrequencyTest` enforces voltage and static P/Q NRMSE
 below 0.001, rotor-angle RMSE below 0.01 degrees, and G/B peak error below
 0.000005 pu for both methods. This qualifies the exercised omitted-distribution
-profile only; represented distribution, motors, restoration and longer runs
-remain separate work.
+profile; motors, restoration and longer runs remain separate work.
 
 The raw cold-pair inputs, manifests, output and logs are retained in the private
 `verification-artifacts/cmldblu1-mixed-frequency-20261105/captures.zip`,
 SHA-256 `ad659d1bbf30cc17a2f2b0ea9834f9c08675e0457a8cb9a6f846a1e374aad7cb`.
+
+### Represented-distribution frequency qualification
+
+A second cold pair uses the same mixed static/electronic fractions and active
+frequency coefficients with both distribution elements represented. Every
+recorded field repeats exactly across the 1,005 rows. The generic static path
+had 0.00251 bus-voltage NRMSE in this fault control. Selecting the prepared
+distributed current port gives:
+
+| Complete-response error | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Worst bus-voltage NRMSE | 0.000031168 | 0.0000010755 |
+| Worst static P/Q NRMSE | 0.00010567 | 0.000094743 |
+| Peak low-voltage G/B error, pu | 0.0000001966 | 0.0000001966 |
+| Rotor-angle RMSE, degrees | 0.00005499 | 0.000008641 |
+
+The same complete-row and event-side gates pass under both methods. The raw
+reference pair and inputs are retained in the private
+`verification-artifacts/cmldblu1-distributed-frequency-20261105/captures.zip`,
+SHA-256 `40faed43c8f82bfaedfaea9b3b582b09e2bb82696e4b09736a50ed78113cf479`.
 
 The port retains the original physical component shunts. Let `Y_c` be only the
 composite's newly added shunt and `Y_aux = -Y_c` its numerical port stamp:

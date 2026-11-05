@@ -14,17 +14,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipFile;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Complete independent mixed static/electronic response with static frequency coefficients. */
 public class CompositeMixedStaticFrequencyTest {
-    private static final Path ARCHIVE=Path.of(
-            "testData/private/verification-artifacts/cmldblu1-mixed-frequency-20261105/captures.zip");
-    private static final String SHA="ad659d1bbf30cc17a2f2b0ea9834f9c08675e0457a8cb9a6f846a1e374aad7cb";
-    private static final Set<String> INACTIVE=Set.of("VAR69","VAR70","VAR71","VAR72");
+    private record Profile(String name,String archive,String sha,Set<String> inactive) { }
+    private static Stream<Arguments> profiles() {
+        var merged=new Profile("merged", "cmldblu1-mixed-frequency-20261105",
+                "ad659d1bbf30cc17a2f2b0ea9834f9c08675e0457a8cb9a6f846a1e374aad7cb",
+                Set.of("VAR69","VAR70","VAR71","VAR72"));
+        var distributed=new Profile("distributed", "cmldblu1-distributed-frequency-20261105",
+                "40faed43c8f82bfaedfaea9b3b582b09e2bb82696e4b09736a50ed78113cf479",Set.of());
+        return Stream.of(Arguments.of(merged,false),Arguments.of(merged,true),
+                Arguments.of(distributed,false),Arguments.of(distributed,true));
+    }
 
     private static List<Map<String,Double>> rows(byte[] raw) throws Exception {
         try(var reader=new java.io.BufferedReader(new StringReader(new String(raw,StandardCharsets.UTF_8)))) {
@@ -39,17 +47,19 @@ public class CompositeMixedStaticFrequencyTest {
         }
     }
 
-    @ParameterizedTest @ValueSource(booleans={false,true})
-    void mixedFrequencyPortFollowsCompleteIndependentFault(boolean staggered,@TempDir Path staged) throws Exception {
-        Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE));
-        assertEquals(SHA,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(ARCHIVE))));
+    @ParameterizedTest @MethodSource("profiles")
+    void mixedFrequencyPortFollowsCompleteIndependentFault(Profile profile,boolean staggered,
+            @TempDir Path staged) throws Exception {
+        Path archive=Path.of("testData/private/verification-artifacts",profile.archive(),"captures.zip");
+        Assumptions.assumeTrue(Files.isRegularFile(archive));
+        assertEquals(profile.sha(),HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
         List<Map<String,Double>> source;
-        try(var zip=new ZipFile(ARCHIVE.toFile())) {
+        try(var zip=new ZipFile(archive.toFile())) {
             var first=rows(zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes());
             var repeat=rows(zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
             assertEquals(first.size(),repeat.size());assertEquals(1005,first.size());
             for(int i=0;i<first.size();i++)for(var field:first.get(i).entrySet())
-                if(!INACTIVE.contains(field.getKey()))assertEquals(field.getValue(),repeat.get(i).get(field.getKey()),
+                if(!profile.inactive().contains(field.getKey()))assertEquals(field.getValue(),repeat.get(i).get(field.getKey()),
                         "Cold-repeat field " + field.getKey() + " row " + i);
             source=first.stream().filter(row->row.get("time_s")>=0).toList();
             Files.write(staged.resolve("dynamic.dyr"),zip.getInputStream(zip.getEntry("a/dynamic.dyr")).readAllBytes());
@@ -65,6 +75,7 @@ public class CompositeMixedStaticFrequencyTest {
         assertEquals(.5,actual.model.getData().value(22),1e-7);
         assertEquals(.5,actual.model.getData().value(31),1e-7);
         assertEquals(.5,actual.model.getData().value(36),1e-7);
+        assertEquals(profile.name().equals("merged"),actual.model.getLoadBus()==actual.model.getDStabBus());
         double[] clock=new double[1001];float tick=0;
         for(int i=1;i<clock.length;i++){tick+=(float).0005;clock[i]=tick;}
         for(int i=0;i<source.size();i++) {
@@ -83,8 +94,8 @@ public class CompositeMixedStaticFrequencyTest {
                 min=Math.min(min,expected);max=Math.max(max,expected);
             }
             double rmse=Math.sqrt(sum/source.size()),nrmse=rmse/(max-min);
-            System.out.printf("CMLD_MIXED_FREQ %s %s rmse=%.12g nrmse=%.12g peak=%.12g%n",
-                    staggered,pair[1],rmse,nrmse,peak);
+            System.out.printf("CMLD_MIXED_FREQ %s %s %s rmse=%.12g nrmse=%.12g peak=%.12g%n",
+                    profile.name(),staggered,pair[1],rmse,nrmse,peak);
             if(pair[1].equals("ANGLE_DEG"))assertTrue(rmse<.01,pair[1]+" RMSE="+rmse);
             else if(pair[1].startsWith("STATIC.LowVoltage"))assertTrue(peak<5e-6,pair[1]+" peak="+peak);
             else assertTrue(nrmse<.001,pair[1]+" NRMSE="+nrmse);

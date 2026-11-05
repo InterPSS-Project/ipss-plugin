@@ -52,10 +52,7 @@ public final class Cmldblu1Model extends Cmldznu2Model {
     }
 
     @Override protected Cmldznu2AlgebraicLoadModel createStaticComponent(double assignedActivePower) {
-        boolean frequencyIndependent = getData().value(31) == 0 && getData().value(36) == 0;
-        boolean mergedBus = getLoadBus() == getDStabBus();
-        if (getFmA() == 0 && getFmB() == 0 && getFmC() == 0 && getFmD() == 0
-                && (frequencyIndependent || mergedBus)) {
+        if (getFmA() == 0 && getFmB() == 0 && getFmC() == 0 && getFmD() == 0) {
             if (getLoadBus() == getDStabBus()) return new LegacyStaticLoadPort(getLoadBus(), getId() + "_S", getData(),
                     assignedActivePower, getCollapsedParentOwnedShunt());
             if (distXfr != null || distFdr != null)
