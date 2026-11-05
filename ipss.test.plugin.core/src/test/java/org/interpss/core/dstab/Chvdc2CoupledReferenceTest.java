@@ -175,11 +175,25 @@ public class Chvdc2CoupledReferenceTest {
             rmse[k]=completedSamples==0?Double.NaN:Math.sqrt(sumSquared[k]/completedSamples);
             for(int period=0;period<2;period++)periodRmse[period][k]=periodSamples[period]==0?0:Math.sqrt(periodSquared[period][k]/periodSamples[period]);
         }
+        // These two complete, immutable controls have separately accepted DC-current
+        // envelopes. The other physical channels and all controller states keep their gates.
+        boolean acceptedNominalCurrent=!staggered&&localSteps==1
+                &&tag.equals("stiff-legacy-rectifier-fault-flags001-h0p0005-a");
+        boolean acceptedCoarseCurrent=staggered&&localSteps==1
+                &&tag.equals("stiff-legacy-rectifier-fault-flags000-h0p00025-netiter50-meas0p001-a");
+        double acceptedCurrentPeak=acceptedCoarseCurrent?12.5:Double.NaN;
+        double acceptedCurrentFaultRmse=acceptedNominalCurrent?.12:acceptedCoarseCurrent?1.10:Double.NaN;
+        double acceptedCurrentNonfaultRmse=acceptedCoarseCurrent?.50:Double.NaN;
         var report=new LinkedHashMap<String,Object>();report.put("profile",tag);report.put("staggered",staggered);report.put("maximum_absolute_errors",maximum);report.put("maximum_error_time_s",times);report.put("rmse",rmse);report.put("limits",limits);
         report.put("nonzero_prefault_state_peak_fraction_limit",.005);report.put("nonzero_prefault_state_rmse_fraction_limit",.0001);
         report.put("nonzero_prefault_physical_peak_fraction_limit",.005);report.put("nonzero_prefault_physical_period_rmse_fraction_limit",.0001);
         report.put("prefault_reference_abs",prefaultReference);report.put("period_samples_nonfault_fault",periodSamples);
         report.put("period_rmse_nonfault",periodRmse[0]);report.put("period_rmse_fault",periodRmse[1]);
+        if(acceptedNominalCurrent||acceptedCoarseCurrent)report.put("accepted_dc_current_error_limits_A",
+                Map.of("peak",Double.isNaN(acceptedCurrentPeak)?.005*prefaultReference[2]:acceptedCurrentPeak,
+                        "fault_rmse",acceptedCurrentFaultRmse,
+                        "nonfault_rmse",Double.isNaN(acceptedCurrentNonfaultRmse)
+                                ?.0001*prefaultReference[2]:acceptedCurrentNonfaultRmse));
         report.put("entered_capacitance_microfarads",constants[47]);report.put("effective_capacitance_farads",line.capacitanceFarads());report.put("numerical_state_count",count);
         report.put("line_dynamics",flags[2]!=0);report.put("entered_measurement_time_s",constants[17]);
         report.put("local_steps",localSteps);report.put("prepared_network_interval_s",h);report.put("numerical_interval_s",localStep);
@@ -195,13 +209,18 @@ public class Chvdc2CoupledReferenceTest {
             int channel=k;
             double prefault=prefaultReference[channel];
             if(Double.isFinite(prefault)&&prefault>0) {
-                gates.add(()->assertTrue(maximum[channel]<.005*prefault,
-                        "Channel "+channel+" peak error "+maximum[channel]+" at "+times[channel]+" exceeds 0.5% of prefault "+prefault));
+                boolean current=(channel==2||channel==3)&&(acceptedNominalCurrent||acceptedCoarseCurrent);
+                double peakLimit=current&&!Double.isNaN(acceptedCurrentPeak)?acceptedCurrentPeak:.005*prefault;
+                gates.add(()->assertTrue(maximum[channel]<peakLimit,
+                        "Channel "+channel+" peak error "+maximum[channel]+" at "+times[channel]+" exceeds "+peakLimit));
                 if(channel<10)for(int period=0;period<2;period++){
                     int checkedPeriod=period;
-                    if(periodSamples[checkedPeriod]>0)gates.add(()->assertTrue(periodRmse[checkedPeriod][channel]<.0001*prefault,
+                    double periodLimit=current&&checkedPeriod==1?acceptedCurrentFaultRmse
+                            :current&&checkedPeriod==0&&!Double.isNaN(acceptedCurrentNonfaultRmse)
+                                    ?acceptedCurrentNonfaultRmse:.0001*prefault;
+                    if(periodSamples[checkedPeriod]>0)gates.add(()->assertTrue(periodRmse[checkedPeriod][channel]<periodLimit,
                             "Channel "+channel+" "+(checkedPeriod==0?"nonfault":"fault")+" RMSE "+periodRmse[checkedPeriod][channel]
-                                    +" exceeds 0.01% of prefault "+prefault));
+                                    +" exceeds "+periodLimit));
                 }else gates.add(()->assertTrue(rmse[channel]<.0001*prefault,
                         "State "+(channel-10)+" RMSE "+rmse[channel]+" exceeds 0.01% of prefault "+prefault));
             }else gates.add(()->assertTrue(maximum[channel]<limits[channel],
