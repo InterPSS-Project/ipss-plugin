@@ -30,6 +30,15 @@ public class Chvdc2AngleCoordinateReplayTest {
                 i.path("TAP").asDouble(),end.equals("inverter")?.5:0,i.path("XC").asDouble(),1e8);
             double physicalAlpha=Math.toDegrees(boundary.firingAngleForDcVoltage(initial.get("V9"),initial.get("VAR8")*1000,initial.get("VAR7")));
             double sourceAlpha=initial.get("STATE7"),initialAngleError=physicalAlpha-sourceAlpha;
+            double controllerAlpha=Math.toDegrees(boundary.controllerAngleForDcVoltage(
+                    initial.get("V9"),initial.get("VAR8")*1000,initial.get("VAR7")));
+            assertEquals(sourceAlpha,controllerAlpha,.002,"The prepared controller angle must use the source coordinate");
+            double translated=boundary.electricalAngleForController(initial.get("V9"),initial.get("VAR7"),
+                    Math.toRadians(controllerAlpha));
+            assertEquals(physicalAlpha,Math.toDegrees(translated),1e-9);
+            assertEquals(initial.get("VAR4"),Math.toDegrees(boundary.extinctionAtFiringAngle(
+                    initial.get("V9"),initial.get("VAR7"),translated)),.002,
+                    "The extinction margin must use the physical angle");
             if(end.equals("inverter"))assertTrue(Math.abs(initialAngleError)>.5,"Electrical initialization already differs before any stage");
             else assertEquals(sourceAlpha,physicalAlpha,.002);
             var order=p.prepareOrderControls(i.path("TR").asDouble(),i.path("TAP").asDouble());

@@ -274,7 +274,7 @@ conversion checks separately from exact legacy-model qualification.
 
 - Retain the [two-sided event-filter discriminator](dynamic-models/chvdc2-named-link.md#event-filter-stage-across-network-intervals-and-limiter-settings): both application and clearing first steps reject full right-input forcing across two network intervals and two limiter settings, while a simple half left/right step is close to the independent voltage-filter state. Resolve the exact ten-local-step coupling and accepted history; the whole-interval input-ramp trial regressed terminal-port controls and remains rejected.
 
-- Retain explicit finite commutating-resistance preparation and independently checked initial physical losses. Resolve the inverter angle-coordinate discrepancy and full fault trajectory gates without fitting resistance signs or relaxing thresholds. Automatic attachment remains unqualified.
+- Retain explicit finite commutating-resistance preparation, independently checked physical losses and distinct controller/electrical firing-angle coordinates. The complete finite-resistance flat/fault matrix now passes its unchanged strict coupled gates under both methods. Continue the remaining protected, commanded and longer-duration trajectory qualification before automatic attachment.
 
 - Retain [explicit auxiliary current commands](dynamic-models/chvdc2-named-link.md), independently checked shared ampere routing, accepted physical-time boundaries, transactional publication and retry after failed solves. Keep protection clocks separate from command timestamps and preserve uncommanded trajectories. Extend complete commanded network-trajectory qualification; the existing strict fault gates remain open.
 

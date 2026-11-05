@@ -1780,9 +1780,9 @@ inverter resistance independently. All six cold pairs reproduce byte for byte;
 the zero-resistance fault CSV is identical to the retained earlier control.
 Both methods complete all twelve trajectories with ten local steps, retaining
 all 1,005 samples and both boundary duplicates. Preparation equilibrium and
-line-plus-converter energy controls pass. Existing strict trajectory gates stay
-unchanged: six fault trajectories and two inverter-resistance flat trajectories
-remain outside acceptance.
+line-plus-converter energy controls pass. At this baseline, six fault
+trajectories and two inverter-resistance flat trajectories remained outside
+the unchanged strict gates. The later coordinate correction is recorded below.
 
 The inverter flat discrepancy is already present at initialization: its PI and
 calculated-angle states differ by approximately 0.58424 degrees while terminal
@@ -1795,9 +1795,9 @@ reproduces the latter angle but contradicts the shared physical overlap
 relation. This observation is a diagnostic, not an implemented sign convention.
 The primary state/variable descriptions identify calculated and published
 firing angles but do not resolve this finite-resistance coordinate relationship.
-An authoritative initialization/terminal mapping or additional internal
-observations are required before changing that coordinate. Physical converter
-equations must not be altered solely to make the angle trace agree.
+This baseline observation preceded the all-row coordinate audit and
+controller-only initialization replay below. Physical converter equations
+must remain intact.
 
 The retained archive is `verification-artifacts/chvdc2-resistance-20261104`.
 It includes raw paired captures, exact provenance and full Java comparisons.
@@ -1817,11 +1817,10 @@ boundary timestamps, are retained for each control. This identifies a
 persistent coordinate discrepancy, not merely an initialization offset. It
 does not justify changing the shared physical converter equation.
 
-The missing authoritative contract is the finite-resistance mapping between
-controller firing angle and electrical firing angle: initialization, extinction
-margin and angle limits, DC-line voltage publication, and the input values used
-at each integration stage. The available diagrams expose controller angle and
-terminal voltage separately without specifying this mapping. The existing
+The missing contract at this stage was the finite-resistance mapping between
+controller firing angle and electrical firing angle. The subsequent
+controller-only replay and coupled correction below resolve this mapping for
+the retained finite-resistance profiles. The existing
 zero-resistance fault measurement/history discrepancy remains a separate open
 issue. No further equivalent timing, precision or sign sweeps were performed.
 Full model qualification remains unresolved; these diagnostics do not satisfy
@@ -1943,7 +1942,31 @@ per-state limits. Zero-resistance and
 rectifier-resistance controls also pass. All six complete 1,005-row comparisons
 and initial derivatives are retained.
 
-These conditional replay passes localize the missing electrical-to-controller
-coordinate contract. They neither repair nor replace the eight retained strict
-coupled finite-resistance failures. No controller equation, source coefficient,
-physical resistance sign or full-network accuracy gate was changed.
+These conditional replay passes localized the electrical-to-controller
+coordinate contract. The coupled correction below then addressed the eight
+baseline finite-resistance failures. No controller equation, source coefficient,
+physical resistance sign or accuracy gate was changed.
+
+### Finite-resistance controller and electrical angle coordinates
+
+The retained inverter observations distinguish the reported controller firing
+angle from the electrical angle in the signed DC terminal-voltage and extinction
+equations. For finite inverter winding resistance, the controller angle is
+recovered from the converter voltage-magnitude drop; translating it to the
+electrical angle restores the physical commutation drop. The controller angle
+initializes and drives the angle controller. The translated electrical angle
+drives DC voltage, extinction margin and terminal power. At zero resistance and
+at the rectifier, the coordinates coincide. This preserves the positive
+converter loss and the existing physical terminal equation.
+
+`LccConverterBoundary` now exposes the explicit coordinate conversion, and
+`Chvdc2CoupledRuntime` applies it at initialization and each electrical
+refresh. The source replay checks both angles and extinction margin against
+independent observations. Complete coupled flat and fault comparisons for
+zero, rectifier and inverter resistance pass all 16 finite-resistance reference
+checks under modified Euler and staggered integration. The focused boundary,
+runtime, network-preparation, coordinate-replay and coupled-reference suite
+passes 71 tests without changing its strict limits. All 1,005 samples and
+both event-side records remain in each coupled comparison. This qualifies the
+retained finite-resistance profiles; other protection, commanded and automatic
+attachment gates remain separate.

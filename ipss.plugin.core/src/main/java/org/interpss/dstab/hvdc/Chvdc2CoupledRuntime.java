@@ -71,8 +71,10 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         if(!inputReady)throw new IllegalStateException("Supply terminal phasors and current reference first");
         finite(time);initialized=false;line.initialize(rectifierDcVolts,inverterDcVolts);
         double ir=line.rectifierAmperes(),ii=line.inverterAmperes(),vr=Math.hypot(inputs[0],inputs[1]),vi=Math.hypot(inputs[2],inputs[3]);
-        double ar=rectifier.firingAngleForDcVoltage(vr,rectifierDcVolts,ir),ai=inverter.firingAngleForDcVoltage(vi,inverterDcVolts,ii);
-        double gamma=inverter.extinctionAtFiringAngle(vi,ii,ai);
+        double ar=rectifier.controllerAngleForDcVoltage(vr,rectifierDcVolts,ir),
+                ai=inverter.controllerAngleForDcVoltage(vi,inverterDcVolts,ii);
+        double gamma=inverter.extinctionAtFiringAngle(vi,ii,
+                inverter.electricalAngleForController(vi,ii,ai));
         controls.setInput(ir,ii,rectifierDcVolts*.001,inverterDcVolts*.001,vr,vi,inputs[4],inputs[5],Math.toDegrees(gamma));
         controls.initialize(Math.toDegrees(ar),Math.toDegrees(ai),time);
         algebraicCurrent=ir;intervalSeconds=intervalAdvanced=intervalRectifierVoltage=intervalInverterVoltage=0;
@@ -91,8 +93,9 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double ir,ii;
         if(count==15){ir=ii=algebraicCurrent;}else{ir=line.rectifierAmperes();ii=line.inverterAmperes();}
         if(ir<0||ii<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary");
-        double dcR=rectifier.dcVoltageAtFiringAngle(vr,ir,ar),dcI=controls.inverterShorted()?0:inverter.dcVoltageAtFiringAngle(vi,ii,ai);
-        double gamma=inverter.extinctionAtFiringAngle(vi,ii,ai);
+        double electricalAi=inverter.electricalAngleForController(vi,ii,ai);
+        double dcR=rectifier.dcVoltageAtFiringAngle(vr,ir,ar),dcI=controls.inverterShorted()?0:inverter.dcVoltageAtFiringAngle(vi,ii,electricalAi);
+        double gamma=inverter.extinctionAtFiringAngle(vi,ii,electricalAi);
         rectifier.evaluateFiringAngle(vr,ir,ar,rectifierValues,0);
         double electricalInverterVoltage=inverter.maximumDcVoltage(vi,ii,heldGamma);
         inverter.evaluateDcVoltage(vi,electricalInverterVoltage,ii,inverterValues,0);

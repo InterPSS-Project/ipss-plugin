@@ -17,6 +17,22 @@ public final class LccConverterBoundary {
         if(amperes<0)throw new IllegalArgumentException("Nonnegative converter current required");
         return Math.acos(unit((powerSign*dcVolts+commutatingOhms*amperes)/(noLoadDcVoltsPerPu*acVoltagePu)));
     }
+    /** Controller angle is an observation coordinate of positive terminal DC magnitude.
+     * At the inverter its winding drop has the opposite sign from the signed
+     * electrical-voltage equation; zero resistance and rectifier coordinates coincide. */
+    public double controllerAngleForDcVoltage(double acVoltagePu,double dcVolts,double amperes) {
+        positive(acVoltagePu);finite(dcVolts);finite(amperes);
+        if(amperes<0)throw new IllegalArgumentException("Nonnegative converter current required");
+        return Math.acos(unit((powerSign*dcVolts+magnitudeDropOhms*amperes)/(noLoadDcVoltsPerPu*acVoltagePu)));
+    }
+    /** Translate a controller angle back to the electrical coordinate at the
+     * present voltage/current without changing the physical converter equation. */
+    public double electricalAngleForController(double acVoltagePu,double amperes,double controllerAngleRadians) {
+        firingInputs(acVoltagePu,amperes,controllerAngleRadians);
+        if(commutatingOhms==magnitudeDropOhms)return controllerAngleRadians;
+        return Math.acos(unit(Math.cos(controllerAngleRadians)
+                +(commutatingOhms-magnitudeDropOhms)*amperes/(noLoadDcVoltsPerPu*acVoltagePu)));
+    }
     /** Fresh extinction margin for protection. Loss of a feasible commutation margin
      * returns zero; this does not replace the terminal by a short or define its AC power. */
     public double extinctionAtFiringAngle(double acVoltagePu,double amperes,double angleRadians) {
