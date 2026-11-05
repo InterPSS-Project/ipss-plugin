@@ -575,3 +575,27 @@ not replace the complete event-side reference comparisons. The separate
 quarter-cycle, ten-second modified-Euler derivative-input angle gate remains
 unmet. The private long-run capture archive is unavailable in this checkout,
 so that gate could not be rerun as part of this slice.
+
+## Prescribed-controller fault-boundary discriminator
+
+The retained ten-second playback was rerun with the recompiled core candidate.
+The 19 long-run checks retain the same single quarter-cycle modified-Euler
+rotor-angle failure (0.01702476 degrees RMSE against 0.01 degrees); all six
+prescribed-output playback checks pass. These diagnostics retain all 2,406
+samples, including both sides of each event.
+
+When both stabilizer output and exciter field voltage are prescribed exactly
+from the independent samples, bus-1 voltage still differs by -0.00098049 pu
+at the first accepted fault interval (0.0541667 s). Prescribing only the
+stabilizer gives -0.00098141 pu at the same interval. The fault-right event
+sample differs by less than 0.00000016 pu in both experiments. The residual
+therefore develops during the machine/network integration interval while the
+controller outputs are fixed. At the first interval after clearing, the
+prescribed-both voltage difference is +0.00126387 pu.
+
+The prescribed outputs isolate this upstream discrepancy; they do not qualify
+the ordinary coupled controller. A PSS2B history change is not supported by
+this evidence. Keep the existing controller recurrence, both integration
+methods and strict long-run gate while resolving the machine/network interval
+boundary separately. The bounded run logs and complete playback traces remain
+in the private verification workspace.
