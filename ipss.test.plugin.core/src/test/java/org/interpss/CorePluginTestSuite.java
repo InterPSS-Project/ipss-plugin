@@ -940,6 +940,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.Svsmo3t2DeadbandRelockTest.class,
     org.interpss.core.dstab.Svsmo3t2DeadbandCoupledTest.class,
     org.interpss.core.dstab.Svsmo3t2PhysicalPublicationTest.class,
+    org.interpss.core.dstab.Svsmo3t2ZeroLagStageDiscriminatorTest.class,
     org.interpss.core.dstab.PhysicalStepTrialDispatchTest.class,
     Svsmo3t2MssKernelTest.class,
     Svsmo3t2MssReplayTest.class,
