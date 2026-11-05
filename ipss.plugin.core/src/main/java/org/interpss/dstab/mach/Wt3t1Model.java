@@ -23,6 +23,7 @@ public final class Wt3t1Model implements ICMLStateProvider {
     private boolean initialized;
     private Wt3p1Model pitchController;
     private Wt3e1Model electricalController;
+    private final double[] rateBuffer = new double[4];
 
     public Wt3t1Model(Wt3t1Data data) { this.data = data; }
 
@@ -51,6 +52,8 @@ public final class Wt3t1Model implements ICMLStateProvider {
         }
         aerodynamicPower = initialAerodynamicPower;
         state = new State(shaftAngle, generatorSpeed, generatorSpeed, 0.0);
+        oldState = null;
+        predictor = null;
         initialized = true;
         if (pitchController != null) {
             pitchController.initialize(initialPitch, generatorSpeed - 1.0,
@@ -88,25 +91,96 @@ public final class Wt3t1Model implements ICMLStateProvider {
     }
 
     private Derivative derivatives(State s, double electricalPower) {
+        fillRates(s, electricalPower, aerodynamicPower, rateBuffer, 0);
+        return new Derivative(rateBuffer[0], rateBuffer[1], rateBuffer[2], rateBuffer[3]);
+    }
+
+    private void fillRates(State s, double electricalPower, double mechanicalPower,
+            double[] rates, int offset) {
         double omegaBase = 2.0 * Math.PI * frequencyHz;
         if (isSingleMass()) {
-            double derivative = (aerodynamicPower / nonzero(s.generatorSpeed)
+            double derivative = (mechanicalPower / nonzero(s.generatorSpeed)
                     - electricalPower / nonzero(s.generatorSpeed)
                     - data.damp() * (s.generatorSpeed - 1.0)) / (2.0 * data.h());
-            return new Derivative(0.0, derivative, derivative,
-                    omegaBase * (s.generatorSpeed - initialGeneratorSpeed));
+            rates[offset] = 0.0;
+            rates[offset + 1] = derivative;
+            rates[offset + 2] = derivative;
+            rates[offset + 3] = omegaBase * (s.generatorSpeed - initialGeneratorSpeed);
+            return;
         }
         double speedDifference = s.turbineSpeed - s.generatorSpeed;
         double shaftTorque = shaftStiffness() * s.shaftAngle;
         double dampingTorque = data.shaftDamping() * speedDifference;
-        double turbineRate = (aerodynamicPower / nonzero(s.turbineSpeed)
+        double turbineRate = (mechanicalPower / nonzero(s.turbineSpeed)
                 - shaftTorque - dampingTorque) / (2.0 * turbineInertia());
         double generatorRate = (shaftTorque + dampingTorque
                 - electricalPower / nonzero(s.generatorSpeed)
                 - data.damp() * (s.generatorSpeed - 1.0))
                 / (2.0 * generatorInertia());
-        return new Derivative(omegaBase * speedDifference, turbineRate,
-                generatorRate, omegaBase * (s.generatorSpeed - initialGeneratorSpeed));
+        rates[offset] = omegaBase * speedDifference;
+        rates[offset + 1] = turbineRate;
+        rates[offset + 2] = generatorRate;
+        rates[offset + 3] = omegaBase * (s.generatorSpeed - initialGeneratorSpeed);
+    }
+
+    /** Leaf state boundary; the converter owner supplies live electrical power.
+     * Pitch-controller participation is intentionally unavailable until its own
+     * states share the enclosing solver's integration lifecycle. */
+    public int staggeredStateCount() { return 4; }
+
+    public void readStaggeredState(double[] values, int offset) {
+        requireSharedState(values, offset);
+        values[offset] = state.shaftAngle;
+        values[offset + 1] = state.turbineSpeed;
+        values[offset + 2] = state.generatorSpeed;
+        values[offset + 3] = state.generatorAngle;
+    }
+
+    /** Pure RHS evaluation: does not step the pitch controller or publish history. */
+    public void evaluateStaggered(double electricalPower, double[] rates, int offset) {
+        requireSharedState(rates, offset);
+        if (!Double.isFinite(electricalPower)) {
+            throw new IllegalArgumentException("WT3T1 electrical power must be finite");
+        }
+        double mechanicalPower = initialAerodynamicPower
+                + data.aerodynamicGain() * (initialPitch - pitch);
+        fillRates(state, electricalPower, mechanicalPower, rateBuffer, 0);
+        for (double rate : rateBuffer) {
+            if (!Double.isFinite(rate)) throw new IllegalStateException("WT3T1 non-finite shared rate");
+        }
+        System.arraycopy(rateBuffer, 0, rates, offset, 4);
+    }
+
+    /** State projection and rollback use the same atomic path; there is no clock history. */
+    public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        requireSharedState(values, offset);
+        if (!Double.isFinite(stepSec) || stepSec < 0.0) {
+            throw new IllegalArgumentException("WT3T1 shared interval must be finite and nonnegative");
+        }
+        for (int i = 0; i < 4; i++) {
+            if (!Double.isFinite(values[offset + i])) {
+                throw new IllegalArgumentException("WT3T1 shared states must be finite");
+            }
+        }
+        double mechanicalPower = initialAerodynamicPower
+                + data.aerodynamicGain() * (initialPitch - pitch);
+        if (!Double.isFinite(mechanicalPower)) {
+            throw new IllegalStateException("WT3T1 non-finite aerodynamic power");
+        }
+        state = new State(values[offset], values[offset + 1], values[offset + 2], values[offset + 3]);
+        aerodynamicPower = mechanicalPower;
+    }
+
+    private void requireSharedState(double[] values, int offset) {
+        if (!initialized) throw new IllegalStateException("WT3T1 is not initialized");
+        if (oldState != null || predictor != null) {
+            throw new IllegalStateException("WT3T1 ordinary predictor is pending");
+        }
+        if (pitchController != null) {
+            throw new UnsupportedOperationException("WT3T1 shared pitch-controller integration is not available");
+        }
+        java.util.Objects.requireNonNull(values, "values");
+        java.util.Objects.checkFromIndexSize(offset, 4, values.length);
     }
 
     private void updateAerodynamicPower() {
