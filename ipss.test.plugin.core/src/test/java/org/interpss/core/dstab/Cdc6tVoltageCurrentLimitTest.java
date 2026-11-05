@@ -54,4 +54,24 @@ public class Cdc6tVoltageCurrentLimitTest {
         assertThrows(IllegalArgumentException.class,()->new Cdc6tVoltageCurrentLimit(480,800,480,980,500,1200));
         assertThrows(IllegalArgumentException.class,()->new Cdc6tVoltageCurrentLimit(480,800,490,700,500,1200));
     }
+
+    @Test void independentVoltageReversalSamplesUseInverterMeasurement() {
+        var limiter=new Cdc6tVoltageCurrentLimit(450,400,490,1000,550,1200);
+        // These selected fault samples have a lower rectifier measurement. Both
+        // voltage choices yield different limits, so the recorded order distinguishes them.
+        double[][] samples={
+                {495899.78125,489067.875,1008.26824951},
+                {492301.46875,487583.03125,1007.67156982},
+                {490577.5625,488241.8125,1001.92523193}
+        };
+        for(double[] sample:samples) {
+            double inverterVoltage=sample[0],rectifierVoltage=sample[1],recordedOrder=sample[2];
+            double requested=500e6/inverterVoltage;
+            double inverterOrder=limiter.limit(requested,inverterVoltage);
+            double lowerVoltageOrder=limiter.limit(requested,Math.min(inverterVoltage,rectifierVoltage));
+            assertEquals(inverterOrder,recordedOrder,1e-4);
+            assertTrue(inverterOrder-lowerVoltageOrder>20,
+                    "The recorded order must distinguish the two voltage selectors");
+        }
+    }
 }
