@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import math
 import re
 import shlex
 import shutil
@@ -47,7 +48,7 @@ def select_records(source):
     return selected
 
 
-def stage_records(selected):
+def stage_records(selected, omit_model=None, gewgd1_first_constant=None):
     records, inventory = [], []
     for name, original, raw in selected:
         t = original.copy()
@@ -55,16 +56,19 @@ def stage_records(selected):
         allocation = [int(x) for x in t[pos + 1:pos + 7]]
         if len(t) != pos + 7 + allocation[2] + allocation[3]:
             raise ValueError('Unexpected record cardinality: ' + name)
+        if name == 'GEWGD1' and gewgd1_first_constant is not None:
+            t[pos + 7 + allocation[2]] = format(gewgd1_first_constant, '.12g')
         if name == 'GEWPLT2':
             t[0], t[9], t[10] = '1', '1', '1'
         else:
             t[0], t[2] = '1', '1'
         t[1] = "'" + t[1] + "'"
         t[pos] = "'" + name + "'"
-        records.append(' '.join(t) + ' /')
+        if name != omit_model:
+            records.append(' '.join(t) + ' /')
         inventory.append(dict(model=name, allocation=allocation,
                               original_tokens=original, staged_tokens=t,
-                              original_record=raw))
+                              original_record=raw, omitted=name == omit_model))
     records.append("2 'GENCLS' '1' 0.0 0.0 /")
     return '\n'.join(records) + '\n', inventory
 
@@ -76,20 +80,29 @@ def main():
     parser.add_argument('--tag', required=True)
     parser.add_argument('--executable', required=True, type=Path)
     parser.add_argument('--diagnostic-states', action='store_true')
+    parser.add_argument('--omit-model', choices=('GEWGD1', 'GEWTA2', 'GEWPLT2'))
+    parser.add_argument('--gewgd1-first-constant', type=float)
     args = parser.parse_args()
     if not re.fullmatch('[A-Za-z0-9_-]+', args.tag):
         raise ValueError('Invalid run tag')
+    if args.gewgd1_first_constant is not None and (not math.isfinite(args.gewgd1_first_constant)
+                                                   or args.gewgd1_first_constant < 0):
+        raise ValueError('GEWGD1 first constant must be finite and nonnegative')
     root = Path.cwd()
     out = root / 'target' / ('legacy-ge-import-' + args.tag)
     out.mkdir(parents=True, exist_ok=False)
-    dynamic, records = stage_records(select_records(args.source_dyr))
+    dynamic, records = stage_records(select_records(args.source_dyr), args.omit_model,
+                                     args.gewgd1_first_constant)
     (out / 'source.dyr').write_text(dynamic)
     shutil.copy2(__file__, out / 'probe.py')
     shutil.copy2(args.runner, out / 'runner.py')
     (out / 'source-contract-private.json').write_text(json.dumps(dict(
         source_sha256=sha(args.source_dyr), runner_sha256=sha(args.runner),
         executable_sha256=sha(args.executable), records=records,
-        transformations=['Synthetic owner bus/unit 1/1', 'Plot owner 1/1'],
+        transformations=['Synthetic owner bus/unit 1/1', 'Plot owner 1/1']
+            + ([f'Omitted {args.omit_model} auxiliary'] if args.omit_model else [])
+            + ([f'GEWGD1 first constant set to {args.gewgd1_first_constant}']
+               if args.gewgd1_first_constant is not None else []),
         note='All constants and other integer values unchanged; this tests import, not equivalence.'), indent=2))
     spec = dict(name='legacy-ge-import', raw='ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt2g1.raw',
                 raw_format='PTI33', dyr=(out / 'source.dyr').relative_to(root).as_posix(),

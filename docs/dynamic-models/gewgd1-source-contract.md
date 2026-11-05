@@ -18,6 +18,29 @@ The [independent importer support document](https://www.spp.org/documents/67445/
 also labels the legacy suite as internally converted. Neither source provides
 an exact GEWGD1 equation and lifecycle contract.
 
+## Converted-suite auxiliary sensitivity
+
+A synthetic conversion discriminator retained the same generator and companion
+records while omitting only GEWGD1. A second pair changed only GEWGD1's first
+entered constant to `0.04` or omitted that changed record. The first constant's
+legacy meaning is not established, so this is a slot perturbation, not an
+assumed gust-start setting. The complete converted voltage, P/Q and available
+state export was byte-identical across the baseline, omission, perturbed and
+perturbed-omission controls. A cold repeat of the perturbed control reproduced
+both the staged input and exported output exactly. The dynamic-model readbacks
+after import and initialization were also identical for each omission pair.
+
+This establishes insensitivity of the installed **converted** runtime to that
+record and slot in the exercised short profile. It does not establish the
+behavior of the original GEWGD1 executable, nor whether another slot, event
+window or host profile would affect the conversion. The repeatable private
+inputs, model readbacks, full exports and bounded logs are in
+`verification-artifacts/legacy-ge-aux-sensitivity-20261105/evidence.zip`,
+SHA-256 `47b874c89ecf72849974694471c2a5e7f56acd132d3ef441ee0cf11fc49ef430`.
+The public `tools/legacy_ge_powerworld_import_probe.py` adds controlled
+auxiliary omission and first-slot perturbation without publishing source
+records. The legacy implementation gate below remains unchanged.
+
 ## Required implementation work
 
 1. Obtain the original model data sheet and a runnable matching vendor library.
