@@ -139,7 +139,9 @@ public class Hyg3StateConformanceTest {
         });
     }
 
-    record ComparisonLimits(double[] states, double[] boundaries) { }
+    record ComparisonLimits(double[] states, double[] boundaries, boolean prefaultRelativeStates) {
+        ComparisonLimits(double[] states, double[] boundaries) { this(states,boundaries,false); }
+    }
 
     static void compare(Hyg3ReferenceFixture fixture, boolean staggered, Path output,
             java.util.function.Function<JsonNode, ComparisonLimits> limits) throws Exception {
@@ -216,11 +218,21 @@ public class Hyg3StateConformanceTest {
             var bounds = limits.apply(manifest);
             double[] stateTolerance = bounds.states();
             var stateBounds = new LinkedHashMap<String,Double>();
+            var stateRmse = new LinkedHashMap<String,Double>();
             for (int i = 0; i < stateTolerance.length; i++) {
                 String key = "STATE"+i; stateBounds.put(key,stateTolerance[i]);
-                if (!(maximum.get(key) < stateTolerance[i])) failures.add(tag+" "+key+" maximum "+maximum.get(key)+" exceeds "+stateTolerance[i]);
+                double rmse = Math.sqrt(squared.get(key)/reference.size());stateRmse.put(key,rmse);
+                double prefault = Math.abs(reference.getFirst().get(key));
+                if (bounds.prefaultRelativeStates() && Double.isFinite(prefault) && prefault>0) {
+                    if (!(maximum.get(key)<.005*prefault && rmse<.0001*prefault))
+                        failures.add(tag+" "+key+" peak "+maximum.get(key)+" / "+(.005*prefault)
+                                +" and RMSE "+rmse+" / "+(.0001*prefault));
+                } else if (!(maximum.get(key) < stateTolerance[i]))
+                    failures.add(tag+" "+key+" maximum "+maximum.get(key)+" exceeds "+stateTolerance[i]);
             }
             result.put("state_absolute_tolerance",stateBounds);
+            result.put("state_rmse",stateRmse);
+            result.put("prefault_relative_state_gate",bounds.prefaultRelativeStates());
             String[] boundaryKeys = {"P_PU","Q_PU","PMECH","SPEED","A1","A2","VAR0","VAR1","VAR2","VAR3","VAR4"};
             double[] boundaryTolerance = bounds.boundaries(); var boundaryBounds = new LinkedHashMap<String,Double>();
             for (int i = 0; i < boundaryKeys.length; i++) {

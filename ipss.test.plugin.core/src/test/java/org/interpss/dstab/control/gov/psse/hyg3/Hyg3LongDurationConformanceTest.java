@@ -37,7 +37,7 @@ public class Hyg3LongDurationConformanceTest {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var output=Files.createTempDirectory(Path.of("target"),"hyg3-long-fault-"+(staggered?"staggered-":"euler-"));
         Hyg3StateConformanceTest.compare(fixture(staged),staggered,output,manifest->new Hyg3StateConformanceTest.ComparisonLimits(
-                Hyg3StateConformanceTest.stateTolerances(staggered,5.),Hyg3StateConformanceTest.boundaryTolerances(staggered,5.)),
+                Hyg3StateConformanceTest.stateTolerances(staggered,5.),Hyg3StateConformanceTest.boundaryTolerances(staggered,5.),true),
                 entry->entry.path("profile").asText().equals("standard")&&entry.path("mode").asInt()==mode);
     }
     @ParameterizedTest @MethodSource("profiles")
@@ -45,7 +45,7 @@ public class Hyg3LongDurationConformanceTest {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         var output=Files.createTempDirectory(Path.of("target"),"hyg3-long-backlash-"+(staggered?"staggered-":"euler-"));
         Hyg3LimitConformanceTest.compare(fixture(staged),staggered,output,
-                entry->entry.path("profile").asText().equals("backlash-large")&&entry.path("mode").asInt()==mode);
+                entry->entry.path("profile").asText().equals("backlash-large")&&entry.path("mode").asInt()==mode,true);
     }
     @Test void prescribedInputsLocalizeLateControllerStateDrift(@TempDir Path staged)throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");

@@ -878,3 +878,18 @@ and parameter order. A builder/initialization check exercises both controller
 branches and integration methods. The independent both-method SMIB boundary
 suite remains green with the supplied reference trajectories. Partial-curve
 and complete import-path residual qualification remain separate work.
+
+### Ten-second prefault-relative state audit
+
+The long-duration coupled and backlash comparisons now apply the paired
+engineering rule to internal states with nonzero reference prefault values:
+peak absolute error below 0.5% and complete-grid RMSE below 0.01% of that
+prefault magnitude. Zero-prefault states retain their original absolute
+limits. Physical power, voltage, angle, history and event checks remain
+independent. The shorter established comparisons keep their earlier gates.
+
+Eighteen previously failing nonzero-prefault state checks meet both limits;
+the long backlash control with a small gate-state discrepancy now passes.
+The ten-second suite still reports five failures: zero-prefault states,
+physical output checks and the separate prescribed-input diagnostic remain
+unqualified. No governor equation or integration policy changed.

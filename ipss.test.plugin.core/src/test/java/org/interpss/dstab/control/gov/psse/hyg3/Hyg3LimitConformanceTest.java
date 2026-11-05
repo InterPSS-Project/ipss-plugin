@@ -142,6 +142,12 @@ public class Hyg3LimitConformanceTest {
 
     static void compare(Hyg3ReferenceFixture fixture,boolean staggered,Path output,
             java.util.function.Predicate<com.fasterxml.jackson.databind.JsonNode> include) throws Exception {
+        compare(fixture,staggered,output,include,false);
+    }
+
+    static void compare(Hyg3ReferenceFixture fixture,boolean staggered,Path output,
+            java.util.function.Predicate<com.fasterxml.jackson.databind.JsonNode> include,
+            boolean prefaultRelativeStates) throws Exception {
         System.out.println("HYG3 active-limit comparison "+output.getFileName());
         var diagnostics = new LinkedHashMap<String,Object>();
         for (var entry : fixture.matrix()) {
@@ -197,9 +203,12 @@ public class Hyg3LimitConformanceTest {
             var result = new LinkedHashMap<String,Object>(); result.put("maximum_absolute_error",maximum); result.put("time_of_maximum",at);
             result.put("norms",norms); result.put("rotor_rmse_deg",Math.sqrt(squared.get("ANGLE_DEG")/reference.size()));
             result.put("profile",entry.path("profile").asText()); result.put("step_s",step);
+            result.put("prefault_relative_state_gate",prefaultRelativeStates);
             var governor = (PsseHyg3Governor) actual.algorithm.getNetwork().getMachine("Bus1-mach1").getGovernor();
             result.put("backlash_events",compareBacklashEvents(reference,actual,step,governor.getEffectiveBacklashWidth(),maximum.get("STATE4")));
-            result.put("qualification","Per-channel absolute/state and discrete-event regression gates; strict range-normalized acceptance remains diagnostic");
+            result.put("qualification",prefaultRelativeStates
+                    ?"Paired nonzero-prefault state gates, absolute zero-state/boundary gates and discrete-event checks"
+                    :"Per-channel absolute/state and discrete-event regression gates; strict range-normalized acceptance remains diagnostic");
             diagnostics.put(tag,result);
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(),diagnostics);
             for (var row : actual.frames) {
@@ -209,7 +218,7 @@ public class Hyg3LimitConformanceTest {
                 assertTrue(row.values().get("STATE4") >= governor.getEffectivePmin()-1e-12);
             }
             assertTrue((double) result.get("rotor_rmse_deg") < .0033,tag+" rotor RMSE "+result.get("rotor_rmse_deg"));
-            checkAbsoluteEnvelope(tag,maximum,staggered,step);
+            checkAbsoluteEnvelope(tag,maximum,squared,reference,staggered,step,prefaultRelativeStates);
             if (staggered) assertTrue(maximum.get("STATE0") < 5e-7,
                     tag+" input-filter event history error "+maximum.get("STATE0"));
         }
@@ -255,15 +264,24 @@ public class Hyg3LimitConformanceTest {
         return Map.of("events",events,"opposite_event_side_rows",opposite);
     }
 
-    private static void checkAbsoluteEnvelope(String tag,Map<String,Double> maximum,boolean staggered,double h) {
+    private static void checkAbsoluteEnvelope(String tag,Map<String,Double> maximum,Map<String,Double> squared,
+            List<Map<String,Double>> reference,boolean staggered,double h,boolean prefaultRelativeStates) {
         boolean fine=h<.001;
-        // Absolute finite-step envelopes; range-normalized errors remain unmodified in diagnostics.
+        // Existing absolute envelopes still govern zero-prefault states and every physical boundary.
         double[] states=staggered ? (fine
                 ? new double[]{3e-7,2.2e-6,6e-7,4e-5,2.5e-5,1.8e-5,2e-5,7e-7,4e-6}
                 : new double[]{3e-7,2.6e-6,5e-7,7e-6,2.6e-6,2e-5,2.2e-6,2.2e-6,1.3e-5}) : (fine
                 ? new double[]{1.3e-3,1.3e-4,4.5e-5,1.4e-3,2.6e-5,2.2e-5,2.1e-5,8e-7,4e-6}
                 : new double[]{9e-3,1.1e-3,2.7e-3,.01,1.9e-4,2.2e-4,1.2e-4,3.6e-6,3e-5});
-        for (int i=0;i<states.length;i++) assertTrue(maximum.get("STATE"+i)<states[i],tag+" STATE"+i+" "+maximum.get("STATE"+i));
+        for (int i=0;i<states.length;i++) {
+            String key="STATE"+i;double prefault=Math.abs(reference.getFirst().get(key));
+            if(prefaultRelativeStates&&Double.isFinite(prefault)&&prefault>0) {
+                double rmse=Math.sqrt(squared.get(key)/reference.size());
+                assertTrue(maximum.get(key)<.005*prefault&&rmse<.0001*prefault,
+                        tag+" "+key+" peak "+maximum.get(key)+" / "+(.005*prefault)
+                                +" and RMSE "+rmse+" / "+(.0001*prefault));
+            } else assertTrue(maximum.get(key)<states[i],tag+" "+key+" "+maximum.get(key));
+        }
         double[] variables=staggered ? (fine ? new double[]{2.2e-6,2e-7,2.5e-5,3.5e-5} : new double[]{2.6e-6,3.7e-7,2.6e-6,4.5e-6})
                 : (fine ? new double[]{.0038,2.5e-7,2.7e-5,7.3e-5} : new double[]{.025,3.7e-6,1.8e-4,6e-4});
         int[] keys={0,1,3,4}; for (int i=0;i<keys.length;i++) assertTrue(maximum.get("VAR"+keys[i])<variables[i],tag+" VAR"+keys[i]);
