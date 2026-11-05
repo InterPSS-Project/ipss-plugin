@@ -155,6 +155,12 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## GEWGD1
 
+The [legacy wind-suite import probe](dynamic-models/legacy-ge-import-verification.md)
+confirms a repeatable converted WT3 SMIB reference for this seven-model family.
+It supplies a usable conversion comparison, but exact legacy equations and
+auxiliary behavior remain unverified. Keep each model's source and attachment
+gate below until that distinction is resolved.
+
 - Follow the [exact-source implementation gate](dynamic-models/gewgd1-source-contract.md). Obtain the original legacy equations and matching executable; newer identifiers and generic conversion do not establish equivalence.
 - Bind the auxiliary to its converter host before selecting reusable numerical blocks.
 - Add import, initialization, named-state and independent trajectory checks.
