@@ -32,6 +32,8 @@ def main():
     parser.add_argument('--dc-tap-adjustment', type=int, choices=[0, 1], default=1)
     parser.add_argument('--scheduled-kv', type=float, default=500.)
     parser.add_argument('--current-margin', type=float, default=0.)
+    parser.add_argument('--current-order', type=float, default=1000.)
+    parser.add_argument('--flow-passes', type=int, default=1)
     parser.add_argument('--measurement-times', type=float, nargs=3, default=[.05,.05,.05])
     parser.add_argument('--restart-current', type=float, default=500.)
     parser.add_argument('--recovery-rates', type=float, nargs=2, metavar=('VOLTAGE', 'CURRENT'))
@@ -60,6 +62,10 @@ def main():
         parser.error('Scheduled DC voltage must be finite and positive')
     if not math.isfinite(args.current_margin) or not 0 <= args.current_margin < 1:
         parser.error('Current margin must be finite in [0,1)')
+    if not math.isfinite(args.current_order) or args.current_order <= 0:
+        parser.error('Current order must be finite and positive')
+    if not 1 <= args.flow_passes <= 3:
+        parser.error('Flow passes must be between one and three')
     if any(not math.isfinite(v) or not 0 <= v < 90 for v in [args.dynamic_alpha_min,args.dynamic_gamma,args.static_alpha_min]+([] if args.static_gamma is None else [args.static_gamma])):
         parser.error('Gamma angles must be finite in [0,90) degrees')
     if any(not math.isfinite(v) or v < 0 for v in args.measurement_times):
@@ -120,7 +126,7 @@ def main():
     if args.control=='rectifier-power':
         dc_fields[3]='505.0'
     elif args.control=='current':
-        dc_fields[1]='2';dc_fields[3]='1000.0'
+        dc_fields[1]='2';dc_fields[3]=str(args.current_order)
     lines[dc_header]=','.join(dc_fields)
     rectifier_fields=lines[dc_header+1].split(',')
     rectifier_fields[3]=str(args.static_alpha_min)
@@ -199,7 +205,10 @@ def main():
     library = Path(psspy.__file__).resolve().parents[1] / 'PSSBIN/DSMDL.DLL'
     checked('library', psspy.addmodellibrary(str(library)))
     checked('read', psspy.read(0, 'network.raw'))
-    checked('flow', psspy.fnsl([0, 0, 0, args.dc_tap_adjustment, 0, 0, 99, 0]))
+    for _ in range(args.flow_passes):
+        checked('flow', psspy.fnsl([0, 0, 0, args.dc_tap_adjustment, 0, 0, 99, 0]))
+        if psspy.solved() == 0:
+            break
     assert psspy.solved() == 0
     equipment={str(bus): {key: checked('solved equipment', psspy.dc2dat_2('1',bus,key))
                 for key in ['TAP','TR','EBASE','XC','ANGLE','ANGMIN','ANGMAX','KVDC','DCCUR']} for bus in [7,9]}

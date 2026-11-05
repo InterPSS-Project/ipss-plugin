@@ -14,6 +14,30 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 /** Independent measured-input current-limiter equations; coupled network qualification remains separate. */
 public class Cdc6tVoltageCurrentLimitTest {
+    @Test void increasedCurrentOrderRemainsNonbindingInConvergedControl() throws Exception {
+        var archive=Path.of("testData/private/verification-artifacts/cdc6t-current-order-bracket-20261105/captures.zip");
+        Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain current-order reference captures");
+        assertEquals("f72b27f6db37309cce87fe18b700f056fb6873de8c7fbbcccf109d54b854f951",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
+        String prefix="cdc6t-margin1300-pass2-nov5-current-fault-";
+        try(var zip=new ZipFile(archive.toFile())) {
+            byte[] first=zip.getInputStream(zip.getEntry(prefix+"a/native.csv")).readAllBytes();
+            assertArrayEquals(first,zip.getInputStream(zip.getEntry(prefix+"b/native.csv")).readAllBytes());
+            for(String repeat:new String[]{"a","b"}) {
+                String manifest=new String(zip.getInputStream(zip.getEntry(prefix+repeat+"/manifest.json"))
+                        .readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);
+                assertTrue(manifest.contains("\"status\": \"complete\""));
+                assertTrue(manifest.contains("\"flow_passes\": 2"));
+                assertTrue(manifest.contains("\"current_order\": 1300.0"));
+            }
+            var rows=Tiocr1ResetReferenceTest.csv(first);
+            assertEquals(1005,rows.size());
+            for(var row:rows) {
+                assertEquals(1300.,row.get("STATE1"),1e-9);
+                assertEquals(1300.,row.get("VAR11"),1e-9);
+            }
+        }
+    }
     @ParameterizedTest
     @ValueSource(strings={"flat","equal-slope-fault","two-slope-fault"})
     void completeReferenceSamplesMatchNormalCurrentCeiling(String profile) throws Exception {

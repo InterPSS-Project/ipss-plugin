@@ -2287,6 +2287,20 @@ with both minimum-angle characteristics active, so it cannot independently
 qualify a new crossover branch either. A converged independent discriminator
 or an exact model-specific characteristic definition is still required.
 
+The probe now permits an explicit current order and up to three unchanged
+load-flow passes so that a near-converged first pass is not mistaken for an
+infeasible operating point. At a higher order, the second pass met the same
+load-flow tolerance and the complete fault run finished; two cold captures
+match byte for byte over every sample and event side. Delivered current stayed
+at the requested value throughout, so this valid control never entered the
+characteristic crossover. A still higher order did not converge after three
+passes. These runs bracket this small network's usable range but do not
+qualify a new current-margin equation. The complete valid pair is retained at
+`verification-artifacts/cdc6t-current-order-bracket-20261105/captures.zip`,
+SHA-256 `f72b27f6db37309cce87fe18b700f056fb6873de8c7fbbcccf109d54b854f951`.
+`Cdc6tVoltageCurrentLimitTest` preserves its source quality and nonbinding
+current-order result.
+
 Private failed capture, exact probe inputs and logs:
 `verification-artifacts/cdc6t-margin-intersection-20261105/rejected-capture.zip`,
 SHA-256 `acf0eed717238ec030691bcdeb37d08b8a5bd6a38cce3ae41ee887db140a31ad`.
