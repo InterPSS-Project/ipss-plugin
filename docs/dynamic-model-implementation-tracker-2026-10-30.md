@@ -33,6 +33,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 - Retain the [slow-flow precision discriminator](dynamic-models/hyg3-prepared-curves.md#slow-flow-precision-discriminator-and-shared-gate-evaluation) and one-pass gate-curve evaluation. Reported governor states have binary32 observation precision; this does not prove internal storage precision. Reference flow plateaus are consistent with sub-ULP numerical increments, but a [flow-only binary32 storage trial](dynamic-models/hyg3-prepared-curves.md#rejected-flow-only-storage-rounding) worsened coupled staggered trajectories and was reverted. Resolve accepted hydraulic-rate and state accumulation stages before changing precision or relaxing strict coupled gates.
 
+- Retain the [ten-second prefault-relative state audit](dynamic-models/hyg3-prepared-curves.md#ten-second-prefault-relative-state-audit) for nonzero initial states under both methods. Zero-initialized state coordinates, physical outputs and the prescribed-input diagnostic remain independently gated and unresolved.
+
 - Retain [ordered initial gate bounds](dynamic-models/hyg3-prepared-curves.md#ordered-initial-gate-bounds): imported physical limits must not widen to manufacture an equilibrium. Preserve dispatched flow/integral coordinates and expose nonzero initialization residuals when the initial gate is infeasible. Rejected-quality captures qualify this behavior only, not dynamic trajectories; remaining coupled accuracy gates stay open.
 
 - Retain [atomic integration-stage rejection](dynamic-models/hyg3-prepared-curves.md#atomic-integration-stage-rejection), reusable trial storage and retry preservation under both methods. Valid trajectories remain unchanged; this correctness fix adds a measured small-loop cost and does not close the independent reference-accuracy gates.
@@ -234,6 +236,7 @@ conversion checks separately from exact legacy-model qualification.
 
 - Retain the inverter-measured DC voltage for the voltage-dependent current ceiling. An exact-model reference fault capture reverses the measured terminal voltages and distinguishes the two candidate orders; every distinguishing row follows the inverter measurement. The external DC-modeling overview uses the lower of both measurements in a different model dialect and does not change this CDC6T contract. Keep the complete, repeated capture and its inputs in the private evidence archive; preserve the all-row and both-integrator regressions.
 - Qualify current-margin transfer across the converter-characteristic intersection regions. The external overview describes multiple intersection branches; the current conducting runtime applies one margin reduction at the rectifier limit. Compare the branches with an independent exact-model reference before changing the conducting equation or claiming the current-margin path complete.
+- Retain the [current-margin crossover state acceptance](dynamic-models/cdc6t-runtime-plan.md#current-margin-crossover-discriminator-not-qualified): both-method measured-voltage/current states satisfy the paired prefault-relative peak/RMSE limits across complete event-side grids. Preserve distinct physical-output and wider protection gates; state acceptance does not qualify the entire model.
 
 - Retain [finite commutating resistance](dynamic-models/cdc6t-runtime-plan.md#finite-commutating-resistance), signed and magnitude voltage equations, positive converter losses and unchanged zero-resistance arithmetic. Independent converter/current-limit controls pass; the modified-Euler rectifier-resistance fault still exceeds the existing DC-voltage envelope. Resolve that gate without changing its threshold; capacitor commutation and automatic attachment remain unqualified.
 
@@ -272,6 +275,8 @@ conversion checks separately from exact legacy-model qualification.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 
 ## CHVDC2U1
+
+- Retain the [prefault-relative state accuracy audit](dynamic-models/chvdc2-named-link.md#prefault-relative-state-accuracy-audit): apply both peak and RMSE limits to nonzero initial internal states, preserve absolute limits for zero-initialized states and leave physical/event gates unchanged. The complete coupled matrix still fails both state and physical gates and reaches one reverse-current error.
 
 - Retain the [two-sided event-filter discriminator](dynamic-models/chvdc2-named-link.md#event-filter-stage-across-network-intervals-and-limiter-settings): both application and clearing first steps reject full right-input forcing across two network intervals and two limiter settings, while a simple half left/right step is close to the independent voltage-filter state. Resolve the exact ten-local-step coupling and accepted history; the whole-interval input-ramp trial regressed terminal-port controls and remains rejected.
 
