@@ -132,6 +132,36 @@ public class Cmldblu1SharedStateTest {
         for (String key : new String[] {"EPrimeQ", "EPrimeD", "EkReal", "EkImag"}) assertEquals(0., snapshot.rates().get(key));
         assertTrue(motor.getSlip() > initialSlip);
     }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void legacyNegativeOnlineFractionRetainsMotorStatesAndSignedNortonCurrent(boolean staggered) throws Exception {
+        var motor = (InductionMotorImpl) model().getInductionMotorA();
+        motor.setFonline(-.1);
+        motor.getDStabBus().setVoltage(new Complex(.82,-.04));
+        var original = motor.getEp();
+        if (staggered) {
+            double[] state = new double[motor.staggeredStateCount()];
+            double[] rates = new double[state.length];
+            motor.readStaggeredState(state,0);
+            motor.evaluateStaggered(.0005,rates,0);
+            assertTrue(Math.abs(rates[0])+Math.abs(rates[1])>0);
+            for(int i=0;i<state.length;i++)state[i]+=.0005*rates[i];
+            motor.applyStaggeredState(state,0,.0005);
+        } else {
+            assertTrue(motor.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0));
+            assertTrue(motor.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,1));
+        }
+        assertNotEquals(Complex.ZERO,motor.getEp());
+        assertNotEquals(original,motor.getEp());
+        var voltage=motor.getDStabBus().getVoltage();
+        var admittance=motor.getPosSeqEquivY();
+        var source=motor.isTwoAxisModel()?motor.getEpp():motor.getEp();
+        var baseCurrent=voltage.multiply(admittance);
+        var expected=baseCurrent.add(source.multiply(motor.getEquivYSysBase())
+                .subtract(baseCurrent).multiply(-.1));
+        var current=(Complex)motor.getOutputObject();
+        assertEquals(expected.getReal(),current.getReal(),1e-12);
+        assertEquals(expected.getImaginary(),current.getImaginary(),1e-12);
+    }
     @Test void warmedRhsUsesReusableBuffersAndOnlyTheRequiredComplexCurrentPublication() throws Exception {
         var generic = java.lang.management.ManagementFactory.getThreadMXBean();
         Assumptions.assumeTrue(generic instanceof com.sun.management.ThreadMXBean);

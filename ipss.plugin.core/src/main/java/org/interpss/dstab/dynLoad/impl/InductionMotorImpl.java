@@ -76,7 +76,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     }
 
     private void evaluateRates(double[] rates, int offset, IntegrationStateMonitor.Stage stage) {
-        boolean connected = Fonline > 0 && (legacyCompositeProtectionScheduling || Fuv > 0);
+        boolean connected = legacyCompositeProtectionScheduling ? Fonline != 0 : Fonline > 0 && Fuv > 0;
         Complex source = twoAxisModel ? epp : ep;
         if (connected) {
             Complex voltage = getDStabBus().getVoltage();
@@ -102,7 +102,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
         for (int i = 0; i < staggeredStateCount(); i++)
             if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
-        boolean connected = Fonline > 0 && (legacyCompositeProtectionScheduling || Fuv > 0);
+        boolean connected = legacyCompositeProtectionScheduling ? Fonline != 0 : Fonline > 0 && Fuv > 0;
         ep = connected ? new Complex(values[offset], values[offset + 1]) : Complex.ZERO;
         if (twoAxisModel) {
             ek = new Complex(values[offset + 2], values[offset + 3]);
@@ -2353,7 +2353,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         }
 		// if the motor is out-of-service or tripped
 		
-		if(this.Fonline <=0.0 || !legacyCompositeProtectionScheduling && this.Fuv<=0.0){
+		if(this.Fonline == 0.0 || (!legacyCompositeProtectionScheduling && (this.Fonline < 0.0 || this.Fuv<=0.0))){
             evaluateRates(observedRates, 0, flag == 0
                     ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
 			this.ep = new Complex(0.0);
@@ -2607,7 +2607,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
  	   // The norton Current injection needs to compensate for this.
 
  	 
- 	  if(this.Fonline>1.0E-8) {
+	  if((legacyCompositeProtectionScheduling && this.Fonline<0.0) || this.Fonline>1.0E-8) {
  			 this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1.0-this.Fonline));
  	
  	  }
@@ -2744,7 +2744,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		//TODO move to afterStep() after 1/28/2025
 		//post_solution_step_process();
 		
-		if(this.Fonline>0.0){
+		if((legacyCompositeProtectionScheduling && this.Fonline<0.0) || this.Fonline>0.0){
 			Complex vt = this.getDStabBus().getVoltage();
 			 
 			Complex iEquivYSysBase = vt.multiply(getPosSeqEquivY());

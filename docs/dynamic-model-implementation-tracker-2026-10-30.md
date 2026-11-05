@@ -78,6 +78,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Retain signed legacy motor participation after overlapping protective actions: a nonzero negative online fraction preserves motor electrical states and signed Norton compensation under both integration methods. The independent overlap voltage gates now pass, while the modified-Euler rotor-angle peak remains open. Keep the ordinary nonlegacy disconnection rule separate and resolve that remaining trajectory gate without relaxing its limit.
+
 - Retain the accepted event-boundary electrical-current and mechanical-rate refreshes, observation/history invariance controls and complete mechanical predictor restoration. They remove stale event-left rates without changing ordinary-step measurement policy. Controller event-rate qualification and the earlier coarse thermal-voltage discrepancy remain separate work.
 
 - Retain the separate accepted tap command and applied electrical ratio, transactional rollback and matrix-rebuild checks. Independent command, power and machine-state transition ordering now agrees; complete small-range power trajectory qualification remains open. Do not round machine states or relax gates to absorb the remaining precision-sensitive discrepancy.

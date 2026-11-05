@@ -165,6 +165,22 @@ zero-step behavior.
 - Extend independent coupled qualification to production quarter-cycle steps,
   longer runs, base/ownership edge cases and extreme valid parameters.
 
+## Signed motor participation after overlapping actions
+
+An independent overlapping-action control publishes a negative online fraction
+while the motor electrical states continue to evolve. Treating every nonpositive
+fraction as a disconnection erased those states and their Norton contribution.
+The legacy composite path now keeps a nonzero signed fraction in the motor
+derivative, state application, current compensation, and physical-power update.
+The ordinary nonlegacy path retains its positive-fraction disconnection rule.
+
+The complete both-method overlap comparison retains the action-side fraction and
+all reference samples. The voltage gates now pass in both methods. The modified-
+Euler rotor-angle peak remains above its unchanged limit; staggered rotor-angle
+and other checked boundary gates pass. This is a scoped electrical correction,
+not complete composite-load qualification. The new component test checks signed
+Norton current and state evolution under both integration methods.
+
 ## Maintained checks and retained evidence
 
 `Cmldblu1SharedSmibTest` checks actual solver dispatch and complete flat/fault
