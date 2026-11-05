@@ -30,8 +30,9 @@ power-factor convention.
 
 `Cmldblu1Model` selects `LegacyStaticLoadPort` automatically for its static
 portion when transformer and feeder are omitted, no motor fractions are active,
-and both static frequency coefficients are zero. The owned composite may also
-contain the legacy full-recovery electronic portion, using the
+and either both static frequency coefficients are zero or the merged-bus
+composite is wholly static. The zero-frequency configuration may also contain
+the legacy full-recovery electronic portion, using the
 [mixed current interface](cmldblu1-static-electronic-interface.md).
 Other configurations retain their existing runtime; their low-voltage
 qualification remains open.
@@ -100,12 +101,38 @@ absolute-error gate. No offsets, interpolation or event-sample reduction are
 used. The accumulated reference clock is checked explicitly.
 
 The complete composite remains `LOADABLE`. Mixed motor/electronic bundles,
-represented distribution, nonzero frequency coefficients, warm restoration,
-production-step and long-duration qualification remain open. Their behavior
-must be established independently before extending this port's eligibility.
+represented distribution, warm restoration, production-step and long-duration
+qualification remain open. Their behavior must be established independently
+before extending this port's eligibility.
 Relay-coordinated shedding and restoration of the component compensation also
 remain outside these trajectory controls; the unit checks cover load-factor
 arithmetic only.
+
+## Static frequency coefficients at the low-voltage boundary
+
+A separate cold-repeated synthetic control enables both static active- and
+reactive-power frequency coefficients while crossing the low-voltage threshold.
+The reference retains every channel, the two event-side pairs, and prepared
+conductance/susceptance. With this input, the previous implementation selected
+the generic static-load interface because the frequency coefficients were
+nonzero. That path gives about `0.00319` full-range voltage NRMSE under either
+integration method, above the existing `0.001` gate.
+
+The legacy static current port now remains eligible with nonzero static
+frequency coefficients for a whole static component at the merged bus. Its
+existing normal polynomial reads live bus frequency, and its first low-voltage
+preparation retains the preceding accepted power. No numerical kernel or state equation is
+duplicated. The complete new reference comparison gives worst bus-voltage
+NRMSE `3.11e-5` with modified Euler and `8.13e-7` with staggered integration.
+Static P/Q NRMSE remains below `0.000205`; prepared G/B peak errors are below
+`1.8e-7` pu. The two cold reference captures agree byte for byte on every
+recorded channel. The SHA-pinned private archive is
+`verification-artifacts/cmldblu1-frequency-static-20261105/captures.zip`,
+SHA-256 `6b8f9b955ccb6307cfe719463e45ae862cc224e5cd2e6f61eeceb594d18fa3b5`.
+
+The new gate covers a whole static component with omitted distribution. Mixed
+motor/electronic bundles, represented distribution with active frequency
+coefficients, warm restoration and production-step accuracy remain separate.
 
 ## Ten-second production-step diagnostic
 
