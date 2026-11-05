@@ -7,12 +7,63 @@ import java.security.MessageDigest;
 import java.util.*;
 import java.util.zip.ZipFile;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /** Complete independent reset/re-pickup boundaries and accepted protection milestones. */
 public class Tiocr1ResetReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/tiocr-reset-20261101/captures.zip");
+    private static final Path ALTERNATE=Path.of("testData/private/verification-artifacts/tiocr-reset03-20261105/captures.zip");
+    private static final String ALTERNATE_SHA="301eb34c56e7fbd735ab2160235e2748b11b879591ccb7d15c820d953024a57d";
+
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void alternateResetRetainsCompleteTripTrajectory(boolean staggered,@TempDir Path staged) throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(ALTERNATE));
+        assertEquals(ALTERNATE_SHA,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(ALTERNATE))));
+        List<Map<String,Double>> reference;
+        try(var zip=new ZipFile(ALTERNATE.toFile())) {
+            var first=csv(zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes());
+            var repeat=csv(zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
+            assertEquals(1008,first.size());assertEquals(first,repeat);
+            reference=first.stream().filter(row->row.get("time_s")>=0).toList();
+            Files.write(staged.resolve("network.raw"),zip.getInputStream(zip.getEntry("a/network.raw")).readAllBytes());
+            Files.write(staged.resolve("dynamic.dyr"),zip.getInputStream(zip.getEntry("a/dynamic.dyr")).readAllBytes());
+        }
+        Path output=staged.resolve("actual");
+        HspUsageRankedModelTest.run("tiocr1-1",false,staggered,true,staged.resolve("network.raw"),
+                staged.resolve("dynamic.dyr"),output);
+        var actual=csv(Files.readAllBytes(output.resolve("tiocr1-1-reset"
+                +(staggered?"-staggered":"")+"-fault.csv")));
+        assertEquals(reference.size(),actual.size());
+        assertEquals(tripTime(reference),tripTime(actual),.00051);
+        assertEquals(.23,tripTime(reference),.00051);
+        assertEquals(0,actual.getLast().get("RELAY.Position"));
+        for(var rows:List.of(reference,actual)) {
+            String position=rows==reference?"VAR1":"RELAY.Position";
+            assertTrue(rows.stream().filter(row->row.get("time_s")>=.05 && row.get("time_s")<.09)
+                    .mapToDouble(row->row.get(position)).max().orElseThrow()>.4);
+            assertTrue(rows.stream().filter(row->row.get("time_s")>=.09 && row.get("time_s")<.19)
+                    .allMatch(row->row.get(position)==0));
+            assertTrue(rows.stream().filter(row->row.get("time_s")>=.2 && row.get("time_s")<.229)
+                    .mapToDouble(row->row.get(position)).max().orElseThrow()>=1);
+        }
+        for(String channel:List.of("V1","V2","P_PU","Q_PU","ANGLE_DEG")) {
+            double sum=0,min=Double.POSITIVE_INFINITY,max=Double.NEGATIVE_INFINITY;
+            for(int i=0;i<reference.size();i++) {
+                var expected=reference.get(i);var observed=actual.get(i);
+                assertEquals(expected.get("time_s"),observed.get("time_s"),5e-6);
+                double value=expected.get(channel),error=observed.get(channel)-value;
+                sum+=error*error;min=Math.min(min,value);max=Math.max(max,value);
+            }
+            double rmse=Math.sqrt(sum/reference.size()),nrmse=rmse/(max-min);
+            System.out.printf("TIOCR_RESET03 %s %s rmse=%.12g nrmse=%.12g%n",staggered,channel,rmse,nrmse);
+            if(channel.equals("ANGLE_DEG"))assertTrue(rmse<.01,channel+" RMSE="+rmse);
+            else assertTrue(nrmse<.001,channel+" NRMSE="+nrmse);
+        }
+    }
 
     @ParameterizedTest
     @CsvSource({"false,tiocr1-0","true,tiocr1-0","false,tiocr1-1","true,tiocr1-1"})

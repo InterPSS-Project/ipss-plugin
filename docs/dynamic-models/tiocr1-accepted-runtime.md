@@ -77,6 +77,27 @@ fault has a staggered voltage peak error of `6.09e-6` pu, above the earlier
 single-fault bound but below its new `6.7e-6` pu bound. No model parameters or
 production equations were changed for this qualification.
 
+### Alternate reset time
+
+A second cold pair changes only the entered zero-current reset time. All 1,008
+raw rows repeat exactly, including both sides of fault application, clearing
+and the physical trip. Both methods retain partial first-fault travel, a zero
+position throughout the recovered interval, second pickup and the trip at
+0.23 seconds within one integration interval.
+
+| Complete-response error | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Worst bus-voltage NRMSE | 0.000041901 | 0.000001223 |
+| Worst P/Q NRMSE | 0.000042995 | 0.000004400 |
+| Rotor-angle RMSE, degrees | 0.00002643 | 0.00002060 |
+
+`Tiocr1ResetReferenceTest` checks every nonnegative-time row with the existing
+voltage/power range-normalized limit of 0.001 and rotor-angle RMSE limit of
+0.01 degrees. No production action or timer equation changed. The private raw
+pair and inputs are retained in
+`verification-artifacts/tiocr-reset03-20261105/captures.zip`, SHA-256
+`301eb34c56e7fbd735ab2160235e2748b11b879591ccb7d15c820d953024a57d`.
+
 ## Remaining qualification
 
 An additional cold-repeated independent SMIB profile isolates remote static-load
