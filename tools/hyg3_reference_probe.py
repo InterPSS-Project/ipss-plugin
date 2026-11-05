@@ -21,6 +21,7 @@ PROFILES = {
     'input-filter-bypass': {3: 0.},
     'servo-bypass': {9: 0.},
     'water-flow-bypass': {29: 0.},
+    'water-fast-reversal': {29: .02},
     'derivative-filter-zero': {7: 0.},
     'derivative-filter-fixed-small': {7: .002},
     'derivative-filter-two-steps': {},
@@ -31,7 +32,7 @@ PROFILES = {
     'input-derivative-explicit': {3: 0.},
     'input-power-servo-derivative-bypass': {2: 0., 3: 0., 7: 0., 9: 0.},
 }
-REFERENCE_PROFILES = {'valve-limits', 'gate-limits', 'backlash-small', 'backlash-large'}
+REFERENCE_PROFILES = {'valve-limits', 'gate-limits', 'backlash-small', 'backlash-large', 'water-fast-reversal'}
 REFERENCE_PROGRAM = [( .05, .2), (.3, -.4), (.6, .2)]
 
 

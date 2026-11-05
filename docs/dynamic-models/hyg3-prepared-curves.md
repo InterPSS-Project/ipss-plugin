@@ -739,6 +739,36 @@ values do not supply that information. No additional equation change, fitted
 coefficient, clock adjustment or relaxed trajectory gate is justified by the
 currently retained evidence.
 
+### Moving-flow reversal control
+
+`Hyg3WaterRateDiscriminatorTest` uses a short positive water time and three
+reference-command reversals to move the hydraulic state well beyond its
+observation quantum. Both controller modes have two cold, byte-identical
+captures with 2,006 rows each; the accepted source runs report valid initial
+conditions and converged networks. The test retains every event-side row.
+
+The recorded flow/gate pair can be inserted into the published water-rate
+equation. Using binary32 observation precision, the mean one-step error of a
+left-endpoint Euler update is `9.94e-8` and `1.70e-7` pu in the two modes.
+The corresponding two-step update has mean errors `1.61e-8` and `1.57e-8` pu.
+That comparison distinguishes an Euler-only flow update from the established
+two-step history in this moving-flow profile. It does not reveal the hidden
+accepted rate or prove a universal storage-precision policy.
+
+The unchanged production runtime also passes complete independent coupled
+SMIB comparisons under modified Euler and staggered integration. Across both
+modes and methods, worst bus-voltage NRMSE is `0.000204`, worst P/Q NRMSE is
+`0.000139`, rotor-angle RMSE is below `0.000113` degrees, and peak published
+water-flow error is below `8.5e-6` pu. The test enforces the existing physical
+actuator and history gates plus voltage/P/Q NRMSE below `0.001`, angle RMSE
+below `0.01` degrees and flow peak error below `1e-5` pu. This qualifies the
+exercised short-water-time reversal; the long-run slow-flow plateau remains
+open. An Euler-only flow patch is not supported by these observations.
+
+Raw captures, inputs and manifests are retained in the private
+`verification-artifacts/hyg3-water-rate-20261105/captures.zip`, SHA-256
+`ec0cac9bb198c70207b012d9ecd6d67bb6b0f18f77f3255efdf594eac6f59856`.
+
 ### Slow-flow precision discriminator and shared gate evaluation
 
 `Hyg3FlowPrecisionDiscriminatorTest` also checks every reported governor

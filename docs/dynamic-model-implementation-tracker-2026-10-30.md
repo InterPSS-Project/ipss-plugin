@@ -29,6 +29,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
+- Retain the [moving-flow reversal control](dynamic-models/hyg3-prepared-curves.md#moving-flow-reversal-control): short positive water time and repeated command reversals move flow beyond observation quantization. Cold source pairs repeat exactly, both integration methods pass complete SMIB voltage/P/Q/angle and flow gates, and the source observations favor the existing two-step flow history over an Euler-only update. This does not resolve the separate ten-second slow-flow plateau or identify hidden accepted-state precision.
+
 - Retain the [slow-flow precision discriminator](dynamic-models/hyg3-prepared-curves.md#slow-flow-precision-discriminator-and-shared-gate-evaluation) and one-pass gate-curve evaluation. Reported governor states have binary32 observation precision; this does not prove internal storage precision. Reference flow plateaus are consistent with sub-ULP numerical increments, but a [flow-only binary32 storage trial](dynamic-models/hyg3-prepared-curves.md#rejected-flow-only-storage-rounding) worsened coupled staggered trajectories and was reverted. Resolve accepted hydraulic-rate and state accumulation stages before changing precision or relaxing strict coupled gates.
 
 - Retain [ordered initial gate bounds](dynamic-models/hyg3-prepared-curves.md#ordered-initial-gate-bounds): imported physical limits must not widen to manufacture an equilibrium. Preserve dispatched flow/integral coordinates and expose nonzero initialization residuals when the initial gate is infeasible. Rejected-quality captures qualify this behavior only, not dynamic trajectories; remaining coupled accuracy gates stay open.
