@@ -1907,3 +1907,20 @@ at the same boundary. A correction must separate protection preview, electrical
 application and output publication while preserving event-side rows and
 transaction rollback; changing the voltage threshold or shifting a trace would
 not establish the required stage contract. The coupled RAML gates remain open.
+
+### Event-filter stage across network intervals and limiter settings
+
+The source-only event-filter check now covers both 0.5 ms and 0.25 ms network
+intervals with two independent limiter configurations. Every complete capture
+and its repeated run are checked byte-for-byte; application and clearing retain
+their separate event-side samples. The inverter-voltage filter state does not
+step at either event. Its first post-event increment is within `1e-5` pu of the
+half left/right-input estimate in all four profiles. The full right-input
+estimate is more than ten times farther from the captured state at each event.
+
+This establishes a two-sided event boundary across the available profiles; it
+does not determine the exact forcing observed within each local integration
+step. The residual from the half-input estimate remains several micro-pu and
+does not vanish under the finer outer interval. Do not install a generic
+whole-interval ramp or change the controller's lag equation based on this
+source-only observation. The coupled state, current and power gates remain open.

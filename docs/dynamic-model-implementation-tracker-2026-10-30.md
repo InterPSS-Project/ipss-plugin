@@ -269,7 +269,7 @@ conversion checks separately from exact legacy-model qualification.
 
 ## CHVDC2U1
 
-- Retain the [two-sided event-filter discriminator](dynamic-models/chvdc2-named-link.md): both application and clearing first steps reject full right-input forcing, while a simple half left/right step is close to the independent voltage-filter state. Resolve the exact ten-local-step coupling and accepted history; the whole-interval input-ramp trial regressed terminal-port controls and remains rejected.
+- Retain the [two-sided event-filter discriminator](dynamic-models/chvdc2-named-link.md#event-filter-stage-across-network-intervals-and-limiter-settings): both application and clearing first steps reject full right-input forcing across two network intervals and two limiter settings, while a simple half left/right step is close to the independent voltage-filter state. Resolve the exact ten-local-step coupling and accepted history; the whole-interval input-ramp trial regressed terminal-port controls and remains rejected.
 
 - Retain explicit finite commutating-resistance preparation and independently checked initial physical losses. Resolve the inverter angle-coordinate discrepancy and full fault trajectory gates without fitting resistance signs or relaxing thresholds. Automatic attachment remains unqualified.
 
