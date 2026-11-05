@@ -435,9 +435,10 @@ Reinitialization invalidates the previous scale. Repeated preparation retains
 the latest fresh value, and shared integration rejects an incomplete pair.
 The scale is not recomputed from moving turbine states. Undefined zero-primary
 allocation and nonfinite normalization fail initialization rather than exposing
-the previous run's scale. Independent zero-over-zero and hot reconnection
-behavior still require qualification. Initially inactive companions are covered
-by the separate controls below.
+the previous run's scale. The exact-zero primary boundary below qualifies this
+rejection with a loaded secondary; zero-over-zero and hot reconnection still
+require qualification. Initially inactive companions are covered by the
+separate controls below.
 
 Both integration methods retain the same state arrays and passive companion.
 Warmed paired-shaft update/output checks measure zero allocated bytes under
@@ -539,6 +540,24 @@ rule. The implementation retains its explicit undefined-normalization failure
 instead of adding an arbitrary power floor or fallback rating ratio. These
 diagnostics remain separately classified and are not substituted for coupled
 zero-primary acceptance tests.
+
+### Exact-zero primary allocation boundary
+
+An additional independent discriminator isolates the unloaded primary shaft
+from the balanced, loaded secondary. Its primary allocation denominator is
+zero at dynamic initialization. The reference publishes an infinite secondary
+scale and a nonfinite secondary mechanical output, even though its initial
+conditions summary reports success; the secondary electrical trajectory then
+becomes nonfinite. Two cold captures reproduce the same initial output block.
+The raw inputs, output, log and manifests are retained in the private
+`wsieg1-zero-primary-20261105` evidence archive (SHA-256
+`6F3B3243565C3EBB28B417D93071C319865127535D2B8F35C9FEC57BAC77132C`).
+
+This is a rejected-quality reference run, not an acceptable zero-primary
+trajectory. The existing Java initialization rejects the undefined scale
+before either integration method can advance. No denominator floor, fallback
+rating ratio or nonfinite state is introduced to imitate the invalid run.
+The ordinary active-shaft trajectory and hot-reconnection gates remain open.
 
 The focused model/import suite executes 115 tests with the same six unresolved
 accuracy failures, no errors and no skips; all newly added inactive-shaft tests

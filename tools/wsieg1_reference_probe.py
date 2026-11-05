@@ -50,7 +50,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fixture', choices=['standard', 'curve', 'dual', 'unused-lp'], required=True)
     parser.add_argument('--profile', choices=[*PROFILES, *STEP_PROFILES], default='base')
-    parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary','zero-primary','zero-both','secondary-off','balanced-zero-primary','balanced-zero-both'], default='entered')
+    parser.add_argument('--base-profile', choices=['entered','primary-high','secondary-high','split-fractions','system-double','independent-secondary','zero-secondary','zero-primary','zero-both','secondary-off','balanced-zero-primary','balanced-zero-both','island-zero-primary'], default='entered')
     parser.add_argument('--event', choices=['flat', 'fault', 'primary-trip', 'secondary-trip', 'reference-reversals'], required=True)
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/480, 1/240], required=True)
     parser.add_argument('--status-reenable', action='store_true',
@@ -104,10 +104,12 @@ def main():
             if line.startswith('0 /'): section = 'other'; continue
             if i == 0 and args.base_profile == 'system-double':
                 fields = line.split(','); fields[1] = ' 200.00'; lines[i] = ','.join(fields)
-            elif section == 'bus' and args.base_profile.startswith('balanced-zero-'):
-                fields = line.split(','); fields[7] = '1.0'; fields[8] = '0.0'; lines[i] = ','.join(fields)
-            elif section == 'load' and args.base_profile.startswith('balanced-zero-'):
-                fields = line.split(','); fields[5] = '12.0' if args.base_profile == 'balanced-zero-primary' else '0.0'; fields[6] = '0.0'; lines[i] = ','.join(fields)
+            elif section == 'bus' and (args.base_profile.startswith('balanced-zero-') or args.base_profile == 'island-zero-primary'):
+                fields = line.split(','); fields[7] = '1.0'; fields[8] = '0.0'
+                if args.base_profile == 'island-zero-primary' and int(fields[0]) == 1: fields[3] = '3'
+                lines[i] = ','.join(fields)
+            elif section == 'load' and (args.base_profile.startswith('balanced-zero-') or args.base_profile == 'island-zero-primary'):
+                fields = line.split(','); fields[5] = '12.0' if args.base_profile in ('balanced-zero-primary', 'island-zero-primary') else '0.0'; fields[6] = '0.0'; lines[i] = ','.join(fields)
             elif section == 'generator':
                 fields = line.split(','); bus = int(fields[0])
                 ratings = {'primary-high': {1:200.,2:50.}, 'secondary-high': {1:50.,2:200.}, 'split-fractions': {1:80.,2:120.}}.get(args.base_profile,{})
@@ -118,9 +120,13 @@ def main():
                 if args.base_profile == 'zero-primary' and bus == 1: fields[2] = '0.0'
                 if args.base_profile == 'zero-both' and bus in [1,2]: fields[2] = '0.0'
                 if args.base_profile == 'secondary-off' and bus == 2: fields[14] = '0'
-                if args.base_profile.startswith('balanced-zero-'):
-                    fields[2] = '12.0' if bus == 2 and args.base_profile == 'balanced-zero-primary' else '0.0'
+                if args.base_profile.startswith('balanced-zero-') or args.base_profile == 'island-zero-primary':
+                    fields[2] = '12.0' if bus == 2 and args.base_profile in ('balanced-zero-primary', 'island-zero-primary') else '0.0'
                     fields[3] = '0.0'; fields[6] = '1.0'
+                lines[i] = ','.join(fields)
+            elif section == 'branch' and args.base_profile == 'island-zero-primary':
+                fields = line.split(','); fields[3] = '0.0'
+                if int(fields[0]) == 1: fields[13] = '0'
                 lines[i] = ','.join(fields)
             elif section == 'branch' and args.base_profile == 'system-double':
                 fields = line.split(',')
@@ -239,6 +245,23 @@ def main():
                                    return_code=ierr, before=before, after=after, accepted_reconnect_contract=False)
 
     checked('finish', psspy.run(0, args.duration, 1000000, 1, 0))
+    if args.base_profile == 'island-zero-primary':
+        checked('model report', psspy.docu(0, 1, [0, 3, 1]))
+        log = Path('native.log').read_text(errors='replace')
+        assert 'Initial conditions check O.K.' in log
+        assert 'Infinity VAR1' in log and 'NaN PMECH_LP' in log
+        manifest = dict(status='rejected-nonfinite', settings=vars(args), layout=layout,
+            entered_constants=entered, initialized_constants=initialized,
+            initial_reference=initial_reference, reference_events=reference_events,
+            machine_layouts=machine_layouts,
+            diagnostic='The exact-zero primary operating point divides by zero in the paired-shaft allocation; the secondary and network become nonfinite.',
+            engine_module=psse3607.__name__, library_sha256=sha(library),
+            source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),
+            source_pdf_pages=[522, 523, 524],
+            files={p.name: sha(p) for p in Path('.').iterdir() if p.is_file()})
+        Path('manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+        print(json.dumps(dict(tag=tag, status=manifest['status'])), flush=True)
+        return
     _, labels, data = dyntools.CHNF('native.out').get_data()
     keys = sorted(k for k in labels if isinstance(k, int))
     assert 0 < len(data['time']) < 30000

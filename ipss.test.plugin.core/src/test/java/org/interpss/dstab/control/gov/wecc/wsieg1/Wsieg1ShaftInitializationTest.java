@@ -66,7 +66,10 @@ public class Wsieg1ShaftInitializationTest {
         assertThrows(IllegalStateException.class,p.owner::getSecondaryBaseScale);
         p.secondary.setPm(.1);p.primary.setPm(0.);assertTrue(initialize(p.primary));assertFalse(initialize(p.secondary));
         assertThrows(IllegalStateException.class,p.owner::getSecondaryBaseScale);
+        assertFalse(p.owner.nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.primary,0));
+        assertFalse(p.secondary.getGovernor().nextStep(.0005,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,p.secondary,0));
         assertThrows(IllegalStateException.class,()->p.owner.readStaggeredState(new double[6],0));
+        assertThrows(IllegalStateException.class,()->((StaggeredEulerParticipant)p.secondary.getGovernor()).readStaggeredState(new double[0],0));
     }
 
     @Test void bothShaftsReusePreparedNormalizationWithoutPerStepAllocation()throws Exception {
