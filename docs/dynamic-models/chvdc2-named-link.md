@@ -1,5 +1,49 @@
 # CHVDC2 named-link preparation and shared components
 
+## Fault-on and nonfault reference-range error gates
+
+The full-network fault comparison now evaluates each channel's RMSE separately
+while the fault is on and while it is off. Both values use the full recorded
+reference trajectory's maximum-minus-minimum as denominator. At fault
+application, the duplicate timestamp's left sample stays nonfault and its right
+sample becomes fault-on; at clearing, the left sample stays fault-on and the
+right sample becomes nonfault. Negative-time startup samples remain in the
+nonfault group. All samples still contribute to the full reference range.
+
+Electrical boundary channels must have NRMSE below 0.02 in each period; internal
+states must remain below 0.05. A constant reference channel keeps its preceding
+maximum-absolute-error gate because range normalization is undefined. The test
+continues to require matching clocks, complete trajectories, finite samples,
+event-side ordering, protection regimes and accepted protection times. Maximum
+absolute errors and their times remain in the comparison report as diagnostics.
+
+This accepts the retained 0.5 ms ordinary inverter fault and the ten-local-step
+protected inverter and measurement-lag rectifier profiles under both integration
+methods. In the protected profile, the peak DC-current difference is 5.948 A
+for modified Euler and 9.472 A for staggered integration, while fault-on
+current NRMSE is 0.000574 and 0.000769 respectively. The small normalized
+values reflect a reference current range above 3,100 A; they do not imply that
+the pointwise errors disappeared. The ordinary profile's largest internal
+nonfault NRMSE is about 0.0443 for a nearly flat measured-voltage state.
+
+The focused full-network class still has 27 failing comparisons and one
+nonconvergent one-step control among 54 tests. Fixed-angle-line, active RAML and
+some coarse-step profiles exceed the new NRMSE gates; the numerical error
+cannot be accepted by changing an error metric. Automatic model attachment and
+complete model qualification remain open.
+
+The fixed-angle-line controls hold the converter angle and DC taps fixed to
+separate line/network behavior from active angle control. In the current run,
+the inverter current-PI state reaches about 0.392 nonfault NRMSE versus its
+0.05 state limit. Its reference range is only 0.00004578 degrees and the peak
+raw difference is 0.00002787 degrees. Thus this normalized error alone does
+not imply a large physical angle error; the control remains a distinct
+state-coordinate check. The RAML controls instead exercise rectifier minimum-
+angle pickup, hold and release during a rectifier fault. The coarser control
+reaches 0.080 fault-on rectifier-power NRMSE and 0.094 firing-angle NRMSE versus
+the 0.02 boundary limit. Its recorded RAML timer marker also differs by
+55.75 ms, a discrete-history mismatch outside any trajectory NRMSE gate.
+
 ## Explicit accepted-boundary auxiliary commands
 
 The terminal attachment previously rebound its auxiliary input to zero on every

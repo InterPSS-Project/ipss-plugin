@@ -31,6 +31,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/chvdc2-controller-20261102/captures.zip");
     private static final double[] LIMITS={1e-5,1e-5,.01,.01,1e-4,1e-4,1e-4,1e-4,.002,.002,
             1e-5,1e-5,1e-5,1e-5,.002,.002,.002,.002,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,.002,.01};
+    private static final double BOUNDARY_NRMSE_LIMIT=.02, STATE_NRMSE_LIMIT=.05;
     @TempDir Path folder;
     @BeforeAll static void integrity()throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent coupled reference captures");
@@ -242,6 +243,10 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         Path output=Files.createTempDirectory(Files.createDirectories(Path.of(localSteps>1?"../target/chvdc2-terminal-local-reference":"../target/chvdc2-terminal-reference")),staggered?"staggered-":"euler-");
         int channels=10+recorder.states.length;
         double[] maximum=new double[channels],times=new double[channels];int duplicates=0,step=0;
+        double[] referenceMin=new double[channels],referenceMax=new double[channels];
+        Arrays.fill(referenceMin,Double.POSITIVE_INFINITY);Arrays.fill(referenceMax,Double.NEGATIVE_INFINITY);
+        double[][] periodSquaredError=new double[2][channels];int[] periodSamples=new int[2];
+        boolean faultOn=false;
         float referenceClock=(float)(-2*h);
         var checks=new ArrayList<org.junit.jupiter.api.function.Executable>();
         try(var w=BenchmarkOutputGuard.newWriter(output.resolve("comparison.csv"),2*1024*1024)) {
@@ -251,6 +256,11 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                 boolean duplicate=row>0&&actual[0]==recorder.rows.get(row-1)[0];
                 if(duplicate)duplicates++;
                 else if(row>0){step++;referenceClock+=(float)h;}
+                if(recorder.faultEnabled&&duplicate) {
+                    if(Math.abs(actual[0]-.05)<1e-9)faultOn=true;
+                    else if(Math.abs(actual[0]-.1)<1e-9)faultOn=false;
+                }
+                int period=faultOn?1:0;periodSamples[period]++;
                 // Validate each simulator's clock independently at the same step/event side.
                 // The capture accumulates a binary32 clock; do not shift or interpolate signals.
                 double sourceTime=expected.get("time_s"),expectedSourceTime=referenceClock,expectedTime=(step-2)*h;
@@ -265,6 +275,8 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                 for(int k=0;k<channels;k++){double target=k<10?boundary[k]:expected.get("STATE"+(k-10)),error=actual[k+1]-target;
                     int channel=k;
                     checks.add(()->assertTrue(Double.isFinite(actual[channel+1])&&Double.isFinite(target),"Finite sample/channel "+index+"/"+channel));
+                    referenceMin[k]=Math.min(referenceMin[k],target);referenceMax[k]=Math.max(referenceMax[k],target);
+                    periodSquaredError[period][k]+=error*error;
                     if(Math.abs(error)>maximum[k]){maximum[k]=Math.abs(error);times[k]=actual[0];}w.write(","+actual[k+1]+","+target+","+error);}
                 w.write("\n");
             }
@@ -273,7 +285,19 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         report.put("local_steps",localSteps);report.put("network_interval_s",h);report.put("local_interval_s",h/localSteps);
         report.put("network_solution_calls",recorder.networkSolves);
         report.put("reference_samples",reference.size());report.put("event_duplicates",duplicates);report.put("trajectory_complete",stopped==null);
-        report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);report.put("limits",Arrays.copyOf(LIMITS,channels));
+        report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);
+        report.put("previous_maximum_absolute_limits",Arrays.copyOf(LIMITS,channels));
+        Double[][] periodNrmse=new Double[2][channels];
+        double[] referenceRange=new double[channels];
+        for(int period=0;period<2;period++)if(periodSamples[period]>0)for(int k=0;k<channels;k++) {
+            double range=referenceMax[k]-referenceMin[k];
+            if(range>0)periodNrmse[period][k]=Math.sqrt(periodSquaredError[period][k]/periodSamples[period])/range;
+        }
+        for(int k=0;k<channels;k++)referenceRange[k]=referenceMax[k]-referenceMin[k];
+        report.put("acceptance_metric","period RMSE / full-trajectory reference range");
+        report.put("period_names",List.of("nonfault","fault_on"));report.put("period_samples",periodSamples);
+        report.put("period_range_nrmse",periodNrmse);report.put("reference_range",referenceRange);
+        report.put("boundary_nrmse_limit",BOUNDARY_NRMSE_LIMIT);report.put("state_nrmse_limit",STATE_NRMSE_LIMIT);
         report.put("numerical_state_count",recorder.states.length);
         report.put("automatic_import",false);report.put("full_network_terminal_attachment",true);report.put("recorded_state_or_input_forcing",false);
         report.put("protected_profile",protectedProfile);report.put("fault_bus",faultBus);report.put("fault_reactance_pu",reactance);
@@ -305,7 +329,20 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         try(var w=BenchmarkOutputGuard.newWriter(output.resolve("comparison.json"),20000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,report);}
         if(stopped!=null)throw stopped;
         assertEquals(reference.size(),recorder.rows.size());assertEquals(2,duplicates);
-        for(int k=0;k<channels;k++){int channel=k;checks.add(()->assertTrue(maximum[channel]<LIMITS[channel],"Channel "+channel+" error "+maximum[channel]+" at "+times[channel]));}
+        if(recorder.faultEnabled)assertEquals((int)Math.round(.05/h)+1,periodSamples[1],
+                "Fault-on count includes application-right and clearing-left samples");
+        else assertEquals(0,periodSamples[1]);
+        for(int k=0;k<channels;k++){
+            int channel=k;double range=referenceMax[k]-referenceMin[k];
+            if(range==0)checks.add(()->assertTrue(maximum[channel]<LIMITS[channel],
+                    "Constant reference channel "+channel+" maximum error "+maximum[channel]));
+            else for(int period=0;period<2;period++)if(periodSamples[period]>0){
+                int selected=period;double limit=channel<10?BOUNDARY_NRMSE_LIMIT:STATE_NRMSE_LIMIT;
+                checks.add(()->assertTrue(periodNrmse[selected][channel]<limit,
+                        "Channel "+channel+" "+(selected==1?"fault-on":"nonfault")+
+                        " reference-range NRMSE="+periodNrmse[selected][channel]+"; limit="+limit));
+            }
+        }
         assertAll(tag+" / "+staggered,checks);
     }
 }
