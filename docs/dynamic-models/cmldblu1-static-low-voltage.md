@@ -110,6 +110,30 @@ are still separate qualification work. The private raw pair and inputs are in
 `verification-artifacts/cmldblu1-distributed-frequency-duration-20261105/captures.zip`,
 SHA-256 `a099a24d1d1403ca7d3d8cdc27e15720323297bba430396e639bade8a56a5f2d`.
 
+### Motor-containing frequency boundary remains open
+
+A separate cold-paired composite fault control contains active motors, static
+frequency coefficients and represented distribution. Every recorded field
+repeats exactly over 1,005 rows. The source prepares nonzero static G/B at
+fault entry. The current generic static path has bus-voltage NRMSE 0.001300
+and 0.001306 under modified Euler and staggered integration, respectively,
+above the 0.001 limit.
+
+An isolated trial that selected the prepared static port for this
+motor-containing composite reduced voltage NRMSE to about 0.000212 and
+0.000215, but static active-power NRMSE became 0.03033 and 0.03022. Its
+prepared G differed by as much as 0.04994 pu. Initial static power agrees;
+the fault-entry G values imply different first preparation voltages, about
+0.4424 pu in the reference and 0.4569 pu in the trial. The trial was reverted.
+The static/motor first-iterate boundary must be resolved before expanding
+the production port or claiming motor-containing trajectory acceptance.
+
+`CompositeMixedStaticFrequencyTest` retains a source-only cold-repeat and
+nonzero-G/B gate for this control, separate from the passing runtime profiles.
+The raw inputs, outputs and logs are retained privately in
+`verification-artifacts/cmldblu1-motor-frequency-20261105/captures.zip`,
+SHA-256 `f1154ef4fe727451f2c94913dae83e1a680a54b66521dcafb660ca5fc5a3831e`.
+
 The port retains the original physical component shunts. Let `Y_c` be only the
 composite's newly added shunt and `Y_aux = -Y_c` its numerical port stamp:
 

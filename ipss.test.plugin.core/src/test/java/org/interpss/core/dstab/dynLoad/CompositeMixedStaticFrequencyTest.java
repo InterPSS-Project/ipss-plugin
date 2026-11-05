@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.zip.ZipFile;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,6 +24,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** Complete independent mixed static/electronic response with static frequency coefficients. */
 public class CompositeMixedStaticFrequencyTest {
+    private static final Path MOTOR_ARCHIVE=Path.of(
+            "testData/private/verification-artifacts/cmldblu1-motor-frequency-20261105/captures.zip");
+    private static final String MOTOR_SHA="f1154ef4fe727451f2c94913dae83e1a680a54b66521dcafb660ca5fc5a3831e";
     private record Profile(String name,String archive,String sha,Set<String> inactive,
             double step,double endTime,int rows) { }
     private static Stream<Arguments> profiles() {
@@ -50,6 +54,20 @@ public class CompositeMixedStaticFrequencyTest {
                 result.add(row);
             }
             return result;
+        }
+    }
+
+    @Test void motorContainingSourceExposesSeparateStaticPreparationGate() throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(MOTOR_ARCHIVE));
+        assertEquals(MOTOR_SHA,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(MOTOR_ARCHIVE))));
+        try(var zip=new ZipFile(MOTOR_ARCHIVE.toFile())) {
+            var first=rows(zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes());
+            var repeat=rows(zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
+            assertEquals(1005,first.size());assertEquals(first,repeat);
+            assertEquals(2,first.stream().filter(row->row.get("time_s")<0).count());
+            assertTrue(first.stream().anyMatch(row->row.get("VAR57")>.79));
+            assertTrue(first.stream().anyMatch(row->row.get("VAR58")<-.28));
         }
     }
 
