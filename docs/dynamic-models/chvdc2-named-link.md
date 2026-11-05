@@ -1,5 +1,56 @@
 # CHVDC2 named-link preparation and shared components
 
+## Explicit accepted-boundary auxiliary commands
+
+The terminal attachment previously rebound its auxiliary input to zero on every
+network evaluation. The numerical components supported the input, but an
+attached model could not receive it. `queueAuxiliaryCurrent(time, amperes)` now
+queues one common signal at a settled physical-time endpoint. It does not change
+states, publish current or accept history. The next settled `INITIAL` or explicit
+`DIRECT` network transaction evaluates and accepts the request. Predictor and
+corrector trials cannot introduce a command.
+
+A failed network solve restores accepted numerical/history/output data and the
+accepted command, while retaining the queued request for retry. An idle caller
+may cancel that request. Repeated equal requests are idempotent; a conflicting
+pending request, invalid time/value, inactive owner or mid-stage call is rejected.
+Reinitialization restores the zero auxiliary default. Physical command time is
+tracked separately from the optional accumulated binary32 protection clock.
+Staggered callers must invoke `notifyAcceptedEndpointDiscontinuity()` before
+queuing an input jump, then solve the endpoint using the existing network event
+protocol. Observations never write the signal. This explicit command API does
+not attach an auxiliary controller automatically or change the solved current
+reference.
+
+Independent cold controls attach an actual voltage-driven auxiliary controller
+to the legacy model. Its index-1 output equals both terminal auxiliary observations
+at every one of 1,005 samples, including both event-side duplicates. A second cold
+pair excites index 2 instead: the source output is nonzero while both terminal
+auxiliary inputs stay zero. Each pair's complete CSV is byte-identical. The
+previous directly overwritten observation-variable probe remains a rejected
+excitation control, not an input oracle.
+
+`Chvdc2AuxiliaryRouteReferenceTest` preserves that source-routing contract.
+Terminal tests cover physical-time acceptance with both solvers, exact state
+preservation at the event, rejection, failed-network retry, cancellation,
+reinitialization and pure repeated reads. The independent equations require
+`-Ki * deltaI / Irated` at the rectifier PI and `Kref * deltaI / (Irated * Tref)`
+at the inverter order lag. The outward-limited inverter PI remains blocked.
+Restoring the former zero-input binding makes those assertions fail under both
+clock modes.
+
+The focused selection passes 78 checks with no failures, errors or skips. Four
+existing complete-network fault comparisons still fail their strict gates. Their
+auxiliary-disabled full trajectories are byte-identical to the deliberately
+disconnected-input control in the same build environment. No gate or sample was
+removed, and this change does not claim to recover those reference trajectories.
+
+This qualifies the explicit input route and lifecycle only. It does not resolve
+existing complete-model state/trajectory errors, provide a general auxiliary
+model builder or enable automatic CHVDC2 attachment. Raw cold captures and their
+manifests are retained privately in `chvdc2-auxiliary-route-20261104/captures.zip`.
+
+
 ## Network-context rejection before transaction entry
 
 The terminal owner validates both network-context timestamps before changing its

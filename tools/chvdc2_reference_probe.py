@@ -50,6 +50,7 @@ def main():
     parser.add_argument('--boundary-probe', choices=['observations', 'split'], help='Read public state/time snapshots; split additionally pauses after the first event step')
     parser.add_argument('--event-refresh-count', type=int, choices=[0, 1, 2], default=0,
                         help='Diagnostic same-time RUN calls after each event API; ordinary captures use zero')
+    parser.add_argument('--auxiliary-index', type=int, choices=[1,2], help='Independent voltage-driven HVDCAT routing discriminator')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
     parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240, 1/480], default=.0005)
@@ -72,6 +73,8 @@ def main():
         parser.error('Batch must contain only letters, digits and hyphens')
     root = Path.cwd()
     tag = f'{args.form}-{args.profile}-flags'+''.join(map(str, args.flags))+f'-h{args.step:.12g}-{args.repeat}'
+    if args.auxiliary_index is not None:
+        tag = tag[:-1]+f'aux{args.auxiliary_index}-'+args.repeat
     if args.control != 'inverter-power':
         tag = tag[:-1]+args.control+'-'+args.repeat
     if args.network == 'stiff':
@@ -160,6 +163,11 @@ def main():
         constants[17] = args.measurement_time
     (out/'dynamic.dyr').write_text(''.join(f"{bus} 'GENCLS' '1' 99999 0 /\n" for bus in range(1, 5))+
                                  header+' '.join(map(str, args.flags+constants))+' /\n')
+    if args.auxiliary_index is not None:
+        # Source-defined generic auxiliary: terminal-voltage deviation through a
+        # lag and identity downstream filters. Its output is observed, not fitted.
+        with (out/'dynamic.dyr').open('a') as f:
+            f.write(f"'1' 'HVDCAT' 1 {args.auxiliary_index} 4 7 0 0 -1 1 100 .02 1 .01 .01 1 .01 .01 2 1 2 1 -100 100 /\n")
     for name in ['chvdc2_reference_probe.py', 'tgov1_limit_probe.py']:
         shutil.copy2(root/'tools'/name, out/name)
     import psse3607
@@ -187,6 +195,15 @@ def main():
     layout = {k: checked('layout', psspy.dc2mind('1', k)) for k in ['CON', 'ICON', 'STATE', 'VAR', 'NCON', 'NICON', 'NSTATE', 'NVAR']}
     Path('layout.json').write_text(json.dumps(layout, indent=2)+'\n')
     assert layout['NCON'] == 48 and layout['NICON'] == 3 and layout['NSTATE'] == 18 and layout['NVAR'] == 24, layout
+    auxiliary_layout = None
+    if args.auxiliary_index is not None:
+        auxiliary_layout = {k: checked('auxiliary layout', psspy.dc2auxmind('1', args.auxiliary_index, k))
+                            for k in ['CON','ICON','STATE','VAR','NCON','NICON','NSTATE','NVAR']}
+        Path('auxiliary-layout.json').write_text(json.dumps(auxiliary_layout, indent=2)+'\n')
+        assert [auxiliary_layout[k] for k in ['NCON','NICON','NSTATE','NVAR']] == [16,4,5,3]
+        for kind,fn in [('STATE',psspy.state_channel),('VAR',psspy.var_channel)]:
+            for i in range(auxiliary_layout['N'+kind]):
+                checked('auxiliary channel',fn([-1,auxiliary_layout[kind]+i], 'AUX_'+kind+str(i)))
     entered = [checked('constant', psspy.dsrval('CON', layout['CON']+i)) for i in range(48)]
     checked('entered report', psspy.docu(0, 1, [0, 3, 1]))
     for kind, fn in [('STATE', psspy.state_channel), ('VAR', psspy.var_channel)]:
@@ -269,7 +286,7 @@ def main():
     manifest = dict(status=status, initialization_and_network_valid=quality, excitation_observed=excitation,
                     finite_measurements=not nonfinite, nonfinite_measurements=len(nonfinite),
                     first_nonfinite=min(nonfinite) if nonfinite else None,
-                    settings=vars(args), layout=layout,
+                    settings=vars(args), layout=layout, auxiliary_layout=auxiliary_layout,
                     entered_constants=entered, initialized_constants=initialized, samples=len(data['time']), channels=len(keys),
                     engine_module=psse3607.__name__, library_sha256=sha(library),
                     source_document_sha256=sha(library.parent.parent/'DOCS/ModelLibrary.pdf'),

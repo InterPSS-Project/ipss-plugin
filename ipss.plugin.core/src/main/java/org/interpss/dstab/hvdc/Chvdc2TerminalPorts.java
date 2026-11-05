@@ -46,6 +46,35 @@ public final class Chvdc2TerminalPorts {
     private boolean ramlTransitioned,commutationTransitioned;
     private double evaluationTime,sharedEndpoint,interval;
     private long sequence,savedSequence;
+    private double acceptedPhysicalTime,physicalEvaluationTime,acceptedAuxiliary,pendingAuxiliary;
+    private boolean auxiliaryPending,auxiliaryTrial,auxiliaryActionApplied;
+
+    /** Queue a common ampere signal at the settled physical-time endpoint. The
+     * next settled INITIAL or DIRECT network transaction must accept it before integration resumes.
+     * A failed solve preserves the accepted command and retains this request for
+     * retry. Staggered callers must notify their accepted-endpoint discontinuity
+     * before queuing the jump, using the solver's existing event protocol. */
+    public void queueAuxiliaryCurrent(double time,double amperes) {
+        requireReady();
+        if(!Double.isFinite(time)||!Double.isFinite(amperes)||time!=acceptedPhysicalTime)
+            throw new IllegalArgumentException("Finite auxiliary command at the accepted physical time required");
+        if(transaction||networkTrial||integrationPending||!rectifierPort.attachmentIntact()||!rectifierPort.isOperational())
+            throw new IllegalStateException("Auxiliary commands require a settled operational owner");
+        if(auxiliaryPending) {
+            if(amperes!=pendingAuxiliary)throw new IllegalStateException("Accept or cancel the queued auxiliary command first");
+            return;
+        }
+        if(amperes==acceptedAuxiliary)return;
+        pendingAuxiliary=amperes;auxiliaryPending=true;
+    }
+    /** Cancel an unaccepted command; observations and accepted history are untouched. */
+    public void cancelQueuedAuxiliaryCurrent() {
+        if(transaction||networkTrial||integrationPending)throw new IllegalStateException("Finish the network trial first");
+        auxiliaryPending=false;
+    }
+    public double acceptedAuxiliaryCurrent(){return acceptedAuxiliary;}
+    public boolean hasQueuedAuxiliaryCurrent(){return auxiliaryPending;}
+
 
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding) {
         this(binding,ProtectionClock.CALLER_TIME);
@@ -110,7 +139,7 @@ public final class Chvdc2TerminalPorts {
     private void bind() {
         if(!rectifierPort.attachmentIntact())throw new IllegalStateException("Both original terminal ports must remain attached");
         var r=rectifier.getVoltage();var i=inverter.getVoltage();
-        runtime.setBoundary(r.getReal(),r.getImaginary(),i.getReal(),i.getImaginary(),binding.operatingPoint().currentAmperes(),0);
+        runtime.setBoundary(r.getReal(),r.getImaginary(),i.getReal(),i.getImaginary(),binding.operatingPoint().currentAmperes(),auxiliaryTrial?pendingAuxiliary:acceptedAuxiliary);
     }
     /** Called once by the owner at each network iteration, not by output getters. */
     private void publish() {
@@ -121,15 +150,18 @@ public final class Chvdc2TerminalPorts {
         if(transaction)throw new IllegalStateException("A terminal transaction is already open");
         runtime.beginTransaction();transaction=true;savedSequence=sequence;
         trialProtectionTime=acceptedProtectionTime;
-        ramlTransitioned=false;commutationTransitioned=false;
+        ramlTransitioned=false;commutationTransitioned=false;auxiliaryTrial=false;auxiliaryActionApplied=false;
         savedRectifierOutput=rectifierOutput;savedInverterOutput=inverterOutput;
     }
     private void rollback() {
         if(transaction){runtime.rollbackTransaction();transaction=false;sequence=savedSequence;
             rectifierOutput=savedRectifierOutput;inverterOutput=savedInverterOutput;}
-        integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;localIntegration=false;
+        integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;localIntegration=false;auxiliaryTrial=false;auxiliaryActionApplied=false;
     }
-    private void commit() {runtime.commitTransaction();acceptedProtectionTime=trialProtectionTime;transaction=false;}
+    private void commit() {
+        runtime.commitTransaction();acceptedProtectionTime=trialProtectionTime;transaction=false;
+        if(auxiliaryTrial){acceptedAuxiliary=pendingAuxiliary;auxiliaryPending=false;auxiliaryTrial=false;}
+    }
     private void requireReady() {
         if(!initialAccepted)throw new IllegalStateException("Accept the initial electrical endpoint before integration");
     }
@@ -154,6 +186,8 @@ public final class Chvdc2TerminalPorts {
             if(owner){
                 rollback();networkTrial=false;initialAccepted=false;sequence=0;
                 acceptedProtectionTime=trialProtectionTime=initialProtectionTime();
+                acceptedPhysicalTime=binding.operatingPoint().initialTimeSeconds();
+                acceptedAuxiliary=0;auxiliaryPending=false;auxiliaryTrial=false;
                 bind();runtime.initialize(binding.operatingPoint().rectifierVolts(),binding.operatingPoint().inverterVolts(),acceptedProtectionTime);
                 publish();
             }
@@ -181,10 +215,13 @@ public final class Chvdc2TerminalPorts {
                 throw new IllegalStateException("Network stage must match the CHVDC2 integration stage");
             if(!predictorTrial&&!corrector&&integrationPending&&!(direct&&sharedEndpointPending))
                 throw new IllegalStateException("Finish the pending integration endpoint first");
+            if(auxiliaryPending&&(!"INITIAL".equals(context.stage())&&!direct||integrationPending||context.evaluationTime()!=acceptedPhysicalTime))
+                throw new IllegalStateException("Queued auxiliary command requires its settled accepted endpoint");
             if(!transaction)beginTransaction();networkTrial=true;actionDiscontinuity=false;
+            auxiliaryTrial=auxiliaryPending;physicalEvaluationTime=direct&&sharedEndpointPending?sharedEndpoint:context.evaluationTime();
             // An ordinary INITIAL solve revisits the previous accepted endpoint.
             // Refresh live injections without accepting the electrical angle twice.
-            clockedTrial=predictorTrial||corrector||sharedEndpointPending
+            clockedTrial=auxiliaryTrial||predictorTrial||corrector||sharedEndpointPending
                     ||!direct&&(!initialAccepted||context.externalEventBoundary());
             evaluationTime=protectionTime(direct&&sharedEndpointPending?sharedEndpoint:context.evaluationTime());
         }
@@ -198,7 +235,9 @@ public final class Chvdc2TerminalPorts {
             if(predictorTrial)runtime.evaluatePredictorProtection(evaluationTime,sequence++,!ramlTransitioned,false);
             else runtime.evaluateProtectionBoundary(evaluationTime,sequence++,!ramlTransitioned,!commutationTransitioned);
             ramlTransitioned|=raml!=runtime.ramlActive();commutationTransitioned|=shorted!=runtime.inverterShorted();
-            actionDiscontinuity=before!=runtime.staggeredInputDiscontinuityVersion();
+            boolean commandAction=auxiliaryTrial&&!auxiliaryActionApplied;
+            auxiliaryActionApplied|=commandAction;
+            actionDiscontinuity=commandAction||before!=runtime.staggeredInputDiscontinuityVersion();
             // A new protection regime must be solved before publication; its
             // electrical angle is still the previous accepted boundary's angle.
             return actionDiscontinuity||shorted!=runtime.inverterShorted();
@@ -212,7 +251,7 @@ public final class Chvdc2TerminalPorts {
                 if(predictorTrial){predictorConverged=true;return;}
                 if(clockedTrial){bind();runtime.acceptNetworkBoundary(evaluationTime,sequence++);}
                 // Do not recalculate outputs after accepting the next electrical angle.
-                commit();integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;
+                commit();acceptedPhysicalTime=physicalEvaluationTime;integrationPending=false;sharedIntegration=false;sharedEndpointPending=false;predictorConverged=false;
             }catch(RuntimeException failure){rollback();throw failure;}
             finally{networkTrial=false;}
         }
@@ -222,6 +261,7 @@ public final class Chvdc2TerminalPorts {
             if(method!=DynamicSimuMethod.MODIFIED_EULER||stage<0||stage>1||!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds())
                 throw new IllegalArgumentException("Matching modified-Euler stages within the prepared outer interval required");
             if(h==0)return true;
+            if(auxiliaryPending)throw new IllegalStateException("Accept the queued auxiliary command before integration");
             if(stage==0&&(integrationPending||networkTrial)||stage==1&&(!integrationPending||sharedIntegration||!predictorConverged||h!=interval))
                 throw new IllegalStateException("Matching predictor/network/corrector lifecycle required");
             if(stage==0){beginTransaction();integrationPending=true;interval=h;}
@@ -249,7 +289,7 @@ public final class Chvdc2TerminalPorts {
         @Override public int staggeredLocalStepCount(){return owner?staggeredLocalSteps:1;}
         @Override public void beginStaggeredLocalInterval(double h){
             if(!owner||!isOperational())return;requireReady();
-            if(staggeredLocalSteps<=1||transaction||networkTrial||integrationPending||!Double.isFinite(h)||h<=0||h>binding.networkIntervalSeconds())
+            if(staggeredLocalSteps<=1||auxiliaryPending||transaction||networkTrial||integrationPending||!Double.isFinite(h)||h<=0||h>binding.networkIntervalSeconds())
                 throw new IllegalStateException("Start a fresh prepared local integration interval");
             beginTransaction();integrationPending=true;sharedIntegration=true;localIntegration=true;interval=h;
             try{advanceProtectionClock(h);bind();runtime.beginIntegrationInterval(h);}
@@ -279,6 +319,7 @@ public final class Chvdc2TerminalPorts {
             if(!Double.isFinite(h)||h<0||h>binding.networkIntervalSeconds()||networkTrial||integrationPending&&!sharedIntegration
                     ||localIntegration&&h>0&&h!=interval/staggeredLocalSteps)
                 throw new IllegalStateException("Shared state proposal requires an idle prepared integration owner");
+            if(h>0&&auxiliaryPending)throw new IllegalStateException("Accept the queued auxiliary command before integration");
             boolean starting=h>0&&!transaction;
             if(starting){beginTransaction();integrationPending=true;sharedIntegration=true;interval=h;}
             try{

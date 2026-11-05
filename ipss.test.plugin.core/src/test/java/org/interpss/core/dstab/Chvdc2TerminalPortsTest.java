@@ -67,6 +67,56 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
         while(a.getSimuTime()<.1-.00025){assertTrue(a.solveDEqnStep(true));worst=Math.max(worst,Math.max(Math.abs(n.getBus("Bus7").getVoltageMag()-vr),Math.abs(n.getBus("Bus9").getVoltageMag()-vi)));}
         f.binding().runtime().readStaggeredState(end,0);assertArrayEquals(initial,end,1e-4);assertTrue(worst<1e-7,"No-event voltage drift "+worst);
     }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void auxiliaryCommandCommitsOnlyAtAcceptedInitialBoundary(boolean binaryClock)throws Exception {
+        var clock=binaryClock?Chvdc2TerminalPorts.ProtectionClock.BINARY32:Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME;
+        var f=fixture(true,clock,0,10);initializePorts(f);var ports=f.ports();var p=ports.rectifierPort();
+        var states=p.getIntegrationStates();var histories=p.getIntegrationHistories();var output=p.getOutputObject();
+        double[] leftRate=new double[p.staggeredStateCount()],rightRate=new double[leftRate.length];p.evaluateStaggered(0,leftRate,0);
+        f.binding().owner().setStatus(false);assertThrows(IllegalStateException.class,()->ports.queueAuxiliaryCurrent(0,10));f.binding().owner().setStatus(true);
+        ports.queueAuxiliaryCurrent(0,10);ports.queueAuxiliaryCurrent(0,10);
+        assertTrue(p.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertEquals(0.,ports.acceptedAuxiliaryCurrent());assertTrue(ports.hasQueuedAuxiliaryCurrent());
+        for(double bad:new double[]{Double.NaN,Double.POSITIVE_INFINITY,.0005})assertThrows(IllegalArgumentException.class,()->ports.queueAuxiliaryCurrent(bad,10));
+        assertThrows(IllegalArgumentException.class,()->ports.queueAuxiliaryCurrent(0,Double.NaN));
+        assertThrows(IllegalStateException.class,()->ports.queueAuxiliaryCurrent(0,20));
+        assertThrows(IllegalStateException.class,()->p.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertThrows(IllegalStateException.class,()->p.beginNetworkSolution(new Context("INITIAL",0,.0005,50,1e-10)));
+        assertEquals(states,p.getIntegrationStates());assertEquals(histories,p.getIntegrationHistories());assertSame(output,p.getOutputObject());
+        p.beginNetworkSolution(new Context("INITIAL",0,0,50,1e-10));p.beforeNetworkIteration(0);
+        assertThrows(IllegalStateException.class,()->ports.cancelQueuedAuxiliaryCurrent());
+        assertThrows(IllegalStateException.class,()->ports.queueAuxiliaryCurrent(0,10));
+        assertTrue(p.applyConvergedNetworkAction());assertTrue(p.requiresIntegrationInputDiscontinuity());
+        assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(false);
+        assertEquals(0.,ports.acceptedAuxiliaryCurrent());assertTrue(ports.hasQueuedAuxiliaryCurrent());
+        assertEquals(states,p.getIntegrationStates());assertEquals(histories,p.getIntegrationHistories());assertSame(output,p.getOutputObject());
+        p.beginNetworkSolution(new Context("INITIAL",0,0,50,1e-10));p.beforeNetworkIteration(0);assertTrue(p.applyConvergedNetworkAction());
+        p.beforeNetworkIteration(1);assertFalse(p.applyConvergedNetworkAction());p.afterNetworkConvergence();p.endNetworkSolution(true);
+        assertEquals(10.,ports.acceptedAuxiliaryCurrent());assertFalse(ports.hasQueuedAuxiliaryCurrent());assertEquals(states,p.getIntegrationStates());
+        p.evaluateStaggered(0,rightRate,0);
+        assertEquals(-150.*10./3500.,rightRate[4]-leftRate[4],1e-10,"Rectifier PI receives the common ampere command");
+        assertEquals(0.,rightRate[5],0.,"Outward inverter PI remains blocked at its active limit");
+        assertEquals(5.*10./(3500.*.005),rightRate[8]-leftRate[8],1e-10,"Inverter order lag receives the common ampere command");
+        var acceptedOutput=p.getOutputObject();var acceptedHistory=p.getIntegrationHistories();
+        for(int i=0;i<5;i++){assertSame(acceptedOutput,p.getOutputObject());assertEquals(acceptedHistory,p.getIntegrationHistories());}
+        ports.queueAuxiliaryCurrent(0,10);assertFalse(ports.hasQueuedAuxiliaryCurrent());
+        ports.queueAuxiliaryCurrent(0,-10);ports.cancelQueuedAuxiliaryCurrent();assertEquals(10.,ports.acceptedAuxiliaryCurrent());
+        initializePorts(f);assertEquals(0.,ports.acceptedAuxiliaryCurrent());assertFalse(ports.hasQueuedAuxiliaryCurrent());
+    }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void bothSolversAcceptExplicitAuxiliaryAtPhysicalTime(boolean staggered)throws Exception {
+        var f=fixture(true,Chvdc2TerminalPorts.ProtectionClock.BINARY32,0,10);var a=f.network().context().getDynSimuAlgorithm();
+        a.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(.0005);a.setTotalSimuTimeSec(.01);a.setSimuOutputHandler(new StateMonitor());
+        var solver=staggered?new StaggeredEulerSolver(a):new DefaultDynamicSimulationSolver(a);a.setSolver(solver);assertTrue(a.initialization());
+        for(int i=0;i<3;i++)assertTrue(a.solveDEqnStep(true));
+        double time=a.getSimuTime();var before=f.ports().rectifierPort().getIntegrationStates();
+        if(solver instanceof StaggeredEulerSolver s)s.notifyAcceptedEndpointDiscontinuity();
+        f.ports().queueAuxiliaryCurrent(time,10);assertTrue(solver.networkSolutionStep());
+        assertEquals(10.,f.ports().acceptedAuxiliaryCurrent());assertEquals(before,f.ports().rectifierPort().getIntegrationStates());
+        for(int i=0;i<6;i++)assertTrue(a.solveDEqnStep(true));
+        assertTrue(f.ports().rectifierPort().getIntegrationStates().values().stream().allMatch(Double::isFinite));
+        assertNotEquals(before,f.ports().rectifierPort().getIntegrationStates(),"Accepted signal reaches controller equations");
+    }
     @Test void defaultAttachmentSelectsLocalIntegration()throws Exception {
         var f=fixture(true);var defaults=new Chvdc2TerminalPorts(f.binding());
         assertEquals(10,defaults.rectifierPort().staggeredLocalStepCount());
