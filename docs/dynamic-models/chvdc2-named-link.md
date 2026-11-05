@@ -1924,3 +1924,26 @@ step. The residual from the half-input estimate remains several micro-pu and
 does not vanish under the finer outer interval. Do not install a generic
 whole-interval ramp or change the controller's lag equation based on this
 source-only observation. The coupled state, current and power gates remain open.
+### Controller-only initialization discriminator
+
+`Chvdc2AngleCoordinateReplayTest` isolates the finite-resistance discrepancy
+before the first numerical step. It explicitly supplies the independent flat
+run's recorded inputs and initial controller angles to the controller assembly;
+it does not substitute those coordinates into the physical converter runtime.
+The corresponding physical-angle calculation is retained as a negative control.
+
+For inverter resistance, the recorded controller angle produces cosine reference
+0.7884184213, matching the independent internal observation 0.7884184122.
+The physical electrical angle instead produces 0.7819217384. The angle
+coordinate difference therefore changes internal angle-limit initialization;
+it is not simply a display offset. Both methods then reproduce the conditional
+inverter-resistance flat controller replay with maximum angle-state error
+0.0000458 degrees and maximum per-unit state error 1.23e-7, using the unchanged
+per-state limits. Zero-resistance and
+rectifier-resistance controls also pass. All six complete 1,005-row comparisons
+and initial derivatives are retained.
+
+These conditional replay passes localize the missing electrical-to-controller
+coordinate contract. They neither repair nor replace the eight retained strict
+coupled finite-resistance failures. No controller equation, source coefficient,
+physical resistance sign or full-network accuracy gate was changed.
