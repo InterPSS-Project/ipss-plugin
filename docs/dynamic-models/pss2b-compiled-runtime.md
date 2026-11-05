@@ -324,6 +324,22 @@ failing. Production equations and runtime settings are unchanged. Preserve the
 unmodified coupled traces alongside the intervention evidence when evaluating
 the next controller-stage change.
 
+A repeated single-profile diagnostic of the ten-second derivative-input run
+locates the first large output difference at the limiter release. At 0.191667 s,
+the independent stabilizer output is +0.026022 pu after a -0.1 pu sample, while
+modified Euler is still at -0.1 pu; both reach +0.1 pu one network interval
+later. The modified-Euler instantaneous output and its published output are
+identical at the differing sample. This rules out a delayed publication of the
+same numerical state as the reason for that particular discrepancy. Already at
+the first fault-on increment, the bus-voltage difference reaches 0.000981 pu
+and the sampled voltage-derivative difference reaches 0.047100 pu/s. The
+controller therefore receives a different coupled boundary before the limiter
+release. This evidence narrows the next experiment to the accepted
+machine/network/exciter boundary and its sampled derivative; it does not prove
+which component caused that boundary difference. The unchanged ten-second
+angle RMSE is 0.017025 degrees and still fails its 0.01-degree gate. No
+production equation, acceptance limit or step setting changed in this review.
+
 ## Input-transducer preparation
 
 Independent synthetic SMIB controls distinguish the standard record's input-lag
