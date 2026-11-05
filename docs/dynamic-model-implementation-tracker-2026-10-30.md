@@ -132,7 +132,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## SVSMO3T2
 
-- Keep full coupled deadband pulse acceptance separate from passing equation diagnostics. Resolve accepted-projection derivative history and zero-lag algebraic-state versus physical-current publication; unchanged strict voltage gates remain unmet for enabled, middle-band, unequal-gain and zero-lag controls under both methods.
+- Keep full coupled deadband pulse acceptance separate from passing equation diagnostics. Retain [zero-lag physical publication](dynamic-models/svs-physical-publication-boundary.md), model-local trial rollback and standalone integration compatibility. The zero-lag staggered voltage gate now passes; modified-Euler zero-lag and enabled, middle-band and unequal-gain controls remain open. Accepted-projection history changes remain an isolated candidate because one pulse trajectory worsens.
 
 - Retain [deadband input and accepted state projection](dynamic-models/svsmo3t2-current-runtime.md#deadband-input-accepted-reset-and-live-lead-lag-storage): preserve evolving lead-lag storage, pure trial evaluations and source-observed integral projection at held endpoints. Complete coupled pulse and unequal-gain trajectories and the combined zero-lag/unequal-gain branch; ratio/delay behavior outside the exercised controls remains unqualified.
 

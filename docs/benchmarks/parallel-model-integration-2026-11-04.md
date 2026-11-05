@@ -70,3 +70,20 @@ independent native wildcard semantics or all remaining model trajectories.
 
 Private evidence: `verification-artifacts/typed-relay-integrated-20261104/validation.zip`,
 SHA-256 `a1626c1f17f117a0aaf63d27c4c49e7a972677358bf3f7771c64b47c7f8dc9c7`.
+
+## SVS physical publication follow-up
+
+Commits `afaf59824` and `676416124` add the explicit physical-step trial
+lifecycle and zero-lag SVS current publication, independently of the isolated
+history-reset candidate. The integrated selection executed 116 tests across
+19 classes: 109 passed, seven retained strict deadband pulse failures, no errors
+or skips. All failures are in the complete pulse comparison; lifecycle,
+standalone compatibility, replay and legacy solver controls pass.
+
+The zero-lag staggered voltage comparison now passes the existing 0.001 gate
+with NRMSE 0.0000167. Modified-Euler zero-lag remains failing at 0.0190.
+The earlier full-suite result predates this follow-up; main-branch merge remains
+pending complete model qualification and validation of the final combined state.
+
+Private evidence: `verification-artifacts/svs-publication-integrated-20261104/validation.zip`,
+SHA-256 `018cab42fe8b65e8186feaeaf3f96efffe60d3aad914c23c5dddc775eeea8e0d`.
