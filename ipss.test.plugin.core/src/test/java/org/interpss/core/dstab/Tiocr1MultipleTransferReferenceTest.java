@@ -14,6 +14,68 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Two distinct transfer targets and a duplicated target retain one accepted network/load action. */
 public class Tiocr1MultipleTransferReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip");
+    private static final Path SURVIVOR=Path.of("testData/private/verification-artifacts/tiocr-fourth-survivor-20261104/captures.zip");
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void threeTargetsWithSurvivingCorridor(boolean staggered,@TempDir Path staged)throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(SURVIVOR),"Retain independent connected-corridor reference");
+        assertEquals("1c4087c09e497647464aa72d552a3bf546ed833ee0e4ccaefa1c5b23e8ce0440",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(SURVIVOR))));
+        List<Map<String,Double>> reference;
+        try(var zip=new ZipFile(SURVIVOR.toFile())) {
+            byte[] first=zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes();
+            assertArrayEquals(first,zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
+            reference=Tiocr1ResetReferenceTest.csv(first).stream().filter(r->r.get("time_s")>=0).toList();
+            for(String file:List.of("network.raw","dynamic.dyr")) {
+                byte[] source=zip.getInputStream(zip.getEntry("a/"+file)).readAllBytes();
+                assertArrayEquals(source,zip.getInputStream(zip.getEntry("b/"+file)).readAllBytes());
+                Files.write(staged.resolve(file),source);
+            }
+        }
+        HspUsageRankedModelTest.setup();
+        Path out=Files.createTempDirectory(Path.of("target"),"tiocr-surviving-fourth-");
+        HspUsageRankedModelTest.run("tiocr1-action",false,staggered,false,
+                staged.resolve("network.raw"),staged.resolve("dynamic.dyr"),out);
+        var actual=Tiocr1ResetReferenceTest.csv(Files.readAllBytes(out.resolve("tiocr1-action"
+                +(staggered?"-staggered":"")+"-fault.csv")));
+        assertEquals(reference.size(),actual.size(),"Complete grid and both event sides");
+        int action=-1,duplicates=0;
+        for(int i=0;i<actual.size();i++) {
+            var r=reference.get(i);var a=actual.get(i);
+            assertEquals(r.get("time_s"),a.get("time_s"),5e-6);
+            if(i>0&&r.get("time_s").equals(reference.get(i-1).get("time_s"))) {
+                duplicates++;
+                if(r.get("VAR1")==0.&&reference.get(i-1).get("VAR1")==1.)action=i;
+            }
+        }
+        assertEquals(3,duplicates);assertTrue(action>0);
+        var left=actual.get(action-1);var right=actual.get(action);
+        assertEquals(1.,left.get("RELAY.Position"));assertEquals(1.,left.get("RELAY.Operated"));
+        assertEquals(0.,left.get("RELAY.Revision"));assertEquals(1.,right.get("RELAY.Revision"));
+        assertEquals(.1,right.get("RELAY.ShedFraction"),1e-12);
+        for(String circuit:List.of("1","2","3")) {
+            assertEquals(1.,left.get("BRANCH.Bus1->Bus2("+circuit+")"));
+            assertEquals(0.,right.get("BRANCH.Bus1->Bus2("+circuit+")"));
+        }
+        assertEquals(1.,left.get("BRANCH.Bus1->Bus2(4)"));
+        assertEquals(1.,right.get("BRANCH.Bus1->Bus2(4)"));
+        for(int i=action;i<actual.size();i++) {
+            var row=actual.get(i);
+            assertEquals(0.,row.get("RELAY.Current"),"Monitored branch is open");
+            assertEquals(1.,row.get("RELAY.Revision"),"One accepted action");
+            assertEquals(1.,row.get("BRANCH.Bus1->Bus2(4)"),"Fourth circuit retains the corridor");
+        }
+        for(String channel:List.of("V1","V2","P_PU","Q_PU","ANGLE_DEG")) {
+            double sum=0,min=Double.POSITIVE_INFINITY,max=Double.NEGATIVE_INFINITY;
+            for(int i=0;i<reference.size();i++) {
+                double value=reference.get(i).get(channel),delta=actual.get(i).get(channel)-value;
+                sum+=delta*delta;min=Math.min(min,value);max=Math.max(max,value);
+            }
+            double rmse=Math.sqrt(sum/reference.size());
+            double error=channel.equals("ANGLE_DEG")?rmse:rmse/(max-min);
+            assertTrue(error<(channel.equals("ANGLE_DEG")?5e-5:staggered?8e-6:5e-5),
+                    channel+" full-trajectory error="+error);
+        }
+    }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void threeDistinctTransferTargets(boolean staggered,@TempDir Path staged)throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent two-target pre-trip capture");

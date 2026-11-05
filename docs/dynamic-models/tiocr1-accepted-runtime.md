@@ -368,6 +368,25 @@ Paired source and reference evidence is retained in
 `testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip`,
 SHA-256 `05760ac11b534f31068cd01d5ad7d71c75a53add35c19b24d54537b747c7b483`.
 
+A further connected-corridor control trips three distinct targets in one
+accepted action while a fourth circuit remains energized. Two cold captures
+are byte-identical. Both integration methods match all 1,004 nonnegative
+samples and the three event-side duplicates, and preserve the pre-action
+relay observation, one load-shed revision and all four physical branch
+statuses. Maximum voltage/power NRMSE is `3.10367e-5` for modified Euler and
+`3.39591e-6` for staggered integration; rotor-angle RMSE is `3.83556e-5`
+and `2.04603e-5` degrees, respectively. The unchanged strict envelopes are
+`5e-5` voltage/power NRMSE for modified Euler, `8e-6` for staggered, and
+`5e-5` degrees for rotor angle.
+
+Opening all three circuits without a surviving path is a separate island
+control. The reference de-energizes both buses at the action while the current
+network solver retains energized island voltages. That topology difference
+remains open; the connected-corridor result does not qualify full islanding.
+The paired connected-corridor evidence is retained in
+`testData/private/verification-artifacts/tiocr-fourth-survivor-20261104/captures.zip`,
+SHA-256 `1c4087c09e497647464aa72d552a3bf546ed833ee0e4ccaefa1c5b23e8ce0440`.
+
 ## Prepared target lifecycle
 
 Single-ID static targets retain their active status and nominal load definition

@@ -60,13 +60,17 @@ def main():
                         help='One to three comma-separated transfer circuits on the synthetic corridor')
     parser.add_argument('--relay-third-parallel', action='store_true',
                         help='Add a third synthetic circuit so multiple transfer trips leave a connected corridor')
+    parser.add_argument('--relay-fourth-parallel', action='store_true',
+                        help='Add a fourth synthetic circuit as a surviving path for three transfer targets')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
     if (args.relay_split_time is not None or args.relay_fault_bus != 1 or args.relay_end != 'from' or args.relay_line_charging != 0.
             or args.relay_threshold is not None or args.relay_reset_time is not None or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
-            or args.relay_transfer_circuits is not None or args.relay_third_parallel) and not args.fixture.startswith('tiocr1-'):
+            or args.relay_transfer_circuits is not None or args.relay_third_parallel or args.relay_fourth_parallel) and not args.fixture.startswith('tiocr1-'):
         parser.error('Relay terminal controls require a relay fixture')
+    if args.relay_fourth_parallel and not args.relay_third_parallel:
+        parser.error('A fourth synthetic circuit requires the third circuit')
     transfer_circuits = args.relay_transfer_circuits.split(',') if args.relay_transfer_circuits is not None else None
     if transfer_circuits is not None and (args.relay_transfer_circuit is not None or not 1 <= len(transfer_circuits) <= 3
             or any(c not in (['1','2','3'] if args.relay_third_parallel else ['1','2']) for c in transfer_circuits)):
@@ -103,7 +107,8 @@ def main():
         +(f'-breaker{args.relay_breaker_time:g}' if args.relay_breaker_time is not None else '')
         +(f'-transfer{args.relay_transfer_circuit}' if args.relay_transfer_circuit is not None else '')
         +(f'-targets{args.relay_transfer_circuits.replace(",", "_")}' if transfer_circuits is not None else '')
-        +('-third' if args.relay_third_parallel else ''))
+        +('-third' if args.relay_third_parallel else '')
+        +('-fourth' if args.relay_fourth_parallel else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
     if args.fixture == 'acmtblu1' and args.channel_part != 0:
@@ -122,7 +127,7 @@ def main():
     relay_from, relay_to = (1, 2) if args.relay_end == 'from' else (2, 1)
     if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.
                   or args.relay_threshold is not None or args.relay_reset_time is not None or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
-                  or transfer_circuits is not None or args.relay_third_parallel):
+                  or transfer_circuits is not None or args.relay_third_parallel or args.relay_fourth_parallel):
         shutil.copy2(out / 'network.raw', out / 'original-network.raw')
         shutil.copy2(out / 'dynamic.dyr', out / 'original-dynamic.dyr')
         path = out / 'dynamic.dyr'
@@ -168,6 +173,9 @@ def main():
             index = matches[0]
             fields = lines[index].split(','); fields[2] = "'3'"
             lines.insert(index+1, ','.join(fields))
+            if args.relay_fourth_parallel:
+                fields[2] = "'4'"
+                lines.insert(index+2, ','.join(fields))
         path.write_text('\n'.join(lines) + '\n')
     if args.constant:
         shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')
