@@ -759,3 +759,18 @@ evaluated the same curve at the same gate coordinate. Reusing that scalar remove
 one interpolation per derivative call without changing the hydraulic equation,
 integration stage, limits, or controller history. The strict coupled accuracy
 gates remain open and must be rerun with the private reference archive.
+
+### Rejected flow-only storage rounding
+
+A controlled trial rounded only the water-flow state to binary32 at
+initialization and each accepted or predicted update; the hydraulic equations,
+inputs, limits, step sizes and other states stayed unchanged. It retained the
+reference flow plateau more closely in some recorded-input replays, but the
+complete coupled comparison rejected it. In a staggered fault run, peak water-
+flow error rose from about 0.0000123 to 0.000325 pu and peak active-power error
+rose above 0.002 pu. Modified-Euler and staggered strict comparisons still
+failed, and the reported-coordinate replay no longer preserved the exact seeded
+decimal coordinate. The trial was reverted. A one-step binary32 projection can
+explain a plateau without establishing the reference's full accepted-state
+precision or stage policy; retain double-precision production storage until
+those are independently identified.
