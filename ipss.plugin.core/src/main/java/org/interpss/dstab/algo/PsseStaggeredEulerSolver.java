@@ -1165,6 +1165,15 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         machineEventElectricalRefreshCount=saved.electrical();machineEventMechanicalRefreshCount=saved.mechanical();
     }
     @Override protected void markHotReactivationDiscontinuity(){notifyDiscontinuity();}
+    /** Accepted model projection and solver-owned selective history update. */
+    static void completeParticipantStep(StaggeredEulerParticipant model, double[] history,
+            double dt, double endpointTime) {
+        model.completeStaggeredStep(dt, endpointTime);
+        if (dt > 0 && model.hasAcceptedDerivativeHistoryInvalidation())
+            for (int i=0;i<history.length;i++)
+                if (model.isAcceptedDerivativeHistoryInvalidated(i)) history[i]=0.;
+    }
+
     @Override public void nextStep(double time,double dt,DynamicSimuMethod method) throws DStabSimuException {
         try {advanceWithRetainedInactiveStates(time,dt,method);reactivation.commit();}
         catch(RuntimeException|DStabSimuException failure){reactivation.rollback();throw failure;}
@@ -1318,8 +1327,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 if(p.localSteps>1)p.local.completeStaggeredLocalStep(localStep);
             }
         }
-        for (var p:participants)
-            if (p.wasActive) p.model.completeStaggeredStep(dt, endpointTime);
+        for (var p:participants) {
+            if (!p.wasActive) continue;
+            completeParticipantStep(p.model, p.history, dt, endpointTime);
+        }
         participantEndpointTime = endpointTime;
         // Refresh model algebraic outputs/caches without advancing any state.
         evaluate(false,true); evaluate();

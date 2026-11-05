@@ -53,6 +53,20 @@ public interface StaggeredEulerParticipant {
      * still decides which entries are used.
      */
     default boolean readNetworkEventLeftRates(double[] derivatives, int offset) { return false; }
+    /**
+     * Whether the latest successful accepted-step callback applied a model state
+     * projection that invalidates selected two-step slopes. This is a pure query;
+     * trials, derivative evaluations and getters must not publish a projection.
+     * Existing participants retain their integration history unchanged.
+     */
+    default boolean hasAcceptedDerivativeHistoryInvalidation() { return false; }
+    /**
+     * Select a coordinate whose preceding integration slope is invalid after
+     * that accepted projection. The solver owns and clears the retained slope;
+     * unaffected coordinates preserve their history. Called only when the
+     * accepted-step callback succeeded and hasAcceptedDerivativeHistoryInvalidation is true.
+     */
+    default boolean isAcceptedDerivativeHistoryInvalidated(int stateIndex) { return false; }
     default void completeStaggeredStep(double stepSec) { }
     /** Explicit endpoint clock for discrete histories; existing duration-based participants retain their contract. */
     default void completeStaggeredStep(double stepSec, double endpointTimeSec) {
