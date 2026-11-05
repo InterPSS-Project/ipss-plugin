@@ -131,7 +131,7 @@ public class Chvdc2CoupledReferenceTest {
                 try {
                 if(n>0) {
                     if(time==rows.get(n-1).get("time_s")) {
-                        model.evaluateStaggered(h,left,0);event=true;duplicates++;
+                        model.evaluateStaggered(h,left,0);if(!staggered)model.captureScheduledNetworkEvent();event=true;duplicates++;
                         circuit.faultSide=duplicates==1?(tag.contains("rectifier-fault")?0:1):-1;
                     }else {
                       boolean sampledInterval=localSteps>1&&flags[2]==0;

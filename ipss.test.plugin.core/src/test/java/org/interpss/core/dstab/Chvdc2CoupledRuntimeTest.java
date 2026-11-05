@@ -22,6 +22,27 @@ public class Chvdc2CoupledRuntimeTest {
         double vr=r.dcVoltageAtFiringAngle(1.03,1050,Math.toRadians(32)),vi=vr-5*1050;
         m.setBoundary(1.03,0,1.03,0,1050,0);m.initialize(vr,vi,0);return new Rig(m,r,i,line,vr,vi);
     }
+    @ParameterizedTest @ValueSource(ints={1,10})
+    void scheduledEventRetainsLeftLineRateForTheFirstOuterInterval(int localSteps) {
+        var event=rig(true,0).model();var ordinary=rig(true,0).model();double h=.0005;
+        event.acceptBoundary(0,0);ordinary.acceptBoundary(0,0);
+        double[] initial=new double[event.staggeredStateCount()],after=new double[initial.length];
+        event.readStaggeredState(initial,0);event.captureScheduledNetworkEvent();
+        for(var model:new Chvdc2CoupledRuntime[]{event,ordinary}) {
+            model.setBoundary(1.02,0,1.03,0,1050,0);
+            model.beginTransaction();model.beginIntegrationInterval(h);
+            model.step(h,0,localSteps);model.step(h,1,localSteps);model.completeIntegrationInterval();
+        }
+        event.readStaggeredState(after,0);double eventChange=after[15]-initial[15];
+        ordinary.readStaggeredState(after,0);double ordinaryChange=after[15]-initial[15];
+        assertTrue(ordinaryChange<-.01,"The changed terminal voltage must excite the line");
+        assertEquals(.5,eventChange/ordinaryChange,.03,"The first interval retains both event-side rates");
+        event.rollbackTransaction();event.readStaggeredState(after,0);assertArrayEquals(initial,after,0.);
+        event.setBoundary(1.02,0,1.03,0,1050,0);event.beginIntegrationInterval(h);
+        event.step(h,0,localSteps);event.step(h,1,localSteps);event.completeIntegrationInterval();
+        event.readStaggeredState(after,0);
+        assertEquals(eventChange,after[15]-initial[15],1e-9,"Rollback must retain the pending event stage");
+    }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void localModifiedEulerReplaysEndpointInputsAndRestoresOuterSamples(boolean dynamic) {
         for(int steps:new int[]{2,4,10}) {
@@ -324,7 +345,7 @@ public class Chvdc2CoupledRuntimeTest {
         var bean=ManagementFactory.getThreadMXBean();Assumptions.assumeTrue(bean instanceof com.sun.management.ThreadMXBean);var memory=(com.sun.management.ThreadMXBean)bean;
         Assumptions.assumeTrue(memory.isThreadAllocatedMemorySupported());memory.setThreadAllocatedMemoryEnabled(true);long thread=Thread.currentThread().threadId();
         var m=rig(dynamic,0).model();double[] x=new double[m.staggeredStateCount()],f=new double[x.length],i=new double[4];
-        for(int n=0;n<5;n++)batch(m,staggered,x,f,i,20000);long before=memory.getThreadAllocatedBytes(thread);batch(m,staggered,x,f,i,20000);assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
+        for(int n=0;n<20;n++)batch(m,staggered,x,f,i,20000);long before=memory.getThreadAllocatedBytes(thread);batch(m,staggered,x,f,i,20000);assertEquals(0,memory.getThreadAllocatedBytes(thread)-before);
     }
     private static void batch(Chvdc2CoupledRuntime m,boolean staggered,double[] x,double[] f,double[] i,int count) {
         for(int n=0;n<count;n++){m.beginTransaction();m.evaluateInjections(i,0);m.readPublishedStates(x,0);m.beginIntegrationInterval(.00001);if(staggered){m.readStaggeredState(x,0);m.evaluateStaggered(.00001,f,0);for(int j=0;j<x.length;j++)x[j]+=.00001*f[j];m.applyStaggeredState(x,0,.00001);m.completeStaggeredStep(.00001);}else{m.step(.00001,0);m.step(.00001,1);}m.completeIntegrationInterval();m.commitTransaction();}

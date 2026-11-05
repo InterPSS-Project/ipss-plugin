@@ -657,11 +657,24 @@ two-step history after averaging the event derivative. This lowers the nominal
 staggered 0.5 ms rectifier-fault peak current error from 0.377053 to
 0.230870 A; the corresponding inverter-fault peak falls from 0.331682 to
 0.201433 A. One capacitive inverter-current peak increases by 0.000199 A.
+The modified-Euler runtime now captures the accepted left derivative before
+the external network event solve and uses half of that derivative plus half of
+each live right derivative throughout the first outer integration interval.
+The CHVDC2 terminal port calls this boundary only for an external INITIAL
+event; nested predictions and failed network solves retain the captured rate
+through their existing checkpoint/rollback contract. The ordinary path uses
+the same equations and arrays without an event-stage calculation. The
+scheduled-event unit control checks one and ten local steps and transaction
+rollback. The warmed numerical and terminal-port controls remain allocation
+free after JIT stabilization.
+
+In the same 0.5 ms rectifier-fault control, modified-Euler peak current error
+falls from 0.394789 to 0.145612 A and its first postfault current error becomes
++0.017677 A. The inverter-fault peak falls from 0.347467 to 0.127513 A.
 The complete matrix remains at 29 trajectory failures and one reverse-current
-error. The source discriminator therefore warrants an explicit event-stage
-contract for modified Euler and further line/input work for staggered coupling.
-No source-derived fraction is fitted into the line equation, and the
-current/power/state reference gates remain open.
+error under the unchanged physical/current/state gates. Further line/input and
+protected-transition work is required. No source-derived fraction was fitted
+into the line equation.
 
 The broader Maven selection plus explicit completion of registered classes
 executes 5,834 checks: 193 failures, two errors and 63 skips. All 4,622 checks

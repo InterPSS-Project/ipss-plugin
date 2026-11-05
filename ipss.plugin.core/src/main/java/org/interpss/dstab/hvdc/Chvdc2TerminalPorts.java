@@ -217,6 +217,8 @@ public final class Chvdc2TerminalPorts {
                 throw new IllegalStateException("Finish the pending integration endpoint first");
             if(auxiliaryPending&&(!"INITIAL".equals(context.stage())&&!direct||integrationPending||context.evaluationTime()!=acceptedPhysicalTime))
                 throw new IllegalStateException("Queued auxiliary command requires its settled accepted endpoint");
+            if(initialAccepted&&"INITIAL".equals(context.stage())&&context.externalEventBoundary())
+                runtime.captureScheduledNetworkEvent();
             if(!transaction)beginTransaction();networkTrial=true;actionDiscontinuity=false;
             auxiliaryTrial=auxiliaryPending;physicalEvaluationTime=direct&&sharedEndpointPending?sharedEndpoint:context.evaluationTime();
             // An ordinary INITIAL solve revisits the previous accepted endpoint.
