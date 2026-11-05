@@ -961,3 +961,29 @@ For the fine-step valve-rate capture, the reference voltage ranges are
 and `1.28e-6` pu. The existing nonflat 0.001 range-NRMSE gates still fail.
 The earlier first-step event discriminator remains separate: it checks an
 integration-method difference, whereas this test checks stored-state rounding.
+
+### Rejected global accepted-valve precision trial
+
+A reversible trial projected only a moving accepted valve to binary32 after
+each modified-Euler corrector or staggered accepted step. It kept predictor
+states and initialization in double precision. On the fine-step active-rate
+profile, maximum valve-state error fell from about `1.29e-5` to `1.37e-6` pu
+under modified Euler, consistent with the independent ramp recurrence above.
+The same projection alone introduced a staggered reversal delay: the source
+upper limit is represented as `0.504999995232`, while the entered Java limit
+is `0.505`. The projected valve sat one binary32 increment below the entered
+limit, allowing an extra positive-rate evaluation. Staggered quarter-cycle
+maximum valve error rose from `1.47e-7` to `6.25e-4` pu.
+
+A second trial kept the entered limits visible but treated a projected accepted
+coordinate within one binary32 rounding interval of a bound as bound-active.
+The focused 28-test group then had 26 passes, with only its two previously
+failing coupled boundary tests still failing. Staggered quarter-cycle
+valve-position peak error fell to about `9e-8` pu. The broader 109-test model
+matrix exposed new failures, however: the conflicting-limit valve trajectory
+failed under both integration methods, and an ordinary-state bit-identity
+control failed. The two coupled boundary tests also retained substantial
+voltage and reactive-power errors. Both precision trials were reverted;
+production uses the original double-precision accepted valve and exact entered
+limits. The source ramp observation alone does not justify a global storage or
+limiter rule across bypass, conflicting-limit and ordinary profiles.
