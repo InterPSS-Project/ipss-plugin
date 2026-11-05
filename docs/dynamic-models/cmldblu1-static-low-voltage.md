@@ -148,6 +148,15 @@ includes motor Norton terms; it is not inherent to the static-port equation.
 This observation does not yet determine the reference's first-iterate motor
 sampling rule.
 
+A further temporary timing discriminator deferred the motor-containing static
+port's conductance preparation until after the first external fault-network
+iteration. Under both integration methods, the fault-entry conductance moved
+from 0.747609 to 0.759361 pu, still below the independent 0.797544 pu value.
+This rejects a single skipped first iterate as a complete explanation. The
+trial was reverted; production still uses the generic motor-containing static
+path. Source pre-lock network iterates remain unobserved, so no iteration delay
+or motor-specific prepared-port selection is qualified for production.
+
 The first fault solve also excludes a simple accepted-current versus fresh-current
 explanation. At its first low-voltage iterate, the temporary static port reconstructed
 0.456943 pu from the accepted prefault distribution current; substituting the
