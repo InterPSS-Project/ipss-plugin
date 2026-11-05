@@ -82,6 +82,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CMLDBLU1
 
+- Retain [active-motor time-step screening](dynamic-models/cmldblu1-shared-runtime.md#active-motor-time-step-screening): positive transient and subtransient time constants shorter than the configured numerical threshold produce non-mutating warnings for participating motors. This does not qualify the other model parameters or change integration, and independent trajectory gates remain separate.
+
 - Retain signed legacy motor participation after overlapping protective actions: a nonzero negative online fraction preserves motor electrical states and signed Norton compensation under both integration methods. Independent overlap voltage, power and speed gates pass. The rotor-angle comparison uses method-specific peak limits after an independent reference-history discriminator established a different angle integration recurrence. Keep the ordinary nonlegacy disconnection rule separate and extend complete composite-load qualification.
 
 - Retain the accepted event-boundary electrical-current and mechanical-rate refreshes, observation/history invariance controls and complete mechanical predictor restoration. They remove stale event-left rates without changing ordinary-step measurement policy. Controller event-rate qualification and the earlier coarse thermal-voltage discrepancy remain separate work.

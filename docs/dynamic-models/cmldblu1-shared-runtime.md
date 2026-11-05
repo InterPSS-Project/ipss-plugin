@@ -176,9 +176,9 @@ The ordinary nonlegacy path retains its positive-fraction disconnection rule.
 
 The complete both-method overlap comparison retains the action-side fraction and
 all reference samples. Voltage, power, and speed normalized errors remain below
-0.0002 in both methods. The staggered rotor-angle peak stays below 0.0002\u00b0.
-Modified Euler peaks at 0.000539\u00b0 and 0.000493\u00b0 in the two overlap
-controls and uses a 0.0006\u00b0 gate. An independent first-step rotor-history
+0.0002 in both methods. The staggered rotor-angle peak stays below 0.0002°.
+Modified Euler peaks at 0.000539° and 0.000493° in the two overlap
+controls and uses a 0.0006° gate. An independent first-step rotor-history
 control shows that the reference uses prior-speed history while modified Euler
 uses its predictor/corrector speed, so these are method-specific numerical
 limits. This is a scoped electrical correction, not complete composite-load
@@ -186,6 +186,17 @@ qualification. The component test checks signed Norton current and state
 evolution under both integration methods.
 
 ## Maintained checks and retained evidence
+
+### Active-motor time-step screening
+
+The pre-initialization validator now screens positive transient and subtransient
+motor time constants against the requested network step and threshold. It checks
+only motor groups with a nonzero participation fraction. A short time constant
+produces a warning with its model parameter and step size; no constant, state,
+local-step setting or integration stage is changed. Zero and negative values
+remain under the existing model-specific preparation policy; the other composite
+parameters remain explicitly uncovered by this screening pass. Both integration
+methods retain their existing SMIB trajectories.
 
 `Cmldblu1SharedSmibTest` checks actual solver dispatch and complete flat/fault
 recordings. `Cmldblu1SharedStateTest` covers pure evaluation, zero-time refresh,

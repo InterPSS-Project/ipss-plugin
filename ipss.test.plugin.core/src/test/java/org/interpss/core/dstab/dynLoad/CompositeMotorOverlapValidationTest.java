@@ -32,4 +32,31 @@ public class CompositeMotorOverlapValidationTest {
         assertEquals(1,report.checkedModels().get("CMLDBLU1.UvOverlap"));
         assertEquals(1,report.uncoveredModels().get("CMLDBLU1.otherParameters"));
     }
+
+    @org.junit.jupiter.api.Test
+    void activeMotorTimeScreeningKeepsSourceConstantsAndInactiveMotorOutOfWarnings()throws Exception {
+        IpssCorePlugin.init();
+        var context=new PSSEMultiFileLoader().loadDStab(Cmldblu1SharedSmibTest.CASE.resolve("load-network.raw").toString(),
+                Cmldblu1SharedSmibTest.CASE.resolve("cmldblu1-mixed.dyr").toString());
+        var original=(Cmldblu1Model)context.getDStabilityNet().getDStabBus("Bus2").getInfoOnlyDynModel();
+        double[] constants=original.getLegacyConstants();
+        constants[18]=.4;constants[19]=0;constants[20]=0;
+        constants[43]=.0002;constants[44]=.0003;
+        constants[63]=.0001;constants[64]=.0001;
+        var network=com.interpss.dstab.DStabObjectFactory.createDStabilityNetwork();
+        var bus=(com.interpss.dstab.DStabBus)com.interpss.dstab.DStabObjectFactory.createDStabBus("B",network).get();
+        var model=new Cmldblu1Model("C",bus,java.util.Set.of("1"),new Complex(.4,.1),constants);
+        double[] before=model.getLegacyConstants();
+        var report=DynamicParameterValidator.validate(network,.0005,1,m->1);
+        var warnings=report.issues().stream().filter(i->i.model().equals("CMLDBLU1")&&i.parameter().contains(".Tp")).toList();
+        assertEquals(java.util.Set.of("MotorA.Tpo","MotorA.Tppo"),warnings.stream()
+                .map(DynamicParameterValidator.Issue::parameter).collect(java.util.stream.Collectors.toSet()));
+        assertTrue(warnings.stream().allMatch(i->i.severity()==DynamicParameterValidator.Severity.WARNING
+                &&i.effectiveStepSeconds()==.0005));
+        assertArrayEquals(before,model.getLegacyConstants());
+        assertArrayEquals(before,constants);
+        report.requireNoErrors();
+        assertEquals(1,report.checkedModels().get("CMLDBLU1.MotorTime"));
+        assertEquals(1,report.uncoveredModels().get("CMLDBLU1.otherParameters"));
+    }
 }

@@ -72,8 +72,20 @@ public final class DynamicParameterValidator {
                             "Overlapping UV trip fractions exceed unity. Legacy reference behavior can retain a negative "
                             +"accumulator and a physical response different from full disconnection; this profile is "
                             +"not trajectory-qualified. Parameters and protection history are not adjusted."));
+                    if(data.value(18+motor)>0)for(int offset=43;offset<=44;offset++) {
+                        double seconds=data.value(offset+20*motor);
+                        if(seconds>0&&seconds/networkStep<minimumTimeStepMultiple) {
+                            String parameter="Motor"+(char)('A'+motor)+(offset==43?".Tpo":".Tppo");
+                            issues.add(new Issue(Severity.WARNING,bus.getId(),"CMLDBLU1",
+                                    parameter,seconds,networkStep,bus.isActive()&&composite.isActive(),
+                                    "Motor time constant is below "+minimumTimeStepMultiple
+                                    +" times the network step; review local substeps or a smaller step. "
+                                    +"This screens numerical resolution without changing entered data."));
+                        }
+                    }
                 }
                 checked.merge("CMLDBLU1.UvOverlap",1,Integer::sum);
+                checked.merge("CMLDBLU1.MotorTime",1,Integer::sum);
                 uncovered.merge("CMLDBLU1.otherParameters",1,Integer::sum);
             }
             for(var gen:bus.getContributeGenList()) {
