@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--static-gamma', type=float)
     parser.add_argument('--static-alpha-min', type=float, default=15.)
     parser.add_argument('--dynamic-gamma', type=float, default=20.)
+    parser.add_argument('--dynamic-alpha-min', type=float, default=5.)
     parser.add_argument('--dc-tap-adjustment', type=int, choices=[0, 1], default=1)
     parser.add_argument('--scheduled-kv', type=float, default=500.)
     parser.add_argument('--current-margin', type=float, default=0.)
@@ -59,7 +60,7 @@ def main():
         parser.error('Scheduled DC voltage must be finite and positive')
     if not math.isfinite(args.current_margin) or not 0 <= args.current_margin < 1:
         parser.error('Current margin must be finite in [0,1)')
-    if any(not math.isfinite(v) or not 0 <= v < 90 for v in [args.dynamic_gamma,args.static_alpha_min]+([] if args.static_gamma is None else [args.static_gamma])):
+    if any(not math.isfinite(v) or not 0 <= v < 90 for v in [args.dynamic_alpha_min,args.dynamic_gamma,args.static_alpha_min]+([] if args.static_gamma is None else [args.static_gamma])):
         parser.error('Gamma angles must be finite in [0,90) degrees')
     if any(not math.isfinite(v) or v < 0 for v in args.measurement_times):
         parser.error('Measurement times must be finite and nonnegative')
@@ -133,6 +134,7 @@ def main():
                  250, 500, 99, 99, 400, 250, 450, 500, 2000, 425, 2000,
                  .02, -999, 999, -999, 0, 0, 999, 999, 0, 999, .05]
     constants[2],constants[3],constants[31] = args.measurement_times
+    constants[0] = args.dynamic_alpha_min
     constants[1] = args.dynamic_gamma
     if args.protection == 'coordinated':
         constants[4:10] = [.90, .94, .02, 490., .92, .02]

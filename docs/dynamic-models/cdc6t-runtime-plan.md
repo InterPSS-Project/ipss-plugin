@@ -1993,7 +1993,6 @@ Complete samples, controlled pre-fix comparison, source snapshots and test repor
 `verification-artifacts/cdc6t-initial-ceiling-20261104/validation.zip`, SHA-256
 `bb809df9200422fa91e75a8fe7ea4606368131349a222c9d12aae52d9c71ef9a`.
 
-
 ### Zero-time continuation discriminator
 
 A fresh cold pair inserts exactly one RUN continuation at the current time
@@ -2233,3 +2232,26 @@ the private SHA-pinned evidence archive. `Cdc6tVoltageCurrentLimitTest`
 checks every distinguishing row, and `Cdc6tVdcolDiscriminatorTest` exercises
 both integration methods. The existing production selector is accepted for
 this regime; other CDC6T qualification work remains separate.
+
+### Current-margin crossover discriminator (not qualified)
+
+The probe now accepts a dynamic rectifier minimum angle independently of its
+static setting; the existing default remains five degrees. A synthetic
+constant-gamma/current-order discriminator used a 15-degree dynamic rectifier
+minimum, a 20-degree static minimum and a 0.1 current margin, with fixed taps.
+Its purpose was to distinguish a characteristic intersection from an immediate
+transfer to the lower current order.
+
+The independent run failed network convergence starting at initialization and
+reported 1,007 nonconverged solves. Its manifest is `rejected-quality` despite a
+separate successful initial-conditions message. The retained complete samples
+are diagnostic only; the cold repeat and fault expansion were stopped. No
+production equation, margin-selection threshold or acceptance gate changed.
+The existing valid current-margin recovery capture does not contain a sample
+with both minimum-angle characteristics active, so it cannot independently
+qualify a new crossover branch either. A converged independent discriminator
+or an exact model-specific characteristic definition is still required.
+
+Private failed capture, exact probe inputs and logs:
+`verification-artifacts/cdc6t-margin-intersection-20261105/rejected-capture.zip`,
+SHA-256 `acf0eed717238ec030691bcdeb37d08b8a5bd6a38cce3ae41ee887db140a31ad`.
