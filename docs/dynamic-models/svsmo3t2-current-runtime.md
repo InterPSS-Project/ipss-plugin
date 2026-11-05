@@ -736,3 +736,32 @@ SHA-256 `fa1a5ebb00a49202135965dfc1f054e6ff8e2ef3888481660f4959070faaf0c4`.
 The complete new coupled outputs, strict reports and source snapshots are in
 `verification-artifacts/svs-deadband-coupled-20261104/validation.zip`,
 SHA-256 `31f75143f87cd1b5d26018cbc9d7558a23ae2d7c1c57bf4eb8a65278873aa9b2`.
+
+### Selective accepted-history trial and return-band crossing
+
+The shared staggered solver now exposes per-coordinate accepted-history
+invalidation. A reversible model trial cleared the held PI and output-lag
+two-step slopes after each accepted deadband projection, retaining the
+lead-lag storage slope. Clearing only the PI slope had no measurable effect;
+the source's repeated held-lag recurrence identifies output-lag history as
+the active difference. In the current 10-control, 2,005-row extended pulse
+matrix, the unmodified runtime has seven voltage-gate failures. The
+output-lag trial reduces that count to five: enabled staggered bus-3 voltage
+range-NRMSE falls from 0.00128218 to 0.000028656, and unequal-lead-lag
+staggered falls from 0.192428 to 0.00005163. Its middle-band staggered
+control worsens from 0.00964894 to 0.02192749, well above the 0.001 gate.
+Modified-Euler and the disabled/bypass controls are unchanged. The trial was
+reverted; the source recurrence alone does not qualify a production history
+policy across these pulse profiles.
+
+At the middle-band return crossing, the trial's Java sensor is 0.9949998769
+while the independent value is 0.9950004220 pu. The exact 0.995 pu threshold
+therefore selects different sides for one interval, producing a 0.0006473 pu
+bus-3 voltage difference at the next sample. Before that crossing, Java
+sensor and bus-3 voltage errors are below 0.000001 pu. Replaying the source
+sensor from 0.15 s with its own published voltage reaches 0.99500059 pu;
+using the trial's Java bus voltage reaches 0.99500011 pu. Both cross the
+threshold, so the pre-existing sensor offset also contributes. Projecting
+the sensor to binary32 after each step does not reproduce the source crossing.
+The full network/input and accepted-state stages need localization before
+enabling selective history or changing the return threshold.
