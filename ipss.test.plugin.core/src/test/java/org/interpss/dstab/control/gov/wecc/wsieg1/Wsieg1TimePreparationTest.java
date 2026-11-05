@@ -26,6 +26,37 @@ public class Wsieg1TimePreparationTest {
     }
     private static void initialize(Wsieg1Governor g,double step){g.configureIntegrationStep(step);assertTrue(g.initStates(g.getMachine().getDStabBus(),g.getMachine()));}
 
+    @Test void valveCurveUnusedSlotsMustBeTrailing()throws Exception {
+        // A zero pair or repeated final pair denotes unused capacity, not an
+        // interior point that a later entered pair may silently skip.
+        assertThrows(IllegalArgumentException.class,()->model(c->{
+            c[27]=0.;c[28]=0.;c[29]=2.;c[30]=2.;
+        }));
+        assertThrows(IllegalArgumentException.class,()->model(c->{
+            c[27]=1.;c[28]=1.;c[29]=2.;c[30]=2.;
+        }));
+        assertNotNull(model(c->{})); // The supplied trailing-unused curve remains valid.
+    }
+
+    @Test void malformedCurveGapIsRejectedThroughTheDyrImport(@TempDir Path staged)throws Exception {
+        var root=Wsieg1SharedSmibTest.CASE;
+        var lines=new ArrayList<>(Files.readAllLines(root.resolve("wsieg1.dyr")));
+        for(int i=0;i<lines.size();i++)if(lines.get(i).contains("'WSIEG1'")) {
+            String[] fields=lines.get(i).trim().split("\\s+");
+            fields[5+27]="0";fields[5+28]="0";
+            fields[5+29]="2";fields[5+30]="2";
+            lines.set(i,String.join(" ",fields));
+        }
+        Path malformed=staged.resolve("malformed-curve.dyr");Files.write(malformed,lines);
+        var loader=new PSSEMultiFileLoader();
+        var context=loader.loadDStab(root.resolve("network.raw").toString(),malformed.toString());
+        var rejected=loader.getLastDynamicImportReport().failures().stream()
+                .filter(entry->entry.canonicalModelName().equals("WSIEG1")).findFirst().orElseThrow();
+        assertEquals(org.interpss.fadapter.psse.dyr.DynamicModelImportStatus.REJECTED,rejected.status());
+        assertTrue(rejected.message().contains("unused valve-curve slots must be trailing"));
+        assertNull(context.getDStabilityNet().getMachine("Bus1-mach1").getGovernor());
+    }
+
     @Test void eachLagUsesTheInclusiveOuterIntervalBoundaryButServoAndLeadRemainEntered()throws Exception {
         for(double multiple:new double[]{0.,.5,1.,2.,2.01,4.}) {
             var g=model(c->{for(int i:new int[]{1,8,11,14,17})c[i]=multiple*H;c[2]=multiple==0?0:.02;c[3]=H/2;});

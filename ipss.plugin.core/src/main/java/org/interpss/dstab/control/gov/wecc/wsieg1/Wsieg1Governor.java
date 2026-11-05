@@ -107,10 +107,14 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
                 || c[33]!=(int)c[33] || c[33]<0 || c[33]>3)
             throw new IllegalArgumentException("Invalid WSIEG1 time, rate, deadband or limit settings");
         for (int i : new int[]{8,11,14,17}) if(c[i]<0) throw new IllegalArgumentException("Negative turbine time constant");
+        boolean unusedCurveSlot=false;
         for (int i=0;i<5;i++) {
             double a=c[23+2*i], b=c[24+2*i];
-            if (points>0 && a==0 && b==0) continue; // unused trailing curve slots
-            if (points>0 && a==curveX[points-1] && b==curveY[points-1]) continue;
+            if (points>0 && (a==0 && b==0 || a==curveX[points-1] && b==curveY[points-1])) {
+                unusedCurveSlot=true; // Unused capacity may only follow the final entered point.
+                continue;
+            }
+            if(unusedCurveSlot)throw new IllegalArgumentException("WSIEG1 unused valve-curve slots must be trailing");
             if (points>0 && (a<=curveX[points-1] || b<curveY[points-1]))
                 throw new IllegalArgumentException("WSIEG1 valve curve must be increasing");
             curveX[points]=a;curveY[points++]=b;

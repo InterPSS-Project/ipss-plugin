@@ -26,6 +26,16 @@ mutation, unfinished ordinary predictors and changed machine ownership.
 Failed initialization clears derivative-diagnostic status. The solver retains
 its audited controller allowlist rather than accepting arbitrary controllers.
 
+## Valve-curve slot validation
+
+The fixed-size valve curve accepts a zero pair or a repeated final point as
+unused capacity after the final entered point. An entered point after either
+unused marker is rejected. Previously the constructor skipped the marker and
+silently joined the later point to the earlier curve. The DYR import report now
+records that malformed record as rejected, with no governor attached. Valid
+trailing-unused curves retain the existing equations and both integration
+methods' independent SMIB trajectories.
+
 ## States and diagnostics
 
 Stored coordinates, the last evaluated rates and their evaluation coordinates
