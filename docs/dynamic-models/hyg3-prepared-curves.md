@@ -738,3 +738,24 @@ stage-ownership qualification. More decimal places on the existing recorded
 values do not supply that information. No additional equation change, fitted
 coefficient, clock adjustment or relaxed trajectory gate is justified by the
 currently retained evidence.
+
+### Slow-flow precision discriminator and shared gate evaluation
+
+`Hyg3FlowPrecisionDiscriminatorTest` checks the retained long-duration standard
+profiles after five seconds. In three independent profiles, every recorded
+water-flow value remains constant through the end, while the published gate
+continues to vary. Evaluating the documented hydraulic rate from each recorded
+flow/gate pair gives a nonzero local increment smaller than half of one binary32
+unit in the last place. Projecting each such one-step candidate to binary32
+therefore leaves the reported flow unchanged. The unrounded increments are
+large enough to accumulate above the existing strict state envelope. This is
+evidence for an internal precision or accumulation-stage difference; the
+recorded output format alone cannot establish the hidden numerical storage.
+The test changes no production precision or acceptance threshold.
+
+The HYG3 runtime now retains the prepared gate-curve output from each algebraic
+evaluation for the immediately following derivative evaluation. Both formerly
+evaluated the same curve at the same gate coordinate. Reusing that scalar removes
+one interpolation per derivative call without changing the hydraulic equation,
+integration stage, limits, or controller history. The strict coupled accuracy
+gates remain open and must be rerun with the private reference archive.

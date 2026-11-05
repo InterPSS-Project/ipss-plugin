@@ -480,7 +480,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double valve = d.getTp() > SMALL ? s.valve : servoTarget;
         valve = clamp(valve, d.getVelclose(), d.getVelopen());
         algebraicBuffer.set(frequency.mode, tdInput, tdSignal, integralError, cv,
-                gateOutput, valve, pmech, backlashWidth);
+                gateOutput, pgv, valve, pmech, backlashWidth);
         algebraicBuffer.requireFinite();
         requireFinite(pmech * governorToMachineBase);
         return algebraicBuffer;
@@ -498,8 +498,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double gateDot = a.valve;
         if ((s.gate >= effectivePmax && gateDot > 0.0)
                 || (s.gate <= effectivePmin && gateDot < 0.0)) gateDot = 0.0;
-        double pgv = gateCurve(a.gateOutput);
-        double head = square(s.flow / Math.max(SMALL, pgv));
+        double head = square(s.flow / Math.max(SMALL, a.pgv));
         double flowDot = effectiveTw > SMALL ? (d.getH0() - head) / effectiveTw : 0.0;
         double peDot = d.getTt() > SMALL
                 ? (getMachine().getPe() / governorToMachineBase - s.peMeasured) / d.getTt() : 0.0;
@@ -677,16 +676,18 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     }
     private static final class Algebraic {
         DeadbandMode deadbandMode;
-        double tdInput, tdSignal, integralError, cv, gateOutput, valve, pmech, backlashWidth;
+        double tdInput, tdSignal, integralError, cv, gateOutput, pgv, valve, pmech, backlashWidth;
         void set(DeadbandMode mode, double input, double signal, double error, double command,
-                double gate, double valve, double power, double width) {
+                double gate, double gateFlow, double valve, double power, double width) {
             deadbandMode = mode; tdInput = input; tdSignal = signal; integralError = error;
-            cv = command; gateOutput = gate; this.valve = valve; pmech = power; backlashWidth = width;
+            cv = command; gateOutput = gate; pgv = gateFlow;
+            this.valve = valve; pmech = power; backlashWidth = width;
         }
         void requireFinite() {
             PsseHyg3Governor.requireFinite(tdInput); PsseHyg3Governor.requireFinite(tdSignal);
             PsseHyg3Governor.requireFinite(integralError); PsseHyg3Governor.requireFinite(cv);
-            PsseHyg3Governor.requireFinite(gateOutput); PsseHyg3Governor.requireFinite(valve);
+            PsseHyg3Governor.requireFinite(gateOutput); PsseHyg3Governor.requireFinite(pgv);
+            PsseHyg3Governor.requireFinite(valve);
             PsseHyg3Governor.requireFinite(pmech); PsseHyg3Governor.requireFinite(backlashWidth);
         }
     }

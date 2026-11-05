@@ -27,6 +27,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## HYG3U1
 
+- Retain the [slow-flow precision discriminator](dynamic-models/hyg3-prepared-curves.md#slow-flow-precision-discriminator-and-shared-gate-evaluation) and one-pass gate-curve evaluation. Reference flow plateaus are consistent with sub-ULP numerical increments but do not establish hidden source storage precision. Resolve accepted hydraulic-rate and state accumulation stages before changing precision or relaxing strict coupled gates.
+
 - Retain [ordered initial gate bounds](dynamic-models/hyg3-prepared-curves.md#ordered-initial-gate-bounds): imported physical limits must not widen to manufacture an equilibrium. Preserve dispatched flow/integral coordinates and expose nonzero initialization residuals when the initial gate is infeasible. Rejected-quality captures qualify this behavior only, not dynamic trajectories; remaining coupled accuracy gates stay open.
 
 - Retain [atomic integration-stage rejection](dynamic-models/hyg3-prepared-curves.md#atomic-integration-stage-rejection), reusable trial storage and retry preservation under both methods. Valid trajectories remain unchanged; this correctness fix adds a measured small-loop cost and does not close the independent reference-accuracy gates.
