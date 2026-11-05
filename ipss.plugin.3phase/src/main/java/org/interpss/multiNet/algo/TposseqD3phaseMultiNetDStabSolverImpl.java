@@ -240,7 +240,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 	@Override
 	public boolean networkSolutionStep() throws DStabSimuException {
 		 
-		boolean netSolConverged = true;
+		// Success is returned only after a complete comparison of consecutive solutions.
 		
 		
 		//If use Thevenin Equivalent to represent Transmission system in distribution system
@@ -412,13 +412,14 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			
 			// step-7 check if the transmission network solution results of the last two steps converge wrt the tolerance
 			// if so, exit the loop; otherwise, continue the iteration until the maximum iteration
+			int unconvergedBusCount = 0;
 			for ( BaseDStabBus busi : transmissionNet.getBusList() ) {
 				
 				if(busi.isActive()){
 					
 					if(i>=1){
 						if(!NumericUtil.equals(busi.getVoltage(),lastStepTransBoundaryVoltTable.get(busi.getId()),this.converge_tol))
-							netSolConverged =false;
+							unconvergedBusCount++;
 					}
 					lastStepTransBoundaryVoltTable.put(busi.getId(), busi.getVoltage());
 				}
@@ -426,14 +427,15 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			
 			
 			
-		     if(i>0 && netSolConverged) {
+		     if(i>0 && unconvergedBusCount == 0) {
 				  log.debug(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
-				  break;
+				  return true;
 			 }
 	
 		  } // for maxIterationTimes loop
 			
-		return netSolConverged;
+		// Zero/one iteration cannot establish convergence; exhaustion is failure.
+		return false;
 	}
 	
 	public void diffEqnIntegrationStep(double t, double dt, DynamicSimuMethod method, int flag) throws DStabSimuException{

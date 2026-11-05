@@ -177,9 +177,15 @@ public class Cdc6tProtectionCoordinatorTest {
         Assumptions.assumeTrue(bean.isThreadAllocatedMemorySupported());bean.setThreadAllocatedMemoryEnabled(true);
         var c=coordinator(.01,.92,sampling);c.configureIntegrationStep(.0005);accept(c,0,1,1,500000);
         for(int i=0;i<30000;i++){c.beginTrial(1);c.observe(1,1,500000);c.discardTrial();}
-        long thread=Thread.currentThread().threadId(),before=bean.getThreadAllocatedBytes(thread);
-        for(int i=0;i<100000;i++){c.beginTrial(1);c.observe(1,1,500000);c.discardTrial();}
-        long bytes=bean.getThreadAllocatedBytes(thread)-before;
+        long thread=Thread.currentThread().threadId();
+        // Prime both counter call sites and the complete batch before measuring warmed storage reuse.
+        allocationBatch(bean,thread,c);
+        long bytes=allocationBatch(bean,thread,c);
         System.out.println("CDC6T coordinator warmed allocation bytes="+bytes);assertTrue(bytes<=1024,"History trials must reuse storage: "+bytes);
+    }
+    private static long allocationBatch(com.sun.management.ThreadMXBean bean,long thread,Cdc6tProtectionCoordinator c){
+        long before=bean.getThreadAllocatedBytes(thread);
+        for(int i=0;i<100000;i++){c.beginTrial(1);c.observe(1,1,500000);c.discardTrial();}
+        return bean.getThreadAllocatedBytes(thread)-before;
     }
 }
