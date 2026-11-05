@@ -651,12 +651,14 @@ In the 0.5 ms rectifier-fault control, the first reference line-current change
 is -0.352478 A. The existing modified-Euler coupled replay changes about
 -0.668 A and starts its current error at -0.315424 A. Its first predictor
 samples the postevent line derivative. The staggered replay changes about
--0.504 A, leaving -0.151041 A error at that first sample. The coupled
-comparison runner now keeps the right-side derivative as the next ordinary
-two-step history after averaging the event derivative. This lowers the nominal
-staggered 0.5 ms rectifier-fault peak current error from 0.377053 to
-0.230870 A; the corresponding inverter-fault peak falls from 0.331682 to
-0.201433 A. One capacitive inverter-current peak increases by 0.000199 A.
+-0.504 A, leaving -0.151041 A error at that first sample. The production
+staggered solver and the independent coarse component replay both retain the
+averaged event derivative as the next two-step history. The coupled comparison
+runner uses the same policy. An exploratory unaveraged-right history lowered
+the nominal 0.5 ms rectifier-fault peak to 0.230870 A, but it did not represent
+the production method and was removed. The production-consistent peak remains
+0.377053 A. A solver-level qualification is required before changing this
+shared history policy for CHVDC2.
 The modified-Euler runtime now captures the accepted left derivative before
 the external network event solve and uses half of that derivative plus half of
 each live right derivative throughout the first outer integration interval.
@@ -2050,25 +2052,48 @@ existing `Chvdc2CoupledRuntimeTest`, `Chvdc2DcLineTest` and
 checks with the current core dependency.
 
 This physical boundary does not establish complete coupled trajectory
-accuracy. `Chvdc2CoupledReferenceTest` still reports 29 trajectory failures
-and one reverse-current error across its 30 controls. Repeating that suite
-with core versions 1.4.8 and 1.4.9 gives the same failure/error counts, so
-the pending core-version change is not their cause. Preserve the existing
-reference limits and investigate the line-input update and protection/event
+accuracy. Repeating the earlier coupled suite with core versions 1.4.8 and
+1.4.9 gave the same 29 trajectory failures and one reverse-current error, so
+the core-version change was not their cause. The later engineering-gate audit
+below leaves 28 trajectory failures and the same reverse-current error across
+30 controls. Investigate the line-input update and protection/event
 publication stages before changing the local-step default.
 
 ### Prefault-relative state accuracy audit
 
-The coupled comparison now checks every nonzero-prefault internal state against
-both user-approved limits: peak error below 0.5% and full-grid RMSE below
-0.01% of that state's reference prefault magnitude. Zero-prefault states keep
-their existing absolute limits. Physical voltage, current, P/Q, angle and
-protection gates are unchanged. All event-side samples remain in both metrics.
+The coupled comparison checks every nonzero-prefault internal state against
+both engineering limits: peak error below 0.5% and full-grid RMSE below
+0.01% of that state's reference prefault magnitude. For nonzero-prefault
+physical voltage, current, P/Q and angle channels, the same peak limit applies
+to the full trace, and the 0.01% RMSE limit applies separately to fault and
+nonfault periods. The first duplicate at fault application belongs to the
+fault period; the clearing duplicate belongs to the nonfault period. Every
+sample, including both event sides, remains in the metrics. Zero-prefault
+channels retain their absolute limits, and the reverse-current regime remains
+an error rather than a toleranced trajectory.
 
-In the retained coupled matrix, 165 state checks that failed an earlier
-absolute-peak limit satisfy both engineering limits. Another 72 failing state
-checks do not; 206 physical-channel checks also exceed their existing limits,
-and one run still reaches an unqualified reverse-current boundary. The suite
-therefore remains at 29 trajectory failures and one numerical error. These
-results prevent a broad tolerance change from being mistaken for complete
-model qualification.
+Under the earlier state-only audit, 165 checks that failed an absolute-peak
+limit satisfied both engineering limits; 72 state and 206 physical-channel
+checks still failed. After applying the period-separated physical gates and
+restoring the production staggered event history in the comparison runner,
+one complete run passes, 28 complete runs fail, and one run reaches the
+unqualified reverse-current boundary. For the nominal rectifier fault at
+0.5 ms, modified Euler's peak DC-current error is 0.145612 A against the
+5.000 A peak allowance, but fault-period RMSE is 0.11467 A against the
+0.10000 A allowance. The corresponding staggered peak is 0.377053 A and
+fault-period RMSE is 0.12457 A. For the zero-lag 0.25 ms rectifier fault,
+staggered peak current error is 12.25551 A and fault-period RMSE is 1.09578 A;
+both exceed the respective limits. The separate zero-lag 0.5 ms staggered run
+stops with reverse current and does not supply a complete trajectory.
+
+### Reported DC-voltage observation stage
+
+The immutable repeated source profiles show that the reported rectifier DC
+voltage during a fault is reconstructed much more closely with the next
+sample's reported rectifier angle than with the same row's angle. Across
+rectifier and inverter fault controls at 0.25 and 0.5 ms, same-row
+reconstruction RMSE ranges from 10.62 to 23.01 V, while next-angle RMSE ranges
+from 1.09 to 2.64 V. `Chvdc2VoltageChannelStageReferenceTest` checks this
+source-only discriminator without altering the converter equations. This
+observation timing must be resolved before treating the published voltage
+channel as a simultaneous input for DC-line equation fitting.
