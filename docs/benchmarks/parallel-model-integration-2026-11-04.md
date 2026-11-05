@@ -23,3 +23,33 @@ Remaining work is the CHV inverter angle-coordinate mapping and fault
 trajectories, and SVS accepted-projection history and algebraic-state versus
 physical-current publication. Passing equation checks do not replace full
 trajectory acceptance.
+
+## Full registered suite
+
+The full suite on clean commit `54dd55213` executed 5,017 tests across 756
+report files: 245 failures, two errors and 13 skips. Relative to the preceding
+4,959-test core-candidate run, no previously passing test failed and no existing
+failure was resolved. Seventeen newly registered strict comparisons fail:
+one CDC resistance trajectory, eight CHV resistance trajectories and eight SVS
+deadband pulse trajectories. Four earlier symbolic-target rejection test
+identities were replaced by exact-target acceptance and missing-target checks
+after independent relay evidence established the correct semantics.
+
+Private XML reports, bounded log and identity audit:
+`verification-artifacts/full-parallel-models-20261104/validation.zip`, SHA-256
+`a291045c60b4b6c4c118f7cbe75b7bd0a64c88a974d4eb66db1a24ecb64b8e1e`.
+This run predates the generic accepted-projection history API; that opt-in API
+has a separate focused validation and currently enables no production model.
+
+The integrated generic API at `84b0f4956`, plus its suite registration, passed
+49 checks across four classes, with no failures, errors or skips. Private
+reports and bounded log:
+`verification-artifacts/projection-contract-integrated-20261104/validation.zip`,
+SHA-256 `8bc9c431102bc464f9ac4fe307562ffca12360464942c4f2923d3365f9d7f1c5`.
+
+The SVS-specific opt-in remains isolated in candidate `730125104`. It brings
+enabled and unequal-gain staggered pulse comparisons within the existing gate,
+but worsens the middle-band pulse comparison after a threshold crossing changes
+by one step. Modified-Euler profiles remain byte-identical. This candidate is
+not included in the integrated runtime; physical-current publication and full
+trajectory qualification remain open.
