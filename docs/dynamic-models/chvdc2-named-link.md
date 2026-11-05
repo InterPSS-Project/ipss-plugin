@@ -636,6 +636,33 @@ checkpoint, including the modified-Euler controls. The private
 `chvdc2-coarse-line-event-20261104` archive retains the raw cold captures,
 probe scripts, rejected protection policy and validation results.
 
+### First postevent line-current increment
+
+The complete, repeated noncapacitive stiff-source controls also distinguish
+the first dynamic-line update from the next ordinary update. At both fault
+application and clearing, both fault locations and both 0.25/0.5 ms network
+steps retain the same current on the two event-side rows. The first positive-time
+current increment is 0.512–0.515 of the second increment. The new source-only
+`Chvdc2EventLineHistoryReferenceTest` pins all eight event comparisons and the
+unchanged duplicate rows. This is a stage/history discriminator; it does not
+establish the exact line coefficient or qualify the complete coupled trajectory.
+
+In the 0.5 ms rectifier-fault control, the first reference line-current change
+is -0.352478 A. The existing modified-Euler coupled replay changes about
+-0.668 A and starts its current error at -0.315424 A. Its first predictor
+samples the postevent line derivative. The staggered replay changes about
+-0.504 A, leaving -0.151041 A error at that first sample. The coupled
+comparison runner now keeps the right-side derivative as the next ordinary
+two-step history after averaging the event derivative. This lowers the nominal
+staggered 0.5 ms rectifier-fault peak current error from 0.377053 to
+0.230870 A; the corresponding inverter-fault peak falls from 0.331682 to
+0.201433 A. One capacitive inverter-current peak increases by 0.000199 A.
+The complete matrix remains at 29 trajectory failures and one reverse-current
+error. The source discriminator therefore warrants an explicit event-stage
+contract for modified Euler and further line/input work for staggered coupling.
+No source-derived fraction is fitted into the line equation, and the
+current/power/state reference gates remain open.
+
 The broader Maven selection plus explicit completion of registered classes
 executes 5,834 checks: 193 failures, two errors and 63 skips. All 4,622 checks
 from the retained registered baseline keep exactly the same outcome. The extra

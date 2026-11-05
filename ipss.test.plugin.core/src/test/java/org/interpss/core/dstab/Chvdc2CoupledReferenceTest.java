@@ -120,7 +120,7 @@ public class Chvdc2CoupledReferenceTest {
         circuit.accept(model,initial.get("time_s"));
         int count=model.staggeredStateCount();assertEquals(flags[2]==0?15:line.capacitanceFarads()>0?18:16,count);int channels=10+count;
         double[] limits=Arrays.copyOf(LIMITS,channels);if(count==18){limits[26]=.1;limits[27]=.01;}
-        double[] x=new double[count],f=new double[count],old=new double[count],left=new double[count],trial=new double[count],b=new double[10],maximum=new double[channels],times=new double[channels],sumSquared=new double[channels];
+        double[] x=new double[count],f=new double[count],old=new double[count],left=new double[count],eventRight=new double[count],trial=new double[count],b=new double[10],maximum=new double[channels],times=new double[channels],sumSquared=new double[channels];
         boolean started=false,event=false;int duplicates=0;double localStep=h/localSteps;
         RuntimeException integrationFailure=null;double stoppedTime=Double.NaN;int completedSamples=0;
         Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-coupled-"+(staggered?"staggered-":"euler-"));
@@ -140,9 +140,10 @@ public class Chvdc2CoupledReferenceTest {
                         double stageTime=sub+1==localSteps?time:time-h+(sub+1)*localStep;
                         if(staggered) {
                             circuit.solve(model);model.readStaggeredState(x,0);model.evaluateStaggered(localStep,f,0);if(!started)System.arraycopy(f,0,old,0,count);
-                            if(event){for(int k=0;k<count;k++)f[k]=.5*(f[k]+left[k]);event=false;}
+                            boolean eventStep=event;
+                            if(eventStep){System.arraycopy(f,0,eventRight,0,count);for(int k=0;k<count;k++)f[k]=.5*(f[k]+left[k]);event=false;}
                             for(int k=0;k<count;k++)trial[k]=x[k]+localStep*(1.5*f[k]-.5*old[k]);model.applyStaggeredState(trial,0,localStep);model.readStaggeredState(x,0);
-                            for(int k=0;k<count;k++)old[k]=x[k]==trial[k]?f[k]:0;started=true;
+                            for(int k=0;k<count;k++)old[k]=x[k]==trial[k]?(eventStep?eventRight[k]:f[k]):0;started=true;
                             model.completeStaggeredStep(localStep);
                         }else {
                             circuit.solve(model);model.step(localStep,0);circuit.solve(model);model.evaluatePredictorProtection(stageTime,circuit.sequence++);model.step(localStep,1);
