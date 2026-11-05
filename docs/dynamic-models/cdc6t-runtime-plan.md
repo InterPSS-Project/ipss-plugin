@@ -2214,3 +2214,21 @@ The separate full resistance comparison retains its strict 10 V gate and its
 known modified-Euler fault failure. An accepted production change needs a
 predictor-stage boundary capture or another independent discriminator showing
 an incorrect event handoff within the selected integration method.
+
+### Unresolved current-limit voltage selection
+
+The normal runtime currently evaluates the DC current-limit curve using the
+measured inverter DC voltage. A supplied DC-model overview describes a
+lower-of-measured-rectifier-and-inverter selection, but the retained independent
+trajectories do not distinguish these rules: their rectifier measurement stays
+above the inverter measurement.
+
+`Cdc6tVdcolDiscriminatorTest` establishes a small-network stimulus for an
+independent comparison. With a five-cycle rectifier-bus fault and separate
+5 ms rectifier / 50 ms inverter measurement times, the measured rectifier
+voltage falls about 6.83 kV below the inverter measurement. The two possible
+current-limit selections differ by more than 48 A while the lower-voltage
+limit binds the power order. Both integration methods complete the test.
+This is a stimulus and candidate-separation check, not a reference acceptance
+test. The production selector remains unchanged until an independent capture
+for this regime determines the required rule.
