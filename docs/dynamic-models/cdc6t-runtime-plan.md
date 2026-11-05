@@ -2137,3 +2137,13 @@ transition snapshots remain exactly unchanged. Adjacent converter boundary,
 coupled-runtime and preparation tests pass with their existing restrictions.
 Private source, captures, full samples, classes and reports are retained in
 `cdc6t-resistance-20261104`.
+
+Combined integration with the adjacent converter's auxiliary-command extension
+executes 120 checks: 119 pass, the same modified-Euler resistance comparison
+fails, and there are no errors or skips. All 78 adjacent converter controls
+pass. The failing DC-voltage values and all selected test identities match the
+separate model validations. Actual XML, bounded output, source and settings
+are retained privately in `hvdc-resistance-aux-integrated-20261104/validation.zip`,
+SHA-256 `945e34277dda16d98aedc06f8d315cdaf2c836ec9e0693df350001f55bab2d01`.
+This focused integration result does not replace full registered validation or
+close the remaining independent trajectory gate.
