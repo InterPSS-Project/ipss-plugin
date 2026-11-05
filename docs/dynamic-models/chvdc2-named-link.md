@@ -1130,6 +1130,16 @@ discrepancy without discarding either event-side sample. The gate deliberately
 remains failing until an independently justified event/input-stage contract is
 implemented; no controller gain, state, or time shift is fitted to the trace.
 
+A separate source-only filter discriminator retains both fault application and
+clearing duplicates. In each case the first measured inverter AC-voltage state
+is within `6.5e-6` pu of a half left/right forcing step using the entered
+measurement time constant. A full right-input step differs by more than
+`1.7e-4` pu. This holds for both directions of the voltage jump. It narrows the
+missing event-stage contract but does not identify how that stage is distributed
+through ten local controller and line steps. A whole-interval input-ramp trial
+regressed terminal-port lifecycle controls, so neither that ramp nor a generic
+event-history restart is promoted to production.
+
 This component does not supply RAML, commutation-failure histories, converter
 network injection or complete model attachment. Coupled SMIB, local substep
 and observation-stage qualification remain necessary. The private

@@ -267,6 +267,8 @@ conversion checks separately from exact legacy-model qualification.
 
 ## CHVDC2U1
 
+- Retain the [two-sided event-filter discriminator](dynamic-models/chvdc2-named-link.md): both application and clearing first steps reject full right-input forcing, while a simple half left/right step is close to the independent voltage-filter state. Resolve the exact ten-local-step coupling and accepted history; the whole-interval input-ramp trial regressed terminal-port controls and remains rejected.
+
 - Retain explicit finite commutating-resistance preparation and independently checked initial physical losses. Resolve the inverter angle-coordinate discrepancy and full fault trajectory gates without fitting resistance signs or relaxing thresholds. Automatic attachment remains unqualified.
 
 - Retain [explicit auxiliary current commands](dynamic-models/chvdc2-named-link.md), independently checked shared ampere routing, accepted physical-time boundaries, transactional publication and retry after failed solves. Keep protection clocks separate from command timestamps and preserve uncommanded trajectories. Extend complete commanded network-trajectory qualification; the existing strict fault gates remain open.
