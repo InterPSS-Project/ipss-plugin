@@ -161,6 +161,12 @@ It supplies a usable conversion comparison, but exact legacy equations and
 auxiliary behavior remain unverified. Keep each model's source and attachment
 gate below until that distinction is resolved.
 
+The converted WT3P1 pitch record has an explicit signed-rate policy backed by
+the reference engine's documented magnitude rule. Its typed SMIB run completes
+under modified Euler, but the strict converted-suite voltage and power gates
+fail, and the attached generator/controller bundle lacks staggered ownership.
+Preserve those separate gates while extending the native WT3 device contracts.
+
 - Follow the [exact-source implementation gate](dynamic-models/gewgd1-source-contract.md). Obtain the original legacy equations and matching executable; newer identifiers and generic conversion do not establish equivalence.
 - Bind the auxiliary to its converter host before selecting reusable numerical blocks.
 - Add import, initialization, named-state and independent trajectory checks.

@@ -955,6 +955,7 @@ import org.junit.platform.suite.api.Suite;
 	Wt3g2PsseSmibConformanceTest.class,
 	Wt3t1PsseSmibConformanceTest.class,
 	Wt3p1PsseSmibConformanceTest.class,
+	org.interpss.core.dstab.mach.Wt3p1SignedRateCompatibilityTest.class,
 	Wt4g1PsseSmibConformanceTest.class,
 	Wt4e1PsseSmibConformanceTest.class,
 	GenqejPsseSmibConformanceTest.class,
