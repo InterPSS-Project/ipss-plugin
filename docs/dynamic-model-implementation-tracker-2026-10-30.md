@@ -220,6 +220,9 @@ conversion checks separately from exact legacy-model qualification.
 
 ## CDC6T
 
+- Qualify the voltage-dependent current ceiling when the measured rectifier DC voltage falls below the measured inverter DC voltage. An external DC-modeling overview selects the lower measured voltage, while the current runtime uses the inverter measurement alone. Existing independent ceiling captures keep the rectifier measurement higher and therefore cannot distinguish the rules. Retain the current production equation until an exact-model reference discriminator establishes the required input.
+- Qualify current-margin transfer across the converter-characteristic intersection regions. The external overview describes multiple intersection branches; the current conducting runtime applies one margin reduction at the rectifier limit. Compare the branches with an independent exact-model reference before changing the conducting equation or claiming the current-margin path complete.
+
 - Retain [finite commutating resistance](dynamic-models/cdc6t-runtime-plan.md#finite-commutating-resistance), signed and magnitude voltage equations, positive converter losses and unchanged zero-resistance arithmetic. Independent converter/current-limit controls pass; the modified-Euler rectifier-resistance fault still exceeds the existing DC-voltage envelope. Resolve that gate without changing its threshold; capacitor commutation and automatic attachment remain unqualified.
 
 - Retain initial current-ceiling preparation: settle an initially binding ceiling through the existing startup-control-transfer lifecycle before source reconciliation. Both-method flat/fault comparisons and equal/inactive-ceiling controls qualify this path; preserve source constants, physical limits and the separate unresolved protection-timing gates.
