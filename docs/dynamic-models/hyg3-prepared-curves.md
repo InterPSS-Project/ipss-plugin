@@ -814,6 +814,32 @@ explain a plateau without establishing the reference's full accepted-state
 precision or stage policy; retain double-precision production storage until
 those are independently identified.
 
+### Rejected gate-only and complete-state rounding
+
+Two additional precision discriminators used the same retained ten-second
+standard-fault captures, event-side samples, quarter- and eighth-cycle intervals,
+and both integration methods as the unchanged production comparison. The
+baseline long-duration test has six failing groups out of ten. This is a
+comparison against the source captures, not a test of rounded output formatting.
+
+The first trial projected every controller state to binary32 at initialization
+and each proposed numerical update. It retained the same six failing groups but
+made the coupled trajectory much worse: in the quarter-cycle double-derivative
+profile, active-power NRMSE reached `0.0140`, rotor-angle RMSE reached
+`0.0517` degrees, and peak water-flow error reached `0.00138` pu. The unchanged
+baseline's corresponding peak water-flow error is about `0.000008` pu.
+
+The second trial projected only the gate at initialization and accepted updates.
+It reduced the modified-Euler double-derivative quarter-cycle peak flow error
+from `0.00000792` to `0.00000671` pu, but the staggered counterpart grew to
+`0.000457` pu, with active-power NRMSE `0.00496` and rotor-angle RMSE
+`0.0184` degrees. Both trials were reverted. Exact binary32 recurrence on an
+active gate plateau and binary32 published coordinates do not establish a
+uniform hidden-state or stage-quantization rule. The remaining work needs an
+independently observed accepted hydraulic rate or an authoritative stage and
+storage contract; no production precision change or gate relaxation follows
+from these trials.
+
 ### Named parameter edits before initialization
 
 The HYG3 data object now applies its generic named-value API to all scalar
