@@ -1950,6 +1950,41 @@ Private convergence captures, including the rejected attempt and its log:
 `verification-artifacts/cdc6t-bypass-convergence-20261104/captures.zip`, SHA-256
 `f3ad33a2cc827504c9c00822ef6d538461a7c018466aca625e50a9831afa33e3`.
 
+### Static inverter preparation changes the recovery observation side
+
+Paired small-network controls retain identical source RAW, dynamic records,
+fault, 0.5 ms interval and bypass settings. Only the static inverter-angle
+record differs across the three profiles. Every output row repeats byte for
+byte in its cold run, both clearing sides are retained, and all six runs pass
+the initial-conditions and network-convergence checks. All three continuous DC
+states are unchanged between the two clearing observations.
+
+| Static inverter angle | Clearing-right inverter voltage (pu) | Timer on clearing right | First timer observation |
+| --- | ---: | --- | ---: |
+| Source RAW setting | 0.932210 | absent | 0.100500 s |
+| 20 degrees | 0.936949 | absent | 0.100500 s |
+| 15 degrees | 0.940745 | present | 0.100000 s |
+
+The entered recovery threshold is 0.92 pu, so every published clearing-right
+voltage exceeds it. The 15-degree control starts its recovery deadline on that
+event side, while the other two start at the following endpoint. The 15-degree
+deadline equals clearing time minus half an interval plus the entered delay;
+the other deadline equals clearing time plus half an interval plus the delay.
+The same protection trigger with the source RAW angle retains the later schedule.
+Changing only the dynamic angle, static rectifier angle minimum or static DC
+tap adjustment in exploratory runs also retained the later schedule. Thus the
+earlier base/transferred discrepancy is sensitive to the static inverter
+operating point, and the published voltage alone does not reveal the event-solve
+observation that made the decision. An intermediate or internal measurement
+must be identified before changing the production recovery clock. No timing
+rule or tolerance was changed.
+
+`Cdc6tBypassSamplingReferenceTest` pins the complete cold pairs, unchanged
+dynamic records, one changed static converter record, event-side voltages,
+continuous states and timer publication. Private inputs, outputs, settings and
+source scripts are in `verification-artifacts/cdc6t-static-gamma-event-20261105/captures.zip`,
+SHA-256 `2829705bf4c0182539f961cdb937571fe0d1616dd22d6747cbcc3b20210b204a`.
+
 ### Initially binding current ceiling
 
 An initial voltage-dependent ceiling below the solved static current now requests
