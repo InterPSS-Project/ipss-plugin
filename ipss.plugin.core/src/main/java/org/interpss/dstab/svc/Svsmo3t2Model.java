@@ -26,7 +26,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * with the controlled current on the explicit STATCOM base.
  */
 public final class Svsmo3t2Model extends DynamicBusDeviceImpl
-        implements ICMLStateProvider, IntegrationStateAccess, StaggeredEulerParticipant {
+        implements ICMLStateProvider, IntegrationStateAccess, StaggeredEulerParticipant,
+        org.interpss.dstab.control.util.PhysicalStepTrial {
     private static final String[] NAMES = {"Voltage measurement filter", "Main PI integrator",
             "STATCOM output lag", "Slow-reset PI integrator", "Short-term rating integral",
             "Transient-gain lead-lag filter"};
@@ -46,6 +47,12 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private double overvoltageRecoveryStart = -1;
     /** Last accepted physical output; trial states cannot start the rating timer early. */
     private double acceptedCurrent;
+    private double publishedCurrent, trialPhysicalCurrent;
+    private boolean physicalTrialOpen, physicalTrialPublished, automaticPhysicalTrial;
+    private final double[] physicalTrialCoordinates, physicalTrialHistory;
+    private int physicalTrialFlags;
+    private final IntegrationStateMonitor physicalTrialMonitor;
+
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
     private boolean predictorPending, blocked, tripped, thermalLimited, deadbandLocked, shortRatingExhausted;
@@ -55,6 +62,9 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             StaticVarCompensator svc, Svsmo3t2Data data) {
         switching = new Svsmo3t2MssBoundary((com.interpss.dstab.BaseDStabNetwork<?, ?>) bus.getNetwork(), data);
         this.data = data;
+        physicalTrialCoordinates=data.firingTime()==0?new double[30]:null;
+        physicalTrialHistory=data.firingTime()==0?new double[9]:null;
+        physicalTrialMonitor=data.firingTime()==0?new IntegrationStateMonitor(NAMES):null;
         this.svc = svc;
         this.remoteBus = remoteBus;
         sensorRatio = data.tb1() > 0 ? data.tc1() / data.tb1() : 0;
@@ -82,6 +92,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         x[0] = remoteBus.getVoltageMag();
         x[1] = x[2] = initialB * bus.getVoltageMag() / baseRatio;
         acceptedCurrent = x[2];
+        publishedCurrent=x[2];physicalTrialOpen=physicalTrialPublished=automaticPhysicalTrial=false;
         scheduledVoltage = x[0] + (data.deadband() > 0 ? 0 : droop(x[0]) * x[2]);
         preparedVrefMin = Math.min(data.vrefMin(), scheduledVoltage);
         preparedVrefMax = Math.max(data.vrefMax(), scheduledVoltage);
@@ -150,6 +161,58 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         integrationTime = endpointTimeSec;
     }
 
+    @Override public boolean requiresPhysicalStepTrial(){return data.firingTime()==0;}
+    @Override public void beginPhysicalStepTrial(double time,double dt) {
+        if(!requiresPhysicalStepTrial())return;
+        if(!initialized||predictorPending||physicalTrialOpen||!Double.isFinite(time)||!Double.isFinite(dt)||dt<=0)
+            throw new IllegalStateException("Initialized, idle positive physical step required");
+        System.arraycopy(x,0,physicalTrialCoordinates,0,6);
+        System.arraycopy(start,0,physicalTrialCoordinates,6,6);
+        System.arraycopy(rate,0,physicalTrialCoordinates,12,6);
+        System.arraycopy(firstRate,0,physicalTrialCoordinates,18,6);
+        System.arraycopy(trialBackup,0,physicalTrialCoordinates,24,6);
+        physicalTrialHistory[0]=integrationTime;physicalTrialHistory[1]=predictorStep;
+        physicalTrialHistory[2]=overvoltageRecoveryStart;physicalTrialHistory[3]=acceptedCurrent;
+        physicalTrialHistory[4]=shortTimer;physicalTrialHistory[5]=unblockTimer;
+        physicalTrialHistory[6]=overvoltageTimer;physicalTrialHistory[7]=deadbandTimer;
+        physicalTrialHistory[8]=publishedCurrent;
+        physicalTrialFlags=(predictorPending?1:0)|(blocked?2:0)|(tripped?4:0)|(thermalLimited?8:0)
+                |(deadbandLocked?16:0)|(shortRatingExhausted?32:0)
+                |(networkDetached?128:0)|(overvoltageRecovery?256:0);
+        monitor.copyObservationTo(physicalTrialMonitor);
+        trialPhysicalCurrent=x[2];physicalTrialOpen=true;physicalTrialPublished=false;
+    }
+    @Override public void publishPhysicalStepTrial(){
+        if(!requiresPhysicalStepTrial())return;
+        if(!physicalTrialOpen)throw new IllegalStateException("Begin physical-output trial before publication");
+        physicalTrialPublished=true;
+    }
+    @Override public void validatePhysicalStepAcceptance(){
+        if(physicalTrialOpen&&(!physicalTrialPublished||predictorPending))throw new IllegalStateException("Complete and publish the physical trial before acceptance");
+    }
+    @Override public void acceptPhysicalStepTrial(){
+        validatePhysicalStepAcceptance();
+        if(!physicalTrialOpen)return;
+        publishedCurrent=trialPhysicalCurrent;acceptedCurrent=getCurrent();
+        physicalTrialOpen=physicalTrialPublished=automaticPhysicalTrial=false;
+    }
+    @Override public void discardPhysicalStepTrial(){
+        if(!physicalTrialOpen)return;
+        System.arraycopy(physicalTrialCoordinates,0,x,0,6);
+        System.arraycopy(physicalTrialCoordinates,6,start,0,6);
+        System.arraycopy(physicalTrialCoordinates,12,rate,0,6);
+        System.arraycopy(physicalTrialCoordinates,18,firstRate,0,6);
+        System.arraycopy(physicalTrialCoordinates,24,trialBackup,0,6);
+        integrationTime=physicalTrialHistory[0];predictorStep=physicalTrialHistory[1];
+        overvoltageRecoveryStart=physicalTrialHistory[2];acceptedCurrent=physicalTrialHistory[3];
+        shortTimer=physicalTrialHistory[4];unblockTimer=physicalTrialHistory[5];
+        overvoltageTimer=physicalTrialHistory[6];deadbandTimer=physicalTrialHistory[7];publishedCurrent=physicalTrialHistory[8];
+        predictorPending=(physicalTrialFlags&1)!=0;blocked=(physicalTrialFlags&2)!=0;tripped=(physicalTrialFlags&4)!=0;
+        thermalLimited=(physicalTrialFlags&8)!=0;deadbandLocked=(physicalTrialFlags&16)!=0;shortRatingExhausted=(physicalTrialFlags&32)!=0;
+        networkDetached=(physicalTrialFlags&128)!=0;overvoltageRecovery=(physicalTrialFlags&256)!=0;
+        physicalTrialMonitor.copyObservationTo(monitor);physicalTrialOpen=physicalTrialPublished=automaticPhysicalTrial=false;
+    }
+
     private void requireStaggeredBoundary() {
         if (!initialized || predictorPending)
             throw new IllegalStateException("Initialize SVSMO3T2 and finish any predictor before using shared state access");
@@ -165,6 +228,9 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
                 || (flag != 0 && flag != 1)) return false;
         if (predictorPending && (dt == 0 || flag == 0 || dt != predictorStep)) return false;
         if (networkDetached) return finiteState();
+        if(dt>0 && flag==0 && requiresPhysicalStepTrial() && !physicalTrialOpen){
+            beginPhysicalStepTrial(integrationTime,dt);automaticPhysicalTrial=true;
+        }
         System.arraycopy(x, 0, trialBackup, 0, x.length);
         // Event-side limiter projection is algebraic. No derivative integration,
         // timer advance or accepted-history commit occurs at zero duration.
@@ -177,19 +243,21 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             System.arraycopy(rate, 0, firstRate, 0, x.length);
             for (int i = 0; i < x.length; i++) x[i] = start[i] + dt * firstRate[i];
             projectAlgebraicStates();
-            if (!acceptFiniteTrial()) return false;
+            if (!acceptFiniteTrial()) {if(automaticPhysicalTrial)discardPhysicalStepTrial();return false;}
             predictorStep = dt;
             predictorPending = true;
+            if(automaticPhysicalTrial)publishPhysicalStepTrial();
         } else {
             if (!predictorPending) return false;
             evaluateRates();
             observe(Stage.CORRECTOR);
             for (int i = 0; i < x.length; i++) x[i] = start[i] + .5 * dt * (firstRate[i] + rate[i]);
             projectAlgebraicStates();
-            if (!acceptFiniteTrial()) return false;
+            if (!acceptFiniteTrial()) {if(automaticPhysicalTrial)discardPhysicalStepTrial();return false;}
             updateHistory(dt, integrationTime + dt);
             predictorPending = false;
             if (finiteState()) integrationTime += dt;
+            if(automaticPhysicalTrial)acceptPhysicalStepTrial();
         }
         return finiteState();
     }
@@ -374,15 +442,20 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     public StaticVarCompensator getStaticDevice() { return svc; }
     public BaseDStabBus<?, ?> getRemoteBus() { return remoteBus; }
     /** Blocking is accepted history, not a new discrete action inside a network iteration. */
-    public double getCurrent() { return networkDetached || blocked ? 0 : x[2]; }
+    public double getCurrent() {
+        return networkDetached || blocked ? 0 : data.firingTime()==0
+                ? (physicalTrialPublished?trialPhysicalCurrent:publishedCurrent) : x[2];
+    }
     public double getMvarOutput() { return getCurrent() * getDStabBus().getVoltageMag() * data.statcomBaseMva(); }
     public double getVoltageReference() { return voltageReference(); }
     public double getScheduledVoltage() { return scheduledVoltage; }
     public void setScheduledVoltage(double value) {
+        if(physicalTrialOpen&&!automaticPhysicalTrial)throw new IllegalStateException("Finish the physical trial before changing its input");
         if (!Double.isFinite(value)) throw new IllegalArgumentException("Nonfinite scheduled voltage");
         scheduledVoltage = value;
     }
     public void setAuxiliarySignal(double value) {
+        if(physicalTrialOpen&&!automaticPhysicalTrial)throw new IllegalStateException("Finish the physical trial before changing its input");
         if (!Double.isFinite(value)) throw new IllegalArgumentException("Nonfinite auxiliary signal");
         auxiliarySignal = value;
     }
@@ -398,6 +471,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         if (tripped) { networkDetached = true; acceptedCurrent = 0; }
     }
     void checkNetworkEventReady() {
+        if (physicalTrialOpen) throw new IllegalStateException("Accept or discard physical trial before a network event");
         if (predictorPending) throw new IllegalStateException("Finish the predictor before accepting a network event");
     }
     /** Available rating before voltage reduction/blocking; a tripped device has none. */
@@ -436,7 +510,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     }
     /** Call after initial network compensation is established, never during its construction. */
     public boolean acceptSwitchingEndpoint() {
-        if (predictorPending) return false;
+        if (predictorPending || physicalTrialOpen) return false;
         if (!tripped) switching.advance(integrationTime, getCurrent());
         return finiteState();
     }
