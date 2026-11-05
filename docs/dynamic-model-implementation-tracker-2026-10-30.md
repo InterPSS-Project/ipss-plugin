@@ -200,7 +200,7 @@ conversion checks separately from exact legacy-model qualification.
 
 ## GEWTE2
 
-- Follow the [legacy source and qualification gate](dynamic-models/gewte2-source-contract.md); the newer model has a different integer/output layout and is not an established alias.
+- Retain the [strict legacy record decoder](dynamic-models/gewte2-source-contract.md), preserving every integer and constant in source order and rejecting different allocations. The newer model has a different integer/output layout and is not an established alias; the decoder does not attach a runtime.
 - Implement the exact electrical-controller variant and its converter attachment.
 - Verify equations, limits, initialization and state/history lifecycle before reusing another variant's engine.
 - Add independent trajectory checks; do not alias to GEWTECU1 without evidence of equivalence.
