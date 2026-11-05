@@ -128,7 +128,7 @@ public class Svsmo3t2DeadbandRelockTest extends CorePluginTestSetup {
         var lines=Files.readAllLines(p);String[] names=lines.getFirst().split(",");var result=new ArrayList<Map<String,Double>>();
         for(String line:lines.subList(1,lines.size())){String[] v=line.split(",");var row=new LinkedHashMap<String,Double>();for(int i=0;i<v.length;i++)row.put(names[i],Double.parseDouble(v[i]));result.add(row);}return result;
     }
-    private static Path reference()throws Exception {
+    static Path reference()throws Exception {
         byte[] bytes;try(var in=Svsmo3t2DeadbandRelockTest.class.getResourceAsStream("/dynamic-models/svsmo3t2/deadband-relock.zip")){assertNotNull(in);bytes=in.readAllBytes();}
         assertEquals("b11a6d7d8b8ff49808e8091a8414723688815aab261fb9eefa543f62965a815b",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)));
         Path root=Files.createTempDirectory(Path.of("target"),"svs-deadband-reference-").toAbsolutePath();

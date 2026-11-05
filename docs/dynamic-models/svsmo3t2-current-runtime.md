@@ -633,3 +633,50 @@ The unequal lead-lag and zero-output-lag controls are orthogonal tests. Their
 combination (zero output lag with nonzero retained proportional gain memory)
 has no independent capture here and remains unqualified. In particular, these
 tests do not certify instantaneous inside-band output for that combination.
+
+
+## Complete deadband pulse gates and first divergence
+
+The new coupled test executes ten separate parameterized cases and retains all
+2,005 samples per case, including startup and event-side duplicates. The
+unchanged all-bus voltage range-NRMSE criterion is 0.001. Eight cases fail and
+the two deadband-disabled controls pass; there are no errors or skips. State,
+current, reactive-power and angle comparisons are exported without silently
+relaxing the failed voltage criterion.
+
+| Profile | Bus-3 voltage NRMSE, modified Euler | Bus-3 voltage NRMSE, staggered |
+|---|---:|---:|
+| 0.02 pu pulse, deadband enabled | 0.00158908 | 0.00128218 |
+| Matched deadband-disabled control | 0.000412084 | 0.0000245440 |
+| 0.007 pu pulse | 0.0295208 | 0.00964894 |
+| Unequal lead-lag constants | 0.192563 | 0.192428 |
+| Zero output-lag constant | 0.0562129 | 0.0215376 |
+
+The unequal-lead-lag staggered comparison agrees at the first re-lock endpoint
+within 4.8e-8 pu for the PI/lag states and 1e-9 pu for lead-lag storage. At the
+next endpoint, the lag differs by approximately 0.00066534 pu while lead-lag
+storage still agrees within 2.5e-9 pu. The source lag increment equals
+`1.5*h*f_current`; the implementation retains and subtracts its previous lag
+slope. This identifies an accepted-projection/history boundary before network
+feedback diverges. Repeated omission of the previous slope is not established
+as ordinary truncation error. The current participant interface assigns history
+to the solver and has no accepted-projection selective-history invalidation
+contract. No hidden model integrator, history reset or input delay is added.
+
+The zero-lag source has a separate observation/publication distinction. On the
+pulse's duplicate event row, the algebraic lag coordinate changes from about
+0.304501 to 0.444500 pu, while physical current and voltage retain their prior
+values. At the next endpoint physical current takes the preceding algebraic
+value, and the observed algebraic coordinate has advanced again. Immediate
+algebraic projection is therefore not evidence of same-boundary physical
+network publication. The full coupled gate remains failed until this lifecycle
+is independently represented and verified.
+
+The root's integrated existing selection separately executed 52 tests across
+12 classes with no failures/errors/skips, including extended diagnostic tests.
+That result does not override these eight newly exposed strict failures.
+Its private archive is `verification-artifacts/svs-deadband-integrated-20261104/validation.zip`,
+SHA-256 `fa1a5ebb00a49202135965dfc1f054e6ff8e2ef3888481660f4959070faaf0c4`.
+The complete new coupled outputs, strict reports and source snapshots are in
+`verification-artifacts/svs-deadband-coupled-20261104/validation.zip`,
+SHA-256 `31f75143f87cd1b5d26018cbc9d7558a23ae2d7c1c57bf4eb8a65278873aa9b2`.
