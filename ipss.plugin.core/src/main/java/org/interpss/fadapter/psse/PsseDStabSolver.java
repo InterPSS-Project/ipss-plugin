@@ -81,15 +81,18 @@ public class PsseDStabSolver extends DStabSolverImpl {
     }
     @Override public void nextStep(double time,double dt,com.interpss.dstab.algo.DynamicSimuMethod method)
             throws DStabSimuException {
-        if(!reactivation.enabled()){super.nextStep(time,dt,method);return;}
+        if(!reactivation.enabled() && physicalStepInputs.isEmpty()){super.nextStep(time,dt,method);return;}
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Integration interval must be positive");
-        try {super.nextStep(time,dt,method);reactivation.commit();}
-        catch(RuntimeException|DStabSimuException failure){reactivation.rollback();throw failure;}
+        physicalStepWrapperActive=true;
+        try {super.nextStep(time,dt,method);acceptPhysicalStepTrials();reactivation.commit();}
+        catch(RuntimeException|DStabSimuException failure){discardPhysicalStepTrials(failure);try{reactivation.rollback();}catch(RuntimeException cleanup){failure.addSuppressed(cleanup);}throw failure;}
+        finally{physicalStepWrapperActive=false;}
     }
     @Override public void diffEqnIntegrationStep(double time,double dt,
             com.interpss.dstab.algo.DynamicSimuMethod method,int flag) throws DStabSimuException {
-        if(flag==0)reactivation.begin(dt);
+        if(flag==0){if(physicalStepWrapperActive)beginPhysicalStepTrials(time,dt);reactivation.begin(dt);}
         super.diffEqnIntegrationStep(time,dt,method,flag);
+        if(flag==0&&physicalStepWrapperActive)publishPhysicalStepTrials();
     }
     public enum BusFrequencyMode { REQUIRED, ALL }
     public record BusFrequencyReport(int activeBuses,int measuredBuses,String reason) { }
@@ -108,6 +111,36 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private record StepInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
             org.interpss.dstab.control.util.IntegrationStepContext input) { }
     private final java.util.List<StepInput> integrationStepInputs = new java.util.ArrayList<>();
+    private static final class PhysicalStepInput {
+        final DynamicDevice device; final BaseDStabBus<?,?> bus;
+        final org.interpss.dstab.control.util.PhysicalStepTrial input;
+        boolean pending;
+        PhysicalStepInput(DynamicDevice device,BaseDStabBus<?,?> bus,
+                org.interpss.dstab.control.util.PhysicalStepTrial input){this.device=device;this.bus=bus;this.input=input;}
+    }
+    private boolean physicalStepWrapperActive;
+    private final java.util.List<PhysicalStepInput> physicalStepInputs=new java.util.ArrayList<>();
+    protected final void beginPhysicalStepTrials(double time,double dt) {
+        for(var p:physicalStepInputs)if(p.device.isActive()&&p.bus.isActive()) {
+            if(p.pending)throw new IllegalStateException("Unfinished physical-output trial");
+            p.pending=true;p.input.beginPhysicalStepTrial(time,dt);
+        }
+    }
+    protected final void publishPhysicalStepTrials(){for(var p:physicalStepInputs)if(p.pending)p.input.publishPhysicalStepTrial();}
+    protected final void acceptPhysicalStepTrials(){
+        for(var p:physicalStepInputs)if(p.pending)p.input.validatePhysicalStepAcceptance();
+        for(var p:physicalStepInputs)if(p.pending){p.input.acceptPhysicalStepTrial();p.pending=false;}
+    }
+    protected final void discardPhysicalStepTrials(Throwable primary){
+        RuntimeException cleanupFailure=null;
+        for(int i=physicalStepInputs.size()-1;i>=0;i--){var p=physicalStepInputs.get(i);if(p.pending){
+            try{p.input.discardPhysicalStepTrial();}catch(RuntimeException cleanup){
+                if(primary!=null)primary.addSuppressed(cleanup);
+                else if(cleanupFailure==null)cleanupFailure=cleanup;else cleanupFailure.addSuppressed(cleanup);
+            }finally{p.pending=false;}
+        }}
+        if(cleanupFailure!=null)throw cleanupFailure;
+    }
     /** Configure before initialization; false retains compatible controller dispatch. */
     public void setControllerRuntimePreparationEnabled(boolean enabled){controllerRuntimePreparationEnabled=enabled;}
     public boolean isControllerRuntimePreparationEnabled(){return controllerRuntimePreparationEnabled;}
@@ -294,7 +327,8 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
-        controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();integrationStepInputs.clear();
+        discardPhysicalStepTrials(null);
+        controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();integrationStepInputs.clear();physicalStepInputs.clear();
         reactivation.prepare(dstabAlgo,hotReactivationIds);hotReactivationEvent=false;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
@@ -317,6 +351,8 @@ public class PsseDStabSolver extends DStabSolverImpl {
                     networkEventInputs.add(new EventInput(device, bus, input));
                 if (device instanceof org.interpss.dstab.control.util.IntegrationStepContext input)
                     integrationStepInputs.add(new StepInput(device, bus, input));
+                if (device instanceof org.interpss.dstab.control.util.PhysicalStepTrial input && input.requiresPhysicalStepTrial())
+                    physicalStepInputs.add(new PhysicalStepInput(device,bus,input));
             }
         selectFrequencyMeasurements();
         // Do not overwrite a hybrid-simulation current source supplied by a caller.

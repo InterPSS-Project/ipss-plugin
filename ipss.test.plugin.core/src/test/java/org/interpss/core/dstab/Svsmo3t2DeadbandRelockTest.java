@@ -117,7 +117,7 @@ public class Svsmo3t2DeadbandRelockTest extends CorePluginTestSetup {
         shared.applyStaggeredState(x,0,0);assertEquals(x[2]+.14,numerical(shared)[2],2e-7);
     }
     private static double[] numerical(Svsmo3t2Model m){double[] x=new double[6];m.readStaggeredState(x,0);return x;}
-    private static Svsmo3t2Model model(Path root)throws Exception {
+    static Svsmo3t2Model model(Path root)throws Exception {
         var c=new PSSEMultiFileLoader().loadDStab(root.resolve("smib.raw").toString(),root.resolve("smib.dyr").toString());
         var a=c.getDynSimuAlgorithm();a.getAclfAlgorithm().getLfAdjAlgo().setLocalContinuousSvcAsPv(true);
         a.getAclfAlgorithm().setTolerance(1e-10);assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuOutputHandler(new StateMonitor());assertTrue(a.initialization());

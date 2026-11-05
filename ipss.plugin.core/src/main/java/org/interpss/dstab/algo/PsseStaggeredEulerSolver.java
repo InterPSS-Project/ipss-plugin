@@ -1175,8 +1175,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     }
 
     @Override public void nextStep(double time,double dt,DynamicSimuMethod method) throws DStabSimuException {
-        try {advanceWithRetainedInactiveStates(time,dt,method);reactivation.commit();}
-        catch(RuntimeException|DStabSimuException failure){reactivation.rollback();throw failure;}
+        try {advanceWithRetainedInactiveStates(time,dt,method);acceptPhysicalStepTrials();reactivation.commit();}
+        catch(RuntimeException|DStabSimuException failure){discardPhysicalStepTrials(failure);try{reactivation.rollback();}catch(RuntimeException cleanup){failure.addSuppressed(cleanup);}throw failure;}
     }
     private void advanceWithRetainedInactiveStates(double time,double dt,DynamicSimuMethod method) throws DStabSimuException {
         requireStep(dt);
@@ -1220,6 +1220,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         }
         networkEndpointAvailable = false;
         reactivation.begin(dt);
+        beginPhysicalStepTrials(time,dt);
         // Accepted-step relay motion uses the solved left-endpoint current.
         // Sample it before advancing any differential coordinates; the relay's
         // existing afterStep callback remains the sole timer/action owner.
@@ -1332,6 +1333,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             completeParticipantStep(p.model, p.history, dt, endpointTime);
         }
         participantEndpointTime = endpointTime;
+        publishPhysicalStepTrials();
         // Refresh model algebraic outputs/caches without advancing any state.
         evaluate(false,true); evaluate();
         networkSolutionStep();
