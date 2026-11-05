@@ -186,7 +186,8 @@ public class HspUsageRankedModelTest {
         var voltage=net.getDStabBus("Bus1").getVoltage();
         var power=voltage.multiply(machine.getIgen().subtract(voltage.multiply(machine.getYgen())).conjugate());
         values.put("V1",voltage.abs());values.put("V2",net.getDStabBus("Bus2").getVoltageMag());
-        values.put("ANGLE_DEG",Math.toDegrees(machine.getAngle()));values.put("P_PU",power.getReal());values.put("Q_PU",power.getImaginary());
+        values.put("ANGLE_DEG",net.getDStabBus("Bus1").isActive()?Math.toDegrees(machine.getAngle()):0.);
+        values.put("P_PU",power.getReal());values.put("Q_PU",power.getImaginary());
         values.put("PMECH",machine.getPm());values.put("SPEED",machine.getSpeed()-1);
         if(net.getMachine("Bus2-mach1")!=null && net.getMachine("Bus3-mach1")!=null) {
             values.put("PMECH_LP",net.getMachine("Bus2-mach1").getPm());values.put("SPEED_LP",net.getMachine("Bus2-mach1").getSpeed()-1);

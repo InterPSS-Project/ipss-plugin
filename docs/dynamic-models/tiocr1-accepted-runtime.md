@@ -610,21 +610,22 @@ An independent all-three-target-open capture retains 1,006 rows and all three
 event-side duplicates. The line trip at 0.085 second disconnects both terminal
 buses: their voltage, terminal P/Q and the disconnected machine's observed
 angle become zero on the action-right side. The two-method SMIB gate retains
-the complete observation grid and checks both action sides. Its current
-baseline fails twice: Bus1 action-right voltage is 0.65086374 pu under modified
-Euler and 0.65086202 pu under staggered integration, while the reference is
-zero. The eight connected-corridor and transfer controls in the same test
-class pass.
+the complete observation grid and checks both action sides. Before the solver
+island lifecycle, Bus1 action-right voltage was 0.65086374 pu under modified
+Euler and 0.65086202 pu under staggered integration, while the reference was
+zero. With the core lifecycle, all twelve transfer and reconnection controls
+pass, including both all-open trajectories.
 
 The test recorder now retains the complete action-left network snapshot before
 physical mutation; relay and branch fields no longer come from a different
-topology side than voltage and power. A local trial that deactivated isolated
-buses matched the zero-voltage reference and passed all ten class cases, but
-the ordinary solver skips output for inactive buses and stores the disconnected
-machine's previous angle. It also lacks a qualified reconnection transaction.
-That trial is not production code. Closing this gate requires one accepted
-topology lifecycle for left/right publication, de-energized output, active
-fault stamps, and reactivation or rollback.
+topology side than voltage and power. The core solver now detects formerly
+connected buses that become branch-isolated after an accepted action. It zeros
+their electrical rows and publishes zero-valued bus and machine channels while
+retaining those channel identities. When a branch reconnects, the solver
+restores those buses and rebuilds the network with active fault stamps. A
+reclosure control exercises that rebuild while the bus fault remains active.
+This contract covers newly isolated individual buses; it does not yet identify
+or solve separated multi-bus islands.
 
 
 ## Typed collapsed-parent wildcard allocation

@@ -10,12 +10,63 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.apache.commons.math3.complex.Complex;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 
 /** Two distinct transfer targets and a duplicated target retain one accepted network/load action. */
 public class Tiocr1MultipleTransferReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip");
     private static final Path SURVIVOR=Path.of("testData/private/verification-artifacts/tiocr-fourth-survivor-20261104/captures.zip");
     private static final Path ALL_OPEN=Path.of("testData/private/verification-artifacts/tiocr-three-transfer-20261104/captures.zip");
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void isolatedTerminalsReconnectWhileFaultRemainsActive(boolean staggered,@TempDir Path staged)throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(ALL_OPEN),"Retain independent all-open reference");
+        try(var zip=new ZipFile(ALL_OPEN.toFile())) {
+            for(String file:List.of("network.raw","dynamic.dyr"))
+                Files.write(staged.resolve(file),zip.getInputStream(zip.getEntry("a/"+file)).readAllBytes());
+        }
+        HspUsageRankedModelTest.setup();
+        var loader=new PSSEMultiFileLoader();
+        var context=loader.loadDStab(staged.resolve("network.raw").toString(),
+                staged.resolve("dynamic.dyr").toString());
+        assertTrue(loader.getLastDynamicImportReport().isStrictlyComplete());
+        var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm));
+        algorithm.setSimuStepSec(.0005);algorithm.setTotalSimuTimeSec(.5);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        var fault=DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,
+                new Complex(0,.2),null,.05,.05);
+        net.addDynamicEvent(fault,"Fault");
+        assertTrue(algorithm.initialization());
+        var first=net.getBranch("Bus1->Bus2(1)");
+        while(first.isActive() && algorithm.getSimuTime()<.15)
+            assertTrue(algorithm.solveDEqnStep(true),"Trip at "+algorithm.getSimuTime());
+        assertFalse(first.isActive(),"Accepted transfer opens the first corridor");
+        assertFalse(net.getDStabBus("Bus1").isActive());
+        assertFalse(net.getDStabBus("Bus2").isActive());
+        assertTrue(fault.isActive(),"The fault is still applied when the relay operates");
+        first.setStatus(true);
+        assertTrue(algorithm.solveDEqnStep(true),"Reclose at "+algorithm.getSimuTime());
+        assertTrue(net.getDStabBus("Bus1").isActive());
+        assertTrue(net.getDStabBus("Bus2").isActive());
+        assertTrue(net.getDStabBus("Bus1").getVoltageMag()>0);
+        assertTrue(fault.isActive(),"The fault stamp must survive the topology rebuild");
+        int faultRow=net.getDStabBus("Bus1").getSortNumber();
+        Complex stamped=net.getYMatrix().getA(faultRow,faultRow);
+        net.formYMatrix4DStab();
+        Complex noFault=net.getYMatrix().getA(faultRow,faultRow);
+        assertTrue(stamped.subtract(noFault).abs()>1.,"Active fault admittance survives reconnection");
+        new com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor().rebuildCurrentTopology(net);
+        while(algorithm.getSimuTime()<.12)
+            assertTrue(algorithm.solveDEqnStep(true),"Clearing after reclose at "+algorithm.getSimuTime());
+        assertTrue(Double.isFinite(net.getDStabBus("Bus1").getVoltageMag()));
+        assertTrue(net.getDStabBus("Bus1").isActive());
+    }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void allThreeTargetsOpenAndDisconnectBothTerminalBuses(boolean staggered,@TempDir Path staged)throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ALL_OPEN),"Retain independent all-open reference");
