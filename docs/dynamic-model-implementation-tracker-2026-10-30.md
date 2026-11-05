@@ -199,6 +199,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## CDC6T
 
+- Retain [finite commutating resistance](dynamic-models/cdc6t-runtime-plan.md#finite-commutating-resistance), signed and magnitude voltage equations, positive converter losses and unchanged zero-resistance arithmetic. Independent converter/current-limit controls pass; the modified-Euler rectifier-resistance fault still exceeds the existing DC-voltage envelope. Resolve that gate without changing its threshold; capacitor commutation and automatic attachment remain unqualified.
+
 - Retain initial current-ceiling preparation: settle an initially binding ceiling through the existing startup-control-transfer lifecycle before source reconciliation. Both-method flat/fault comparisons and equal/inactive-ceiling controls qualify this path; preserve source constants, physical limits and the separate unresolved protection-timing gates.
 
 - Use the [bypass observation-stage counterexamples](dynamic-models/cdc6t-runtime-plan.md#bypass-observation-stage-counterexamples) when resolving recovery timing. Base and transferred-source captures require different observed start stages even across delay, threshold and control-mode discriminators; a universal completed-interval rule regresses an existing voltage gate. Preserve source-specific evidence rather than fitting a blanket timer delay.
@@ -234,6 +236,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Add exact import, initialization, named-state, limiter/event and independent trajectory checks.
 
 ## CHVDC2U1
+
+- Retain [explicit auxiliary current commands](dynamic-models/chvdc2-named-link.md), independently checked shared ampere routing, accepted physical-time boundaries, transactional publication and retry after failed solves. Keep protection clocks separate from command timestamps and preserve uncommanded trajectories. Extend complete commanded network-trajectory qualification; the existing strict fault gates remain open.
 
 - Retain [network-context rejection before transaction entry](dynamic-models/chvdc2-named-link.md#network-context-rejection-before-transaction-entry): reject nonfinite timestamps without opening or corrupting trials, including pending local modified-Euler predictors and both protection clocks. Strict reference gates remain unchanged.
 
