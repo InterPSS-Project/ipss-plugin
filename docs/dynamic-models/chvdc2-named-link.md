@@ -1995,3 +1995,24 @@ passes 71 tests without changing its strict limits. All 1,005 samples and
 both event-side records remain in each coupled comparison. This qualifies the
 retained finite-resistance profiles; other protection, commanded and automatic
 attachment gates remain separate.
+
+### DC line and AC network trial boundary
+
+The external DC modeling overview distinguishes a dynamic multi-terminal
+resistance/inductance line from a two-terminal algebraic converter balance. Its
+illustrated local subinterval count belongs to the dynamic line example; it is
+not a general requirement for every DC link. During an AC network trial, the
+dynamic line's stored current remains at the proposed numerical state while
+live AC phasors refresh converter DC voltage, terminal power and AC injections.
+The controller and line advance only at their integration boundary. The
+existing `Chvdc2CoupledRuntimeTest`, `Chvdc2DcLineTest` and
+`Chvdc2ConverterBoundaryTest` exercise that separation and pass 54 focused
+checks with the current core dependency.
+
+This physical boundary does not establish complete coupled trajectory
+accuracy. `Chvdc2CoupledReferenceTest` still reports 29 trajectory failures
+and one reverse-current error across its 30 controls. Repeating that suite
+with core versions 1.4.8 and 1.4.9 gives the same failure/error counts, so
+the pending core-version change is not their cause. Preserve the existing
+reference limits and investigate the line-input update and protection/event
+publication stages before changing the local-step default.
