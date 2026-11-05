@@ -222,7 +222,6 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         rate[4] = !thermalRatingActive ? 0
                 : nonWindupRate(x[4], excess * excess - data.thermalResetRate(), 0, Double.POSITIVE_INFINITY);
         rate[5] = data.tb2() > 0 ? (error - x[5]) / data.tb2() : 0;
-        if (deadbandLocked) rate[1] = rate[2] = rate[5] = 0;
     }
 
     private void projectAlgebraicStates() {
@@ -233,7 +232,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         double low = minimumCurrent(terminal), high = maximumCurrent(terminal);
         double proportional = clamp(data.kp() * gainOutput(error), low, high);
         x[1] = clamp(x[1], low - proportional, high - proportional);
-        if (data.firingTime() == 0 && !deadbandLocked) x[2] = clamp(x[1] + proportional, low, high);
+        if (data.firingTime() == 0 && !insideVoltageDeadband(measured)) x[2] = clamp(x[1] + proportional, low, high);
         double resetP = clamp(data.kpr() * resetError(), data.vrMin(), data.vrMax());
         if (data.slowResetFlag() != 0) x[3] = clamp(x[3], data.vrMin() - resetP, data.vrMax() - resetP);
         x[4] = Math.max(0, x[4]);
@@ -276,14 +275,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
             else if (x[4] <= data.thermalLimit() - data.thermalHysteresis()) thermalLimited = false;
         }
         if (data.deadband() > 0) {
-            double deviation = Math.abs(voltageReference() - measurement(remoteBus.getVoltageMag()));
-            if (deadbandLocked && deviation >= data.deadband()) {
-                deadbandLocked = false;
-                deadbandTimer = 0;
-            } else if (!deadbandLocked && deviation < data.deadband() / data.deadbandRatio()) {
-                deadbandTimer += dt;
-                if (deadbandTimer >= data.deadbandTime()) deadbandLocked = true;
-            } else deadbandTimer = 0;
+            boolean held = insideVoltageDeadband(measurement(remoteBus.getVoltageMag()));
+            if (held) {
+                // Held accepted endpoints retain the lag in the PI integral.
+                // Lead-lag storage remains live and may contribute proportional output.
+                x[1] = x[2];
+            }
+            deadbandLocked = held;
+            deadbandTimer = 0;
         }
         if (tripped && !previouslyTripped) projectAlgebraicStates();
         acceptedCurrent = getCurrent();
@@ -343,7 +342,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         return data.slowResetFlag() == 0 ? 0 : clamp(x[3]
                 + clamp(data.kpr() * resetError(), data.vrMin(), data.vrMax()), data.vrMin(), data.vrMax());
     }
+    private boolean insideVoltageDeadband(double measured) {
+        return data.deadband() > 0 && Math.abs(voltageReference() - measured) < data.deadband();
+    }
     private double voltageError(double measured) {
+        // The deadband acts on the regulator input, not on dynamic storage.
+        // Input changes can reopen regulation without committing any history.
+        if (insideVoltageDeadband(measured)) return 0;
+
         // The diagram feeds back the output-lag coordinate. External current
         // blocking must not erase that internal regulator feedback.
         return clamp(voltageReference() + auxiliarySignal - measured - droop(measured) * x[2],

@@ -572,3 +572,59 @@ full trajectory qualification remains open.
 Private evidence: `verification-artifacts/svs-release-stage-discriminator-20261104`.
 Archive SHA-256:
 `dfc2338bdc4dd1d14008e994d79a0c464df866b293a36e19760bae8a226f189b`.
+
+
+## Deadband input, accepted reset and live lead-lag storage
+
+A scheduled-voltage pulse exposes a missing deadband path that is separate from
+coarse overvoltage integration error. The previous implementation froze the PI,
+output lag and transient-gain storage together. It also delayed re-lock using a
+ratio-derived inner band. Independent controls instead zero the voltage error
+inside the entered deadband and copy the accepted output-lag coordinate into
+the PI integral at every held endpoint. The lead-lag storage continues evolving.
+
+The correction uses the same equations and accepted projection in both
+integration contracts. Input changes reopen the regulator without advancing
+history in a derivative evaluation. A zero output-lag constant also reopens
+through explicit algebraic projection at the same event boundary; ordinary
+getters remain read-only. Failed numerical trials retain accepted states and
+histories. No integration method, coefficient, accuracy gate or default changes.
+
+The source controls use a 0.005 pu deadband and pulses of 0.02 and 0.007 pu.
+Re-lock occurs at the first sampled error inside the entered band in both
+profiles. Changing only the entered deadband time from 0.01 to 0.04 seconds
+leaves all 2,005 recorded rows exactly unchanged. Parameter readbacks retain
+the entered values before initialization, after initialization and after the
+run. The ratio remains 2. These observations establish the exercised branch;
+they do not establish the role of the ratio and delay in every configuration.
+
+An unequal lead-lag control prevents an incorrect generalization: its retained
+storage contributes proportional output even while the voltage error is zero.
+The PI integral still copies the output lag at each accepted held endpoint,
+but the command need not equal that lag and the output can keep moving. No
+extra derivative-history reset or alternative integration formula is introduced
+to imitate the source's sampled recurrence. Complete coupled trajectory
+qualification of this branch remains open.
+
+Six cold-paired controls retain every state, diagnostic, physical channel and
+event-side row. Assigned signals and physical trajectories repeat exactly.
+Two original pairs differ only in one unused MSS diagnostic slot; those values
+remain in the archive and are explicitly distinguished from assigned outputs.
+The public fixture contains only neutral synthetic inputs and complete samples;
+exact source/tool provenance and parameter readbacks remain private.
+
+The independent test checks source reset/lead-lag equations, immediate algebraic
+reopening, pure derivative evaluation and rejected-trial rollback. Its shared
+state checks exercise the model contract; they do not independently certify
+the staggered solver's entire new pulse trajectory. The existing coarse
+modified-Euler overvoltage gate and other open qualification tasks are unchanged.
+
+The unchanged implementation fails two of the three new tests: accepted PI
+integral remains 0.3 instead of the accepted lag (0.471225 in the selected
+modified-Euler step and 0.48 in the held projection). With the correction,
+all 47 default SVS tests across 11 classes pass, with no failures/errors/skips.
+The optional extended matrix was excluded; stale reports were not counted.
+The explicit isolated core dependency remains unchanged.
+
+Private evidence: `verification-artifacts/svs-deadband-relock-20261104/evidence.zip`.
+SHA-256: `5256ade80291462e357fc8e729569d5ca4236f3b7f734c72482e30f8c396b5c4`.
