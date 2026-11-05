@@ -1118,6 +1118,18 @@ the initial static bases. Observation-stage ownership still requires
 qualification; no production time shift is applied to improve the comparison.
 Full replay errors remain recorded without relaxing gates or changing precision.
 
+The first postevent inverter-fault interval is now an explicit red regression
+gate in `Chvdc2OrderControlsReferenceTest`. The two retained rows at the fault
+timestamp have unchanged filter states; the next sample is the first state
+advance. Its reference inverter DC-filter state is 0.999843418598 pu and its
+measured inverter AC-voltage state is 1.02806603909 pu. With the same recorded
+right-side inputs, modified Euler produces 0.999678619836 and 1.027902812651;
+the shared staggered replay produces 0.999752473444 and 1.027983131998.
+Both methods advance too far during this interval. This isolates an event-stage
+discrepancy without discarding either event-side sample. The gate deliberately
+remains failing until an independently justified event/input-stage contract is
+implemented; no controller gain, state, or time shift is fitted to the trace.
+
 This component does not supply RAML, commutation-failure histories, converter
 network injection or complete model attachment. Coupled SMIB, local substep
 and observation-stage qualification remain necessary. The private

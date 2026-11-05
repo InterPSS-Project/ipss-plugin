@@ -57,6 +57,42 @@ public class Chvdc2OrderControlsReferenceTest {
     private static void inputs(Chvdc2OrderControls m,Map<String,Double> r,double rated){
         m.setInput(r.get("VAR5"),r.get("VAR7"),r.get("VAR6"),r.get("VAR8"),r.get("V7"),r.get("V9"),r.get("VAR15")*rated,r.get("VAR0"));
     }
+    /** A fault has distinct left/right rows at the same time. Neither row advances
+     * controller storage; the first positive interval establishes the event stage. */
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void firstPosteventFilterStateUsesCapturedEventStage(boolean shared)throws Exception {
+        String tag="stiff-legacy-inverter-fault-flags001-h0p0005-dc-limit-a";
+        var capture=CAPTURES.get(tag);double[] c=JSON.convertValue(capture.manifest().path("entered_constants"),double[].class);
+        int[] flags=JSON.convertValue(capture.manifest().path("settings").path("flags"),int[].class);
+        double h=capture.manifest().path("settings").path("step").asDouble();
+        List<Map<String,Double>> samples;
+        try(var z=new ZipFile(capture.archive().toFile())){samples=rows(z.getInputStream(z.getEntry(tag+"/native.csv")).readAllBytes());}
+        int right=-1;
+        for(int i=1;i<samples.size();i++)if(samples.get(i).get("time_s").equals(samples.get(i-1).get("time_s"))
+                &&samples.get(i).get("time_s")>.049&&samples.get(i).get("time_s")<.051){right=i;break;}
+        assertTrue(right>0);var leftRow=samples.get(right-1);var rightRow=samples.get(right);var next=samples.get(right+1);
+        assertEquals(leftRow.get("time_s"),rightRow.get("time_s"));
+        assertEquals(leftRow.get("STATE3"),rightRow.get("STATE3"));
+        assertEquals(leftRow.get("STATE11"),rightRow.get("STATE11"));
+        var model=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,flags,c)
+                .prepareOrderControls(capture.equipment().path("TR").asDouble(),capture.equipment().path("TAP").asDouble());
+        inputs(model,samples.getFirst(),c[28]);model.initialize(samples.getFirst().get("STATE7"));
+        inputs(model,rightRow,c[28]);
+        if(shared){
+            double[] state=new double[10],rate=new double[10];model.readStaggeredState(state,0);
+            model.evaluateStaggered(h,rate,0);
+            // The replay's first shared step averages the event-left and right rates.
+            // Its previous accepted derivative is zero in this flat prefault interval.
+            for(int i=0;i<10;i++)state[i]+=.75*h*rate[i];
+            model.applyStaggeredState(state,0,h);
+        }else{
+            model.step(h,0);inputs(model,next,c[28]);model.step(h,1);
+        }
+        double[] actual=new double[10];model.readPublishedStates(actual,0);
+        assertAll("First positive interval after retained event-side duplicate / "+shared,
+                ()->assertEquals(next.get("STATE3"),actual[3],1e-5,"Inverter DC-filter storage"),
+                ()->assertEquals(next.get("STATE11"),actual[7],1e-5,"Measured inverter AC voltage"));
+    }
     @ParameterizedTest @MethodSource("limiterCaptures")
     void sameRowStatesDoNotReconstructRecordedCurrentOrder(String tag)throws Exception {
         var capture=CAPTURES.get(tag);double[] c=JSON.convertValue(capture.manifest().path("entered_constants"),double[].class);
