@@ -9,10 +9,73 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /** Two distinct transfer targets and a duplicated target retain one accepted network/load action. */
 public class Tiocr1MultipleTransferReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip");
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void threeDistinctTransferTargets(boolean staggered,@TempDir Path staged)throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent two-target pre-trip capture");
+        assertEquals("05760ac11b534f31068cd01d5ad7d71c75a53add35c19b24d54537b747c7b483",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(ARCHIVE))));
+        List<Map<String,Double>> reference;
+        try(var zip=new ZipFile(ARCHIVE.toFile())) {
+            reference=Tiocr1ResetReferenceTest.csv(zip.getInputStream(zip.getEntry("1_2/a/native.csv")).readAllBytes())
+                    .stream().filter(r->r.get("time_s")>=0).toList();
+            Files.write(staged.resolve("network.raw"),zip.getInputStream(zip.getEntry("1_2/a/network.raw")).readAllBytes());
+            String dyr=new String(zip.getInputStream(zip.getEntry("1_2/a/dynamic.dyr")).readAllBytes());
+            String third="1 2 '2' 0 0 '0'";
+            assertEquals(1,dyr.split(java.util.regex.Pattern.quote(third),-1).length-1);
+            Files.writeString(staged.resolve("dynamic-two.dyr"),dyr);
+            Files.writeString(staged.resolve("dynamic.dyr"),dyr.replace(third,"1 2 '2' 1 2 '3'"));
+        }
+        HspUsageRankedModelTest.setup();
+        Path out=Files.createTempDirectory(Path.of("target"),"tiocr-three-transfer-");
+        HspUsageRankedModelTest.run("tiocr1-action",false,staggered,false,
+                staged.resolve("network.raw"),staged.resolve("dynamic.dyr"),out);
+        var actual=Tiocr1ResetReferenceTest.csv(Files.readAllBytes(out.resolve("tiocr1-action"
+                +(staggered?"-staggered":"")+"-fault.csv")));
+        Path baselineOut=Files.createTempDirectory(Path.of("target"),"tiocr-two-transfer-");
+        HspUsageRankedModelTest.run("tiocr1-action",false,staggered,false,
+                staged.resolve("network.raw"),staged.resolve("dynamic-two.dyr"),baselineOut);
+        var baseline=Tiocr1ResetReferenceTest.csv(Files.readAllBytes(baselineOut.resolve("tiocr1-action"
+                +(staggered?"-staggered":"")+"-fault.csv")));
+        assertEquals(reference.size(),actual.size(),"Complete grid and event-side duplicates");
+        assertEquals(reference.size(),baseline.size());
+        int action=-1,duplicates=0;
+        for(int i=0;i<actual.size();i++) {
+            var a=actual.get(i);var r=reference.get(i);
+            assertEquals(r.get("time_s"),a.get("time_s"),5e-6);
+            if(i>0&&r.get("time_s").equals(reference.get(i-1).get("time_s"))) {
+                duplicates++;
+                if(r.get("VAR1")==0.&&reference.get(i-1).get("VAR1")==1.)action=i;
+            }
+        }
+        assertEquals(3,duplicates);assertTrue(action>0);
+        for(int i=0;i<action;i++) {
+            var a=actual.get(i);var b=baseline.get(i);
+            for(String channel:List.of("V1","V2","P_PU","Q_PU","ANGLE_DEG",
+                    "RELAY.Position","RELAY.Current","RELAY.Operated","RELAY.Revision"))
+                assertEquals(b.get(channel),a.get(channel),1e-12,"Third target has no pre-action effect: "+channel);
+        }
+        var left=actual.get(action-1);var right=actual.get(action);
+        assertEquals(1.,left.get("RELAY.Position"));assertEquals(1.,left.get("RELAY.Operated"));
+        assertEquals(0.,left.get("RELAY.Revision"));assertEquals(1.,right.get("RELAY.Revision"));
+        assertEquals(.1,right.get("RELAY.ShedFraction"),1e-12);
+        for(String circuit:List.of("1","2","3")) {
+            assertEquals(1.,left.get("BRANCH.Bus1->Bus2("+circuit+")"));
+            assertEquals(0.,right.get("BRANCH.Bus1->Bus2("+circuit+")"));
+        }
+        for(int i=action;i<actual.size();i++) {
+            var row=actual.get(i);
+            assertEquals(0.,row.get("RELAY.Current"));
+            assertEquals(1.,row.get("RELAY.Revision"),"One accepted physical action");
+            assertEquals(.1,row.get("RELAY.ShedFraction"),1e-12);
+            for(String circuit:List.of("1","2","3"))
+                assertEquals(0.,row.get("BRANCH.Bus1->Bus2("+circuit+")"));
+        }
+    }
     @ParameterizedTest @CsvSource({"false,1_2","true,1_2","false,1_2_1","true,1_2_1"})
     void completeMultipleTransfer(boolean staggered,String terminal,@TempDir Path staged)throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain paired independent action references");
