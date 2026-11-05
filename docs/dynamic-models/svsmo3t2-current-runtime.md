@@ -639,6 +639,30 @@ combination (zero output lag with nonzero retained proportional gain memory)
 has no independent capture here and remains unqualified. In particular, these
 tests do not certify instantaneous inside-band output for that combination.
 
+## Inner-band parameter discriminator
+
+The [generic model diagram](https://www.powerworld.com/WebHelp/Content/Other_Documents/WECC-Static-Var-System-Modeling-Aug-2011.pdf)
+describes an inner return band and a definite return delay. Their effect needs
+an exact-model check because the retained pulse comparisons did not establish
+this branch. A new independent small-system control changes the entered ratio
+from 2 to 10 and the delay from 0.01 to 0.5 seconds, leaving every other input
+fixed. Parameter readbacks confirm both values. The control crosses the outer
+band, then has hundreds of held samples with measured error between the new
+inner and outer bands. All assigned controller states, outputs and three bus
+voltages remain identical across all 2,005 samples and both event-side pairs.
+One unassigned diagnostic differs by less than 2e-43. Cold repeats establish
+the assigned-signal result.
+
+`Svsmo3t2InnerBandControlTest` retains the full reference grids and checks the
+same pulse profile under modified Euler and staggered integration. Both methods
+leave the complete Java trajectory unchanged when only those two entered
+parameters change. This is a profile-specific source observation, not a claim
+that the parameters are inert for all valid settings or source variants. The
+strict coupled voltage pulse gates remain unchanged and failing. The raw
+source, parameter readbacks, executable probe and complete repeats are retained
+in the private `svs-inner-band-20261105/captures.zip` archive, SHA-256
+`bcb3607dba3de2579846b6e56402eac81c72b54ee1df1cb7e3029f521f8c3ee3`.
+
 
 ## Complete deadband pulse gates and first divergence
 
