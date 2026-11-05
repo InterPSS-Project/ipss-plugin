@@ -35,11 +35,38 @@ with its parent bus. The merged-bus configuration may also contain the legacy
 full-recovery electronic portion with active static frequency coefficients, using the
 [mixed current interface](cmldblu1-static-electronic-interface.md).
 The combined configuration preserves the owned-shunt current balance and the
-electronic leaf's pure-current interface in focused controls. Independent source
-trajectories separately qualify whole-static frequency response and mixed
-zero-frequency response; a combined mixed/frequency trajectory remains open.
+electronic leaf's pure-current interface in focused controls. An independent
+half-second mixed/frequency fault trajectory with omitted distribution now
+passes under both integration methods, including all event-side samples.
 Other configurations retain their existing runtime and low-voltage
 qualification remains open.
+
+### Mixed static/electronic frequency qualification
+
+Two cold reference runs contain 1,005 rows each. All active fields agree
+exactly between repeats; four inactive allocated storage fields contain tiny
+uninitialized differences and are excluded only from the repeat check. The
+comparison retains both sides of fault application and clearing, checks the
+accumulated source clock and compares every nonnegative-time row. It uses the
+entered static frequency coefficients and an active full-recovery electronic
+fraction without changing the numerical interface.
+
+| Complete-response error | Modified Euler | Staggered |
+| --- | ---: | ---: |
+| Worst bus-voltage NRMSE | 0.000031125 | 0.0000005754 |
+| Worst static P/Q NRMSE | 0.00033035 | 0.00027242 |
+| Peak low-voltage G/B error, pu | 0.00000002609 | 0.00000002609 |
+| Rotor-angle RMSE, degrees | 0.00003600 | 0.000009901 |
+
+`CompositeMixedStaticFrequencyTest` enforces voltage and static P/Q NRMSE
+below 0.001, rotor-angle RMSE below 0.01 degrees, and G/B peak error below
+0.000005 pu for both methods. This qualifies the exercised omitted-distribution
+profile only; represented distribution, motors, restoration and longer runs
+remain separate work.
+
+The raw cold-pair inputs, manifests, output and logs are retained in the private
+`verification-artifacts/cmldblu1-mixed-frequency-20261105/captures.zip`,
+SHA-256 `ad659d1bbf30cc17a2f2b0ea9834f9c08675e0457a8cb9a6f846a1e374aad7cb`.
 
 The port retains the original physical component shunts. Let `Y_c` be only the
 composite's newly added shunt and `Y_aux = -Y_c` its numerical port stamp:
