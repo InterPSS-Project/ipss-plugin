@@ -2016,3 +2016,19 @@ with core versions 1.4.8 and 1.4.9 gives the same failure/error counts, so
 the pending core-version change is not their cause. Preserve the existing
 reference limits and investigate the line-input update and protection/event
 publication stages before changing the local-step default.
+
+### Prefault-relative state accuracy audit
+
+The coupled comparison now checks every nonzero-prefault internal state against
+both user-approved limits: peak error below 0.5% and full-grid RMSE below
+0.01% of that state's reference prefault magnitude. Zero-prefault states keep
+their existing absolute limits. Physical voltage, current, P/Q, angle and
+protection gates are unchanged. All event-side samples remain in both metrics.
+
+In the retained coupled matrix, 165 state checks that failed an earlier
+absolute-peak limit satisfy both engineering limits. Another 72 failing state
+checks do not; 206 physical-channel checks also exceed their existing limits,
+and one run still reaches an unqualified reverse-current boundary. The suite
+therefore remains at 29 trajectory failures and one numerical error. These
+results prevent a broad tolerance change from being mistaken for complete
+model qualification.

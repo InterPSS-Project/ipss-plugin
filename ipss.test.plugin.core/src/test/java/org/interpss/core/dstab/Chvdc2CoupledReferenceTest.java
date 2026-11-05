@@ -120,7 +120,7 @@ public class Chvdc2CoupledReferenceTest {
         circuit.accept(model,initial.get("time_s"));
         int count=model.staggeredStateCount();assertEquals(flags[2]==0?15:line.capacitanceFarads()>0?18:16,count);int channels=10+count;
         double[] limits=Arrays.copyOf(LIMITS,channels);if(count==18){limits[26]=.1;limits[27]=.01;}
-        double[] x=new double[count],f=new double[count],old=new double[count],left=new double[count],trial=new double[count],b=new double[10],maximum=new double[channels],times=new double[channels];
+        double[] x=new double[count],f=new double[count],old=new double[count],left=new double[count],trial=new double[count],b=new double[10],maximum=new double[channels],times=new double[channels],sumSquared=new double[channels];
         boolean started=false,event=false;int duplicates=0;double localStep=h/localSteps;
         RuntimeException integrationFailure=null;double stoppedTime=Double.NaN;int completedSamples=0;
         Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-coupled-"+(staggered?"staggered-":"euler-"));
@@ -159,13 +159,15 @@ public class Chvdc2CoupledReferenceTest {
                 double[] reference={row.get("V7"),row.get("V9"),row.get("VAR5"),row.get("VAR7"),row.get("VAR9")/100,row.get("VAR10")/100,row.get("VAR11")/100,row.get("VAR12")/100,row.get("STATE6"),row.get("STATE7")};
                 w.write(Double.toString(time));for(int k=0;k<channels;k++){
                     double actual=k<10?values[k]:x[k-10],expected=k<10?reference[k]:row.get("STATE"+(k-10));
-                    double error=actual-expected;if(Math.abs(error)>maximum[k]){maximum[k]=Math.abs(error);times[k]=time;}w.write(","+actual+","+expected+","+error);
+                    double error=actual-expected;sumSquared[k]+=error*error;if(Math.abs(error)>maximum[k]){maximum[k]=Math.abs(error);times[k]=time;}w.write(","+actual+","+expected+","+error);
                 }w.write("\n");
                 completedSamples++;
                 assertFalse(model.inverterShorted(),"Nominal controls must not enter an unobserved protection regime");
             }
         }
-        var report=new LinkedHashMap<String,Object>();report.put("profile",tag);report.put("staggered",staggered);report.put("maximum_absolute_errors",maximum);report.put("maximum_error_time_s",times);report.put("limits",limits);
+        double[] rmse=new double[channels];for(int k=0;k<channels;k++)rmse[k]=completedSamples==0?Double.NaN:Math.sqrt(sumSquared[k]/completedSamples);
+        var report=new LinkedHashMap<String,Object>();report.put("profile",tag);report.put("staggered",staggered);report.put("maximum_absolute_errors",maximum);report.put("maximum_error_time_s",times);report.put("rmse",rmse);report.put("limits",limits);
+        report.put("nonzero_prefault_state_peak_fraction_limit",.005);report.put("nonzero_prefault_state_rmse_fraction_limit",.0001);
         report.put("entered_capacitance_microfarads",constants[47]);report.put("effective_capacitance_farads",line.capacitanceFarads());report.put("numerical_state_count",count);
         report.put("line_dynamics",flags[2]!=0);report.put("entered_measurement_time_s",constants[17]);
         report.put("local_steps",localSteps);report.put("prepared_network_interval_s",h);report.put("numerical_interval_s",localStep);
@@ -177,6 +179,16 @@ public class Chvdc2CoupledReferenceTest {
         report.put("recorded_trajectory_forcing",false);report.put("automatic_attachment_qualified",false);
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),30000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,report);}
         if(integrationFailure!=null)throw integrationFailure;
-        assertEquals(2,duplicates);var gates=new ArrayList<org.junit.jupiter.api.function.Executable>();for(int k=0;k<channels;k++){int channel=k;gates.add(()->assertTrue(maximum[channel]<limits[channel],"Boundary/state "+channel+" error "+maximum[channel]+" at "+times[channel]));}assertAll(tag+" / "+staggered,gates);
+        assertEquals(2,duplicates);var gates=new ArrayList<org.junit.jupiter.api.function.Executable>();for(int k=0;k<channels;k++){
+            int channel=k;
+            double prefault=channel<10?0:Math.abs(initial.get("STATE"+(channel-10)));
+            if(channel>=10&&Double.isFinite(prefault)&&prefault>0) {
+                gates.add(()->assertTrue(maximum[channel]<.005*prefault,
+                        "State "+(channel-10)+" peak error "+maximum[channel]+" at "+times[channel]+" exceeds 0.5% of prefault "+prefault));
+                gates.add(()->assertTrue(rmse[channel]<.0001*prefault,
+                        "State "+(channel-10)+" RMSE "+rmse[channel]+" exceeds 0.01% of prefault "+prefault));
+            }else gates.add(()->assertTrue(maximum[channel]<limits[channel],
+                    "Boundary/state "+channel+" error "+maximum[channel]+" at "+times[channel]));
+        }assertAll(tag+" / "+staggered,gates);
     }
 }
