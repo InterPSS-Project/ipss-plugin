@@ -1761,3 +1761,42 @@ The private [coordinate audit](../../ipss.test.plugin.core/testData/private/veri
 contains the reproducible calculation, complete residual traces, inspected
 diagrams and source provenance. Its SHA-256 is
 `5981af0b5952e3fba8aec956c48af16c7b4b5635b9e6aebd32019c5aedfdfe7c`.
+
+
+### Retained one-step errors are not physical blocking evidence
+
+The two retained errors use the same fast algebraic-line control:
+`stiff-legacy-rectifier-fault-flags000-h0p0005-netiter50-meas0p001-a`,
+with staggered integration and one local step. Their causal sequences differ:
+
+- `Chvdc2CoupledReferenceTest.completeCoupledFaultTrajectory[18]` develops
+  alternating current growth before the 0.05 s fault. The retained reduced
+  circuit trace reaches 27.9, 1,381.9, 2,952.6 and 112.4 A in successive
+  samples, then rejects a negative algebraic-current proposal near 0.038 s.
+  The independent prefault current stays at 1,000.0025 A.
+- `Chvdc2TerminalReferenceTest.localStaggeredNetworkRefinement[9]` remains
+  flat before the fault, then develops alternating growth. Its final recorded
+  currents are 139.2, 1,544.4 and 2,242.2 A while the independent current
+  remains near 974.1 A. The network step fails at 0.058 s.
+
+The independent complete control stays between 934.53 and 1,041.76 A and
+never changes its normal-conduction flag. These observations therefore do not
+establish a physical zero-current or blocking transition. Clamping the failed
+numerical proposal would hide the instability. Both errors remain errors.
+The previously retained two-, four- and ten-step controls complete, but their
+strict accuracy gates remain unresolved; completion alone does not qualify a
+method or an automatic step-count policy.
+
+The primary diagram specifies the conducting controller, line dynamics and
+inverter commutation-failure short. It does not supply a current-zero
+extinction/reignition state machine or an adaptive integration selection rule.
+A blocking implementation requires independent blocking/restart observations
+and the associated thresholds, valve eligibility, terminal voltage/current
+rules, controller-history evolution and release rules. None is justified by
+these two failed numerical trajectories, so no runtime patch was made.
+
+The private [two-error audit](../../ipss.test.plugin.core/testData/private/verification-artifacts/chvdc2-two-errors-audit-20261104/audit.zip)
+retains the partial traces, exact executed error identities and source archive
+hashes. SHA-256:
+`96f06bffa96b3858d11dffbaca49b57e21e7583840bf4a0cbf743680cbd1023b`.
+No simulation or equivalent parameter sweep was repeated for this diagnosis.
