@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.zip.ZipFile;
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 class CompositeMotorAllocationDiscriminatorTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/cmldblu1-motor-allocation-20261105/captures.zip");
     private static final String SHA="6937323b632cd0a22d90f310c20393faad5e6ba4e3ce831a04e05e91e2d6bbe6";
+    private static final Path MOTOR_ARCHIVE=Path.of("testData/private/verification-artifacts/cmldblu1-motor-frequency-20261105/captures.zip");
+    private static final String MOTOR_SHA="f1154ef4fe727451f2c94913dae83e1a680a54b66521dcafb660ca5fc5a3831e";
     private static final List<String> INACTIVE=List.of("VAR69","VAR70","VAR71","VAR72");
 
     private record Table(String[] header,List<String[]> rows) {
@@ -75,6 +78,36 @@ class CompositeMotorAllocationDiscriminatorTest {
             assertEquals(.796466946602,one.value(103,"VAR57"),1e-9);
             assertEquals(.794167339802,noMotor.value(103,"VAR57"),1e-9);
         }
+    }
+
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void sourceFaultMotorPowerReconstructsFromNortonAndCompensation(boolean staggered,@TempDir Path staged)
+            throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(MOTOR_ARCHIVE));
+        assertEquals(MOTOR_SHA,HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(MOTOR_ARCHIVE))));
+        Table source;
+        Path dynamic=staged.resolve("dynamic.dyr");
+        try(var zip=new ZipFile(MOTOR_ARCHIVE.toFile())) {
+            source=table(zip,"a/native.csv");
+            Files.write(dynamic,zip.getInputStream(zip.getEntry("a/dynamic.dyr")).readAllBytes());
+        }
+        IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
+        var actual=Cmldblu1SharedRecording.simulateStaticControl(dynamic,staggered,.0005,.04,0,.5);
+        var frame=actual.frames.get(101); // Right side of the first fault boundary.
+        assertEquals(source.value(103,"time_s"),frame.time(),5e-6);
+        for(String[] state:new String[][]{{"STATE0","MotorA.EpImag"},{"STATE1","MotorA.EpReal"},
+                {"STATE2","MotorA.EkImag"},{"STATE3","MotorA.EkReal"}})
+            assertEquals(source.value(103,state[0]),frame.values().get(state[1]),1e-5,state[1]);
+        var motor=actual.model.getInductionMotorA();
+        var voltage=new Complex(source.value(103,"VAR15"),source.value(103,"VAR16"));
+        var sourceVoltage=new Complex(frame.values().get("MotorA.EppReal"),
+                frame.values().get("MotorA.EppImag"));
+        var portY=motor.getPosSeqEquivY();
+        var sourceY=portY.subtract(motor.getCompensateShuntY());
+        var power=voltage.multiply(voltage.multiply(portY).subtract(sourceVoltage.multiply(sourceY)).conjugate());
+        assertEquals(source.value(103,"VAR31"),power.getReal(),5e-6,"Motor A fault active power");
+        assertEquals(source.value(103,"VAR32"),power.getImaginary(),5e-6,"Motor A fault reactive power");
     }
 
     @ParameterizedTest @ValueSource(booleans={false,true})

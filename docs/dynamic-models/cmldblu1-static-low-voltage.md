@@ -148,6 +148,25 @@ includes motor Norton terms; it is not inherent to the static-port equation.
 This observation does not yet determine the reference's first-iterate motor
 sampling rule.
 
+The first fault solve also excludes a simple accepted-current versus fresh-current
+explanation. At its first low-voltage iterate, the temporary static port reconstructed
+0.456943 pu from the accepted prefault distribution current; substituting the
+fresh current from the same iterate gave 0.615857 pu. The source conductance
+implies 0.442407 pu. The source and Java motor A electrical states at fault
+entry differ by less than 5.4e-6 pu. At the source's internal load phasor,
+the Java motor's Norton voltage reconstructs the source motor P/Q when its
+reactive-compensation shunt remains in the port admittance but is excluded
+from the Norton source current:
+`I = Y_port V - (Y_port - Y_comp) Epp`. Reconstructed P/Q are
+(-0.02282879, -0.08156366) pu versus source values
+(-0.02282776, -0.08156310) pu. The accepted parent-bus fault voltage differs
+by only 0.000281 pu in the static-port trial. The source's pre-lock network
+iterate is not recorded, so these accepted-state checks do not establish its
+preparation rule. Investigation should focus on the first fault network solve
+and its ordering before changing static-load preparation.
+`CompositeMotorAllocationDiscriminatorTest` pins the motor-state and Norton
+power reconstruction under both integration methods.
+
 For the no-motor control, the production port reproduces the complete 0.5 ms
 fault trajectory under both integration methods. The largest voltage NRMSE is
 3.12e-5, static P/Q NRMSE is at most 3.37e-4, angle RMSE is below
