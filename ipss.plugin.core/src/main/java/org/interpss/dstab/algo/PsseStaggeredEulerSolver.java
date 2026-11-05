@@ -32,6 +32,7 @@ import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.mach.IeeeVcEConstMachine;
+import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
@@ -216,6 +217,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private final java.util.IdentityHashMap<Object, Participant> participantByController = new java.util.IdentityHashMap<>();
     private final List<Renewable> renewables = new ArrayList<>();
     private final List<Participant> gridForming = new ArrayList<>();
+    private final List<Participant> type3Converters = new ArrayList<>();
     private final List<Participant> busParticipants = new ArrayList<>();
     /** Arithmetic of timestamps passed to participant completion callbacks, independently of state integration weights. */
     public enum EndpointTimePrecision { DOUBLE, SINGLE }
@@ -387,7 +389,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     public void setReuseNetworkEndpoint(boolean enabled) { reuseNetworkEndpoint = enabled; }
     public boolean isReuseNetworkEndpoint() { return reuseNetworkEndpoint; }
     public int getBoundMachineCount() { return machines.size(); }
-    public int getBoundRenewableCount() { return renewables.size()+gridForming.size(); }
+    public int getBoundRenewableCount() { return renewables.size()+gridForming.size()+type3Converters.size(); }
     /** Bound machine/controller/bus-device states; excludes REGCA bundle-owned states. */
     public int getBoundDifferentialStateCount() {
         return states.size()+participants.stream().mapToInt(p->p.values.length).sum()
@@ -484,6 +486,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         localSt1Controllers.clear();
         localExciters.clear();resolvedExciterSubsteps.clear();
         participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); busParticipants.clear(); extendedStack=false;
+        type3Converters.clear();
         upstreamPlants.clear();upstreamAuxiliaries.clear();upstreamOwners.clear();
         previous = null; wasActive = null; inputDiscontinuity = false;
         machineEventStateSlots = new int[0];
@@ -620,6 +623,11 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 // The engine explicitly represents allowed generators without a
                 // dynamic model as static negative loads during initialization.
                 if (gen.getDynamicGenDevice()==null&&dstabAlgo.getNetwork().isAllowGenWithoutMach()) continue;
+                if (gen.getDynamicGenDevice() instanceof Wt3g2Model r) {
+                    if (r.getElectricalController()!=null || r.getDriveTrain()!=null)
+                        throw new IllegalArgumentException("WT3G2 attached controls require shared integration owners: "+gen.getId());
+                    continue;
+                }
                 if (gen.getDynamicGenDevice() instanceof Regfma1Model r) {
                     if (r.getPlantController()!=null)
                         throw new IllegalArgumentException("Staggered REGFMA1 plant-controller coupling is not supported: "+gen.getId());
@@ -932,6 +940,15 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==r&&r.getPlantController()==null);
                     continue;
                 }
+                if (gen.getDynamicGenDevice() instanceof Wt3g2Model r) {
+                    extendedStack=true;
+                    Participant participant=new Participant(r,()->bus.isActive()&&gen.isActive()&&r.isActive());
+                    participants.add(participant);
+                    type3Converters.add(participant);
+                    attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==r
+                            &&r.getElectricalController()==null&&r.getDriveTrain()==null);
+                    continue;
+                }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {
                     extendedStack=true;
                     r.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
@@ -1081,6 +1098,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         for(var p:upstreamPlants)if(p.active.getAsBoolean())p.model.evaluateStaggered(fixedStep,p.rates,0);
         for(var p:upstreamAuxiliaries)if(p.active.getAsBoolean())p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var p:gridForming)
+            if (p.active.getAsBoolean()) p.model.evaluateStaggered(fixedStep,p.rates,0);
+        for (var p:type3Converters)
             if (p.active.getAsBoolean()) p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var r:renewables)
             if (r.active.getAsBoolean()&&!r.model.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0))
