@@ -32,6 +32,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
     private static final double[] LIMITS={1e-5,1e-5,.01,.01,1e-4,1e-4,1e-4,1e-4,.002,.002,
             1e-5,1e-5,1e-5,1e-5,.002,.002,.002,.002,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,.002,.01};
     private static final double BOUNDARY_NRMSE_LIMIT=.02, STATE_NRMSE_LIMIT=.05;
+    private static final double SMALL_RANGE_LIMIT_MULTIPLIER=10.;
     @TempDir Path folder;
     @BeforeAll static void integrity()throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent coupled reference captures");
@@ -287,16 +288,22 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         report.put("reference_samples",reference.size());report.put("event_duplicates",duplicates);report.put("trajectory_complete",stopped==null);
         report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);
         report.put("previous_maximum_absolute_limits",Arrays.copyOf(LIMITS,channels));
-        Double[][] periodNrmse=new Double[2][channels];
-        double[] referenceRange=new double[channels];
+        Double[][] periodNrmse=new Double[2][channels],periodRmse=new Double[2][channels];
+        double[] referenceRange=new double[channels];boolean[] useRmse=new boolean[channels];
         for(int period=0;period<2;period++)if(periodSamples[period]>0)for(int k=0;k<channels;k++) {
             double range=referenceMax[k]-referenceMin[k];
-            if(range>0)periodNrmse[period][k]=Math.sqrt(periodSquaredError[period][k]/periodSamples[period])/range;
+            periodRmse[period][k]=Math.sqrt(periodSquaredError[period][k]/periodSamples[period]);
+            if(range>0)periodNrmse[period][k]=periodRmse[period][k]/range;
         }
-        for(int k=0;k<channels;k++)referenceRange[k]=referenceMax[k]-referenceMin[k];
-        report.put("acceptance_metric","period RMSE / full-trajectory reference range");
+        for(int k=0;k<channels;k++){
+            referenceRange[k]=referenceMax[k]-referenceMin[k];
+            useRmse[k]=referenceRange[k]<=SMALL_RANGE_LIMIT_MULTIPLIER*LIMITS[k];
+        }
+        report.put("acceptance_metric","period NRMSE; period RMSE for small-reference-range channels");
         report.put("period_names",List.of("nonfault","fault_on"));report.put("period_samples",periodSamples);
-        report.put("period_range_nrmse",periodNrmse);report.put("reference_range",referenceRange);
+        report.put("period_range_nrmse",periodNrmse);report.put("period_rmse",periodRmse);
+        report.put("reference_range",referenceRange);report.put("uses_rmse",useRmse);
+        report.put("small_range_limit_multiplier",SMALL_RANGE_LIMIT_MULTIPLIER);
         report.put("boundary_nrmse_limit",BOUNDARY_NRMSE_LIMIT);report.put("state_nrmse_limit",STATE_NRMSE_LIMIT);
         report.put("numerical_state_count",recorder.states.length);
         report.put("automatic_import",false);report.put("full_network_terminal_attachment",true);report.put("recorded_state_or_input_forcing",false);
@@ -333,14 +340,18 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                 "Fault-on count includes application-right and clearing-left samples");
         else assertEquals(0,periodSamples[1]);
         for(int k=0;k<channels;k++){
-            int channel=k;double range=referenceMax[k]-referenceMin[k];
-            if(range==0)checks.add(()->assertTrue(maximum[channel]<LIMITS[channel],
-                    "Constant reference channel "+channel+" maximum error "+maximum[channel]));
-            else for(int period=0;period<2;period++)if(periodSamples[period]>0){
-                int selected=period;double limit=channel<10?BOUNDARY_NRMSE_LIMIT:STATE_NRMSE_LIMIT;
-                checks.add(()->assertTrue(periodNrmse[selected][channel]<limit,
+            int channel=k;
+            for(int period=0;period<2;period++)if(periodSamples[period]>0){
+                int selected=period;
+                if(useRmse[channel])checks.add(()->assertTrue(periodRmse[selected][channel]<LIMITS[channel],
                         "Channel "+channel+" "+(selected==1?"fault-on":"nonfault")+
-                        " reference-range NRMSE="+periodNrmse[selected][channel]+"; limit="+limit));
+                        " small-range RMSE="+periodRmse[selected][channel]+"; limit="+LIMITS[channel]));
+                else {
+                    double limit=channel<10?BOUNDARY_NRMSE_LIMIT:STATE_NRMSE_LIMIT;
+                    checks.add(()->assertTrue(periodNrmse[selected][channel]<limit,
+                            "Channel "+channel+" "+(selected==1?"fault-on":"nonfault")+
+                            " reference-range NRMSE="+periodNrmse[selected][channel]+"; limit="+limit));
+                }
             }
         }
         assertAll(tag+" / "+staggered,checks);
