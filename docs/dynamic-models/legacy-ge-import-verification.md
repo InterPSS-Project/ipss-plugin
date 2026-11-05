@@ -129,3 +129,29 @@ initialization or network rule produces that offset. Private input/output
 evidence and the exact byte audit are retained at
 `verification-artifacts/legacy-ge-qg-discriminator-20261104/validation.zip`,
 SHA-256 `5edc5ac69578e39e91c363f65b507df1323898419e254df8495e57d5dd90a303`.
+
+An additional synthetic-case stage export isolates the preparation rule. The
+reference importer exposes a finite −0.2 to +0.2 Mvar reactive range immediately
+after RAW load, before any dynamic-model record is read. Its load flow moves the
+unit to the +0.2 Mvar limit and leaves the terminal voltage at approximately
+0.998947 pu. Our RAW importer instead gives the unity-power-factor wind unit a
+zero-width range and classifies its bus as PQ. In the converted diagnostic only,
+restoring the observed finite range and PV bus type before load flow matches
+initial voltage within 2.3e−9 pu and initial reactive power within 3e−9 Mvar.
+This does not establish a general RAW-import rule for other wind units.
+
+With the corrected synthetic-case power flow and the recompiled candidate core,
+the complete 303-sample comparison still fails the unchanged 0.1 MW/Mvar gates.
+Both methods pass the 0.001 pu voltage gate. The maximum errors are:
+
+| Method | Terminal voltage | Active power | Reactive power |
+| --- | ---: | ---: | ---: |
+| Modified Euler | 0.000770 pu | 1.787 MW | 0.649 Mvar |
+| Staggered | 0.000770 pu | 1.787 MW | 0.649 Mvar |
+
+The largest P/Q mismatch is on the fault-clearing event side. The isolated
+startup correction therefore does not qualify the converted transient response
+or the original legacy model. The private stage exports, all comparison rows,
+reference trajectory and focused test log are retained at
+`verification-artifacts/legacy-ge-raw-q-range-20261104/validation.zip`,
+SHA-256 `e48b086036adec2501fb9794e9981c642f1541501e156096a6d13062cfa7924d`.

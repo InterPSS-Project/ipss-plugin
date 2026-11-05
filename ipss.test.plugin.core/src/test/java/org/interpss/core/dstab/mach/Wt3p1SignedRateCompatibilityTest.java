@@ -21,7 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.interpss.numeric.datatype.LimitType;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -72,8 +74,14 @@ public class Wt3p1SignedRateCompatibilityTest {
         var converter=assertInstanceOf(Wt3g2Model.class,gen.getDynamicGenDevice());
         converter.getDriveTrain().setPitchController(new Wt3p1Model(data),converter.getElectricalController());
         var bundle=new Wt3g2IntegrationBundle(converter);
+        // The synthetic reference RAW import exposes a finite +/-0.2 Mvar range.
+        // Preserve its PV classification for this converted-interface diagnostic.
+        gen.setQGenLimit(new LimitType(.002,-.002));
+        net.getBus("Bus1").setQGenLimit(new LimitType(.002,-.002));
+        net.getBus("Bus1").setGenCode(AclfGenCode.GEN_PV);
         algo.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);
         assertTrue(algo.getAclfAlgorithm().loadflow());
+        assertEquals(.002,gen.getGen().getImaginary(),1e-9);
         var sourceRecords=PsseDyrRecordReader.read(new StringReader(
                 Files.readString(input.resolve("source.dyr"))),"synthetic-source.dyr");
         var legacy=sourceRecords.stream().filter(r->r.sourceModelName().equals("GEWTG2"))
