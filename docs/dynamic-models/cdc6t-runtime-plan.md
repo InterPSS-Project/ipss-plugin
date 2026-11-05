@@ -2070,3 +2070,13 @@ These are reported errors with incomplete event-owner coverage, not new or
 relaxed accuracy limits. Raw nearest-side comparisons, every reference duplicate,
 all actual regular samples and all internal transitions remain retained in
 `cdc6t-overlap-owners-20261104` private evidence. Production code is unchanged.
+
+
+The classifier rejects malformed channel/row shapes, nonfinite values,
+nonmonotonic observations and clocks outside the existing 10-microsecond
+half-second reference envelope. Integer ticks are an explicit sample-index
+mapping, not a claim of exact clock equality: original times and their grid
+residuals are exported. Actual regular rows and internal transitions that lack a
+unique reference pairing are also retained with counts, identities and reasons.
+Seven classifier tests cover these guards, multiple internal events and
+unmatched actual observations; they do not replace physical accuracy gates.
