@@ -16,6 +16,27 @@ import org.junit.jupiter.api.Test;
 /** Independent deadband input/reset evidence, distinct from complete trajectory acceptance. */
 public class Svsmo3t2DeadbandRelockTest extends CorePluginTestSetup {
     private static final double H=.0005;
+    @Test void smallPulseSensorCrossingFollowsTheOrdinaryTwoStepRate() throws Exception {
+        var samples=rows(reference().resolve("middle-a/reference.csv"));
+        int checked=0, crossings=0;
+        for(int i=2;i<samples.size();i++) {
+            var previous=samples.get(i-2);var left=samples.get(i-1);var right=samples.get(i);
+            double time=right.get("time_s"),h=time-left.get("time_s");
+            if(time<.185||time>.1881||h<=0||left.get("time_s")<=previous.get("time_s"))continue;
+            double rate=(left.get("V_3")-left.get("A_STATE_0"))/.05;
+            double oldRate=(previous.get("V_3")-previous.get("A_STATE_0"))/.05;
+            assertEquals(left.get("A_STATE_0")+h*(1.5*rate-.5*oldRate),
+                    right.get("A_STATE_0"),4e-8,"Sensor recurrence at "+time);
+            checked++;
+            if(Math.abs(time-.187999352813)<2e-6) {
+                assertTrue(left.get("A_STATE_0")<.995);
+                assertTrue(right.get("A_STATE_0")>.995);
+                crossings++;
+            }
+        }
+        assertTrue(checked>=5);
+        assertEquals(1,crossings,"The captured sensor crosses the exact return-band boundary once");
+    }
     @Test void everyHeldLagEndpointOmitsPriorSlopeWhileLeadLagHistoryRemainsLive() throws Exception {
         Path root=reference();
         for(String profile:List.of("enabled","middle","timer","unequal")) {

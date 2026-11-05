@@ -715,6 +715,19 @@ algebraic projection is therefore not evidence of same-boundary physical
 network publication. The full coupled gate remains failed until this lifecycle
 is independently represented and verified.
 
+The source-only `Svsmo3t2DeadbandRelockTest` now checks the small pulse's sensor
+over the final positive intervals before its return-band crossing. Its stored
+sensor follows the ordinary two-step first-order recurrence within `4e-8` pu;
+the captured state crosses the exact 0.995 pu boundary at the next endpoint.
+This rules out an additional sensor delay in that local interval. Repeating
+the isolated selective-history candidate at network tolerances `1e-6` and
+`1e-8` leaves the small-pulse staggered bus-voltage NRMSE essentially unchanged
+(`0.0219274865` and `0.0219274767`). The candidate sensor remains roughly
+`5.45e-7` pu below the independent state at the threshold. A tighter network
+convergence limit therefore does not resolve the one-interval switching
+discrepancy. The candidate stays isolated; the strict pulse gate and entered
+deadband remain unchanged.
+
 The root's integrated existing selection separately executed 52 tests across
 12 classes with no failures/errors/skips, including extended diagnostic tests.
 That result does not override these eight newly exposed strict failures.
