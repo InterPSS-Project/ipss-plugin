@@ -595,6 +595,17 @@ includes the machine electrical/network integration. This does not by itself
 establish an equation defect: integration formulas and event handling still need
 to be distinguished through electrical-state comparisons and step refinement.
 
+`Wsieg1ElectricalBoundaryDiscriminatorTest` now checks the first post-fault
+network sample against complete independent machine-state captures at quarter
+cycle, half-quarter cycle and 0.5 ms intervals. The primary damper-flux error
+is respectively 0.00421074, 0.00255968 and 0.000697206 pu. At those same
+samples, mechanical-power error stays below 0.000001 pu and is more than one
+hundred times smaller than the flux error. These are each method's first
+post-event interval, so the samples occur at different physical times; this
+comparison establishes localization and refinement, not a convergence order.
+The unchanged coupled gate remains authoritative. A governor servo or turbine
+coefficient adjustment cannot be justified from this electrical-state evidence.
+
 The registered diagnostic tests assert input delivery, the mechanical stage
 equations, finite observations and complete clock/event alignment. Their reports
 retain every state and boundary error and the outcomes of the original coupled
