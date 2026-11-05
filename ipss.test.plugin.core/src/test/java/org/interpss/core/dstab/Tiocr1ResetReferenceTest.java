@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.interpss.dstab.relay.Tiocr1Data;
 
 /** Complete independent reset/re-pickup boundaries and accepted protection milestones. */
 public class Tiocr1ResetReferenceTest {
@@ -37,7 +38,30 @@ public class Tiocr1ResetReferenceTest {
             assertTrue(recovery.length>100);
             assertTrue(Arrays.stream(recovery).min().orElseThrow()>.07);
             assertTrue(Arrays.stream(recovery).max().orElseThrow()<.4);
+            // The source advances the moving element on the right side of both
+            // later network events using the newly solved terminal current.
+            var curve=new Tiocr1Data(new double[]{.4,.2,1.1,.04,1.5,.03,2,.02,3,.01,5,.005,.01,.1});
+            for(double eventTime:new double[]{.06,.20}) {
+                int right=eventRightIndex(active,eventTime);
+                double measured=active.get(right).get("VAR1")-active.get(right-1).get("VAR1");
+                double expected=.0005*curve.rate(active.get(right).get("VAR0"));
+                assertEquals(expected,measured,2e-8,"Event-right relay recurrence at "+eventTime);
+            }
+            int firstFaultRight=eventRightIndex(active,.05);
+            assertEquals(0.,active.get(firstFaultRight).get("VAR1")
+                    -active.get(firstFaultRight-1).get("VAR1"),1e-12);
         }
+    }
+
+    private static int eventRightIndex(List<Map<String,Double>> rows,double targetTime) {
+        int found=-1;
+        for(int i=1;i<rows.size();i++)
+            if(rows.get(i).get("time_s").equals(rows.get(i-1).get("time_s"))
+                    &&Math.abs(rows.get(i).get("time_s")-targetTime)<5e-6) {
+                assertEquals(-1,found,"One event-side pair at "+targetTime);found=i;
+            }
+        assertTrue(found>0,"Event-side pair exists at "+targetTime);
+        return found;
     }
 
     @ParameterizedTest @CsvSource({"false","true"})

@@ -114,9 +114,33 @@ position and action-time control separately from the passing short-reset
 comparison. The source pair and entered data are retained privately in
 `verification-artifacts/tiocr-reset20-20261105/captures.zip`, SHA-256
 `8974e0f1a6204bfb010b4211d9be3a930f8cd00ae6f8e015e76416bbde3863f7`.
-Resolve pickup-interval breaker-time accumulation and event-side publication
-against this and the previously accepted timing controls before changing the
-runtime action threshold.
+Resolve the event-side position and deadline publication against this and the
+previously accepted timing controls before changing the runtime action threshold.
+
+The complete recording localizes the difference more narrowly. On the right
+side of first-fault clearing, the source moving element changes by
+`-0.001416891813`, matching one 0.5 ms reset-rate increment evaluated at the
+new current to within `6.3e-9`. On the right side of second-fault application,
+it changes by `+0.023329347372`, matching one pickup-rate increment at the new
+current to within `4.2e-9`. The first fault begins with zero stored travel and
+has no event-right increment. The new source recurrence test pins these three
+distinct event boundaries and the immutable reference identity.
+
+The Java relay retains its event-left position on both later event-right rows.
+It is `0.075640` versus source `0.074216` immediately before the second fault;
+the missing event-right pickup increment then leaves it about `0.0219` behind.
+Its current agrees with the source to about `1e-5` pu, so current measurement
+does not explain the half-millisecond pickup and trip delay. No breaker delay
+parameter or action threshold was changed for this diagnostic.
+
+The shared solver needs an accepted external-event history stage after the new
+network voltage converges and before event-right observation, with exactly-once
+execution, a known nominal interval and failure handling. The existing network
+iteration callback explicitly forbids advancing committed history, so it must
+not be used for this projection. Both integration methods must run the same
+event-history contract. The source's first-fault zero-travel behavior and all
+previous reset, single-fault, quarter-cycle breaker-delay and physical-action
+gates remain required before the long-reset trajectory can be accepted.
 
 ## Remaining qualification
 
