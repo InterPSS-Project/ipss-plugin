@@ -1363,6 +1363,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.StagedRelayTargetLifecycleTest.class,
     org.interpss.core.dstab.dynLoad.Tiocr1CompositeLoadTest.class,
     org.interpss.core.dstab.Tiocr1ExactLoadImportTest.class,
+    org.interpss.core.dstab.Tiocr1LiteralTargetReferenceTest.class,
     org.interpss.core.dstab.dynLoad.CompositeCollapsedFullTripTest.class,
     org.interpss.core.dstab.dynLoad.CompositePartlyCollapsedFullTripTest.class,
     org.interpss.core.dstab.dynLoad.CompositeMotorRecloseTest.class,

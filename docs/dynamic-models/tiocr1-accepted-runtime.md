@@ -496,9 +496,9 @@ The native importer previously exempted `*` from exact load-existence checks
 and passed it to the typed whole-owner runtime. Import now rejects that
 interpretation before attaching either relay or load port. If a literal load
 named `*` or `#` exists, the diagnostic explicitly identifies an unsupported
-exact symbolic target because the runtime cannot distinguish it from its typed
-wildcard API. This does not assert that either symbol is a forbidden source
-load ID. Exact ordinary IDs and load-bus-zero/no-load actions remain supported;
+exact symbolic target because that runtime could not distinguish it from its
+typed wildcard API. The literal-target extension below supersedes this restriction
+for existing exact identities. Load-bus-zero/no-load actions remain supported;
 typed wildcard constructors remain an explicit application choice.
 
 These observations do not qualify native whole-bus wildcard shedding or solve
@@ -546,3 +546,41 @@ the existing boundary/KCL and full-reference tests remain required.
 Private `tiocr-reference-quality-audit-20261104/audit-v2.zip` retains the complete
 hash-indexed inventory, verifier source, unit-test output and audit exit status.
 SHA-256: `11dc21f1f46f9174405d184f37001e9c2d605ff32fc1b71c070a4a8ca7de8d68`.
+
+## Exact symbolic load identities
+
+Imported TIOCR1 records now select an exact load identity through
+`Tiocr1RelayModel.forExactLoad`. Literal `*` and `#` IDs are supported when that
+load exists. Absent symbolic targets still fail before attachment; import does
+not expand them to whole-bus commands. Existing typed constructors retain their
+explicit wildcard behavior.
+
+The prepared load port stores the selection policy once. Static and dynamic
+target discovery, ownership checks and capacity actions use that same policy.
+An exact source cannot select an individual member of a composite aggregate:
+the existing singleton-owner restriction remains enforced even when the source
+ID is a symbol. No per-step allocation or alternate integration equations are
+introduced.
+
+Independent SMIB captures rename only the load and relay target among `1`, `*`
+and `#`, first alone and then alongside an unrelated load. All cold pairs repeat
+exactly, and all target variants have identical complete channel files. The
+selected load loses ten percent of its capacity; the peer retains its full
+constant-current P and constant-impedance Q capacity. Positive initialization
+and action-log quality checks pass. Each capture retains all 1,006 rows,
+including startup and event duplicates.
+
+Both-method tests retain the complete nonnegative comparison grid, require
+bit-identical ordinary/symbolic Java trajectories with the peer present, and
+enforce the existing 0.001 range-normalized voltage/P/Q and 0.01-degree rotor
+RMSE gates. Original captures remain immutable in private
+`tiocr-literal-targets-20261104/captures.zip`, SHA-256
+`01876cab0f0c9a14ae2b9c688953d19d5868136c8e80b6e12ec793df8f9f8c11`.
+This exact-identity extension does not resolve typed collapsed-wildcard
+static-residual allocation or broaden composite source ownership.
+
+The focused import, peer-load, composite and lifecycle selection passes 23
+tests. The broader relay/parser regression selection passes 114 tests, with
+zero failures, errors or skips. The new both-method controls are registered in
+the core plugin suite. These checks use the corrected isolated core candidate;
+default dependency versions are unchanged.

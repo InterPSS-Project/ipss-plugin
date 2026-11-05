@@ -25,6 +25,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private final String modelName;
     private final BaseDStabBus<?, ?> loadBus;
     private final String loadId;
+    private final boolean wildcardTarget;
     private final StagedLoadSheddingRelayData data;
     private final double[] timers = new double[5];
     private final boolean[] pickedUp = new boolean[5];
@@ -56,9 +57,16 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
 
     protected AbstractStagedLoadSheddingRelayModel(String modelName,
             BaseDStabBus<?, ?> loadBus, String loadId, StagedLoadSheddingRelayData data) {
+        this(modelName, loadBus, loadId, data, true);
+    }
+
+    protected AbstractStagedLoadSheddingRelayModel(String modelName,
+            BaseDStabBus<?, ?> loadBus, String loadId, StagedLoadSheddingRelayData data,
+            boolean interpretSymbolAsWildcard) {
         this.modelName = modelName;
         this.loadBus = loadBus;
         this.loadId = loadId;
+        this.wildcardTarget = interpretSymbolAsWildcard && (loadId.equals("*") || loadId.equals("#"));
         this.data = data;
         String relayId = modelName + "_" + loadBus.getId() + "_" + loadId;
         setId(relayId);
@@ -90,7 +98,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         if (bus != loadBus || bus.getNetwork() == null) return false;
         preparedNetwork=(BaseDStabNetwork<?, ?>)bus.getNetwork();
         preparedDynamicTargets.clear();
-        boolean wildcard = loadId.equals("*") || loadId.equals("#");
+        boolean wildcard = wildcardTarget;
         compositeTarget = null;
         if (bus.getInfoOnlyDynModel() instanceof Cmldblu1Model composite
                 && (wildcard || composite.getTargetLoadIds().contains(loadId))) {
@@ -99,7 +107,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
             // source ownership here; validate the live matrix at the action boundary.
             // A collapsed wildcard also requires a separately resolved static
             // residual; do not count its owned leaves as parent static demand.
-            if (wildcard && composite.getLoadBus()==bus
+            if (!wildcard && composite.getTargetLoadIds().size()!=1
+                    || wildcard && composite.getLoadBus()==bus
                     || !composite.canPrepareLoadChange(loadId,-total)) return false;
             compositeTarget = composite;
         }
@@ -171,12 +180,14 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         if (operated[stageIndex]) return true;
         double fraction = Math.min(data.stages().get(stageIndex).fraction(), 1.0 - shedFraction);
         return compositeTarget == null || loadBus.getInfoOnlyDynModel() == compositeTarget
+                && (wildcardTarget || compositeTarget.getTargetLoadIds().size()==1
+                    && compositeTarget.getTargetLoadIds().contains(loadId))
                 && compositeTarget.canChangeLoad(loadId, -fraction);
     }
 
     private boolean selectsExternalDynamicTarget(DynLoadModel load) {
         return load!=compositeTarget && (compositeTarget==null || !compositeTarget.ownsCapacityLoad(load))
-                && (loadId.equals("*") || loadId.equals("#") || loadId.equals(load.getId()));
+                && (wildcardTarget || loadId.equals(load.getId()));
     }
 
     private boolean targetOwnershipIntact() {
@@ -201,7 +212,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         if (fraction <= 0.0) { operated[stageIndex] = true; return; }
         if (compositeTarget != null && !compositeTarget.changeLoad(-fraction))
             throw new IllegalStateException("Composite load rejected a prepared shedding action");
-        boolean wildcard = loadId.equals("*") || loadId.equals("#");
+        boolean wildcard = wildcardTarget;
         if (loadBus.getDynLoadModelList() != null) {
             for (DynLoadModel load : loadBus.getDynLoadModelList()) {
                 if (load != compositeTarget && (compositeTarget==null || !compositeTarget.ownsCapacityLoad(load))

@@ -115,7 +115,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## TIOCR1
 
-- Preserve exact imported load identities separately from typed wildcard APIs. Independent action-time logs reject absent wildcard targets; do not treat initial record acceptance as action qualification. Exact symbolic IDs remain explicitly unsupported where the runtime cannot distinguish them from typed wildcard operations. Retain import atomicity and no-load-action controls; typed collapsed residual allocation remains open.
+- Preserve [exact imported load identities](dynamic-models/tiocr1-accepted-runtime.md#exact-symbolic-load-identities) separately from typed wildcard APIs. Existing literal symbolic IDs select only their exact target; absent targets remain rejected before attachment. Retain independent peer-load controls, both-method trajectories, singleton composite ownership, import atomicity and no-load actions. Typed collapsed residual allocation remains open.
 
 - Retain [partial composite-load action](dynamic-models/tiocr1-accepted-runtime.md#partial-composite-load-action) and [owned-subtree disconnection](dynamic-models/tiocr1-accepted-runtime.md#owned-composite-disconnection), explicit source-owner preparation and accepted-action preflight. Both-method complete shed/control trajectories retain the relay-operation duplicate and distinguish prepared internal diagnostics from physical bus voltage. Extend other full-removal topologies, aggregate source selection and restoration without phantom parent load stamps.
 

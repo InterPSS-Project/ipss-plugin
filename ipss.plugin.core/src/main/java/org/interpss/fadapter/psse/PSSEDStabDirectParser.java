@@ -560,9 +560,8 @@ public class PSSEDStabDirectParser {
             String loadId=record.fields().get(7);
             if(loadBus!=0 && (loadId.equals("*") || loadId.equals("#"))) {
                 var host=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+loadBus);
-                return host!=null && host.getContributeLoad(loadId)!=null
-                        ? "TIOCR1 exact symbolic load IDs are unsupported: runtime typed wildcard semantics cannot represent this exact target"
-                        : "TIOCR1 exact load target does not exist; native import does not expand wildcard load IDs";
+                if(host==null || host.getContributeLoad(loadId)==null)
+                    return "TIOCR1 exact load target does not exist; native import does not expand wildcard load IDs";
             }
             return relayBranch(builder.getBaseDStabNetwork(),record.busNumber(),
                     Integer.parseInt(record.fields().get(2)),record.fields().get(3)) == null
@@ -4440,7 +4439,7 @@ public class PSSEDStabDirectParser {
         BaseDStabBus<?,?> host=network.getDStabBus(BUS_ID_PREFIX+(loadBus==0?from:loadBus));
         if(host==null)return false;
         String loadId=loadBus==0?null:f.get(7);
-        if(loadBus!=0&&(loadId.equals("*")||loadId.equals("#")||host.getContributeLoad(loadId)==null))return false;
+        if(loadBus!=0&&host.getContributeLoad(loadId)==null)return false;
         AclfBranch[] transfers=new AclfBranch[3];
         for(int i=0;i<3;i++) {
             int b=Integer.parseInt(f.get(8+3*i));
@@ -4450,7 +4449,7 @@ public class PSSEDStabDirectParser {
         }
         double[] constants=new double[14];
         for(int i=0;i<14;i++)constants[i]=Double.parseDouble(f.get(17+i));
-        new org.interpss.dstab.relay.Tiocr1RelayModel(monitored,
+        org.interpss.dstab.relay.Tiocr1RelayModel.forExactLoad(monitored,
                 monitored.getFromBusId().equals(BUS_ID_PREFIX+from),slot,mode==1,host,loadId,
                 transfers,new org.interpss.dstab.relay.Tiocr1Data(constants));
         return true;

@@ -14,15 +14,21 @@ public class Tiocr1ExactLoadImportTest {
     @TempDir Path directory;
     private static final Path ROOT=Path.of("testData/adpter/psse/v33/HspModels");
     @ParameterizedTest @CsvSource({"*,false","*,true","#,false","#,true"})
-    void symbolicTargetsRejectBeforeAnyRelayAttachment(String id,boolean literalExists)throws Exception {
+    void symbolicTargetsRequireAnExistingExactIdentity(String id,boolean literalExists)throws Exception {
         var context=base();var net=context.getDStabilityNet();
         if(literalExists)net.getDStabBus("Bus2").getContributeLoad("1").setId(id);
         int before=net.getBusList().stream().mapToInt(b->b.getDynamicBusDeviceList().size()).sum();
         var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setStrictImport(true);
         Path input=directory.resolve("relay.dyr");Files.writeString(input,record(2,id));
+        if(literalExists) {
+            parser.parseDynFile(input.toString());
+            assertTrue(parser.getLastImportReport().isStrictlyComplete());
+            assertEquals(before+2,net.getBusList().stream().mapToInt(b->b.getDynamicBusDeviceList().size()).sum());
+            return;
+        }
         assertThrows(Exception.class,()->parser.parseDynFile(input.toString()));
         assertFalse(parser.getLastImportReport().isStrictlyComplete());
-        assertTrue(parser.getLastImportReport().failures().getFirst().message().contains(literalExists?"exact symbolic load IDs are unsupported":"does not expand wildcard load IDs"));
+        assertTrue(parser.getLastImportReport().failures().getFirst().message().contains("does not expand wildcard load IDs"));
         assertEquals(before,net.getBusList().stream().mapToInt(b->b.getDynamicBusDeviceList().size()).sum());
     }
     @ParameterizedTest @CsvSource({"2,1","0,*","0,#"})

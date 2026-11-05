@@ -36,10 +36,10 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
     private final LoadPort loadPort;
     private final Hashtable<String,Object> output=new Hashtable<>();
     private static final class LoadPort extends AbstractStagedLoadSheddingRelayModel {
-        LoadPort(String id,BaseDStabBus<?,?> bus,String loadId,double fraction) {
+        LoadPort(String id,BaseDStabBus<?,?> bus,String loadId,double fraction,boolean interpretSymbolAsWildcard) {
             super(id,bus,loadId,new StagedLoadSheddingRelayData(List.of(
                     new LoadSheddingStage(0,0,0,fraction),new LoadSheddingStage(0,0,0,0),
-                    new LoadSheddingStage(0,0,0,0),new LoadSheddingStage(0,0,0,0),new LoadSheddingStage(0,0,0,0)),false));
+                    new LoadSheddingStage(0,0,0,0),new LoadSheddingStage(0,0,0,0),new LoadSheddingStage(0,0,0,0)),false),interpretSymbolAsWildcard);
         }
         @Override protected double monitoredValue() { return 0; }
         @Override protected boolean violates(LoadSheddingStage stage,double value) { return false; }
@@ -49,6 +49,18 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
 
     public Tiocr1RelayModel(AclfBranch branch, boolean fromEnd, int slot, boolean operate,
             BaseDStabBus<?,?> host, String loadId, AclfBranch[] transfers, Tiocr1Data curve) {
+        this(branch,fromEnd,slot,operate,host,loadId,transfers,curve,true);
+    }
+
+    /** Attach an exact load identity, including literal symbolic IDs. */
+    public static Tiocr1RelayModel forExactLoad(AclfBranch branch, boolean fromEnd, int slot, boolean operate,
+            BaseDStabBus<?,?> host, String loadId, AclfBranch[] transfers, Tiocr1Data curve) {
+        return new Tiocr1RelayModel(branch,fromEnd,slot,operate,host,loadId,transfers,curve,false);
+    }
+
+    private Tiocr1RelayModel(AclfBranch branch, boolean fromEnd, int slot, boolean operate,
+            BaseDStabBus<?,?> host, String loadId, AclfBranch[] transfers, Tiocr1Data curve,
+            boolean interpretSymbolAsWildcard) {
         if(slot<1 || slot>2 || transfers==null || transfers.length!=3) throw new IllegalArgumentException("Invalid relay slot/targets");
         monitored=java.util.Objects.requireNonNull(branch);this.fromEnd=fromEnd;this.operate=operate;
         owner=(BaseDStabBus<?,?>)(fromEnd?branch.getFromAclfBus():branch.getToAclfBus());
@@ -65,7 +77,7 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
         // Motion is owned by the monitored terminal, independently of the remote load port.
         setDStabBus(owner);owner.getDynamicBusDeviceList().add(this);
         output.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,id);
-        loadPort=loadId==null?null:new LoadPort(id+"_LOAD",host,loadId,curve.loadFraction());
+        loadPort=loadId==null?null:new LoadPort(id+"_LOAD",host,loadId,curve.loadFraction(),interpretSymbolAsWildcard);
     }
     private boolean busBelongsToOwnerNetwork(BaseDStabBus<?,?> bus) {
         return bus!=null&&bus.getNetwork()==ownerNetwork&&ownerNetwork.getBus(bus.getId())==bus;
