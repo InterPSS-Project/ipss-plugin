@@ -71,6 +71,33 @@ public class Chvdc2NetworkPreparationTest extends CorePluginTestSetup {
             m.readStaggeredState(x,0);assertArrayEquals(initial,x,1e-6);
         }
     }
+    @ParameterizedTest @ValueSource(strings={"rectifier","inverter"})
+    void finiteConverterResistancePreservesPreparedEnergyAndEquilibrium(String end)throws Exception {
+        var f=fixture();var n=f.context().getDStabilityNet();
+        var owner=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);
+        var converter=end.equals("rectifier")?owner.getRectifier():owner.getInverter();
+        converter.setCommutingZ(new Complex(.5,converter.getCommutingZ().getImaginary()));
+        var flow=f.context().getDynSimuAlgorithm().getAclfAlgorithm();flow.setTolerance(1e-10);
+        assertTrue(flow.loadflow());
+        for(boolean staggered:new boolean[]{false,true}) {
+            var b=Chvdc2NetworkPreparation.prepare(n,parameters(owner.getName(),true,0),.0005,0);
+            var m=b.runtime();double[] initial=new double[m.staggeredStateCount()],x=initial.clone(),rates=initial.clone(),old=initial.clone(),boundary=new double[10];
+            m.readStaggeredState(initial,0);m.evaluateStaggered(0,rates,0);
+            for(double rate:rates)assertEquals(0,rate,1e-7);
+            m.acceptBoundary(0,0);
+            for(int k=0;k<100;k++) {
+                if(staggered) {
+                    m.readStaggeredState(x,0);m.evaluateStaggered(.0005,rates,0);
+                    for(int j=0;j<x.length;j++)x[j]+=.0005*(k==0?rates[j]:1.5*rates[j]-.5*old[j]);
+                    System.arraycopy(rates,0,old,0,x.length);m.applyStaggeredState(x,0,.0005);m.completeStaggeredStep(.0005);
+                }else {m.step(.0005,0);m.evaluatePredictorProtection((k+1)*.0005,2*k+1);m.step(.0005,1);}
+                m.acceptBoundary((k+1)*.0005,2*k+2);m.readBoundary(boundary,0);
+                double current=boundary[2],loss=(owner.getRdc(UnitType.Ohm)+2*converter.getNBridges()*.5)*current*current/(n.getBaseKva()*1000);
+                assertTrue(loss>0);assertEquals(loss,boundary[4]+boundary[6],1e-10,"Line plus winding dissipative power");
+            }
+            m.readStaggeredState(x,0);assertArrayEquals(initial,x,1e-6);
+        }
+    }
     @Test void preparationUsesFrequencyAndOuterIntervalAndFreezesEquipment()throws Exception {
         var f=fixture();var n=f.context().getDStabilityNet();
         var o=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);var r=o.getRectifier();var i=o.getInverter();
@@ -101,7 +128,7 @@ public class Chvdc2NetworkPreparationTest extends CorePluginTestSetup {
         double voltage=i.getDcVoltage();i.setDcVoltage(voltage+1);reject(n,p);i.setDcVoltage(voltage);
         int bridges=i.getNBridges();i.setNBridges(bridges+1);reject(n,p);i.setNBridges(bridges);
         o.setPuBasedPowerFlowAlgo(true);reject(n,p);o.setPuBasedPowerFlowAlgo(false);
-        var z=i.getCommutingZ();i.setCommutingZ(new Complex(1,z.getImaginary()));reject(n,p);i.setCommutingZ(z);
+        var z=i.getCommutingZ();for(double bad:new double[]{-1,Double.NaN,Double.POSITIVE_INFINITY}) {i.setCommutingZ(new Complex(bad,z.getImaginary()));reject(n,p);}i.setCommutingZ(z);
         i.setCommutingCapacitor(1);reject(n,p);i.setCommutingCapacitor(0);
         double rated=i.getAcRatedVoltage();i.setAcRatedVoltage(Double.NaN);reject(n,p);i.setAcRatedVoltage(rated);
         double resistance=o.getRdc(UnitType.Ohm);o.setRdc(0,UnitType.Ohm);reject(n,p);o.setRdc(resistance,UnitType.Ohm);
@@ -110,6 +137,13 @@ public class Chvdc2NetworkPreparationTest extends CorePluginTestSetup {
         assertThrows(IllegalArgumentException.class,()->Chvdc2NetworkPreparation.prepare(n,p,.0005,Double.NaN));
     }
     private static void reject(com.interpss.dstab.BaseDStabNetwork<?,?> n,Chvdc2Parameters p) {
+        var o=(HvdcLine2TLCC<?>)n.getSpecialBranchList().get(0);
+        var rv=o.getRectifier().getBus().getVoltage();var iv=o.getInverter().getBus().getVoltage();
+        boolean active=o.isActive(),solved=n.isLfConverged();
         assertThrows(IllegalArgumentException.class,()->Chvdc2NetworkPreparation.prepare(n,p,.0005,0));
+        assertEquals(active,o.isActive());assertEquals(solved,n.isLfConverged());
+        assertEquals(rv,o.getRectifier().getBus().getVoltage());assertEquals(iv,o.getInverter().getBus().getVoltage());
+        assertTrue(n.getBus(o.getFromBus().getId()).getDynamicBusDeviceList().isEmpty());
+        assertTrue(n.getBus(o.getToBus().getId()).getDynamicBusDeviceList().isEmpty());
     }
 }

@@ -115,6 +115,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         final Chvdc2NetworkPreparation.Binding binding;final Chvdc2TerminalPorts ports;
         final List<double[]> rows=new ArrayList<>();boolean enabled;int networkSolves;
         final List<Map<String,Double>> histories=new ArrayList<>();
+        boolean faultEnabled=true;
         final double[] states,boundary=new double[10];
         Recorder(com.interpss.dstab.algo.DynamicSimuAlgorithm a,Chvdc2NetworkPreparation.Binding b,Chvdc2TerminalPorts p){algorithm=a;binding=b;ports=p;states=new double[b.runtime().staggeredStateCount()];}
         void before(double time){if(enabled&&(Math.abs(time-.05)<1e-9||Math.abs(time-.1)<1e-9))capture(time);}
@@ -193,7 +194,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         compare(source,"stiff-legacy-rectifier-fault-flags000-h0p0005-netiter50-meas0p001-a",false,false,
                 Chvdc2TerminalPorts.ProtectionClock.BINARY32,1);
     }
-    private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock,int localSteps)throws Exception {
+    void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock,int localSteps)throws Exception {
         List<Map<String,Double>> reference;com.fasterxml.jackson.databind.JsonNode manifest,equipment;
         Path raw=folder.resolve("network.raw"),dyr=folder.resolve("machines.dyr");
         try(var z=new ZipFile(archive.toFile())) {
@@ -232,7 +233,8 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         a.setSimuOutputHandler(new StateMonitor());a.setSolver(staggered?new Shared(recorder):new Ordinary(recorder));
         String faultBus=manifest.path("settings").path("profile").asText().equals("rectifier-fault")?"Bus7":"Bus9";
         double reactance=manifest.path("settings").path("fault_reactance").asDouble(.2);
-        n.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBus,n,SimpleFaultCode.GROUND_3P,new Complex(0,reactance),null,.05,.05),"TerminalFault");
+        recorder.faultEnabled=!manifest.path("settings").path("profile").asText().equals("flat");
+        if(recorder.faultEnabled)n.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBus,n,SimpleFaultCode.GROUND_3P,new Complex(0,reactance),null,.05,.05),"TerminalFault");
         assertTrue(a.initialization());a.setSimuTime(-2*h);recorder.enabled=true;
         Exception stopped=null;
         try{while(a.getSimuTime()<.5-h/2)if(!a.solveDEqnStep(true))throw new IllegalStateException("Attached network step did not converge");recorder.capture(a.getSimuTime());}

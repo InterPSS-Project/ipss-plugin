@@ -78,12 +78,12 @@ public final class Chvdc2NetworkPreparation {
     }
 
     private static LccConverterBoundary boundary(ThyConverter<?> converter,boolean rectifier,double baseVA) {
-        if(converter.getCommutingZ()==null||converter.getCommutingZ().getReal()!=0||converter.getCommutingCapacitor()!=0)
-            throw new IllegalArgumentException("Converter resistance and capacitor compensation are not qualified");
+        if(converter.getCommutingZ()==null||converter.getCommutingCapacitor()!=0)
+            throw new IllegalArgumentException("Converter impedance is required; capacitor compensation is not qualified");
         double rated=converter.getAcRatedVoltage();
         if(!Double.isFinite(rated)||rated<0)throw new IllegalArgumentException("Nonnegative converter primary voltage base required");
         double baseVolts=converter.getBus().getBaseVoltage()*(rated>0?rated:1);
         return new LccConverterBoundary(rectifier,converter.getNBridges(),baseVolts,converter.getXformerRatio(),
-                converter.getXformerTapSetting(),converter.getCommutingZ().getImaginary(),baseVA);
+                converter.getXformerTapSetting(),converter.getCommutingZ().getReal(),converter.getCommutingZ().getImaginary(),baseVA);
     }
 }

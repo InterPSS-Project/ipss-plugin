@@ -1693,3 +1693,43 @@ run-boundary test class. Production Java is unchanged in this slice; the precedi
 registered-suite failure baseline is retained, not represented as a fresh full
 suite run. Capture and validation evidence are retained separately in the private
 event-refresh artifact directory.
+
+
+## Finite converter resistance: explicit preparation slice
+
+Explicit named-link preparation accepts finite nonnegative winding resistance
+in ohms per bridge. It passes each terminal's resistance to the shared LCC
+boundary, preserving the signed DC voltage drop and positive `2*N*R*I^2`
+converter loss. DC line resistance remains a separate line parameter; no
+controller coefficients, integration stages or local-step defaults change.
+Missing impedances, invalid resistance and capacitor-commutated equipment are
+rejected before attachment. Automatic attachment remains unqualified.
+
+Cold flat/fault controls exercise zero resistance, rectifier resistance and
+inverter resistance independently. All six cold pairs reproduce byte for byte;
+the zero-resistance fault CSV is identical to the retained earlier control.
+Both methods complete all twelve trajectories with ten local steps, retaining
+all 1,005 samples and both boundary duplicates. Preparation equilibrium and
+line-plus-converter energy controls pass. Existing strict trajectory gates stay
+unchanged: six fault trajectories and two inverter-resistance flat trajectories
+remain outside acceptance.
+
+The inverter flat discrepancy is already present at initialization: its PI and
+calculated-angle states differ by approximately 0.58424 degrees while terminal
+voltage/current/P/Q satisfy their existing limits. For the retained control,
+the physical signed-voltage equation gives 140.13066 degrees; the independent
+calculated-angle state and published angle give 140.71490 degrees. The static
+extinction-angle readback and dynamic extinction angle both remain near
+31.77462 degrees. Reversing the winding-resistance term in the angle calculation
+reproduces the latter angle but contradicts the shared physical overlap
+relation. This observation is a diagnostic, not an implemented sign convention.
+The primary state/variable descriptions identify calculated and published
+firing angles but do not resolve this finite-resistance coordinate relationship.
+An authoritative initialization/terminal mapping or additional internal
+observations are required before changing that coordinate. Physical converter
+equations must not be altered solely to make the angle trace agree.
+
+The retained archive is `verification-artifacts/chvdc2-resistance-20261104`.
+It includes raw paired captures, exact provenance and full Java comparisons.
+This slice establishes explicit physical preparation, not full controller or
+trajectory qualification.
