@@ -902,3 +902,22 @@ not supported by the evidence.
 The compact eight-profile increment audit and focused XML reports are retained
 privately at `verification-artifacts/wsieg1-reentry-method-discriminator-20261104/validation.zip`,
 SHA-256 `094b43e4342004ca686f8b79ddc62d89e124d065d594fc29ae08a27a4a528998`.
+
+### Binary32 accumulation in the rate-limited reference ramp
+
+The independent fine-step valve-position capture also distinguishes reference
+storage arithmetic from the controller equation. During an unclipped 0.2 pu/s
+rise at 0.5 ms intervals, each recorded valve state equals the binary32 result
+of adding `h * rate` to the preceding recorded state. By 0.060 s, this repeated
+rounding places the reference approximately `3.45e-7` pu above a double-precision
+accumulation. `Wsieg1BypassLimitConformanceTest` checks consecutive increments
+and a negative control against double accumulation. The production governor
+continues to use double states; quantizing them to imitate reference storage
+would change the numerical model.
+
+This small state difference can matter when a physical channel barely moves.
+For the fine-step valve-rate capture, the reference voltage ranges are
+`1.59e-5` and `5.19e-6` pu, while their physical RMSE values are `3.83e-6`
+and `1.28e-6` pu. The existing nonflat 0.001 range-NRMSE gates still fail.
+The earlier first-step event discriminator remains separate: it checks an
+integration-method difference, whereas this test checks stored-state rounding.

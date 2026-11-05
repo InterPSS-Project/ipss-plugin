@@ -81,6 +81,36 @@ public class Wsieg1BypassLimitConformanceTest {
         }
     }
 
+    @Test void independentValveRateRampAccumulatesInBinary32(@TempDir Path staged)throws Exception {
+        var fixture=new Wsieg1ReferenceFixture(staged,CONFIG);int checked=0;
+        for(var entry:fixture.matrix()) {
+            if(!entry.path("profile").asText().equals("valve-position")
+                    ||!entry.path("repeat").asText().equals("a")
+                    ||entry.path("step_s").asDouble()>=.001)continue;
+            Path root=fixture.stage(entry.path("tag").asText());
+            var manifest=new ObjectMapper().readTree(root.resolve("manifest.json").toFile());
+            double h=entry.path("step_s").asDouble();
+            double rate=manifest.path("initialized_constants").get(4).asDouble();
+            var rows=Wsieg1StateConformanceTest.rows(Files.readAllBytes(root.resolve("native.csv")));
+            double first=Double.NaN,last=Double.NaN;int increments=0;
+            for(int i=1;i<rows.size();i++) {
+                var before=rows.get(i-1);var after=rows.get(i);
+                double time=before.get("time_s");
+                if(time<.051||after.get("time_s")>.0601)continue;
+                double previous=before.get("STATE1"),actual=after.get("STATE1");
+                assertEquals((double)(float)(previous+h*rate),actual,1e-12,
+                        "Independent valve state retains each binary32 rate-limited increment");
+                if(increments==0)first=previous;
+                last=actual;increments++;
+            }
+            assertTrue(increments>=15,"A sustained unclipped ramp must be present");
+            assertTrue(last-(first+increments*h*rate)>2e-7,
+                    "Repeated binary32 rounding must be distinguishable from double accumulation");
+            checked++;
+        }
+        assertEquals(1,checked);
+    }
+
     @ParameterizedTest @ValueSource(booleans={false,true})
     void completeCoupledTrajectoriesRetainStrictBoundaryGates(boolean staggered,@TempDir Path staged)throws Exception {
         var fixture=new Wsieg1ReferenceFixture(staged,CONFIG);
