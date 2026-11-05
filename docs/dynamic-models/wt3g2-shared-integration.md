@@ -93,3 +93,20 @@ converter source-current publication. Reference source current, actual stamped
 converter admittance, internal voltage/current states and PLL angle at both event
 sides are needed to resolve that remaining distinction. No parameter adjustment
 or fitted correction has been applied.
+
+## Bypassed-PLL terminal-angle current axes
+
+The published [WT3G2 block diagram](https://www.powerworld.com/WebHelp/Content/TransientModels_PDF/Generator/Machine/Machine%20Model%20WT3G2.pdf)
+selects the angle of terminal voltage when both PLL gains are zero. The stored
+PLL angle remains a numerical state but does not rotate the current source in
+that branch. The runtime now applies this selector directly at each network
+evaluation, using the live terminal phasor and a reusable scalar calculation.
+Nonzero-PLL current publication follows the existing stored-angle path.
+
+The complete converted generic WT3 SMIB shows that this selector removes the
+large clearing-side active-power difference without changing model parameters
+or sample alignment. A separate bypassed voltage-controller initialization
+correction is required for its reactive-power gate; the
+[converted comparison](legacy-ge-import-verification.md#converted-terminal-angle-and-bypass-reference-correction)
+records both effects and their separate implementation boundaries. Neither
+generic result establishes exact support for a legacy wind-model identifier.

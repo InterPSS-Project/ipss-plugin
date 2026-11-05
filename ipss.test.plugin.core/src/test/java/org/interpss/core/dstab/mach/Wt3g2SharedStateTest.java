@@ -3,6 +3,7 @@ package org.interpss.core.dstab.mach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
+import java.nio.file.Files;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
@@ -10,6 +11,7 @@ import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -23,10 +25,15 @@ public class Wt3g2SharedStateTest {
     private record Fixture(DynamicSimuAlgorithm algorithm, Wt3g2Model model) {}
 
     private static Fixture fixture(boolean shared, boolean keepController, double step) throws Exception {
+        return fixture(shared, keepController, step, CASE.resolve("SMIB_v33_wt3g2.dyr"));
+    }
+
+    private static Fixture fixture(boolean shared, boolean keepController, double step,
+            Path dyr) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_wt3g2.raw").toString(),
-                CASE.resolve("SMIB_v33_wt3g2.dyr").toString());
+                dyr.toString());
         var a = context.getDynSimuAlgorithm();
         var gen = (DStabGen) context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         var model = (Wt3g2Model) gen.getDynamicGenDevice();
@@ -93,6 +100,45 @@ public class Wt3g2SharedStateTest {
         assertFalse(f.model.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 1));
         assertTrue(f.model.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 1));
         assertFalse(f.model.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, 1));
+    }
+
+    @Test void activePllKeepsStoredAngleWhenTerminalAngleChanges() throws Exception {
+        var f = fixture(false, false, .0005);
+        assertTrue(f.algorithm.initialization());
+        assertTrue(f.model.getData().pllGain() > 0);
+        assertTrue(f.model.getData().pllIntegratorGain() > 0);
+        var bus = f.model.getDStabBus();
+        Complex voltage = bus.getVoltage();
+        Complex source = (Complex) f.model.getOutputObject();
+        bus.setVoltage(voltage.abs(), voltage.getArgument() + .03);
+        Complex changed = (Complex) f.model.getOutputObject();
+        assertEquals(source.getReal(), changed.getReal(), 1e-12);
+        assertEquals(source.getImaginary(), changed.getImaginary(), 1e-12);
+        assertEquals(voltage.getArgument(), f.model.getPllAngleState(), 1e-12);
+    }
+
+    @Test void bypassedPllFollowsTerminalAngleWithoutChangingStoredState(@TempDir Path temp)
+            throws Exception {
+        String source = Files.readString(CASE.resolve("SMIB_v33_wt3g2.dyr"));
+        String zeroPll = source.replace("20.0 0.55 0.12", "0.0 0.0 0.12");
+        assertNotEquals(source, zeroPll, "The test must change both PLL gains");
+        Path dyr = temp.resolve("zero-pll.dyr");
+        Files.writeString(dyr, zeroPll);
+        var f = fixture(false, false, .0005, dyr);
+        assertTrue(f.algorithm.initialization());
+        assertEquals(0.0, f.model.getData().pllGain());
+        assertEquals(0.0, f.model.getData().pllIntegratorGain());
+        var bus = f.model.getDStabBus();
+        Complex voltage = bus.getVoltage();
+        Complex sourceCurrent = (Complex) f.model.getOutputObject();
+        double stateAngle = f.model.getPllAngleState();
+        double rotation = .03;
+        bus.setVoltage(voltage.abs(), voltage.getArgument() + rotation);
+        Complex changed = (Complex) f.model.getOutputObject();
+        Complex expected = sourceCurrent.multiply(new Complex(Math.cos(rotation), Math.sin(rotation)));
+        assertEquals(expected.getReal(), changed.getReal(), 1e-12);
+        assertEquals(expected.getImaginary(), changed.getImaginary(), 1e-12);
+        assertEquals(stateAngle, f.model.getPllAngleState(), 0.0);
     }
 
     @Test void foreignAttachedControllerIsRejectedBeforeIntegration() throws Exception {

@@ -211,8 +211,18 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         deltaQ = highVoltageCorrection(voltage, data.highVoltageThreshold(),
                 data.highVoltageReactiveCurrentGain());
         double lowVoltageActiveGain = fixedLowVoltageActiveGain(voltage);
-        Complex source = new Complex(ipState * lowVoltageActiveGain,
-                -(eqState / equivalentReactance - deltaQ));
+        double active = ipState * lowVoltageActiveGain;
+        double reactive = -(eqState / equivalentReactance - deltaQ);
+        // With both PLL gains bypassed, the current axes follow the terminal
+        // voltage angle. Keep the stored PLL angle as its own numerical state.
+        if (data.pllGain() == 0.0 && data.pllIntegratorGain() == 0.0 && voltage > EPS) {
+            Complex terminal = getDStabBus().getVoltage();
+            double c = terminal.getReal() / voltage, s = terminal.getImaginary() / voltage;
+            double scale = deviceBaseMva / systemBaseMva;
+            return new Complex((active * c - reactive * s) * scale,
+                    (active * s + reactive * c) * scale);
+        }
+        Complex source = new Complex(active, reactive);
         return source.multiply(new Complex(Math.cos(angle), Math.sin(angle)))
                 .multiply(deviceBaseMva / systemBaseMva);
     }
