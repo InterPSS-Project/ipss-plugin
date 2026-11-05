@@ -1368,6 +1368,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.Tiocr1ExactLoadImportTest.class,
     org.interpss.core.dstab.Tiocr1LiteralTargetReferenceTest.class,
     org.interpss.core.dstab.dynLoad.CompositeCollapsedFullTripTest.class,
+    org.interpss.core.dstab.dynLoad.CollapsedWildcardLoadRelayTest.class,
     org.interpss.core.dstab.dynLoad.CompositePartlyCollapsedFullTripTest.class,
     org.interpss.core.dstab.dynLoad.CompositeMotorRecloseTest.class,
     org.interpss.core.dstab.dynLoad.CompositeMotorProtectionTimingTest.class,

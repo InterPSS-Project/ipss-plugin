@@ -53,3 +53,20 @@ but worsens the middle-band pulse comparison after a threshold crossing changes
 by one step. Modified-Euler profiles remain byte-identical. This candidate is
 not included in the integrated runtime; physical-current publication and full
 trajectory qualification remain open.
+
+## Typed relay allocation follow-up
+
+Commit `2b8c0e4f5` separates a collapsed composite's owned demand from its
+prepared parent static remainder for typed wildcard relay actions. Independent
+shunts are handled separately from composite-owned compensation. Exact imported
+symbolic load identities are unchanged. Unsupported external dynamic ownership
+and changed static definitions are rejected before action.
+
+The integrated selection passed 116 tests across 16 classes, with no failures,
+errors or skips. It covers both integration methods, repeated partial actions,
+current-P/impedance-Q behavior, matrix rebuilds, exact-target regressions and
+composite disconnection controls. This validates typed API ownership, not
+independent native wildcard semantics or all remaining model trajectories.
+
+Private evidence: `verification-artifacts/typed-relay-integrated-20261104/validation.zip`,
+SHA-256 `a1626c1f17f117a0aaf63d27c4c49e7a972677358bf3f7771c64b47c7f8dc9c7`.
