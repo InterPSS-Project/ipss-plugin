@@ -1059,6 +1059,19 @@ tests replace the unresolved full-replay gates. Complete attachment, all
 controller/protection states, coupled SMIB trajectories and long-duration
 qualification remain required.
 
+A controlled runtime trial cast only the rectifier PI coordinate to binary32
+after each accepted local update. Prescribed-input ten-step replay then stayed
+within `0.0000267` degrees of the captured PI coordinate, but rate-limited
+rectifier firing-angle error still reached `0.01046` degrees against the
+unchanged `0.002`-degree gate. More importantly, all four available coupled
+staggered network refinements that passed before the cast failed afterward:
+nonfault rectifier-power NRMSE reached about `0.0258` against `0.02`, and PI
+state NRMSE reached about `0.246` against `0.05`. The cast was reverted. The
+worst prescribed-input profile first crosses its PI gate near `0.201` s,
+well after the first fault event; the event-right row itself differs by only
+about `3.3e-8` degrees. Matching a quantized isolated trace therefore does not
+establish the coupled numerical storage contract.
+
 ## Shared measurement and current-order component
 
 `Chvdc2OrderControls` implements the measured DC currents and AC voltages,
