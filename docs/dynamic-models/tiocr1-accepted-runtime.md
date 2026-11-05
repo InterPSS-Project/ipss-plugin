@@ -584,3 +584,38 @@ tests. The broader relay/parser regression selection passes 114 tests, with
 zero failures, errors or skips. The new both-method controls are registered in
 the core plugin suite. These checks use the corrected isolated core candidate;
 default dependency versions are unchanged.
+
+
+## Typed collapsed-parent wildcard allocation
+
+Typed whole-bus `*` and `#` targets now support a fully collapsed composite with
+an independently attributable static remainder. Imported symbolic load IDs
+remain exact identities; this change does not grant wildcard semantics to input
+records or individual selection inside a multi-source composite.
+
+Relay initialization precedes the engine's subtraction of dynamic demand from
+the gross bus load. The relay therefore uses the composite's recorded pre-leaf
+parent allocation: unrelated static power and independent shunt. It does not
+capture gross composite demand a second time. The composite capacity action
+scales its own leaves and compensation shunts once, retaining its fixed shunt
+under the existing partial-capacity contract. The relay's persistent matrix
+ledger and voltage-dependent current correction apply only to the static
+remainder; optional staged-relay shunt shedding excludes composite-owned shunts.
+
+A foreign dynamic load at the collapsed parent remains unsupported because its
+initial allocation has not yet been established at relay preparation. Changed
+static source definitions or membership also reject the action before relay
+position, capacity or matrix mutation. General dynamic-remainder allocation and
+restoration are not introduced.
+
+The focused controls exercise both integration methods, two successive quarter-
+capacity actions, current-P/impedance-Q voltage dependence, gross/leaf/residual
+balance, independent versus owned shunts, matrix rebuild and idempotent ledger
+reapplication. A separate staged-relay control enables independent-shunt
+shedding. These are typed API ownership and physical-balance checks, not a claim
+that the reference interface accepts whole-bus wildcard records. The earlier
+collapsed-wildcard rejection noted above is superseded only for this scope.
+
+Validation: 116 focused tests passed without failures, errors or skips; the final
+three ownership controls also passed after adding the explicit rebuilt-ledger
+identity. No trajectory threshold or sample handling changed.

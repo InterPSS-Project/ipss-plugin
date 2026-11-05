@@ -33,6 +33,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private final Hashtable<String, Object> states = new Hashtable<>();
     private Complex initialStaticLoad = Complex.ZERO;
     private AclfLoad preparedStaticTarget;
+    private boolean collapsedWildcard;
+    private final java.util.IdentityHashMap<AclfLoad, StaticDefinition> collapsedStaticTargets = new java.util.IdentityHashMap<>();
     private StaticDefinition preparedStaticDefinition;
     private BaseDStabNetwork<?, ?> preparedNetwork;
     private final java.util.IdentityHashMap<DynLoadModel, Boolean> preparedDynamicTargets = new java.util.IdentityHashMap<>();
@@ -100,6 +102,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         preparedDynamicTargets.clear();
         boolean wildcard = wildcardTarget;
         compositeTarget = null;
+        collapsedWildcard = false;
+        collapsedStaticTargets.clear();
         if (bus.getInfoOnlyDynModel() instanceof Cmldblu1Model composite
                 && (wildcard || composite.getTargetLoadIds().contains(loadId))) {
             double total = Math.min(1., data.stages().stream().mapToDouble(LoadSheddingStage::fraction).sum());
@@ -108,9 +112,13 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
             // A collapsed wildcard also requires a separately resolved static
             // residual; do not count its owned leaves as parent static demand.
             if (!wildcard && composite.getTargetLoadIds().size()!=1
-                    || wildcard && composite.getLoadBus()==bus
                     || !composite.canPrepareLoadChange(loadId,-total)) return false;
             compositeTarget = composite;
+            collapsedWildcard = wildcard && composite.getLoadBus()==bus;
+            // Unrelated dynamic loads have not yet initialized at this lifecycle point.
+            // Their static remainder cannot be attributed safely from gross bus demand.
+            if (collapsedWildcard && bus.getDynLoadModelList().stream()
+                    .anyMatch(load -> load != composite && !composite.ownsCapacityLoad(load))) return false;
         }
         boolean hasDynamicTarget = loadBus.getDynLoadModelList() != null
                 && loadBus.getDynLoadModelList().stream()
@@ -124,7 +132,10 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         preparedStaticTarget = null;
         preparedStaticDefinition = null;
         if (wildcard) {
-            initialStaticLoad = loadBus.calNetLoadResults();
+            initialStaticLoad = collapsedWildcard ? compositeTarget.getCollapsedParentAllocation().staticPower()
+                    : loadBus.calNetLoadResults();
+            if (collapsedWildcard) for (AclfLoad load : loadBus.getContributeLoadList())
+                if (load.isActive()) collapsedStaticTargets.put(load, new StaticDefinition(load));
         } else if (!hasDynamicTarget) {
             AclfLoad load = loadBus.getContributeLoad(loadId);
             if (load == null || !load.isActive()) return false;
@@ -133,7 +144,8 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
             initialStaticLoad = load.getLoad(loadBus.getVoltageMag());
         }
         initialShunt = data.shedShunt() && loadBus.getShuntY() != null
-                ? loadBus.getShuntY() : Complex.ZERO;
+                ? (collapsedWildcard ? compositeTarget.getCollapsedParentAllocation().shunt() : loadBus.getShuntY())
+                : Complex.ZERO;
         return targetInitialized = reset() && Double.isFinite(monitoredValue());
     }
 
@@ -196,6 +208,15 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         if(preparedStaticTarget!=null && (loadBus.getContributeLoad(loadId)!=preparedStaticTarget
                 || preparedStaticTarget.getParentBus()!=loadBus || !preparedStaticDefinition.matches(preparedStaticTarget)))return false;
         if(compositeTarget!=null && loadBus.getInfoOnlyDynModel()!=compositeTarget)return false;
+        if (collapsedWildcard) {
+            int active=0;
+            for (AclfLoad load : loadBus.getContributeLoadList()) if (load.isActive()) {
+                StaticDefinition definition=collapsedStaticTargets.get(load);
+                if (definition==null || !definition.matches(load)) return false;
+                active++;
+            }
+            if (active!=collapsedStaticTargets.size()) return false;
+        }
         int matches=0;
         if(loadBus.getDynLoadModelList()!=null)for(DynLoadModel load:loadBus.getDynLoadModelList())
             if(selectsExternalDynamicTarget(load)) {

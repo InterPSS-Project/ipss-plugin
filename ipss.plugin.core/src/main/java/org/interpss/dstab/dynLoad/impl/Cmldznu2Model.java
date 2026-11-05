@@ -443,6 +443,16 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
                 getLoadBus(), getId() + "_S", staticFraction, data, assignedActivePower);
     }
 
+    /** Prepared unrelated parent demand and shunt, before owned leaves are allocated. */
+    public record CollapsedParentAllocation(Complex staticPower, Complex shunt) { }
+
+    public CollapsedParentAllocation getCollapsedParentAllocation() {
+        if (getLoadBus() != getDStabBus() || collapsedParentRemainder == null
+                || collapsedParentOriginalShunt == null || capacityLeaves == null)
+            throw new IllegalStateException("Collapsed parent ownership has not been prepared");
+        return new CollapsedParentAllocation(collapsedParentRemainder, collapsedParentOriginalShunt);
+    }
+
     protected Complex getCollapsedParentOwnedShunt() {
         if (getLoadBus() != getDStabBus() || collapsedParentOriginalShunt == null)
             throw new IllegalStateException("An owned parent shunt requires omitted distribution elements");
