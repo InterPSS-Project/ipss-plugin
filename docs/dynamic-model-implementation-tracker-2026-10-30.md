@@ -10,6 +10,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## PSS2B
 
+- Retain the [both-method independent SMIB comparison](dynamic-models/pss2b-compiled-runtime.md#both-method-independent-smib-gate) at a common 0.25 ms interval. The one-second machine, exciter, stabilizer and network limits are now set near their measured error envelopes. This does not close the separate production-step ten-second modified-Euler failure or the complete event-side and selector matrix.
+
 - Retain [complete captured-state recurrence and isolated replay](dynamic-models/pss2b-compiled-runtime.md#complete-captured-state-recurrence-and-isolated-replay): active conditioner, ramp and lead-lag increments match independent captures; bypassed lead-lags expose algebraic output rather than zero numerical storage. Full replay and long-run coupled accuracy remain separate gates; do not change verified equations to compensate for integration or upstream-input differences.
 
 - Retain [independent selector-state recurrence coverage](dynamic-models/pss2b-compiled-runtime.md#independent-selector-state-recurrence-coverage), compiled first-washout rate checks for all selectors and event-history negative control. Host-exciter local refinement does not resolve the quarter-cycle modified-Euler angle gate; finish ramp/lead-lag and sampled-output trajectory qualification without changing equations to compensate.

@@ -542,3 +542,20 @@ long-run angle failure. Fine-step shared-state replay and equation recurrence
 acceptance do not close that coupled failure or complete model qualification.
 Full replay samples, independent archive identity, negative-control reports and
 validation logs are retained in private evidence.
+
+## Both-method independent SMIB gate
+
+The retained one-second, three-cycle-fault SMIB comparison now runs the same
+network, machine, exciter and stabilizer channels with both modified Euler and
+staggered integration at 0.25 ms. Its reference samples remain unchanged. The
+maximum rotor-angle errors are 0.000181 and 0.000189 degrees, respectively;
+maximum stabilizer output-stage errors are below 0.00000065 pu. Per-channel
+voltage, P/Q, angle, speed, machine, exciter and stabilizer limits were reduced
+to measured envelopes with margin, rather than changing the equations or the
+integration interval.
+
+This test excludes the immediate fault-side interpolation neighborhood; it does
+not replace the complete event-side reference comparisons. The separate
+quarter-cycle, ten-second modified-Euler derivative-input angle gate remains
+unmet. The private long-run capture archive is unavailable in this checkout,
+so that gate could not be rerun as part of this slice.
