@@ -134,4 +134,34 @@ public class Cdc6tVoltageCurrentLimitTest {
             assertTrue(minLowerVoltageError>1,"The alternative selector must remain distinguishable");
         }
     }
+
+    @Test void convergedCurrentMarginControlIsVdcolLimitedRatherThanAngleLimited() throws Exception {
+        var archive=Path.of("testData/private/verification-artifacts/cdc6t-margin-vdcol-negative-20261105/captures.zip");
+        Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain current-margin negative control");
+        assertEquals("cfd01930af03dc83b133ee4bb280343d7c2123c44acb95aaed1f3452c3b277b1",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
+        var limiter=Cdc6tVoltageCurrentLimit.fromSourcePoints(250,450,500,2000,425,2000);
+        try(var zip=new ZipFile(archive.toFile())) {
+            for(String profile:new String[]{"margin/a","margin/b","zero/a"}) {
+                for(String input:new String[]{"manifest.json","network.raw","dynamic.dyr","native.csv","native.log","solved-equipment.json"})
+                    assertNotNull(zip.getEntry(profile+"/"+input),"Missing complete control input "+profile+"/"+input);
+                assertTrue(new String(zip.getInputStream(zip.getEntry(profile+"/manifest.json")).readAllBytes())
+                        .contains("\"status\": \"complete\""));
+            }
+            byte[] raw=zip.getInputStream(zip.getEntry("margin/a/native.csv")).readAllBytes();
+            assertArrayEquals(raw,zip.getInputStream(zip.getEntry("margin/b/native.csv")).readAllBytes());
+            assertArrayEquals(raw,zip.getInputStream(zip.getEntry("zero/a/native.csv")).readAllBytes());
+            var rows=Tiocr1ResetReferenceTest.csv(raw);
+            assertEquals(1005,rows.size(),"Preserve all samples and event sides");
+            double maximumOrderError=0,minimumAngleMargin=Double.POSITIVE_INFINITY;
+            for(var row:rows) {
+                maximumOrderError=Math.max(maximumOrderError,Math.abs(row.get("VAR11")
+                        -limiter.ceilingAmperes(row.get("STATE0"))));
+                minimumAngleMargin=Math.min(minimumAngleMargin,row.get("VAR12")-10);
+                assertTrue(row.get("VAR11")<1300,"The current ceiling must remain active");
+            }
+            assertTrue(maximumOrderError<7e-5,"Every current order follows the entered voltage curve in amperes");
+            assertTrue(minimumAngleMargin>40,"The rectifier remains above its dynamic minimum angle");
+        }
+    }
 }
