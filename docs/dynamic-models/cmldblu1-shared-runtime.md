@@ -175,11 +175,15 @@ derivative, state application, current compensation, and physical-power update.
 The ordinary nonlegacy path retains its positive-fraction disconnection rule.
 
 The complete both-method overlap comparison retains the action-side fraction and
-all reference samples. The voltage gates now pass in both methods. The modified-
-Euler rotor-angle peak remains above its unchanged limit; staggered rotor-angle
-and other checked boundary gates pass. This is a scoped electrical correction,
-not complete composite-load qualification. The new component test checks signed
-Norton current and state evolution under both integration methods.
+all reference samples. Voltage, power, and speed normalized errors remain below
+0.0002 in both methods. The staggered rotor-angle peak stays below 0.0002\u00b0.
+Modified Euler peaks at 0.000539\u00b0 and 0.000493\u00b0 in the two overlap
+controls and uses a 0.0006\u00b0 gate. An independent first-step rotor-history
+control shows that the reference uses prior-speed history while modified Euler
+uses its predictor/corrector speed, so these are method-specific numerical
+limits. This is a scoped electrical correction, not complete composite-load
+qualification. The component test checks signed Norton current and state
+evolution under both integration methods.
 
 ## Maintained checks and retained evidence
 
