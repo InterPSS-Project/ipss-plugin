@@ -132,10 +132,51 @@ public class PsseHyg3GovernorData extends BaseControllerData {
     public void setDbL(double value) { dbL = value; }
 
     @Override public void setValue(String name, int value) {
-        if ("controlFlag".equals(name) || "cflag".equalsIgnoreCase(name)) setControlFlag(value);
+        if ("controlFlag".equalsIgnoreCase(name) || "cflag".equalsIgnoreCase(name)) setControlFlag(value);
+        else setValue(name, (double)value);
     }
 
-    @Override public void setValue(String name, double value) { }
+    @Override public void setValue(String name, double value) {
+        String key = name.toLowerCase(java.util.Locale.ROOT);
+        switch (key) {
+            case "controlflag", "cflag" -> {
+                if (!Double.isFinite(value) || value != Math.rint(value)
+                        || value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)
+                    throw new IllegalArgumentException("HYG3 control flag must be an integer");
+                setControlFlag((int)value);
+            }
+            case "rgate" -> setRgate(value);
+            case "relec" -> setRelec(value);
+            case "tt" -> setTt(value);
+            case "td" -> setTd(value);
+            case "k2" -> setK2(value);
+            case "ki" -> setKi(value);
+            case "k1" -> setK1(value);
+            case "tf" -> setTf(value);
+            case "kg" -> setKg(value);
+            case "tp" -> setTp(value);
+            case "velopen" -> setVelopen(value);
+            case "velclose" -> setVelclose(value);
+            case "pmax" -> setPmax(value);
+            case "pmin" -> setPmin(value);
+            case "db2" -> setDb2(value);
+            case "h0" -> setH0(value);
+            case "qnl" -> setQnl(value);
+            case "tw" -> setTw(value);
+            case "at" -> setAt(value);
+            case "dturb" -> setDturb(value);
+            case "trate" -> setTrate(value);
+            case "dbh" -> setDbH(value);
+            case "eps" -> setEps(value);
+            case "dbl" -> setDbL(value);
+            default -> {
+                if (key.length() == 3 && key.startsWith("gv") && key.charAt(2) >= '1' && key.charAt(2) <= '6')
+                    setGv(key.charAt(2) - '1', value);
+                else if (key.length() == 4 && key.startsWith("pgv") && key.charAt(3) >= '1' && key.charAt(3) <= '6')
+                    setPgv(key.charAt(3) - '1', value);
+            }
+        }
+    }
 
     @Override public String toString() {
         return "HYG3{flag=" + controlFlag + ", gv=" + Arrays.toString(gv)

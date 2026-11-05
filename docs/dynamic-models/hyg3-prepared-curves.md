@@ -774,3 +774,16 @@ decimal coordinate. The trial was reverted. A one-step binary32 projection can
 explain a plateau without establishing the reference's full accepted-state
 precision or stage policy; retain double-precision production storage until
 those are independently identified.
+
+### Named parameter edits before initialization
+
+The HYG3 data object now applies its generic named-value API to all scalar
+parameters and all six gate/power-curve point pairs. Integer and integral
+double selector edits share the same flag; fractional selector values are
+rejected. Named edits use the existing typed setters, so curve revisions still
+invalidate prepared interpolation storage. This affects configuration only;
+the numerical runtime and source-record parser keep their existing equations
+and parameter order. A builder/initialization check exercises both controller
+branches and integration methods. The independent both-method SMIB boundary
+suite remains green with the supplied reference trajectories. Partial-curve
+and complete import-path residual qualification remain separate work.
