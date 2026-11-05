@@ -86,24 +86,32 @@ public class Cdc6tRectifierMarginCrossoverTest extends CorePluginTestSetup {
         while(algorithm.getSimuTime()<.5-.00025)assertTrue(algorithm.solveDEqnStep(true));
         recorder.capture(algorithm.getSimuTime());
         assertEquals(reference.size(),recorder.rows.size(),"Complete event-side channel alignment");
-        var keys=Cdc6tCoupledReferenceTest.KEYS;double[] max=new double[keys.length],times=new double[keys.length];
+        var keys=Cdc6tCoupledReferenceTest.KEYS;double[] max=new double[keys.length],times=new double[keys.length],sumSquared=new double[keys.length];
         for(int i=0;i<reference.size();i++) {
             var row=reference.get(i);var actual=recorder.rows.get(i);
             assertEquals(row.get("time_s"),actual[0],5e-6);
             for(int j=0;j<keys.length;j++){
                 double error=Math.abs(row.get(keys[j])-actual[j+1]);
+                sumSquared[j]+=error*error;
                 if(error>max[j]){max[j]=error;times[j]=actual[0];}
             }
         }
         for(int j=0;j<keys.length;j++)System.out.println("Margin crossover staggered="+staggered+" "+keys[j]+" max="+max[j]+" at="+times[j]);
-        // Reuse the existing complete-fault gates solely to identify unresolved
-        // numerical differences. This diagnostic does not qualify the trajectory.
+        // Physical-channel gates remain independent of the measurement-state
+        // acceptance below. Retain the earlier limits for diagnostic context.
         double[] priorGates=staggered
                 ?new double[]{4.2e-6,.00046,4e-6,.0017,1.8,.0085,1.7,.000115,.00006,.00052,.00011,.00008,.00082,2.9,2.9}
                 :new double[]{.00014,.0085,.000008,.0075,125,.031,125,.004,.0007,.022,.004,.0023,.004,10,10};
         var unresolved=new ArrayList<String>();
-        for(int j=0;j<keys.length;j++)if(max[j]>=priorGates[j])unresolved.add(keys[j]);
+        for(int j=0;j<keys.length;j++)if((j<4||j>6)&&max[j]>=priorGates[j])unresolved.add(keys[j]);
         System.out.println("Margin crossover prior-gate residuals staggered="+staggered+" "+unresolved);
         assertTrue(max[0]<priorGates[0]&&max[2]<priorGates[2],"Bus voltage remains inside the earlier strict gates");
+        for(int j=4;j<=6;j++) {
+            double prefault=Math.abs(reference.getFirst().get(keys[j]));
+            assertTrue(Double.isFinite(prefault)&&prefault>0,"A nonzero reference prefault state is required for relative engineering limits");
+            double rmse=Math.sqrt(sumSquared[j]/reference.size());
+            assertTrue(max[j]<.005*prefault,keys[j]+" peak error "+max[j]+" exceeds 0.5% of prefault "+prefault);
+            assertTrue(rmse<.0001*prefault,keys[j]+" RMSE "+rmse+" exceeds 0.01% of prefault "+prefault);
+        }
     }
 }

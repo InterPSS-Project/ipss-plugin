@@ -2323,11 +2323,19 @@ event-side capture is retained at
 SHA-256 `c64c8cd24a846eb55b69052c92717e09b34f23815c411abb8f981445dfc7c386`.
 `Cdc6tRectifierMarginCrossoverTest` pins these source transitions and runs
 the coupled SMIB comparison under both integration methods. Both bus-voltage
-channels pass the earlier strict limits. The earlier state limits remain
-unmet: modified Euler peaks at about 146 V in the first fault interval and
-0.247 A after clearing, while staggered integration peaks near 2.17 V.
-The full crossover trajectory is therefore still unqualified; no margin
-equation, integration stage, default or tolerance changed.
+channels pass the earlier strict limits. The three measurement states now use
+the user-approved paired engineering gate: peak absolute error below 0.5% of
+each reference prefault state and complete-grid RMSE below 0.01% of that
+state. Every sample and event side contributes. The largest modified-Euler
+state peak is 0.0264% of prefault, and its largest state RMSE is 0.00123%; the
+staggered values are smaller. All three states pass both limits under both
+methods. The broader coupled reference suite also passes unchanged.
+
+This accepts the measurement-state discrepancies; it does not qualify every
+physical output or the remaining protection matrix. The earlier absolute
+state envelopes remain in the diagnostic output, but are no longer the
+acceptance rule for this nonzero-prefault crossover control. No margin
+equation, integration stage, or default changed.
 
 Private failed capture, exact probe inputs and logs:
 `verification-artifacts/cdc6t-margin-intersection-20261105/rejected-capture.zip`,
