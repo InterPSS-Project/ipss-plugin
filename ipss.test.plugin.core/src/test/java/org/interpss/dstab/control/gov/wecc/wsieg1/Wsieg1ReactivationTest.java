@@ -47,6 +47,43 @@ public class Wsieg1ReactivationTest {
             try(var in=z.getInputStream(z.getEntry(tag+file))){Files.copy(in,out.resolve(file));}}
         return out;
     }
+    @org.junit.jupiter.api.Test void independentFirstEventIncrementsUseEventAverageAndOlderRate()throws Exception {
+        for(double h:List.of(.0005,1./240)) {
+            Path input=stage("primary-trip",h);
+            var rows=Wsieg1StateConformanceTest.rows(Files.readAllBytes(input.resolve("native.csv")));
+            var ordinary=simulate(input,false,"primary-trip",h,(r,s,l,t)->{
+                if(Math.abs(t-.1)<1e-9){r.enabled=false;try{s.reactivateMachineAtAcceptedEndpoint("Bus1-mach1",t);}finally{r.enabled=true;}}
+            });
+            var staggered=simulate(input,true,"primary-trip",h,(r,s,l,t)->{
+                if(Math.abs(t-.1)<1e-9){r.enabled=false;try{s.reactivateMachineAtAcceptedEndpoint("Bus1-mach1",t);}finally{r.enabled=true;}}
+            });
+            for(double event:List.of(.025,.1)) {
+                var atEvent=rows.stream().filter(r->Math.abs(r.get("time_s")-event)<1e-6)
+                        .reduce((left,right)->right).orElseThrow();
+                var after=rows.stream().filter(r->r.get("time_s")>event+1e-6)
+                        .findFirst().orElseThrow();
+                double leftRate=event<.05?0.:.2;
+                double rightRate=event<.05?.2:-.2;
+                double olderRate=leftRate;
+                double eventRate=.5*(leftRate+rightRate);
+                double observed=after.get("STATE1")-atEvent.get("STATE1");
+                double expected=h*(1.5*eventRate-.5*olderRate);
+                assertEquals(expected,observed,1e-7,"Independent first interval at "+event+" s");
+                assertTrue(Math.abs(observed-h*rightRate)>.1*h*Math.abs(rightRate),
+                        "A full right-side modified-Euler rate must remain distinguishable");
+                for(boolean shared:List.of(false,true)) {
+                    var frames=shared?staggered.frames:ordinary.frames;
+                    var left=frames.stream().filter(r->Math.abs(r.time()-event)<1e-6)
+                            .reduce((a,b)->b).orElseThrow();
+                    var right=frames.stream().filter(r->r.time()>event+1e-6)
+                            .findFirst().orElseThrow();
+                    double increment=right.values().get("PUBLISHED1")-left.values().get("PUBLISHED1");
+                    assertEquals(shared?expected:h*rightRate,increment,1e-7,
+                            (shared?"Staggered":"Modified Euler")+" first interval at "+event+" s");
+                }
+            }
+        }
+    }
     interface Boundary {void run(Wsieg1SharedSmibTest.Recording r,PsseDStabSolver s,MachineReactivationLifecycle life,double t)throws DStabSimuException;}
     static Wsieg1SharedSmibTest.Recording simulate(Path input,boolean shared,String event,double h,Boundary boundary)throws Exception {
         return simulate(input,shared,event,h,boundary,new boolean[1]);

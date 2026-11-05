@@ -862,3 +862,36 @@ The ordinary core trip/energization path still resets sequence-load equivalents.
 A separate source-controlled comparison must check whether this also rebases
 colocated loads at disturbed voltages before changing default event processing.
 That wider correction is outside this opt-in reclose slice.
+
+### First-step method discriminator
+
+The independent primary-reclose trace has two first-interval effects that the
+existing whole-trajectory maximum obscures. At a reference command change,
+the valve rate changes from zero to `+0.2` pu/s. At reactivation, the retained
+left rate is `+0.2` pu/s and the connected right rate is `-0.2` pu/s. For both
+0.5 ms and quarter-cycle intervals, the first reference increment follows the
+previously established event rule:
+
+```text
+event_rate = (left_rate + right_rate) / 2
+increment = h * (1.5 * event_rate - 0.5 * older_rate)
+```
+
+| Boundary | Reference first increment | Modified-Euler first increment |
+| --- | --- | --- |
+| Command change | `+0.15 h` | `+0.20 h` |
+| Primary reactivation | `-0.10 h` | `-0.20 h` |
+
+After the second post-event interval, the reference increment returns to the
+steady rate. The staggered solver
+matches the event-rule increment; modified Euler retains its defined
+predictor/corrector result. `Wsieg1ReactivationTest` now checks the independent
+first increment and both solver methods at both intervals, including a negative
+control that distinguishes a full right-side rate. This test passes without
+changing the model. The two complete modified-Euler primary-reclose profiles
+still fail their original strict state gates. Changing the valve equation to
+remove this integration-method difference is not supported by the evidence.
+
+The compact eight-profile increment audit and focused XML reports are retained
+privately at `verification-artifacts/wsieg1-reentry-method-discriminator-20261104/validation.zip`,
+SHA-256 `094b43e4342004ca686f8b79ddc62d89e124d065d594fc29ae08a27a4a528998`.
