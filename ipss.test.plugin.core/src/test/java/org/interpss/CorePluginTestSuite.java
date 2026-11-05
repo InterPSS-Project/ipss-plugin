@@ -1397,6 +1397,7 @@ import org.junit.platform.suite.api.Suite;
     Cdc6tOperatingBoundaryTest.class,
     Cdc6tProtectionCoordinatorTest.class,
     Cdc6tProtectedNetworkTest.class,
+    org.interpss.core.dstab.Cdc6tOverlappingProtectionTest.class,
     Cdc6tMinimumCurrentTest.class,
     Cdc6tParametersTest.class,
     Chvdc2ParametersTest.class,
