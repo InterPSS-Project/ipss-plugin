@@ -142,6 +142,15 @@ event-history contract. The source's first-fault zero-travel behavior and all
 previous reset, single-fault, quarter-cycle breaker-delay and physical-action
 gates remain required before the long-reset trajectory can be accepted.
 
+The converged initial network stage is available in the shared solver, but an
+event-history callback can cause a zero-delay relay trip there. That trip
+changes branch status, matrix stamps and possibly load capacity. Its contract
+must preview or snapshot those changes, commit history once, solve the changed
+topology again and restore relay and network state if that solve fails. The
+current load-shedding port has no snapshot or undo for its capacity change;
+position-only projection would leave the zero-delay case unsafe. Explicit hot
+reactivation must not consume a scheduled-event history token.
+
 ## Remaining qualification
 
 An additional cold-repeated independent SMIB profile isolates remote static-load
