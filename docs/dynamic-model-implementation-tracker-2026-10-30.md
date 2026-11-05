@@ -336,6 +336,8 @@ conversion checks separately from exact legacy-model qualification.
 
 ## URGS3T
 
+- Retain the [first fault-on electrical-boundary discriminator](dynamic-models/urgs3t-shared-runtime.md#first-fault-on-electrical-boundary-discriminator): an independent complete machine-state SMIB capture isolates the earliest modified-Euler voltage/reactive-power error to machine damper-flux integration before governor output diverges. Staggered matches the same boundary closely. Resolve the coupled machine/network stage without changing URGS3T servo or turbine equations; strict command and production-step gates remain open.
+
 - Retain the [hot reactivation derivative-history discriminator](dynamic-models/urgs3t-shared-runtime.md#hot-reactivation-derivative-history-discriminator): the independent first two valve increments use an averaged event rate and stored preceding rate. This isolates the modified-Euler first-interval state difference without changing the governor equation, solver method or strict coupled gate. Extend qualified hot reconnection separately from the existing trip controls.
 
 - Retain [atomic numerical stages](dynamic-models/urgs3t-shared-runtime.md#atomic-numerical-stages), matching ordinary predictor/corrector intervals and finite trial validation before publication. Preserve valid retry, reusable storage and unchanged full trajectories; existing reference-accuracy failures remain open.

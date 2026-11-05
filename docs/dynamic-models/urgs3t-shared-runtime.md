@@ -474,6 +474,30 @@ predictor/corrector interval, while the reference retains an averaged two-step
 history. The strict coupled reactivation comparisons remain open; neither
 integration method or acceptance limit was changed.
 
+### First fault-on electrical-boundary discriminator
+
+A cold-repeated independent small-network capture adds all machine electrical
+states to the governor and terminal channels. The complete raw runs are
+byte-identical, preserve both fault event sides and are pinned in private
+evidence. A second capture changes only the turbine temperature limit; its
+first fault-on reference boundary and both Java methods' errors are identical
+to the standard control. At the first 0.5 ms fault-on endpoint, modified Euler differs by
+`0.00014903` pu at the governor-host bus, `0.00171863` pu in reactive power and
+`0.00054826` pu in its damper-flux state. The governor valve state differs by
+only `0.000000249` pu and mechanical power by less than `0.000001` pu. Staggered
+integration on the same input differs by less than `0.000001` pu in bus voltage,
+damper flux and valve state. The registered discriminator checks both methods,
+complete indexed samples and duplicate event times.
+
+The first appreciable modified-Euler fault error is therefore upstream of the
+governor power output, at the coupled machine/network electrical boundary.
+Changing the URGS3T servo or turbine equations would not address this first
+error. This does not establish the precise machine integration defect or close
+the later command and production-step gates; those remain unchanged.
+The private complete-input archive is
+`verification-artifacts/urgs3t-electrical-boundary-20261105/captures.zip`,
+SHA-256 `3b920c8cd7d5f5607ca31a7ec8b34265604d1768640b5161236929dcb7f42e2e`.
+
 ## Validation checkpoint
 
 The initial runtime checkpoint's registered suite executes 4,159 tests, with 36 failures, no errors
