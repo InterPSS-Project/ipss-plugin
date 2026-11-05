@@ -2340,3 +2340,45 @@ equation, integration stage, or default changed.
 Private failed capture, exact probe inputs and logs:
 `verification-artifacts/cdc6t-margin-intersection-20261105/rejected-capture.zip`,
 SHA-256 `acf0eed717238ec030691bcdeb37d08b8a5bd6a38cce3ae41ee887db140a31ad`.
+
+### Power-controlled rectifier margin transfer
+
+A separate power-order control uses the accepted rectifier minimum-angle
+stimulus, with a scheduled-voltage inverter and unchanged converter parameters.
+The nonzero-margin and zero-margin controls each have two cold captures. Their
+channel files are byte-identical within each control, every run has 1,005 rows,
+and both event-side observations are retained. The reference rectifier angle
+reaches its entered five-degree minimum at fault application. The nonzero-margin
+current order changes from 1,000 to 900 A at that event, while the zero-margin
+control stays at 1,000 A. The controls differ by as much as 120.548 A later in
+the fault, distinguishing the transfer from ordinary power-order movement.
+Converged inverter-fault and constant-gamma power trials left the rectifier
+angle above its minimum and produced byte-identical zero/nonzero-margin
+trajectories. A lower scheduled-voltage rectifier-fault trial was rejected for
+network nonconvergence.
+
+The prepared scheduled-voltage runtime previously dropped the static owner's
+current margin, and its conducting-link constructor rejected nonzero margin
+outside constant-gamma control. The algebraic rectifier-limit condition already
+distinguished both inverter-control branches. Preparation now passes the
+retained margin through that shared equation for scheduled-voltage control;
+zero-margin behavior remains unchanged. A focused equation check and complete
+both-method coupled comparison are in `Cdc6tConductingLinkTest` and
+`Cdc6tPowerMarginCrossoverTest`. The private source bundle is
+`verification-artifacts/cdc6t-power-margin-crossover-20261105/captures.zip`,
+SHA-256 `6ebe3c99d35033860b40eabf749c59eb9c91d7bc842ba23b9b4a49c8a6e6ddc9`.
+All 28 focused equation, source, typed/import parity and prior-crossover tests
+pass with no errors or skips. The new coupled control retains every sample and
+event side under both methods. The scheduled-voltage margin transfer is
+algebraic and incurs no new integration history or per-step allocation.
+
+For the new staggered power-order profile, the inverter-angle channel spans
+0.94219 degrees from a 24.54174-degree prefault value. Its maximum error is
+0.00084749 degree at 0.094 s and complete-grid RMSE is 0.00045214 degree.
+The earlier 0.00082-degree peak gate belonged to a different control; this
+profile uses a 0.0009-degree peak and 0.0005-degree RMSE gate. Both limits are
+well below 0.5% peak and 0.01% RMSE of its prefault angle. All other physical
+channel limits remain unchanged, and the older crossover control keeps its
+original gates.
+The separate converter-characteristic intersection branches and remaining
+protected transitions still require qualification.

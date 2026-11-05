@@ -25,8 +25,6 @@ public final class Cdc6tConductingLink {
         resistance=lineOhms;alphaMinimum=alphaMinimumRadians;gammaMinimum=gammaMinimumRadians;
         if(!Double.isFinite(currentMargin)||currentMargin<0||currentMargin>=1)
             throw new IllegalArgumentException("Current margin must be finite in [0,1)");
-        if(currentMargin!=0&&inverterControl!=InverterControl.CONSTANT_GAMMA)
-            throw new IllegalArgumentException("Nonzero dynamic margin currently requires constant-gamma control");
         this.currentMargin=currentMargin;
     }
     /** Writes rectifier P,Q,angle; inverter P,Q,angle; rectifier volts; inverter volts.

@@ -48,7 +48,13 @@ public final class Cdc6tParameters {
     /** Assemble the qualified fixed-tap, ordinary dynamic-angle path. Static-network
      * ownership, constant-gamma controls and other converter variants are not inferred here. */
     public Prepared prepare(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,double lineOhms,OperatingPoint point){
-        return prepare(rectifier,inverter,lineOhms,point,Math.toRadians(source[1]),Cdc6tConductingLink.InverterControl.SCHEDULED_VOLTAGE,0);
+        return prepare(rectifier,inverter,lineOhms,point,0);
+    }
+    /** Retained static current margin also applies at a scheduled-voltage rectifier limit. */
+    public Prepared prepare(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,double lineOhms,
+            OperatingPoint point,double currentMargin){
+        return prepare(rectifier,inverter,lineOhms,point,Math.toRadians(source[1]),
+                Cdc6tConductingLink.InverterControl.SCHEDULED_VOLTAGE,currentMargin);
     }
     /** Equal static inverter angle limits select gamma control and supersede the dynamic gamma minimum. */
     public Prepared prepareConstantGamma(Cdc6tConverterBoundary rectifier,Cdc6tConverterBoundary inverter,

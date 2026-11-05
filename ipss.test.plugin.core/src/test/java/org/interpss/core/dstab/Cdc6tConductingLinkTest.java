@@ -101,4 +101,21 @@ public class Cdc6tConductingLinkTest {
         assertThrows(IllegalArgumentException.class,()->new Cdc6tConductingLink(rectifier,inverter,5,0,0,
                 Cdc6tConductingLink.InverterControl.CONSTANT_GAMMA,1));
     }
+    @Test void scheduledVoltageControlTransfersMarginAtTheRectifierLimit(){
+        var rectifier=new Cdc6tConverterBoundary(true,2,230000,.9263,.9375,13.5939,1e8);
+        var inverter=new Cdc6tConverterBoundary(false,2,230000,.9097,.94375,13.3174,1e8);
+        var margin=new Cdc6tConductingLink(rectifier,inverter,5,Math.toRadians(5),Math.toRadians(20),
+                Cdc6tConductingLink.InverterControl.SCHEDULED_VOLTAGE,.1);
+        var zero=new Cdc6tConductingLink(rectifier,inverter,5,Math.toRadians(5),Math.toRadians(20),
+                Cdc6tConductingLink.InverterControl.SCHEDULED_VOLTAGE,0);
+        double[] actual=new double[8],control=new double[8];
+        assertEquals(1000,margin.evaluateCurrent(1,1,1000,500000,actual,0),0);
+        assertEquals(1000,zero.evaluateCurrent(1,1,1000,500000,control,0),0);
+        assertArrayEquals(control,actual,0);
+        assertEquals(900,margin.evaluateCurrent(.8,1,1000,500000,actual,0),0);
+        assertEquals(1000,zero.evaluateCurrent(.8,1,1000,500000,control,0),0);
+        assertEquals(4500,actual[6]-actual[7],1e-9);
+        assertEquals(5*900*900/1e8,actual[0]+actual[3],1e-12);
+        assertEquals(1000,margin.evaluateCurrent(1,1,1000,500000,actual,0),0);
+    }
 }

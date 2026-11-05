@@ -99,7 +99,7 @@ public final class Cdc6tNetworkPreparation {
         var rectifierBoundary=boundary(rectifier,true,network.getBaseKva()*1000);
         var inverterBoundary=boundary(inverter,false,network.getBaseKva()*1000);
         var prepared=constantGamma?parameters.prepareConstantGamma(rectifierBoundary,inverterBoundary,resistance,point,inverter.getFiringAngLimit().getMin(),owner.getPowerCurrentMargin())
-                :parameters.prepare(rectifierBoundary,inverterBoundary,resistance,point);
+                :parameters.prepare(rectifierBoundary,inverterBoundary,resistance,point,owner.getPowerCurrentMargin());
         var ports=new Cdc6tNormalTerminalPorts(parameters.linkName(),rb,ib,prepared.runtime(),vi,current,vr,prepared.protection());
         if(transferredGamma||parameters.initiallyLimitsCurrent(point))
             ports.prepareInitialControlTransfer(rectifier.powerIntoConverter(),inverter.powerIntoConverter());
