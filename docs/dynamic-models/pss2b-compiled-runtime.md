@@ -599,3 +599,21 @@ this evidence. Keep the existing controller recurrence, both integration
 methods and strict long-run gate while resolving the machine/network interval
 boundary separately. The bounded run logs and complete playback traces remain
 in the private verification workspace.
+
+The same complete prescribed-field playback now records the round-rotor
+machine's four electrical coordinates. At the first accepted fault interval,
+the local minus independent errors are `-0.000191` pu in E'q, `-0.000369` pu in
+E'd, `-0.003403` pu in the d-axis damper state and `-0.001556` pu in the q-axis
+damper state. Their event-right differences before integration are below
+`1.4e-7` pu. The electrical-state discrepancy therefore also develops inside
+the first machine/network interval, with exact field-voltage playback.
+
+The independent rotor angle retains its pre-fault value for the first fault
+interval while speed changes. Its next two angle increments match the
+accepted-speed two-step recurrence `angle += h*360*f*(1.5*speed[n] -
+0.5*speed[n-1])` within `3e-6` degrees at 60 Hz. A within-step corrected-speed
+alternative differs by more than `0.0005` degrees on the first interval. A
+source-only regression pins this stage distinction, and the six complete
+prescribed-controller replays still pass. It explains why retuning PSS2B
+history cannot repair the quarter-cycle modified-Euler gate; no machine or
+controller equation, integration method or acceptance limit was changed.

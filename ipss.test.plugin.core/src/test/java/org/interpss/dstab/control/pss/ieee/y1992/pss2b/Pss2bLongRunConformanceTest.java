@@ -66,6 +66,36 @@ public class Pss2bLongRunConformanceTest {
             assertTrue(Math.abs(single-expected) > .002, "Single-step event recurrence must remain distinguishable");
         }
     }
+
+    @Test void firstFaultRotorAngleUsesAcceptedSpeedHistory() throws Exception {
+        var root=references().stage("pss2b-native-long-quarter-derivative-a-20261102");
+        var rows=Pss2bReferenceReplayTest.rows(root.resolve("native.csv"));
+        double step=1./240.;
+        int right=-1;
+        for(int i=1;i<rows.size();i++)
+            if(Math.abs(rows.get(i).get("time_s")-.05)<step/10
+                    &&rows.get(i).get("time_s").equals(rows.get(i-1).get("time_s")))right=i;
+        assertTrue(right>0,"Retain both fault application sides");
+        assertEquals(rows.get(right-1).get("MACH_ANGLE"),rows.get(right).get("MACH_ANGLE"),0.);
+        // The synthetic network is 60 Hz. The independent rotor angle uses
+        // accepted speed history rather than the within-step corrected speed.
+        double degreesPerSecond=360.*60.;
+        for(int interval=1;interval<=3;interval++) {
+            var before=rows.get(right+interval-1);
+            var after=rows.get(right+interval);
+            double oldSpeed=interval==1?rows.get(right-1).get("MACH_SPEED")
+                    :rows.get(right+interval-2).get("MACH_SPEED");
+            double acceptedSpeed=before.get("MACH_SPEED");
+            double predicted=before.get("MACH_ANGLE")+step*degreesPerSecond*
+                    (1.5*acceptedSpeed-.5*oldSpeed);
+            assertEquals(predicted,after.get("MACH_ANGLE"),3e-6,
+                    "Accepted two-step rotor-angle recurrence at fault interval "+interval);
+        }
+        double correctedFirst=rows.get(right).get("MACH_ANGLE")+step*degreesPerSecond*.5*
+                (rows.get(right).get("MACH_SPEED")+rows.get(right+1).get("MACH_SPEED"));
+        assertTrue(Math.abs(correctedFirst-rows.get(right+1).get("MACH_ANGLE"))>.0005,
+                "Within-step corrected speed is a distinguishable alternative");
+    }
     static java.util.stream.Stream<Arguments> profiles(){
         return java.util.stream.Stream.of("quarter","half-quarter").flatMap(grid->
                 java.util.stream.Stream.of("speed","derivative","voltage-limits","remote-frequency").flatMap(name->
