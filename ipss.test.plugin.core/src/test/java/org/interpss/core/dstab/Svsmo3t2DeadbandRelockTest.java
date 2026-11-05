@@ -16,6 +16,37 @@ import org.junit.jupiter.api.Test;
 /** Independent deadband input/reset evidence, distinct from complete trajectory acceptance. */
 public class Svsmo3t2DeadbandRelockTest extends CorePluginTestSetup {
     private static final double H=.0005;
+    @Test void everyHeldLagEndpointOmitsPriorSlopeWhileLeadLagHistoryRemainsLive() throws Exception {
+        Path root=reference();
+        for(String profile:List.of("enabled","middle","timer","unequal")) {
+            var samples=rows(root.resolve(profile+"-a/reference.csv"));
+            int heldIntervals=0, repeatedNonzeroIntervals=0;
+            double worstRetainedHistoryError=0;
+            for(int i=2;i<samples.size()-1;i++) {
+                var old=samples.get(i-1);var left=samples.get(i);var right=samples.get(i+1);
+                // Exclude duplicate event boundaries; no sample is removed from the fixture.
+                if(left.get("time_s")<=.05 || !(right.get("time_s")>left.get("time_s")
+                        && left.get("time_s")>old.get("time_s"))
+                        || left.get("A_VAR_5")!=0 || right.get("A_VAR_5")!=0) continue;
+                double slope=(left.get("A_VAR_3")-left.get("A_STATE_2"))/.01;
+                double previous=(old.get("A_VAR_3")-old.get("A_STATE_2"))/.01;
+                double increment=right.get("A_STATE_2")-left.get("A_STATE_2");
+                assertEquals(1.5*H*slope,increment,5e-8,
+                        profile+" held lag recurrence at "+left.get("time_s"));
+                worstRetainedHistoryError=Math.max(worstRetainedHistoryError,
+                        Math.abs(increment-H*(1.5*slope-.5*previous)));
+                if(old.get("A_VAR_5")==0 && Math.abs(previous)>1e-3) repeatedNonzeroIntervals++;
+                heldIntervals++;
+            }
+            assertTrue(heldIntervals>40,profile+" must exercise held recurrence repeatedly");
+            assertTrue(worstRetainedHistoryError>5e-4,profile+" must distinguish retained lag history");
+            if(profile.equals("unequal")) assertTrue(repeatedNonzeroIntervals>100,
+                    "A transition-only reset cannot explain repeated unequal-lead-lag increments");
+            System.out.println("SVS_HELD_LAG "+profile+" intervals="+heldIntervals
+                    +" repeatedNonzero="+repeatedNonzeroIntervals
+                    +" retainedSlopeMaximumError="+worstRetainedHistoryError);
+        }
+    }
     @Test void sourceRepeatsDiscriminateRelockAndStoredLeadLagDecay() throws Exception {
         Path root=reference();
         for(String profile:List.of("enabled","disabled","middle","timer","unequal","bypass")) {

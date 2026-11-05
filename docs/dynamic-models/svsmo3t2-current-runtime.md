@@ -668,6 +668,20 @@ as ordinary truncation error. The current participant interface assigns history
 to the solver and has no accepted-projection selective-history invalidation
 contract. No hidden model integrator, history reset or input delay is added.
 
+The complete retained-reference recurrence discriminator now checks every
+positive-duration held-to-held interval in four pulse profiles. The lag
+increment matches `1.5*h*f_current` within 5e-8 pu across 51 enabled, 1,828
+middle, 1,828 timer and 1,068 unequal-lead-lag intervals. Retaining the prior
+lag slope produces maximum local errors from 0.000534 to 0.001961 pu at
+representative re-lock boundaries. In the unequal-lead-lag profile, more than
+100 consecutive held intervals have a nonzero prior slope: resetting only on
+entry to the deadband cannot reproduce this recurrence. The existing separate
+lead-lag check still requires its previous slope during held-input decay.
+This is coordinate-specific evidence, not justification to erase all solver
+history or to claim complete coupled acceptance. In particular, the coupled
+threshold timing and physical publication must also be consistent before
+adopting a selective-history implementation.
+
 The zero-lag source has a separate observation/publication distinction. On the
 pulse's duplicate event row, the algebraic lag coordinate changes from about
 0.304501 to 0.444500 pu, while physical current and voltage retain their prior
