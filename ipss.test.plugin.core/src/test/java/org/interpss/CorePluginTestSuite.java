@@ -936,6 +936,7 @@ import org.junit.platform.suite.api.Suite;
     Svsmo3t2StaggeredSmibTest.class,
     Svsmo3t2LimiterSmibTest.class,
     org.interpss.core.dstab.Svsmo3t2ReleaseStageDiscriminatorTest.class,
+    org.interpss.core.dstab.Svsmo3t2DeadbandRelockTest.class,
     Svsmo3t2MssKernelTest.class,
     Svsmo3t2MssReplayTest.class,
     Svsmo3t2MssBoundaryTest.class,

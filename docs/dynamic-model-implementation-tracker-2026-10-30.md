@@ -132,6 +132,8 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## SVSMO3T2
 
+- Retain [deadband input and accepted state projection](dynamic-models/svsmo3t2-current-runtime.md#deadband-input-accepted-reset-and-live-lead-lag-storage): preserve evolving lead-lag storage, pure trial evaluations and source-observed integral projection at held endpoints. Complete coupled pulse and unequal-gain trajectories and the combined zero-lag/unequal-gain branch; ratio/delay behavior outside the exercised controls remains unqualified.
+
 - Retain independently verified peer-trip removal at MSS bank events, prepared peer ownership and exact stamp-failure rollback under both methods. Keep disconnected physical current separate from stored output-lag state. Later failed-network-solve rollback and full trajectory gates remain open; repeated reference continuation calls cannot substitute for uninterrupted event controls.
 
 - Retain the [accepted recovery clock](dynamic-models/svsmo3t2-current-runtime.md#recovery-clock-and-local-integration-discrimination): use the selected endpoint timestamps rather than summing nominal intervals. Keep the default precision unchanged. Local refinement does not resolve the remaining coarse modified-Euler transition error and is not enabled as a production workaround.
