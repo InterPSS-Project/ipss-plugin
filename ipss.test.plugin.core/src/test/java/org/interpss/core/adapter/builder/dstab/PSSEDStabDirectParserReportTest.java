@@ -65,17 +65,20 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     }
 
     @Test
-    void namedDcRecordIsReportedUnsupportedWithoutLosingFollowingMachine() throws Exception {
+    void missingNamedDcOwnerIsReportedWithoutLosingFollowingMachine() throws Exception {
         var builder=DStabBuilderTestFixture.createBuilder();
         Path dyr=tempDir.resolve("named-dc.dyr");
-        Files.writeString(dyr,"'North DC' 'CDC6T' "+"0 ".repeat(32)+"/ 1 'GENCLS' '1' 3 0 /\n");
+        Files.writeString(dyr,"'North DC' 'CDC6T' "
+                +"5 20 .05 .05 .2 .3 .02 .2 .3 .02 250 500 99 99 400 250 450 500 2000 425 2000 .02 -999 999 -999 0 0 999 999 0 999 .05 "
+                +"/ 1 'GENCLS' '1' 3 0 /\n");
         var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
         assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
         var report=parser.getLastImportReport();
         assertEquals(2,report.totalRecordCount());
-        assertEquals(1,report.count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals(1,report.count(DynamicModelImportStatus.ERROR));
         assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
         assertEquals("CDC6T",report.failures().getFirst().sourceModelName());
+        assertTrue(report.failures().getFirst().message().contains("No static DC-link owner named North DC"));
         assertFalse(report.isStrictlyComplete());
     }
 

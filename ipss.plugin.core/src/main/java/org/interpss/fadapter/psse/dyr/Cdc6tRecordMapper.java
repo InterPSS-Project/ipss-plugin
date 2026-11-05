@@ -2,7 +2,7 @@ package org.interpss.fadapter.psse.dyr;
 
 import org.interpss.dstab.hvdc.Cdc6tParameters;
 
-/** Exact named-record preparation for explicitly assembled DC runtimes; no automatic attachment. */
+/** Decode exact named records into source constants; runtime preparation follows solved load flow. */
 public final class Cdc6tRecordMapper {
     private Cdc6tRecordMapper() {}
     public static Cdc6tParameters prepare(PsseDyrRecord record){

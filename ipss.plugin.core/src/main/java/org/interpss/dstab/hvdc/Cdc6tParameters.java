@@ -1,7 +1,7 @@
 package org.interpss.dstab.hvdc;
 
 /** Immutable source constants prepared outside the integration loop.
- * Creates independently owned numerical runtimes; does not enable automatic attachment. */
+ * Creates independently owned numerical runtimes from a solved static operating point. */
 public final class Cdc6tParameters {
     public static final int CONSTANT_COUNT=32;
     private final String linkName;
