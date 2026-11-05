@@ -99,7 +99,7 @@ restart-pending and zero-threshold controls. Its explicit initialization and
 method-specific criteria are separate from the UV/contactor gates above.
 Restoration, parameter-validation and production-step/long-duration work remain.
 
-Broader Maven discovery also exposes a historical typed-load allocation
-assertion before dynamic initialization. The retained parent executable
-reproduces it identically. That fixture expectation remains a separate open
-compatibility task and does not establish a protection-equation discrepancy.
+The historical typed-load regression now checks the selected source load's
+share of bus demand. Its post-fault voltage checkpoint is an internal
+regression for that allocation; the independent both-method composite SMIB
+captures remain the dynamic-accuracy gate.

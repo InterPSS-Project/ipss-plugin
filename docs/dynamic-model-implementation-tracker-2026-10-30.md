@@ -109,7 +109,6 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 - Retain independently checked legacy tap/grid, reactive allocation and physical current-balance initialization under both methods. Resolve feeder-floor preparation, zero-step behavior and remaining motor-coordinate discrepancies; the complete model remains unqualified.
 - Retain the [independently checked compressor stall/restart histories](dynamic-models/cmldblu1-compressor-lifecycle.md) under both methods. Resolve remaining coupled input preparation, allocated angle observations, bypasses, active protection/reclosure and warm restoration without advancing owned states twice.
 - Compare every internal state and published diagnostic against independent captures.
-- Reconcile the historical typed-load allocation fixture with its declared source-load ownership; retain the independently reproduced baseline failure until that compatibility check is repaired.
 - Investigate the remaining composite-load trajectory discrepancy and tighten the accuracy gates after it is resolved.
 - Preserve bus/load-specific ownership, explicit MVA-base handling and the legacy electronic-load recovery convention.
 
