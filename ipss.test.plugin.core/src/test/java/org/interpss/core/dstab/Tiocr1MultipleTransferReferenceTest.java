@@ -15,6 +15,49 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class Tiocr1MultipleTransferReferenceTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/tiocr-multiple-transfer-20261104/captures.zip");
     private static final Path SURVIVOR=Path.of("testData/private/verification-artifacts/tiocr-fourth-survivor-20261104/captures.zip");
+    private static final Path ALL_OPEN=Path.of("testData/private/verification-artifacts/tiocr-three-transfer-20261104/captures.zip");
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void allThreeTargetsOpenAndDisconnectBothTerminalBuses(boolean staggered,@TempDir Path staged)throws Exception {
+        Assumptions.assumeTrue(Files.isRegularFile(ALL_OPEN),"Retain independent all-open reference");
+        assertEquals("0905ea9affc020617ecbe588ddb548f158fc772311be8f2e5907ff4cb5f10f50",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(ALL_OPEN))));
+        List<Map<String,Double>> reference;
+        try(var zip=new ZipFile(ALL_OPEN.toFile())) {
+            byte[] first=zip.getInputStream(zip.getEntry("a/native.csv")).readAllBytes();
+            assertArrayEquals(first,zip.getInputStream(zip.getEntry("b/native.csv")).readAllBytes());
+            reference=Tiocr1ResetReferenceTest.csv(first).stream().filter(r->r.get("time_s")>=0).toList();
+            for(String file:List.of("network.raw","dynamic.dyr"))Files.write(staged.resolve(file),
+                    zip.getInputStream(zip.getEntry("a/"+file)).readAllBytes());
+        }
+        HspUsageRankedModelTest.setup();
+        Path out=Files.createTempDirectory(Path.of("target"),"tiocr-three-open-");
+        HspUsageRankedModelTest.run("tiocr1-action",false,staggered,false,
+                staged.resolve("network.raw"),staged.resolve("dynamic.dyr"),out);
+        var actual=Tiocr1ResetReferenceTest.csv(Files.readAllBytes(out.resolve("tiocr1-action"
+                +(staggered?"-staggered":"")+"-fault.csv")));
+        assertEquals(reference.size(),actual.size(),"Complete grid including action sides");
+        int action=-1,duplicates=0;
+        for(int i=0;i<actual.size();i++) {
+            var r=reference.get(i);var a=actual.get(i);
+            assertEquals(r.get("time_s"),a.get("time_s"),5e-6);
+            if(i>0&&r.get("time_s").equals(reference.get(i-1).get("time_s"))) {
+                duplicates++;
+                if(r.get("VAR1")==0.&&reference.get(i-1).get("VAR1")==1.)action=i;
+            }
+        }
+        assertEquals(3,duplicates);assertTrue(action>0);
+        for(String channel:List.of("V1","V2","P_PU","Q_PU","ANGLE_DEG")) {
+            double preActionLimit=channel.equals("Q_PU")||channel.equals("ANGLE_DEG")?.004:channel.equals("P_PU")?.002:.001;
+            assertEquals(reference.get(action-1).get(channel),actual.get(action-1).get(channel),preActionLimit,
+                    channel+" pre-action event side");
+            assertEquals(0.,reference.get(action).get(channel),1e-12);
+            assertEquals(0.,actual.get(action).get(channel),1e-8,
+                    channel+" disconnected action side");
+        }
+        for(int i=action;i<actual.size();i++)for(String channel:List.of("V1","V2","P_PU","Q_PU","ANGLE_DEG"))
+            assertEquals(0.,actual.get(i).get(channel),1e-8,
+                    channel+" stays de-energized after all target branches open at row "+i);
+    }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void threeTargetsWithSurvivingCorridor(boolean staggered,@TempDir Path staged)throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(SURVIVOR),"Retain independent connected-corridor reference");

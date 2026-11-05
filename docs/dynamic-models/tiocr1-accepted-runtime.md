@@ -604,6 +604,28 @@ zero failures, errors or skips. The new both-method controls are registered in
 the core plugin suite. These checks use the corrected isolated core candidate;
 default dependency versions are unchanged.
 
+### All-target-open island reference gate
+
+An independent all-three-target-open capture retains 1,006 rows and all three
+event-side duplicates. The line trip at 0.085 second disconnects both terminal
+buses: their voltage, terminal P/Q and the disconnected machine's observed
+angle become zero on the action-right side. The two-method SMIB gate retains
+the complete observation grid and checks both action sides. Its current
+baseline fails twice: Bus1 action-right voltage is 0.65086374 pu under modified
+Euler and 0.65086202 pu under staggered integration, while the reference is
+zero. The eight connected-corridor and transfer controls in the same test
+class pass.
+
+The test recorder now retains the complete action-left network snapshot before
+physical mutation; relay and branch fields no longer come from a different
+topology side than voltage and power. A local trial that deactivated isolated
+buses matched the zero-voltage reference and passed all ten class cases, but
+the ordinary solver skips output for inactive buses and stores the disconnected
+machine's previous angle. It also lacks a qualified reconnection transaction.
+That trial is not production code. Closing this gate requires one accepted
+topology lifecycle for left/right publication, de-energized output, active
+fault stamps, and reactivation or rollback.
+
 
 ## Typed collapsed-parent wildcard allocation
 

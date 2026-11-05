@@ -147,11 +147,7 @@ public class HspUsageRankedModelTest {
             protectionRevision=relayRevision();
             for(var bus:dstabAlgo.getNetwork().getBusList())for(var device:bus.getDynamicBusDeviceList())
                 if(device instanceof Tiocr1RelayModel relay) {
-                    protectionLeft=new TreeMap<>(Map.of(
-                        "RELAY.Current",relay.currentMagnitude(),"RELAY.Position",relay.getPosition(),
-                        "RELAY.Breaker",relay.getBreakerTimer(),"RELAY.Operated",relay.isOperated()?1.:0.,
-                        "RELAY.ShedFraction",relay.getShedFraction(),"RELAY.Revision",(double)relay.getNetworkActionVersion()));
-                    captureBranchStatus(dstabAlgo.getNetwork(),protectionLeft);
+                    protectionLeft=capture(dstabAlgo.getNetwork());
                 }
         }
         @Override public void afterStep(double t) throws com.interpss.dstab.common.DStabSimuException {
