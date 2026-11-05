@@ -65,4 +65,36 @@ public class Hyg3FlowPrecisionDiscriminatorTest {
             assertTrue(sum>1e-5,tag+" unrounded increments can accumulate materially");
         }
     }
+
+    @Test void retainedPidIntegralAndGatePlateausRejectOutputOnlyRounding(@TempDir Path staged)throws Exception {
+        var fixture=new Hyg3ReferenceFixture(staged,ARCHIVE,SHA);
+        String tag="m1-standard-h0p00208333333333-t10-a";
+        var manifest=fixture.captureManifest(tag);
+        assertEquals(1,manifest.path("settings").path("mode").asInt());
+        double h=manifest.path("settings").path("step").asDouble();
+        assertEquals(1./480.,h,1e-10);
+        double ki=manifest.path("initialized_constants").get(5).asDouble();
+        var rows=Hyg3StateConformanceTest.rows(fixture.stage(tag).resolve("native.csv"));
+        for(int coordinate:new int[]{1,4}) {
+            double cumulative=0.;int checked=0;
+            for(int i=1;i+1<rows.size();i++) {
+                var previous=rows.get(i-1);var current=rows.get(i);var next=rows.get(i+1);
+                double time=current.get("time_s");
+                if(time<5.||time>8.5||next.get("time_s")<=time)continue;
+                double left=coordinate==1?ki*previous.get("STATE0"):previous.get("STATE3");
+                double right=coordinate==1?ki*current.get("STATE0"):current.get("STATE3");
+                double increment=h*(1.5*right-.5*left);
+                double value=current.get("STATE"+coordinate);
+                assertEquals(value,next.get("STATE"+coordinate),0.,tag+" retained state "+coordinate);
+                assertTrue(increment!=0.&&Math.abs(increment)<.5*Math.ulp((float)value),
+                        tag+" sub-ULP accepted increment "+coordinate);
+                assertEquals((float)value,(float)(value+increment),0.f,
+                        tag+" accepted binary32 projection "+coordinate);
+                cumulative+=increment;checked++;
+            }
+            assertTrue(checked>1500,tag+" extended plateau "+coordinate);
+            assertTrue(Math.abs(cumulative)>1e-5,
+                    tag+" unrounded accepted increments exceed observation precision "+coordinate);
+        }
+    }
 }

@@ -893,3 +893,29 @@ the long backlash control with a small gate-state discrepancy now passes.
 The ten-second suite still reports five failures: zero-prefault states,
 physical output checks and the separate prescribed-input diagnostic remain
 unqualified. No governor equation or integration policy changed.
+
+### Accepted-coordinate precision and stationary states
+
+The retained long-run source traces provide an additional discriminator beyond
+the published hydraulic-flow plateau. In the PID profile at the smaller
+integration interval, the recorded integral stays unchanged for more than
+2,300 consecutive accepted samples. The documented integral derivative gives
+a nonzero increment on each interval, below half a binary32 unit in the last
+place. Those increments sum to more than `0.000020` pu. The gate has a similar
+plateau: more than 1,600 unchanged accepted samples with nonzero documented
+increments whose sum exceeds `0.000040` pu. Projecting each accepted value to
+binary32 reproduces both plateaus. The source-only discriminator checks these
+claims independently of the Java implementation.
+
+The production controller now projects changed integral, gate and flow
+coordinates at accepted steps for the imported profile with zero backlash.
+It preserves the double-precision initial coordinates, predictor values,
+rejected trials, direct reported-coordinate seeds and stationary coordinates.
+The typed and active-backlash
+profiles retain their original state storage. Both integration methods pass
+the moving-flow reversal control, long-duration coupled and recorded-input
+comparisons, backlash and limit controls, no-event equilibrium, and atomic
+stage-rejection checks. This is a profile-specific accepted-state rule;
+the retained observations do not establish the same precision for other
+profiles or every controller coordinate. The independent short bypass power
+gates remain separate work.

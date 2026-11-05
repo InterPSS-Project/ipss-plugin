@@ -49,12 +49,14 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     private double auxiliaryInput;
     private double committedGateOutput;
     private double committedBacklashInput;
+    private double acceptedIntegrator, acceptedGate, acceptedFlow;
     private double currentGateOutput;
     private double currentCv;
     private double currentOutput;
     private DeadbandMode committedDeadbandMode = DeadbandMode.NEUTRAL;
     private boolean initialized;
     private boolean predictorPending;
+    private boolean staggeredRatePrepared;
     private double pendingStep;
     private Machine initializedMachine;
     private PsseHyg3GovernorData initializedData;
@@ -91,6 +93,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
         initialized = false;
         predictorPending = false;
+        staggeredRatePrepared = false;
         stateMonitor.reset();
         staggeredEvaluationCount = 0;
         if (!validateParameters()) return false;
@@ -131,6 +134,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         pref = d.getRgate() * gate0 + d.getRelec() * pe0;
         state.set(0.0, 0.0, gate0, initialGate, q0, 0.0, pe0, 0.0, 0.0);
         oldState.copyFrom(state);
+        retainAcceptedCoordinates();
         committedGateOutput = initialGate;
         committedBacklashInput = initialGate;
         currentGateOutput = initialGate;
@@ -189,11 +193,13 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
             trialState.plusAverage(oldState, oldDerivatives, corrected, dt);
             trialState.requireFinite();
             constrain(trialState);
+            projectAcceptedState(trialState);
             Algebraic result = algebraic(trialState, committedGateOutput, committedDeadbandMode);
             retainRates(state, corrected, Stage.CORRECTOR);
             state.copyFrom(trialState);
             publish(result);
             commitHistories(result);
+            retainAcceptedCoordinates();
             predictorPending = false;
         }
         return true;
@@ -242,6 +248,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         d.writeTo(rates, offset);
         publish(a);
         staggeredEvaluationCount++;
+        staggeredRatePrepared = true;
     }
 
     @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
@@ -260,9 +267,31 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         requireSharedState();
         if (!Double.isFinite(stepSec) || stepSec <= 0.)
             throw new IllegalArgumentException("HYG3 accepted step must be finite and positive");
-        Algebraic result = algebraic(state, committedGateOutput, committedDeadbandMode);
+        trialState.copyFrom(state);
+        // A direct state seed followed by completion has no integration rate.
+        if (staggeredRatePrepared) projectAcceptedState(trialState);
+        Algebraic result = algebraic(trialState, committedGateOutput, committedDeadbandMode);
+        state.copyFrom(trialState);
         publish(result);
         commitHistories(result);
+        retainAcceptedCoordinates();
+        staggeredRatePrepared = false;
+    }
+
+    private void projectAcceptedState(State s) {
+        // The imported, zero-backlash profile retains these three accepted
+        // coordinates at binary32 precision. Keep initial and stationary
+        // coordinates exact; prediction and rejected trials remain double.
+        if (!sourceConvention() || deadband2Pu() > SMALL) return;
+        if (s.integrator != acceptedIntegrator) s.integrator = (float)s.integrator;
+        if (s.gate != acceptedGate) s.gate = clamp((float)s.gate,effectivePmin,effectivePmax);
+        if (s.flow != acceptedFlow) s.flow = (float)s.flow;
+    }
+
+    private void retainAcceptedCoordinates() {
+        acceptedIntegrator = state.integrator;
+        acceptedGate = state.gate;
+        acceptedFlow = state.flow;
     }
 
     private void commitHistories(Algebraic result) {
