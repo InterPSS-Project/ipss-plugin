@@ -741,6 +741,15 @@ currently retained evidence.
 
 ### Slow-flow precision discriminator and shared gate evaluation
 
+`Hyg3FlowPrecisionDiscriminatorTest` also checks every reported governor
+state in complete long-run captures from both control branches. Each state
+value is within the printed decimal resolution of a binary32 value, including
+moving flow samples. This establishes limited precision at the observation
+boundary. It does not establish the precision of the hidden integrator state:
+the output API may round a wider internal coordinate. The rejected flow-only
+storage trial below remains rejected; identifying the accepted hydraulic rate
+and its history requires separate evidence.
+
 `Hyg3FlowPrecisionDiscriminatorTest` checks the retained long-duration standard
 profiles after five seconds. In three independent profiles, every recorded
 water-flow value remains constant through the end, while the published gate

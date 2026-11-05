@@ -11,6 +11,25 @@ public class Hyg3FlowPrecisionDiscriminatorTest {
     private static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/hyg3-long-duration-agent-20261104/captures.zip");
     private static final String SHA="0ca02f1095d2a8505158311eac18a9a3b42f674e17476383bad157e975be989b";
 
+    @Test void completeReportedStateVectorsHaveBinary32ObservationPrecision(@TempDir Path staged)throws Exception {
+        var fixture=new Hyg3ReferenceFixture(staged,ARCHIVE,SHA);
+        for(String tag:new String[]{"m0-standard-h0p00208333333333-t10-a",
+                "m1-standard-h0p00208333333333-t10-a"}) {
+            var rows=Hyg3StateConformanceTest.rows(fixture.stage(tag).resolve("native.csv"));
+            int moving=0;
+            double firstFlow=rows.getFirst().get("STATE6");
+            for(var row:rows) {
+                for(int state=0;state<9;state++) {
+                    double reported=row.get("STATE"+state);
+                    assertEquals((double)(float)reported,reported,1e-12,
+                            tag+" published state "+state+" at "+row.get("time_s"));
+                }
+                if(row.get("STATE6")!=firstFlow)moving++;
+            }
+            assertTrue(moving>1000,"Quantization must be observed on a moving state, not only equilibrium");
+        }
+    }
+
     @Test void retainedFlowPlateauIsConsistentWithSinglePrecisionIncrements(@TempDir Path staged)throws Exception {
         var fixture=new Hyg3ReferenceFixture(staged,ARCHIVE,SHA);
         for(String tag:new String[]{"m0-standard-h0p00208333333333-t10-a",
