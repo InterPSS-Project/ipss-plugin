@@ -52,7 +52,7 @@ class LegacyStaticLoadPortTest {
         accept(m, .5); assertEquals(.4 * .8 * .8 / .25, g(m), 1e-15);
         assertNotEquals(.4 / .25, g(m));
     }
-    @Test void onlyTheQualifiedWholeStaticPortUsesThisPreparationPolicy() {
+    @Test void wholeStaticMergedBusUsesPreparedPortWithOrWithoutFrequencyCoefficients() {
         for (int frequencyIndex : new int[]{-1, 31, 36}) {
             var net = DStabObjectFactory.createDStabilityNetwork(); net.setBaseKva(100000); net.setFrequency(60);
             var bus = DStabObjectFactory.createDStabBus("B", net).orElseThrow();
@@ -63,7 +63,7 @@ class LegacyStaticLoadPortTest {
             var m = new Cmldblu1Model("C", bus, java.util.Set.of("1"), new Complex(.4, .1), c);
             assertTrue(m.initStates());
             var component = bus.getDynLoadModelList().getFirst();
-            assertEquals(frequencyIndex < 0, component instanceof LegacyStaticLoadPort);
+            assertInstanceOf(LegacyStaticLoadPort.class, component);
             assertTrue(component.getInitLoadPQ().getImaginary() > 0);
             assertEquals(-.94, m.getLegacyConstants()[26]); assertEquals(-.94, m.getData().value(26));
             assertTrue(Cmldznu2Model.isAlgebraicComponent(component));

@@ -61,7 +61,7 @@ class ElectronicFullRecoveryTest {
         }
     }
 
-    @Test void mixedPortOwnsOnlyItsLeavesAndRetainsUnrelatedParentShunts() {
+    @Test void mixedPortOwnsOnlyItsLeavesAndRetainsUnrelatedParentShunts() throws Exception {
         for (boolean frequencyDependent : new boolean[]{false, true}) {
             var net = DStabObjectFactory.createDStabilityNetwork(); net.setBaseKva(100000); net.setFrequency(60);
             var bus = DStabObjectFactory.createDStabBus("B", net).orElseThrow();
@@ -74,14 +74,27 @@ class ElectronicFullRecoveryTest {
             assertTrue(composite.initStates());
             var s = bus.getDynLoadModelList().stream().filter(v -> v.getId().equals("M_S")).findFirst().orElseThrow();
             var e = bus.getDynLoadModelList().stream().filter(v -> v.getId().equals("M_E")).findFirst().orElseThrow();
-            assertEquals(!frequencyDependent, s instanceof LegacyStaticLoadPort);
+            assertInstanceOf(LegacyStaticLoadPort.class, s);
             assertEquals(.2, s.getInitLoadPQ().getReal(), 1e-15); assertEquals(.2, e.getInitLoadPQ().getReal(), 1e-15);
             assertEquals(100.0 / 3, s.getLoadPercent(), 1e-12); assertEquals(100.0 / 3, e.getLoadPercent(), 1e-12);
             assertEquals(.6, bus.getInitLoad().getReal(), 1e-15);
-            if (!frequencyDependent) {
-                assertTrue(e.initStates()); assertEquals(Complex.ZERO, e.getEquivY());
-                assertEquals(0, bus.getShuntY().add(s.getEquivY()).add(e.getEquivY()).subtract(originalShunt).abs(), 1e-15);
-            } else assertTrue(e.getEquivY().abs() > 0);
+            assertTrue(e.initStates()); assertEquals(Complex.ZERO, e.getEquivY());
+            assertEquals(0, bus.getShuntY().add(s.getEquivY()).add(e.getEquivY()).subtract(originalShunt).abs(), 1e-15);
+            if (frequencyDependent) {
+                var port = (LegacyStaticLoadPort) s;
+                bus.setFreq(1.02); bus.setVoltage(new Complex(.5));
+                port.beginNetworkSolution(new com.interpss.dstab.device.NetworkIterationAware.Context(
+                        "DYNAMIC", 0, 0, 50, 1e-9));
+                port.beforeNetworkIteration(0);
+                port.afterNetworkConvergence(); port.endNetworkSolution(true);
+                assertEquals(.2 / (.5 * .5), port.getNamedStates().get("STATIC.LowVoltageG"), 1e-14);
+                var voltage = bus.getVoltage();
+                var physical = port.effectivePower()
+                        .add(((Cmldznu2AlgebraicLoadModel) e).effectivePower()).divide(voltage).conjugate();
+                var injected = port.getNortonCurInj().add(e.getNortonCurInj());
+                var owned = bus.getShuntY().subtract(originalShunt).multiply(voltage);
+                assertEquals(0, physical.add(owned).add(injected).abs(), 1e-12);
+            }
         }
     }
 

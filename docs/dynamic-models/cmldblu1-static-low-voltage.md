@@ -30,11 +30,15 @@ power-factor convention.
 
 `Cmldblu1Model` selects `LegacyStaticLoadPort` automatically for its static
 portion when transformer and feeder are omitted, no motor fractions are active,
-and either both static frequency coefficients are zero or the merged-bus
-composite is wholly static. The zero-frequency configuration may also contain
-the legacy full-recovery electronic portion, using the
+and either both static frequency coefficients are zero or the load bus is merged
+with its parent bus. The merged-bus configuration may also contain the legacy
+full-recovery electronic portion with active static frequency coefficients, using the
 [mixed current interface](cmldblu1-static-electronic-interface.md).
-Other configurations retain their existing runtime; their low-voltage
+The combined configuration preserves the owned-shunt current balance and the
+electronic leaf's pure-current interface in focused controls. Independent source
+trajectories separately qualify whole-static frequency response and mixed
+zero-frequency response; a combined mixed/frequency trajectory remains open.
+Other configurations retain their existing runtime and low-voltage
 qualification remains open.
 
 The port retains the original physical component shunts. Let `Y_c` be only the
