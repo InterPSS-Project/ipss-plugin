@@ -29,7 +29,7 @@ public class Urgs3tCommandBoundaryTest {
             var rows=Urgs3tReferenceTest.rows(Urgs3tReferenceTest.stage("speed-deadband-h"+step+"-t0p5-command-a").resolve("native.csv"));
             int event=-1;
             for(int i=1;i<rows.size()-1;i++)if(rows.get(i).get("time_s").equals(rows.get(i-1).get("time_s"))){event=i;break;}
-            assertTrue(event>0);var at=rows.get(event);var next=rows.get(event+1);
+            assertTrue(event>0);var at=rows.get(event);var next=rows.get(event+1);var following=rows.get(event+2);
             assertEquals(.05,at.get("time_s"),1e-7);
             assertEquals(0.,at.get("SPEED"),1e-12);
             double initial=at.get("STATE0"),initialRate=.2/.1;
@@ -37,6 +37,12 @@ public class Urgs3tCommandBoundaryTest {
             double heun=initial+h*initialRate*(1-h/(2*.1));
             assertEquals(staggered,next.get("STATE0"),5e-8,"Reference derivative average precedes the two-step formula");
             assertTrue(Math.abs(heun-next.get("STATE0"))>.45*h,"Full right-side Heun step must be independently distinguished");
+            double eventRate=.5*initialRate;
+            double acceptedRate=(initial+.2-next.get("STATE0"))/.1;
+            double twoStep=next.get("STATE0")+h*(1.5*acceptedRate-.5*eventRate);
+            assertEquals(twoStep,following.get("STATE0"),5e-8,"The next interval retains the averaged event rate as two-step history");
+            assertTrue(Math.abs(following.get("STATE0")-(next.get("STATE0")+h*acceptedRate))>.4*h,
+                    "The second reference increment distinguishes stored history from an ordinary single-step update");
         }
     }
     @ParameterizedTest @ValueSource(strings={"temperature-limits","rate-limits"})

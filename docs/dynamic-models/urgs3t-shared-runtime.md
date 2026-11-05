@@ -125,6 +125,14 @@ continues to use double-precision integration. Small terminal-voltage responses
 also fail the unchanged range-normalized gate despite micro-pu absolute errors.
 These observations localize remaining work; they do not waive those gates.
 
+The command-event discriminator also checks the next accepted interval. The
+reference averages the old and new derivative at the event, then retains that
+average as the preceding rate in its two-step recurrence. A trial that blended
+only modified Euler's first predictor matched the first sample but missed the
+second by about `2.5e-4` pu at a 0.5 ms step and worsened complete voltage and
+power trajectories. That trial was rejected; the existing modified-Euler method
+and accuracy limits remain unchanged.
+
 ## Command and downstream boundary localization
 
 Independent cold controls tighten only the reference network tolerance from its
