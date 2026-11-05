@@ -100,3 +100,24 @@ remaining model accuracy and runtime failures.
 Private XML reports, bounded log and exact identity audit:
 `verification-artifacts/full-registered-current-20261104/validation.zip`,
 SHA-256 `011a6bf678737831a6459b1574f5c350c6cfd4b5c53a1546132e7bb1aa86545c`.
+
+## Converted WT3 bundle follow-up
+
+The WT3G2, WT3E1, WT3T1 and WT3P1 shared numerical leaves and their attached
+bundle are committed. The solver evaluates all attached controllers at the same
+trial endpoint and refreshes terminal P/Q before their equations. Reusable
+storage, ownership validation and failed-trial restoration are covered by
+focused tests. This supports both integration methods without advancing an
+attached controller through a hidden ordinary step.
+
+The integrated selection passed 29 tests across eight classes, with no failures,
+errors or skips. Complete converted-reference exports retained 303 samples and
+both event-side duplicates under each method. The independent strict voltage
+and power comparison still fails, with its largest voltage difference already
+on the fault-right sample. Matching fault admittance does not explain that
+difference; internal converter source and admittance observations are needed to
+isolate it. Converted-model behavior does not establish exact legacy equations.
+
+Private integrated XML and bounded log:
+`verification-artifacts/wt3-bundle-integrated-20261104/validation.zip`, SHA-256
+`c1f1726342936b6bdf410a9e640242115c64e39724a827169defd73157c33064`.

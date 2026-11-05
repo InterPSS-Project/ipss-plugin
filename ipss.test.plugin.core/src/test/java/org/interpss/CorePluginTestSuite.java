@@ -957,6 +957,7 @@ import org.junit.platform.suite.api.Suite;
 	Wt3p1PsseSmibConformanceTest.class,
 	org.interpss.core.dstab.mach.Wt3p1SignedRateCompatibilityTest.class,
 	org.interpss.core.dstab.mach.Wt3g2SharedStateTest.class,
+	org.interpss.core.dstab.mach.Wt3g2BundleTest.class,
 	org.interpss.core.dstab.mach.Wt3t1SharedStateTest.class,
 	org.interpss.core.dstab.mach.Wt3p1SharedStateTest.class,
 	org.interpss.core.adapter.builder.dstab.Wt3e1SharedStateTest.class,
