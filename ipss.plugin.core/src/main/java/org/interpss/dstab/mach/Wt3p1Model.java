@@ -79,7 +79,8 @@ public final class Wt3p1Model implements ICMLStateProvider {
                                 * (powerOrder - data.powerSetpoint());
         double rate = data.bladeTime() <= EPS
                 ? (target - pitch) / step : (target - pitch) / data.bladeTime();
-        rate = clamp(rate, -data.thetaRateMax(), data.thetaRateMax());
+        double rateMagnitude = data.preparedRateMagnitude();
+        rate = clamp(rate, -rateMagnitude, rateMagnitude);
         if ((pitch >= data.thetaMax() && rate > 0.0)
                 || (pitch <= data.thetaMin() && rate < 0.0)) return 0.0;
         return rate;
