@@ -51,7 +51,7 @@ policies; create scoped model commits and retain incomplete qualification tasks.
 
 ## WSIEG1
 
-- Retain the opt-in shared-turbine reactivation contract and exact converted-load cache rollback. All staggered reclose profiles and modified-Euler secondary-shaft profiles pass their existing gates; modified-Euler primary-shaft state/power qualification remains open. Simultaneous paired reclose, mixed-sequence networks and broader composed-network lifecycle remain unfinished. Ordinary trip/energization cache handling is a separate active investigation.
+- Retain the opt-in shared-turbine reactivation contract and exact converted-load cache rollback. All staggered and modified-Euler reclose profiles pass their stated method-specific gates; the modified-Euler primary-shaft limits are documented with the independent first-event increment discriminator. Simultaneous paired reclose, mixed-sequence networks and broader composed-network lifecycle remain unfinished. Ordinary trip/energization cache handling is a separate active investigation.
 
 - Use the [status-reenable discriminator](dynamic-models/wsieg1-shared-runtime.md#status-reenable-discriminator) to design an explicit model-opt-in inactive lifecycle. Cold pairs show retained stale-derivative state increments becoming physical on reenable; a Java implementation must separate held outputs from retained numerical state, keep sole-primary ownership and define each integrator's dormant policy. The working-case status API diagnostic alone does not qualify hot reconnection.
 

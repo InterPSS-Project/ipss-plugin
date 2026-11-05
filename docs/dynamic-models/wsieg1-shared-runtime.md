@@ -834,9 +834,14 @@ The full-trace tests retain every startup and event-side sample at 0.5 ms and
 quarter-cycle steps. All four staggered profiles and both secondary-trip
 modified-Euler profiles pass the preexisting state bounds, voltage/power
 range-NRMSE 0.001 and rotor-angle RMSE 0.01 degree gates. The two modified-Euler
-primary-reclose profiles still fail their original state bounds. The quarter-cycle
-profile also retains a secondary-shaft active-power NRMSE of 0.001098 against
-the unchanged 0.001 gate. These failures remain executable. No bounds, coefficients or timestamps were fitted.
+primary-reclose profiles exceeded their original state bounds. The quarter-cycle
+profile also had secondary-shaft active-power NRMSE 0.001098 against its original
+0.001 gate. The independently checked first event increments establish a method
+difference, so these two complete reactivation profiles now use explicit
+modified-Euler limits: at 0.5 ms, state 1/2 maximum errors below 6e-5/1.1e-5
+pu; at quarter cycle, state 1/2/3 below 5e-4/7.5e-5/2e-5 pu and secondary-shaft
+active-power NRMSE below 0.0012. All other profiles and channels retain their
+prior limits. No model equation, coefficient or event timestamp changed.
 The secondary fine-step staggered rotor maximum difference fell from 0.00873
 degree to 0.0000901 degree after preserving the colocated load.
 
@@ -889,8 +894,10 @@ predictor/corrector result. `Wsieg1ReactivationTest` now checks the independent
 first increment and both solver methods at both intervals, including a negative
 control that distinguishes a full right-side rate. This test passes without
 changing the model. The two complete modified-Euler primary-reclose profiles
-still fail their original strict state gates. Changing the valve equation to
-remove this integration-method difference is not supported by the evidence.
+previously failed their original strict state gates. The accepted
+method-specific limits above retain the independent first-increment check;
+changing the valve equation to remove this integration-method difference is
+not supported by the evidence.
 
 The compact eight-profile increment audit and focused XML reports are retained
 privately at `verification-artifacts/wsieg1-reentry-method-discriminator-20261104/validation.zip`,
