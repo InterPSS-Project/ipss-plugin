@@ -134,8 +134,12 @@ public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRel
             position=Double.isInfinite(rate)?0:Math.max(0,Math.min(1,position+dt*rate));
             if(position<1-1e-12)return true;
             pickedUp=true; // Breaker timer starts at pickup, without counting this interval twice.
+            // A positive delay cannot operate in the pickup interval itself.
+            if(curve.breakerTime()>0)return true;
         } else breakerTimer+=dt;
-        if(breakerTimer+1e-12<curve.breakerTime())return true;
+        // The source selects the nearest accepted endpoint after pickup. At
+        // coarse steps this can be one interval earlier than a ceiling rule.
+        if(breakerTimer+.5*dt+1e-12<curve.breakerTime())return true;
         operated=true;
         if(!operate)return true;
         double actionCurrent=currentMagnitude(),actionPosition=position,actionBreakerTimer=breakerTimer;

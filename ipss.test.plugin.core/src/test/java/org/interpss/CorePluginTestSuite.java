@@ -1372,6 +1372,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.Tiocr1PhysicalTerminalReferenceTest.class,
     org.interpss.core.dstab.Tiocr1BreakerTransferReferenceTest.class,
     org.interpss.core.dstab.Tiocr1MultipleTransferReferenceTest.class,
+    org.interpss.core.dstab.Tiocr1SeparatedIslandReferenceTest.class,
     org.interpss.core.dstab.Tiocr1LowVoltageReferenceTest.class,
     org.interpss.core.dstab.Tiocr1ReferenceSegmentationContractTest.class,
     org.interpss.core.dstab.StagedRelayTargetLifecycleTest.class,

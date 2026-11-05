@@ -62,12 +62,15 @@ def main():
                         help='Add a third synthetic circuit so multiple transfer trips leave a connected corridor')
     parser.add_argument('--relay-fourth-parallel', action='store_true',
                         help='Add a fourth synthetic circuit as a surviving path for three transfer targets')
+    parser.add_argument('--relay-side-bus', action='store_true',
+                        help='Connect a passive side bus to the relay source to distinguish a separated two-bus island')
     parser.add_argument('--batch', default='hsp-model-references-qualified-20261030')
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     args = parser.parse_args()
     if (args.relay_split_time is not None or args.relay_fault_bus != 1 or args.relay_end != 'from' or args.relay_line_charging != 0.
             or args.relay_threshold is not None or args.relay_reset_time is not None or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
-            or args.relay_transfer_circuits is not None or args.relay_third_parallel or args.relay_fourth_parallel) and not args.fixture.startswith('tiocr1-'):
+            or args.relay_transfer_circuits is not None or args.relay_third_parallel or args.relay_fourth_parallel
+            or args.relay_side_bus) and not args.fixture.startswith('tiocr1-'):
         parser.error('Relay terminal controls require a relay fixture')
     if args.relay_fourth_parallel and not args.relay_third_parallel:
         parser.error('A fourth synthetic circuit requires the third circuit')
@@ -108,7 +111,8 @@ def main():
         +(f'-transfer{args.relay_transfer_circuit}' if args.relay_transfer_circuit is not None else '')
         +(f'-targets{args.relay_transfer_circuits.replace(",", "_")}' if transfer_circuits is not None else '')
         +('-third' if args.relay_third_parallel else '')
-        +('-fourth' if args.relay_fourth_parallel else ''))
+        +('-fourth' if args.relay_fourth_parallel else '')
+        +('-sidebus' if args.relay_side_bus else ''))
     out.mkdir(parents=True, exist_ok=False)
     load = load_fixture(args.fixture)
     if args.fixture == 'acmtblu1' and args.channel_part != 0:
@@ -127,7 +131,8 @@ def main():
     relay_from, relay_to = (1, 2) if args.relay_end == 'from' else (2, 1)
     if relay and (args.relay_end != 'from' or args.relay_line_charging != 0.
                   or args.relay_threshold is not None or args.relay_reset_time is not None or args.relay_breaker_time is not None or args.relay_transfer_circuit is not None
-                  or transfer_circuits is not None or args.relay_third_parallel or args.relay_fourth_parallel):
+                  or transfer_circuits is not None or args.relay_third_parallel or args.relay_fourth_parallel
+                  or args.relay_side_bus):
         shutil.copy2(out / 'network.raw', out / 'original-network.raw')
         shutil.copy2(out / 'dynamic.dyr', out / 'original-dynamic.dyr')
         path = out / 'dynamic.dyr'
@@ -176,6 +181,11 @@ def main():
             if args.relay_fourth_parallel:
                 fields[2] = "'4'"
                 lines.insert(index+2, ','.join(fields))
+        if args.relay_side_bus:
+            busEnd=next(i for i,line in enumerate(lines) if line.startswith('0 / END OF BUS DATA'))
+            lines.insert(busEnd,"3,'PASSIVE SIDE',100.0000,1,1,1,1,1.0000,-0.1144,1.1000,0.9000,1.1000,0.9000")
+            branchEnd=next(i for i,line in enumerate(lines) if line.startswith('0 / END OF BRANCH DATA'))
+            lines.insert(branchEnd,"1,3,'1',0.00000,0.10000,0.00000,0.00,0.00,0.00,0.00000,0.00000,0.00000,0.00000,1,1,0.00,1,1.0000")
         path.write_text('\n'.join(lines) + '\n')
     if args.constant:
         shutil.copy2(out / 'dynamic.dyr', out / 'original.dyr')
@@ -254,7 +264,7 @@ def main():
     if args.fixture=='wsieg1-dual':
         for code,name in [(6,'PMECH_LP'),(7,'SPEED_LP')]:
             checked('secondary machine',psspy.machine_array_channel([-1,code,2],'1',name))
-    for bus in ([1, 2, 3] if load or args.fixture=='wsieg1-dual' else [1, 2]):
+    for bus in ([1, 2, 3] if load or args.fixture=='wsieg1-dual' or args.relay_side_bus else [1, 2]):
         checked('voltage', psspy.voltage_and_angle_channel([-1, -1, -1, bus], [f'V{bus}', f'A{bus}']))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
     checked('step', psspy.dynamics_solution_param_2([di]*8,

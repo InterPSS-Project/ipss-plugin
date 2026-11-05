@@ -54,6 +54,12 @@ public class HspUsageRankedModelTest {
     static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile,
             Path rawFile,Path dynamicFile,Path out,double faultReactance,
             String faultBus) throws Exception {
+        run(fixture,flat,staggered,resetProfile,rawFile,dynamicFile,out,faultReactance,faultBus,.0005);
+    }
+    static void run(String fixture,boolean flat,boolean staggered,boolean resetProfile,
+            Path rawFile,Path dynamicFile,Path out,double faultReactance,
+            String faultBus,double dt) throws Exception {
+        assertTrue(Double.isFinite(dt)&&dt>0);
         assertFalse(resetProfile && (flat || !fixture.startsWith("tiocr1-")));
         var loader=new PSSEMultiFileLoader();
         var context=loader.loadDStab(rawFile.toString(),dynamicFile.toString());
@@ -62,7 +68,7 @@ public class HspUsageRankedModelTest {
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         if(fixture.equals("tiocr1-current")||fixture.equals("tiocr1-load-only")) {net.setStaticLoadIncludedInYMatrix(false);net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_I);}
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        double dt=.0005;algorithm.setSimuStepSec(dt);algorithm.setTotalSimuTimeSec(.5);
+        algorithm.setSimuStepSec(dt);algorithm.setTotalSimuTimeSec(.5);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         var recording=new SmallNetworkRecorder(algorithm,flat,resetProfile);
         algorithm.setSolver(staggered?new StaggeredNetworkRecorder(algorithm,recording):recording);
@@ -197,6 +203,8 @@ public class HspUsageRankedModelTest {
             provider.getNamedStates().forEach((k,v)->values.put("GOV."+k,v));
         for(var bus:net.getBusList())for(var device:bus.getDynamicBusDeviceList())
             if(device instanceof Tiocr1RelayModel relay) {
+                var side=net.getDStabBus("Bus3");
+                if(side!=null)values.put("V3",side.getVoltageMag());
                 values.put("RELAY.Current",relay.currentMagnitude());values.put("RELAY.Position",relay.getPosition());values.put("RELAY.Breaker",relay.getBreakerTimer());
                 values.put("RELAY.Operated",relay.isOperated()?1.:0.);values.put("RELAY.ShedFraction",relay.getShedFraction());
                 values.put("RELAY.Revision",(double)relay.getNetworkActionVersion());

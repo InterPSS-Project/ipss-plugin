@@ -628,6 +628,29 @@ reclosure control exercises that rebuild while the bus fault remains active.
 This contract covers newly isolated individual buses; it does not yet identify
 or solve separated multi-bus islands.
 
+### Separated island and production-step breaker timing
+
+A separate passive bus connected to the source bus remains energized after the
+relay opens every parallel branch to the opposite terminal. The opposite bus
+becomes isolated and reports zero voltage. Cold-repeated independent captures
+at 0.5 ms and quarter-cycle network intervals retain all samples and three
+event-side duplicates. Both integration methods match the complete voltage,
+terminal-power and rotor-angle trajectories. At quarter-cycle spacing, the
+largest range-normalized voltage error is 0.000855, below the 0.001 gate, and
+the largest rotor-angle RMSE is 0.00718 degrees, below the 0.01-degree gate.
+
+Four additional quarter-cycle controls vary the positive breaker delay across
+successive accepted endpoints. They establish that the operation occurs at the
+nearest eligible post-pickup endpoint. The pickup interval itself does not
+consume the breaker delay. The accepted-step relay callback now compares the
+elapsed delay at the interval midpoint; zero delay still acts at pickup. This
+single callback is shared by modified Euler and staggered integration. The
+0.5 ms trajectory controls remain within their original strict gates.
+
+These controls qualify this connected source-side island and the exercised
+delay range. General disconnected-component detection, multi-generator islands,
+and the remaining diagnostic observation-stage cases remain open.
+
 
 ## Typed collapsed-parent wildcard allocation
 
