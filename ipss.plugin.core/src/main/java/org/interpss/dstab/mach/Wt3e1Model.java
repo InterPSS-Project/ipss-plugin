@@ -4,10 +4,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
 
 /** Published WT3E1 Type-3 electrical controller. */
-public final class Wt3e1Model implements ICMLStateProvider {
+public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess {
     private static final double EPS = 1.0e-10;
+    private static final String[] STATE_NAMES = {"Voltage regulator filter", "Voltage regulator integrator",
+            "Torque regulator filter", "Torque regulator integrator", "Voltage sensor", "Power filter",
+            "MVAR/Vref integrator", "Voltage-error/internal-voltage integrator", "WindVar lag",
+            "Fast-PF electrical-power filter"};
+    private final double[] stateBuffer = new double[10], rateBuffer = new double[10];
+    private final IntegrationStateMonitor monitor = new IntegrationStateMonitor(STATE_NAMES);
+    private double pendingStep;
+    private final double[] speedPower, speedValues;
     private final Wt3e1Data data;
     private final Wt3GeneratorModel generator;
     private State state;
@@ -24,6 +35,9 @@ public final class Wt3e1Model implements ICMLStateProvider {
     public Wt3e1Model(Wt3e1Data data, Wt3GeneratorModel generator) {
         this.data = data;
         this.generator = generator;
+        speedPower = new double[] {0.0, .2, .4, .6, data.minimumPowerAtFullSpeed()};
+        speedValues = new double[] {data.omegaPmin(), data.omegaP20(), data.omegaP40(),
+                data.omegaP60(), data.omegaP100()};
     }
 
     public void initialize() {
@@ -43,23 +57,75 @@ public final class Wt3e1Model implements ICMLStateProvider {
         state = new State(qOrder, qOrder, pOrder, torqueIntegral, compensated,
                 speedDeviation, voltage, generator.getInternalVoltageState(),
                 0.0, generator.getP());
+        oldState = null; predictor = null; monitor.reset();
         initialized = true;
         updateCommands();
     }
 
     public void step(double dt, int flag) {
-        if (!initialized || dt <= 0 || (flag != 0 && flag != 1)) return;
-        if (flag == 0) {
-            oldState = state;
-            predictor = derivatives(state);
-            state = advance(oldState, predictor, dt);
-        } else {
-            Derivative corrected = derivatives(state);
-            state = advance(oldState, predictor.add(corrected), .5 * dt);
-            oldState = null;
-            predictor = null;
-        }
-        updateCommands();
+        ready(); interval(dt);
+        if (flag != 0 && flag != 1) throw new IllegalArgumentException("Predictor or corrector required");
+        if (dt == 0) { exclusive(); return; }
+        if (flag == 0 && oldState != null || flag == 1 && (oldState == null || dt != pendingStep))
+            throw new IllegalStateException("Matching WT3E1 predictor/corrector required");
+        Derivative rate = derivatives(state);
+        State candidate = flag == 0 ? advance(state, rate, dt)
+                : advance(oldState, predictor.add(rate), .5 * dt);
+        validate(candidate);
+        publish(candidate);
+        record(rate, flag == 0 ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
+        if (flag == 0) { oldState = state; predictor = rate; pendingStep = dt; }
+        else { oldState = null; predictor = null; }
+        state = candidate;
+    }
+
+    /** Restore an abandoned ordinary predictor without retaining a trial history. */
+    public void cancelPrediction() {
+        ready();
+        if (oldState != null) { publish(oldState); state = oldState; oldState = null; predictor = null; monitor.reset(); }
+    }
+
+    @Override public int staggeredStateCount() { return 10; }
+    @Override public void readStaggeredState(double[] values, int offset) {
+        ready(); buffer(values, offset); copy(state, values, offset);
+    }
+    @Override public void evaluateStaggered(double stepSec, double[] derivatives, int offset) {
+        ready(); interval(stepSec); exclusive(); buffer(derivatives, offset);
+        Derivative rate = derivatives(state);
+        copy(rate, rateBuffer, 0);
+        for (double value : rateBuffer) finite(value);
+        updateCommands(); // Algebraic publication only; no state or accepted history advances.
+        System.arraycopy(rateBuffer, 0, derivatives, offset, 10);
+        record(rate, IntegrationStateMonitor.Stage.STAGGERED);
+    }
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        ready(); interval(stepSec); exclusive(); buffer(values, offset);
+        for (int i = 0; i < 10; i++) finite(values[offset+i]);
+        State candidate = new State(values[offset], values[offset+1], values[offset+2], values[offset+3],
+                values[offset+4], values[offset+5], values[offset+6], values[offset+7], values[offset+8], values[offset+9]);
+        publish(candidate); state = candidate;
+    }
+    @Override public Map<String, Double> getIntegrationStates() { return getNamedStates(); }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return monitor.snapshot(); }
+    private void record(Derivative rate, IntegrationStateMonitor.Stage stage) {
+        copy(state, stateBuffer, 0); copy(rate, rateBuffer, 0); monitor.begin(stage);
+        for (int i = 0; i < 10; i++) monitor.record(i, stateBuffer[i], rateBuffer[i]);
+    }
+    private void validate(State candidate) { copy(candidate, stateBuffer, 0); for (double value : stateBuffer) finite(value); }
+    private void ready() { if (!initialized) throw new IllegalStateException("Initialize WT3E1 first"); }
+    private void exclusive() { if (oldState != null) throw new IllegalStateException("Finish or cancel ordinary WT3E1 prediction first"); }
+    private static void finite(double value) { if (!Double.isFinite(value)) throw new IllegalArgumentException("Finite WT3E1 value required"); }
+    private static void interval(double value) { finite(value); if (value < 0) throw new IllegalArgumentException("Nonnegative interval required"); }
+    private static void buffer(double[] values, int offset) { java.util.Objects.checkFromIndexSize(offset, 10, values.length); }
+    private static void copy(State s, double[] v, int o) {
+        v[o]=s.vregFilter; v[o+1]=s.vregIntegral; v[o+2]=s.torqueFilter; v[o+3]=s.torqueIntegral;
+        v[o+4]=s.voltageSensor; v[o+5]=s.powerFilter; v[o+6]=s.qVrefIntegral;
+        v[o+7]=s.verrorEqIntegral; v[o+8]=s.windVarLag; v[o+9]=s.pelecFilter;
+    }
+    private static void copy(Derivative s, double[] v, int o) {
+        v[o]=s.vregFilter; v[o+1]=s.vregIntegral; v[o+2]=s.torqueFilter; v[o+3]=s.torqueIntegral;
+        v[o+4]=s.voltageSensor; v[o+5]=s.powerFilter; v[o+6]=s.qVrefIntegral;
+        v[o+7]=s.verrorEqIntegral; v[o+8]=s.windVarLag; v[o+9]=s.pelecFilter;
     }
 
     private Derivative derivatives(State s) {
@@ -111,11 +177,13 @@ public final class Wt3e1Model implements ICMLStateProvider {
                 rate(generator.getP(), s.pelecFilter, data.tpp()));
     }
 
-    private void updateCommands() {
+    private void updateCommands() { publish(state); }
+
+    private void publish(State value) {
         double voltage = terminalVoltage();
-        double pOrder = clamp(state.torqueFilter, data.pmin(), data.pmax());
+        double pOrder = clamp(value.torqueFilter, data.pmin(), data.pmax());
         double ipControl = clamp(pOrder / Math.max(EPS, voltage), 0.0, data.ipmax());
-        double eq = data.voltageLimitFlag() == 0 ? state.qVrefIntegral : state.verrorEqIntegral;
+        double eq = data.voltageLimitFlag() == 0 ? value.qVrefIntegral : value.verrorEqIntegral;
         generator.setCommands(ipControl * controlBaseMva / systemBaseMva, eq);
     }
 
@@ -125,9 +193,8 @@ public final class Wt3e1Model implements ICMLStateProvider {
     }
 
     private double optimalSpeed(double p) {
-        double[] px = {0.0, .2, .4, .6, data.minimumPowerAtFullSpeed()};
-        double[] wy = {data.omegaPmin(), data.omegaP20(), data.omegaP40(),
-                data.omegaP60(), data.omegaP100()};
+        double[] px = speedPower;
+        double[] wy = speedValues;
         if (p <= px[0]) return wy[0] - 1.0;
         for (int i = 1; i < px.length; i++) {
             if (p <= px[i]) {
