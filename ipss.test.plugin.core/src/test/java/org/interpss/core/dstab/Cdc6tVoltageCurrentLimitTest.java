@@ -74,4 +74,40 @@ public class Cdc6tVoltageCurrentLimitTest {
                     "The recorded order must distinguish the two voltage selectors");
         }
     }
+
+    @Test void completeVoltageReversalReferenceUsesInverterMeasurement() throws Exception {
+        var archive=Path.of("testData/private/verification-artifacts/cdc6t-vdcol-selector-20261105/captures.zip");
+        Assumptions.assumeTrue(Files.isRegularFile(archive),"Retain voltage-selector reference captures");
+        assertEquals("bfe0fe3eac2a06dd6da492f4ef87904c589930350c089bc8b92773eac15b2922",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(archive))));
+        var limiter=new Cdc6tVoltageCurrentLimit(450,400,490,1000,550,1200);
+        try(var zip=new ZipFile(archive.toFile())) {
+            for(String repeat:new String[]{"a","b"}) {
+                for(String input:new String[]{"manifest.json","network.raw","dynamic.dyr","cdc6t_reference_probe.py"})
+                    assertNotNull(zip.getEntry("selector/"+repeat+"/"+input),"Missing reproducibility input "+input);
+            }
+            byte[] raw=zip.getInputStream(zip.getEntry("selector/a/native.csv")).readAllBytes();
+            assertArrayEquals(raw,zip.getInputStream(zip.getEntry("selector/b/native.csv")).readAllBytes());
+            var rows=Tiocr1ResetReferenceTest.csv(raw);
+            assertEquals(1005,rows.size(),"Keep every sample and both event sides");
+            int reversed=0,distinguished=0;double maxInverterError=0,minLowerVoltageError=Double.POSITIVE_INFINITY;
+            for(var row:rows) {
+                double time=row.get("time_s"),inverterVoltage=row.get("STATE0"),rectifierVoltage=row.get("STATE2");
+                if(time<=.05||time>=.1||rectifierVoltage>=inverterVoltage)continue;
+                reversed++;
+                double requested=500e6/inverterVoltage;
+                double inverterOrder=limiter.limit(requested,inverterVoltage);
+                double lowerVoltageOrder=limiter.limit(requested,rectifierVoltage);
+                if(inverterOrder-lowerVoltageOrder<=1)continue;
+                distinguished++;
+                double observed=row.get("VAR11");
+                maxInverterError=Math.max(maxInverterError,Math.abs(observed-inverterOrder));
+                minLowerVoltageError=Math.min(minLowerVoltageError,Math.abs(observed-lowerVoltageOrder));
+            }
+            assertEquals(95,reversed);
+            assertEquals(82,distinguished);
+            assertTrue(maxInverterError<5e-5,"All distinguishing current-order samples in amperes");
+            assertTrue(minLowerVoltageError>1,"The alternative selector must remain distinguishable");
+        }
+    }
 }
