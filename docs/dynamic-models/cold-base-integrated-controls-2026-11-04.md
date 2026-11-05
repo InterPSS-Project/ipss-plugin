@@ -32,3 +32,24 @@ Comparison baseline archive SHA-256:
 `e2f60baa5406b2784b654fbfbd1aab78c2fb3eaf0c518ab19f876bfff2f84e56`.
 Loaded core artifact SHA-256:
 `38e8e89ae416e8563646f179c1e0309f266ea4f7ee2ab25f6b2b27e506683149`.
+
+## Complete registered validation
+
+The completed full run at plugin source `fbc98ce57` and the same corrected core
+executes 4,959 tests: 228 failures, two errors and 13 skips across 749 XML
+reports. Compared with the preceding ordinary-cache full run, the IEEE9 cold
+energization regression is the sole resolved failure. There are no new failures,
+removed tests or new skips. All 13 added controls pass: eight initial-bound
+controls, one release-stage discriminator and four overlapping-protection
+controls. The remaining 230 failed/error identities and messages are unchanged.
+
+This result qualifies the regression correction, not completion of the model
+work list. Existing independent trajectory and runtime-error gates still prevent
+full acceptance and main-branch promotion.
+
+The bounded log, complete XML, source provenance and exact identity comparison
+are retained privately at
+`verification-artifacts/full-cold-base-integrated-20261104/validation.zip`,
+SHA-256 `adb977db6fea7485196d500ca3e30b3a0cc207f335d8b37dd56ca12f411ad6ee`.
+Subsequent recorder/comparison-only changes receive separate focused validation;
+they are not included in this pinned full-run claim.
