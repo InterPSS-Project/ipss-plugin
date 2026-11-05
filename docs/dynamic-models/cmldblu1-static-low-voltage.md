@@ -134,6 +134,31 @@ The raw inputs, outputs and logs are retained privately in
 `verification-artifacts/cmldblu1-motor-frequency-20261105/captures.zip`,
 SHA-256 `f1154ef4fe727451f2c94913dae83e1a680a54b66521dcafb660ca5fc5a3831e`.
 
+#### Motor-allocation first-iterate discriminator
+
+A controlled allocation keeps the static share fixed while replacing one
+motor, then all motors, with electronic demand. Each source profile has 1,005
+rows and a cold repeat that agrees on every active field; four unused
+diagnostic variables retain run-specific storage. The prepared fault-entry
+conductance is 0.797544, 0.796467 and 0.794167 pu for the original,
+one-motor-removed and no-motor profiles, respectively. The corresponding
+temporary Java static-port trial gives 0.747609, 0.756200 and 0.794167 pu.
+Thus the large first-preparation change appears only when the Java network
+includes motor Norton terms; it is not inherent to the static-port equation.
+This observation does not yet determine the reference's first-iterate motor
+sampling rule.
+
+For the no-motor control, the production port reproduces the complete 0.5 ms
+fault trajectory under both integration methods. The largest voltage NRMSE is
+3.12e-5, static P/Q NRMSE is at most 3.37e-4, angle RMSE is below
+0.000056 degrees, and the peak prepared G difference is 4.39e-8 pu. All
+event-side rows are retained. `CompositeMotorAllocationDiscriminatorTest`
+pins these comparisons and the controlled source preparation. The private
+inputs, complete outputs and cold repeats are in
+`verification-artifacts/cmldblu1-motor-allocation-20261105/captures.zip`,
+SHA-256 `6937323b632cd0a22d90f310c20393faad5e6ba4e3ce831a04e05e91e2d6bbe6`.
+Motor-containing trajectory acceptance remains open.
+
 The port retains the original physical component shunts. Let `Y_c` be only the
 composite's newly added shunt and `Y_aux = -Y_c` its numerical port stamp:
 
