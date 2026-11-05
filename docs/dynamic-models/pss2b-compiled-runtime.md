@@ -617,3 +617,20 @@ source-only regression pins this stage distinction, and the six complete
 prescribed-controller replays still pass. It explains why retuning PSS2B
 history cannot repair the quarter-cycle modified-Euler gate; no machine or
 controller equation, integration method or acceptance limit was changed.
+
+## Long-run nonzero-prefault state gate
+
+The independent ten-second captures initialize the second input path's first
+washout at `0.50001001358` pu. Its complete reference comparison now has a
+paired gate: peak error below 0.5% and full-grid RMSE below 0.01% of that
+prefault magnitude. The largest measured peak across the retained both-method
+matrix is `0.0000474015` pu, and the largest RMSE is `0.0000135334` pu; both
+pass. All samples and both sides of the network events contribute to the gate.
+The other captured stabilizer states initialize at zero, so this relative rule
+cannot qualify them; their separate absolute and lifecycle checks remain open.
+
+The [machine-only fault-boundary discriminator](../benchmarks/machine-only-fault-boundary-2026-11-05.md)
+reproduces the first-interval modified-Euler voltage and damper-state gap
+without a stabilizer or exciter. It supports investigating machine/network
+integration separately from PSS2B equations. The quarter-cycle modified-Euler
+long-run rotor-angle gate remains unchanged and failing.

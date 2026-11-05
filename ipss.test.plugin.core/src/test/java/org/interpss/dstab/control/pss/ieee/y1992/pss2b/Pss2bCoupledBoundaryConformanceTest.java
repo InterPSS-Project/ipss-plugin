@@ -171,12 +171,27 @@ public class Pss2bCoupledBoundaryConformanceTest {
         result.put("prefault_angle_maximum_degrees", prefaultAngleMaximum);
         result.put("exciter_local_substeps", staggered ? exciterSubsteps : 1);
         result.put("first_event_power_state_maximum", firstEventPowerStateError);
+        boolean longRun = profile.path("duration").asDouble(0.) >= 10.;
+        double firstWashoutPrefault = Math.abs(expected.getFirst().get("PSS_STATE_3"));
+        if (longRun) {
+            assertTrue(firstWashoutPrefault > 0. && Double.isFinite(firstWashoutPrefault),
+                    "The long-run second-path washout requires a nonzero reference prefault state");
+            result.put("second_path_first_washout_prefault", firstWashoutPrefault);
+            result.put("second_path_first_washout_peak_fraction", maximum.get("PSS_STATE_3") / firstWashoutPrefault);
+            result.put("second_path_first_washout_rmse_fraction", rmse.get("PSS_STATE_3") / firstWashoutPrefault);
+        }
         Path diagnostic=output.resolve(root.getFileName()+".json");
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(diagnostic.toFile(),result);
         for(var entry:normalizedVoltage.entrySet()) {
             if(constantVoltage.contains(entry.getKey()))
                 assertEquals(0.,rmse.get(entry.getKey()),1e-12,"Constant reference channel uses an absolute roundoff check");
             else assertTrue(entry.getValue()<.001,root.getFileName()+" "+entry.getKey()+" NRMSE="+entry.getValue());
+        }
+        if (longRun) {
+            assertTrue(maximum.get("PSS_STATE_3") < .005 * firstWashoutPrefault,
+                    "Second-path first-washout peak exceeds 0.5% of reference prefault state");
+            assertTrue(rmse.get("PSS_STATE_3") < .0001 * firstWashoutPrefault,
+                    "Second-path first-washout RMSE exceeds 0.01% of reference prefault state");
         }
         assertTrue(rmse.get("MACH_ANGLE") < .01, "Rotor-angle RMSE="+rmse.get("MACH_ANGLE")+" degrees; required <0.01");
         assertTrue(prefaultAngleMaximum < .002, "Prefault maximum rotor-angle error in degrees");
