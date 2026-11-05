@@ -133,7 +133,7 @@ public class Cdc6tNetworkPreparationTest extends CorePluginTestSetup {
         double voltage=i.getDcVoltage();i.setDcVoltage(voltage+1);
         assertThrows(IllegalArgumentException.class,()->Cdc6tNetworkPreparation.prepare(n,p,0));i.setDcVoltage(voltage);
         owner.setPuBasedPowerFlowAlgo(true);assertThrows(IllegalArgumentException.class,()->Cdc6tNetworkPreparation.prepare(n,p,0));owner.setPuBasedPowerFlowAlgo(false);
-        var z=i.getCommutingZ();i.setCommutingZ(new Complex(1,z.getImaginary()));
+        var z=i.getCommutingZ();i.setCommutingZ(new Complex(-1,z.getImaginary()));
         assertThrows(IllegalArgumentException.class,()->Cdc6tNetworkPreparation.prepare(n,p,0));i.setCommutingZ(z);
         i.setCommutingCapacitor(1);assertThrows(IllegalArgumentException.class,()->Cdc6tNetworkPreparation.prepare(n,p,0));i.setCommutingCapacitor(0);
         i.setAcRatedVoltage(Double.NaN);assertThrows(IllegalArgumentException.class,()->Cdc6tNetworkPreparation.prepare(n,p,0));

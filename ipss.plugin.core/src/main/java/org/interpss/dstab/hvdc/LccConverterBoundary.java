@@ -2,7 +2,7 @@ package org.interpss.dstab.hvdc;
 
 /** Prepared non-capacitor-commutated LCC terminal equations, independent of controller integration. */
 public final class LccConverterBoundary {
-    private final double valveVoltsPerPu,noLoadDcVoltsPerPu,commutatingOhms,reactanceOhms,baseVA,powerSign;
+    private final double valveVoltsPerPu,noLoadDcVoltsPerPu,commutatingOhms,reactanceOhms,baseVA,powerSign,lossOhms,magnitudeDropOhms;
     double commutatingResistanceOhms(){return commutatingOhms;}
     boolean isRectifier(){return powerSign>0;}
     /** Signed terminal DC voltage before any externally owned protection short. */
@@ -30,20 +30,31 @@ public final class LccConverterBoundary {
     }
     public LccConverterBoundary(boolean rectifier,int bridges,double acBaseVolts,double transformerRatio,
             double tap,double reactanceOhms,double networkBaseVA) {
+        this(rectifier,bridges,acBaseVolts,transformerRatio,tap,0,reactanceOhms,networkBaseVA);
+    }
+    /** Resistance and reactance are ohms per bridge; converter losses are 2*N*R*I squared. */
+    public LccConverterBoundary(boolean rectifier,int bridges,double acBaseVolts,double transformerRatio,
+            double tap,double resistanceOhms,double reactanceOhms,double networkBaseVA) {
         positive(acBaseVolts);positive(transformerRatio);positive(tap);positive(networkBaseVA);
+        finite(resistanceOhms);
+        if(resistanceOhms<0)throw new IllegalArgumentException("Nonnegative converter resistance required");
         finite(reactanceOhms);
         if(bridges<1||reactanceOhms<0)throw new IllegalArgumentException("Positive bridge count and nonnegative reactance required");
         valveVoltsPerPu=acBaseVolts*transformerRatio/tap;positive(valveVoltsPerPu);
         noLoadDcVoltsPerPu=3*Math.sqrt(2)/Math.PI*bridges*valveVoltsPerPu;positive(noLoadDcVoltsPerPu);
-        commutatingOhms=3/Math.PI*bridges*reactanceOhms;finite(commutatingOhms);
+        double overlapOhms=3/Math.PI*bridges*reactanceOhms;finite(overlapOhms);
+        lossOhms=2.0*bridges*resistanceOhms;finite(lossOhms);
         this.reactanceOhms=reactanceOhms;baseVA=networkBaseVA;powerSign=rectifier?1:-1;
+        commutatingOhms=lossOhms==0?overlapOhms:overlapOhms+lossOhms;
+        magnitudeDropOhms=lossOhms==0?overlapOhms:overlapOhms+powerSign*lossOhms;
+        finite(commutatingOhms);finite(magnitudeDropOhms);
     }
     /** Maximum conducting DC voltage at the supplied minimum angle, with taps held fixed. */
     public double maximumDcVoltage(double acVoltagePu,double amperes,double minimumAngleRadians) {
         positive(acVoltagePu);finite(amperes);finite(minimumAngleRadians);
         if(amperes<0||minimumAngleRadians<0||minimumAngleRadians>=Math.PI/2)
             throw new IllegalArgumentException("Nonnegative current and an angle below pi/2 required");
-        double result=noLoadDcVoltsPerPu*acVoltagePu*Math.cos(minimumAngleRadians)-commutatingOhms*amperes;
+        double result=noLoadDcVoltsPerPu*acVoltagePu*Math.cos(minimumAngleRadians)-magnitudeDropOhms*amperes;
         finite(result);return result;
     }
     /** Writes P into converter, Q into converter (both pu), and firing/extinction angle (radians).
@@ -55,13 +66,15 @@ public final class LccConverterBoundary {
         if(dcVolts<0||amperes<0)throw new IllegalArgumentException("Nonnegative conducting DC boundary required");
         double valveVolts=valveVoltsPerPu*acVoltagePu;
         positive(valveVolts);double noLoadVolts=noLoadDcVoltsPerPu*acVoltagePu;positive(noLoadVolts);
-        double cosine=(dcVolts+commutatingOhms*amperes)/noLoadVolts;
+        double cosine=(dcVolts+magnitudeDropOhms*amperes)/noLoadVolts;
         double angle=Math.acos(unit(cosine));
         double overlapEnd=Math.acos(unit(Math.cos(angle)-Math.sqrt(2)*amperes*reactanceOhms/valveVolts));
         double power=dcVolts*amperes/baseVA;
         double reactive=reactivePower(noLoadVolts,amperes,angle,overlapEnd);
         finite(power);finite(reactive);finite(angle);
-        output[offset]=powerSign*power;output[offset+1]=reactive;output[offset+2]=angle;
+        double acPower=lossOhms==0?powerSign*power:powerSign*power+lossOhms*amperes*amperes/baseVA;
+        finite(acPower);
+        output[offset]=acPower;output[offset+1]=reactive;output[offset+2]=angle;
     }
     /** Firing-angle interface at either terminal. Writes signed DC volts, AC P/Q in pu,
      * then extinction angle in radians. Current is positive from rectifier to inverter;
@@ -79,6 +92,7 @@ public final class LccConverterBoundary {
         double overlapEnd=Math.acos(unit(cosine-Math.sqrt(2)*amperes*reactanceOhms/valveVolts));
         double signedVolts=noLoadVolts*cosine-commutatingOhms*amperes;
         double power=signedVolts*amperes/baseVA;
+        if(lossOhms!=0)power+=lossOhms*amperes*amperes/baseVA;
         double reactive=reactivePower(noLoadVolts,amperes,firingAngleRadians,overlapEnd);
         double extinction=Math.PI-overlapEnd;
         finite(signedVolts);finite(power);finite(reactive);finite(extinction);

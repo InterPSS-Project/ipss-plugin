@@ -7,6 +7,11 @@ public final class Cdc6tConverterBoundary {
             double tap,double reactanceOhms,double networkBaseVA) {
         equations=new LccConverterBoundary(rectifier,bridges,acBaseVolts,transformerRatio,tap,reactanceOhms,networkBaseVA);
     }
+    /** Finite nonnegative commutating resistance in ohms per bridge. */
+    public Cdc6tConverterBoundary(boolean rectifier,int bridges,double acBaseVolts,double transformerRatio,
+            double tap,double resistanceOhms,double reactanceOhms,double networkBaseVA) {
+        equations=new LccConverterBoundary(rectifier,bridges,acBaseVolts,transformerRatio,tap,resistanceOhms,reactanceOhms,networkBaseVA);
+    }
     /** Maximum conducting DC voltage at the supplied minimum angle, with taps held fixed. */
     public double maximumDcVoltage(double acVoltagePu,double amperes,double minimumAngleRadians) {
         return equations.maximumDcVoltage(acVoltagePu,amperes,minimumAngleRadians);

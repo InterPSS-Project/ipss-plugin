@@ -106,12 +106,12 @@ public final class Cdc6tNetworkPreparation {
         return new Binding(owner,point,prepared.runtime(),prepared.protection(),ports);
     }
     private static Cdc6tConverterBoundary boundary(ThyConverter<?> converter,boolean rectifier,double baseVA){
-        if(converter.getCommutingZ()==null||converter.getCommutingZ().getReal()!=0||converter.getCommutingCapacitor()!=0)
-            throw new IllegalArgumentException("Converter resistance and capacitor compensation are not qualified");
+        if(converter.getCommutingZ()==null||converter.getCommutingCapacitor()!=0)
+            throw new IllegalArgumentException("Converter impedance is required and capacitor compensation is not qualified");
         double rated=converter.getAcRatedVoltage();
         if(!Double.isFinite(rated)||rated<0)throw new IllegalArgumentException("Nonnegative converter primary voltage base required");
         double baseVolts=converter.getBus().getBaseVoltage()*(rated>0?rated:1);
         return new Cdc6tConverterBoundary(rectifier,converter.getNBridges(),baseVolts,converter.getXformerRatio(),
-                converter.getXformerTapSetting(),converter.getCommutingZ().getImaginary(),baseVA);
+                converter.getXformerTapSetting(),converter.getCommutingZ().getReal(),converter.getCommutingZ().getImaginary(),baseVA);
     }
 }

@@ -2080,3 +2080,60 @@ residuals are exported. Actual regular rows and internal transitions that lack a
 unique reference pairing are also retained with counts, identities and reasons.
 Seven classifier tests cover these guards, multiple internal events and
 unmatched actual observations; they do not replace physical accuracy gates.
+
+
+## Finite commutating resistance
+
+Explicit CDC6T preparation now accepts finite nonnegative converter resistance
+for standard LCC equipment. Capacitor commutation remains rejected; automatic
+model attachment remains unqualified. The shared electrical boundary adds an
+overload while preserving its existing zero-resistance constructor and arithmetic.
+No new differential state, integration history or per-step allocation is added.
+Adjacent converter models retain their own preparation restrictions.
+
+With `k = 3*N*X/pi` and `r = 2*N*R`, where R and X are ohms per bridge,
+positive terminal DC magnitudes obey:
+
+- Rectifier: `Vr = V0r*cos(alpha) - (kr + rr)*I`.
+- Inverter: `Vi = V0i*cos(gamma) - (ki - ri)*I`.
+- AC powers into the converters: `Pr = Vr*I + rr*I^2` and
+  `Pi = -Vi*I + ri*I^2`.
+
+The firing-angle interface uses signed bridge voltage
+`Vbridge = V0*cos(alpha) - (k+r)*I`; the terminal orientation is applied only
+when converting to terminal DC voltage. Its AC power is `Vbridge*I+r*I^2`.
+Angle inversion, conducting ceilings and power evaluation use these same terms.
+Reactive power retains the overlap integral at the corrected angle. Thus the
+inverter magnitude equation reverses the resistive voltage-drop sign while
+physical dissipation remains positive. The existing analytic zero-power reactive
+limit is preserved.
+
+Six independent cold pairs cover zero resistance, rectifier-only resistance and
+inverter-only resistance at 0.5 ohm per bridge, each with flat and fault profiles.
+The existing active current-ceiling curve is retained. Every pair has identical
+channel files, accepted initialization and unchanged constants after their
+recorded binary32 representation. The new zero-resistance flat/fault files also
+match the earlier independent current-ceiling controls exactly. Fault controls
+exercise the binding ceiling; recorded current satisfies its existing
+0.000039 A envelope and total converter-plus-line loss satisfies the existing
+0.000002 pu power-balance envelope.
+
+The complete 364-test focused matrix has 363 passes, one failure, no errors or
+skips. All measured-input converter P/Q/angle gates pass. Both methods retain
+all 1,005 rows, including flat-profile continuation duplicates at 0.05 and
+0.10 seconds. Eleven of twelve complete trajectory comparisons pass the existing
+conducting envelopes. The rectifier-resistance modified-Euler fault comparison
+still fails its 10 V DC-terminal limits: maximum rectifier/inverter errors are
+10.1973/10.6411 V. Zero-resistance errors in that method are 8.6461/9.0384 V.
+The failing comparison remains explicit; no thresholds or model parameters are
+adjusted to compensate for it. All staggered finite-resistance trajectories
+pass those unchanged envelopes. This is partial dynamic qualification, not
+complete model acceptance.
+
+Analytic tests cover signed/magnitude coordinate equivalence, positive losses
+at either terminal, conducting feasibility, invalid-input atomicity and exact
+zero-resistance arithmetic. Existing zero-resistance overlap samples and internal
+transition snapshots remain exactly unchanged. Adjacent converter boundary,
+coupled-runtime and preparation tests pass with their existing restrictions.
+Private source, captures, full samples, classes and reports are retained in
+`cdc6t-resistance-20261104`.
