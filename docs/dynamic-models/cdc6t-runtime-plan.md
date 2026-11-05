@@ -2301,6 +2301,18 @@ SHA-256 `f72b27f6db37309cce87fe18b700f056fb6873de8c7fbbcccf109d54b854f951`.
 `Cdc6tVoltageCurrentLimitTest` preserves its source quality and nonbinding
 current-order result.
 
+A second converged, cold-paired control lowered the scheduled DC voltage while
+holding the current order and model constants fixed. Its delivered current fell
+below the request, but all recorded current orders follow the entered
+voltage-dependent ceiling within `0.000062` A. The rectifier angle remains
+more than 40 degrees above its entered minimum, and setting current margin to
+zero leaves the complete trace byte-identical. This is a valid limiting
+profile, but it exercises the ordinary voltage-dependent ceiling rather than
+the minimum-angle/current-margin crossover. The source pair and zero-margin
+control are retained at
+`verification-artifacts/cdc6t-margin-vdcol-negative-20261105/captures.zip`,
+SHA-256 `cfd01930af03dc83b133ee4bb280343d7c2123c44acb95aaed1f3452c3b277b1`.
+
 Private failed capture, exact probe inputs and logs:
 `verification-artifacts/cdc6t-margin-intersection-20261105/rejected-capture.zip`,
 SHA-256 `acf0eed717238ec030691bcdeb37d08b8a5bd6a38cce3ae41ee887db140a31ad`.
