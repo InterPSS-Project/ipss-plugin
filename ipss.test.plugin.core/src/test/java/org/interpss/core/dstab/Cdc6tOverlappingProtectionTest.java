@@ -39,7 +39,8 @@ public class Cdc6tOverlappingProtectionTest extends CorePluginTestSetup {
   double h=.0005;
   a.setSimuMethod(com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER);a.setSimuStepSec(h);a.setTotalSimuTimeSec(.5);
   a.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
-  var recorder=new Cdc6tCoupledReferenceTest.Recorder(f);
+  var recorder=new Cdc6tCoupledReferenceTest.Recorder(f,.05,.07,.10,.16);
+  var internalEvents=new ArrayList<Cdc6tNetworkTransition>();recorder.recordInternalTransitions(internalEvents::add);
   a.setSolver(staggered?new Cdc6tCoupledReferenceTest.Shared(recorder):new Cdc6tCoupledReferenceTest.Ordinary(recorder));
   for(int i=0;i<2;i++) {
    String bus=(first.equals("rectifier")==(i==0))?"Bus7":"Bus9";
@@ -62,6 +63,10 @@ public class Cdc6tOverlappingProtectionTest extends CorePluginTestSetup {
   }
   var out=Files.createTempDirectory(Files.createDirectories(Path.of("target/cdc6t-overlap")),first+"-"+staggered+"-");
   Cdc6tProtectedNetworkTest.writeComparison(out,reference,recorder.rows,h);
+  new com.fasterxml.jackson.databind.ObjectMapper().writeValue(out.resolve("event-owners.json").toFile(),
+    Map.of("external_schedule",List.of(.05,.07,.1,.16),"internal_transitions",internalEvents,
+      "regular_rows",recorder.regularRows,"columns",Cdc6tCoupledReferenceTest.KEYS,
+      "first_terminal",first,"staggered",staggered));
   System.out.println("CDC6T overlap "+first+" staggered="+staggered+" expected="+expected+" actual="+transitions);
   assertEquals(first.equals("rectifier")?4:2,expected.size());
   assertEquals(expected.size(),transitions.size(),"Physical current transition count");

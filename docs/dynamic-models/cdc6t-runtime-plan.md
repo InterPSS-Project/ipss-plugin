@@ -2033,3 +2033,40 @@ parameters or weakened existing accuracy gates are introduced.
 Private cold captures and full Java comparisons are retained in
 `cdc6t-overlap-20261104`. This closes the tested cross-cause lifecycle uncertainty,
 not complete protected model qualification or automatic attachment.
+
+
+### Event-owner comparison of overlapping causes
+
+The overlap recorder now receives all four external event times and captures
+immutable internal before/after transition boundaries through the existing
+observer. Previously its two-event default omitted pre-event rows at 0.07 and
+0.16 seconds, and internal transition observations were disabled. Enabling
+these observations preserves every existing regular sample exactly; it adds
+observations without changing the simulation.
+
+`compare_cdc6t_overlap_owners.py` identifies external owners from the supplied
+schedule and internal owners from the accepted transition callback. It pairs
+reference rows only when the same integration interval has a unique owner and
+matching side counts. It never chooses a side by numerical closeness. Coincident
+external/internal events, multiple internal actions or unmatched observation
+counts remain explicitly ambiguous, with candidate owners and a reason in the
+export. Missing, extra and future observations have negative controls. All
+1,011 reference rows remain accounted for; ambiguous rows receive no invented
+numerical pairing. Therefore the classified subset cannot establish complete
+trajectory acceptance.
+
+For rectifier-first controls, 1,006 rows have unambiguous ownership and five
+remain ambiguous; inverter-first has 1,002 classified rows and nine ambiguous.
+Across classified rows, staggered terminal-voltage error stays below
+0.00000749 pu. Modified Euler reaches 0.0000416 pu in the inverter-first control.
+The previous large event-side voltage comparisons are not reproduced among
+these independently paired observations. Real measurement-state differences
+remain: maximum voltage-state errors are approximately 21.1/25.5 V under
+staggered integration and 1,125/1,237 V under modified Euler for inverter-first /
+rectifier-first respectively. Measurement voltage is in volts, current in
+amperes, terminal voltage/power in pu and angle channels in degrees.
+
+These are reported errors with incomplete event-owner coverage, not new or
+relaxed accuracy limits. Raw nearest-side comparisons, every reference duplicate,
+all actual regular samples and all internal transitions remain retained in
+`cdc6t-overlap-owners-20261104` private evidence. Production code is unchanged.

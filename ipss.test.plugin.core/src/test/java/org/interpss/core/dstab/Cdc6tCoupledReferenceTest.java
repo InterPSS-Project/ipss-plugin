@@ -42,9 +42,13 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
         boolean enabled;
         Recorder(Cdc6tCoupledNetworkTest.Fixture f){this(f,.05,.1);}
         Recorder(Cdc6tCoupledNetworkTest.Fixture f,double... eventTimes){this.f=f;this.eventTimes=eventTimes.clone();}
-        void recordInternalTransitions(){
+        void recordInternalTransitions(){recordInternalTransitions(null);}
+        void recordInternalTransitions(java.util.function.Consumer<org.interpss.dstab.hvdc.Cdc6tNetworkTransition> observer){
             f.ports().setTransitionObserver(event->{
-                if(enabled){capture(event.time(),event.before());capture(event.time(),event.after());}
+                if(enabled){
+                    capture(event.time(),event.before());capture(event.time(),event.after());
+                    if(observer!=null)observer.accept(event);
+                }
             });
         }
         private void capture(double t,org.interpss.dstab.hvdc.Cdc6tNetworkTransition.Boundary b){
