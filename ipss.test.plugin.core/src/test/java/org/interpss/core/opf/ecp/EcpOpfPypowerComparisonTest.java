@@ -65,11 +65,18 @@ public class EcpOpfPypowerComparisonTest {
                 name,mode,strategy,stepControl.mode(),stepControl.voltageLimit(),stepControl.adjointLimit(),stepControl.admittanceFraction(),stepControl.boundaryFraction(),stepControl.minimumScale(),stepControl.maximumBacktracks());
         System.out.printf("ECP_FORMULATION %s %s %s formulation=%s initialization=%s%n",name,mode,strategy,config.formulation(),config.initialization());
         String nativeFile=System.getProperty("ecp.native.library","");
-        var sparse=nativeFile.isEmpty()?EcpSparseSolverConfig.javaKlu():EcpSparseSolverConfig.nativeUmfpack(nativeFile);
+        var sparse=nativeFile.isEmpty()?switch(EcpSparseSolverConfig.Backend.valueOf(System.getProperty("ecp.java.sparse.backend","JAVA_KLU"))) {
+            case JAVA_KLU -> EcpSparseSolverConfig.javaKlu();
+            case JAVA_CSPARSE -> EcpSparseSolverConfig.javaCsparse();
+            case NATIVE_UMFPACK -> throw new IllegalArgumentException("Native diagnostic requires an explicit library file");
+        }:EcpSparseSolverConfig.nativeUmfpack(nativeFile);
         var solveReport=new EcpOpfAlgorithm().solveDetailed(network,config,sparse);var result=solveReport.result();
         var linear=solveReport.linearStatistics();
         assertEquals(0,linear.activeMatrices());assertEquals(linear.handlesCreated(),linear.handlesFreed());
-        if(!nativeFile.isEmpty())assertTrue(linear.triangularSolves()>0,"Requested native backend must actually solve");
+        if(sparse.backend()!=EcpSparseSolverConfig.Backend.JAVA_KLU)assertTrue(linear.triangularSolves()>0,"Requested alternative backend must actually solve");
+        if(sparse.backend()==EcpSparseSolverConfig.Backend.JAVA_CSPARSE) {
+            assertEquals(0,linear.handlesCreated());assertEquals(0,linear.handlesFreed());
+        }
         System.out.printf("ECP_LINEAR %s %s %s %s%n",name,mode,strategy,linear);
         System.out.printf("ECP_OPF %s %s %s status=%s iterations=%d objective=%.9f equality=%.3e bound=%.3e dual=%.3e comp=%.3e PQ=%.3e variableChange=%.3e detail=%s%n",
                 name,mode,strategy,result.status(),result.iterations(),result.objective(),result.maximumEqualityResidual(),result.maximumBoundViolation(),
