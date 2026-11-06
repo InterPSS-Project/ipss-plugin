@@ -1,0 +1,615 @@
+{
+  "schema": "rustpower-latest-core-plugin-v1",
+  "date": "2026-11-05",
+  "core_version": "1.4.9",
+  "plugin_version": "1.4.11",
+  "rustpower_version": "0.5.2",
+  "core_commit": "e8eb86c8e7f4cc74e0b9a007422112f483854165",
+  "plugin_measurement_commit": "95e038efe2b919676c2666b7f088ecf80c1508bb",
+  "plugin_build_commit": "2a926edcca7233e420fbb690c821c084c323477e",
+  "plugin_core_dependency": "1.4.9",
+  "plugin_pom_working_tree_patch": "ipss.test.plugin.core/target/nr-rustpower-latest-20261105/plugin-pom.patch",
+  "production_sources_verified_unchanged": true,
+  "build_configuration_note": "The qualification build used -Dipss.core.version=1.4.9. The plugin POM was then aligned to that same version, verified against the test report and validated with Maven. Production sources and all retained runtime fingerprints were verified.",
+  "protocol": {
+    "mode": "CACHED",
+    "api": "LoadflowAlgorithm.loadflow(false)",
+    "backend": "Java KLU",
+    "forks": 3,
+    "cpu": 2,
+    "affinity_mask": 4,
+    "heap_max_bytes": 2147483648,
+    "small_total_warmups_per_process": 50000,
+    "small_measured_per_process": 10000,
+    "large_total_warmups_per_process": 50,
+    "large_measured_per_process": 100,
+    "initial_java_solve_included_in_warmups": true,
+    "small_cases": [
+      "case39",
+      "case118"
+    ],
+    "large_cases": [
+      "case9241pegase",
+      "activsg25k",
+      "activsg70k"
+    ],
+    "tolerance_pu": 1e-06,
+    "max_iterations": 20,
+    "ratio_definition": "InterPSS pooled mean / RustPower pooled mean",
+    "all_samples_retained": true
+  },
+  "qualification": {
+    "focused_passed": 689,
+    "previous_required_checks_passed": 685,
+    "measured_samples": 121800,
+    "case_runtime_fork_groups": 30,
+    "result_audit_status": "all_numerical_count_mode_fingerprint_and_affinity_checks_passed",
+    "independent_interpss_max_mismatch_pu": 5.320343987628551e-08,
+    "independent_interpss_max_complex_voltage_error_pu": 5.495870760051528e-09,
+    "runtime_entries_per_cohort": 108,
+    "full_regression_rerun": false
+  },
+  "results": [
+    {
+      "case": "case39",
+      "rustpower": {
+        "case": "case39",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.013435953333333335,
+        "median_ms": 0.0128,
+        "min_ms": 0.0116,
+        "p95_ms": 0.015104999999999928,
+        "max_ms": 6.4659,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.012597589999999999,
+            "median_ms": 0.0119,
+            "min_ms": 0.0116,
+            "p95_ms": 0.0125,
+            "max_ms": 0.9166
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.01329334,
+            "median_ms": 0.0129,
+            "min_ms": 0.0124,
+            "p95_ms": 0.0135,
+            "max_ms": 0.6828
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.014416930000000001,
+            "median_ms": 0.0128,
+            "min_ms": 0.0121,
+            "p95_ms": 0.0164,
+            "max_ms": 6.4659
+          }
+        ]
+      },
+      "interpss_cached_nr": {
+        "case": "case39",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.014576029999999999,
+        "median_ms": 0.0139,
+        "min_ms": 0.0135,
+        "p95_ms": 0.0161,
+        "max_ms": 0.3961,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.014768129999999999,
+            "median_ms": 0.0138,
+            "min_ms": 0.0135,
+            "p95_ms": 0.0163,
+            "max_ms": 0.3808
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.014492450000000002,
+            "median_ms": 0.0139,
+            "min_ms": 0.0136,
+            "p95_ms": 0.0151,
+            "max_ms": 0.3961
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.01446751,
+            "median_ms": 0.0139,
+            "min_ms": 0.0136,
+            "p95_ms": 0.0159,
+            "max_ms": 0.2026
+          }
+        ]
+      },
+      "mean_time_ratio": 1.0848526813380812,
+      "within_1_2": true,
+      "per_fork_ratios": [
+        1.1722980347828433,
+        1.0902038163471333,
+        1.0035083752227414
+      ]
+    },
+    {
+      "case": "case118",
+      "rustpower": {
+        "case": "case118",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.028863543333333335,
+        "median_ms": 0.0276,
+        "min_ms": 0.027,
+        "p95_ms": 0.0299,
+        "max_ms": 1.3739,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.028511880000000003,
+            "median_ms": 0.0276,
+            "min_ms": 0.0273,
+            "p95_ms": 0.0299,
+            "max_ms": 0.7249
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.02887268,
+            "median_ms": 0.0276,
+            "min_ms": 0.0271,
+            "p95_ms": 0.0299,
+            "max_ms": 1.0117
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.02920607,
+            "median_ms": 0.0274,
+            "min_ms": 0.027,
+            "p95_ms": 0.0301,
+            "max_ms": 1.3739
+          }
+        ]
+      },
+      "interpss_cached_nr": {
+        "case": "case118",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.03837019666666667,
+        "median_ms": 0.0363,
+        "min_ms": 0.0357,
+        "p95_ms": 0.042,
+        "max_ms": 1.2608,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.03861997,
+            "median_ms": 0.0362,
+            "min_ms": 0.0357,
+            "p95_ms": 0.0425,
+            "max_ms": 1.0603
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.03878173000000001,
+            "median_ms": 0.0363,
+            "min_ms": 0.0358,
+            "p95_ms": 0.0428,
+            "max_ms": 1.2608
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.037708889999999995,
+            "median_ms": 0.0364,
+            "min_ms": 0.0358,
+            "p95_ms": 0.0408,
+            "max_ms": 1.2555
+          }
+        ]
+      },
+      "mean_time_ratio": 1.3293654290308317,
+      "within_1_2": false,
+      "per_fork_ratios": [
+        1.3545220448458677,
+        1.343198137478059,
+        1.2911319462015942
+      ]
+    },
+    {
+      "case": "case9241pegase",
+      "rustpower": {
+        "case": "case9241pegase",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 13.066339000000001,
+        "median_ms": 12.852,
+        "min_ms": 12.0794,
+        "p95_ms": 14.511320000000001,
+        "max_ms": 24.7412,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 13.344695999999997,
+            "median_ms": 13.02635,
+            "min_ms": 12.4177,
+            "p95_ms": 15.013345,
+            "max_ms": 24.7412
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 12.978137000000002,
+            "median_ms": 12.78605,
+            "min_ms": 12.297,
+            "p95_ms": 14.360814999999999,
+            "max_ms": 17.4589
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 12.876184,
+            "median_ms": 12.64225,
+            "min_ms": 12.0794,
+            "p95_ms": 14.020309999999998,
+            "max_ms": 19.2166
+          }
+        ]
+      },
+      "interpss_cached_nr": {
+        "case": "case9241pegase",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 14.065336,
+        "median_ms": 13.890049999999999,
+        "min_ms": 12.5932,
+        "p95_ms": 16.072955,
+        "max_ms": 19.5575,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 14.479016000000001,
+            "median_ms": 14.1858,
+            "min_ms": 12.5932,
+            "p95_ms": 16.966034999999998,
+            "max_ms": 18.9026
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 14.015557,
+            "median_ms": 13.78705,
+            "min_ms": 13.0303,
+            "p95_ms": 15.412169999999998,
+            "max_ms": 19.5575
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 13.701435000000002,
+            "median_ms": 13.48215,
+            "min_ms": 12.7217,
+            "p95_ms": 15.091575,
+            "max_ms": 16.5226
+          }
+        ]
+      },
+      "mean_time_ratio": 1.0764557692862553,
+      "within_1_2": true,
+      "per_fork_ratios": [
+        1.085001561669146,
+        1.079935972320218,
+        1.0640912711405803
+      ]
+    },
+    {
+      "case": "activsg25k",
+      "rustpower": {
+        "case": "activsg25k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 41.70487833333334,
+        "median_ms": 40.7849,
+        "min_ms": 38.3127,
+        "p95_ms": 46.550309999999996,
+        "max_ms": 72.6517,
+        "iterations": [
+          5
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 42.453320999999995,
+            "median_ms": 40.7323,
+            "min_ms": 38.3127,
+            "p95_ms": 52.38075,
+            "max_ms": 67.7096
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 41.54926,
+            "median_ms": 40.70115,
+            "min_ms": 38.4204,
+            "p95_ms": 45.3221,
+            "max_ms": 72.6517
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 41.112054,
+            "median_ms": 40.9486,
+            "min_ms": 38.9786,
+            "p95_ms": 43.677144999999996,
+            "max_ms": 45.8648
+          }
+        ]
+      },
+      "interpss_cached_nr": {
+        "case": "activsg25k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 46.65823966666667,
+        "median_ms": 45.777249999999995,
+        "min_ms": 42.0694,
+        "p95_ms": 51.21905000000001,
+        "max_ms": 72.0815,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 47.10244599999999,
+            "median_ms": 46.203950000000006,
+            "min_ms": 42.7426,
+            "p95_ms": 51.34744499999999,
+            "max_ms": 72.0815
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 45.283104,
+            "median_ms": 44.4714,
+            "min_ms": 42.0694,
+            "p95_ms": 49.134405,
+            "max_ms": 65.6257
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 47.589169,
+            "median_ms": 46.66105,
+            "min_ms": 43.665,
+            "p95_ms": 53.810775,
+            "max_ms": 64.7463
+          }
+        ]
+      },
+      "mean_time_ratio": 1.118771748804606,
+      "within_1_2": true,
+      "per_fork_ratios": [
+        1.1095114561237742,
+        1.0898654753417993,
+        1.1575478325651158
+      ]
+    },
+    {
+      "case": "activsg70k",
+      "rustpower": {
+        "case": "activsg70k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 227.37426333333332,
+        "median_ms": 225.23465,
+        "min_ms": 214.8707,
+        "p95_ms": 244.095225,
+        "max_ms": 297.3817,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 222.368083,
+            "median_ms": 221.0729,
+            "min_ms": 214.8707,
+            "p95_ms": 233.242955,
+            "max_ms": 242.987
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 229.69071,
+            "median_ms": 226.74200000000002,
+            "min_ms": 219.3224,
+            "p95_ms": 246.80606,
+            "max_ms": 297.3817
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 230.06399699999997,
+            "median_ms": 227.6199,
+            "min_ms": 221.0346,
+            "p95_ms": 245.78211999999996,
+            "max_ms": 284.3441
+          }
+        ]
+      },
+      "interpss_cached_nr": {
+        "case": "activsg70k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 207.409849,
+        "median_ms": 204.72865000000002,
+        "min_ms": 193.3604,
+        "p95_ms": 223.24544000000003,
+        "max_ms": 340.1518,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 206.432822,
+            "median_ms": 204.42455,
+            "min_ms": 196.2383,
+            "p95_ms": 220.34264499999998,
+            "max_ms": 239.1558
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 206.05182000000002,
+            "median_ms": 204.6471,
+            "min_ms": 200.015,
+            "p95_ms": 211.48135000000002,
+            "max_ms": 272.7713
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 209.74490500000005,
+            "median_ms": 206.0764,
+            "min_ms": 193.3604,
+            "p95_ms": 225.36584499999998,
+            "max_ms": 340.1518
+          }
+        ]
+      },
+      "mean_time_ratio": 0.9121958042187684,
+      "within_1_2": true,
+      "per_fork_ratios": [
+        0.9283383622999528,
+        0.8970838219795656,
+        0.9116806963933608
+      ]
+    }
+  ],
+  "original_all_five_target_met": false,
+  "evidence_hashes": {
+    "ipss.test.plugin.core/target/nr-rustpower-latest-20261105/source-qualified.json": {
+      "sha256": "8f1359734099df370151780fd6bb9ec06d2e18339c0625a140741bf3f91b6fec",
+      "bytes": 950774
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-20261105/source-build-before.json": {
+      "sha256": "f9a0d5468a4a7e87a780f5b4017eb4f038a68514cc935de393ebf3f6e3ed6cdb",
+      "bytes": 949684
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-20261105/source-qualified-before-pom-update.json": {
+      "sha256": "462c8e754f6a5083f6d76720ea30463587243b3782f4fc2c1eb5ee07b752395b",
+      "bytes": 950035
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-20261105/build-preflight.json": {
+      "sha256": "fe3734c91085d19827d977d2a4a6d8bf3c61cd414619ea06841e491db623e32b",
+      "bytes": 113509
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-20261105/plugin-pom.patch": {
+      "sha256": "d9d5c0054296e78da2d9e819c1eb120b7b9ea9f63c87044cec28135025e3f287",
+      "bytes": 468
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/result-audit.json": {
+      "sha256": "e64cfdd5a4c706487029b4830cfcd753112fcfcc6fa85d8cc04d16ceb48ddc4f",
+      "bytes": 4630
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/summary.json": {
+      "sha256": "935031fcc2360e329a49f6314a02ed98b33f1d6f559b69212e65b10cdf8f547c",
+      "bytes": 9495
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/target-verification.json": {
+      "sha256": "a7d3229a4528cf30cdf9747664ce5e5959b25ad3b3a26e70b2341cc16fc79501",
+      "bytes": 1097
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/runs.json": {
+      "sha256": "20bba830c9535199f365da7de5ad615c2dce1146a5e0950aa70c7cc19fda2c46",
+      "bytes": 2382
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/small/environment.json": {
+      "sha256": "c6c1628412593a34990ed13267bb65f5480c3ec2c7e3fce27317e16461161d25",
+      "bytes": 67422
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/small/sha256.json": {
+      "sha256": "a204aa84309db4b7b81c2e90347c77f0db7fa0306ad8e422e66275e32e52db5f",
+      "bytes": 13317
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/small/summary.json": {
+      "sha256": "f2d9e82b228f595d6f38a19dfa12ccef11a6a046726211b088681d9063e32f3e",
+      "bytes": 5637
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/small/target-verification.json": {
+      "sha256": "5a8ae579a16169e623f3251a27e3a6d9b476bd545607e5293212008f9e71d567",
+      "bytes": 682
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/small/interpss-validation.json": {
+      "sha256": "772e2b0bf44c051cb19542011faf00cd574e57cf3d592126778e546d393ac67c",
+      "bytes": 1541
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/large/environment.json": {
+      "sha256": "5831c9b8fa165df8fd31a817da7e6aed5d4ee715d19ec32c6717e76eb1402b3c",
+      "bytes": 67347
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/large/sha256.json": {
+      "sha256": "1e5d4fb3a8770c15ae4de13fed45aeac674c350c8697831635c1d767cbc33937",
+      "bytes": 13401
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/large/summary.json": {
+      "sha256": "e523e496be0cd6c527867477f752f40522bbbfb4b2940fe3c0370f6bda6a191c",
+      "bytes": 3863
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/large/target-verification.json": {
+      "sha256": "a07ca903bbd642c321722b766e8ca5c2d1e474824b3245f467a7bb91876d3cac",
+      "bytes": 493
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-results-20261105/large/interpss-validation.json": {
+      "sha256": "b07d9bde510809d378ccab87883037a6a4339feae9d7c52d23a415599063528e",
+      "bytes": 1031
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-build-b-20261105.log.status.json": {
+      "sha256": "e227bda416243a62556980c2b06b9b9c1bad1f8749c47f6f8371593020b1d989",
+      "bytes": 159
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-pom-20261105.log.status.json": {
+      "sha256": "bf61c17695b629befaa3c89136af999e7f4d4396c3551f782e31c23795854821",
+      "bytes": 158
+    },
+    "ipss.test.plugin.core/target/nr-rustpower-latest-timing-20261105.log.status.json": {
+      "sha256": "9207aa24632248765a3e9c627417f40db6d54914476ac2e946980a0a6c5caa9d",
+      "bytes": 158
+    }
+  }
+}
