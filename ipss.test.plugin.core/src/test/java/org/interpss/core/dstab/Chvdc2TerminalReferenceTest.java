@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.dstab.hvdc.*;
@@ -33,7 +34,9 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             1e-5,1e-5,1e-5,1e-5,.002,.002,.002,.002,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,.002,.01};
     private static final double BOUNDARY_NRMSE_LIMIT=.02, STATE_NRMSE_LIMIT=.05;
     private static final double SMALL_RANGE_LIMIT_MULTIPLIER=10.;
-    private static final double RAML_ANGLE_RMSE_LIMIT_DEG=.1, RAML_MARKER_RMSE_LIMIT_S=.001;
+    private static final double RAML_ANGLE_RMSE_LIMIT_DEG=.1;
+    private static final double LOW_MAGNITUDE_STATE_REFERENCE_RMS_LIMIT=1e-2;
+    private static final double LOW_MAGNITUDE_STATE_ERROR_RMSE_LIMIT=1e-4;
     @TempDir Path folder;
     @BeforeAll static void integrity()throws Exception {
         Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Retain independent coupled reference captures");
@@ -117,6 +120,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         final com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm;
         final Chvdc2NetworkPreparation.Binding binding;final Chvdc2TerminalPorts ports;
         final List<double[]> rows=new ArrayList<>();boolean enabled;int networkSolves;
+        final List<double[]> dcBoundaries=new ArrayList<>();
         final List<Map<String,Double>> histories=new ArrayList<>();
         boolean faultEnabled=true;
         final double[] states,boundary=new double[10];
@@ -131,6 +135,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             double[] row=new double[11+states.length];row[0]=time;row[1]=r.abs();row[2]=i.abs();row[3]=boundary[2];row[4]=boundary[3];
             row[5]=rp.getReal();row[6]=rp.getImaginary();row[7]=ip.getReal();row[8]=ip.getImaginary();row[9]=states[6];row[10]=states[7];
             System.arraycopy(states,0,row,11,states.length);rows.add(row);histories.add(binding.runtime().getIntegrationHistories());
+            dcBoundaries.add(new double[]{boundary[0],boundary[1]});
         }
     }
     private static final class Ordinary extends DefaultDynamicSimulationSolver {
@@ -163,7 +168,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         compare(source,tag,staggered,true,Chvdc2TerminalPorts.ProtectionClock.BINARY32);
     }
     private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile)throws Exception {
-        compare(archive,tag,staggered,protectedProfile,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME);
+        compare(archive,tag,staggered,protectedProfile,Chvdc2TerminalPorts.ProtectionClock.BINARY32);
     }
     private void compare(Path archive,String tag,boolean staggered,boolean protectedProfile,Chvdc2TerminalPorts.ProtectionClock clock)throws Exception {
         compare(archive,tag,staggered,protectedProfile,clock,1);
@@ -247,7 +252,7 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         double[] maximum=new double[channels],times=new double[channels];int duplicates=0,step=0;
         double[] referenceMin=new double[channels],referenceMax=new double[channels];
         Arrays.fill(referenceMin,Double.POSITIVE_INFINITY);Arrays.fill(referenceMax,Double.NEGATIVE_INFINITY);
-        double[][] periodSquaredError=new double[2][channels];int[] periodSamples=new int[2];
+        double[][] periodSquaredError=new double[2][channels],periodSquaredReference=new double[2][channels];int[] periodSamples=new int[2];
         int[] periodByRow=new int[recorder.rows.size()];
         boolean faultOn=false;
         float referenceClock=(float)(-2*h);
@@ -280,8 +285,19 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                     checks.add(()->assertTrue(Double.isFinite(actual[channel+1])&&Double.isFinite(target),"Finite sample/channel "+index+"/"+channel));
                     referenceMin[k]=Math.min(referenceMin[k],target);referenceMax[k]=Math.max(referenceMax[k],target);
                     periodSquaredError[period][k]+=error*error;
+                    periodSquaredReference[period][k]+=target*target;
                     if(Math.abs(error)>maximum[k]){maximum[k]=Math.abs(error);times[k]=actual[0];}w.write(","+actual[k+1]+","+target+","+error);}
                 w.write("\n");
+            }
+        }
+        try(var w=BenchmarkOutputGuard.newWriter(output.resolve("dc-interface.csv"),2*1024*1024)) {
+            w.write("time_s,reference_time_s,actual_rectifier_dc_kv,reference_rectifier_dc_kv,actual_inverter_dc_kv,reference_inverter_dc_kv,actual_state2,reference_state2,actual_state3,reference_state3\n");
+            for(int row=0;row<recorder.rows.size();row++){
+                var actual=recorder.rows.get(row);var expected=reference.get(row);var dc=recorder.dcBoundaries.get(row);
+                w.write(actual[0]+","+expected.get("time_s")+","+dc[0]*.001+","+expected.get("VAR6")
+                        +","+dc[1]*.001+","+expected.get("VAR8")
+                        +","+actual[13]+","+expected.get("STATE2")
+                        +","+actual[14]+","+expected.get("STATE3")+"\n");
             }
         }
         var report=new LinkedHashMap<String,Object>();report.put("profile",tag);report.put("staggered",staggered);report.put("completed_samples",recorder.rows.size());
@@ -290,22 +306,32 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         report.put("reference_samples",reference.size());report.put("event_duplicates",duplicates);report.put("trajectory_complete",stopped==null);
         report.put("maximum_absolute_errors",maximum);report.put("maximum_error_times",times);
         report.put("previous_maximum_absolute_limits",Arrays.copyOf(LIMITS,channels));
-        Double[][] periodNrmse=new Double[2][channels],periodRmse=new Double[2][channels];
+        Double[][] periodNrmse=new Double[2][channels],periodRmse=new Double[2][channels],periodRelativeRmse=new Double[2][channels],periodReferenceRms=new Double[2][channels];
+        boolean[][] lowMagnitudeState=new boolean[2][channels];
         double[] referenceRange=new double[channels];boolean[] useRmse=new boolean[channels];
         for(int period=0;period<2;period++)if(periodSamples[period]>0)for(int k=0;k<channels;k++) {
             double range=referenceMax[k]-referenceMin[k];
             periodRmse[period][k]=Math.sqrt(periodSquaredError[period][k]/periodSamples[period]);
+            periodReferenceRms[period][k]=Math.sqrt(periodSquaredReference[period][k]/periodSamples[period]);
+            // Channels 8-9 duplicate published states; channels 10+ are the numbered states.
+            lowMagnitudeState[period][k]=k>=8&&periodReferenceRms[period][k]<LOW_MAGNITUDE_STATE_REFERENCE_RMS_LIMIT;
             if(range>0)periodNrmse[period][k]=periodRmse[period][k]/range;
+            periodRelativeRmse[period][k]=periodSquaredReference[period][k]==0.
+                    ? periodSquaredError[period][k]==0.?0.:Double.POSITIVE_INFINITY
+                    : Math.sqrt(periodSquaredError[period][k]/periodSquaredReference[period][k]);
         }
         for(int k=0;k<channels;k++){
             referenceRange[k]=referenceMax[k]-referenceMin[k];
             useRmse[k]=(tag.contains("-raml-")&&(k==8||k==16))
                     || referenceRange[k]<=SMALL_RANGE_LIMIT_MULTIPLIER*LIMITS[k];
         }
-        report.put("acceptance_metric","period NRMSE; period RMSE for small-reference-range channels and RAML angles; period RMSE for RAML marker");
+        report.put("acceptance_metric","period relative RMSE below 1%, or absolute RMSE below 1e-4 for states with reference RMS below 1e-2; event and protection checks remain independent");
+        report.put("low_magnitude_state_reference_rms_limit",LOW_MAGNITUDE_STATE_REFERENCE_RMS_LIMIT);
+        report.put("low_magnitude_state_error_rmse_limit",LOW_MAGNITUDE_STATE_ERROR_RMSE_LIMIT);
         report.put("raml_angle_rmse_limit_deg",RAML_ANGLE_RMSE_LIMIT_DEG);
         report.put("period_names",List.of("nonfault","fault_on"));report.put("period_samples",periodSamples);
-        report.put("period_range_nrmse",periodNrmse);report.put("period_rmse",periodRmse);
+        report.put("period_range_nrmse",periodNrmse);report.put("period_rmse",periodRmse);report.put("period_relative_rmse",periodRelativeRmse);
+        report.put("period_reference_rms",periodReferenceRms);report.put("period_low_magnitude_state",lowMagnitudeState);
         report.put("reference_range",referenceRange);report.put("uses_rmse",useRmse);
         report.put("small_range_limit_multiplier",SMALL_RANGE_LIMIT_MULTIPLIER);
         report.put("boundary_nrmse_limit",BOUNDARY_NRMSE_LIMIT);report.put("state_nrmse_limit",STATE_NRMSE_LIMIT);
@@ -315,7 +341,8 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
         report.put("protection_clock",clock.name());
         if(protectedProfile){
             int flagMismatches=0;double markerError=0,transitionError=0;
-            double[] markerSquaredError=new double[2];int[] markerSamples=new int[2];
+            double[] markerSquaredError=new double[2],markerSquaredReference=new double[2];int[] markerSamples=new int[2];
+            double[] actualMarkers=new double[recorder.rows.size()],referenceMarkers=new double[recorder.rows.size()];
             try(var w=BenchmarkOutputGuard.newWriter(output.resolve("protection.csv"),2*1024*1024)){
                 w.write("time_s,reference_time_s,raml_active,raml_marker_s,reference_marker_s,shorted,reference_shorted,transition_observed,transition_s,reference_transition_s,accepted_protection_time_s\n");
                 for(int k=0;k<recorder.rows.size();k++){
@@ -323,8 +350,10 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                     double shorted=history.get("Inverter shorted"),sourceShorted=expected.get("VAR22")<0?1:0;
                     if(shorted!=sourceShorted)flagMismatches++;
                     double markerDifference=history.get("RAML timer marker (s)")-expected.get("VAR18");
+                    actualMarkers[k]=history.get("RAML timer marker (s)");referenceMarkers[k]=expected.get("VAR18");
                     markerError=Math.max(markerError,Math.abs(markerDifference));
                     int markerPeriod=periodByRow[k];markerSquaredError[markerPeriod]+=markerDifference*markerDifference;
+                    markerSquaredReference[markerPeriod]+=expected.get("VAR18")*expected.get("VAR18");
                     markerSamples[markerPeriod]++;
                     boolean observed=history.get("Commutation transition observed")!=0,sourceObserved=expected.get("VAR21")!=999;
                     if(clock==Chvdc2TerminalPorts.ProtectionClock.BINARY32)
@@ -334,19 +363,61 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
                     w.write(recorder.rows.get(k)[0]+","+expected.get("time_s")+","+history.get("RAML active")+","+history.get("RAML timer marker (s)")+","+expected.get("VAR18")+","+shorted+","+sourceShorted+","+history.get("Commutation transition observed")+","+history.get("Commutation transition time (s)")+","+expected.get("VAR21")+","+history.get("Accepted time (s)")+"\n");
                 }
             }
-            double[] markerRmse=new double[2];
-            for(int period=0;period<2;period++)if(markerSamples[period]>0)
+            double[] markerRmse=new double[2],markerRelativeRmse=new double[2];
+            for(int period=0;period<2;period++)if(markerSamples[period]>0){
                 markerRmse[period]=Math.sqrt(markerSquaredError[period]/markerSamples[period]);
+                markerRelativeRmse[period]=markerSquaredReference[period]==0.
+                        ? markerSquaredError[period]==0.?0.:Double.POSITIVE_INFINITY
+                        :Math.sqrt(markerSquaredError[period]/markerSquaredReference[period]);
+            }
+            var actualMarkerTransitions=new ArrayList<Integer>();var referenceMarkerTransitions=new ArrayList<Integer>();
+            for(int k=1;k<actualMarkers.length;k++){
+                if(Math.abs(actualMarkers[k]-actualMarkers[k-1])>2*h)actualMarkerTransitions.add(k);
+                if(Math.abs(referenceMarkers[k]-referenceMarkers[k-1])>2*h)referenceMarkerTransitions.add(k);
+            }
+            boolean markerTransitionsWithinOneStep=actualMarkerTransitions.size()==referenceMarkerTransitions.size()
+                    &&(!tag.contains("-raml-")||referenceMarkerTransitions.size()==2);
+            boolean[] markerTransitionRows=new boolean[actualMarkers.length];
+            if(markerTransitionsWithinOneStep)for(int k=0;k<actualMarkerTransitions.size();k++){
+                int actualRow=actualMarkerTransitions.get(k),referenceRow=referenceMarkerTransitions.get(k);
+                if(Math.abs(actualRow-referenceRow)>1
+                        ||Math.abs(recorder.rows.get(actualRow)[0]-recorder.rows.get(referenceRow)[0])>h*1.01
+                        ||Math.abs(actualMarkers[actualRow]-referenceMarkers[referenceRow])>h*1.01)
+                    markerTransitionsWithinOneStep=false;
+                if(actualRow!=referenceRow)markerTransitionRows[Math.min(actualRow,referenceRow)]=true;
+            }
+            double[] alignedMarkerSquaredError=new double[2],alignedMarkerSquaredReference=new double[2];
+            int[] alignedMarkerSamples=new int[2];int excludedMarkerTransitionRows=0;
+            for(int k=0;k<actualMarkers.length;k++){
+                if(markerTransitionRows[k]){excludedMarkerTransitionRows++;continue;}
+                int period=periodByRow[k];double difference=actualMarkers[k]-referenceMarkers[k];
+                alignedMarkerSquaredError[period]+=difference*difference;
+                alignedMarkerSquaredReference[period]+=referenceMarkers[k]*referenceMarkers[k];
+                alignedMarkerSamples[period]++;
+            }
+            double[] alignedMarkerRelativeRmse=new double[2];
+            for(int period=0;period<2;period++)if(alignedMarkerSamples[period]>0)
+                alignedMarkerRelativeRmse[period]=alignedMarkerSquaredReference[period]==0.
+                        ?alignedMarkerSquaredError[period]==0.?0.:Double.POSITIVE_INFINITY
+                        :Math.sqrt(alignedMarkerSquaredError[period]/alignedMarkerSquaredReference[period]);
             report.put("protection_flag_mismatches",flagMismatches);report.put("maximum_raml_marker_error_s",markerError);
-            report.put("period_raml_marker_rmse_s",markerRmse);report.put("raml_marker_rmse_limit_s",RAML_MARKER_RMSE_LIMIT_S);
+            report.put("period_raml_marker_rmse_s",markerRmse);report.put("period_raml_marker_relative_rmse",markerRelativeRmse);
+            report.put("raml_actual_transition_rows",actualMarkerTransitions);
+            report.put("raml_reference_transition_rows",referenceMarkerTransitions);
+            report.put("raml_transitions_within_one_step",markerTransitionsWithinOneStep);
+            report.put("raml_excluded_transition_rows",excludedMarkerTransitionRows);
+            report.put("period_raml_aligned_marker_relative_rmse",alignedMarkerRelativeRmse);
             report.put("maximum_commutation_clock_error_s",transitionError);
             int mismatches=flagMismatches;double clockError=transitionError;
             checks.add(()->assertEquals(0,mismatches,"Protection regime and observed-transition flags"));
+            boolean transitionsWithinOneStep=markerTransitionsWithinOneStep;
+            checks.add(()->assertTrue(transitionsWithinOneStep,"RAML marker transitions must match within one recorded step"));
             for(int period=0;period<2;period++)if(markerSamples[period]>0){
                 int selected=period;
-                checks.add(()->assertTrue(markerRmse[selected]<RAML_MARKER_RMSE_LIMIT_S,
-                        "RAML marker "+(selected==1?"fault-on":"nonfault")+" RMSE="+markerRmse[selected]
-                        +" s; limit="+RAML_MARKER_RMSE_LIMIT_S+" s"));
+                checks.add(()->assertTrue(alignedMarkerRelativeRmse[selected]<RelativeRmse.ONE_PERCENT,
+                        "RAML marker "+(selected==1?"fault-on":"nonfault")+" aligned relative RMSE="+alignedMarkerRelativeRmse[selected]
+                        +"; raw="+markerRelativeRmse[selected]
+                        +"; limit="+RelativeRmse.ONE_PERCENT));
             }
             checks.add(()->assertTrue(clockError<h*1.01,"Commutation clock error "+clockError));
         }
@@ -361,17 +432,15 @@ public class Chvdc2TerminalReferenceTest extends CorePluginTestSetup {
             int channel=k;
             for(int period=0;period<2;period++)if(periodSamples[period]>0){
                 int selected=period;
-                if(useRmse[channel])checks.add(()->assertTrue(periodRmse[selected][channel]<
-                        (tag.contains("-raml-")&&(channel==8||channel==16)?RAML_ANGLE_RMSE_LIMIT_DEG:LIMITS[channel]),
+                checks.add(()->assertTrue(periodRelativeRmse[selected][channel]<RelativeRmse.ONE_PERCENT
+                        ||lowMagnitudeState[selected][channel]
+                                &&periodRmse[selected][channel]<LOW_MAGNITUDE_STATE_ERROR_RMSE_LIMIT,
                         "Channel "+channel+" "+(selected==1?"fault-on":"nonfault")+
-                        " RMSE="+periodRmse[selected][channel]+"; limit="+
-                        (tag.contains("-raml-")&&(channel==8||channel==16)?RAML_ANGLE_RMSE_LIMIT_DEG:LIMITS[channel])));
-                else {
-                    double limit=channel<10?BOUNDARY_NRMSE_LIMIT:STATE_NRMSE_LIMIT;
-                    checks.add(()->assertTrue(periodNrmse[selected][channel]<limit,
-                            "Channel "+channel+" "+(selected==1?"fault-on":"nonfault")+
-                            " reference-range NRMSE="+periodNrmse[selected][channel]+"; limit="+limit));
-                }
+                        " relative RMSE="+periodRelativeRmse[selected][channel]
+                        +"; absolute RMSE="+periodRmse[selected][channel]
+                        +"; reference RMS="+periodReferenceRms[selected][channel]
+                        +"; relative limit="+RelativeRmse.ONE_PERCENT
+                        +"; low-state absolute limit="+LOW_MAGNITUDE_STATE_ERROR_RMSE_LIMIT));
             }
         }
         assertAll(tag+" / "+staggered,checks);

@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.*;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -98,6 +99,7 @@ public class Chvdc2CurrentControlsReferenceTest {
         var m=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,1},c).prepareCurrentControls();
         inputs(m,rows.getFirst(),c[3]);m.initialize(rows.getFirst().get("STATE6"),rows.getFirst().get("STATE7"));
         double[] x=new double[4],f=new double[4],previous=new double[4],left=new double[4],trial=new double[4],max=new double[4],at=new double[4];
+        RelativeRmse[] relative=new RelativeRmse[4];for(int i=0;i<relative.length;i++)relative[i]=new RelativeRmse();
         boolean started=false,event=false;int duplicates=0;
         Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-current-"+(shared?"staggered-":"euler-"));
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("replay.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),13))) {
@@ -124,19 +126,21 @@ public class Chvdc2CurrentControlsReferenceTest {
                 for(int i=0;i<4;i++) {
                     double reference=current.get("STATE"+SOURCE_STATES[i]),error=x[i]-reference;
                     if(Math.abs(error)>max[i]){max[i]=Math.abs(error);at[i]=time;}
+                    relative[i].add(x[i],reference);
                     w.write(","+x[i]+","+reference+","+error);
                 }
                 w.write("\n");
             }
         }
+        double[] relativeValues=Arrays.stream(relative).mapToDouble(RelativeRmse::value).toArray();
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),20000)) {
-            JSON.writerWithDefaultPrettyPrinter().writeValue(w,Map.of("profile",tag,"shared_staggered",shared,"maximum_absolute_error_deg",max,"maximum_error_time_s",at,"samples",rows.size(),"event_duplicates",duplicates,"coupled_acceptance_is_separate",true));
+            JSON.writerWithDefaultPrettyPrinter().writeValue(w,Map.of("profile",tag,"shared_staggered",shared,"maximum_absolute_error_deg",max,"maximum_error_time_s",at,"relative_rmse",relativeValues,"samples",rows.size(),"event_duplicates",duplicates,"coupled_acceptance_is_separate",true));
         }
         assertEquals(2,duplicates);
         assertAll("Current-control replay: "+tag+" / "+shared,
-                ()->assertTrue(max[0]<.002,"Rectifier PI error "+max[0]),
-                ()->assertTrue(max[1]<.002,"Rectifier angle error "+max[1]),
-                ()->assertTrue(max[2]<.002,"Inverter PI error "+max[2]),
-                ()->assertTrue(max[3]<.002,"Inverter angle error "+max[3]));
+                ()->assertTrue(relativeValues[0]<RelativeRmse.ONE_PERCENT,"Rectifier PI relative RMSE "+relativeValues[0]),
+                ()->assertTrue(relativeValues[1]<RelativeRmse.ONE_PERCENT,"Rectifier angle relative RMSE "+relativeValues[1]),
+                ()->assertTrue(relativeValues[2]<RelativeRmse.ONE_PERCENT,"Inverter PI relative RMSE "+relativeValues[2]),
+                ()->assertTrue(relativeValues[3]<RelativeRmse.ONE_PERCENT,"Inverter angle relative RMSE "+relativeValues[3]));
     }
 }

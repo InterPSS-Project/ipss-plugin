@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.*;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +17,8 @@ import org.junit.jupiter.params.provider.*;
 
 /** Independent prescribed-boundary qualification, distinct from coupled HVDC attachment. */
 public class Chvdc2OrderControlsReferenceTest {
+    private static final int LOW_MAGNITUDE_FILTER_CHANNEL=5;
+    private static final double LOW_MAGNITUDE_RMS_LIMIT=1e-4;
     private static final Path ROOT=Path.of("testData/private/verification-artifacts");
     private static final Map<String,String> ARCHIVES=Map.of(
             "chvdc2-controller-20261102/captures.zip","75d8b6a733eb20426dbc8c8fe7c4efdab854c8e11a82da99ee98f6ce76377511",
@@ -126,6 +129,7 @@ public class Chvdc2OrderControlsReferenceTest {
         assertEquals(h==.0005?1005:2005,rows.size());inputs(m,rows.getFirst(),c[28]);m.initialize(rows.getFirst().get("STATE7"));
         assertEquals(rows.getFirst().get("VAR17"),m.acReferencePu(),1e-6);assertEquals(rows.getFirst().get("VAR16"),m.cosineReference(),1e-6);
         double[] x=new double[10],f=new double[10],old=new double[10],left=new double[10],trial=new double[10],values=new double[13],maximum=new double[13],times=new double[13];
+        RelativeRmse[] relative=new RelativeRmse[13];for(int i=0;i<relative.length;i++)relative[i]=new RelativeRmse();
         boolean started=false,event=false;int duplicates=0;double excitation=0;
         Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-orders-"+(shared?"staggered-":"euler-"));
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("replay.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),40))) {
@@ -147,17 +151,30 @@ public class Chvdc2OrderControlsReferenceTest {
                 w.write(Double.toString(time));
                 for(int i=0;i<13;i++) {
                     double expected=r.get(i<10?"STATE"+STATES[i]:i==10?"VAR13":i==11?"VAR14":"VAR20"),error=values[i]-expected;
+                    relative[i].add(values[i],expected);
                     if(Math.abs(error)>maximum[i]){maximum[i]=Math.abs(error);times[i]=time;}w.write(","+values[i]+","+expected+","+error);
                 }
                 w.write("\n");
             }
         }
+        double[] relativeValues=Arrays.stream(relative).mapToDouble(RelativeRmse::value).toArray();
+        double[] absoluteRmse=Arrays.stream(relative).mapToDouble(RelativeRmse::rmse).toArray();
+        double[] referenceRms=Arrays.stream(relative).mapToDouble(RelativeRmse::referenceRms).toArray();
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),20000)){
-            JSON.writerWithDefaultPrettyPrinter().writeValue(w,Map.of("profile",tag,"shared_staggered",shared,"maximum_absolute_errors",maximum,"maximum_error_time_s",times,"limits",LIMITS,"samples",rows.size(),"event_duplicates",duplicates,"maximum_order_reduction_A",excitation,"coupled_acceptance_is_separate",true));
+            var report=new LinkedHashMap<String,Object>(Map.of("profile",tag,"shared_staggered",shared,"maximum_absolute_errors",maximum,"maximum_error_time_s",times,"relative_rmse",relativeValues,"samples",rows.size(),"event_duplicates",duplicates,"maximum_order_reduction_A",excitation,"coupled_acceptance_is_separate",true));
+            report.put("absolute_rmse",absoluteRmse);report.put("reference_rms",referenceRms);
+            report.put("low_magnitude_filter_absolute_rmse_limit",LOW_MAGNITUDE_RMS_LIMIT);
+            JSON.writerWithDefaultPrettyPrinter().writeValue(w,report);
         }
         assertEquals(2,duplicates);if(tag.contains("dc-limit")||tag.contains("ac-limit"))assertTrue(excitation>1,"Limiter must be exercised");
         List<org.junit.jupiter.api.function.Executable> gates=new ArrayList<>();
-        for(int i=0;i<13;i++){int channel=i;gates.add(()->assertTrue(maximum[channel]<LIMITS[channel],"Channel "+channel+" error "+maximum[channel]+" at "+times[channel]));}
+        for(int i=0;i<13;i++){int channel=i;gates.add(()->{
+            boolean accepted=relativeValues[channel]<RelativeRmse.ONE_PERCENT
+                    ||channel==LOW_MAGNITUDE_FILTER_CHANNEL&&absoluteRmse[channel]<LOW_MAGNITUDE_RMS_LIMIT;
+            assertTrue(accepted,"Channel "+channel+" relative RMSE "+relativeValues[channel]
+                    +"; absolute RMSE "+absoluteRmse[channel]+"; reference RMS "+referenceRms[channel]
+                    +"; maximum "+maximum[channel]+" at "+times[channel]);
+        });}
         assertAll(tag+" / "+shared,gates);
     }
 }

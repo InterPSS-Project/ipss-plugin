@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
+import org.interpss.test.TestConfig;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.dstab.mach.Wt3g2Model;
@@ -31,6 +32,8 @@ import com.interpss.dstab.cache.StateMonitor;
 
 /** Explicit converted-interface rate policy; native validation is unchanged. */
 public class Wt3p1SignedRateCompatibilityTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Wt3p1SignedRateCompatibilityTest");
     private Wt3p1Data data(double rate, Wt3p1Data.RateLimitPolicy policy) {
         return new Wt3p1Data(.2, 100, 20, 2, 15, -4, 25, rate, 1, policy);
     }
@@ -57,7 +60,7 @@ public class Wt3p1SignedRateCompatibilityTest {
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void convertedSmibExportsCompleteBoundary(boolean staggered) throws Exception {
-        String folder=System.getProperty("legacy.ge.reference");
+        String folder=CONFIG.string("legacy.ge.reference");
         Assumptions.assumeTrue(folder!=null,"Private converted-interface diagnostic must be explicitly selected");
         Path input=Path.of(folder), output=Files.createTempDirectory(Path.of("target"),"converted-wt3-"+(staggered?"staggered-":"euler-"));
         String dyr=Files.readString(input.resolve("dyr_loaded-converted.dyr"));
@@ -129,7 +132,7 @@ public class Wt3p1SignedRateCompatibilityTest {
         });
         net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"Fault");
         assertTrue(algo.initialization());
-        String stateReference=System.getProperty("legacy.ge.state.reference");
+        String stateReference=CONFIG.string("legacy.ge.state.reference");
         if(stateReference!=null) {
             String first=Files.readAllLines(Path.of(stateReference)).stream()
                     .dropWhile(line->!line.startsWith("Results,"))

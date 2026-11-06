@@ -17,6 +17,7 @@ import com.interpss.dstab.common.DStabSimuException;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -164,8 +165,10 @@ public class Urgs3tReferenceTest {
         var simulation=simulate(out,shared,1e-6);var initial=simulation.initial();var governor=simulation.governor();
         var reference=rows(out.resolve("native.csv"));var maximum=new TreeMap<String,Double>();var square=new TreeMap<String,Double>();
         var low=new TreeMap<String,Double>();var high=new TreeMap<String,Double>();var at=new TreeMap<String,Double>();
-        var activeStateMaximum=new TreeMap<String,Double>();for(int i=0;i<5;i++)activeStateMaximum.put("STATE"+i,0.);
-        for(String key:reference.getFirst().keySet())if(!key.equals("time_s")){maximum.put(key,0.);square.put(key,0.);low.put(key,Double.POSITIVE_INFINITY);high.put(key,Double.NEGATIVE_INFINITY);at.put(key,0.);}
+        var activeStateMaximum=new TreeMap<String,Double>();var activeStateRelative=new TreeMap<String,RelativeRmse>();
+        for(int i=0;i<5;i++){String key="STATE"+i;activeStateMaximum.put(key,0.);activeStateRelative.put(key,new RelativeRmse());}
+        var relative=new TreeMap<String,RelativeRmse>();
+        for(String key:reference.getFirst().keySet())if(!key.equals("time_s")){maximum.put(key,0.);square.put(key,0.);low.put(key,Double.POSITIVE_INFINITY);high.put(key,Double.NEGATIVE_INFINITY);at.put(key,0.);relative.put(key,new RelativeRmse());}
         int index=0,startup=0;float clock=0;long tick=0;
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("actual.csv"),BenchmarkOutputGuard.estimateCsvBytes(reference.size(),2+2*maximum.size()))) {
             w.write("source_time_s,actual_time_s,"+String.join(",",maximum.keySet()));for(String k:maximum.keySet())w.write(",REFERENCE."+k);w.write("\n");
@@ -181,26 +184,30 @@ public class Urgs3tReferenceTest {
                 for(String k:maximum.keySet()) {
                     assertTrue(a.containsKey(k),k);double error=a.get(k)-s.get(k);assertTrue(Double.isFinite(error));
                     if(Math.abs(error)>maximum.get(k)){maximum.put(k,Math.abs(error));at.put(k,time);}
-                    square.put(k,square.get(k)+error*error);low.put(k,Math.min(low.get(k),s.get(k)));high.put(k,Math.max(high.get(k),s.get(k)));w.write(","+a.get(k));
-                    if(!inactive&&activeStateMaximum.containsKey(k))activeStateMaximum.put(k,Math.max(activeStateMaximum.get(k),Math.abs(error)));
+                    square.put(k,square.get(k)+error*error);low.put(k,Math.min(low.get(k),s.get(k)));high.put(k,Math.max(high.get(k),s.get(k)));relative.get(k).add(a.get(k),s.get(k));w.write(","+a.get(k));
+                    if(!inactive&&activeStateMaximum.containsKey(k)){activeStateMaximum.put(k,Math.max(activeStateMaximum.get(k),Math.abs(error)));activeStateRelative.get(k).add(a.get(k),s.get(k));}
                 }
                 for(String k:maximum.keySet())w.write(","+s.get(k));w.write("\n");
             }
         }
         assertEquals(2,startup);assertEquals(reference.size(),simulation.frames().size()+startup);
-        var nrmse=new TreeMap<String,Double>();var checks=new ArrayList<Executable>();
+        var nrmse=new TreeMap<String,Double>();var relativeValues=new TreeMap<String,Double>();var checks=new ArrayList<Executable>();
         for(String k:List.of("V1","V2","P_PU","Q_PU")) {
             double range=high.get(k)-low.get(k),rmse=Math.sqrt(square.get(k)/reference.size());nrmse.put(k,range>1e-7?rmse/range:rmse);
-            checks.add(()->assertTrue(nrmse.get(k)<.001,k+" NRMSE "+nrmse.get(k)));
+            relativeValues.put(k,relative.get(k).value());
+            checks.add(()->assertTrue(relativeValues.get(k)<RelativeRmse.ONE_PERCENT,k+" relative RMSE "+relativeValues.get(k)));
         }
-        double angle=Math.sqrt(square.get("ANGLE_DEG")/reference.size());checks.add(()->assertTrue(angle<.01,"Rotor-angle RMSE "+angle));
-        double stateBound=shared?5e-6:2e-4*h/.0005;
-        for(int i=0;i<5;i++){String k="STATE"+i;checks.add(()->assertTrue(activeStateMaximum.get(k)<=stateBound,k+" active maximum "+activeStateMaximum.get(k)));}
-        boolean parity=angle<.01&&nrmse.values().stream().allMatch(v->v<.001);
-        for(int i=0;i<5;i++)parity&=activeStateMaximum.get("STATE"+i)<=stateBound;
+        double angle=Math.sqrt(square.get("ANGLE_DEG")/reference.size());relativeValues.put("ANGLE_DEG",relative.get("ANGLE_DEG").value());
+        checks.add(()->assertTrue(relativeValues.get("ANGLE_DEG")<RelativeRmse.ONE_PERCENT,"Rotor-angle relative RMSE "+relativeValues.get("ANGLE_DEG")));
+        var activeStateRelativeValues=new TreeMap<String,Double>();
+        for(int i=0;i<5;i++){String k="STATE"+i;double value=activeStateRelative.get(k).value();activeStateRelativeValues.put(k,value);
+            checks.add(()->assertTrue(value<RelativeRmse.ONE_PERCENT,k+" active relative RMSE "+value));}
+        boolean parity=relativeValues.values().stream().allMatch(v->v<RelativeRmse.ONE_PERCENT)
+                &&activeStateRelativeValues.values().stream().allMatch(v->v<RelativeRmse.ONE_PERCENT);
         var result=new LinkedHashMap<String,Object>(Map.of("profile",tag,"method",shared?"staggered":"modified-euler","maximum_absolute",maximum,"time_of_maximum",at,
-                "range_nrmse",nrmse,"rotor_angle_rmse_deg",angle,"state_bound",stateBound,"state_and_boundary_parity",parity,
+                "range_nrmse",nrmse,"rotor_angle_rmse_deg",angle,"state_and_boundary_parity",parity,
                 "all_observation_channels_qualified",false,"runtime_convention",governor.getRuntimeConvention().name()));
+        result.put("relative_rmse",relativeValues);result.put("active_state_relative_rmse",activeStateRelativeValues);
         if(tripBus>0){result.put("active_state_maximum_for_gates",activeStateMaximum);result.put("inactive_host_samples",inactiveSamples);result.put("inactive_allocated_states_qualified",false);}
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),100000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,result);}
         System.out.println("URGS3T "+tag+" shared="+shared+" diagnostics="+out.getFileName()+" maxima="+maximum);

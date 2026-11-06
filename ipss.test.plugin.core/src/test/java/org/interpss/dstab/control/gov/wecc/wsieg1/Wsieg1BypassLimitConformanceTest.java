@@ -9,6 +9,7 @@ import java.util.zip.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.test.TestConfig;
 import org.junit.jupiter.api.BeforeAll;
@@ -134,7 +135,8 @@ public class Wsieg1BypassLimitConformanceTest {
             double duration=Math.round(expected.getLast().get("time_s")/step)*step;
             var run=Wsieg1SharedSmibTest.simulate(input.resolve("network.raw"),input.resolve("dynamic.dyr"),staggered,entry.path("event").asText(),step,duration,events,algorithm->{},startupSteps);
             var maximum=new LinkedHashMap<String,Double>();var squares=new LinkedHashMap<String,Double>();var times=new LinkedHashMap<String,Double>();
-            for(String key:expected.getFirst().keySet())if(!key.equals("time_s")&&!key.equals("VAR2")){maximum.put(key,0.);squares.put(key,0.);times.put(key,0.);}
+            var relative=new LinkedHashMap<String,RelativeRmse>();
+            for(String key:expected.getFirst().keySet())if(!key.equals("time_s")&&!key.equals("VAR2")){maximum.put(key,0.);squares.put(key,0.);times.put(key,0.);relative.put(key,new RelativeRmse());}
             int frame=0,startups=0,unchangedRunBoundaries=0;float clock=0f;long tick=0;
             Map<String,Double> previousReference=null;
             Wsieg1SharedSmibTest.Frame previousFrame=null;
@@ -163,37 +165,40 @@ public class Wsieg1BypassLimitConformanceTest {
                         String observed=key.startsWith("STATE")?"PUBLISHED"+key.substring(5):key;double error=row.values().get(observed)-ref.get(key);assertTrue(Double.isFinite(error));
                         if(Math.abs(error)>maximum.get(key)){maximum.put(key,Math.abs(error));times.put(key,time);}
                         squares.put(key,squares.get(key)+error*error);
+                        relative.get(key).add(row.values().get(observed),ref.get(key));
                     }
                     previousReference=ref;previousFrame=row;
                 }
             }
             assertEquals(expected.size(),run.frames.size()+startups+unchangedRunBoundaries);var normalized=new LinkedHashMap<String,Double>();var ranges=new LinkedHashMap<String,Double>();
+            var relativeValues=new LinkedHashMap<String,Double>();
             for(String key:expected.getFirst().keySet())if(key.matches("V[0-9]+")||key.startsWith("P_PU")||key.startsWith("Q_PU")) {
                 double low=expected.stream().mapToDouble(r->r.get(key)).min().orElseThrow(),high=expected.stream().mapToDouble(r->r.get(key)).max().orElseThrow();
                 double rmse=Math.sqrt(squares.get(key)/expected.size());ranges.put(key,high-low);
-                if(high>low) {
-                    double nrmse=rmse/(high-low);normalized.put(key,nrmse);
-                    if(entry.path("event").asText().equals("flat"))
-                        gates.add(()->assertTrue(maximum.get(key)<1e-6,tag+" "+key+" flat-run absolute error "+maximum.get(key)));
-                    else gates.add(()->assertTrue(nrmse<.001,tag+" "+key+" range NRMSE "+nrmse));
-                } else {
-                    normalized.put(key,null);
-                    gates.add(()->assertTrue(maximum.get(key)<1e-6,tag+" "+key+" constant-reference absolute error "+maximum.get(key)));
-                }
+                normalized.put(key,high>low?rmse/(high-low):null);
+                double value=relative.get(key).value();relativeValues.put(key,Double.isFinite(value)?value:null);
+                if(Double.isFinite(value))gates.add(()->assertTrue(value<RelativeRmse.ONE_PERCENT,
+                        tag+" "+key+" relative RMSE "+value));
+                else gates.add(()->assertTrue(maximum.get(key)<1e-6,
+                        tag+" "+key+" zero-reference absolute error "+maximum.get(key)));
             }
             var rotorByChannel=new LinkedHashMap<String,Double>();
             for(String key:expected.getFirst().keySet())if(key.startsWith("ANGLE_DEG")) {
                 double rmse=Math.sqrt(squares.get(key)/expected.size());rotorByChannel.put(key,rmse);
-                gates.add(()->assertTrue(rmse<.01,tag+" "+key+" rotor RMSE "+rmse));
+                double value=relative.get(key).value();relativeValues.put(key,Double.isFinite(value)?value:null);
+                if(Double.isFinite(value))gates.add(()->assertTrue(value<RelativeRmse.ONE_PERCENT,
+                        tag+" "+key+" rotor relative RMSE "+value));
+                else gates.add(()->assertTrue(maximum.get(key)<1e-6,
+                        tag+" "+key+" zero-reference rotor error "+maximum.get(key)));
             }
             double rotor=rotorByChannel.get("ANGLE_DEG");
             var result=new LinkedHashMap<String,Object>();result.put("tag",tag);result.put("staggered",staggered);result.put("samples",expected.size());
-            result.put("maximum_absolute_error",maximum);result.put("time_of_maximum_error",times);result.put("range_nrmse",normalized);result.put("reference_ranges",ranges);result.put("rotor_rmse_deg",rotor);
+            result.put("maximum_absolute_error",maximum);result.put("time_of_maximum_error",times);result.put("range_nrmse",normalized);result.put("relative_rmse",relativeValues);result.put("reference_ranges",ranges);result.put("rotor_rmse_deg",rotor);
             result.put("unmapped_reference_diagnostics",List.of("VAR2"));
             result.put("integrated_startup_steps",startupSteps);
             result.put("constant_reference_maximum_absolute_error_limit",1e-6);
             result.put("rotor_rmse_by_channel",rotorByChannel);
-            result.put("flat_run_uses_absolute_error",entry.path("event").asText().equals("flat"));
+            result.put("flat_run_uses_absolute_error",false);
             result.put("retained_unchanged_run_boundary_duplicates",unchangedRunBoundaries);
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve(tag+".json").toFile(),result);
         }

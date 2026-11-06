@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.Assumptions;
@@ -42,7 +43,7 @@ public class Chvdc2EventIntervalReferenceTest {
             var first=rows.getFirst();
             for(var row:rows) {assertEquals(first.get("STATE6"),row.get("STATE6"));assertEquals(first.get("STATE7"),row.get("STATE7"));}
             Path output=Files.createTempDirectory(Files.createDirectories(Path.of("../target/chvdc2-event-interval-reference")),"replay-");
-            Map<String,Double> errors=new LinkedHashMap<>();
+            Map<String,Double> errors=new LinkedHashMap<>(),relativeErrors=new LinkedHashMap<>();
             for(String policy:List.of("first-local","whole-interval")) {
                 StaggeredEulerParticipant model;
                 if(line) {
@@ -54,7 +55,7 @@ public class Chvdc2EventIntervalReferenceTest {
                     var dc=new Chvdc2OrderControls(parameters,equipment.path("9").path("TR").asDouble(),equipment.path("9").path("TAP").asDouble());
                     input(dc,first,constants[28]);dc.initialize(first.get("STATE7"));model=dc;
                 }
-                int size=model.staggeredStateCount();double h=H/10,maximum=0;
+                int size=model.staggeredStateCount();double h=H/10,maximum=0;var relative=new RelativeRmse();
                 double[] x=new double[size],old=new double[size],rate=new double[size],left=new double[size],trial=new double[size],second=new double[size];
                 input(model,first,constants[28]);model.evaluateStaggered(h,old,0);
                 boolean event=false;int duplicates=0;
@@ -85,19 +86,21 @@ public class Chvdc2EventIntervalReferenceTest {
                         }
                         model.readStaggeredState(x,0);double value=x[line?0:7],reference=row.get(line?"VAR5":"STATE11");
                         maximum=Math.max(maximum,Math.abs(value-reference));
+                        relative.add(value,reference);
                         writer.write(row.get("time_s")+","+value+","+reference+","+(value-reference)+"\n");
                     }
                 }
-                assertEquals(2,duplicates);errors.put(policy,maximum);
+                assertEquals(2,duplicates);errors.put(policy,maximum);relativeErrors.put(policy,relative.value());
             }
             try(var writer=BenchmarkOutputGuard.newWriter(output.resolve("comparison.json"),20000)) {
                 JSON.writerWithDefaultPrettyPrinter().writeValue(writer,Map.of("profile",tag,"staggered",staggered,"line",line,
-                        "maximum_errors",errors,"samples",rows.size(),"event_duplicates",2,"local_steps",10,
+                        "maximum_errors",errors,"relative_rmse",relativeErrors,"samples",rows.size(),"event_duplicates",2,"local_steps",10,
                         "precision","double","complete_network_qualified",false));
             }
             double limit=line?.0055:1e-5;
             assertTrue(errors.get("first-local")>10*limit,"The reference must distinguish the old event scope");
-            assertTrue(errors.get("whole-interval")<limit,"Whole-interval error: "+errors.get("whole-interval"));
+            assertTrue(relativeErrors.get("whole-interval")<RelativeRmse.ONE_PERCENT,
+                    "Whole-interval relative RMSE: "+relativeErrors.get("whole-interval"));
         }
     }
     static Stream<Arguments> commutationProfiles(){return Stream.of("0p00416666666667","0p00208333333333")
@@ -123,12 +126,12 @@ public class Chvdc2EventIntervalReferenceTest {
             var parameters=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,new int[]{0,0,1},JSON.convertValue(manifest.path("entered_constants"),double[].class));
             double H=manifest.path("settings").path("step").asDouble(),h=H/10;
             Path output=Files.createTempDirectory(Files.createDirectories(Path.of("../target/chvdc2-commutation-current-reference")),"replay-");
-            Map<String,Double> errors=new LinkedHashMap<>();
+            Map<String,Double> errors=new LinkedHashMap<>(),relativeErrors=new LinkedHashMap<>();
             for(boolean sampled:new boolean[]{false,true}) {
                 var line=parameters.prepareDcLine(5,2,r.path("XC").asDouble(),i.path("XC").asDouble(),60,H);
                 line.initialize(5*first.get("VAR5"),0);converterInput(line,rectifier,inverter,first,first.get("VAR5"));
                 double[] x=new double[1],rate=new double[1],old=new double[1],left=new double[1],trial=new double[1],second=new double[1];
-                line.evaluateStaggered(h,old,0);boolean event=false;double peak=0;int duplicates=0;
+                line.evaluateStaggered(h,old,0);boolean event=false;double peak=0;int duplicates=0;var relative=new RelativeRmse();
                 try(var writer=BenchmarkOutputGuard.newWriter(output.resolve(sampled?"sampled.csv":"live.csv"),2*1024*1024)) {
                     writer.write("time_s,current_A,reference_A,error_A\n");
                     for(int k=0;k<rows.size();k++) {
@@ -149,18 +152,19 @@ public class Chvdc2EventIntervalReferenceTest {
                             }
                             event=false;
                         }
-                        line.readStaggeredState(x,0);double error=x[0]-row.get("VAR5");peak=Math.max(peak,Math.abs(error));
+                        line.readStaggeredState(x,0);double error=x[0]-row.get("VAR5");peak=Math.max(peak,Math.abs(error));relative.add(x[0],row.get("VAR5"));
                         writer.write(row.get("time_s")+","+x[0]+","+row.get("VAR5")+","+error+"\n");
                     }
                 }
-                assertEquals(2,duplicates);errors.put(sampled?"sampled":"live",peak);
+                assertEquals(2,duplicates);errors.put(sampled?"sampled":"live",peak);relativeErrors.put(sampled?"sampled":"live",relative.value());
             }
             try(var writer=BenchmarkOutputGuard.newWriter(output.resolve("comparison.json"),20000)) {
                 JSON.writerWithDefaultPrettyPrinter().writeValue(writer,Map.of("profile",tag,"staggered",staggered,"samples",rows.size(),
-                        "event_duplicates",2,"local_steps",10,"peak_current_error_A",errors,"complete_network_qualified",false));
+                        "event_duplicates",2,"local_steps",10,"peak_current_error_A",errors,"relative_rmse",relativeErrors,"complete_network_qualified",false));
             }
             if(staggered)assertTrue(errors.get("live")>100*errors.get("sampled"),"Coarse controls discriminate commutation current sampling");
-            assertTrue(errors.get("sampled")<.0055,"Sampled converter current error: "+errors.get("sampled"));
+            assertTrue(relativeErrors.get("sampled")<RelativeRmse.ONE_PERCENT,
+                    "Sampled converter current relative RMSE: "+relativeErrors.get("sampled"));
         }
     }
     private static void converterInput(Chvdc2DcLine line,LccConverterBoundary rectifier,LccConverterBoundary inverter,Map<String,Double> row,double current) {

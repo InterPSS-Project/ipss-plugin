@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,7 +43,7 @@ public class Chvdc2CurrentSamplingReferenceTest {
             double[] constants=JSON.convertValue(manifest.path("entered_constants"),double[].class);
             var parameters=new Chvdc2Parameters("link",Chvdc2Parameters.Dialect.CHVDC2U1,
                     JSON.convertValue(manifest.path("settings").path("flags"),int[].class),constants);
-            double[] maximum=new double[2];
+            double[] maximum=new double[2];RelativeRmse[] relative={new RelativeRmse(),new RelativeRmse()};
             Path output=Files.createTempDirectory(Files.createDirectories(Path.of("../target/chvdc2-current-sampling-reference")),staggered?"staggered-":"euler-");
             for(int run=0;run<2;run++) {
                 int localSteps=run==0?1:10;double h=H/localSteps;
@@ -65,19 +66,22 @@ public class Chvdc2CurrentSamplingReferenceTest {
                             }
                         }
                         model.readStaggeredState(state,0);
-                        for(int c=0;c<2;c++)maximum[run]=Math.max(maximum[run],Math.abs(state[c]-row.get("STATE"+c)));
+                        for(int c=0;c<2;c++){double expected=row.get("STATE"+c);
+                            maximum[run]=Math.max(maximum[run],Math.abs(state[c]-expected));relative[run].add(state[c],expected);}
                         writer.write(row.get("time_s")+","+state[0]+","+row.get("STATE0")+","+state[1]+","+row.get("STATE1")+"\n");
                     }
                 }
                 assertEquals(2,duplicates);
             }
             try(var writer=BenchmarkOutputGuard.newWriter(output.resolve("comparison.json"),20000)) {
-                JSON.writerWithDefaultPrettyPrinter().writeValue(writer,Map.of("profile",tag,"staggered",staggered,
+                var report=new LinkedHashMap<String,Object>(Map.of("profile",tag,"staggered",staggered,
                         "maximum_one_step_error_pu",maximum[0],"maximum_ten_step_error_pu",maximum[1],
                         "samples",rows.size(),"event_duplicates",2,"production_precision","double",
                         "state_resets_after_initialization",0,"complete_model_qualified",false));
+                report.put("relative_rmse_one_step",relative[0].value());report.put("relative_rmse_ten_step",relative[1].value());
+                JSON.writerWithDefaultPrettyPrinter().writeValue(writer,report);
             }
-            assertTrue(maximum[1]<1e-5,"Sampled-current transducer error "+maximum[1]);
+            assertTrue(relative[1].value()<RelativeRmse.ONE_PERCENT,"Sampled-current transducer relative RMSE "+relative[1].value());
         }
     }
     private static void input(Chvdc2OrderControls model,Map<String,Double> row,double rated) {

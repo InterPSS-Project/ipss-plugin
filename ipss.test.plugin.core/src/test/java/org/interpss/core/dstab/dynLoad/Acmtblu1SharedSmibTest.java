@@ -175,9 +175,10 @@ public class Acmtblu1SharedSmibTest {
         if(!Double.isFinite(value)||value<=0)throw new IllegalArgumentException("Invalid compressor SMIB network tolerance");
         return value;
     }
-    private static Map<String,Object> error(List<Map<String,Double>> source,List<Map<String,Double>> actual,String key,String observed,double offset){double sum=0,max=0,time=0,min=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;
-        for(int i=0;i<source.size();i++){double expected=source.get(i).get(key),delta=actual.get(i).get(observed)+offset-expected;assertTrue(Double.isFinite(delta));sum+=delta*delta;min=Math.min(min,expected);high=Math.max(high,expected);if(Math.abs(delta)>max){max=Math.abs(delta);time=source.get(i).get("time_s");}}
-        double rmse=Math.sqrt(sum/source.size());return Map.of("rmse",rmse,"maximum_absolute",max,"source_time_of_maximum",time,"range_normalized_rmse",high>min?rmse/(high-min):rmse);}
+    private static Map<String,Object> error(List<Map<String,Double>> source,List<Map<String,Double>> actual,String key,String observed,double offset){double sum=0,referenceSquare=0,max=0,time=0,min=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;
+        for(int i=0;i<source.size();i++){double expected=source.get(i).get(key),delta=actual.get(i).get(observed)+offset-expected;assertTrue(Double.isFinite(delta));sum+=delta*delta;referenceSquare+=expected*expected;min=Math.min(min,expected);high=Math.max(high,expected);if(Math.abs(delta)>max){max=Math.abs(delta);time=source.get(i).get("time_s");}}
+        double rmse=Math.sqrt(sum/source.size()),relative=referenceSquare==0?(sum==0?0:Double.POSITIVE_INFINITY):Math.sqrt(sum/referenceSquare);
+        return Map.of("rmse",rmse,"maximum_absolute",max,"source_time_of_maximum",time,"range_normalized_rmse",high>min?rmse/(high-min):rmse,"relative_rmse",relative);}
     private static void run(String name,boolean shared,Path out,boolean enforce)throws Exception {
         runReference(name,REFERENCES.get(name),shared,out,enforce);
     }

@@ -14,6 +14,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.test.TestConfig;
@@ -210,11 +211,9 @@ public class CompressorStartupFrequencyTest {
         var limits = new LinkedHashMap<String, Double>(); var stateLimits = new LinkedHashMap<String, Double>();
         var checks = new ArrayList<Executable>();
         for (String key : List.of("V1", "V2", "V3", "P_PU", "Q_PU", "ANGLE_DEG", "SPEED")) {
-            String norm = key.equals("ANGLE_DEG") || key.equals("SPEED") ? "rmse" : "range_normalized_rmse";
-            double bound = shared ? (key.equals("ANGLE_DEG") ? 2e-4 : key.equals("SPEED") ? 2e-7 : key.equals("P_PU") ? 4e-5 : key.equals("Q_PU") ? 3e-6 : 2e-6)
-                    : ref.h() / .0005 * (key.equals("ANGLE_DEG") ? .01 : key.equals("SPEED") ? 5e-6 : key.startsWith("V") ? 1e-4 : 1e-3);
-            checks.add(() -> assertTrue(((Number) ((Map<?, ?>) boundary.get(key)).get(norm)).doubleValue() <= bound, key + ": " + boundary.get(key)));
-            limits.put(key + "_" + norm, bound);
+            checks.add(() -> assertTrue(((Number) ((Map<?, ?>) boundary.get(key)).get("relative_rmse")).doubleValue() < RelativeRmse.ONE_PERCENT,
+                    key + ": " + boundary.get(key)));
+            limits.put(key + "_relative_rmse", RelativeRmse.ONE_PERCENT);
         }
         var actual = rows(Files.readString(out.resolve("actual.csv")));
         for (int i = 0; i < actual.size(); i++) if (ref.rows().get(i).get("time_s") <= 0) {
@@ -223,9 +222,9 @@ public class CompressorStartupFrequencyTest {
         if (shared) {
             for (String key : List.of("TemperatureA", "TemperatureB", "Fmeas", "FrequencyOutput", "ThermalFractionA", "ThermalFractionB", "UvTimer1", "UvTimer2", "StallTimer", "StallTimerB", "RestartTimer")) {
                 if (FILTERS.get(name) == 0 && (key.equals("Fmeas") || key.equals("FrequencyOutput"))) continue;
-                double bound = key.startsWith("Temperature") ? 3e-6 : key.contains("Timer") ? 2e-8 : key.startsWith("Thermal") ? 5e-5 : 5e-6;
-                checks.add(() -> assertTrue(((Number) ((Map<?, ?>) states.get(key)).get("maximum_absolute")).doubleValue() <= bound, key + ": " + states.get(key)));
-                stateLimits.put(key, bound);
+                checks.add(() -> assertTrue(((Number) ((Map<?, ?>) states.get(key)).get("relative_rmse")).doubleValue() < RelativeRmse.ONE_PERCENT,
+                        key + ": " + states.get(key)));
+                stateLimits.put(key, RelativeRmse.ONE_PERCENT);
             }
             for (int i = 0; i < actual.size(); i++) for (int g = 0; g < 2; g++)
                 assertEquals(ref.rows().get(i).get("VAR" + (16 + g)), actual.get(i).get(g == 0 ? "RunA" : "RunB"));

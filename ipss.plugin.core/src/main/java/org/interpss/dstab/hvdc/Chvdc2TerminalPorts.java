@@ -76,8 +76,10 @@ public final class Chvdc2TerminalPorts {
     public boolean hasQueuedAuxiliaryCurrent(){return auxiliaryPending;}
 
 
+    /** Use the captured-model accumulated protection clock by default.
+     * Select CALLER_TIME explicitly when protection must use the solver's physical timestamp. */
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding) {
-        this(binding,ProtectionClock.CALLER_TIME);
+        this(binding,ProtectionClock.BINARY32);
     }
     public Chvdc2TerminalPorts(Chvdc2NetworkPreparation.Binding binding,ProtectionClock protectionClock) {
         this(binding,protectionClock,DEFAULT_LOCAL_STEPS);
