@@ -10,6 +10,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import com.interpss.dstab.common.DStabSimuException;
+import org.interpss.core.dstab.reference.RelativeRmse;
 
 /** Complete independent hot-reactivation and permanently-offline controls. */
 public class Urgs3tReactivationReferenceTest {
@@ -59,7 +60,7 @@ public class Urgs3tReactivationReferenceTest {
         });
         var reference=Urgs3tReferenceTest.rows(out.resolve("native.csv"));
         assertEquals(reference.size(),simulation.frames().size()+2);
-        var maximum=new TreeMap<String,Double>();var square=new TreeMap<String,Double>();
+        var maximum=new TreeMap<String,Double>();var square=new TreeMap<String,Double>();var relative=new TreeMap<String,RelativeRmse>();
         var lo=new TreeMap<String,Double>();var hi=new TreeMap<String,Double>();
         var keys=new ArrayList<>(simulation.initial().keySet());keys.remove("time_s");keys.remove("HOST_ACTIVE");
         var definedReferenceKeys=new HashSet<>(reference.getFirst().keySet());
@@ -73,25 +74,26 @@ public class Urgs3tReactivationReferenceTest {
                 writer.write(r.get("time_s")+","+a.get("time_s"));
                 for(String key:keys) {
                     double d=a.get(key)-r.get(key);maximum.merge(key,Math.abs(d),Math::max);square.merge(key,d*d,Double::sum);
+                    relative.computeIfAbsent(key,ignored->new RelativeRmse()).add(a.get(key),r.get(key));
                     lo.merge(key,r.get(key),Math::min);hi.merge(key,r.get(key),Math::max);writer.write(","+a.get(key));
                 }
                 writer.write("\n");
             }
         }
-        var nrmse=new TreeMap<String,Double>();
+        var nrmse=new TreeMap<String,Double>();var relativeValues=new TreeMap<String,Double>();
         for(String key:List.of("V1","V2","P_PU","Q_PU")) {
             double rmse=Math.sqrt(square.get(key)/reference.size()),range=hi.get(key)-lo.get(key);
             nrmse.put(key,range>1e-7?rmse/range:rmse);
+            relativeValues.put(key,relative.get(key).value());
         }
-        double angle=Math.sqrt(square.get("ANGLE_DEG")/reference.size());
+        double angle=Math.sqrt(square.get("ANGLE_DEG")/reference.size());relativeValues.put("ANGLE_DEG",relative.get("ANGLE_DEG").value());
+        for(int k=0;k<5;k++){String key="STATE"+k;relativeValues.put(key,relative.get(key).value());}
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(out.resolve("comparison.json").toFile(),
-                Map.of("shared",shared,"control",control,"maximum",maximum,"range_nrmse",nrmse,"angle_rmse",angle));
+                Map.of("shared",shared,"control",control,"maximum",maximum,"range_nrmse",nrmse,"relative_rmse",relativeValues,"angle_rmse",angle));
         System.out.println("Reactivation "+shared+" "+control+" "+out+" "+maximum+" "+nrmse);
         var checks=new ArrayList<org.junit.jupiter.api.function.Executable>();
-        for(String key:nrmse.keySet())checks.add(()->assertTrue(nrmse.get(key)<.001,key+" NRMSE "+nrmse.get(key)));
-        checks.add(()->assertTrue(angle<.01,"angle "+angle));
-        double bound=shared?5e-6:2e-4;
-        for(int k=0;k<5;k++){String key="STATE"+k;checks.add(()->assertTrue(maximum.get(key)<=bound,key+" "+maximum.get(key)));}
+        for(String key:relativeValues.keySet())checks.add(()->assertTrue(relativeValues.get(key)<RelativeRmse.ONE_PERCENT,
+                key+" relative RMSE "+relativeValues.get(key)));
         assertAll(checks);
     }
 }

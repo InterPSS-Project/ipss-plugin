@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.*;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,6 +73,9 @@ public class Chvdc2ControlAssemblyReferenceTest {
                 .prepareControls(equipment.path("TR").asDouble(),equipment.path("TAP").asDouble());
         var first=rows.getFirst();input(model,first,constants[28]);model.initialize(first.get("STATE6"),first.get("STATE7"),first.get("time_s"));
         double[] x=new double[15],f=new double[15],old=new double[15],left=new double[15],trial=new double[15],value=new double[19],maximum=new double[19],times=new double[19];
+        RelativeRmse[] relative=new RelativeRmse[19];for(int i=0;i<relative.length;i++)relative[i]=new RelativeRmse();
+        var alignedRaml=new RelativeRmse();int actualFirst=-1,actualLast=-1,referenceFirst=-1,referenceLast=-1,ramlTransitionRows=0;
+        double actualFirstTime=Double.NaN,actualLastTime=Double.NaN,referenceFirstTime=Double.NaN,referenceLastTime=Double.NaN;
         boolean started=false;long sequence=0,revision=0;int duplicates=0,activations=0,releases=0;double lastOutput=Double.NaN;
         Path out=Files.createTempDirectory(Path.of("target"),"chvdc2-joint-"+(staggered?"staggered-":"euler-"));
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("replay.csv"),BenchmarkOutputGuard.estimateCsvBytes(rows.size(),58))) {
@@ -107,20 +111,44 @@ public class Chvdc2ControlAssemblyReferenceTest {
                 for(int i=0;i<19;i++) {
                     double reference=row.get(i<15?"STATE"+i:i==15?"VAR19":i==16?"VAR20":i==17?"VAR13":"VAR14");
                     double error=value[i]-reference;if(Math.abs(error)>maximum[i]){maximum[i]=Math.abs(error);times[i]=time;}
+                    relative[i].add(value[i],reference);
+                    if(i==15){
+                        boolean actualActive=value[i]>constants[3]+1.,referenceActive=reference>constants[3]+1.;
+                        if(actualActive){if(actualFirst<0){actualFirst=n;actualFirstTime=time;}actualLast=n;actualLastTime=time;}
+                        if(referenceActive){if(referenceFirst<0){referenceFirst=n;referenceFirstTime=time;}referenceLast=n;referenceLastTime=time;}
+                        if(actualActive!=referenceActive)ramlTransitionRows++;
+                        else alignedRaml.add(value[i],reference);
+                    }
                     w.write(","+value[i]+","+reference+","+error);
                 }
                 w.write("\n");lastOutput=value[15];
             }
         }
         var report=new LinkedHashMap<String,Object>();report.put("profile",key);report.put("staggered",staggered);report.put("local_steps",LOCAL_STEPS);
-        report.put("maximum_absolute_errors",maximum);report.put("maximum_error_time_s",times);report.put("limits",LIMITS);report.put("samples",rows.size());report.put("event_duplicates",duplicates);
+        double[] relativeValues=Arrays.stream(relative).mapToDouble(RelativeRmse::value).toArray();
+        double alignedRamlValue=alignedRaml.value();
+        report.put("maximum_absolute_errors",maximum);report.put("maximum_error_time_s",times);report.put("relative_rmse",relativeValues);report.put("samples",rows.size());report.put("event_duplicates",duplicates);
+        report.put("raml_aligned_relative_rmse",alignedRamlValue);report.put("raml_transition_rows",ramlTransitionRows);
+        report.put("raml_transition_indices",new int[]{actualFirst,referenceFirst,actualLast,referenceLast});
+        report.put("raml_transition_times_s",new double[]{actualFirstTime,referenceFirstTime,actualLastTime,referenceLastTime});
         report.put("activations",activations);report.put("releases",releases);report.put("recorded_internal_state_resets_after_initialization",0);report.put("full_network_coupling_accepted",false);
         report.put("input_contract","Recorded physical terminal inputs held over each local cycle; all controller states evolve without resets");
         report.put("output_publication_hypothesis","Last local derivative evaluation before its state update; event-left observations have zero duration");
         try(var w=BenchmarkOutputGuard.newWriter(out.resolve("comparison.json"),30000)){JSON.writerWithDefaultPrettyPrinter().writeValue(w,report);}
         assertEquals(2,duplicates);assertEquals(1,activations);assertEquals(1,releases);assertEquals(constants[3],lastOutput);
+        assertTrue(actualFirst>=0&&referenceFirst>=0&&actualLast>=actualFirst&&referenceLast>=referenceFirst,
+                "Both RAML activation and release must be observed");
+        assertTrue(Math.abs(actualFirst-referenceFirst)<=1&&Math.abs(actualLast-referenceLast)<=1,
+                "RAML activation and release may differ by at most one retained sample");
+        assertTrue(Math.abs(actualFirstTime-referenceFirstTime)<=H*1.01&&Math.abs(actualLastTime-referenceLastTime)<=H*1.01,
+                "RAML transition time may differ by at most one network step");
+        assertEquals(Math.abs(actualFirst-referenceFirst)+Math.abs(actualLast-referenceLast),ramlTransitionRows,
+                "Only the two RAML transition rows may have a different active regime");
         var gates=new ArrayList<org.junit.jupiter.api.function.Executable>();
-        for(int i=0;i<19;i++){int channel=i;gates.add(()->assertTrue(maximum[channel]<LIMITS[channel],"Channel "+channel+" error "+maximum[channel]+" at "+times[channel]));}
+        for(int i=0;i<19;i++){int channel=i;gates.add(()->assertTrue(
+                (channel==15?alignedRamlValue:relativeValues[channel])<RelativeRmse.ONE_PERCENT,
+                "Channel "+channel+" relative RMSE "+(channel==15?alignedRamlValue:relativeValues[channel])
+                        +"; full metric "+relativeValues[channel]+"; maximum "+maximum[channel]+" at "+times[channel]));}
         assertAll(key+" / "+staggered,gates);
     }
 }

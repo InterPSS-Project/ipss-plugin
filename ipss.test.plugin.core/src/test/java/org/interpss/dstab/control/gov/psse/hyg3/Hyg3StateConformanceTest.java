@@ -9,6 +9,7 @@ import java.util.zip.GZIPOutputStream;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -164,9 +165,11 @@ public class Hyg3StateConformanceTest {
             var actual = Hyg3SharedSmibTest.simulate(root.resolve("network.raw"), root.resolve("dynamic.dyr"), staggered, false, step, comparisonDuration(reference,step));
             var maximum = new LinkedHashMap<String, Double>(); var at = new LinkedHashMap<String, Double>();
             var squared = new LinkedHashMap<String, Double>(); var low = new LinkedHashMap<String, Double>(); var high = new LinkedHashMap<String, Double>();
+            var relative = new LinkedHashMap<String, RelativeRmse>();
             assertEquals(0., manifest.path("initialized_constants").get(14).asDouble(), 0., "This matrix bypasses backlash");
             for (String key : reference.getFirst().keySet()) if (!key.equals("time_s")) {
                 maximum.put(key, 0.); at.put(key, 0.); squared.put(key, 0.); low.put(key, Double.POSITIVE_INFINITY); high.put(key, Double.NEGATIVE_INFINITY);
+                relative.put(key,new RelativeRmse());
             }
             int frame = 0, startups = 0;
             long clockTick = 0; float referenceClock = 0.f;
@@ -197,19 +200,24 @@ public class Hyg3StateConformanceTest {
                         double value = expected.get(key), error = row.values().get(observed)-value;
                         if (Math.abs(error) > maximum.get(key)) { maximum.put(key, Math.abs(error)); at.put(key,time); }
                         squared.put(key, squared.get(key)+error*error); low.put(key,Math.min(low.get(key),value)); high.put(key,Math.max(high.get(key),value));
+                        relative.get(key).add(row.values().get(observed),value);
                     }
                 }
             }
             assertEquals(reference.size(), actual.frames.size()+startups, "Preserve every event-side sample");
             var normalized = new LinkedHashMap<String, Double>();
+            var relativeValues = new LinkedHashMap<String, Double>();
             for (String key : List.of("V1","V2","P_PU","Q_PU")) {
                 double range = high.get(key)-low.get(key), rmse = Math.sqrt(squared.get(key)/reference.size());
                 normalized.put(key, range == 0. ? rmse : rmse/range);
+                relativeValues.put(key,relative.get(key).value());
             }
+            relativeValues.put("ANGLE_DEG",relative.get("ANGLE_DEG").value());
             var result = new LinkedHashMap<String,Object>();
             result.put("maximum_absolute_error",maximum); result.put("time_of_maximum",at);
             result.put("voltage_range_nrmse",Map.of("V1",normalized.get("V1"),"V2",normalized.get("V2")));
             result.put("power_range_nrmse",Map.of("P_PU",normalized.get("P_PU"),"Q_PU",normalized.get("Q_PU")));
+            result.put("relative_rmse",relativeValues);
             result.put("rotor_rmse_deg",Math.sqrt(squared.get("ANGLE_DEG")/reference.size()));
             result.put("step_s",step); result.put("duration_s",duration);
             result.put("coordinate_policy","Published compensation coordinates compared explicitly; stored integration coordinates also retained");
@@ -242,8 +250,8 @@ public class Hyg3StateConformanceTest {
             result.put("boundary_absolute_tolerance",boundaryBounds);
             diagnostics.put(tag,result);
             new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("diagnostic.json").toFile(),diagnostics);
-            for (var value : normalized.entrySet()) if (!(value.getValue() < .001)) failures.add(tag+" "+value.getKey()+" NRMSE "+value.getValue());
-            if (!((double) result.get("rotor_rmse_deg") < .01)) failures.add(tag+" rotor RMSE "+result.get("rotor_rmse_deg"));
+            for (var value : relativeValues.entrySet()) if (!(value.getValue() < RelativeRmse.ONE_PERCENT))
+                failures.add(tag+" "+value.getKey()+" relative RMSE "+value.getValue());
         }
         assertFalse(diagnostics.isEmpty(), "A trajectory gate must exercise at least one complete capture");
         assertEquals(List.of(), failures);

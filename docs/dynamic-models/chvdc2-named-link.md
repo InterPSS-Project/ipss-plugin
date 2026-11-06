@@ -335,7 +335,7 @@ accuracy failures, not full model acceptance.
 ### Explicit accepted protection clock
 
 The terminal attachment now accepts an immutable `ProtectionClock` selection.
-The existing constructor keeps `CALLER_TIME`. An explicitly selected `BINARY32`
+At this checkpoint the existing constructor kept `CALLER_TIME`. An explicitly selected `BINARY32`
 clock starts from the prepared initial time, including negative startup time,
 and adds the actual outer integration duration in single precision once per
 accepted interval. Both integrators use the same clock owner. This follows the
@@ -382,6 +382,17 @@ The complete registered suite runs 4,589 tests with 168 failures, one error and
 protected trajectory cases add failures. Full comparisons, executable/source
 snapshots and baseline-difference checks are retained in the private
 `chvdc2-explicit-clock-20261103` validation archive.
+
+The later terminal default selects `BINARY32`; callers can explicitly select
+`CALLER_TIME`. In the short-hold full-network capture, the latter uses the solver's
+double-precision physical time and differs from 121 recorded inverter-short flags.
+Both integration methods with the accumulated protection clock match every flag
+and the recorded transition clock. The first difference occurs at physical time
+`0.127 s`: the caller-time hold test releases one step earlier while the
+accumulated clock remains below the strict minimum duration. Changing the
+protection duration or adding a fixed epsilon would not reproduce the accumulated
+sequence. The reference comparison now selects the matching clock policy;
+the caller-time clock remains available for applications requiring that policy.
 
 ### Commutation applies after the corrected line update
 
@@ -2122,3 +2133,30 @@ from 1.09 to 2.64 V. `Chvdc2VoltageChannelStageReferenceTest` checks this
 source-only discriminator without altering the converter equations. This
 observation timing must be resolved before treating the published voltage
 channel as a simultaneous input for DC-line equation fitting.
+
+### Inverter DC-filter interface in the short-hold fault
+
+The retained 0.5 ms short-hold full-network comparison now writes a bounded
+`dc-interface.csv` beside its state and protection traces. The prepared line
+has one current state and no capacitor. Its shorted inverter line voltage is
+zero without resetting current, and the inverter DC-filter controller also
+receives zero. On release, the line input includes the sampled commutation-drop
+correction while the controller receives the live converter DC voltage in
+kilovolts. Both methods
+match all short/release flags under the accumulated protection clock.
+
+Across 825 shorted samples, the reported inverter DC voltage is zero in both
+the reference and the coupled runtime. Across all 1,005 samples, the
+inverter-voltage error RMS is 0.0051 kV for modified Euler and 0.0520 kV for
+staggered integration; maximum errors are 0.0840 and 0.8963 kV. Yet the
+corresponding STATE3 errors reach 0.01295 and 0.01641 pu, and the terminal
+reference comparison retains its above-limit STATE3 RMSE. At a release sample
+near 0.0555 s, both reported voltages are about 490.5 kV; at the following
+shorted sample both are zero, while the reference STATE3 increases more than
+the coupled state. Local substep refinement does not remove the full-trace gap.
+
+This evidence checks the reported endpoint and unit interface but does not
+reveal every intra-interval voltage observed by the reference controller.
+The remaining issue is the filter's input and publication stage around
+release and re-short transitions. Do not change the DC line equation or
+filter time constants solely to fit the published STATE3 trace.

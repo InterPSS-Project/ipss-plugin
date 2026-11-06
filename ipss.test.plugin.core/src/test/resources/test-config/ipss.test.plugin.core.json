@@ -1,4 +1,8 @@
 {
+  "Wt3p1SignedRateCompatibilityTest": {
+    "legacy.ge.reference": null,
+    "legacy.ge.state.reference": null
+  },
   "CompositeTapControlSmibTest": {
     "recording.enabled": false
   },

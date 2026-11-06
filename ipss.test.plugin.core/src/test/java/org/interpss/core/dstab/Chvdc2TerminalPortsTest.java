@@ -119,6 +119,7 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
     }
     @Test void defaultAttachmentSelectsLocalIntegration()throws Exception {
         var f=fixture(true);var defaults=new Chvdc2TerminalPorts(f.binding());
+        assertEquals(Chvdc2TerminalPorts.ProtectionClock.BINARY32,defaults.protectionClock());
         assertEquals(10,defaults.rectifierPort().staggeredLocalStepCount());
         assertEquals(1,defaults.inverterPort().staggeredLocalStepCount());
     }
@@ -516,6 +517,8 @@ public class Chvdc2TerminalPortsTest extends CorePluginTestSetup {
                 new Chvdc2NetworkPreparation.OperatingPoint(b.operatingPoint().rectifierVolts(),b.operatingPoint().inverterVolts(),
                         b.operatingPoint().currentAmperes(),Double.MAX_VALUE),b.networkIntervalSeconds(),b.frequencyHz(),b.effectiveHenries(),b.capacitanceFarads(),b.runtime());
         assertThrows(IllegalArgumentException.class,()->new Chvdc2TerminalPorts(outside,Chvdc2TerminalPorts.ProtectionClock.BINARY32));
-        assertEquals(Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,new Chvdc2TerminalPorts(b).protectionClock());
+        assertEquals(Chvdc2TerminalPorts.ProtectionClock.BINARY32,new Chvdc2TerminalPorts(b).protectionClock());
+        assertEquals(Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME,
+                new Chvdc2TerminalPorts(b,Chvdc2TerminalPorts.ProtectionClock.CALLER_TIME).protectionClock());
     }
 }

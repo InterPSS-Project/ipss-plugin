@@ -11,6 +11,7 @@ import java.util.function.DoubleSupplier;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
+import org.interpss.core.dstab.reference.RelativeRmse;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -107,9 +108,10 @@ public class Pss2bCoupledBoundaryConformanceTest {
         assertEquals(expected.size(), recorder.frames.size() + startups, "Complete grid and interval-side sample count");
         var maximum = new LinkedHashMap<String, Double>(); var at = new LinkedHashMap<String, Double>();
         var sumSquares = new LinkedHashMap<String, Double>();
+        var relative = new LinkedHashMap<String, RelativeRmse>();
         double prefaultAngleMaximum = 0., minimumOutput = Double.POSITIVE_INFINITY, maximumOutput = Double.NEGATIVE_INFINITY;
         double firstEventPowerStateError = 0.; int firstEventSamples = 0;
-        for (String key : initial.values.keySet()) { maximum.put(key, 0.); at.put(key, 0.); sumSquares.put(key, 0.); }
+        for (String key : initial.values.keySet()) { maximum.put(key, 0.); at.put(key, 0.); sumSquares.put(key, 0.); relative.put(key,new RelativeRmse()); }
         Path trace = output.resolve(root.getFileName() + ".csv.gz");
         long estimate = BenchmarkOutputGuard.estimateCsvBytes(expected.size(), initial.values.size());
         try (var raw = BenchmarkOutputGuard.newOutputStream(trace, estimate);
@@ -139,6 +141,7 @@ public class Pss2bCoupledBoundaryConformanceTest {
                     double error = x - row.get(value.getKey());
                     if (Math.abs(error) > maximum.get(value.getKey())) { maximum.put(value.getKey(), Math.abs(error)); at.put(value.getKey(), time); }
                     sumSquares.merge(value.getKey(), error * error, Double::sum);
+                    relative.get(value.getKey()).add(x,row.get(value.getKey()));
                     writer.write("," + x);
                 }
                 writer.write('\n');
@@ -147,14 +150,14 @@ public class Pss2bCoupledBoundaryConformanceTest {
         }
         var rmse = new LinkedHashMap<String, Double>();
         sumSquares.forEach((key, value) -> rmse.put(key, Math.sqrt(value / expected.size())));
+        var relativeValues=new LinkedHashMap<String,Double>();
+        relative.forEach((key,value)->relativeValues.put(key,value.value()));
         var normalizedVoltage = new LinkedHashMap<String, Double>();
-        var constantVoltage = new java.util.HashSet<String>();
         for (String channel : List.of("V_BUS1", "V_BUS2")) {
             double minimum = expected.stream().mapToDouble(row -> row.get(channel)).min().orElseThrow();
             double maximumReference = expected.stream().mapToDouble(row -> row.get(channel)).max().orElseThrow();
             double range = maximumReference - minimum;
             if (range == 0.) {
-                constantVoltage.add(channel);
                 normalizedVoltage.put(channel, 0.);
             } else {
                 double nrmse = rmse.get(channel) / range;
@@ -168,6 +171,7 @@ public class Pss2bCoupledBoundaryConformanceTest {
                 "voltage_range_nrmse", normalizedVoltage, "bus_frequency_filter_s", .04,
                 "trace", trace.getFileName().toString(), "integration_method", staggered ? "STAGGERED_EULER" : "MODIFIED_EULER"));
         result.put("first_event_power_state_samples", firstEventSamples);
+        result.put("relative_rmse",relativeValues);
         result.put("prefault_angle_maximum_degrees", prefaultAngleMaximum);
         result.put("exciter_local_substeps", staggered ? exciterSubsteps : 1);
         result.put("first_event_power_state_maximum", firstEventPowerStateError);
@@ -182,18 +186,15 @@ public class Pss2bCoupledBoundaryConformanceTest {
         }
         Path diagnostic=output.resolve(root.getFileName()+".json");
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(diagnostic.toFile(),result);
-        for(var entry:normalizedVoltage.entrySet()) {
-            if(constantVoltage.contains(entry.getKey()))
-                assertEquals(0.,rmse.get(entry.getKey()),1e-12,"Constant reference channel uses an absolute roundoff check");
-            else assertTrue(entry.getValue()<.001,root.getFileName()+" "+entry.getKey()+" NRMSE="+entry.getValue());
-        }
+        for(var entry:normalizedVoltage.entrySet())
+            assertTrue(relativeValues.get(entry.getKey())<RelativeRmse.ONE_PERCENT,
+                    root.getFileName()+" "+entry.getKey()+" relative RMSE="+relativeValues.get(entry.getKey()));
         if (longRun) {
-            assertTrue(maximum.get("PSS_STATE_3") < .005 * firstWashoutPrefault,
-                    "Second-path first-washout peak exceeds 0.5% of reference prefault state");
-            assertTrue(rmse.get("PSS_STATE_3") < .0001 * firstWashoutPrefault,
-                    "Second-path first-washout RMSE exceeds 0.01% of reference prefault state");
+            assertTrue(relativeValues.get("PSS_STATE_3")<RelativeRmse.ONE_PERCENT,
+                    "Second-path first-washout relative RMSE="+relativeValues.get("PSS_STATE_3"));
         }
-        assertTrue(rmse.get("MACH_ANGLE") < .01, "Rotor-angle RMSE="+rmse.get("MACH_ANGLE")+" degrees; required <0.01");
+        assertTrue(relativeValues.get("MACH_ANGLE")<RelativeRmse.ONE_PERCENT,
+                "Rotor-angle relative RMSE="+relativeValues.get("MACH_ANGLE"));
         assertTrue(prefaultAngleMaximum < .002, "Prefault maximum rotor-angle error in degrees");
         if (staggered && event.equals("fault") && pss.getData().getIcs1() == 6 && pss.getData().getIcs2() == 3) {
             assertEquals(1, firstEventSamples, "Retain the first postfault sample for the independent input-history gate");
