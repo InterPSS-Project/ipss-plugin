@@ -39,21 +39,28 @@ public class EcpOpfPypowerComparisonTest {
         var network=new MatpowerOpfDirectParser().parse(helper.caseFile(name,input).toString());
         var before=network.getBusList().stream().map(b->b.getVoltage()).toList();
         var config=new EcpOpfConfig(mode.equals("I")?EcpOpfConfig.ThermalLimit.CURRENT:EcpOpfConfig.ThermalLimit.APPARENT_POWER,
-                EcpOpfConfig.BranchRatingUnit.PER_UNIT,5e-6,1e-4,1e-4,500,false).withStrategy(strategy);
+                EcpOpfConfig.BranchRatingUnit.PER_UNIT,5e-6,1e-4,1e-4,500,false).withStrategy(strategy)
+                .withFormulation(EcpOpfConfig.Formulation.valueOf(System.getProperty("ecp.formulation","GENERATOR_ADMITTANCE")));
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF)
+            config=config.withInitialization(EcpOpfConfig.Initialization.valueOf(System.getProperty("ecp.initialization","FLAT")));
         if(strategy==EcpOpfConfig.Strategy.ECPACOPF && System.getProperty("ecp.step.control", "").equals("NON_DIVERGENT"))
             config=config.withNewtonStepControl(EcpOpfConfig.NewtonStepControl.nonDivergent());
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && System.getProperty("ecp.step.control", "").equals("POLYNOMIAL_LIMITING"))
+            config=config.withNewtonStepControl(EcpOpfConfig.NewtonStepControl.polynomial());
         if(strategy==EcpOpfConfig.Strategy.ECPACOPF) {
             var limits=config.newtonStepControl();
             double voltage=System.getProperty("ecp.step.voltage", "").isEmpty()?limits.voltageLimit():Double.parseDouble(System.getProperty("ecp.step.voltage"));
             double adjoint=System.getProperty("ecp.step.adjoint", "").isEmpty()?limits.adjointLimit():Double.parseDouble(System.getProperty("ecp.step.adjoint"));
             double admittance=System.getProperty("ecp.step.admittance", "").isEmpty()?limits.admittanceFraction():Double.parseDouble(System.getProperty("ecp.step.admittance"));
-            config=config.withNewtonStepControl(limits.withLimits(voltage,adjoint,admittance));
+            config=config.withNewtonStepControl(limits.withLimits(voltage,adjoint,admittance)
+                    .withInitialComplementarity(Double.parseDouble(System.getProperty("ecp.initial.complementarity","1"))));
         }
         System.out.printf("ECP_CONFIG %s %s %s feasibility=%.3e optimality=%.3e variable=%.3e maxIterations=%d epsilon=%.3e saturation=%.3e txEnabled=%s txScale=%.3e%n",
                 name,mode,strategy,config.feasibilityTolerance(),config.optimalityTolerance(),config.variableTolerance(),config.maximumIterations(),config.boundEpsilon(),config.boundaryMultiplier(),config.txStepping().enabled(),config.txStepping().seriesScale());
         var stepControl=config.newtonStepControl();
         System.out.printf("ECP_STEP_CONFIG %s %s %s mode=%s voltage=%.3e adjoint=%.3e admittanceFraction=%.3e boundaryFraction=%.3e minimumScale=%.3e backtracks=%d%n",
                 name,mode,strategy,stepControl.mode(),stepControl.voltageLimit(),stepControl.adjointLimit(),stepControl.admittanceFraction(),stepControl.boundaryFraction(),stepControl.minimumScale(),stepControl.maximumBacktracks());
+        System.out.printf("ECP_FORMULATION %s %s %s formulation=%s initialization=%s%n",name,mode,strategy,config.formulation(),config.initialization());
         var result=new EcpOpfAlgorithm().solve(network,config);
         System.out.printf("ECP_OPF %s %s %s status=%s iterations=%d objective=%.9f equality=%.3e bound=%.3e dual=%.3e comp=%.3e PQ=%.3e variableChange=%.3e detail=%s%n",
                 name,mode,strategy,result.status(),result.iterations(),result.objective(),result.maximumEqualityResidual(),result.maximumBoundViolation(),
