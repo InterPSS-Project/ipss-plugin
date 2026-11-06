@@ -677,6 +677,11 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
+    org.interpss.core.opf.ecp.EcpPowerFlowComparisonTest.class,
+    org.interpss.core.opf.ecp.EcpOpfPypowerComparisonTest.class,
+    org.interpss.core.opf.ecp.EcpOpfQualificationTest.class,
+    org.interpss.core.opf.ecp.EcpMatpowerInputContractTest.class,
+    org.interpss.core.opf.ecp.EcpOpfMatpowerComparisonTest.class,
     org.interpss.core.dstab.Cdc6tDyrImportTest.class,
     org.interpss.core.adapter.builder.dstab.ReactiveDeviceDyrImportTest.class,
 	// aclf
