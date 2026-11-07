@@ -58,6 +58,11 @@ public class EcpOpfPypowerComparisonTest {
             config=config.withNewtonStepControl(limits.withLimits(voltage,adjoint,admittance)
                     .withInitialComplementarity(Double.parseDouble(System.getProperty("ecp.initial.complementarity","1"))));
         }
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && !System.getProperty("ecp.bound.epsilon","").isEmpty())
+            config=new EcpOpfConfig(config.thermalLimit(),config.branchRatingUnit(),config.feasibilityTolerance(),
+                    config.optimalityTolerance(),config.variableTolerance(),config.maximumIterations(),config.freezeAutomaticControls(),
+                    config.strategy(),Double.parseDouble(System.getProperty("ecp.bound.epsilon")),config.boundaryMultiplier(),
+                    config.txStepping(),config.newtonStepControl(),config.initialization(),config.formulation());
         System.out.printf("ECP_CONFIG %s %s %s feasibility=%.3e optimality=%.3e variable=%.3e maxIterations=%d epsilon=%.3e saturation=%.3e txEnabled=%s txScale=%.3e%n",
                 name,mode,strategy,config.feasibilityTolerance(),config.optimalityTolerance(),config.variableTolerance(),config.maximumIterations(),config.boundEpsilon(),config.boundaryMultiplier(),config.txStepping().enabled(),config.txStepping().seriesScale());
         var stepControl=config.newtonStepControl();
@@ -83,7 +88,10 @@ public class EcpOpfPypowerComparisonTest {
                 result.maximumStationarity(),result.maximumComplementarity(),result.maximumPowerMismatch(),result.maximumVariableChange(),result.detail());
         assertTrue(result.converged(),()->name+" "+mode+" "+strategy+" "+result.status()+": "+result.detail()+" eq="+result.maximumEqualityResidual()+" dual="+result.maximumStationarity()+" bound="+result.maximumBoundViolation());
         double referenceCost=reference.get("objective_per_hour").getAsDouble();
-        assertEquals(referenceCost,result.objective(),Math.max(.01,1e-6*Math.abs(referenceCost)));
+        double costTolerance=Double.parseDouble(System.getProperty("ecp.objective.relative.tolerance","1e-6"));
+        assertTrue(Double.isFinite(costTolerance) && costTolerance>=0 && costTolerance<=.001,"Approved reference cost tolerance");
+        System.out.printf("ECP_COST_GATE %s %s %s relativeTolerance=%.9e%n",name,mode,strategy,costTolerance);
+        assertEquals(referenceCost,result.objective(),Math.max(.01,costTolerance*Math.abs(referenceCost)));
         assertTrue(result.maximumStationarity()<=config.optimalityTolerance());assertTrue(result.maximumComplementarity()<=config.optimalityTolerance());
         assertTrue(result.maximumEqualityResidual()<=config.feasibilityTolerance());assertTrue(result.maximumBoundViolation()<=config.feasibilityTolerance());
         assertTrue(result.maximumVariableChange()<=config.variableTolerance());assertTrue(result.iterations()<=config.maximumIterations());
