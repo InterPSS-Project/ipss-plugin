@@ -44,7 +44,7 @@ public class EcpOpfPypowerComparisonTest {
         var config=new EcpOpfConfig(mode.equals("I")?EcpOpfConfig.ThermalLimit.CURRENT:EcpOpfConfig.ThermalLimit.APPARENT_POWER,
                 EcpOpfConfig.BranchRatingUnit.PER_UNIT,5e-6,1e-4,1e-4,500,false).withStrategy(strategy)
                 .withFormulation(EcpOpfConfig.Formulation.valueOf(System.getProperty("ecp.formulation","GENERATOR_ADMITTANCE")));
-        if(strategy==EcpOpfConfig.Strategy.ECPACOPF)
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF || Boolean.getBoolean("ecp.initialize.all.strategies"))
             config=config.withInitialization(EcpOpfConfig.Initialization.valueOf(System.getProperty("ecp.initialization","FLAT")));
         if(strategy==EcpOpfConfig.Strategy.ECPACOPF && System.getProperty("ecp.step.control", "").equals("NON_DIVERGENT"))
             config=config.withNewtonStepControl(EcpOpfConfig.NewtonStepControl.nonDivergent());
