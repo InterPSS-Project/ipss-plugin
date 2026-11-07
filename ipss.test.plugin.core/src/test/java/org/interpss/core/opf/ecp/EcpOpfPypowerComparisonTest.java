@@ -67,7 +67,7 @@ public class EcpOpfPypowerComparisonTest {
         String nativeFile=System.getProperty("ecp.native.library","");
         var sparse=nativeFile.isEmpty()?switch(EcpSparseSolverConfig.Backend.valueOf(System.getProperty("ecp.java.sparse.backend","JAVA_KLU"))) {
             case JAVA_KLU -> EcpSparseSolverConfig.javaKlu();
-            case JAVA_CSPARSE -> EcpSparseSolverConfig.javaCsparse();
+            case JAVA_CSPARSE -> Boolean.getBoolean("ecp.factor.reuse")?EcpSparseSolverConfig.javaCsparseReusing():EcpSparseSolverConfig.javaCsparse();
             case NATIVE_UMFPACK -> throw new IllegalArgumentException("Native diagnostic requires an explicit library file");
         }:EcpSparseSolverConfig.nativeUmfpack(nativeFile);
         var solveReport=new EcpOpfAlgorithm().solveDetailed(network,config,sparse);var result=solveReport.result();
