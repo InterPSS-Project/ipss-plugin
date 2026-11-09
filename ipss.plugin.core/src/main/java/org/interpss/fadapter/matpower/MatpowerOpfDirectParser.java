@@ -225,11 +225,13 @@ public class MatpowerOpfDirectParser {
 			branch.setRatingMw1(row[5] / baseMva);
 			branch.setRatingMw2(row[6] / baseMva);
 			branch.setRatingMw3(row[7] / baseMva);
-			if (row.length >= 13 && (row[11] != 0.0 || row[12] != 0.0)
-					&& (row[11] > -360.0 || row[12] < 360.0)) {
+			if (row.length >= 13 && ((row[11] != 0.0 && row[11] > -360.0)
+					|| (row[12] != 0.0 && row[12] < 360.0)
+					|| (row[11] != 0.0 && row[12] == 0.0)
+					|| (row[11] == 0.0 && row[12] != 0.0))) {
 				branch.setAngleDifferenceLimit(new LimitType(
-						row[12] >= 360.0 ? Double.POSITIVE_INFINITY : Math.toRadians(row[12]),
-						row[11] <= -360.0 ? Double.NEGATIVE_INFINITY : Math.toRadians(row[11])));
+						row[12] > 360.0 ? Double.POSITIVE_INFINITY : Math.toRadians(row[12]),
+						row[11] < -360.0 ? Double.NEGATIVE_INFINITY : Math.toRadians(row[11])));
 			}
 			branch.setStatus(row[10] > 0.0);
 			double ratio = row[8];
