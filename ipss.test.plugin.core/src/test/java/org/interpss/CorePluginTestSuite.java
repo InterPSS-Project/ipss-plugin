@@ -198,6 +198,7 @@ import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1NativeSchemaTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
+import org.interpss.core.adapter.builder.dstab.Reecb1VoltageControlTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecc1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecd1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeceModelTest;
@@ -1250,6 +1251,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseRegfma1NativeSchemaTest.class,
 	PsseReeca1ControllerTest.class,
 	PsseReecb1ControllerTest.class,
+	Reecb1VoltageControlTest.class,
 	PsseReecc1ControllerTest.class,
 	PsseReecd1ControllerTest.class,
 	PsseReeceModelTest.class,

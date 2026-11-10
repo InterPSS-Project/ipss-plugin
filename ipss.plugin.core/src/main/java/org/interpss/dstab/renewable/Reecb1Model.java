@@ -21,7 +21,7 @@ public final class Reecb1Model implements RenewableElectricalController {
     private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
-    private double q0;
+    private double qReference;
     private double powerFactorRatio;
     private double dipReference;
     private double vMeasured;
@@ -95,14 +95,20 @@ public final class Reecb1Model implements RenewableElectricalController {
         loadEffectiveParameters();
         double sensedV = sensedVoltage(v);
         p0 = p;
-        q0 = q;
+        // The direct VFLAG=0 path carries an absolute voltage reference,
+        // whereas the coordinated VFLAG=1 path carries a reactive-power target.
+        // Physical port Q is still passed unchanged to plant measurement initialization.
+        qReference = data.qFlag() == 1 && data.vFlag() == 0 ? sensedV : q;
         powerFactorRatio = Math.abs(p) > EPS ? q / p : 0.0;
         dipReference = data.vref0() == 0.0 ? sensedV : data.vref0();
         vMeasured = sensedV;
         pMeasured = p;
         pOrder = p;
         qCurrent = q / nonzero(sensedV);
-        qOuterIntegral = 0.0;
+        // The outer Q PI outputs an absolute voltage, not a zero-based bias.
+        // Its initialized output must equal the measured voltage so the inner
+        // voltage PI sees zero error while retaining the solved reactive current.
+        qOuterIntegral = data.qFlag() == 1 && data.vFlag() == 1 ? sensedV : 0.0;
         vIntegral = qCurrent;
 
         effectivePmax = Math.max(effectivePmax, pOrder);
@@ -111,19 +117,27 @@ public final class Reecb1Model implements RenewableElectricalController {
         effectivePmin = responseLimits.lower(effectivePmin, pOrder);
         effectiveQmax = Math.max(effectiveQmax, q);
         effectiveQmin = Math.min(effectiveQmin, q);
-        effectiveVmax = Math.max(effectiveVmax, 0.0);
-        effectiveVmin = Math.min(effectiveVmin, 0.0);
+        // VMAX/VMIN constrain the absolute voltage-reference coordinate. Zero
+        // is not an equilibrium voltage and must not widen a positive VMIN.
+        // Accommodate only the actual initialized reference, as for REEC_A;
+        // entered parameter values remain unchanged.
+        effectiveVmax = Math.max(effectiveVmax, sensedV);
+        effectiveVmin = Math.min(effectiveVmin, sensedV);
 
         voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         ipcmd = p / nonzero(sensedV);
         iqcmd = -qCurrent;
         if (plantController != null) plantController.setActivePowerResponseLimits(responseLimits);
         responseLimitsInitialized = true;
-        if (plantController != null) plantController.initialize(p, q, sensedV);
+        if (plantController != null) {
+            plantController.initialize(p, q, sensedV);
+            if (data.qFlag() == 1 && data.vFlag() == 0)
+                plantController.setReactiveStateOffset(qReference);
+        }
         if(auxiliaryController!=null) {
             double system=converter==null?100:converter.getDStabBus().getNetwork().getBaseMva();
             double machine=converter==null?system:converter.getParentGen().getMvaBase();
-            auxiliaryController.initializeOutputs(q0,p,system/(machine>0?machine:system));
+            auxiliaryController.initializeOutputs(qReference,p,system/(machine>0?machine:system));
         }
         if (weakGridController != null) weakGridController.initialize(v, p);
     }
@@ -195,7 +209,7 @@ public final class Reecb1Model implements RenewableElectricalController {
 
         double plantQref = plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
-                ? pMeasured * powerFactorRatio : auxiliaryController!=null?auxiliaryController.getReactiveOutput():q0 + plantQref;
+                ? pMeasured * powerFactorRatio : auxiliaryController!=null?auxiliaryController.getReactiveOutput():qReference + plantQref;
         double qTarget = limit(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(vMeasured);
         double rawIp = pOrder / voltage;
@@ -207,16 +221,26 @@ public final class Reecb1Model implements RenewableElectricalController {
                 qCurrent = lag(qCurrent, qTarget / voltage, effectiveTiq, dt);
             }
         } else {
-            double qError = data.vFlag() == 1 ? qTarget - q : 0.0;
-            qOuterIntegral = integrateWithAntiWindup(qOuterIntegral, data.kqi(), qError,
-                    dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
-            double voltageCommand = data.vFlag() == 1
-                    ? limit(data.kqp() * qError + qOuterIntegral,
-                            effectiveVmin, effectiveVmax)
-                    : 0.0;
-            vIntegral = integrateWithAntiWindup(vIntegral, data.kvi(), voltageCommand,
+            double voltageCommand;
+            if (data.vFlag() == 1) {
+                double qError = qTarget - q;
+                qOuterIntegral = integrateWithAntiWindup(qOuterIntegral, data.kqi(), qError,
+                        dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
+                voltageCommand = limit(data.kqp() * qError + qOuterIntegral,
+                        effectiveVmin, effectiveVmax);
+            } else {
+                // The direct voltage-reference branch bypasses the Q limiter
+                // and outer Q PI, but still passes through VMAX/VMIN.
+                voltageCommand = limit(selectedQ, effectiveVmin, effectiveVmax);
+            }
+            // The summing junction after VFLAG subtracts measured voltage in
+            // both modes. Omitting it makes the inner PI integrate an absolute
+            // voltage (or only a clipped positive bias), preventing normal
+            // bidirectional reactive recovery after a network disturbance.
+            double voltageError = voltageCommand - vMeasured;
+            vIntegral = integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
-            qCurrent = limit(data.kvp() * voltageCommand + vIntegral,
+            qCurrent = limit(data.kvp() * voltageError + vIntegral,
                     -preliminaryIqMax, preliminaryIqMax);
         }
 

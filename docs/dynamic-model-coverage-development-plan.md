@@ -2779,3 +2779,14 @@ The original plant data now attach without a parameter override. See the
 The [compatibility notes](dynamic-models/native-import-compatibility.md) explain
 each boundary and the native-wind host qualification limit. Import repair does
 not imply complete model, turbine, or large-system trajectory verification.
+
+REECB1 voltage-feedback correction: restore the absolute outer voltage-reference
+state and the measured-voltage subtraction before the inner PI, including the
+direct voltage-selector branch. Four synthetic discriminators fail on the old
+kernel and pass on the correction; all 44 selected controller/plant checks pass.
+Exact-source private component and short full-network comparisons retain their
+independent inputs and quantify remaining integration differences. A separate
+full supplied-horizon run remains subject to actual completion/parity review.
+The broad registered Maven gate currently stops at unrelated core API dependency
+mismatches; it is not counted as passed. Catalog status stays LOADABLE. See
+[equations, rationale and validation scope](benchmarks/reecb-voltage-feedback-2026-11-10.md).
