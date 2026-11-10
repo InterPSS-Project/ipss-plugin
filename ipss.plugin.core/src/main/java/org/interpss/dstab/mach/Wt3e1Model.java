@@ -3,6 +3,8 @@ package org.interpss.dstab.mach;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
@@ -21,6 +23,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
     private final double[] speedPower, speedValues;
     private final Wt3e1Data data;
     private final Wt3GeneratorModel generator;
+    private BaseDStabBus<?, ?> regulatedBus;
     private State state;
     private State oldState;
     private Derivative predictor;
@@ -41,6 +44,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
     }
 
     public void initialize() {
+        regulatedBus = resolveRegulatedBus();
         double voltage = terminalVoltage();
         // WT3 generator measurements and commands use its own MVA base, not
         // the network base. Convert once to/from the online aggregate MW base
@@ -49,7 +53,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
         controlBaseMva = generator.getAggregateRatedMw() * data.onlineFraction();
         double pControl = generator.getP() * deviceBaseMva / controlBaseMva;
         double qControl = generator.getQ() * deviceBaseMva / controlBaseMva;
-        double compensated = compensatedVoltage(voltage, pControl, qControl);
+        double compensated = voltageRegulatorInput(voltage, pControl, qControl);
         voltageReference = compensated;
         qReference = qControl;
         powerFactorAngle = Math.atan2(qControl, pControl);
@@ -140,7 +144,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
         double scale = deviceBaseMva / controlBaseMva;
         double pControl = generator.getP() * scale;
         double qControl = generator.getQ() * scale;
-        double compensated = compensatedVoltage(voltage, pControl, qControl);
+        double compensated = voltageRegulatorInput(voltage, pControl, qControl);
         double vSensor = algebraicOrState(compensated, s.voltageSensor, data.trv());
         double vError = (voltageReference - vSensor) / data.onlineFraction();
         double vProp = algebraicOrState(data.kpv() * vError, s.windVarLag, data.tvr());
@@ -194,7 +198,21 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
         generator.setCommands(ipControl * controlBaseMva / deviceBaseMva, eq);
     }
 
-    private double compensatedVoltage(double voltage, double p, double q) {
+    private BaseDStabBus<?, ?> resolveRegulatedBus() {
+        if (data.remoteBus() == 0) return null;
+        var network = (BaseDStabNetwork<?, ?>) generator.getDStabBus().getNetwork();
+        var bus = network.getDStabBus("Bus" + data.remoteBus());
+        if (bus == null) {
+            throw new IllegalStateException("WT3E1 remote bus not found: " + data.remoteBus());
+        }
+        return bus;
+    }
+
+    private double voltageRegulatorInput(double voltage, double p, double q) {
+        // A configured remote voltage feeds only the outer regulator sensor.
+        // It is already a bus voltage measurement and takes no local drop
+        // compensation. The inner voltage and active-current equations keep Vt.
+        if (regulatedBus != null) return regulatedBus.getVoltageMag();
         double current = Math.hypot(p, q) / Math.max(EPS, voltage);
         return voltage - data.xcc() * current;
     }

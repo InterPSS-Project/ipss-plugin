@@ -59,3 +59,23 @@ separate WT3G2 terminal-angle selection. The
 [before/after evidence](legacy-ge-import-verification.md#converted-terminal-angle-and-bypass-reference-correction)
 retains all samples, event sides and controller states. This does not qualify
 legacy electrical-controller equations.
+
+
+## Configured outer voltage measurement
+
+WT3E1 resolves an entered nonzero remote bus when the controller initializes.
+Its initial voltage reference and outer voltage-sensor input use the voltage
+at that bus. The Mvar-to-voltage integrator, the inner voltage-error equation
+and the conversion of the active-power order to current use terminal voltage.
+Local compensation remains in the local sensor path. A missing configured
+bus is reported at initialization.
+
+The two-bus reference discriminator varied the remote and terminal voltage
+during a fault while retaining both measured channels. The initial outer
+sensor matched the configured remote bus and the inner integrator matched
+the machine terminal. Selecting local regulation moved the outer sensor to
+the terminal. Changing the local compensation parameter with remote
+regulation left the reference controller states and electrical trajectories
+unchanged. The focused regression varies the remote voltage while holding
+terminal voltage fixed. It fails on the old implementation, and the
+existing local-control and integration tests pass after the correction.

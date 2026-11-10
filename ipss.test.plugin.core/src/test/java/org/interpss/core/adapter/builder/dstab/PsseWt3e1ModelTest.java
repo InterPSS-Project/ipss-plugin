@@ -46,6 +46,28 @@ public class PsseWt3e1ModelTest {
         }
     }
 
+    @Test void remoteVoltageFeedsOuterSensorWhileInnerLoopKeepsTerminalVoltage() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var network = builder.getDStabNetwork();
+        var remote = com.interpss.dstab.DStabObjectFactory.createDStabBus("Bus2", network).orElseThrow();
+        remote.setBaseVoltage(16500);
+        remote.setVoltage(.99, 0.0);
+        var generator = builder.addWt3g1("Bus1", "1", new Wt3g1Data(40,.33403,0,0,.12,1.63));
+        var controller = builder.addWt3e1("Bus1", "1", data(2, 1, 2, .05));
+        var local = generator.getDStabBus();
+        assertTrue(generator.initStates(local));
+        var initial = controller.getNamedStates();
+        assertEquals(.99, initial.get("Voltage sensor"), 1e-12);
+        assertEquals(local.getVoltageMag(), initial.get("MVAR/Vref integrator"), 1e-12);
+
+        remote.setVoltage(.65, 0.0);
+        controller.step(.001, 0);
+        var trial = controller.getNamedStates();
+        assertEquals(.99 + .001 * (.65 - .99) / .02, trial.get("Voltage sensor"), 1e-12);
+        assertEquals(initial.get("Voltage-error/internal-voltage integrator"),
+                trial.get("Voltage-error/internal-voltage integrator"), 1e-12);
+    }
+
     @Test void rejectsInvalidFlagsAndBreakpoints() {
         assertThrows(IllegalArgumentException.class,()->data(2,1));
         assertThrows(IllegalArgumentException.class,()->data(1,3));
@@ -54,7 +76,11 @@ public class PsseWt3e1ModelTest {
                 .88,1.12,35,-.5,1.45,.05,.05,1,.3,.69,.78,.98,.5,1.2));
     }
 
-    private static Wt3e1Data data(int varFlag,int voltageFlag){return new Wt3e1Data(
-            0,varFlag,voltageFlag,0,0,0,.12,15,4,0,.04,2.5,.5,1.1,.05,.45,-.45,
+    private static Wt3e1Data data(int varFlag, int voltageFlag) {
+        return data(0, varFlag, voltageFlag, 0);
+    }
+
+    private static Wt3e1Data data(int remoteBus, int varFlag, int voltageFlag, double xcc) {
+        return new Wt3e1Data(remoteBus,varFlag,voltageFlag,0,0,0,.12,15,4,xcc,.04,2.5,.5,1.1,.05,.45,-.45,
             1.1,.02,.4,-.4,4,.1,.88,1.12,35,-.5,1.45,.05,.05,1,.3,.69,.78,.98,.74,1.2);}
 }
