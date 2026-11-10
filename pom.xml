@@ -21,6 +21,7 @@
 
     <modules>
         <module>ipss.plugin.core</module>
+        <module>ipss.plugin.ecf</module>
         <module>ipss.plugin.3phase</module>
         <module>ipss.test.plugin.core</module>
         <module>ipss.sample</module>

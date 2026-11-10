@@ -11,6 +11,7 @@ Starting from 2025/03, InterPSS development is based on Maven. ipss-plugin repo 
 
 ```
     ipss.plugin.core
+    ipss.plugin.ecf       # experimental equivalent-circuit power flow
     ipss.plugin.3phase
     ipss.test.plugin.core
     ipss.sample
