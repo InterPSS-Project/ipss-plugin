@@ -27,6 +27,8 @@ public final class Reecc1Model
     private final int qPointCount, pPointCount;
     private final RenewableConverterHost converter;
     private Repca1Model plantController;
+    private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
+    private boolean twoStepAuxiliaryManaged;
     private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
@@ -97,6 +99,7 @@ public final class Reecc1Model
 
     @Override
     public void initialize(double p, double q, double v) {
+        twoStepAuxiliaryManaged=false;
         twoStep.reset();
         stateMonitor.reset();
         resolveSensedBus();
@@ -127,6 +130,14 @@ public final class Reecc1Model
         twoStepIpcmd = ipcmd;
         twoStepIqcmd = iqcmd;
         if (plantController != null) plantController.initialize(p, q, sensedV);
+        if(auxiliaryController!=null) {
+            double systemBase=converter==null?100:converter.getDStabBus().getNetwork().getBaseMva();
+            double machineBase=converter==null?systemBase:converter.getParentGen().getMvaBase();
+            // REAXB outputs absolute machine-base references: voltage in direct
+            // voltage mode, reactive power otherwise, plus real power. Its
+            // upstream plant sends system-base increments, converted only here.
+            auxiliaryController.initializeOutputs(reactiveReference,p,systemBase/(machineBase>0?machineBase:systemBase));
+        }
         if (weakGridController != null) weakGridController.initialize(v, p);
     }
 
@@ -156,6 +167,25 @@ public final class Reecc1Model
 
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
+        if(auxiliaryController!=null)throw new UnsupportedOperationException("REECC1 shared auxiliary references require the owning staggered integration group");
+        advanceControls(dt,p,q,v,frequency);
+    }
+
+    @Override public void step(double dt,double p,double q,double v,double frequency,int flag) {
+        if(flag!=0&&flag!=1)throw new IllegalArgumentException("Electrical integration stage must be 0 or 1");
+        if(!Double.isFinite(dt)||dt<0)throw new IllegalArgumentException("Finite nonnegative integration interval required");
+        if(dt==0)return;
+        if(twoStepAuxiliaryManaged)throw new IllegalStateException("Cannot mix ordinary and externally owned auxiliary integration");
+        // The ordinary engine sweeps every predictor before every corrector.
+        // Each local auxiliary advances once per stage, while the shared plant
+        // deduplicates the same stage across its receivers. Keep the existing
+        // bounded electrical integration once per physical interval; the
+        // corrector must not integrate battery energy or controller lags twice.
+        if(auxiliaryController!=null)auxiliaryController.step(dt,flag);
+        if(flag==0)advanceControls(dt,p,q,v,frequency);
+    }
+
+    private void advanceControls(double dt,double p,double q,double v,double frequency) {
         if (dt <= 0.0) return;
         double sensedV = sensedVoltage(v);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
@@ -177,6 +207,7 @@ public final class Reecc1Model
     @Override public double getTwoStepIqcmd() { return twoStepIqcmd; }
 
     @Override public void refreshTwoStep(double p, double q, double v, double frequency) {
+        requireAuxiliaryOwner();
         double sensedV = sensedVoltage(v);
         if (plantController != null) plantController.stepTwoStep(0., p, q, sensedV, frequency);
         if (weakGridController != null) weakGridController.stepTwoStep(0., v, getPlantPowerReference(p0));
@@ -251,7 +282,13 @@ public final class Reecc1Model
 
     private double selectedReactiveReference() {
         return data.pfFlag()==1 ? pMeasured*powerFactorRatio
+                : auxiliaryController!=null?auxiliaryController.getReactiveOutput()
                 : reactiveReference+(plantController==null?0.:plantController.getQref());
+    }
+
+    private void requireAuxiliaryOwner() {
+        if(auxiliaryController!=null&&!twoStepAuxiliaryManaged)
+            throw new UnsupportedOperationException("Shared auxiliary references require an owning integration group");
     }
 
     private static boolean integralBlocked(double integral,double error,double kp,double lower,double upper) {
@@ -271,9 +308,7 @@ public final class Reecc1Model
 
         if (!voltageDip) updatePowerOrder(getSelectedPowerReference(p0), dt);
 
-        double plantQref = plantController == null ? 0.0 : plantController.getQref();
-        double selectedQ = data.pfFlag() == 1
-                ? pMeasured * powerFactorRatio : reactiveReference + plantQref;
+        double selectedQ = selectedReactiveReference();
         double qTarget = limit(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(vMeasured);
         double rawIp = pOrder / voltage + auxiliaryPower;
@@ -442,7 +477,20 @@ public final class Reecc1Model
 
     public Reecc1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
-    @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    @Override public void setPlantController(Repca1Model controller) {
+        if(controller!=null&&auxiliaryController!=null)throw new IllegalStateException("Plant reference port is occupied");
+        plantController = controller;
+    }
+    @Override public org.interpss.dstab.mach.Reaxbu1Model getAuxiliaryController(){return auxiliaryController;}
+    @Override public void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model controller) {
+        if(controller!=null&&(plantController!=null||auxiliaryController!=null))
+            throw new IllegalStateException("Plant reference port is occupied");
+        auxiliaryController=controller;
+    }
+    @Override public void setTwoStepAuxiliaryManaged(boolean managed) {
+        if(managed&&auxiliaryController==null)throw new IllegalStateException("No auxiliary control to manage");
+        twoStepAuxiliaryManaged=managed;
+    }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
     @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public double getMeasuredVoltage() { return vMeasured; }
@@ -472,6 +520,7 @@ public final class Reecc1Model
         states.put("Reactive Current Lag", qCurrent);
         states.put("Power Order Lag", pOrder);
         states.put("Battery Energy Output", energyOutput);
+        if(auxiliaryController!=null)auxiliaryController.getNamedStates().forEach((name,value)->states.put("Auxiliary "+name,value));
         return Collections.unmodifiableMap(states);
     }
 }

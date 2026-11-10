@@ -2,6 +2,30 @@
 
 ## Current checkpoint
 
+The [Type-J voltage-state correction](dynamic-models/type-j-voltage-state-realization.md)
+separates its four electrical equations from the winding-state engine, uses the
+scaled saturation curve and distinct axis factors, and preserves the voltage/
+air-gap-power convention. Focused component checks and the independent coupled
+small-network regression pass with the reference's constant-P/Q loads. This
+fixture correction changes no numerical acceptance threshold. Disturbed-motoring
+energy checks retain active attachment and negative mechanical power.
+
+The [AC7B boundary correction](dynamic-models/ac7b-pid-boundary.md) removes spurious
+outer-integral tracking at outward PID limits and fixes the zero-inner-integral-
+gain initial allocation. Other dialects and nonzero inner-gain behavior remain
+scoped separately. Independent bus-attached limiters also gate their physical
+inputs on the generator, machine and exciter status: an out-of-service machine
+may never have been initialized. Inactive-host histories remain frozen; active
+host failures remain visible. Complete system event stability is a separate
+qualification gate; catalog verification labels remain unchanged.
+
+The [native import compatibility update](dynamic-models/native-import-compatibility.md)
+adds exact H6E1 and wrapped OEL3CU parsing and deferred CHVDC2/CHVDC2U1 source
+attachment to the existing runtimes. H6E1 preserves its distinct native curve/Tw
+order. OEL3CU host expansion remains deferred. Automatic DC preparation and
+import-versus-explicit flat/fault checks now pass; general CHVDC2 trajectory
+qualification remains open, including unavailable capture-archive gates.
+
 The [CHVDC2 solved-network preparation](dynamic-models/chvdc2-named-link.md#preparation-from-the-solved-network)
 resolves and validates the static owner, prepares immutable physical coefficients
 using the outer interval, and initializes the shared runtime without changing
@@ -1115,6 +1139,8 @@ SMIB/model/solver checks with zero failures/errors and only existing skips.
 Source/run/report hashes retain the scoped evidence; equations and existing
 trajectory tolerances are unchanged. Broader model verification remains open.
 See the [schema separation checklist](benchmarks/pss-canonical-native-schema-2026-10-19.md).
+
+Signed-input follow-up: [runtime compensation uses the magnitude of Kw](dynamic-models/genqec-kw-magnitude.md) while retaining the finite entered sign. Independent standard/wrapper probes distinguish both current directions and signed product limits; full-system trajectory acceptance remains open. The following paragraph records the earlier positive-input verification snapshot.
 
 GENQEC bounded field-compensation correction: finite Kw>=0 now replaces
 the artificial Kw<1 restriction, and NaN is rejected. The existing Kw*Id
@@ -2706,3 +2732,50 @@ The instrumentation slice changes no production model or integration equation.
 - [ ] Close complete-profile, instantaneous event-side and Texas2k acceptance.
 
 See the [selector proof, new PowerWorld artifact and remaining boundary gap](benchmarks/regca-zero-q-selector-2026-10-17.md).
+
+## Combined-case import boundary follow-up, 2026-11-08
+
+- [x] Inventory all remaining constructor/parser failures with source locations;
+  consult native tables and independent simulator behavior before changing domains.
+- [x] Accept exact integer-valued real CON selectors for REXSYS/SCRX without
+  truncating fractions or relaxing ICON parsing.
+- [x] Retain DERA1 zero gains, local CSVGN5/SVSMO1 sensing, WT1G1 equal
+  reactances, finite signed GENQEC Kw, and SVSMO3T2 zero inner-band ratio.
+- [x] Exclude zero-power IEEL placeholders while retaining their static records;
+  verify complete real-load attachment for an area with both target types.
+- [x] Derive GEWTGDU1 equal-time behavior from active native discriminators:
+  disable the ramp, preserve the dormant height/times, and prevent a false step.
+- [x] Verify 30 focused core-module tests, 103 existing affected-family tests
+  with unchanged reference gates, and five private QA tests. Retain source-field
+  parity and complete import dispositions in the private repository.
+- [ ] Resolve the retained REECA1 inverted limits, zero REAXB active gain, and
+  PLNTBU1 selector/frequency-limit source issues explicitly; do not silently
+  auto-correct them or infer branch semantics from startup acceptance alone.
+
+Follow-up: REECA1 import automatically swaps inverted finite Pmax/Pmin, with
+source-located warnings and entered/effective diagnostics; explicit parameter
+overrides cover the other reviewed source corrections. Zero-weight REAXB channels preserve
+their initialized output, and REECC1 battery hosts have a shared auxiliary port.
+Native selector discriminators now establish PLNTBU1's inactive branch for
+non-one selectors, including its distinct initialization/measurement behavior.
+The original plant data now attach without a parameter override. See the
+[implementation and scope](dynamic-models/native-import-compatibility.md#explicit-corrections-and-auxiliary-battery-hosts).
+
+- [x] Implement audited corrections without changing source files: default
+  REECA1 limit swapping, and explicit overrides for ambiguous source data.
+- [x] Preserve zero-weight host operating points and connect battery auxiliary
+  controls through shared staggered ownership.
+- [x] Verify source correction profiles with both documented selectors, source
+  hashes, public blockwise tests and a battery/auxiliary full-solver smoke.
+- [x] Preserve the entered plant selector and reproduce native branch behavior;
+  gate the whole P controller, retain unused bounds, and keep PF sensing active.
+- [ ] Qualify the newly accepted compatibility profiles against independent
+  disturbed trajectories and full-system gates. Native zero-weight behavior
+  differs and is not claimed as equivalent.
+- [ ] Close full repository/system gates. An unrelated OPF/core API mismatch
+  prevents unrestricted integration-source compilation against the installed
+  core dependency; temporary focused source selection was removed after testing.
+
+The [compatibility notes](dynamic-models/native-import-compatibility.md) explain
+each boundary and the native-wind host qualification limit. Import repair does
+not imply complete model, turbine, or large-system trajectory verification.

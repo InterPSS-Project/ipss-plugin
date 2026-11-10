@@ -35,6 +35,8 @@ public class Gewtecu1ModelTest {
         assertTrue(fixture.controller.getNamedStates().containsKey("Filter in Voltage regulator"));
         assertTrue(fixture.controller.getNamedStates().containsKey("Washout in WindInertia"));
         assertNotNull(fixture.generator.getElectricalController());
+        assertTrue(fixture.generator.getNamedStates().keySet()
+                .containsAll(fixture.controller.getNamedStates().keySet()));
     }
 
     @Test
@@ -46,6 +48,30 @@ public class Gewtecu1ModelTest {
         assertEquals(.95, model.frequencyPower(1.0), 1.0e-12);
         assertEquals(1.05, model.frequencyPower(1.035), 1.0e-12);
         assertEquals(1.1, model.frequencyPower(1.06), 0.0);
+    }
+
+    @Test
+    void nonzeroReactivePowerAndAbsoluteShaftSpeedRemainAtEquilibrium(@TempDir Path tempDir)
+            throws Exception {
+        var fixture = load(tempDir);
+        var generator = fixture.generator;
+        var controller = fixture.controller;
+        var bus = generator.getDStabBus();
+        bus.setVoltage(new org.apache.commons.math3.complex.Complex(.99, 0));
+        generator.getParentGen().setGen(new org.apache.commons.math3.complex.Complex(.5, -.1));
+        assertTrue(generator.initStates(bus));
+        controller.setRotorSpeed(controller.getInitialRotorSpeed());
+        var initial = controller.getNamedStates();
+        assertEquals(0, initial.get("Lag of the WindVar controller"), 0);
+        for (int i = 0; i < 100; i++) {
+            assertTrue(generator.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 0));
+            assertTrue(generator.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 1));
+            assertTrue(generator.updateAttributes(false));
+        }
+        assertEquals(.5, generator.getP(), 1e-10);
+        assertEquals(-.1, generator.getQ(), 1e-10);
+        initial.forEach((name, value) -> assertEquals(value,
+                controller.getNamedState(name), 1e-10, name));
     }
 
     @Test
@@ -61,6 +87,39 @@ public class Gewtecu1ModelTest {
         assertTrue(fixture.controller.step(.0005, 0));
         assertTrue(fixture.controller.step(.0005, 1));
         assertTrue(fixture.controller.isTripped());
+    }
+
+    @Test
+    void highWindProtectionIntegratesExcessAndRetainsExposure(@TempDir Path tempDir)
+            throws Exception {
+        Path dyr = tempDir.resolve("wind-protection.dyr");
+        String original = Files.readString(MODEL_DYR);
+        String adjusted = original.replace("10.0 100.0 -100.0 -1.0 1000.0",
+                "14.0 25.0 3.0 -0.9 8.0");
+        assertTrue(!original.equals(adjusted));
+        Files.writeString(dyr, adjusted);
+        var controller = loadDyr(dyr).controller;
+        for (int i = 0; i < 2000; i++) protectionStep(controller, 14);
+        assertEquals(0, controller.getNamedState("High wind speed trip integrator"), 0);
+        assertTrue(!controller.isTripped());
+        for (int i = 0; i < 500; i++) protectionStep(controller, 34);
+        assertEquals(4.5, controller.getNamedState("High wind speed trip integrator"), 1e-10);
+        assertTrue(!controller.isTripped());
+        for (int i = 0; i < 500; i++) protectionStep(controller, 14);
+        assertEquals(4.5, controller.getNamedState("High wind speed trip integrator"), 1e-10);
+        for (int i = 0; i < 500; i++) protectionStep(controller, 34);
+        assertEquals(9, controller.getNamedState("High wind speed trip integrator"), 1e-10);
+        assertTrue(controller.isTripped());
+        controller.setWindSpeed(14);
+        assertTrue(controller.initialize());
+        assertEquals(0, controller.getNamedState("High wind speed trip integrator"), 0);
+        assertTrue(!controller.isTripped());
+    }
+
+    private static void protectionStep(Gewtecu1Model controller, double wind) {
+        controller.setWindSpeed(wind);
+        assertTrue(controller.step(.001, 0));
+        assertTrue(controller.step(.001, 1));
     }
 
     @Test
@@ -126,10 +185,14 @@ public class Gewtecu1ModelTest {
     }
 
     private static Fixture load(Path tempDir) throws Exception {
+        return loadDyr(MODEL_DYR);
+    }
+
+    private static Fixture loadDyr(Path modelDyr) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
-                MODEL_DYR.toString());
+                modelDyr.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         DStabGen gen = (DStabGen) network.getBus("Bus1").getContributeGen("1");

@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ieeet4;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Map;
 
@@ -57,6 +59,7 @@ public final class Ieeet4Exciter extends AnnotateExciter {
         minimumTimeConstantMultiplier = multiplier;
     }
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         kr=data.getKr(); trh=correctedMinimum(data.getTrh()); kv=data.getKv();
         te=correctedMinimum(data.getTe()); ke=data.getKe(); e1=data.getE1(); se1=data.getSe1();
@@ -73,7 +76,7 @@ public final class Ieeet4Exciter extends AnnotateExciter {
         state[EFD] = efd0;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
-        reference = machine.getDStabBus().getVoltageMag();
+        reference = sensedVoltage(machine);
         outputSignal = efd0;
         initialized = true;
         return true;
@@ -111,7 +114,7 @@ public final class Ieeet4Exciter extends AnnotateExciter {
     }
 
     private void derivatives(double[] x, double[] dx, Machine machine) {
-        double voltage = machine.getDStabBus().getVoltageMag();
+        double voltage = sensedVoltage(machine);
         double rate = rateCommand(reference, voltage) / trh;
         if ((x[VRH] >= vrmax && rate > 0.0) || (x[VRH] <= vrmin && rate < 0.0)) rate = 0.0;
         dx[VRH] = rate;

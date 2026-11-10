@@ -16,7 +16,7 @@ public record Uel2cData(int k1, int k2, int thirdQuadrantMode, int gainMode,
     public Uel2cData {
         if (k1 < 0 || k1 > 2 || k2 < 0 || k2 > 2
                 || thirdQuadrantMode < 0 || thirdQuadrantMode > 1
-                || gainMode < 1 || gainMode > 2) {
+                || gainMode < 0 || gainMode > 2) {
             throw new IllegalArgumentException("UEL2C selectors are invalid");
         }
         if (!finite(tuv,tup,tuq,kui,kul,vuimax,vuimin,kuf,kfb,tul,tu1,tu2,tu3,tu4,

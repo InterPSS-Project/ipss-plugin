@@ -1,5 +1,16 @@
 # CHVDC2 named-link preparation and shared components
 
+## Automatic Source Attachment
+
+The [native import compatibility update](native-import-compatibility.md) now
+retains direct and wrapped source records through `Chvdc2DyrModel`. Both dynamic
+solvers prepare the existing runtime after load flow and attach its terminal
+ports using the configured outer interval. Source/owner validation, copying,
+reinitialization, and imported-versus-explicit flat/fault parity are covered.
+Historical references below to missing automatic import describe the earlier
+checkpoint. General trajectory acceptance remains open; this change does not
+relax the documented reference gates or claim additional qualification.
+
 ## Fault-on and nonfault reference-range error gates
 
 The full-network fault comparison now evaluates each channel's RMSE separately
@@ -2160,3 +2171,31 @@ reveal every intra-interval voltage observed by the reference controller.
 The remaining issue is the filter's input and publication stage around
 release and re-short transitions. Do not change the DC line equation or
 filter time constants solely to fit the published STATE3 trace.
+
+
+## Qualified dynamic RL current-zero owner boundary
+
+CHVDC2U1 source flags111 with entered C=0 now projects its own modified-Euler
+line-current predictor/corrector before converter evaluation. Both free RL
+rates remain in the Heun quadrature; zeroing the outward right rate while
+retaining the origin can create rebound. The accepted-zero published derivative
+is viable, while internal free rates remain available for quadrature.
+Controller states and protection histories continue without a blocking timer,
+angle reset, or parameter change.
+
+This boundary belongs to Chvdc2CoupledRuntime. The signed Chvdc2DcLine ODE is
+unchanged. Algebraic/capacitor paths, other flags/dialects, and negative shared
+external proposals retain their guards. Chvdc2RlBoundaryTest covers crossing,
+hold/release, raw quadrature, cancellation, rollback and observation purity.
+
+Two complete fixed-angle cold pairs qualify boundary entry/release clocks at
+1 ms and 0.5 ms with unchanged ordinary current criteria applied to that
+component. Old/new positive-current prefixes are bit-identical. Complete
+controller-active state trajectories remain unqualified: their one-sample
+release difference and full-state gate failures are retained. Private raw
+captures, goldens, corrected-checkpoint replay and detailed results live in
+the large-case QA repository.
+
+Ten existing local updates keep the isolated equilibrium flat at outer
+0.0033333 s; one local update is unstable. This does not qualify a complete
+system or alter the default local count.

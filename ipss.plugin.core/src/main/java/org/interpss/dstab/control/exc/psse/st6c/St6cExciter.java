@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.st6c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,12 +21,14 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** Native PSS/E implementation of the IEEE 421.5-2016 ST6C exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St6cExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class St6cExciter extends AnnotateExciter implements IntegrationStepAware,
+        org.interpss.dstab.control.exc.UnderExcitationLimiterTarget,org.interpss.dstab.control.exc.OverExcitationLimiterTarget, org.interpss.dstab.control.exc.Oel3cExciterPort {
     private static final double EPS=1e-12;
     private static final int VSENSE=0,PID_I=1,PID_D=2,VG=3,VM=4;
     private final St6cData data;
     private final double[] state=new double[5],trial=new double[5],oldDerivative=new double[5];
     private double[] active=state;
+    private Limiter auxiliaryOel3c;
     private boolean initialized,hasVoel,hasVuel,hasVsclOel,hasVsclUel;
     private double integrationStep,minimumTimeConstantMultiplier=1,voel,vuel,vsclOel,vsclUel;
 
@@ -38,22 +42,44 @@ public final class St6cExciter extends AnnotateExciter implements IntegrationSte
     public St6cData getData(){return data;}
     @Override public void configureIntegrationStep(double step){configureIntegrationStep(step,1);}
     public void configureIntegrationStep(double step,double multiplier){integrationStep=step;minimumTimeConstantMultiplier=multiplier;}
-    public void setVoel(double v){voel=v;hasVoel=true;} public void setVuel(double v){vuel=v;hasVuel=true;}
+    public void setVoel(double v){
+        if(auxiliaryOel3c!=null)throw new IllegalStateException("OEL input already occupied");
+        voel=v;hasVoel=true;
+    } public void setVuel(double v){vuel=v;hasVuel=true;}
+    @Override public void clearVoel(){hasVoel=false;voel=0;}
+    @Override public void clearVuel(){hasVuel=false;vuel=0;}
+    @Override public Connection oel3cConnection(){
+        int mode=data.getOel();return mode==1||mode==3?Connection.SUMMATION:mode==2||mode==4?Connection.TAKEOVER:Connection.DISABLED;
+    }
+    @Override public boolean bindOel3c(Limiter limiter){
+        if(limiter==null||auxiliaryOel3c!=null||hasVoel||oel3cConnection()!=Connection.SUMMATION)return false;
+        auxiliaryOel3c=limiter;return true;
+    }
+    @Override public boolean supportsOel3cInput(int inputFlag){return inputFlag!=3;}
+    @Override public double oel3cExciterFieldCurrent(){
+        throw new UnsupportedOperationException("Static exciter has no exciter-field circuit");
+    }
+    private double auxiliaryOel(){return auxiliaryOel3c==null?0:auxiliaryOel3c.output();}
     public void setVsclOel(double v){vsclOel=v;hasVsclOel=true;} public void setVsclUel(double v){vsclUel=v;hasVsclUel=true;}
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrectParameters();
         if(tr<0||tda<0||tg<0||ta<0||kpa<=0||Math.abs(kff+km)<=EPS||sw1<1||sw1>2)return false;
-        double vt=bus.getVoltageMag(),ifd=exciterIfd(machine),supply=selectedSupply(machine);
+        double ec=sensedVoltage(machine),ifd=exciterIfd(machine),supply=selectedSupply(machine);
         double vb=availableBridge(supply,ifd),efd0=machine.getEfd();
         if(!Double.isFinite(vb)||vb<=EPS||!Double.isFinite(efd0))return false;
         double vm0=efd0/vb,vg0=kg*efd0,vr0=vm0,va0=(vr0+km*vg0)/(kff+km);
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
         vmmax=Math.max(vmmax,vm0);vmmin=Math.min(vmmin,vm0);
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
-        state[VSENSE]=vt;state[PID_I]=va0;state[PID_D]=0;state[VG]=vg0;state[VM]=vm0;
+        state[VSENSE]=ec;state[PID_I]=va0;state[PID_D]=0;state[VG]=vg0;state[VM]=vm0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=vt-stabilizerSignal(machine);outputSignal=efd0;initialized=true;return true;
+        reference=ec-stabilizerSignal(machine);
+        if(auxiliaryOel3c!=null&&!auxiliaryOel3c.initializeAfterExciter(ifd))return false;
+        // Both summation positions lie in the voltage-error path.
+        reference-=sumAtOne()+sumAtThree();
+        outputSignal=efd0;initialized=true;return true;
     }
     private void loadAndCorrectParameters(){
         oel=data.getOel();uel=data.getUel();scl=data.getScl();sw1=data.getSw1();
@@ -76,14 +102,14 @@ public final class St6cExciter extends AnnotateExciter implements IntegrationSte
         outputSignal=algebraics(active,machine).efd;return true;
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
-        Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);double vt=machine.getDStabBus().getVoltageMag();
-        dx[VSENSE]=lagDerivative(vt,x[VSENSE],tr);dx[PID_D]=lagDerivative(a.vi,x[PID_D],tda);
+        Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);double ec=sensedVoltage(machine);
+        dx[VSENSE]=lagDerivative(ec,x[VSENSE],tr);dx[PID_D]=lagDerivative(a.vi,x[PID_D],tda);
         double irate=kia*a.vi;if((a.va>=a.vaUpper-EPS&&irate>0)||(a.va<=vamin+EPS&&irate<0))irate=0;dx[PID_I]=irate;
         dx[VG]=lagDerivative(kg*a.efd,x[VG],tg);
         double vmRate=lagDerivative(a.vmInput,x[VM],ta);if((x[VM]>=vmmax-EPS&&vmRate>0)||(x[VM]<=vmmin+EPS&&vmRate<0))vmRate=0;dx[VM]=vmRate;
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double sensed=tr>EPS?x[VSENSE]:machine.getDStabBus().getVoltageMag();
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double first=reference-sensed+sumAtOne(),gate1=lvGate1(hvGate1(first));
         double vi=gate1+stabilizerSignal(machine)+sumAtThree();
         double derivative=tda>EPS?kda*(vi-x[PID_D])/tda:0,ifd=exciterIfd(machine);
@@ -99,8 +125,8 @@ public final class St6cExciter extends AnnotateExciter implements IntegrationSte
         }
         return new Algebraic(sensed,vi,va,vaUpper,vg,inner,currentLimit,vmInput,vm,efd);
     }
-    private double sumAtOne(){double v=0;if(oel<2&&hasVoel)v+=voel;if(uel<2&&hasVuel)v+=vuel;if(scl<2){if(hasVsclOel)v+=vsclOel;if(hasVsclUel)v+=vsclUel;}return v;}
-    private double sumAtThree(){double v=0;if(oel==3&&hasVoel)v+=voel;if(uel==3&&hasVuel)v+=vuel;if(scl==3){if(hasVsclOel)v+=vsclOel;if(hasVsclUel)v+=vsclUel;}return v;}
+    private double sumAtOne(){double v=0;if(oel<2&&hasVoel)v+=voel;if(oel==1)v+=auxiliaryOel();if(uel<2&&hasVuel)v+=vuel;if(scl<2){if(hasVsclOel)v+=vsclOel;if(hasVsclUel)v+=vsclUel;}return v;}
+    private double sumAtThree(){double v=0;if(oel==3&&hasVoel)v+=voel;if(oel==3)v+=auxiliaryOel();if(uel==3&&hasVuel)v+=vuel;if(scl==3){if(hasVsclOel)v+=vsclOel;if(hasVsclUel)v+=vsclUel;}return v;}
     private double hvGate1(double v){if(uel==2&&hasVuel)v=Math.max(v,vuel);if(scl==2&&hasVsclUel)v=Math.max(v,vsclUel);return v;}
     private double lvGate1(double v){if(oel==2&&hasVoel)v=Math.min(v,voel);if(scl==2&&hasVsclOel)v=Math.min(v,vsclOel);return v;}
     private double hvGate2(double v){if(uel==4&&hasVuel)v=Math.max(v,vuel);if(scl==4&&hasVsclUel)v=Math.max(v,vsclUel);return v;}

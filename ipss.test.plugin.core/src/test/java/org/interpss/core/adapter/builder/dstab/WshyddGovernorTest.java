@@ -66,6 +66,22 @@ public class WshyddGovernorTest extends CorePluginTestSetup {
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
     }
 
+    @Test void zeroTimeEventObservationPreservesPredictorAndStateHistory() throws Exception {
+        var observed=fixture();var ordinary=fixture();
+        observed.machine.setSpeed(1.01);ordinary.machine.setSpeed(1.01);
+        for(int tick=0;tick<50;tick++) {
+            assertTrue(observed.governor.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,observed.machine,0));
+            assertTrue(ordinary.governor.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,ordinary.machine,0));
+            var before=observed.governor.getNamedStates();double output=observed.governor.getOutput(observed.machine);
+            assertTrue(observed.governor.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,observed.machine,0));
+            assertTrue(observed.governor.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,observed.machine,1));
+            assertEquals(before,observed.governor.getNamedStates());assertEquals(output,observed.governor.getOutput(observed.machine),0.);
+            assertTrue(observed.governor.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,observed.machine,1));
+            assertTrue(ordinary.governor.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,ordinary.machine,1));
+            assertEquals(ordinary.governor.getNamedStates(),observed.governor.getNamedStates());
+        }
+    }
+
     private static Fixture fixture() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");

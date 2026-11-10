@@ -48,6 +48,32 @@ public class PsseWt12t1ModelTest {
     }
 
     @Test
+    void twoMassGeneratorNormalizesShaftTransferAtUnequalSpeeds() {
+        // The equilibrium test cannot distinguish the generator/turbine speed
+        // ratio: it is exactly one there. Excite the turbine, then check the
+        // next mechanical predictor at unequal speeds. Independent reference
+        // state perturbations and the existing coupled fault regression bind
+        // this equation; no reference gain or model constant is fitted.
+        Wt12t1Model model = new Wt12t1Model(new Wt12t1Data(5.4, .05, .82, 4.7, .9));
+        model.initialize(.5, 1.00356, 60);
+        model.setAerodynamicPower(model.getAerodynamicPower() + .2);
+        model.step(.02, .5, 0);
+        model.step(.02, .5, 1);
+        double wt = model.getTurbineSpeed(), wg = model.getGeneratorSpeed();
+        assertTrue(Math.abs(wt - wg) > 1e-5);
+        double phi = model.getShaftAngle(), dt = .001;
+        double shaft = model.shaftStiffness() * phi + .9 * (wt - wg);
+        double generatorRhs = (shaft * wg / wt - .52 / wg - .05 * (wg - 1))
+                / (2 * model.generatorInertia());
+        double turbineRhs = (model.getAerodynamicPower() / wt - shaft)
+                / (2 * model.turbineInertia());
+        model.step(dt, .52, 0);
+        assertEquals(wg + dt * generatorRhs, model.getGeneratorSpeed(), 1e-12);
+        assertEquals(wt + dt * turbineRhs, model.getTurbineSpeed(), 1e-12);
+        assertEquals(phi + dt * 2 * Math.PI * 60 * (wt - wg), model.getShaftAngle(), 1e-12);
+    }
+
+    @Test
     void oneMassModeInitializesAtExactDampedEquilibrium() {
         Wt12t1Model model = new Wt12t1Model(new Wt12t1Data(4.8, .12, 0, 0, 0));
         model.initialize(.6, 1.01, 60.0);

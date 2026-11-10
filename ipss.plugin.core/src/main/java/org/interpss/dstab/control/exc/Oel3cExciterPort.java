@@ -9,5 +9,7 @@ public interface Oel3cExciterPort {
     }
     Connection oel3cConnection();
     boolean bindOel3c(Limiter limiter);
+    /** Static exciters may expose machine field inputs without an exciter-field circuit. */
+    default boolean supportsOel3cInput(int inputFlag){return true;}
     double oel3cExciterFieldCurrent();
 }

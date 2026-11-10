@@ -150,6 +150,7 @@ public FilterControlBlock wFilterBlock;
 	     */
 	    @Override
 		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+        initialized = false;
 	        this.tg = correctedMinimum(getData().getTg());
 	        this.tp = correctedPilotValve(getData().getTp());
 	        this.tr = correctedMinimum(getData().getTr());
@@ -271,6 +272,15 @@ public FilterControlBlock wFilterBlock;
 		reference = sigma * value * invRatingScale / a23;
 	}
 
+    /** Apply an explicit initial travel cap after numerical initialization. Only the
+     * effective upper bound changes: entered constants, states, reference, output,
+     * predictor/corrector memory and any delay history remain untouched. The caller
+     * owns the pre-integration lifecycle and source-located policy report. */
+    public void applyInitialUpperTravelLimit(double value) {
+        if (!(initialized)) throw new IllegalStateException("Apply travel policy after initialization at an idle boundary");
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Travel cap must be finite");
+        pmax = value;
+    }
 	public double getServoPosition() { return effectiveServo(state, getMachine()); }
 	public double getGatePosition() { return state.gate; }
 	public double getPermanentDroopFeedback() { return sigma * state.gate; }

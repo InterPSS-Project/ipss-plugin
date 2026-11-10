@@ -75,6 +75,7 @@ public class PsseGgov1Governor extends AbstractGovernor
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
+        initialized = false;
         stateMonitor.reset();
         if (!validateParameters()) return false;
         prepareEffectiveParameters();
@@ -210,6 +211,11 @@ public class PsseGgov1Governor extends AbstractGovernor
         pref = value / governorToMachineBase;
     }
 
+    /** Reference in the external setter's coordinate, not electrical power.
+     * Secondary controls must retain the initialized droop reference before
+     * adding a bias; substituting Pe would introduce an unrequested load step. */
+    public double getRefPoint() { return pref * governorToMachineBase; }
+
     public double getValveStroke() { return clamp(state.valve, effectiveVmin, effectiveVmax); }
     public double getFsr() { return currentFsr; }
     public double getMeasuredElectricalPower() { return state.peMeasured; }
@@ -294,6 +300,15 @@ public class PsseGgov1Governor extends AbstractGovernor
     }
     public double getEffectiveMaxerr() { return effectiveMaxerr; }
     public double getEffectiveMinerr() { return effectiveMinerr; }
+    /** Apply an explicit initial travel cap after numerical initialization. Only the
+     * effective upper bound changes: entered constants, states, reference, output,
+     * predictor/corrector memory and any delay history remain untouched. The caller
+     * owns the pre-integration lifecycle and source-located policy report. */
+    public void applyInitialUpperTravelLimit(double value) {
+        if (!(initialized)) throw new IllegalStateException("Apply travel policy after initialization at an idle boundary");
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Travel cap must be finite");
+        effectiveVmax = value;
+    }
     public double getEffectiveVmax() { return effectiveVmax; }
     public double getEffectiveVmin() { return effectiveVmin; }
     public double getEffectiveRopen() { return effectiveRopen; }
@@ -347,13 +362,16 @@ public class PsseGgov1Governor extends AbstractGovernor
         boolean validSelector = d.getRselect() == 1 || d.getRselect() == 0
                 || d.getRselect() == -1 || d.getRselect() == -2;
         return validSelector && (d.getFlag() == 0 || d.getFlag() == 1)
-                && (d.getRselect() == 0 ? d.getR() >= 0.0 : d.getR() > 0.0)
+                // Droop is a multiplier, never a divisor: zero disables feedback.
+                && d.getR() >= 0.0
                 && d.getTpelec() >= 0.0 && d.getTdgov() >= 0.0
-                && d.getTact() > EPS && d.getTb() >= 0.0 && d.getTc() >= 0.0
-                && (d.getTb() > EPS || d.getTc() <= EPS)
+                // Tc is a signed lead coefficient, not a lag time constant.
+                && d.getTact() > EPS && d.getTb() >= 0.0 && Double.isFinite(d.getTc())
+                && (d.getTb() > EPS || Math.abs(d.getTc()) <= EPS)
                 && d.getTeng() >= 0.0 && d.getTfload() >= 0.0
                 && d.getTa() >= 0.0 && d.getTsa() >= 0.0 && d.getTsb() >= 0.0
-                && d.getRopen() > 0.0 && d.getRclose() < 0.0
+                // A zero opening rate is an active directional stop, not missing data.
+                && d.getRopen() >= 0.0 && d.getRclose() < 0.0
                 && d.getKturb() > EPS && d.getTrate() >= 0.0
                 && d.getDbH() >= 0.0 && d.getDbL() <= 0.0
                 && d.getDbL() <= d.getDbH();
@@ -487,8 +505,13 @@ public class PsseGgov1Governor extends AbstractGovernor
 
     private double damping(double speedDeviation) {
         double dm = getData().getDm();
-        double absoluteSpeed = Math.max(EPS, 1.0 + speedDeviation);
-        return dm >= 0.0 ? dm * absoluteSpeed : dm * Math.pow(absoluteSpeed, dm);
+        // Positive Dm is a power-versus-speed slope, measured from nominal
+        // speed: Pm = Pturb - Dm * (omega - 1). Negative Dm instead selects
+        // the fuel-limit characteristic below; it contributes no mechanical
+        // damping. Applying it as a negative power offset at omega=1 can put
+        // the inverse-initialized valve below zero, clip the actuator, and
+        // create a large artificial pulse through the turbine lead-lag.
+        return dm > 0.0 ? dm * speedDeviation : 0.0;
     }
 
     private double maximumPowerFactor(double speedDeviation) {

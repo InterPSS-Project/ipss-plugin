@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.dc3a;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -27,14 +29,15 @@ public final class Dc3aExciter extends AnnotateExciter implements IntegrationSte
     public Dc3aData getData(){return data;}public String getModelName(){return modelName;}
     @Override public void configureIntegrationStep(double stepSeconds){configureIntegrationStep(stepSeconds,1);}
     public void configureIntegrationStep(double stepSeconds,double multiplier){integrationStep=stepSeconds;minimumTimeConstantMultiplier=multiplier;}
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrect();if(tr<0||trh<0||te<=EPS)return false;
-        double speed=speedMultiplier(machine),efd0=machine.getEfd()/speed,vt0=machine.getDStabBus().getVoltageMag();
-        if(!Double.isFinite(efd0)||!Double.isFinite(vt0))return false;
+        double speed=speedMultiplier(machine),efd0=machine.getEfd()/speed,ec0=sensedVoltage(machine);
+        if(!Double.isFinite(efd0)||!Double.isFinite(ec0))return false;
         double vr0=fieldFeedback(efd0);vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
         double lower=fieldLowerLimit();if(efd0<lower-EPS)return false;
-        state[EFD]=efd0;state[VSENSE]=vt0;state[VRH]=vr0;System.arraycopy(state,0,trial,0,3);active=state;
-        reference=vt0;outputSignal=efd0*speed;initialized=true;return true;
+        state[EFD]=efd0;state[VSENSE]=ec0;state[VRH]=vr0;System.arraycopy(state,0,trial,0,3);active=state;
+        reference=ec0;outputSignal=efd0*speed;initialized=true;return true;
     }
     private void loadAndCorrect(){
         tr=correctedBypass(data.getTr());kv=Math.max(0,data.getKv());
@@ -53,8 +56,8 @@ public final class Dc3aExciter extends AnnotateExciter implements IntegrationSte
         outputSignal=active[EFD]*speedMultiplier(machine);return true;
     }
     private void derivatives(double[] x,double[] d,Machine machine){
-        Arrays.fill(d,0);double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt,error=reference-sensed;
-        d[VSENSE]=tr>EPS?(vt-x[VSENSE])/tr:0;
+        Arrays.fill(d,0);double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine),error=reference-sensed;
+        d[VSENSE]=tr>EPS?(sensedVoltage(machine)-x[VSENSE])/tr:0;
         double rheostatRate=kv>EPS&&trh>EPS?(vrmax-vrmin)*error/(kv*trh):0;
         if((x[VRH]>=vrmax-EPS&&rheostatRate>0)||(x[VRH]<=vrmin+EPS&&rheostatRate<0))rheostatRate=0;d[VRH]=rheostatRate;
         double vr=regulatorOutput(error,x[VRH]),fieldRate=(vr-fieldFeedback(x[EFD]))/te;
@@ -69,7 +72,7 @@ public final class Dc3aExciter extends AnnotateExciter implements IntegrationSte
     private double speedMultiplier(Machine machine){return esdc3a&&spdmlt==1?machine.getSpeed():1;}
     private void constrain(double[] x){x[VRH]=clamp(x[VRH],vrmin,vrmax);x[EFD]=Math.max(fieldLowerLimit(),x[EFD]);for(int i=0;i<3;i++)if(!Double.isFinite(x[i]))x[i]=0;}
     private static double clamp(double value,double lower,double upper){return Math.max(lower,Math.min(upper,value));}
-    public double getSensedVoltage(){return tr>EPS?active[VSENSE]:getMachine().getDStabBus().getVoltageMag();}
+    public double getSensedVoltage(){return tr>EPS?active[VSENSE]:sensedVoltage(getMachine());}
     public double getVoltageError(){return reference-getSensedVoltage();}public double getRheostatPosition(){return active[VRH];}
     public double getRegulatorOutput(){return regulatorOutput(getVoltageError(),active[VRH]);}
     public double getInternalFieldVoltage(){return active[EFD];}public double getSaturation(){return Exac1Exciter.saturation(active[EFD],e1,se1,e2,se2);}

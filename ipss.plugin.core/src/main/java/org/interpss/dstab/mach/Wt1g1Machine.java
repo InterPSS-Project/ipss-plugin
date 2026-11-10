@@ -23,6 +23,20 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
     private final Wt1g1Solver solver;
     private Wt12t1Model driveTrain;
     private Complex compensationY = Complex.ZERO;
+    private boolean coupledStageActive;
+    private double stageSpeed;
+
+    @Override
+    public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {
+        // Mechanics is applied first by the shared lifecycle. Electrical flux
+        // derivatives still need the same stage-entry shaft speed, not that
+        // already advanced mechanical prediction/correction. Capturing this
+        // scalar restores simultaneous modified-Euler coupling; publication
+        // after the update continues to use the actual updated machine state.
+        stageSpeed=getSpeed();coupledStageActive=true;
+        try { return super.nextStep(dt,method,flag); }
+        finally { coupledStageActive=false; }
+    }
 
     public Wt1g1Machine(Wt1g1Data data) {
         this.data = data;
@@ -74,6 +88,13 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
     public boolean nextStepMechanical(double dt, DynamicSimuMethod method,
             Network network, int flag) {
         if (driveTrain != null) {
+            // Machine.nextStep advances mechanics before electrical fluxes. A
+            // fault-side or predictor network solve has already changed V, but
+            // cached Pe can still belong to the preceding voltage/flux endpoint.
+            // Evaluate the algebraic stator boundary at this stage's current V
+            // and frozen rotor fluxes before computing mechanical derivatives.
+            // This refresh integrates no state and changes no source parameter.
+            solver.updateOutputs();
             driveTrain.stepCoupled(dt, getPe(), getDStabBus().getVoltageMag(), flag);
             setDriveTrainSpeed(driveTrain.getGeneratorSpeed());
         }
@@ -172,7 +193,7 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
             if (method != DynamicSimuMethod.MODIFIED_EULER) {
                 throw new UnsupportedOperationException("WT1G1 supports MODIFIED_EULER only");
             }
-            Derivatives derivatives = derivatives(machineVoltage(), getSpeed(),
+            Derivatives derivatives = derivatives(machineVoltage(), coupledStageActive?stageSpeed:getSpeed(),
                     rotorFlux1, rotorFlux2, network.getFrequency());
             if (flag == 0) {
                 oldRotorFlux1 = rotorFlux1;
@@ -200,6 +221,16 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
             double slip = 1.0 - speed;
             Complex d1 = point.rotorCurrent1.multiply(rr1)
                     .subtract(psi1.multiply(Complex.I.multiply(slip))).multiply(omega0);
+            // The native state realization keeps the Norton reactance fixed.
+            // Saturation is an excitation-axis forcing of E', driven by the
+            // voltage behind that reactance, not a voltage-dependent stator
+            // magnetizing admittance. Moving it into the stator circuit changes
+            // both initialized slip and Q, even though the local fluxes settle.
+            // E' = j*n*psi1, E_N = j*psiN, n=Xm/(Xm+Xr1), hence the
+            // -Se(|E_N|)*E_N/T' voltage forcing becomes -Se*psiN/(n*T').
+            Complex psiN = nortonFlux(psi1, psi2);
+            double n = xm / (xm + xr1);
+            d1 = d1.subtract(psiN.multiply(saturation(psiN.abs()) / (n * data.tp())));
             Complex d2 = data.twoCage()
                     ? point.rotorCurrent2.multiply(rr2)
                             .subtract(psi2.multiply(Complex.I.multiply(slip))).multiply(omega0)
@@ -208,21 +239,7 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
         }
 
         private CircuitPoint circuit(Complex voltage, Complex psi1, Complex psi2) {
-            double saturation = 0.0;
-            CircuitPoint point = circuitAtSaturation(voltage, psi1, psi2, saturation);
-            for (int iteration = 0; iteration < 30; iteration++) {
-                double updated = saturation(point.airGapFlux.abs());
-                if (Math.abs(updated - saturation) <= 1.0e-12) return point;
-                saturation = updated;
-                point = circuitAtSaturation(voltage, psi1, psi2, saturation);
-            }
-            return point;
-        }
-
-        private CircuitPoint circuitAtSaturation(Complex voltage, Complex psi1,
-                Complex psi2, double saturation) {
-            double a = (1.0 + saturation) / xm + 1.0 / xr1
-                    + (data.twoCage() ? 1.0 / xr2 : 0.0);
+            double a = 1.0 / xm + 1.0 / xr1 + (data.twoCage() ? 1.0 / xr2 : 0.0);
             Complex b = psi1.divide(xr1);
             if (data.twoCage()) b = b.add(psi2.divide(xr2));
             Complex zLeakage = new Complex(getRa(), data.xl());
@@ -232,6 +249,14 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
             Complex ir2 = data.twoCage() ? airGap.subtract(psi2).divide(xr2) : Complex.ZERO;
             Complex is = airGap.multiply(a).subtract(b);
             return new CircuitPoint(is, ir1, ir2, airGap);
+        }
+
+        /** Flux corresponding to the internal voltage behind the fixed Norton X. */
+        private Complex nortonFlux(Complex psi1, Complex psi2) {
+            double a = 1.0 / xm + 1.0 / xr1 + (data.twoCage() ? 1.0 / xr2 : 0.0);
+            Complex b = psi1.divide(xr1);
+            if (data.twoCage()) b = b.add(psi2.divide(xr2));
+            return b.divide(a);
         }
 
         private Complex transientVoltage(Complex psi1) {
@@ -277,38 +302,65 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
         }
 
         private double generatorPower(double slip, double voltage) {
-            return -voltage * voltage * steadyAdmittance(slip).getReal();
+            // The rotor equilibrium depends on voltage through saturation.
+            // Solve it at the actual terminal V; a unit-voltage admittance
+            // scaled by V^2 would balance a different nonlinear operating point.
+            return -voltage * steadyCircuit(slip, new Complex(voltage, 0)).machineCurrent.getReal();
         }
 
         private SteadyCircuit steadyCircuit(double slip, Complex voltage) {
-            double saturation = 0.0;
-            SteadyCircuit point = steadyCircuitAtSaturation(slip, voltage, saturation);
+            double se = 0.0;
+            SteadyCircuit point = steadyCircuitAtSaturation(slip, voltage, se);
             for (int iteration = 0; iteration < 30; iteration++) {
-                double updated = saturation(point.airGapFlux.abs());
-                if (Math.abs(updated - saturation) <= 1.0e-12) return point;
-                saturation = updated;
-                point = steadyCircuitAtSaturation(slip, voltage, saturation);
+                Complex psi1 = point.airGapFlux.subtract(point.rotorCurrent1.multiply(xr1));
+                Complex psi2 = data.twoCage()
+                        ? point.airGapFlux.subtract(point.rotorCurrent2.multiply(xr2)) : Complex.ZERO;
+                double updated = saturation(nortonFlux(psi1, psi2).abs());
+                if (Math.abs(updated - se) <= 1.0e-12) return point;
+                se = updated;
+                point = steadyCircuitAtSaturation(slip, voltage, se);
             }
             return point;
         }
 
+        /**
+         * Solve the same zero-derivative rotor equations used at runtime, with
+         * the scalar saturation factor frozen for this local fixed-point step.
+         * Reusing a saturated passive circuit would put Se in a different
+         * equation. The two-by-two complex system below also retains cage
+         * coupling and the stator resistance without numerical differentiation.
+         */
         private SteadyCircuit steadyCircuitAtSaturation(double slip, Complex voltage,
-                double saturation) {
-            Complex ym = Complex.ONE.divide(new Complex(0.0, xm / (1.0 + saturation)));
-            Complex y1 = Complex.ONE.divide(new Complex(rr1 / slip, xr1));
-            Complex y2 = data.twoCage()
-                    ? Complex.ONE.divide(new Complex(rr2 / slip, xr2)) : Complex.ZERO;
-            Complex parallelY = ym.add(y1).add(y2);
-            Complex airGapVoltage = voltage.divide(
-                    Complex.ONE.add(new Complex(getRa(), data.xl()).multiply(parallelY)));
-            Complex machineCurrent = parallelY.multiply(airGapVoltage);
-            Complex airGapFlux = airGapVoltage.divide(Complex.I);
-            return new SteadyCircuit(machineCurrent, y1.multiply(airGapVoltage),
-                    y2.multiply(airGapVoltage), airGapFlux);
-        }
-
-        private Complex steadyAdmittance(double slip) {
-            return steadyCircuit(slip, Complex.ONE).machineCurrent;
+                double se) {
+            double a = 1.0 / xm + 1.0 / xr1 + (data.twoCage() ? 1.0 / xr2 : 0.0);
+            Complex zLeakage = new Complex(getRa(), data.xl());
+            Complex denominator = zLeakage.multiply(a).add(Complex.I);
+            Complex m0 = voltage.divide(denominator);
+            Complex m1 = zLeakage.divide(denominator).divide(xr1);
+            Complex m2 = data.twoCage() ? zLeakage.divide(denominator).divide(xr2) : Complex.ZERO;
+            double k1 = rr1 / xr1;
+            double omega0 = 2.0 * Math.PI * getDStabBus().getNetwork().getFrequency();
+            double n = xm / (xm + xr1);
+            double h = se / (omega0 * n * data.tp());
+            Complex a11 = new Complex(k1 + h / (xr1 * a), slip).subtract(m1.multiply(k1));
+            Complex rhs1 = m0.multiply(k1);
+            Complex psi1;
+            Complex psi2 = Complex.ZERO;
+            if (data.twoCage()) {
+                double k2 = rr2 / xr2;
+                Complex a12 = new Complex(h / (xr2 * a), 0.0).subtract(m2.multiply(k1));
+                Complex a21 = m1.multiply(-k2);
+                Complex a22 = new Complex(k2, slip).subtract(m2.multiply(k2));
+                Complex rhs2 = m0.multiply(k2);
+                Complex determinant = a11.multiply(a22).subtract(a12.multiply(a21));
+                psi1 = rhs1.multiply(a22).subtract(a12.multiply(rhs2)).divide(determinant);
+                psi2 = a11.multiply(rhs2).subtract(a21.multiply(rhs1)).divide(determinant);
+            } else {
+                psi1 = rhs1.divide(a11);
+            }
+            CircuitPoint point = circuit(voltage, psi1, psi2);
+            return new SteadyCircuit(point.machineCurrent, point.rotorCurrent1,
+                    point.rotorCurrent2, point.airGapFlux);
         }
 
         private void updateOutputs() {

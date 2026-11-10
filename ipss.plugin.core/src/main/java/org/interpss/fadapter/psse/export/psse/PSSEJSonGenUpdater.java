@@ -25,7 +25,8 @@ public class PSSEJSonGenUpdater extends BasePSSEJSonUpdater{
 	 */
 	public PSSEJSonGenUpdater(PSSESchema.Generator gen, BaseAclfNetwork<?,?> aclfNet) {
 		super(gen.getFields(), aclfNet, (lst) -> {
-			// fields appended at the end of the list
+			// Sparse templates can omit the default field; append it before indexing.
+            if (!lst.contains("rmpct")) lst.add("rmpct");
 		});
 		this.gen = gen;
 	}
@@ -48,6 +49,18 @@ public class PSSEJSonGenUpdater extends BasePSSEJSonUpdater{
 	 * update the data list based on the AclfNetwork simulation results 
 	 */
 	public void update() {
+        Integer factorColumn = positionTable.get("rmpct");
+        if (factorColumn == null) return;
+        for (Object record : gen.getData()) {
+            @SuppressWarnings("unchecked")
+            List<Object> values = (List<Object>) record;
+            var bus = aclfNet.getBus(getBusIdFromDataList(values, "ibus"));
+            if (bus == null || bus.getPlantMvarControlPFactor() == null) continue;
+            // Source templates can have omitted trailing default columns. Write
+            // a canonical plant value so record reordering cannot change it.
+            while (values.size() <= factorColumn) values.add(null);
+            values.set(factorColumn, bus.getPlantMvarControlPFactor() * 100.0);
+        }
 		/*
         "fields":["ibus", "machid", "pg", "qg", "qt", "qb", "vs", "ireg", "nreg", "mbase", 
         			"zr", "zx", "rt", "xt", "gtap", "stat", "rmpct", "pt", "pb", "baslod", 

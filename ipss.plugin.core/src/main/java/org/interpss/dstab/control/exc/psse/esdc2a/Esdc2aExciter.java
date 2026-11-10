@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.esdc2a;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -83,11 +85,12 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         minimumTimeConstantMultiplier = multiplier;
     }
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         loadAndCorrect();
-        double vt = bus.getVoltageMag();
-        if (!Double.isFinite(vt) || vt <= EPS || !Double.isFinite(machine.getEfd())
+        double ec = sensedVoltage(machine);
+        if (!Double.isFinite(ec) || ec <= EPS || !Double.isFinite(machine.getEfd())
                 || Math.abs(ka) <= EPS || tr < 0.0 || ta < 0.0 || tb < 0.0
                 || te < 0.0 || tf < 0.0) {
             return false;
@@ -104,13 +107,13 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         double input = vr / ka;
 
         state[FIELD] = field;
-        state[SENSED] = vt;
+        state[SENSED] = ec;
         state[REGULATOR] = vr;
         state[WASHOUT_LAG] = field;
         state[LEAD_LAG] = input;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
-        reference = vt + input - stabilizerSignal(machine) - summationLimiterInput();
+        reference = ec + input - stabilizerSignal(machine) - summationLimiterInput();
         outputSignal = field * outputSpeedScale;
         initialized = true;
         derivatives(state,staggeredRates,machine);
@@ -196,8 +199,7 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
 
     private void derivatives(double[] values, double[] derivative, Machine machine) {
         Algebraic a = algebraics(values, machine);
-        double vt = machine.getDStabBus().getVoltageMag();
-        derivative[SENSED] = lagDerivative(vt, values[SENSED], tr);
+        derivative[SENSED] = lagDerivative(sensedVoltage(machine), values[SENSED], tr);
         derivative[LEAD_LAG] = lagDerivative(a.error, values[LEAD_LAG], tb);
 
         double rawVrDerivative = lagDerivative(ka * a.leadLag,
@@ -248,8 +250,7 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
     private void requireInitialized(){if(!initialized)throw new IllegalStateException("Initialize DC excitation before evaluating states");}
 
     private Algebraic algebraics(double[] values, Machine machine) {
-        double vt = machine.getDStabBus().getVoltageMag();
-        double sensed = tr > EPS ? values[SENSED] : vt;
+        double sensed = tr > EPS ? values[SENSED] : sensedVoltage(machine);
         if (te > EPS) return algebraicsForField(values, machine, sensed, values[FIELD]);
         double field = solveAlgebraicField(values, machine, sensed);
         return algebraicsForField(values, machine, sensed, field);

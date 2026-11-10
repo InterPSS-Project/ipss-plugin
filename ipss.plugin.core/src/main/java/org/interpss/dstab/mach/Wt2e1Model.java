@@ -18,10 +18,12 @@ public final class Wt2e1Model implements ICMLStateProvider {
     private State oldState;
     private Derivative oldDerivative;
     private boolean initialized;
+    private double effectiveOutputMin,effectiveOutputMax;
 
     public Wt2e1Model(Wt2e1Data data, Wt2g1Data generatorData) {
         this.data = data;
         this.generatorData = generatorData;
+        effectiveOutputMin=data.outputMin();effectiveOutputMax=data.outputMax();
     }
 
     public void initialize(double speedDeviation, double electricalPower,
@@ -31,6 +33,14 @@ public final class Wt2e1Model implements ICMLStateProvider {
         speedFilter = speedDeviation;
         powerFilter = electricalPower;
         integrator = rotorResistance;
+        // The machine initializes a rotor resistance that balances its solved
+        // P/V point. Clipping that command immediately starts an artificial
+        // transient even with zero controller error. Include the required
+        // operating point in effective bounds, preserving the entered data.
+        // Reset on every initialization so a later valid point does not retain
+        // an earlier correction. The owner reports this correction explicitly.
+        effectiveOutputMin=Math.min(data.outputMin(),rotorResistance);
+        effectiveOutputMax=Math.max(data.outputMax(),rotorResistance);
         output = limit(rotorResistance);
         initialized = true;
     }
@@ -67,8 +77,8 @@ public final class Wt2e1Model implements ICMLStateProvider {
         double error = filteredPower - generatorData.powerAtSpeedDeviation(filteredSpeed);
         double unconstrained = state.integrator + data.proportionalGain() * error;
         double integralDerivative = error / data.integratorTime();
-        if ((unconstrained >= data.outputMax() && integralDerivative > 0.0)
-                || (unconstrained <= data.outputMin() && integralDerivative < 0.0)) {
+        if ((unconstrained >= effectiveOutputMax && integralDerivative > 0.0)
+                || (unconstrained <= effectiveOutputMin && integralDerivative < 0.0)) {
             integralDerivative = 0.0;
         }
         return new Derivative(
@@ -96,11 +106,16 @@ public final class Wt2e1Model implements ICMLStateProvider {
     }
 
     private double limit(double value) {
-        return Math.max(data.outputMin(), Math.min(data.outputMax(), value));
+        return Math.max(effectiveOutputMin, Math.min(effectiveOutputMax, value));
     }
 
     public Wt2e1Data getData() { return data; }
     public double getOutput() { return output; }
+    public double getEffectiveOutputMin(){return effectiveOutputMin;}
+    public double getEffectiveOutputMax(){return effectiveOutputMax;}
+    public boolean isInitializationLimitCorrected(){
+        return effectiveOutputMin!=data.outputMin()||effectiveOutputMax!=data.outputMax();
+    }
 
     @Override
     public Map<String, Double> getNamedStates() {

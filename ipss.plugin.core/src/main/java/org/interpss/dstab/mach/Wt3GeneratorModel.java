@@ -6,7 +6,11 @@ import com.interpss.dstab.BaseDStabBus;
 public interface Wt3GeneratorModel {
     BaseDStabBus<?, ?> getDStabBus();
     double getAggregateRatedMw();
+    /** MVA base of terminal P/Q measurements and active-current commands. */
+    double getDeviceBaseMva();
+    /** Terminal active power on the generator device base. */
     double getP();
+    /** Terminal reactive power on the generator device base. */
     double getQ();
     double getInternalVoltageState();
     void setCommands(double activeCurrentCommand, double internalVoltageCommand);

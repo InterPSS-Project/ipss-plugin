@@ -84,7 +84,7 @@ public class RexsysExciterTest extends CorePluginTestSetup {
         assertEquals(0,exciter.tb1,1e-12);assertEquals(0,exciter.tf,1e-12);
         assertEquals(0,exciter.tf2,1e-12);assertEquals(.02,exciter.tp,1e-12);
         assertEquals(.02,exciter.te,1e-12);
-        assertTrue(exciter.vimax>=Math.abs(exciter.getRegulatorOutput()));
+        assertTrue(exciter.vimax>=Math.abs(exciter.getVoltageErrorInput()));
         assertTrue(exciter.vrmax>=exciter.getRegulatorOutput());
         assertTrue(exciter.vfmax>=exciter.getBridgeOutput());
     }

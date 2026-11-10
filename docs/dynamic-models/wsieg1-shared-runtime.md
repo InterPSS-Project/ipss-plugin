@@ -279,6 +279,16 @@ check alone does not establish machine/network equilibrium. The immutable
 minus projected position, refreshes on reinitialization and is unavailable after
 failed initialization. Existing numerical state names remain unchanged.
 
+A successful initialization emits a WARN when the valve projection residual
+exceeds 1e-9 pu or the effective lower bound exceeds the upper bound. The warning
+identifies the governor and machine and reports required/projected valve
+positions, entered/effective bounds and the signed residual in the governor
+coordinate. It preserves the entered limits and startup dynamics, and is emitted
+once per initialization rather than during integration. Exact-boundary starts,
+valid Iblock-derived bounds and roundoff-only residuals are quiet. The focused
+warning, initial-limit, shared-state and shaft-initialization regression run
+passes all 30 tests.
+
 Independent cold pairs exercise nonlinear upper/lower clipping, each `Iblock`
 selection, conflicting effective limits and full turbine bypass at fine and
 quarter-cycle intervals. Both production initializers reproduce the published

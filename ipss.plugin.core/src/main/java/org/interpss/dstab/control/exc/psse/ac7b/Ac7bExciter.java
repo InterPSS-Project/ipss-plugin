@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
 import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 
 import com.interpss.dstab.BaseDStabBus;
@@ -78,8 +79,7 @@ public final class Ac7bExciter extends AnnotateExciter
 
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         loadAndCorrectParameters();
-        if (tr < 0.0 || tdr < 0.0 || tf < 0.0 || te < 0.0
-                || Math.abs(kp) <= EPS) {
+        if (tr < 0.0 || tdr < 0.0 || tf < 0.0 || te < 0.0) {
             return false;
         }
 
@@ -88,10 +88,27 @@ public final class Ac7bExciter extends AnnotateExciter
         if (!Double.isFinite(ve0)) return false;
         double rawEfd0 = rectifierOutput(ve0, ifd);
         double vfe0 = fieldFeedback(ve0, ifd);
-        double vb0 = kp * machine.getDStabBus().getVoltageMag();
+        double vb0 = potentialFactor(machine.getDStabBus().getVoltageMag());
         if (Math.abs(vb0) <= EPS) return false;
         double va0 = vfe0 / vb0;
         double vr0 = kf1 * rawEfd0 + kf2 * vfe0;
+        double piIntegral0 = va0;
+        if (usesNativeAc7bPid() && kia == 0.0) {
+            // With no inner integral gain the native 27-CON regulator is a
+            // proportional amplifier, not a proportional amplifier plus a
+            // frozen VA bias. Invert VA=KPA*(VR-feedback) to obtain the outer
+            // integral at zero voltage error. The old bias allocation agrees
+            // only while the outer PID is interior; clipping VR destroys that
+            // equivalence. Repeated independent boundary captures distinguish
+            // both allocations without changing gains or initial field output.
+            piIntegral0 = 0.0;
+            if (kpa == 0.0) {
+                if (Math.abs(va0) > EPS) return false;
+            } else {
+                vr0 += va0 / kpa;
+            }
+            if (!Double.isFinite(vr0)) return false;
+        }
 
         // PowerWorld expands all three limiter pairs to admit the solved point.
         vrmax = Math.max(vrmax, vr0);
@@ -102,10 +119,14 @@ public final class Ac7bExciter extends AnnotateExciter
         vemin = Math.min(vemin, ve0);
 
         state[VE] = ve0;
-        state[VSENSE] = machine.getDStabBus().getVoltageMag();
+        // The transducer senses VCOMP, supplied by IEEEVC or the machine's
+        // own compensation boundary. Use it consistently at initialization,
+        // positive-TR stages and the algebraic bypass; raw terminal voltage
+        // would silently ignore an attached compensator.
+        state[VSENSE] = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         state[PID_INTEGRAL] = vr0;
         state[PID_DERIVATIVE_LAG] = 0.0;
-        state[PI_INTEGRAL] = va0;
+        state[PI_INTEGRAL] = piIntegral0;
         state[RATE_LAG] = vfe0;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
@@ -113,6 +134,17 @@ public final class Ac7bExciter extends AnnotateExciter
         outputSignal = speedAdjusted(rawEfd0, machine);
         initialized = true;
         return true;
+    }
+
+    private boolean usesNativeAc7bPid() {
+        return "AC7B".equalsIgnoreCase(modelName);
+    }
+
+    private double potentialFactor(double voltage) {
+        // The published zero-KP selector bypasses multiplication by KP*VT;
+        // it is a unit factor, not a zero exciter power supply. The same
+        // branch must be used in the inverse initialization and runtime.
+        return kp == 0.0 ? 1.0 : kp * voltage;
     }
 
     private void loadAndCorrectParameters() {
@@ -189,11 +221,28 @@ public final class Ac7bExciter extends AnnotateExciter
     private void derivatives(double[] x, double[] dx, Machine machine) {
         Arrays.fill(dx, 0.0);
         Algebraic a = algebraics(x, machine);
-        double vt = machine.getDStabBus().getVoltageMag();
-        dx[VSENSE] = lagDerivative(vt, x[VSENSE], tr);
+        double sensedVoltage = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
+        dx[VSENSE] = lagDerivative(sensedVoltage, x[VSENSE], tr);
         dx[PID_DERIVATIVE_LAG] = lagDerivative(a.pidError, x[PID_DERIVATIVE_LAG], tdr);
-        dx[PID_INTEGRAL] = kir * (a.pidError
-                - ANTI_WINDUP_GAIN * (a.pidUnlimited - a.pidOutput));
+        if (usesNativeAc7bPid()) {
+            double rate = kir * a.pidError;
+            // Native 27-CON captures hold the integral at either outward
+            // PID limit. Back-calculation instead injects a large artificial
+            // rate proportional to clipping, which can leave the field off
+            // long after a disturbance. Use the signed integral rate so inward
+            // recovery remains possible, including negative integral gains.
+            // The inward branch is a synthetic equation gate, not a claim of
+            // independent native inward-boundary trajectory qualification.
+            if ((a.pidUnlimited >= vrmax && rate > 0.0)
+                    || (a.pidUnlimited <= vrmin && rate < 0.0)) rate = 0.0;
+            dx[PID_INTEGRAL] = rate;
+        } else {
+            // The reordered ESAC7B dialect has not received this independent
+            // boundary qualification. Preserve its existing tracking equation.
+            dx[PID_INTEGRAL] = kir * (a.pidError
+                    - ANTI_WINDUP_GAIN * (a.pidUnlimited - a.pidOutput));
+        }
+        // Nonzero-KIA inner PI tracking is separately unqualified and retained.
         dx[PI_INTEGRAL] = kia * (a.piError
                 - ANTI_WINDUP_GAIN * (a.piUnlimited - a.piOutput));
         dx[RATE_LAG] = lagDerivative(a.vfe, x[RATE_LAG], tf);
@@ -209,7 +258,10 @@ public final class Ac7bExciter extends AnnotateExciter
     private Algebraic algebraics(double[] x, Machine machine) {
         double vt = machine.getDStabBus().getVoltageMag();
         double ifd = exciterIfd(machine);
-        double sensed = tr > EPS ? x[VSENSE] : vt;
+        // VCOMP belongs only to sensing. The potential-source multiplier
+        // below uses physical VT, independently of the compensated signal.
+        double sensed = tr > EPS ? x[VSENSE]
+                : IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         double vfe = fieldFeedback(x[VE], ifd);
         double rawEfd = rectifierOutput(x[VE], ifd);
         double rateFeedback = tf > EPS ? kf3 * (vfe - x[RATE_LAG]) / tf : 0.0;
@@ -222,7 +274,7 @@ public final class Ac7bExciter extends AnnotateExciter
         double piError = pidOutput - combinedFeedback;
         double piUnlimited = kpa * piError + x[PI_INTEGRAL];
         double piOutput = clamp(piUnlimited, vamin, vamax);
-        double regulator = Math.max(kp * vt * piOutput, -kl * vfe);
+        double regulator = Math.max(potentialFactor(vt) * piOutput, -kl * vfe);
         regulator = Math.min(999.0, regulator);
         double field = te > EPS ? limitedField(x[VE], machine)
                 : solveAlgebraicField(regulator, x[VE], machine);

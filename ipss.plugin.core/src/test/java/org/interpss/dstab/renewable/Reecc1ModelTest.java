@@ -11,6 +11,48 @@ import org.junit.jupiter.api.Test;
 class Reecc1ModelTest {
     private static final double TOL = 1.0e-10;
 
+    @Test void ordinaryStagesAdvanceAuxiliaryOnceAndDoNotDoubleCountBatteryEnergy() {
+        var model=new Reecc1Model(dataWithOverrides(1,10,.5,.1,.9,false));
+        var auxiliary=new org.interpss.dstab.mach.Reaxbu1Model("REAX4BU1",
+                new org.interpss.dstab.mach.Reaxbu1Data(1,.02,.8,.7,2,-2,2,-2));
+        model.setAuxiliaryController(auxiliary);model.initialize(.4,.1,1);
+        auxiliary.setExternalSignals(.05,.02);
+        model.step(.001,.4,.1,1,1,0);
+        assertEquals(.102,auxiliary.getReactiveOutput(),TOL);
+        assertEquals(.4007,auxiliary.getActiveOutput(),TOL);
+        double energy=model.getEnergyOutput();assertEquals(.00004,energy,TOL);
+        model.step(.001,.4,.1,1,1,1);
+        assertEquals(.10195,auxiliary.getReactiveOutput(),TOL);
+        assertEquals(.4006825,auxiliary.getActiveOutput(),TOL);
+        assertEquals(energy,model.getEnergyOutput(),0);
+        model.initialize(.3,.2,1);
+        assertThrows(IllegalArgumentException.class,()->model.step(.001,.3,.2,1,1,2));
+        model.setTwoStepAuxiliaryManaged(true);
+        assertThrows(IllegalStateException.class,()->model.step(.001,.3,.2,1,1,0));
+    }
+
+    @Test void auxiliaryReferencesUseAbsoluteCoordinatesAndRequireSharedStateOwnership() {
+        var model=new Reecc1Model(dataWithOverrides(1,10,.5,.1,.9,false));
+        var auxiliary=new org.interpss.dstab.mach.Reaxbu1Model("REAX4BU1",
+                new org.interpss.dstab.mach.Reaxbu1Data(1,.02,.8,0,2,-2,2,-2));
+        model.setAuxiliaryController(auxiliary);model.initialize(.4,.1,1);
+        assertEquals(.1,auxiliary.getReactiveOutput(),TOL);assertEquals(.4,auxiliary.getActiveOutput(),TOL);
+        assertThrows(UnsupportedOperationException.class,()->model.step(.001,.4,.1,1,1));
+        assertThrows(UnsupportedOperationException.class,()->model.refreshTwoStep(.4,.1,1,1));
+        model.setTwoStepAuxiliaryManaged(true);
+        auxiliary.setExternalSignals(.05,100);auxiliary.step(.001,0);auxiliary.step(.001,1);
+        double q=auxiliary.getReactiveOutput();assertTrue(q>.1);
+        for(int i=0;i<20;i++)model.refreshTwoStep(.4,.1,1,1);
+        assertEquals(q,auxiliary.getReactiveOutput(),0,"Refresh cannot advance shared states");
+        model.stepTwoStep(.001,.4,.1,1,1);
+        assertEquals(.4,model.getActivePowerOrder(),TOL);
+        assertTrue(model.getReactiveCurrentState()>.1);
+        assertEquals(9,model.getNamedStates().size());
+        model.initialize(.3,.2,1);
+        assertEquals(.3,auxiliary.getActiveOutput(),0);assertEquals(.2,auxiliary.getReactiveOutput(),0);
+        assertThrows(UnsupportedOperationException.class,()->model.refreshTwoStep(.3,.2,1,1));
+    }
+
     @Test
     void exposesAllSevenPublishedStatesAndIntegratesBatteryEnergy() {
         Reecc1Model model = new Reecc1Model(data(1, .60, .10, .90));

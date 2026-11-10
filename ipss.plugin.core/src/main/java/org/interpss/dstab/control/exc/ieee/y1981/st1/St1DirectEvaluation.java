@@ -346,6 +346,143 @@ final class St1DirectEvaluation {
         prepare(false);
         prepare(false);
     }
+    private boolean wholePending;
+    private double wholeDt;
+    private int wholeCount;
+    // Four boundary coordinates: sensed/compensated voltage, raw terminal
+    // magnitude (field ceilings), exciter-base IFD, and PSS output. No machine
+    // or stabilizer equation is reevaluated at an internal local stage.
+    private final double[] wholeLeft=new double[8],wholeEndpoint=new double[8];
+    private final double[][] wholeOrigin=new double[8][4],wholeRollback=new double[8][4];
+    private boolean wholeInProgress;
+    boolean isWholeModifiedEulerBusy(){return wholePending||wholeInProgress;}
+    private static final StaticBlockType[] WHOLE_MODES={StaticBlockType.NoLimit,StaticBlockType.Limit,StaticBlockType.NoLimit,
+        StaticBlockType.NoLimit,StaticBlockType.NonWindup,StaticBlockType.NoLimit};
+    boolean hasPendingWholeModifiedEuler(){return wholePending;}
+
+    void requireWholeModifiedEulerGraph() {
+        if(model.getClass()!=IEEE1981ST1Exciter.class||!"ESST1A".equals(model.getName())||!standardBoundaryGraph
+                ||nodes[6].block.getClass()!=FEEDBACK_TYPE||nodes[7].block.getClass()!=OUTPUT_TYPE
+                ||model.getFieldWrapperList().size()!=9
+                ||model.getData().getFieldVoltageLimitConvention()!=IEEE1981ST1ExciterData.FieldVoltageLimitConvention.ESST1A)
+            throw new IllegalStateException("Whole local integration requires the exact standard ESST1A graph");
+        for(int i=0;i<WHOLE_MODES.length;i++)if(((com.interpss.dstab.controller.cml.field.adapt.CMLStaticBlockAdapter)nodes[i].block).getType()!=WHOLE_MODES[i])
+            throw new IllegalStateException("Unsupported ESST1A block limiter mode");
+        for(Node node:nodes) {
+            if(node.wrapper.getField()!=node.block || !St1InputEquations.matches(node.id,node.wrapper.getInputExp()))
+                throw new IllegalStateException("Unsupported/changed ESST1A equation graph");
+            if(node.block instanceof DelayControlBlock delay&&delay.getLocalIntegrationSteps()!=1)
+                throw new IllegalStateException("Disable nested delay-block substeps before whole ESST1A integration");
+        }
+    }
+    private void sampleWholeBoundary(double[] boundary) {
+        boundary[0]=voltage();boundary[1]=model.getMachine().getDStabBus().getVoltageMag();
+        boundary[2]=model.sampleLocalFieldCurrent();boundary[3]=pss();
+        boundary[4]=model.getRefPoint();boundary[5]=model.vuel;boundary[6]=model.vuelGate1;boundary[7]=model.voel;
+        for(int i=0;i<boundary.length;i++)if(Double.isNaN(boundary[i]) || i<6&&!Double.isFinite(boundary[i]))
+            throw new IllegalArgumentException("Nonfinite ESST1A machine/reference/error input");
+    }
+    private void saveWholeBlocks(double[][] destination) {
+        for(Node node:nodes) {
+            double[] row=destination[node.id];row[0]=node.block.getU();row[3]=node.input;
+            if(node.control) {
+                var b=(com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter)node.block;
+                row[1]=b.getStateX();row[2]=b.getDX_dt();
+            }
+        }
+    }
+    private void restoreWholeBlocks(double[][] source) {
+        for(Node node:nodes) {
+            double[] row=source[node.id];node.input=row[3];
+            if(node.control)((com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter)node.block)
+                    .restoreIntegrationState(row[0],row[1],row[2]);
+            else node.block.eulerStep1(row[0],0.);
+        }
+    }
+    private static double interpolateWhole(double left,double right,double fraction) {
+        if(left==right)return left; // includes an unchanged absent-limit infinity
+        if(!Double.isFinite(left)||!Double.isFinite(right))
+            throw new IllegalArgumentException("ESST1A finite/infinite limiter transition requires an explicit event boundary");
+        return fraction==1.?right:left+(right-left)*fraction;
+    }
+    private void restoreExternalBoundary(double[] endpoint) {
+        model.setRefPoint(endpoint[4]);model.vuel=endpoint[5];model.vuelGate1=endpoint[6];model.voel=endpoint[7];
+    }
+    private void wholeBoundary(double[] right,double fraction) {
+        fixedInputs=true;fixedPss=true;voltageRead=true;pssRead=true;
+        fixedVoltageValue=wholeLeft[0]+(right[0]-wholeLeft[0])*fraction;
+        fixedPssValue=wholeLeft[3]+(right[3]-wholeLeft[3])*fraction;
+        model.prescribeLocalBoundary(wholeLeft[2]+(right[2]-wholeLeft[2])*fraction,
+                wholeLeft[1]+(right[1]-wholeLeft[1])*fraction,fixedPssValue);
+        model.setRefPoint(interpolateWhole(wholeLeft[4],right[4],fraction));
+        model.vuel=interpolateWhole(wholeLeft[5],right[5],fraction);
+        model.vuelGate1=interpolateWhole(wholeLeft[6],right[6],fraction);
+        model.voel=interpolateWhole(wholeLeft[7],right[7],fraction);
+    }
+    Map<String,Object> wholeModifiedEulerSnapshot() {
+        double[][] current=new double[8][4];saveWholeBlocks(current);
+        var blocks=new LinkedHashMap<String,Object>();var origin=new LinkedHashMap<String,Object>();
+        for(Node node:nodes) {
+            blocks.put(NAMES[node.id],current[node.id].clone());
+            if(wholePending)origin.put(NAMES[node.id],wholeOrigin[node.id].clone());
+        }
+        var result=new LinkedHashMap<String,Object>();
+        result.put("pending",wholePending);result.put("blockCoordinateOrder",List.of("input","state","derivative","stagedInput"));
+        result.put("blocks",Collections.unmodifiableMap(blocks));
+        if(wholePending) {
+            result.put("physicalStepSec",wholeDt);result.put("pendingSteps",wholeCount);
+            result.put("boundaryCoordinateOrder",List.of("sensedVoltage","terminalMagnitude","exciterIfd","pss","reference","vuel","vuelGate1","voel"));
+            result.put("acceptedBoundary",wholeLeft.clone());result.put("acceptedBlocks",Collections.unmodifiableMap(origin));
+        }
+        return result;
+    }
+    /** Each outer stage owns a complete local Heun integration. Corrector starts
+     * at the SAME accepted graph origin, with linearly interpolated boundary
+     * inputs; continuing the full predictor would double-advance physical time.
+     * The ordinary graph evaluator retains all limiter and preparation passes.
+     */
+    void wholeModifiedEulerStep(boolean predictor,double dt,int count) {
+        requireWholeModifiedEulerGraph();
+        if(!Double.isFinite(dt)||dt<0.||count<2||count>128)throw new IllegalArgumentException("Invalid ESST1A local interval/count");
+        if(fixedInputs||primitiveLocal||wholeInProgress)throw new IllegalStateException("Nested ESST1A evaluator");
+        if(dt>0.) {
+            if(predictor==wholePending)throw new IllegalStateException(predictor?"Unfinished ESST1A predictor":"ESST1A corrector requires its predictor");
+            if(!predictor&&(dt!=wholeDt||count!=wholeCount))throw new IllegalArgumentException("ESST1A corrector interval/count mismatch");
+        }
+        wholeInProgress=true;boolean boundarySampled=false,rollbackSaved=false;
+        double[] endpoint=wholeEndpoint;
+        try {
+            sampleWholeBoundary(endpoint);boundarySampled=true;
+            if(dt>0.&&!predictor)for(int i=4;i<8;i++)interpolateWhole(wholeLeft[i],endpoint[i],.5);
+            saveWholeBlocks(wholeRollback);rollbackSaved=true;
+            if(dt>0.&&predictor) {
+                System.arraycopy(endpoint,0,wholeLeft,0,8);saveWholeBlocks(wholeOrigin);wholeDt=dt;wholeCount=count;
+            }
+            if(dt==0.) {
+                // Observe algebraic feedthrough only. Never project/integrate a
+                // differential state or replace pending local derivative history.
+                fixedInputs=true;fixedPss=true;voltageRead=true;pssRead=true;
+                fixedVoltageValue=endpoint[0];fixedPssValue=endpoint[3];model.prescribeLocalBoundary(endpoint[2],endpoint[1],endpoint[3]);
+                prepare(false);prepare(false);prepare(false);return;
+            }
+            if(!predictor)restoreWholeBlocks(wholeOrigin);
+            double localDt=dt/count;
+            for(int i=0;i<count;i++) {
+                wholeBoundary(predictor?wholeLeft:endpoint,(double)i/count);
+                modifiedEulerStep(true,localDt);
+                wholeBoundary(predictor?wholeLeft:endpoint,(double)(i+1)/count);
+                modifiedEulerStep(false,localDt);
+            }
+            wholePending=predictor;
+            if(!predictor){wholeDt=0.;wholeCount=0;}
+        } catch(RuntimeException|Error failure) {
+            if(rollbackSaved)restoreWholeBlocks(wholeRollback);throw failure;
+        } finally {
+            if(boundarySampled)restoreExternalBoundary(endpoint);
+            model.releaseLocalBoundary();fixedInputs=false;fixedPss=false;voltageRead=false;pssRead=false;wholeInProgress=false;
+        }
+    }
+
     /** Ordinary predictor/corrector stages; the caller owns the network endpoint. */
     void modifiedEulerStep(boolean predictor,double dt) {
         for(Node node:nodes)if(node.wrapper.getField()!=node.block)
@@ -392,7 +529,7 @@ final class St1DirectEvaluation {
         double input=node.input;
         if(node.id==0||node.id==4) {
             DelayControlBlock b=(DelayControlBlock)node.block;
-            if(b.getType()==StaticBlockType.NonWindup) {
+            if(b.getType()==StaticBlockType.NonWindup||b.getLocalIntegrationSteps()>1) {
                 node.kernel.advance(true,input,0.,null,null,states,rates,node.id);return;
             }
             double x=b.getStateX();

@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 
-/** Equation-level oracle translated from ANDES 2.0.0 AC8B/PIDTrackAW. */
+/** Interior equations retain the historical independent oracle. The AC8B
+ * limiter uses the exact-record directional boundary qualification, which
+ * supersedes the historical tracking assumption only on that branch. */
 public class Ac8bAndesEquationConformanceTest extends CorePluginTestSetup {
     private static final int VE=0, VSENSE=1, PID_I=2, PID_D=3, VR=4;
 
@@ -42,7 +44,7 @@ public class Ac8bAndesEquationConformanceTest extends CorePluginTestSetup {
     }
 
     @Test
-    void trackingAntiWindupMatchesAndesPidTrackAw() throws Exception {
+    void pidLimiterUsesQualifiedNonwindupInsteadOfTheHistoricalTrackingOracle() throws Exception {
         Fixture fixture = fixture(0.9, -0.9, 99.0);
         fixture.exciter.setVuel(0.4);
         double[] x = {1.2, 1.0, 0.8, 0.0, 1.2};
@@ -100,8 +102,10 @@ public class Ac8bAndesEquationConformanceTest extends CorePluginTestSetup {
         double derivative=.4*(error-x[PID_D])/.03;
         double unlimited=2*error+x[PID_I]+derivative;
         double pid=clamp(unlimited,pidMin,pidMax);
+        double rate=3*error;
+        if((unlimited>=pidMax&&rate>0)||(unlimited<=pidMin&&rate<0))rate=0;
         return new double[]{(x[VR]-x[VE])/.4,0,
-                3*(error-2*(unlimited-pid)),(error-x[PID_D])/.03,
+                rate,(error-x[PID_D])/.03,
                 (1.5*pid-x[VR])/.3};
     }
 

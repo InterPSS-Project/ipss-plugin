@@ -235,9 +235,27 @@ public final class DynamicParameterValidator {
                 time("Td0'",s.getTd01(),false);time("Td0''",s.getTd011(),false);time("Tq0''",s.getTq011(),false);
                 if(s instanceof RoundRotorMachine q) {
                     positive("Xq'",q.getXq1(),false);order("Xl < Xq'",q.getXl(),q.getXq1(),true);
-                    order("Xq'' <= Xq'",q.getXq11(),q.getXq1(),false);order("Xq' <= Xq",q.getXq1(),q.getXq(),false);
+                    // Only the compound-circuit owner has those normalization
+                    // semantics. Type-J validates its own retained native values;
+                    // its legacy compatibility view is not authoritative data.
+                    org.interpss.dstab.mach.GenqecData compoundData =
+                            q instanceof org.interpss.dstab.mach.GenqecMachine compound ? compound.getGenqecData() : null;
+                    boolean retainedCompoundOrder=compoundData!=null
+                            &&compoundData.xqpp()>compoundData.xqp()
+                            &&q.getXq11()==compoundData.xqpp()&&q.getXq1()==compoundData.xqp();
+                    boolean retainedTypeJOrder=q instanceof org.interpss.dstab.mach.Gentpj1Machine typeJ
+                            &&q.getXq11()>q.getXq1()
+                            &&q.getXq11()==typeJ.getGentpj1Data().xqpp()
+                            &&q.getXq1()==typeJ.getGentpj1Data().xqp();
+                    if(retainedCompoundOrder)add(Severity.WARNING,"Xq'' <= Xq'",q.getXq11(),
+                            "Compound-circuit data normalization retains this ordering after its subtransient lower bound; parameters remain finite and constructor-validated. Review before activating a dormant unit.");
+                    else if(retainedTypeJOrder)add(Severity.WARNING,"Xq'' <= Xq'",q.getXq11(),
+                            "Native Type-J retains this nonsingular source ordering. Independent initialization accepts it without changing the reactances; review the supplied data, which is preserved.");
+                    else order("Xq'' <= Xq'",q.getXq11(),q.getXq1(),false);
+                    order("Xq' <= Xq",q.getXq1(),q.getXq(),false);
                     // The documented salient branch removes the q-axis transient state.
-                    boolean removedQTransient=q instanceof org.interpss.dstab.mach.GenqecMachine
+                    boolean removedQTransient=(q instanceof org.interpss.dstab.mach.GenqecMachine
+                            || q instanceof org.interpss.dstab.mach.Gentpj1Machine)
                             && q.getTq01()==0. && q.getXq1()==q.getXq();
                     time("Tq0'",q.getTq01(),removedQTransient);
                 }
@@ -291,7 +309,13 @@ public final class DynamicParameterValidator {
             if(controller instanceof IEEE1981ST1Exciter c) {
                 var d=c.getData();finiteData(d);
                 time("Tr",d.getTr(),true);time("Ta",d.getTa(),true);
-                leadLag("Tc",d.getTc(),"Tb",d.getTb());leadLag("Tc1",d.getTc1(),"Tb1",d.getTb1());
+                // These CML filters implement a zero denominator time as an
+                // algebraic gain bypass, including a retained nonzero lead.
+                // This is the native zero-lag branch, not an unbounded derivative.
+                positive("Tc",d.getTc(),true);time("Tb",d.getTb(),true);
+                positive("Tc1",d.getTc1(),true);time("Tb1",d.getTb1(),true);
+                if(d.getTb1()==0&&d.getTc1()!=0)add(Severity.INFO,"Tc1/Tb1",d.getTc1(),
+                        "Zero lag bypasses the compensator; entered lead is retained and not evaluated");
                 if(d.getKf()!=0)time("Tf",d.getTf(),false);else positive("Tf",d.getTf(),true);
                 limits("Vi",d.getVimin(),d.getVimax());limits("Va",d.getVamin(),d.getVamax());limits("Vr",d.getVrmin(),d.getVrmax());
                 if(d.getKa()==0)add(Severity.WARNING,"Ka",0,"Review whether zero regulator gain can initialize the required field output");
@@ -382,7 +406,12 @@ public final class DynamicParameterValidator {
             if(controller instanceof PsseGgov1Governor c) {
                 var d=c.getData();finiteData(d);
                 time("Tpelec",d.getTpelec(),true);time("Tact",d.getTact(),false);time("Tdgov",d.getTdgov(),true);
-                leadLag("Tc",d.getTc(),"Tb",d.getTb());time("Ta",d.getTa(),true);time("Tsb",d.getTsb(),true);time("Tfload",d.getTfload(),true);
+                // GGOV1 Tc is a signed numerator coefficient. Stability and
+                // resolution are governed by the denominator pole Tb; a
+                // negative lead is finite and proper when Tb is positive.
+                finite("Tc",d.getTc());time("Tb",d.getTb(),true);
+                if(d.getTb()==0&&d.getTc()!=0)add(Severity.ERROR,"Tc/Tb",d.getTc(),"Nonzero lead with zero lag is an improper transfer function");
+                time("Ta",d.getTa(),true);time("Tsb",d.getTsb(),true);time("Tfload",d.getTfload(),true);
                 limits("V",d.getVmin(),d.getVmax());limits("error",d.getMinerr(),d.getMaxerr());
                 if(!c.validateParameters())add(Severity.ERROR,"model constraints",0,"Existing GGOV1 parameter validation rejects this data");
                 add(Severity.INFO,"initialization policy",h,"Existing governor may adjust effective time constants, gains and limits; imported values are unchanged by this report.");return true;

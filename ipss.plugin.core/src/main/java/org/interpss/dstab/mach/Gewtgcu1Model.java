@@ -71,7 +71,11 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         filteredVoltage = compensatedVoltage(voltage, reactiveState);
         initialized = true;
         if (driveTrain != null) {
-            driveTrain.initialize(p, 1.0, bus.getNetwork().getFrequency());
+            // Initialize the shaft on the electrical controller's steady
+            // speed curve, not at synchronous speed for every loading level.
+            double speed = electricalController == null ? 1.0
+                    : electricalController.getInitialRotorSpeed();
+            driveTrain.initialize(p, speed, bus.getNetwork().getFrequency());
         }
         if (aerodynamicModel != null) {
             double speed = driveTrain == null ? 1.0 : driveTrain.getTurbineSpeed();
@@ -80,7 +84,11 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
                     aerodynamicModel.getMechanicalPower(speed));
             if (windModel != null) windModel.initialize(aerodynamicModel.getWindVelocity());
         }
-        if (electricalController != null && !electricalController.initialize()) return false;
+        if (electricalController != null) {
+            if (windModel != null) electricalController.setWindSpeed(windModel.getWindSpeed());
+            else if (aerodynamicModel != null) electricalController.setWindSpeed(aerodynamicModel.getWindVelocity());
+            if (!electricalController.initialize()) return false;
+        }
         if (auxiliaryController != null) auxiliaryController.initialize(0.0, 0.0, systemBaseMva/deviceBaseMva);
         if (electricalController != null && driveTrain != null) {
             electricalController.setRotorSpeed(driveTrain.getGeneratorSpeed());
@@ -107,6 +115,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
                     auxiliaryController.getReactiveOutput(), auxiliaryController.getActiveOutput());
         }
         if (electricalController != null) {
+            if (windModel != null) electricalController.setWindSpeed(windModel.getWindSpeed());
+            else if (aerodynamicModel != null) electricalController.setWindSpeed(aerodynamicModel.getWindVelocity());
             if (driveTrain != null) electricalController.setRotorSpeed(
                     driveTrain.getGeneratorSpeed());
             if (!electricalController.step(dt, flag)) return false;
@@ -203,7 +213,11 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     }
 
     public double highVoltageReactiveCurrent(double voltage) {
-        if (voltage <= 1.0 || data.highVoltageReactiveCurrent2() <= 0.0) return 0.0;
+        // An above-nominal solved voltage is not itself overvoltage pickup.
+        // Applying correction below VHVRCR2 changes the initial solved Q and
+        // creates an artificial controller transient at healthy wind terminals.
+        if (voltage <= data.highVoltageReactiveVoltage2()
+                || data.highVoltageReactiveCurrent2() <= 0.0) return 0.0;
         if (data.highVoltageReactiveVoltage2() <= 1.0) return data.highVoltageReactiveCurrent2();
         return Math.min(data.highVoltageReactiveCurrent2(),
                 data.highVoltageReactiveCurrent2() * (voltage - 1.0)
@@ -279,6 +293,9 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         named.put(data.fullConverter() ? "Converter lag for Iqcmd" : "Converter lag for Eqcmd",
                 reactiveState);
         named.put("Voltage sensor for LVPL", filteredVoltage);
+        // The converter owns lifecycle/observation for its unregistered
+        // electrical controller, just as it does for shaft and pitch models.
+        if (electricalController != null) named.putAll(electricalController.getNamedStates());
         if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
         if (aerodynamicModel != null) named.putAll(aerodynamicModel.getNamedStates());
         if (windModel != null) named.putAll(windModel.getNamedStates());

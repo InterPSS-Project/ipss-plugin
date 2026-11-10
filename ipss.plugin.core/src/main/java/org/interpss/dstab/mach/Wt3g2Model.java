@@ -57,7 +57,15 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         if (parentGen == null || bus == null || parentGen.getGen() == null) return false;
         Complex z = parentGen.getPosGenZ();
         if (z == null || Math.abs(z.getImaginary()) <= EPS) return false;
-        equivalentReactance = z.getImaginary() * parentGen.getZMultiFactor();
+        // The RAW reactance is on the device MVA/rated-voltage base. Device
+        // states use that MVA base and the terminal bus voltage base. Do not
+        // use cached ZMultiFactor here: network matrix formation refreshes it
+        // AFTER device initialization, so first and repeated initialization
+        // can otherwise use different bases. Only the voltage-base square is
+        // needed for these device-base equations.
+        double ratedVoltage=parentGen.getRatedVoltage();
+        double voltageRatio=ratedVoltage>EPS?ratedVoltage/bus.getBaseVoltage():1.0;
+        equivalentReactance = z.getImaginary() * voltageRatio * voltageRatio;
         if (Math.abs(equivalentReactance) <= EPS) return false;
         systemBaseMva = bus.getNetwork().getBaseMva();
         deviceBaseMva = parentGen.getMvaBase() > EPS ? parentGen.getMvaBase() : systemBaseMva;
@@ -341,6 +349,7 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     }
     public Wt3g2Data getData() { return data; }
     @Override public double getAggregateRatedMw() { return data.aggregateRatedMw(); }
+    @Override public double getDeviceBaseMva() { return deviceBaseMva; }
     @Override public double getP() { return p; }
     @Override public double getQ() { return q; }
     @Override public double getInternalVoltageState() { return eqState; }

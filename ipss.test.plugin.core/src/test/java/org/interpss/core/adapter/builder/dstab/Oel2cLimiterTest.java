@@ -14,6 +14,8 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.common.exp.InterpssException;
@@ -70,8 +72,12 @@ public class Oel2cLimiterTest extends CorePluginTestSetup {
     }
 
     private static void step(Oel2cOverExcitationLimiter o,double dt){assertTrue(o.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,0));assertTrue(o.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,1));assertTrue(o.afterStep(dt));}
-    private static DStabNetworkBuilder fixtureBuilder()throws Exception{
-        DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();St1cData d=new St1cData();
+    private static DStabNetworkBuilder fixtureBuilder()throws Exception{return fixtureBuilder(false);}
+    private static DStabNetworkBuilder fixtureBuilder(boolean typeJ)throws Exception{
+        DStabNetworkBuilder b=typeJ?DStabBuilderTestFixture.createBuilder():DStabBuilderTestFixture.createWithMachine();
+        if(typeJ)b.addGentpj1("Bus1","1",100,16.5,new org.interpss.dstab.mach.Gentpj1Data(
+                6.8,.042,.65,.083,4.7,.18,2.12,1.38,.34,.52,.21,.19,.13,.085,.34,0));
+        St1cData d=new St1cData();
         d.setUel(0);d.setVos(1);d.setOel(1);d.setTr(0);d.setVimax(9);d.setVimin(-9);d.setTc(0);d.setTb(0);
         d.setTc1(0);d.setTb1(0);d.setKa(1);d.setTa(0);d.setVamax(9);d.setVamin(-9);d.setVrmax(9);d.setVrmin(-9);
         d.setKc(0);d.setKf(0);d.setTf(0);d.setKlr(0);d.setIlr(99);assertNotNull(b.addExcSt1c("Bus1","1",d));return b;
@@ -79,4 +85,32 @@ public class Oel2cLimiterTest extends CorePluginTestSetup {
     private static Oel2cData data(int rampMode){return new Oel2cData(1,rampMode,
             .015,.08,.02,.10,.35,.8,.01,.08,0,-1,0,-1,0,-1,0,.12,.4,.04,
             .7,.02,1.02,.9,1.45,1.10,.05,1.8,.2,2,.05,.5,-.5,1,-1,.2,1,0,0,-2,2,.1,1);}
+
+    @ParameterizedTest @ValueSource(strings={"bus","generator","machine","exciter","limiter"})
+    void inactiveHostNeverReadsUninitializedMachineOrAdvancesLimiter(String disabled)throws Exception{
+        var b=fixtureBuilder(true);var bus=b.getDStabNetwork().getDStabBus("Bus1");
+        var machine=b.getDStabNetwork().getMachine("Bus1-mach1");
+        // This machine deliberately has no initialized electrical owner. A
+        // current read is an error; an inactive auxiliary must not attempt it.
+        assertThrows(IllegalStateException.class,machine::getIxy);
+        var limiter=b.addOel2c("Bus1","1",data(1));
+        limiter.initializeWithInputSignal(.5);
+        double[] before=limiter.getStateSnapshot();double output=limiter.getOutput();
+        switch(disabled){
+            case "bus"->bus.setStatus(false);
+            case "generator"->machine.getParentGen().setStatus(false);
+            case "machine"->machine.setStatus(false);
+            case "exciter"->machine.getExciter().setStatus(false);
+            case "limiter"->limiter.setStatus(false);
+            default->throw new AssertionError(disabled);
+        }
+        assertTrue(limiter.initStates(bus));
+        assertTrue(limiter.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(limiter.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertTrue(limiter.afterStep(.01));
+        assertDoesNotThrow(()->limiter.getStates(null));
+        assertArrayEquals(before,limiter.getStateSnapshot(),0);
+        assertEquals(output,limiter.getOutput(),0);
+    }
+
 }

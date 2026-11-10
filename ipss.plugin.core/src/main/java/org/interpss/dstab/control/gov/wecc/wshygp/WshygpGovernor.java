@@ -15,6 +15,7 @@ import com.interpss.dstab.mach.Machine;
 /** WECC GP hydro-governor compatibility realization. */
 public final class WshygpGovernor extends AbstractGovernor implements ICMLStateProvider {
     private static final double EPS = 1.0e-10;
+    private double[] preparedCurve;
     private State state = State.zero();
     private State oldState = State.zero();
     private Derivative predictor = Derivative.zero();
@@ -22,6 +23,7 @@ public final class WshygpGovernor extends AbstractGovernor implements ICMLStateP
     private double baseScale = 1.0;
     private double output;
     private boolean initialized;
+    private double effectiveGateMaximum;
 
     public WshygpGovernor(String id, String name, String category) {
         super(id, name, category);
@@ -30,7 +32,9 @@ public final class WshygpGovernor extends AbstractGovernor implements ICMLStateP
     public WshygpGovernorData getData() { return (WshygpGovernorData) _data; }
 
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        initialized = false;
         if (!validateParameters()) return false;
+        effectiveGateMaximum = c(13);
         double machineMva = machine.getRating(UnitType.mVA,
                 bus.getNetwork().getBaseKva());
         double trate = c(29);
@@ -53,7 +57,12 @@ public final class WshygpGovernor extends AbstractGovernor implements ICMLStateP
         if (method != DynamicSimuMethod.MODIFIED_EULER) {
             throw new InterpssRuntimeException("WSHYGP supports MODIFIED_EULER only");
         }
-        if (!initialized || dt <= 0.0) return false;
+        if (!initialized || !Double.isFinite(dt) || dt < 0.0) return false;
+        // A settled network event requests a zero-time observation, not a new
+        // predictor. Leave oldState/predictor untouched so an observation between
+        // the two physical stages cannot overwrite integration history. This
+        // governor's output depends only on its retained turbine/gate states.
+        if (dt == 0.0 && (flag == 0 || flag == 1)) return finite(output);
         if (flag == 0) {
             oldState = state;
             predictor = derivatives(oldState, dt);
@@ -79,7 +88,7 @@ public final class WshygpGovernor extends AbstractGovernor implements ICMLStateP
                 ? (servoTarget - s.valveSpeed) / c(10) : 0.0;
         double requestedRate = c(10) > EPS ? s.valveSpeed : servoTarget;
         double gateRate = clamp(requestedRate, -Math.abs(c(12)), Math.abs(c(11)));
-        if ((s.gate >= c(13) && gateRate > 0.0)
+        if ((s.gate >= effectiveGateMaximum && gateRate > 0.0)
                 || (s.gate <= c(14) && gateRate < 0.0)) gateRate = 0.0;
         double powerRate = c(8) > EPS
                 ? (machinePower() - s.generatorPower) / c(8) : 0.0;
@@ -101,7 +110,7 @@ public final class WshygpGovernor extends AbstractGovernor implements ICMLStateP
         return new State(c(2) > EPS ? s.inputFilter : controllerError(s),
                 s.integral, c(4) > EPS ? s.derivativeState : 0.0,
                 c(10) > EPS ? s.valveSpeed : 0.0,
-                clamp(s.gate, c(14), c(13)),
+                clamp(s.gate, c(14), effectiveGateMaximum),
                 c(8) > EPS ? s.generatorPower : machinePower(),
                 c(27) * c(28) > EPS ? s.turbineState
                         : gateCurve(applyDeadband(s.gate, c(15))));
@@ -112,36 +121,54 @@ public final class WshygpGovernor extends AbstractGovernor implements ICMLStateP
         if (c(27) * c(28) <= EPS || Math.abs(denominator) <= EPS) return gatePower;
         return s.turbineState + c(26) / denominator * (gatePower - s.turbineState);
     }
-    public double gateCurve(double gate) {
-        double[] x = {c(16), c(18), c(20), c(22), c(24)};
-        double[] y = {c(17), c(19), c(21), c(23), c(25)};
-        if (gate <= x[0]) return y[0];
-        for (int i = 1; i < x.length; i++) {
-            if (gate <= x[i]) return interpolate(gate, x[i-1], y[i-1], x[i], y[i]);
+    // Zero pairs after the first point are unused capacity, not a return to
+    // zero gate. Repeated abscissae retain the entered vertical segment.
+    private double[] enteredCurve(boolean inverse) {
+        double[] values=new double[10];int count=0;
+        for(int i=0;i<5;i++) {
+            double x=c(16+2*i),y=c(17+2*i);
+            if(count>0&&(x==0&&y==0||x==values[2*count-2]&&y==values[2*count-1]))continue;
+            if(count>0&&(x<values[2*count-2]||y<values[2*count-1]))
+                throw new IllegalArgumentException("Hydro gate curve must be ordered");
+            values[2*count++]=x;values[2*count-1]=y;
         }
-        return y[y.length - 1];
+        if(count<2)throw new IllegalArgumentException("Hydro gate curve needs two points");
+        double[] result=java.util.Arrays.copyOf(values,count*2);
+        if(inverse)for(int i=0;i<count;i++){double x=result[2*i];result[2*i]=result[2*i+1];result[2*i+1]=x;}
+        return result;
     }
-    public double inverseGateCurve(double power) {
-        double[] x = {c(17), c(19), c(21), c(23), c(25)};
-        double[] y = {c(16), c(18), c(20), c(22), c(24)};
-        if (power <= x[0]) return y[0];
-        for (int i = 1; i < x.length; i++) {
-            if (power <= x[i]) return interpolate(power, x[i-1], y[i-1], x[i], y[i]);
+    private double evaluateCurve(double value,boolean inverse) {
+        // Validate/reinitialize after data edits; evaluation allocates no arrays.
+        if(preparedCurve==null)preparedCurve=enteredCurve(false);
+        double[] curve=preparedCurve;int points=curve.length/2,xi=inverse?1:0,yi=inverse?0:1;
+        if(value<=curve[xi])return curve[yi];
+        for(int i=1;i<points;i++)if(value<=curve[2*i+xi]) {
+            double lo=curve[2*i-2+xi],hi=curve[2*i+xi];
+            return hi==lo?curve[2*i+yi]:curve[2*i-2+yi]+(value-lo)*(curve[2*i+yi]-curve[2*i-2+yi])/(hi-lo);
         }
-        return y[y.length - 1];
+        return curve[curve.length-2+yi];
     }
+    public double gateCurve(double gate){return evaluateCurve(gate,false);}
+    public double inverseGateCurve(double power){return evaluateCurve(power,true);}
     public boolean validateParameters() {
         for (int i = 0; i < 30; i++) if (!Double.isFinite(c(i))) return false;
         return c(2) >= 0.0 && c(4) >= 0.0 && c(8) >= 0.0 && c(10) >= 0.0
                 && c(11) >= 0.0 && c(12) >= 0.0 && c(13) >= c(14)
-                && c(16) < c(18) && c(18) < c(20) && c(20) < c(22)
-                && c(22) < c(24) && c(17) <= c(19) && c(19) <= c(21)
-                && c(21) <= c(23) && c(23) <= c(25) && c(27) >= 0.0
+                && validCurve() && c(27) >= 0.0
                 && c(28) >= 0.0 && c(29) >= 0.0;
     }
 
+    private boolean validCurve(){try{preparedCurve=enteredCurve(false);return true;}catch(IllegalArgumentException invalid){return false;}}
     @Override public double getOutput(Machine machine) { return output * baseScale; }
     @Override public void setRefPoint(double value) { reference = value / baseScale; }
+    /** Explicit initial policy changes runtime travel only; retain the entered curve,
+     * constants, reference, states and modified-Euler predictor history. */
+    public void applyInitialUpperTravelLimit(double value) {
+        if (!initialized) throw new IllegalStateException("Initialize before applying travel policy");
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Travel cap must be finite");
+        effectiveGateMaximum = value;
+    }
+    public double getEffectiveMaximum() { return effectiveGateMaximum; }
     public double getGatePosition() { return state.gate; }
     public double getTurbineOutput() { return output; }
     @Override public Map<String, Double> getNamedStates() {

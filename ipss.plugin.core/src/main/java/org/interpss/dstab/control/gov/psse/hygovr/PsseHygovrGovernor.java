@@ -112,6 +112,8 @@ public class PsseHygovrGovernor extends AbstractGovernor implements IntegrationS
 
     @Override public double getOutput(Machine mach) { return currentOutput * governorToMachineBase; }
     @Override public void setRefPoint(double value) { reference = value; }
+    /** Speed/droop reference paired with setRefPoint; it is not machine Pe. */
+    public double getRefPoint() { return reference; }
 
     public boolean validateParameters() {
         PsseHygovrGovernorData d = getData();

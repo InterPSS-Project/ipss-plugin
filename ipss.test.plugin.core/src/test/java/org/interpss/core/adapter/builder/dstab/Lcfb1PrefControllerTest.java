@@ -76,12 +76,68 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void solvedPowerFallbackConvertsSystemToMachineBase() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setRating(200, org.interpss.numeric.datatype.Unit.UnitType.mVA,
+                builder.getDStabNetwork().getBaseKva());
+        machine.setPe(0); machine.setPm(0); machine.setSpeed(1);
+        builder.addGovTgov1("Bus1", "1", .05, .1, 1, 0, .2, .5, 0);
+        var controller = builder.addLcfb1("Bus1", "1",
+                new Lcfb1Data(0, 1, 0, 1, 0, .1, 0, .01, .025));
+        assertTrue(controller.initStates(machine.getDStabBus()));
+        assertEquals(.7164 / 2, controller.getSensedPower(), TOL);
+        assertEquals(.7164 / 2, controller.getPowerSetpoint(), TOL);
+    }
+
+    @Test
     void powerDeficitRaisesReferenceAndHonorsBiasLimit() throws Exception {
         Fixture f = fixture(new Lcfb1Data(0, 1, 0, 0, 0, 1, 2, 1, .05));
         f.machine.setPe(.3);
         for (int i = 0; i < 100; i++) step(f.controller, .01);
         assertEquals(.05, f.controller.getReferenceBias(), TOL);
         assertEquals(.45, f.controller.getGovernorReference(), TOL);
+    }
+
+    @Test
+    void preservesInitializedGgovDroopReferenceOnUnequalBases() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setRating(100, org.interpss.numeric.datatype.Unit.UnitType.mVA,
+                builder.getDStabNetwork().getBaseKva());
+        machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1.0);
+        var data = new org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData();
+        data.setRselect(1); data.setR(.04); data.setTrate(55);
+        data.setDm(0); data.setKimw(0); data.setAset(99);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double reference = governor.getRefPoint();
+        assertEquals(.04 * .4, reference, TOL);
+        var controller = builder.addLcfb1("Bus1", "1",
+                new Lcfb1Data(0, 1, 0, 0, 0, 1, .1, 0, .025));
+        assertTrue(controller.initStates(machine.getDStabBus()));
+        assertEquals(reference, governor.getRefPoint(), 0.0);
+        for (int i = 0; i < 100; i++) {
+            step(controller, .001);
+            governor.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0);
+            governor.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1);
+        }
+        assertEquals(reference, governor.getRefPoint(), TOL);
+        assertEquals(.4, governor.getOutput(machine), TOL);
+        machine.setPe(.3);
+        step(controller, .001);
+        assertEquals(.01, controller.getReferenceBias(), TOL);
+        assertEquals(reference + .01 * .55, governor.getRefPoint(), TOL);
+
+        // Exercise the actual network lifecycle too: the bus auxiliary is
+        // initialized before the host governor. The first predictor must use
+        // the host's subsequently initialized Pref0, not its old/default value.
+        governor.setRefPoint(.3);
+        machine.setPe(.4);
+        assertTrue(controller.initStates(machine.getDStabBus()));
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        step(controller, .001);
+        assertEquals(reference, governor.getRefPoint(), TOL);
     }
 
     @Test
@@ -94,6 +150,26 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
         // its corrector contributes half a step before nine full increments.
         assertEquals(.0095, f.controller.getNamedState("Integral"), TOL);
         assertEquals(.05, f.controller.getReferenceBias(), TOL);
+    }
+
+    @Test
+    void preservesHydroDigitalGovernorSpeedReference() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1);
+        var data = new org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData();
+        data.setR(.05); data.setAt(1); data.setTrate(0); data.setTw(1);
+        var governor = builder.addGovHygovr1("Bus1", "1", data);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double reference = governor.getRefPoint();
+        assertEquals(.02, reference, TOL);
+        var controller = builder.addLcfb1("Bus1", "1",
+                new Lcfb1Data(0, 1, 0, 0, 0, 1, .1, 0, .025));
+        assertTrue(controller.initStates(machine.getDStabBus()));
+        step(controller, .001);
+        assertEquals(reference, governor.getRefPoint(), TOL);
+        machine.setPe(.3);step(controller, .001);
+        assertEquals(reference + .01, governor.getRefPoint(), TOL);
     }
 
     @Test

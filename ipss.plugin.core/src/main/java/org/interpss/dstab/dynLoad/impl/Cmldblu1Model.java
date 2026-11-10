@@ -26,24 +26,8 @@ public final class Cmldblu1Model extends Cmldznu2Model {
     }
     public double[] getLegacyConstants() { return Arrays.copyOf(getData().values(),132); }
 
-    /** Source-ID action is unambiguous only for a singleton owner or a whole-owner wildcard. */
-    public boolean canChangeLoad(String sourceLoadId, double factor) {
-        return matchesCapacitySource(sourceLoadId) && canChangeCompositeCapacity(factor);
-    }
-
-    /** Validate prepared ownership before the engine has constructed its dynamic matrix. */
-    public boolean canPrepareLoadChange(String sourceLoadId, double factor) {
-        return matchesCapacitySource(sourceLoadId) && canPrepareCompositeCapacity(factor);
-    }
-
-    private boolean matchesCapacitySource(String sourceLoadId) {
-        return "*".equals(sourceLoadId) || "#".equals(sourceLoadId)
-                || getTargetLoadIds().size() == 1 && getTargetLoadIds().contains(sourceLoadId);
-    }
-
-    public boolean canChangeLoad(double factor) { return canChangeCompositeCapacity(factor); }
-
-    @Override public boolean changeLoad(double factor) { return changeCompositeCapacity(factor); }
+    /** Explicit bus/load assignment is retained irrespective of global subsystem cutoffs. */
+    @Override protected boolean consumesInitializationThresholds() { return false; }
 
     @Override protected boolean distributionIncludesReactiveCompensation() { return true; }
 

@@ -663,7 +663,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     /** Published seven-slot native order; reserved inactive slots are not artificial states. */
     public double[] getNativeStates() {
         if (!nativeRecordConvention) throw new IllegalStateException("Native state order requires the native-record convention");
-        return new double[]{data.refFlag() == 1 ? qOrVMeasured : 0,
+        return new double[]{data.refFlag() != 0 ? qOrVMeasured : 0,
                 data.refFlag() == 0 ? qOrVMeasured : 0,
                 qIntegral + initialReactiveReference, leadLagState + initialReactiveReference,
                 data.fFlag() == 1 ? pMeasured : 0,

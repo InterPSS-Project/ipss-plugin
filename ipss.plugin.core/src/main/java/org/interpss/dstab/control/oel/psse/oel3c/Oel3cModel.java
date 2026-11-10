@@ -31,7 +31,8 @@ public final class Oel3cModel extends DynLoadModelImpl
         if(bus==null||machine==null||data==null||machine.getDStabBus()!=bus)
             throw new IllegalArgumentException("OEL3C requires its owning bus, machine and data");
         if(!(machine.getExciter() instanceof Oel3cExciterPort target)
-                ||target.oel3cConnection()!=Oel3cExciterPort.Connection.SUMMATION)
+                ||target.oel3cConnection()!=Oel3cExciterPort.Connection.SUMMATION
+                ||!target.supportsOel3cInput(data.effectiveInputFlag()))
             throw new IllegalArgumentException("OEL3C requires a compatible summation-point exciter port");
         this.machine=machine;this.port=target;this.data=data;
         if(!port.bindOel3c(this))throw new IllegalArgumentException("Exciter OEL port is already occupied");
@@ -42,7 +43,10 @@ public final class Oel3cModel extends DynLoadModelImpl
     }
     private boolean sameOwner(){return machine.getExciter()==port&&machine.getDStabBus()==getDStabBus()
         &&port.oel3cConnection()==Oel3cExciterPort.Connection.SUMMATION;}
-    private boolean enabled(){return isActive()&&machine.isActive()&&getDStabBus().isActive();}
+    // A retained machine can still be flagged active when its parent generator
+    // is out of service. Bus-auxiliary dispatch is independent of that host;
+    // do not read uninitialized field quantities or drive a disabled exciter.
+    private boolean enabled(){return isActive()&&machine.isActive()&&machine.getParentGen().isActive()&&getDStabBus().isActive()&&machine.getExciter().isActive();}
     @Override public boolean initStates(){return initStates(getDStabBus());}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine ignored){return initStates(bus);}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Network<?,?> ignored){return initStates(bus);}
@@ -70,13 +74,17 @@ public final class Oel3cModel extends DynLoadModelImpl
         return value;
     }
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag){
-        if(!ready||!sameOwner()||method!=DynamicSimuMethod.MODIFIED_EULER
+        if(!sameOwner()||method!=DynamicSimuMethod.MODIFIED_EULER
                 ||!Double.isFinite(dt)||dt<0||(flag!=0&&flag!=1))return false;
         if(!enabled()){
-            kernel.cancelPrediction();
+            // An out-of-service generator is not initialized by the engine.
+            // Its retained auxiliary must remain dormant until the exciter's
+            // initialization callback supplies physical field quantities.
+            if(kernel!=null)kernel.cancelPrediction();
             if(predictionPending){input=stepInput;output=stepOutput;predictionPending=false;}
             return true;
         }
+        if(!ready)return false;
         try {
             double sampled=selectedInput(0,false),previousInput=input,previousOutput=output;
             if(!kernel.step(dt,flag,sampled))return false;
@@ -90,8 +98,8 @@ public final class Oel3cModel extends DynLoadModelImpl
     @Override public double output(){return ready&&sameOwner()&&enabled()?output:0;}
     @Override public double getOutput(){return output();}
     @Override public Object getOutputObject(){return Complex.ZERO;}
-    @Override public boolean afterStep(double dt){return ready&&sameOwner();}
-    @Override public boolean updateAttributes(boolean netChange){return ready&&sameOwner();}
+    @Override public boolean afterStep(double dt){return sameOwner()&&(!enabled()||ready);}
+    @Override public boolean updateAttributes(boolean netChange){return sameOwner()&&(!enabled()||ready);}
     @Override public void beginNetworkSolution(Context context){
         if(!ready)return;if(solving)throw new IllegalStateException("OEL3C network solve already active");
         savedInput=input;savedOutput=output;solving=true;

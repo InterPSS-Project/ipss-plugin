@@ -108,12 +108,12 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
         Measurement input = measurement();
         voltageMeasurement = input.voltageControl();
         reactiveMeasurement = input.reactivePower();
-        activeMeasurement = input.activePower();
+        activeMeasurement = data.activePowerMeasurementInitialized() ? input.activePower() : 0.0;
         voltageReference = voltageMeasurement;
         reactiveReference = reactiveMeasurement;
         powerFactorAngleReference = Math.atan2(reactiveMeasurement, activeMeasurement);
-        activeReference = activeMeasurement;
-        frequencyReference = input.frequency();
+        activeReference = data.activePowerControlEnabled() ? activeMeasurement : 0.0;
+        frequencyReference = data.activePowerControlEnabled() ? input.frequency() : 0.0;
         reactiveIntegral = reactiveLeadLagState = activeIntegral = activeLagState = 0.0;
         reactiveOutput = activeOutput = 0.0;
         predictorStart = null;
@@ -227,15 +227,19 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
         double qLeadLagRate = lagRate(qPi, state.reactiveLeadLagState(),
                 data.reactiveLagTime());
 
-        double activeRate = lagRate(input.activePower(), state.activeMeasurement(),
-                data.activePowerFilterTime());
-        double pError = activeError(state.activeMeasurement(), input.frequency());
-        double pIntegralRate = integralRate(state.activeIntegral(),
+        double activeRate = data.activePowerMeasurementEnabled()
+                ? lagRate(input.activePower(), state.activeMeasurement(),data.activePowerFilterTime()) : 0.0;
+        // Fflag gates the whole active controller, not just frequency droop.
+        // Do not evaluate its unused clamps or tiny filter constants when off:
+        // native records may retain unordered limits in that dormant branch.
+        boolean activeEnabled=data.activePowerControlEnabled();
+        double pError = activeEnabled ? activeError(state.activeMeasurement(), input.frequency()) : 0.0;
+        double pIntegralRate = activeEnabled ? integralRate(state.activeIntegral(),
                 data.activeIntegralGain(), pError, data.activeProportionalGain(),
-                data.activeOutputMinimum(), data.activeOutputMaximum(), false);
-        double pPi = clamp(data.activeProportionalGain() * pError + state.activeIntegral(),
-                data.activeOutputMinimum(), data.activeOutputMaximum());
-        double pLagRate = lagRate(pPi, state.activeLagState(), data.activeOutputLagTime());
+                data.activeOutputMinimum(), data.activeOutputMaximum(), false) : 0.0;
+        double pPi = activeEnabled ? clamp(data.activeProportionalGain() * pError + state.activeIntegral(),
+                data.activeOutputMinimum(), data.activeOutputMaximum()) : 0.0;
+        double pLagRate = activeEnabled ? lagRate(pPi, state.activeLagState(), data.activeOutputLagTime()) : 0.0;
         monitor.begin(stage);
         monitor.record(0,state.voltageMeasurement(),voltageRate);monitor.record(1,state.reactiveMeasurement(),reactiveRate);
         monitor.record(2,state.reactiveIntegral(),qIntegralRate);monitor.record(3,state.reactiveLeadLagState(),qLeadLagRate);
@@ -249,19 +253,23 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
                 ? input.voltageControl() : state.voltageMeasurement();
         double reactive = data.voltageFilterTime() <= EPS
                 ? input.reactivePower() : state.reactiveMeasurement();
-        double active = data.activePowerFilterTime() <= EPS
+        boolean activeEnabled=data.activePowerControlEnabled();
+        // Nonbinary selectors initialize this measurement but then hold it,
+        // even when downstream converter power changes. Do not apply the lag
+        // bypass or accept a numerical stage update to a dormant state.
+        double active = !data.activePowerMeasurementEnabled() ? activeMeasurement : data.activePowerFilterTime() <= EPS
                 ? input.activePower() : state.activeMeasurement();
         State filtered = new State(voltage, reactive, state.reactiveIntegral(),
-                state.reactiveLeadLagState(), active, state.activeIntegral(),
-                state.activeLagState());
+                state.reactiveLeadLagState(), active, activeEnabled ? state.activeIntegral() : 0.0,
+                activeEnabled ? state.activeLagState() : 0.0);
         double qPi = clamp(data.reactiveProportionalGain() * reactiveError(filtered, input)
                         + filtered.reactiveIntegral(),
                 data.reactiveOutputMinimum(), data.reactiveOutputMaximum());
         double leadLag = data.reactiveLagTime() <= EPS
                 ? qPi : filtered.reactiveLeadLagState();
-        double pPi = clamp(data.activeProportionalGain()
+        double pPi = activeEnabled ? clamp(data.activeProportionalGain()
                         * activeError(active, input.frequency()) + filtered.activeIntegral(),
-                data.activeOutputMinimum(), data.activeOutputMaximum());
+                data.activeOutputMinimum(), data.activeOutputMaximum()) : 0.0;
         double pLag = data.activeOutputLagTime() <= EPS ? pPi : filtered.activeLagState();
         return new State(voltage, reactive, filtered.reactiveIntegral(), leadLag,
                 active, filtered.activeIntegral(), pLag);
@@ -308,7 +316,7 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
                         * reactiveLeadLagState;
         double scale = modelBaseMva / systemBaseMva;
         reactiveOutput = qModel * scale;
-        activeOutput = activeLagState * scale;
+        activeOutput = data.activePowerControlEnabled() ? activeLagState * scale : 0.0;
     }
 
     private static double integralRate(double integral, double gain, double error,

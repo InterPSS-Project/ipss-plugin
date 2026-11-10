@@ -62,7 +62,10 @@ class DynamicModelImportReportTest {
                     .build();
             if (status == DynamicModelImportStatus.ATTACHED
                     || status == DynamicModelImportStatus.SKIPPED_GNET
-                    || status == DynamicModelImportStatus.SKIPPED_MODEL_REMOVE) {
+                    || status == DynamicModelImportStatus.SKIPPED_MODEL_REMOVE
+                    || status == DynamicModelImportStatus.SKIPPED_MISSING_HOST
+                    || status == DynamicModelImportStatus.SKIPPED_LOAD_PRIORITY
+                    || status == DynamicModelImportStatus.SKIPPED_INACTIVE_TARGET) {
                 assertTrue(report.isStrictlyComplete(), status.name());
             } else {
                 assertFalse(report.isStrictlyComplete(), status.name());

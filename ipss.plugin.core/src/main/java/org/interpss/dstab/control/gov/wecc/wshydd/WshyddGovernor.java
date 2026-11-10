@@ -14,6 +14,7 @@ import com.interpss.dstab.mach.Machine;
 /** WECC double-derivative hydro-governor compatibility realization. */
 public final class WshyddGovernor extends AbstractGovernor implements ICMLStateProvider {
     private static final double EPS = 1.0e-10;
+    private double[] preparedCurve;
     private State state = State.zero(), oldState = State.zero();
     private Derivative predictor = Derivative.zero();
     private double reference, baseScale = 1.0, output;
@@ -41,7 +42,12 @@ public final class WshyddGovernor extends AbstractGovernor implements ICMLStateP
             Machine machine, int flag) {
         if (method != DynamicSimuMethod.MODIFIED_EULER)
             throw new InterpssRuntimeException("WSHYDD supports MODIFIED_EULER only");
-        if (!initialized || dt <= 0.0) return false;
+        if (!initialized || !Double.isFinite(dt) || dt < 0.0) return false;
+        // A settled network event requests a zero-time observation, not a new
+        // predictor. Leave oldState/predictor untouched so an observation between
+        // the two physical stages cannot overwrite integration history. This
+        // governor's output depends only on its retained turbine/gate states.
+        if (dt == 0.0 && (flag == 0 || flag == 1)) return finite(output);
         if (flag == 0) {
             oldState = state; predictor = derivatives(oldState);
             state = normalize(advance(oldState, predictor, dt));
@@ -90,25 +96,42 @@ public final class WshyddGovernor extends AbstractGovernor implements ICMLStateP
         return c(27)*c(28)<=EPS||Math.abs(c(27))<=EPS ? gatePower
                 : s.turbineState+c(26)/c(27)*(gatePower-s.turbineState);
     }
-    public double gateCurve(double gate) {
-        double[] x={c(16),c(18),c(20),c(22),c(24)}, y={c(17),c(19),c(21),c(23),c(25)};
-        if(gate<=x[0])return y[0];
-        for(int i=1;i<x.length;i++)if(gate<=x[i])return lerp(gate,x[i-1],y[i-1],x[i],y[i]);
-        return y[4];
+    // Zero pairs after the first point are unused capacity, not a return to
+    // zero gate. Repeated abscissae retain the entered vertical segment.
+    private double[] enteredCurve(boolean inverse) {
+        double[] values=new double[10];int count=0;
+        for(int i=0;i<5;i++) {
+            double x=c(16+2*i),y=c(17+2*i);
+            if(count>0&&(x==0&&y==0||x==values[2*count-2]&&y==values[2*count-1]))continue;
+            if(count>0&&(x<values[2*count-2]||y<values[2*count-1]))
+                throw new IllegalArgumentException("Hydro gate curve must be ordered");
+            values[2*count++]=x;values[2*count-1]=y;
+        }
+        if(count<2)throw new IllegalArgumentException("Hydro gate curve needs two points");
+        double[] result=java.util.Arrays.copyOf(values,count*2);
+        if(inverse)for(int i=0;i<count;i++){double x=result[2*i];result[2*i]=result[2*i+1];result[2*i+1]=x;}
+        return result;
     }
-    public double inverseGateCurve(double power) {
-        double[] x={c(17),c(19),c(21),c(23),c(25)}, y={c(16),c(18),c(20),c(22),c(24)};
-        if(power<=x[0])return y[0];
-        for(int i=1;i<x.length;i++)if(power<=x[i])return lerp(power,x[i-1],y[i-1],x[i],y[i]);
-        return y[4];
+    private double evaluateCurve(double value,boolean inverse) {
+        // Validate/reinitialize after data edits; evaluation allocates no arrays.
+        if(preparedCurve==null)preparedCurve=enteredCurve(false);
+        double[] curve=preparedCurve;int points=curve.length/2,xi=inverse?1:0,yi=inverse?0:1;
+        if(value<=curve[xi])return curve[yi];
+        for(int i=1;i<points;i++)if(value<=curve[2*i+xi]) {
+            double lo=curve[2*i-2+xi],hi=curve[2*i+xi];
+            return hi==lo?curve[2*i+yi]:curve[2*i-2+yi]+(value-lo)*(curve[2*i+yi]-curve[2*i-2+yi])/(hi-lo);
+        }
+        return curve[curve.length-2+yi];
     }
+    public double gateCurve(double gate){return evaluateCurve(gate,false);}
+    public double inverseGateCurve(double power){return evaluateCurve(power,true);}
     public boolean validateParameters(){
         for(int i=0;i<30;i++)if(!Double.isFinite(c(i)))return false;
         return c(2)>=0&&c(4)>=0&&c(8)>=0&&c(10)>=0&&c(11)>=0&&c(12)>=0
-                &&c(13)>=c(14)&&c(16)<c(18)&&c(18)<c(20)&&c(20)<c(22)&&c(22)<c(24)
-                &&c(17)<=c(19)&&c(19)<=c(21)&&c(21)<=c(23)&&c(23)<=c(25)
+                &&c(13)>=c(14)&&validCurve()
                 &&c(27)>=0&&c(28)>=0&&c(29)>=0;
     }
+    private boolean validCurve(){try{preparedCurve=enteredCurve(false);return true;}catch(IllegalArgumentException invalid){return false;}}
     @Override public double getOutput(Machine machine){return output*baseScale;}
     @Override public void setRefPoint(double value){reference=value/baseScale;}
     public double getGatePosition(){return state.gate;}

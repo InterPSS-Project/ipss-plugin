@@ -38,12 +38,34 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
         setCompensateShuntY(Complex.ZERO);setCurrInj2Net(Complex.ZERO);setDStabBus(bus);
     }
 
+    /** Bus auxiliaries are visited independently of generator initialization.
+     * An out-of-service host may have no electrical state owner yet. Gate
+     * every physical-input entry before reading current, field quantities or
+     * exciter feedback; preserve histories and do not publish to that host.
+     * This is a status guard, not an exception fallback: active-host errors
+     * still propagate through the original physical-input path.
+     */
+    private boolean sameOwner(){
+        return machine.getDStabBus()==getDStabBus() && machine.getExciter()==exciter;
+    }
+    private boolean enabled(){
+        if(!sameOwner())throw new IllegalStateException("Limiter host exciter or bus was replaced/detached");
+        return isActive() && getDStabBus().isActive() && machine.isActive()
+                && machine.getParentGen().isActive() && machine.getExciter().isActive();
+    }
+
     @Override public boolean initStates(){return initStates(getDStabBus());}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine ignored){return initStates(bus);}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Network<?,?> ignored){return initStates(bus);}
     @Override public boolean initStates(BaseDStabBus<?,?> bus){
         if(bus==null||bus!=getDStabBus()||machine.getExciter()!=exciter)return false;
-        Complex initial=machine.getParentGen().getGen();
+        if(!enabled())return true;
+        // Curve coordinates and the running terminal-power signals use the
+        // generator MVA base. RAW generator P/Q are on the system base; using
+        // them directly starts the measurement filters at a different operating
+        // point and can activate an otherwise inactive limiter after startup.
+        Complex initial=machine.getParentGen().getGen().multiply(
+                bus.getNetwork().getBaseMva()/machine.getParentGen().getMvaBase());
         initializeWithSignals(bus.getVoltageMag(),initial.getReal(),initial.getImaginary(),
                 exciter.getUelStabilizingSignal(),exciter.getUelReferenceFeedbackSignal());
         outputStates.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());
@@ -55,11 +77,15 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
         state[V]=vt;double u=voltageBias(vt);state[P]=pt*inversePower(u,data.k1());state[Q]=qt;
         double normalizedQ=limitAt(state[P])*power(u,data.k2());state[QREF]=normalizedQ;
         state[I]=data.vuimin();state[FB]=data.kfb()*vfb;state[LL1]=data.vuimin();state[LL2]=data.vuimin();
-        state[GAIN]=adjustableGain(vt,pt,qt);System.arraycopy(state,0,trial,0,state.length);active=state;
+        // Native selectors 0 and 1 use the fixed-gain branch; only position 2
+        // owns the adjustable-gain lag state. Preserve the source selector.
+        state[GAIN]=data.gainMode()==2?adjustableGain(vt,pt,qt):0;System.arraycopy(state,0,trial,0,state.length);active=state;
         output=output(state,new Signals(vt,pt,qt,vf,vfb));exciter.setVuel(output);initialized=finite(state)&&Double.isFinite(output);
     }
 
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag){
+        if(!sameOwner())return false;
+        if(!enabled())return true;
         return nextStepWithSignals(dt,method,flag,currentSignals());
     }
     public boolean nextStepWithSignals(double dt,DynamicSimuMethod method,int flag,double vt,double pt,double qt,double vf,double vfb){
@@ -80,7 +106,7 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
         double gainInput=adjustableGain(s.vt,s.pt,s.qt);
         dx[V]=lagDerivative(x[V],s.vt,data.tuv());dx[P]=lagDerivative(x[P],pInput,data.tup());
         dx[Q]=lagDerivative(x[Q],s.qt,data.tuq());dx[QREF]=lagDerivative(x[QREF],qReference,data.tqref());
-        dx[GAIN]=lagDerivative(x[GAIN],gainInput,data.tadj());dx[FB]=lagDerivative(x[FB],data.kfb()*s.vfb,data.tul());
+        dx[GAIN]=data.gainMode()==2?lagDerivative(x[GAIN],gainInput,data.tadj()):0;dx[FB]=lagDerivative(x[FB],data.kfb()*s.vfb,data.tul());
         Algebraic a=algebraic(x,s);double di=data.kui()*a.error;
         if((a.rawPi>=data.vuimax()&&di>0)||(a.rawPi<=data.vuimin()&&di<0))di=0;dx[I]=di;
         dx[LL1]=lagDerivative(x[LL1],a.piPlusFeedback,data.tu2());
@@ -91,7 +117,7 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
         double u=voltageBias(filteredOrInput(x[V],s.vt,data.tuv()));
         double directQref=limitAt(filteredOrInput(x[P],s.pt*inversePower(u,data.k1()),data.tup()))*power(u,data.k2());
         double qfb=filteredOrInput(x[Q],s.qt,data.tuq());double qref=filteredOrInput(x[QREF],directQref,data.tqref());
-        double gain=data.gainMode()==1?data.kfix():filteredOrInput(x[GAIN],adjustableGain(s.vt,s.pt,s.qt),data.tadj());
+        double gain=data.gainMode()!=2?data.kfix():filteredOrInput(x[GAIN],adjustableGain(s.vt,s.pt,s.qt),data.tadj());
         if(Math.abs(gain)<EPS)gain=Math.copySign(EPS,gain==0?1:gain);
         double error=(qref-qfb+data.kuf()*s.vf)/gain;double rawPi=data.kul()*error+x[I];
         double pi=clamp(rawPi,data.vuimin(),data.vuimax());double sum=pi+filteredOrInput(x[FB],data.kfb()*s.vfb,data.tul());
@@ -103,7 +129,7 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
     private void normalize(double[] x,Signals s){
         if(data.tuv()<=EPS)x[V]=s.vt;if(data.tup()<=EPS){double u=voltageBias(x[V]);x[P]=s.pt*inversePower(u,data.k1());}
         if(data.tuq()<=EPS)x[Q]=s.qt;if(data.tqref()<=EPS){double u=voltageBias(x[V]);x[QREF]=limitAt(x[P])*power(u,data.k2());}
-        if(data.tadj()<=EPS)x[GAIN]=adjustableGain(s.vt,s.pt,s.qt);if(data.tul()<=EPS)x[FB]=data.kfb()*s.vfb;
+        if(data.gainMode()!=2)x[GAIN]=0;else if(data.tadj()<=EPS)x[GAIN]=adjustableGain(s.vt,s.pt,s.qt);if(data.tul()<=EPS)x[FB]=data.kfb()*s.vfb;
         if(data.tu2()<=EPS)x[LL1]=algebraic(x,s).piPlusFeedback;if(data.tu4()<=EPS)x[LL2]=algebraic(x,s).firstLimited;
     }
     private Signals currentSignals(){
@@ -127,8 +153,8 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
     private static boolean finite(double[] values){for(double v:values)if(!Double.isFinite(v))return false;return true;}
 
     @Override public double getOutput(){return output;}@Override public Object getOutputObject(){return Complex.ZERO;}
-    @Override public boolean updateAttributes(boolean netChange){return true;}@Override public boolean afterStep(double dt){return true;}
-    @Override public Hashtable<String,Object> getStates(Object ref){outputStates.put("UEL2C_OUTPUT",output);outputStates.put("UEL2C_ERROR",algebraic(active,currentSignals()).error);return outputStates;}
+    @Override public boolean updateAttributes(boolean netChange){return sameOwner();}@Override public boolean afterStep(double dt){return sameOwner();}
+    @Override public Hashtable<String,Object> getStates(Object ref){outputStates.put("UEL2C_OUTPUT",getOutput());outputStates.put("UEL2C_ERROR",enabled()?algebraic(active,currentSignals()).error:0.0);return outputStates;}
     @Override public Map<String,Double> getNamedStates(){Map<String,Double> result=new LinkedHashMap<>();
         result.put("Voltage filter",active[V]);result.put("Real power filter",active[P]);result.put("Reactive power filter",active[Q]);
         result.put("Integrator",active[I]);result.put("Reference feedback",active[FB]);result.put("First lead-lag",active[LL1]);

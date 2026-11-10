@@ -274,7 +274,7 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void parseAc8b_mapsSuppliedPsseRecordWithoutUsingExtendedOrdering() throws Exception {
+	public void parseAc8b_mapsNativeRecordWithoutUsingAlternateExportOrdering() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
 		Path dyr = tempDir.resolve("ac8b.dyr");
 		Files.writeString(dyr, "1 'AC8B' '1' .02 15 .8 10 .03 99 -99 1 .02 "
@@ -288,12 +288,16 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(15.0, exc.getData().getKpr(), TOL);
 		assertEquals(0.8, exc.getData().getKir(), TOL);
 		assertEquals(99.0, exc.getData().getVpidmax(), TOL);
-		assertEquals(1.0, exc.getData().getVrmax(), TOL);
-		assertEquals(7.43, exc.getData().getVfemax(), TOL);
-		assertEquals(0.6, exc.getData().getKa(), TOL);
-		assertEquals(0.4, exc.getData().getTe(), TOL);
-		assertEquals(0.2, exc.getData().getKc(), TOL);
-		assertEquals(6.0, exc.getData().getKd(), TOL);
+		assertEquals(7.43, exc.getData().getVrmax(), TOL);
+		assertEquals(-0.25, exc.getData().getVrmin(), TOL);
+		assertEquals(6.0, exc.getData().getVfemax(), TOL);
+		assertEquals(0.0, exc.getData().getVemin(), TOL);
+		assertEquals(1.0, exc.getData().getKa(), TOL);
+		assertEquals(0.02, exc.getData().getTa(), TOL);
+		assertEquals(0.2, exc.getData().getTe(), TOL);
+		assertEquals(0.0, exc.getData().getKc(), TOL);
+		assertEquals(0.6, exc.getData().getKd(), TOL);
+		assertEquals(0.4, exc.getData().getKe(), TOL);
 		assertEquals(5.7, exc.getData().getE1(), TOL);
 		assertEquals(0.4, exc.getData().getSe2(), TOL);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());

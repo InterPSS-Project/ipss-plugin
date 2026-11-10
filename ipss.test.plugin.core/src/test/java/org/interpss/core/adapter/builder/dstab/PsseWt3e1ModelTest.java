@@ -14,6 +14,24 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 
 /** Equation-mode, limit, and named-state checks for WT3E1. */
 public class PsseWt3e1ModelTest {
+    @Test void controllerConvertsDeviceBaseRatherThanSystemBase() throws Exception {
+        for(double deviceBase:new double[]{21,200}) {
+            var builder=DStabBuilderTestFixture.createBuilder();
+            var bus=builder.getDStabNetwork().getDStabBus("Bus1");
+            var gen=(com.interpss.dstab.DStabGen)bus.getContributeGen("1");
+            gen.setMvaBase(deviceBase);
+            gen.setGen(new org.apache.commons.math3.complex.Complex(.3*deviceBase/100,.1*deviceBase/100));
+            var generator=builder.addWt3g1("Bus1","1",new Wt3g1Data(40,.33403,0,0,.12,1.63));
+            var controller=builder.addWt3e1("Bus1","1",data(0,0));
+            assertTrue(generator.initStates(bus));
+            assertEquals(.3*deviceBase/(40*1.63),controller.getPowerOrder(),1e-12);
+            assertEquals(.3/bus.getVoltageMag(),generator.getActiveCurrentState(),1e-12);
+            assertTrue(generator.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,0));
+            assertTrue(generator.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,1));
+            assertEquals(.3/bus.getVoltageMag(),generator.getActiveCurrentState(),1e-12,
+                    "published controller command must preserve initialized Ip");
+        }
+    }
     @Test void allReactiveAndVoltageLimitModesRemainFinite() throws Exception {
         for (int varFlag : new int[] {-1,0,1}) for (int voltageFlag : new int[] {0,1,2}) {
             var builder=DStabBuilderTestFixture.createBuilder();

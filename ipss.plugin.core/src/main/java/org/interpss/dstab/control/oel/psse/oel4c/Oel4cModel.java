@@ -39,7 +39,10 @@ public final class Oel4cModel extends DynLoadModelImpl
     }
     private boolean sameOwner(){return machine.getExciter()==port&&machine.getDStabBus()==getDStabBus()
         &&port.oel3cConnection()==Oel3cExciterPort.Connection.SUMMATION;}
-    private boolean enabled(){return isActive()&&machine.isActive()&&getDStabBus().isActive();}
+    // A retained machine can still be flagged active when its parent generator
+    // is out of service. Bus-auxiliary dispatch is independent of that host;
+    // do not read uninitialized field quantities or drive a disabled exciter.
+    private boolean enabled(){return isActive()&&machine.isActive()&&machine.getParentGen().isActive()&&getDStabBus().isActive()&&machine.getExciter().isActive();}
     @Override public boolean initStates(){return initStates(getDStabBus());}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine ignored){return initStates(bus);}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Network<?,?> ignored){return initStates(bus);}

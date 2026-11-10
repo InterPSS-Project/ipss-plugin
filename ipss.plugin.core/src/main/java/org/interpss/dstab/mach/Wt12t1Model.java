@@ -108,7 +108,18 @@ public final class Wt12t1Model implements ICMLStateProvider {
         double dampingTorque = data.dshaft() * speedDifference;
         double dTurbine = (aerodynamicPower / nonzero(state.turbineSpeed)
                 - shaftTorque - dampingTorque) / (2.0 * turbineInertia());
-        double dGenerator = (shaftTorque + dampingTorque
+        // The reference two-mass implementation transfers the combined shaft
+        // term to the generator equation with omega_g / omega_t. That ratio
+        // is one at equilibrium, so flat initialization and the block diagram
+        // alone do not reveal an omission. Independent positive/negative state
+        // perturbations, zero/doubled shaft damping, zero machine damping and
+        // a second fixture distinguish it from changing a damping coefficient.
+        // Keep the turbine equation and electrical torque normalization intact;
+        // applying the ratio there as well would change a separately verified
+        // derivative. Use the existing low-speed denominator guard only.
+        double generatorShaftTorque = (shaftTorque + dampingTorque)
+                * state.generatorSpeed / nonzero(state.turbineSpeed);
+        double dGenerator = (generatorShaftTorque
                 - electricalPower / nonzero(state.generatorSpeed)
                 - data.damp() * (state.generatorSpeed - 1.0))
                 / (2.0 * generatorInertia());

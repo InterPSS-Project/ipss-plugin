@@ -609,6 +609,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model)
                         && !(device instanceof org.interpss.dstab.hvdc.Cdc6tNormalTerminalPorts.Port)
                         && !(device instanceof org.interpss.dstab.hvdc.Cdc6tDyrModel)
+                        && !(device instanceof org.interpss.dstab.hvdc.Chvdc2DyrModel)
                         && !(device instanceof org.interpss.dstab.hvdc.Chvdc2TerminalPorts.Port)
                         && !supportedLoad(device)
                         && !org.interpss.dstab.relay.Tiocr1RelayModel.isAcceptedStepDevice(device))
@@ -962,7 +963,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                         BooleanSupplier active=()->bus.isActive()&&gen.isActive()&&r.isActive();
                         if(sharedPlant!=null)bindUpstream(sharedPlant,active,upstreamPlants);
                         bindUpstream(auxiliary,active,upstreamAuxiliaries);
-                        r.getReeca1Controller().setTwoStepAuxiliaryManaged(true);
+                        electrical.setTwoStepAuxiliaryManaged(true);
                     }
                     attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==r
                             &&r.getActiveElectricalController()==electrical&&electrical.getPlantController()==plant
@@ -1194,7 +1195,13 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 if (model.isAcceptedDerivativeHistoryInvalidated(i)) history[i]=0.;
     }
 
+    // The STORE/AB2 implementation below has a fixed-step history contract. It
+    // must not inherit variable event fragments until that history is generalized.
+    // The single-step default solver supports exact scheduled event boundaries.
+    @Override protected boolean supportsExactEventStepping() { return false; }
+
     @Override public void nextStep(double time,double dt,DynamicSimuMethod method) throws DStabSimuException {
+        preparePhysicalIntervalInputs(time, dt);
         try {advanceWithRetainedInactiveStates(time,dt,method);acceptPhysicalStepTrials();reactivation.commit();}
         catch(RuntimeException|DStabSimuException failure){discardPhysicalStepTrials(failure);try{reactivation.rollback();}catch(RuntimeException cleanup){failure.addSuppressed(cleanup);}throw failure;}
     }

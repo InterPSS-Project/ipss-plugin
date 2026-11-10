@@ -23,9 +23,7 @@ public record Svsmo1t2Data(int remoteBusNumber,
 
     public Svsmo1t2Data {
         mssDevices = List.copyOf(mssDevices);
-        if (remoteBusNumber == 0) {
-            throw new IllegalArgumentException("SVSMO1T2 remote bus must be nonzero");
-        }
+        // The native schema explicitly defines zero as local voltage control.
         if (mssDevices.size() != 8) {
             throw new IllegalArgumentException("SVSMO1T2 requires exactly eight MSS slots");
         }

@@ -66,7 +66,7 @@ public class DStabNetworkBuilderAc8cTest extends CorePluginTestSetup {
         assertEquals(5,e.getNamedStates().size());assertTrue(e.getNamedStates().keySet().containsAll(
                 java.util.Set.of("Sensed Vt","PID Integrator","PID Derivator","VR","VE")));
         var descriptor=DynamicModelCatalog.find("AC8CU1").orElseThrow();
-        assertEquals(java.util.Set.of(31,38),descriptor.recordSchema().acceptedParameterCounts());
+        assertEquals(java.util.Set.of(31,32,38),descriptor.recordSchema().acceptedParameterCounts());
         assertTrue(p.getLastImportReport().isStrictlyComplete());
     }
 

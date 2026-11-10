@@ -1,6 +1,7 @@
 package org.interpss.core.dstab.mach;
 
 import org.interpss.core.dstab.reference.EmbeddedNativeTrajectoryValues;
+import org.interpss.core.dstab.reference.NativeRecordedEventWindow;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,7 +35,12 @@ public class Wt2g1PsseSmibConformanceTest {
     @Test
     void controlledResistanceGeneratorMatchesNativePsseFaultTrajectory() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        // The retained experiment leaves static P/Q as constant power. Its
+        // original voltage/angle channels reconstruct 1+j0.5 pu load even
+        // during the fault; Z/Z and I/Z would reduce that demand. Declare the
+        // experiment explicitly, independently of the production I/Z default.
+        var context = new PSSEMultiFileLoader().setDynamicRunConfigJson(
+                "{\"activeStaticLoadModel\":\"CONST_P\",\"reactiveStaticLoadModel\":\"CONST_P\"}").loadDStab(
                 CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
                 CASE.resolve("SMIB_v33_wt2g1.dyr").toString());
         var network = context.getDStabilityNet();
@@ -58,6 +64,7 @@ public class Wt2g1PsseSmibConformanceTest {
         }
 
         Csv reference = read(REFERENCE);
+        double[] eventTimes = NativeRecordedEventWindow.boundaries(reference.rows(), STEP, .05, .10);
         assertTrue(!reference.rows().isEmpty());
         System.out.println("WT2G1 initial InterPSS: " + Arrays.toString(actual.get(0)));
         System.out.println("WT2G1 initial PSS/E: " + Arrays.toString(reference.rows().stream()
@@ -69,12 +76,21 @@ public class Wt2g1PsseSmibConformanceTest {
         for (double[] expected : reference.rows()) {
             double time = expected[0];
             if (time < -1.0e-9 || time > 1.0 + 1.0e-8
-                    || Math.abs(time - 0.05) < STEP
-                    || Math.abs(time - 0.10) < STEP) continue;
+                    || NativeRecordedEventWindow.contains(time, eventTimes, STEP)) continue;
             double[] row = interpolate(actual, time);
             for (int column = 0; column < names.length; column++) {
-                double error = Math.abs(row[column + 1]
-                        - expected[reference.columns().get(names[column])]);
+                double referenceValue = expected[reference.columns().get(names[column])];
+                // Electrical reference states use the recorded INTERNAL angle;
+                // compare both realizations in the fixed network frame.
+                if (names[column].equals("EP_R") || names[column].equals("EP_I")) {
+                    double angle = expected[reference.columns().get("INTERNAL")];
+                    Complex flux = new Complex(expected[reference.columns().get("EP_I")],
+                            expected[reference.columns().get("EP_R")]).multiply(
+                                    new Complex(Math.cos(angle), Math.sin(angle)));
+                    referenceValue = names[column].equals("EP_R")
+                            ? flux.getImaginary() : flux.getReal();
+                }
+                double error = Math.abs(row[column + 1] - referenceValue);
                 if (error > maximum[column]) {
                     maximum[column] = error;
                     maximumTime[column] = time;

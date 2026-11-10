@@ -479,7 +479,11 @@ public class PSSEJsonExporter {
 						sourceZ.getReal(), sourceZ.getImaginary(),
 						xfrZ.getReal(), xfrZ.getImaginary(),
 						gen.getXfrTap() != 0.0 ? gen.getXfrTap() : 1.0,
-						gen.isActive() ? 1 : 0, 100.0,
+						gen.isActive() ? 1 : 0,
+                        // Emit the common plant setting on every record. Otherwise
+                        // export ordering can change the effective last-record value.
+                        100.0 * (bus.getPlantMvarControlPFactor() != null
+                                ? bus.getPlantMvarControlPFactor() : gen.getMvarControlPFactor()),
 						limitMax(pLimit, pq.getReal()) * baseMva,
 						limitMin(pLimit, pq.getReal()) * baseMva,
 						0, 1, 1.0, null, null, null, null, null, null,
@@ -494,7 +498,7 @@ public class PSSEJsonExporter {
 						bus.getGenQ() * baseMva, bus.getGenQ() * baseMva,
 						bus.getVoltageMag(), busNumber(bus), 0, baseMva,
 						0.0, 0.0, 0.0, 0.0, 1.0,
-						1, 100.0,
+						1, bus.getPlantMvarControlPFactor() != null ? 100.0 * bus.getPlantMvarControlPFactor() : 100.0,
 						bus.getGenP() * baseMva, bus.getGenP() * baseMva,
 						0, 1, 1.0, null, null, null, null, null, null,
 						0, 1.0, null, "Bus aggregate generation"));

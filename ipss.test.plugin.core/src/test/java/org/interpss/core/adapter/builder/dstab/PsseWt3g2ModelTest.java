@@ -41,6 +41,42 @@ public class PsseWt3g2ModelTest {
     }
 
     @Test
+    void unequalMachineBasePreservesTerminalPowerAndNortonBalance() throws Exception {
+        var builder=DStabBuilderTestFixture.createBuilder();
+        var bus=builder.getDStabNetwork().getDStabBus("Bus1");
+        var gen=(DStabGen)bus.getContributeGen("1");
+        gen.setMvaBase(21);gen.setGen(new org.apache.commons.math3.complex.Complex(.107,-.03215));
+        gen.setZMultiFactor(1); // first device init precedes matrix formation
+        gen.setPosGenZ(new org.apache.commons.math3.complex.Complex(0,.8));
+        bus.setVoltage(org.apache.commons.math3.complex.Complex.ONE);
+        var model=builder.addWt3g2("Bus1","1",new Wt3g2Data(1,.02,.02,0,0,.1,21,.5,.9,1.22,1.2,1.3,10,.02));
+        assertTrue(model.initStates(bus));
+        assertEquals(21,model.getDeviceBaseMva(),0);
+        assertEquals(.107*100/21,model.getP(),1e-12);
+        assertEquals(1+.8*(-.03215*100/21),model.getInternalVoltageState(),1e-12);
+        gen.setZMultiFactor(100.0/21.0); // matrix formation refreshes this cache
+        assertTrue(model.initStates(bus));
+        assertEquals(1+.8*(-.03215*100/21),model.getInternalVoltageState(),1e-12,
+                "reinitialization must not change the state base");
+        var source=(org.apache.commons.math3.complex.Complex)model.getOutputObject();
+        var physical=source.subtract(bus.getVoltage().divide(gen.getPosGenZ().multiply(gen.getZMultiFactor())));
+        assertEquals(0,bus.getVoltage().multiply(physical.conjugate()).subtract(gen.getGen()).abs(),1e-12);
+        assertTrue(model.updateAttributes(false));
+        assertEquals(-.03215*100/21,model.getQ(),1e-12);
+        double ip=model.getActiveCurrentState(),eq=model.getInternalVoltageState();
+        for(double v:new double[]{.6,1,1.2,1.3,2}) {
+            var voltage=new org.apache.commons.math3.complex.Complex(Math.cos(.3)*v,Math.sin(.3)*v);
+            bus.setVoltage(voltage);
+            var norton=(org.apache.commons.math3.complex.Complex)model.getOutputObject();
+            var actual=norton.subtract(voltage.divide(gen.getPosGenZ().multiply(gen.getZMultiFactor())));
+            var expected=new org.apache.commons.math3.complex.Complex(ip*Wt3g2Model.fixedLowVoltageActiveGain(v),
+                    (v-eq)/.8+Wt3g2Model.highVoltageCorrection(v,1.2,1.3))
+                    .multiply(new org.apache.commons.math3.complex.Complex(Math.cos(.3),Math.sin(.3))).multiply(.21);
+            assertEquals(0,actual.subtract(expected).abs(),1e-12,"Norton boundary must preserve physical current across voltage regions");
+        }
+    }
+
+    @Test
     void lvplAndHvrcUsePublishedPiecewiseBoundaries() throws Exception {
         Fixture fixture = load();
         Wt3g2Model model = fixture.model;

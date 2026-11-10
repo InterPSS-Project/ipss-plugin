@@ -37,6 +37,98 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private java.util.Set<String> hotReactivationIds=java.util.Set.of();
     private boolean hotReactivationEvent;
     /** Explicitly select qualified machine IDs before initialization; empty preserves existing behavior. */
+    private Boolean sourceImpedanceReconciliationEnabled;
+    private org.interpss.plugin.dstab.config.LoadModelThresholds loadModelThresholds;
+    public record SourceImpedanceReconciliation(String bus,String generator,boolean enabled,
+            double originalResistance,double originalReactance,double effectiveResistance,
+            double effectiveReactance,boolean changed) { }
+    private java.util.List<SourceImpedanceReconciliation> sourceImpedanceReport=java.util.List.of();
+    public void setSourceImpedanceReconciliationEnabled(boolean enabled) {sourceImpedanceReconciliationEnabled=enabled;}
+    public void setLoadModelThresholds(org.interpss.plugin.dstab.config.LoadModelThresholds thresholds) {loadModelThresholds=thresholds;}
+    public org.interpss.plugin.dstab.config.LoadModelThresholds getLoadModelThresholds(){return loadModelThresholds;}
+    public java.util.List<SourceImpedanceReconciliation> getSourceImpedanceReconciliationReport(){return sourceImpedanceReport;}
+    public java.util.List<org.interpss.dstab.dynLoad.impl.Cmldznu2Model.InitializationScreen> getLoadModelScreeningReport(){
+        var report=new java.util.ArrayList<org.interpss.dstab.dynLoad.impl.Cmldznu2Model.InitializationScreen>();
+        for(var bus:dstabAlgo.getNetwork().getBusList())
+            if(bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldznu2Model first)
+                for(var model:first.getSourceModels())if(model.getInitializationScreen()!=null)report.add(model.getInitializationScreen());
+        return java.util.List.copyOf(report);
+    }
+    /** Final per-source ownership, including ordinary loads with no DYR assignment.
+     * Capture identities before composite expansion removes source records. The
+     * query then resolves the actual initialization result, rather than mistaking
+     * an attached-but-screened composite for a live feeder/motor injection.
+     */
+    public record LoadModelAssignment(String bus,String loadId,String candidateModel,
+            String appliedModel,String status,java.util.List<String> reasons) { }
+    private record SourceLoadIdentity(String bus,String loadId,boolean active) { }
+    private java.util.List<SourceLoadIdentity> sourceLoadIdentities=java.util.List.of();
+    public java.util.List<LoadModelAssignment> getLoadModelAssignmentReport() {
+        var result=new java.util.ArrayList<LoadModelAssignment>();
+        var network=dstabAlgo.getNetwork();
+        String fallback=network.isStaticLoadIncludedInYMatrix()?"CONST_Z/CONST_Z":
+                network.getStaticLoadModel().name()+"/"+network.getReactiveStaticLoadModel().name();
+        for(var source:sourceLoadIdentities) {
+            var bus=network.getDStabBus(source.bus());
+            String candidate="NONE",applied=source.active()?fallback:"NONE",status=source.active()?"STATIC_DEFAULT":"INACTIVE";
+            java.util.List<String> reasons=java.util.List.of();
+            if(source.active()) {
+                org.interpss.dstab.dynLoad.impl.Cmldznu2Model owner=null;
+                if(bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldznu2Model first)
+                    for(var model:first.getSourceModels())if(model.getTargetLoadIds().contains(source.loadId()))owner=model;
+                if(owner!=null) {
+                    candidate=owner instanceof org.interpss.dstab.dynLoad.impl.Cmldblu1Model?"CMLDBLU1":"CMLDZNU2";
+                    var screen=owner.getInitializationScreen();
+                    if(screen!=null&&screen.bypassed()){status="SCREENED_STATIC";reasons=screen.violations();}
+                    else {applied=candidate;status=screen==null?"PENDING_INITIALIZATION":"DYNAMIC";}
+                } else if(bus.getDynLoadModelList()!=null) {
+                    for(var model:bus.getDynLoadModelList())if(model.isActive()&&model.getId().equals(source.loadId())) {
+                        candidate=model instanceof org.interpss.dstab.dynLoad.impl.IeelLoadModel ieel
+                                ?ieel.getSourceModelName():model.getClass().getSimpleName();
+                        applied=candidate;status="DYNAMIC";break;
+                    }
+                }
+            }
+            result.add(new LoadModelAssignment(source.bus(),source.loadId(),candidate,applied,status,reasons));
+        }
+        return java.util.List.copyOf(result);
+    }
+    public void setNetworkVoltageTolerance(double tolerance) {
+        if(!Double.isFinite(tolerance)||tolerance<=0)throw new IllegalArgumentException("Invalid network voltage tolerance");
+        converge_tol=tolerance;
+    }
+    public double getNetworkVoltageTolerance(){return converge_tol;}
+    private void prepareImportedInitializationSettings(BaseDStabNetwork<?,?> network) {
+        var report=new java.util.ArrayList<SourceImpedanceReconciliation>();
+        var sources=new java.util.ArrayList<SourceLoadIdentity>();
+        for(var bus:network.getBusList())for(var load:bus.getContributeLoadList())
+            sources.add(new SourceLoadIdentity(bus.getId(),load.getId(),bus.isActive()&&load.isActive()));
+        sourceLoadIdentities=java.util.List.copyOf(sources);
+        for(var bus:network.getBusList())if(bus.isActive()) {
+            if(bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldznu2Model first)
+                for(var model:first.getSourceModels())model.setInitializationThresholds(loadModelThresholds);
+            if(sourceImpedanceReconciliationEnabled==null)continue;
+            for(var generator:bus.getContributeGenList())if(generator.isActive()
+                    &&generator.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine machine) {
+                var before=generator.getSourceZ();if(before==null)continue;
+                double reactance=machine instanceof com.interpss.dstab.mach.DynamicMachine dynamic
+                        ?dynamic.getMachData().getXd11():machine instanceof com.interpss.dstab.mach.EConstMachine constant?constant.getXd1():Double.NaN;
+                if(!(reactance>0)&&machine instanceof com.interpss.dstab.mach.DynamicMachine dynamic)reactance=dynamic.getMachData().getXd1();
+                if(!(reactance>0))continue;
+                // Both stored source impedances are on the generator MVA base;
+                // the dynamic machine may have a different rating/base factor.
+                double conversion=machine.getZMultiFactor()/generator.getZMultiFactor();
+                Complex after=new Complex(machine.getRa(),reactance).multiply(conversion);
+                boolean changed=sourceImpedanceReconciliationEnabled&&before.subtract(after).abs()>1e-12;
+                if(changed){generator.setSourceZ(after);generator.setPosGenZ(after);}
+                else after=before;
+                report.add(new SourceImpedanceReconciliation(bus.getId(),generator.getId(),sourceImpedanceReconciliationEnabled,
+                        before.getReal(),before.getImaginary(),after.getReal(),after.getImaginary(),changed));
+            }
+        }
+        sourceImpedanceReport=java.util.List.copyOf(report);
+    }
+
     public void setHotReactivationMachineIds(java.util.Set<String> ids) {
         if(dstabAlgo.getNetwork().isDStabNetInitialized())throw new IllegalStateException("Configure before initialization");
         hotReactivationIds=java.util.Set.copyOf(ids);
@@ -81,6 +173,10 @@ public class PsseDStabSolver extends DStabSolverImpl {
     }
     @Override public void nextStep(double time,double dt,com.interpss.dstab.algo.DynamicSimuMethod method)
             throws DStabSimuException {
+        // Event-aligned steps can be shorter than the configured nominal step.
+        // Prepare interval-dependent inputs only for an actual integration interval,
+        // never during the zero-time pre/post switching solves in beforeStep.
+        preparePhysicalIntervalInputs(time, dt);
         if(!reactivation.enabled() && physicalStepInputs.isEmpty()){super.nextStep(time,dt,method);return;}
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Integration interval must be positive");
         physicalStepWrapperActive=true;
@@ -99,6 +195,27 @@ public class PsseDStabSolver extends DStabSolverImpl {
     /** Frequency is optional at unused buses by default; ALL is an explicit override. */
     private BusFrequencyMode busFrequencyMode=BusFrequencyMode.REQUIRED;
     private BusFrequencyReport busFrequencyReport;
+    private java.util.List<PsseGovernorBsgProcessor.Entry> governorBlockingPolicy=java.util.List.of();
+    private java.util.List<PsseGovernorBsgProcessor.Entry> governorBlockingReport=java.util.List.of();
+    /** Registration is inert; numerical replay occurs only after final startup preparation. */
+    public void setGovernorBlockingPolicy(java.util.List<PsseGovernorBsgProcessor.Entry> policy) {
+        if(dstabAlgo.getNetwork().isDStabNetInitialized())throw new IllegalStateException("Register governor policy before initialization");
+        governorBlockingPolicy=java.util.List.copyOf(policy);governorBlockingReport=governorBlockingPolicy;
+    }
+    public java.util.List<PsseGovernorBsgProcessor.Entry> getGovernorBlockingReport(){return governorBlockingReport;}
+    private boolean stepSensitiveModelSubstepsEnabled;
+    public record LocalSubstepPreparation(String modelId,String modelClass,String coordinate,
+            double enteredTimeConstantSec,double outerStepSec,int localSteps,double localStepSec) { }
+    private java.util.List<LocalSubstepPreparation> localSubstepReport=java.util.List.of();
+    /** Explicit numerical option; imported physical time constants and relay clocks are retained. */
+    public void setStepSensitiveModelSubstepsEnabled(boolean enabled) {
+        if(dstabAlgo.getNetwork().isDStabNetInitialized())
+            throw new IllegalStateException("Configure model substeps before initialization");
+        stepSensitiveModelSubstepsEnabled=enabled;
+    }
+    public boolean isStepSensitiveModelSubstepsEnabled(){return stepSensitiveModelSubstepsEnabled;}
+    public java.util.List<LocalSubstepPreparation> getLocalSubstepPreparationReport(){return localSubstepReport;}
+
     private boolean controllerRuntimePreparationEnabled=true;
     public record ControllerPreparationReport(int compiledControllers,int st1Controllers,
             int st4Controllers,int pss2aControllers,int ieeestControllers,int compatibleControllers) { }
@@ -181,7 +298,17 @@ public class PsseDStabSolver extends DStabSolverImpl {
         frequencyOutputIds=frequencyOutputHandler==null?null:frequencyOutputHandler.requiredBusFrequencyIds();
     }
 
+    protected final void preparePhysicalIntervalInputs(double time, double dt) {
+        for (var entry : integrationStepInputs)
+            if (entry.bus().isActive() && entry.device().isActive())
+                entry.input().prepareIntegrationStep(time, dt);
+    }
+
     @Override public void beforeStep(double time) throws DStabSimuException {
+        // Relay actions occur after an accepted step, outside the scheduled-event list.
+        // Recognize their rebuilt/numerically changed operator before STATCOM and
+        // other event-sensitive setup; a consumed dirty flag is not sufficient.
+        recognizeNetworkTopologyDiscontinuity();
         if(!suppressedFrequencyBlocks.isEmpty()&&(dstabAlgo.getScriptOutputHandler()!=null
                 ||dstabAlgo.getSimuOutputHandler()!=frequencyOutputHandler
                 ||!java.util.Objects.equals(frequencyOutputIds,frequencyOutputHandler==null?null:
@@ -190,9 +317,6 @@ public class PsseDStabSolver extends DStabSolverImpl {
         if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
             for (var model : statcomEventModels)
                 if (model.isActive() && model.getDStabBus() != null && model.getDStabBus().isActive()) model.acceptNetworkEvent();
-        for (var entry : integrationStepInputs)
-            if (entry.bus().isActive() && entry.device().isActive())
-                entry.input().prepareIntegrationStep(time, dstabAlgo.getSimuStepSec());
         reactivation.sampleBeforeEvents(time);
         super.beforeStep(time);
         reactivation.acceptStatusChanges();
@@ -226,6 +350,23 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     private static final String COMPENSATION_KEY =
             PsseDStabSolver.class.getName() + ".compensation";
+    private Hashtable<String, Complex> initializedCompensationOwner;
+    private java.util.Map<String, Complex> initializedCompensationBaseline = java.util.Map.of();
+
+    /** Only unchanged entries in this solver's accepted initialization residual
+     * table are numerical bookkeeping. A caller may replace the table or edit an
+     * entry in place; either change restores independent-source protection for
+     * that entry. The immutable value snapshot prevents a mutable public table
+     * from silently acquiring ownership of later caller-supplied injections. */
+    @Override protected boolean isInitializationCompensationCurrentSource(
+            Hashtable<String, Complex> table, String busId) {
+        return table != null && table == initializedCompensationOwner
+                && table == dstabAlgo.getNetwork().getCustomBusCurrInjHashtable()
+                && table == dstabAlgo.getNetwork().getExtraInfo().get(COMPENSATION_KEY)
+                && initializedCompensationBaseline.containsKey(busId)
+                && java.util.Objects.equals(initializedCompensationBaseline.get(busId), table.get(busId));
+    }
+
     public PsseDStabSolver(DynamicSimuAlgorithm algorithm) {
         super(algorithm);
         // Bound network work while retaining the configured convergence test.
@@ -269,10 +410,14 @@ public class PsseDStabSolver extends DStabSolverImpl {
         return device.supportsNetworkIterationAcceleration();
     }
 
-    /** Imported-case network solves have a bounded iteration budget. */
+    /** Keep the default finite budget at 50, while honoring an explicit caller
+     * budget. Under-relaxed low-voltage equations can need additional numerical
+     * passes without any change to tolerance, physical model or integration step.
+     * The requested positive limit still bounds each solve, and exhaustion still
+     * fails before accepting the step; this never retries partially advanced state. */
     @Override public void setMaxIterationTimes(int maximum) {
-        if (maximum < 1 || maximum > DEFAULT_MAXIMUM_NETWORK_ITERATIONS)
-            throw new IllegalArgumentException("Maximum network iterations must be between 1 and 50");
+        if (maximum < 1)
+            throw new IllegalArgumentException("Maximum network iterations must be positive");
         super.setMaxIterationTimes(maximum);
     }
 
@@ -327,12 +472,16 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
+        initializedCompensationOwner=null;initializedCompensationBaseline=java.util.Map.of();
         discardPhysicalStepTrials(null);
+        governorBlockingReport=governorBlockingPolicy;
         controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();integrationStepInputs.clear();physicalStepInputs.clear();
         reactivation.prepare(dstabAlgo,hotReactivationIds);hotReactivationEvent=false;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
+        prepareImportedInitializationSettings(network);
         org.interpss.dstab.hvdc.Cdc6tDyrModel.prepareNetwork(network);
+        org.interpss.dstab.hvdc.Chvdc2DyrModel.prepareNetwork(network, dstabAlgo.getSimuStepSec());
         var validation=validateModelParameters();
         validation.requireNoErrors();
         if(validation.count(DynamicParameterValidator.Severity.WARNING)>0||!validation.uncoveredModels().isEmpty())
@@ -362,7 +511,10 @@ public class PsseDStabSolver extends DStabSolverImpl {
         if (existing != null && existing != previous) return finishInitialPreparation(network);
 
         Hashtable<String, Complex> compensation = new Hashtable<>();
-        Complex[] voltage = new Complex[network.getNoBus()];
+        // Ideal-current rows extend the operator beyond the physical bus rows.
+        // Zero auxiliary coordinates evaluate only the ordinary network current.
+        Complex[] voltage = new Complex[network.getYMatrix().getDimension()];
+        java.util.Arrays.fill(voltage, Complex.ZERO);
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
             voltage[bus.getSortNumber()] = bus.isActive() ? bus.getVoltage() : Complex.ZERO;
         }
@@ -379,6 +531,11 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 return false;
             }
         }
+        // This is a fresh solver-owned residual. Preserve a component aggregate,
+        // while ideal currents supply its internal zero-sum balance. The earlier
+        // caller-table guard is essential: physical injected sources are never projected.
+        if (network.getYMatrix() instanceof com.interpss.dstab.algo.defaultImpl.DynamicIdealNodeMatrix ideal)
+            ideal.reconcileNewInitializationResidual(compensation);
         network.setCustomBusCurrInjHashtable(compensation);
         network.getExtraInfo().put(COMPENSATION_KEY, compensation);
         return finishInitialPreparation(network);
@@ -386,12 +543,103 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     private boolean finishInitialPreparation(BaseDStabNetwork<?, ?> network) {
         if (!acceptInitialPlantEndpoints(network)) return false;
+        // Startup source reconciliation may initialize a governor again. Apply the
+        // explicit travel policy to its FINAL storage before compiling CML plans.
+        // Never reinitialize or integrate a governor to change a numerical limit.
+        if(!governorBlockingPolicy.isEmpty()) {
+            try {governorBlockingReport=PsseGovernorBsgProcessor.apply(network,governorBlockingPolicy);}
+            catch(com.interpss.common.exp.InterpssException failure) {
+                org.slf4j.LoggerFactory.getLogger(getClass()).error("Governor policy replay failed",failure);return false;
+            }
+            var counts=governorBlockingReport.stream().collect(java.util.stream.Collectors.groupingBy(
+                    PsseGovernorBsgProcessor.Entry::status,java.util.stream.Collectors.counting()));
+            org.slf4j.LoggerFactory.getLogger(getClass()).info("Initial governor policy outcomes: {}; inspect getGovernorBlockingReport() for source/old/new limits",counts);
+            if(counts.containsKey(PsseGovernorBsgProcessor.Status.ERROR))return false;
+        }
+        prepareStepSensitiveModelSubsteps(network);
         // Startup control transfers can reinitialize controller blocks and
         // references. Bind optimized execution only to their final storage.
         if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
                 &&dstabAlgo.getSimuMethod()==com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)
             controllerPreparationReport=controllerPreparation.prepare(dstabAlgo);
+        var currents=network.getCustomBusCurrInjHashtable();
+        if(currents!=null&&currents==network.getExtraInfo().get(COMPENSATION_KEY)) {
+            initializedCompensationOwner=currents;
+            initializedCompensationBaseline=java.util.Map.copyOf(currents);
+        }
         return true;
+    }
+
+    /**
+     * Enable only the two families demonstrated to be under-resolved in the
+     * no-event step comparison. Motor local voltage feedback is refreshed inside
+     * every substep; ESST1A integrates its complete regulator/feedback graph,
+     * including a short transducer, with unchanged entered time constants.
+     * Configure FINAL initialized blocks before compiling any controller plan.
+     * This is not the independent native short-lag bypass convention.
+     */
+    private void prepareStepSensitiveModelSubsteps(BaseDStabNetwork<?,?> network) {
+        localSubstepReport=java.util.List.of();
+        if(!stepSensitiveModelSubstepsEnabled)return;
+        if(dstabAlgo.getSimuMethod()!=com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)
+            throw new IllegalArgumentException("Model local substeps currently require modified Euler");
+        double outer=dstabAlgo.getSimuStepSec();
+        var report=new java.util.ArrayList<LocalSubstepPreparation>();
+        var seen=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object,Boolean>());
+        for(var bus:network.getBusList()) {
+            // Inactive metadata attachments may deliberately remain uninitialized.
+            // They have no running differential equations to subdivide.
+            if(!bus.isActive())continue;
+            for(var device:bus.getDynamicBusDeviceList())if(device.isActive()&&seen.add(device)
+                    &&device.getClass()==org.interpss.dstab.dynLoad.impl.InductionMotorImpl.class) {
+                var motor=(org.interpss.dstab.dynLoad.impl.InductionMotorImpl)device;
+                if(!motor.isTwoAxisModel())continue;
+                double maximum=Math.min(.001,Math.min(.5*motor.getTp0(),.5*motor.getTpp0()));
+                if(!Double.isFinite(maximum)||maximum<=0)throw new IllegalArgumentException("Invalid motor electrical time constant");
+                int count=(int)Math.ceil(outer/maximum);
+                if(count>128)throw new IllegalArgumentException("Motor requires more than 128 local intervals");
+                motor.setLocalIntegrationMaximumStepSec(maximum);
+                if(count>1)report.add(new LocalSubstepPreparation(motor.getId()+"@"+bus.getId(),motor.getClass().getName(),
+                        "coupled electrical states and slip",motor.getTpp0(),outer,count,outer/count));
+            }
+            for(var generator:bus.getContributeGenList())if(generator.isActive()&&generator.getMach()!=null&&generator.getMach().isActive()
+                    &&generator.getMach().getExciter() instanceof org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter exciter
+                    &&exciter.isActive()&&seen.add(exciter)&&"ESST1A".equals(exciter.getName())&&exciter.hasInitializedBlocks()) {
+                var block=(com.interpss.dstab.controller.cml.field.block.DelayControlBlock)exciter.getNamedStateBlocks().get("trDelayBlock");
+                if(block.getType()!=com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NoLimit)
+                    throw new IllegalStateException("Unexpected ESST1A transducer limiter");
+                // A short TR is not the only stiff coordinate. The regulator /
+                // washout feedback loop can have a much faster pole than either
+                // entered Ta or Tf (even when both exceed the outer interval).
+                // This conservative resolution indicator is not an eigenvalue
+                // certificate. Retain at least the already resolved 1 ms local
+                // interval for selected controllers, and qualify the coupled run.
+                double rate=0;
+                for(double constant:new double[]{exciter.tr,exciter.ta})if(constant>0)rate=Math.max(rate,1/constant);
+                if(exciter.tb>0&&exciter.tc!=exciter.tb)rate=Math.max(rate,1/exciter.tb);
+                if(exciter.tb1>0&&exciter.tc1!=exciter.tb1)rate=Math.max(rate,1/exciter.tb1);
+                if(exciter.kf!=0&&exciter.tf>0) {
+                    rate=Math.max(rate,1/exciter.tf);
+                    if(exciter.ta>0) {
+                        double directGain=(exciter.tb>0?Math.max(1,Math.abs(exciter.tc/exciter.tb)):1)
+                                *(exciter.tb1>0?Math.max(1,Math.abs(exciter.tc1/exciter.tb1)):1);
+                        rate=Math.max(rate,(1+Math.abs(exciter.ka*exciter.kf/exciter.tf)*directGain)/exciter.ta+1/exciter.tf);
+                    }
+                }
+                int count=(int)Math.ceil(outer*rate);
+                if(count>1)count=Math.max(count,(int)Math.ceil(outer/.001));
+                if(count>128)throw new IllegalArgumentException("ESST1A requires more than 128 local intervals");
+                // The entire feedback graph owns these intervals. Nested block
+                // substeps would repeat work and confuse its accepted history.
+                block.setLocalIntegrationSteps(1);
+                exciter.setModifiedEulerLocalIntegrationSteps(Math.max(1,count));
+                if(count>1)report.add(new LocalSubstepPreparation(generator.getMach().getId(),exciter.getClass().getName(),
+                        "coupled controller states including transducer and feedback",exciter.getData().getTr(),outer,count,outer/count));
+            }
+        }
+        localSubstepReport=java.util.List.copyOf(report);
+        if(!report.isEmpty())org.slf4j.LoggerFactory.getLogger(getClass()).info(
+                "Enabled local model substeps for {} entries at outer interval {} s; inspect getLocalSubstepPreparationReport()",report.size(),outer);
     }
 
     /** The solved initial network is an accepted endpoint. Start discrete plant

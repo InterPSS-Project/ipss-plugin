@@ -17,7 +17,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2005 ST5B static potential-source excitation system. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public class St5bExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider {
+public class St5bExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider,
+        org.interpss.dstab.control.exc.UnderExcitationLimiterTarget,org.interpss.dstab.control.exc.OverExcitationLimiterTarget {
     private static final double EPS=1e-12;
     private static final int EFD=0,VSENSE=1,N1=2,N2=3,U1=4,U2=5,O1=6,O2=7;
     private final St5bData data;

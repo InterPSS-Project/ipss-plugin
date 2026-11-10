@@ -91,6 +91,19 @@ public class GenqecMachine extends RoundRotorMachineImpl
         };
     }
 
+    /**
+     * Native standard/wrapped inputs retain the sign of Kw, but the electrical
+     * equation uses its magnitude. Id keeps its physical sign, and the signed
+     * product is limited afterward. Positive-only validation did not expose
+     * the distinction; matched-P/Q/V native runs with both Kw signs, both Id
+     * directions and both limiter boundaries do. Apply this same function to
+     * initialization/output refresh and the electrical RHS so the computed
+     * initial field voltage is also the stationary field input.
+     */
+    private double limitedFieldCompensationProduct(double id) {
+        return Math.max(-0.4, Math.min(0.4, Math.abs(data.kw()) * id));
+    }
+
     private static double exponentialSaturation(double flux, double s1, double s12) {
         double exponent = Math.log(s12 / s1) / Math.log(1.2);
         return s1 * Math.pow(flux, exponent);
@@ -322,7 +335,7 @@ public class GenqecMachine extends RoundRotorMachineImpl
             double tempQ = (getXq1() - getXq11()) * sat
                     / Math.pow(getXq1() - getXl(), 2.0) * qAxisError;
 
-            double kwId = Math.max(-0.4, Math.min(0.4, data.kw() * id));
+            double kwId = limitedFieldCompensationProduct(id);
             ladIfd = sat * (eq1State + (getXd() - getXd1()) / sat * (id + tempD))
                     / (1.0 - kwId);
 
@@ -383,7 +396,7 @@ public class GenqecMachine extends RoundRotorMachineImpl
             double dAxisError = -psikdState - (getXd1() - getXl()) * id / sat + eq1State;
             double tempD = (getXd1() - getXd11()) * sat
                     / Math.pow(getXd1() - getXl(), 2.0) * dAxisError;
-            double kwId = Math.max(-0.4, Math.min(0.4, data.kw() * id));
+            double kwId = limitedFieldCompensationProduct(id);
             ladIfd = sat * (eq1State + (getXd() - getXd1()) / sat * (id + tempD))
                     / (1.0 - kwId);
 

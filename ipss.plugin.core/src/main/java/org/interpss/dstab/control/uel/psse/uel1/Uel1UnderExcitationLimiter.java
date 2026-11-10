@@ -61,6 +61,18 @@ public final class Uel1UnderExcitationLimiter extends DynLoadModelImpl
         setDStabBus(bus);
     }
 
+    // Bus auxiliaries are dispatched separately from generators. Retained
+    // records on an inactive host must not read an electrical owner that was
+    // never initialized, advance controller history or write exciter input.
+    private boolean sameOwner() {
+        return machine.getDStabBus()==getDStabBus() && machine.getExciter()==exciter;
+    }
+    private boolean enabled() {
+        if(!sameOwner())throw new IllegalStateException("Limiter host exciter or bus was replaced/detached");
+        return isActive() && getDStabBus().isActive() && machine.isActive()
+                && machine.getParentGen().isActive() && machine.getExciter().isActive();
+    }
+
     @Override public boolean initStates() { return initStates(getDStabBus()); }
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine ignored) { return initStates(bus); }
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Network<?, ?> ignored) { return initStates(bus); }
@@ -68,6 +80,7 @@ public final class Uel1UnderExcitationLimiter extends DynLoadModelImpl
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
         if (bus == null || bus != getDStabBus() || machine.getExciter() != exciter) return false;
+        if(!enabled())return true;
         initializeWithError(initialError());
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         initialized = finite(integrator, firstLag, secondLag, output);
@@ -88,6 +101,8 @@ public final class Uel1UnderExcitationLimiter extends DynLoadModelImpl
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        if(!sameOwner())return false;
+        if(!enabled())return true;
         return nextStepWithErrorSignal(dt, method, flag, error());
     }
 
@@ -189,13 +204,13 @@ public final class Uel1UnderExcitationLimiter extends DynLoadModelImpl
 
     @Override public double getOutput() { return output; }
     @Override public Object getOutputObject() { return Complex.ZERO; }
-    @Override public boolean updateAttributes(boolean netChange) { return true; }
-    @Override public boolean afterStep(double dt) { return true; }
+    @Override public boolean updateAttributes(boolean netChange) { return sameOwner(); }
+    @Override public boolean afterStep(double dt) { return sameOwner(); }
 
     @Override
     public Hashtable<String, Object> getStates(Object ref) {
         states.put("UEL1_OUTPUT", output);
-        states.put("UEL1_ERROR", error());
+        states.put("UEL1_ERROR", enabled()?error():0.0);
         return states;
     }
 
@@ -210,7 +225,7 @@ public final class Uel1UnderExcitationLimiter extends DynLoadModelImpl
 
     public Uel1Data getData() { return data; }
     public Machine getMachine() { return machine; }
-    public double getError() { return error(); }
+    public double getError() { return enabled()?error():0.0; }
     public double getIntegratorState() { return integrator; }
     public double getFirstLeadLagState() { return firstLag; }
     public double getSecondLeadLagState() { return secondLag; }

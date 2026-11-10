@@ -369,7 +369,7 @@ class DynamicModelCatalogTest {
                 .recordSchema().acceptedParameterCounts());
         assertEquals(Set.of(38), DynamicModelCatalog.find("AC7C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
-        assertEquals(Set.of(31, 38), DynamicModelCatalog.find("AC8C").orElseThrow()
+        assertEquals(Set.of(31, 32, 38), DynamicModelCatalog.find("AC8C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertEquals("AC8C", DynamicModelCatalog.find("AC8CU1").orElseThrow().canonicalName());
         assertEquals(Set.of(45), DynamicModelCatalog.find("AC9C").orElseThrow()
@@ -516,9 +516,9 @@ class DynamicModelCatalogTest {
                     "Missing parameter schema length for " + model.canonicalName());
             assertTrue(model.recordSchema().accepts(model.parameterCount()),
                     "Primary layout is not accepted for " + model.canonicalName());
-            // The FACTS runtime loads, but its remaining selector/trajectory
-            // qualification must stay visible instead of implying completion.
-            var expectedStatus = model.canonicalName().equals("SVSMO3T2")
+            // Available FACTS/HVDC runtimes retain explicit open qualification
+            // status; automatic import alone does not establish trajectory parity.
+            var expectedStatus = Set.of("SVSMO3T2", "CHVDC2", "CHVDC2U1").contains(model.canonicalName())
                     ? DynamicModelSupportStatus.PARTIAL : DynamicModelSupportStatus.LOADABLE;
             assertEquals(expectedStatus, model.supportStatus(),
                     "Unexpected catalog qualification: " + model.canonicalName());

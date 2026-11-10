@@ -23,7 +23,9 @@ public record Plntbu1Data(
         branchId = branchId == null ? "" : branchId.trim();
         flag(vcFlag, 0, 1, "VCFlag");
         flag(refFlag, 0, 2, "RefFlag");
-        flag(frequencyFlag, 0, 1, "Fflag");
+        // The native selector activates the whole P-control path only at 1.
+        // Other integers retain their entered value and select the inactive
+        // branch; they are not coerced to an inferred enabled setting.
         if (!finite(voltageFilterTime, reactiveProportionalGain,
                 reactiveIntegralGain, reactiveLeadTime, reactiveLagTime,
                 freezeVoltage, resistanceCompensation, reactanceCompensation,
@@ -44,15 +46,23 @@ public record Plntbu1Data(
         }
         if (reactiveErrorMaximum < reactiveErrorMinimum
                 || reactiveOutputMaximum < reactiveOutputMinimum
-                || activeErrorMaximum < activeErrorMinimum
-                || activeOutputMaximum < activeOutputMinimum) {
+                || frequencyFlag == 1 && (activeErrorMaximum < activeErrorMinimum
+                || activeOutputMaximum < activeOutputMinimum)) {
             throw new IllegalArgumentException("PLNTBU1 upper limits must be >= lower limits");
         }
         if (reactiveDeadbandLower > 0.0 || reactiveDeadbandUpper < 0.0
-                || frequencyDeadbandLower > 0.0 || frequencyDeadbandUpper < 0.0) {
+                || frequencyFlag == 1 && (frequencyDeadbandLower > 0.0 || frequencyDeadbandUpper < 0.0)) {
             throw new IllegalArgumentException("PLNTBU1 deadbands must enclose zero");
         }
     }
+
+    public boolean activePowerControlEnabled() { return frequencyFlag == 1; }
+
+    /** Power-factor regulation still needs measured P when the P-control path is off. */
+    public boolean activePowerMeasurementEnabled() { return activePowerControlEnabled() || refFlag == 2; }
+
+    /** Initialization retains measured P for a nonzero selector even if its path will not advance. */
+    public boolean activePowerMeasurementInitialized() { return frequencyFlag != 0 || refFlag == 2; }
 
     private static void flag(int value, int low, int high, String name) {
         if (value < low || value > high) {

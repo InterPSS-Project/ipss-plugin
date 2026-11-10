@@ -218,11 +218,33 @@ public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAwar
     }
 
     public static double saturation(double ve,double e1,double se1,double e2,double se2) {
+        return saturation(ve,e1,se1,e2,se2,false);
+    }
+
+    /**
+     * Evaluate the fitted quadratic with an explicitly selected cutoff convention.
+     * The historical five-argument path retains its signed-A cutoff and arithmetic.
+     * Some independently qualified excitation models instead suppress saturation
+     * through |A| when the fitted intercept is negative. Two synthetic negative-A
+     * component profiles, a positive-A control and repeated reference captures
+     * distinguish this cutoff from disabling saturation or changing the fit.
+     *
+     * Only the cutoff uses the absolute value: the fitted A remains signed in
+     * B*(ve-A)^2/ve and in B's normalization. A negative A therefore permits a
+     * discontinuous nonzero onset at |A|; smoothing that jump or replacing A in
+     * the quadratic would change the qualified model. Callers must opt in only
+     * for their own qualified model convention; other excitation dialects are
+     * intentionally unaffected. Nonpositive/degenerate source handling is shared.
+     *
+     * @param absoluteThreshold select |A| rather than A for the zero-output cutoff
+     */
+    public static double saturation(double ve,double e1,double se1,double e2,double se2,
+            boolean absoluteThreshold) {
         if (e1<=0||e2<=0||se1<=0||se2<=0) return 0.0;
         double ratio=Math.sqrt(e2*se2/(e1*se1));
         if (!Double.isFinite(ratio)||Math.abs(1-ratio)<1e-12) return 0.0;
         double a=(e2-e1*ratio)/(1-ratio);
-        if (ve<=a||ve<=0) return 0.0;
+        if (ve<=(absoluteThreshold?Math.abs(a):a)||ve<=0) return 0.0;
         double d=(e1-a)*(e1-a);
         return d>0 ? e1*se1*(ve-a)*(ve-a)/(d*ve) : 0.0;
     }

@@ -16,7 +16,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 import com.interpss.dstab.mach.impl.DynamicMachineImpl;
 
 /**
- * PSS/E CIMTR4 induction motor represented by a negative generator record.
+ * CIMTR4 induction machine represented by a generator record.
  *
  * <p>The implementation uses the equivalent two-rotor-cage circuit behind the
  * stator leakage reactance. Rotor fluxes are integrated in the synchronous
@@ -159,9 +159,12 @@ public final class Cimtr4Machine extends DynamicMachineImpl implements ICMLState
 
             Complex voltage = machineVoltage();
             double requestedP = -getParentGen().getGen().getReal() / getRating();
-            if (requestedP <= EPS) {
-                throw new IllegalStateException("CIMTR4 requires a negative-P generator operating point");
-            }
+            // The induction circuit also has a supersynchronous generating
+            // branch. A positive generator PG requests negative motor P and
+            // therefore negative slip; changing PG's sign or rejecting it would
+            // discard a valid entered operating point.
+            if (!Double.isFinite(requestedP))
+                throw new IllegalStateException("Nonfinite CIMTR4 operating point: " + getId());
             double slip = solveSlip(requestedP, voltage.abs());
             setSpeed(1.0 - slip);
             initialSpeed = getSpeed();
@@ -282,16 +285,24 @@ public final class Cimtr4Machine extends DynamicMachineImpl implements ICMLState
         }
 
         private double solveSlip(double requestedP, double voltage) {
-            double lower = 1.0e-7;
-            double upper = 0.999;
+            // Search outwards from synchronous speed and stop at the first
+            // crossing, retaining the branch nearest synchronism rather than
+            // accidentally choosing the high-slip side of the torque curve.
+            // The zero-slip limit includes stator magnetizing losses, so even
+            // a small positive motor demand may require a negative slip.
+            double lower = 0.0;
             double lowError = steadyPower(lower, voltage) - requestedP;
+            if (Math.abs(lowError) < 1.0e-12) return lower;
+            double direction = lowError < 0.0 ? 1.0 : -1.0;
+            double upper = direction * 1.0e-7;
             double highError = steadyPower(upper, voltage) - requestedP;
-            if (lowError * highError > 0.0) {
-                upper = 0.2;
+            while (lowError * highError > 0.0 && Math.abs(upper) < 0.999) {
+                upper = direction * Math.min(0.999, Math.abs(upper) * 1.5);
                 highError = steadyPower(upper, voltage) - requestedP;
             }
             if (lowError * highError > 0.0) {
-                throw new IllegalStateException("CIMTR4 operating point has no stable slip solution");
+                throw new IllegalStateException("CIMTR4 operating point has no near-synchronous slip solution: "
+                        + getId() + ", motor P=" + requestedP);
             }
             for (int iteration = 0; iteration < 100; iteration++) {
                 double middle = 0.5 * (lower + upper);
@@ -314,9 +325,9 @@ public final class Cimtr4Machine extends DynamicMachineImpl implements ICMLState
 
         private SteadyCircuit steadyCircuit(double slip, Complex voltage) {
             Complex ym = Complex.ONE.divide(new Complex(0.0, xm));
-            Complex y1 = Complex.ONE.divide(new Complex(rr1 / slip, xr1));
+            Complex y1 = slip == 0.0 ? Complex.ZERO : Complex.ONE.divide(new Complex(rr1 / slip, xr1));
             Complex y2 = data.twoCage()
-                    ? Complex.ONE.divide(new Complex(rr2 / slip, xr2)) : Complex.ZERO;
+                    && slip != 0.0 ? Complex.ONE.divide(new Complex(rr2 / slip, xr2)) : Complex.ZERO;
             Complex parallelY = ym.add(y1).add(y2);
             Complex airGapVoltage = voltage.divide(
                     Complex.ONE.add(new Complex(getRa(), data.xl()).multiply(parallelY)));
@@ -328,9 +339,9 @@ public final class Cimtr4Machine extends DynamicMachineImpl implements ICMLState
 
         private Complex steadyAdmittance(double slip) {
             Complex ym = Complex.ONE.divide(new Complex(0.0, xm));
-            Complex y1 = Complex.ONE.divide(new Complex(rr1 / slip, xr1));
+            Complex y1 = slip == 0.0 ? Complex.ZERO : Complex.ONE.divide(new Complex(rr1 / slip, xr1));
             Complex y2 = data.twoCage()
-                    ? Complex.ONE.divide(new Complex(rr2 / slip, xr2)) : Complex.ZERO;
+                    && slip != 0.0 ? Complex.ONE.divide(new Complex(rr2 / slip, xr2)) : Complex.ZERO;
             Complex parallelY = ym.add(y1).add(y2);
             return Complex.ONE.divide(new Complex(getRa(), data.xl())
                     .add(Complex.ONE.divide(parallelY)));

@@ -320,6 +320,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 
 	private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
 		return switch (code) {
+            case 0 -> 0.0; // Disconnected input path; retain the source selector.
 			case 1 -> machine.getSpeed();
 			case 2 -> bus.getFreq();
 			case 3 -> machine.getPe();

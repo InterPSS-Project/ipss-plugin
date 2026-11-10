@@ -22,6 +22,53 @@ public class Wsieg1InitialLimitsTest {
         assertTrue(g.initStates(m.getDStabBus(),m));return g;
     }
 
+    @Test void initializationWarnsForViolationsWithoutChangingLimitsOrRepeatingDuringSteps()throws Exception {
+        var logger=(org.apache.logging.log4j.core.Logger)org.apache.logging.log4j.LogManager.getLogger(Wsieg1Governor.class);
+        var level=logger.getLevel();var events=new ArrayList<org.apache.logging.log4j.core.LogEvent>();
+        var appender=new org.apache.logging.log4j.core.appender.AbstractAppender("wsieg1-initial-limits",null,null,false) {
+            @Override public void append(org.apache.logging.log4j.core.LogEvent event){events.add(event.toImmutable());}
+        };
+        appender.start();logger.addAppender(appender);logger.setLevel(org.apache.logging.log4j.Level.WARN);
+        try {
+            for(boolean upper:new boolean[]{false,true}) {
+                events.clear();
+                var g=model(c->{c[6]=upper?.2:1.2;c[7]=upper?0.:.7;});
+                assertEquals(1,events.size());assertEquals(org.apache.logging.log4j.Level.WARN,events.getFirst().getLevel());
+                String text=events.getFirst().getMessage().getFormattedMessage();
+                assertTrue(text.contains("WSIEG1 initialization limit violation"));
+                assertTrue(text.contains("machine="+g.getMachine().getId()));
+                assertTrue(text.contains("governor="+g.getId()));
+                assertTrue(text.contains("requiredValve="+g.getInitialReference()));
+                assertTrue(text.contains("enteredLimits=["+g.getConstants()[7]+", "+g.getConstants()[6]+"]"));
+                assertTrue(text.contains("effectiveLimits=["+g.getEffectiveMinimum()+", "+g.getEffectiveMaximum()+"]"));
+                assertTrue(text.contains("initializedValve="+g.getValvePosition()));
+                assertTrue(text.contains("valveResidual="+g.getInitialValveLimitMismatch()));
+                assertEquals(upper?.2:1.2,g.getConstants()[6],0.);assertEquals(upper?0.:.7,g.getConstants()[7],0.);
+                assertTrue(Math.abs(g.getStateDerivativeSnapshot().rates().get("Turbine 1"))>2.);
+                assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),0));
+                assertTrue(g.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,g.getMachine(),1));
+                assertEquals(1,events.size(),"No warning flood during integration");
+                g.getMachine().setPm(.1);if(!upper)g.getMachine().setPm(.8);
+                assertTrue(g.initStates(g.getMachine().getDStabBus(),g.getMachine()));
+                assertEquals(1,events.size(),"An in-range reinitialization is quiet");
+            }
+            events.clear();model(c->{});assertTrue(events.isEmpty());
+            for(int block:new int[]{1,2,3}) {
+                model(c->{c[33]=block;c[7]=0.;if(block>=2)c[6]=0.;});
+                assertTrue(events.isEmpty(),"Iblock-derived valid bounds are not violations");
+            }
+            // Iblock may create inconsistent effective limits with zero initial
+            // projection residual; that conflict must still be visible.
+            var conflict=model(c->{c[6]=0.;c[7]=.7;c[33]=2.;});
+            assertEquals(0.,conflict.getInitialValveLimitMismatch(),0.);assertEquals(1,events.size());
+            assertTrue(conflict.getEffectiveMinimum()>conflict.getEffectiveMaximum());
+            events.clear();
+            double gate=conflict.getInitialReference();
+            model(c->c[6]=gate);model(c->c[7]=gate);assertTrue(events.isEmpty(),"Exact boundaries are valid");
+            model(c->c[6]=gate-1e-12);assertTrue(events.isEmpty(),"Roundoff does not generate a startup warning");
+        } finally {logger.removeAppender(appender);logger.setLevel(level);appender.stop();}
+    }
+
     @Test void ordinaryBoundsClipTheValveAndExposeTheTurbineInitializationResidual()throws Exception {
         for(boolean upper:new boolean[]{false,true}) {
             var g=model(c->{c[6]=upper?.2:1.2;c[7]=upper?0.:.7;});

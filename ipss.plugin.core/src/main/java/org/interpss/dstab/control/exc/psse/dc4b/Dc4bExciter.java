@@ -1,5 +1,10 @@
 package org.interpss.dstab.control.exc.psse.dc4b;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
+import org.interpss.dstab.control.exc.OverExcitationLimiterTarget;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
@@ -17,7 +22,7 @@ import com.interpss.dstab.mach.Machine;
 /** IEEE 421.5 DC4B / PSS/E ESDC4B excitation system. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
 public final class Dc4bExciter extends AnnotateExciter
-        implements IntegrationStepAware, ICMLStateProvider {
+        implements IntegrationStepAware, ICMLStateProvider, UnderExcitationLimiterTarget, OverExcitationLimiterTarget {
     private static final double EPS=1e-12;
     private static final int EFD=0,VSENSE=1,PID_I=2,PID_D_LAG=3,VR=4,FB_LAG=5;
     private final Dc4bData data;
@@ -42,9 +47,13 @@ public final class Dc4bExciter extends AnnotateExciter
     public String getModelName(){return modelName;}
     public void setVuel(double value){vuel=value;hasVuel=true;} public double getVuel(){return vuel;}
     public void setVoel(double value){voel=value;hasVoel=true;} public double getVoel(){return voel;}
+    // Disconnecting a limiter must remove its selector gate, not install a zero ceiling.
+    @Override public void clearVuel(){vuel=0;hasVuel=false;}
+    @Override public void clearVoel(){voel=0;hasVoel=false;}
     @Override public void configureIntegrationStep(double step){configureIntegrationStep(step,1);}
     public void configureIntegrationStep(double step,double multiplier){integrationStep=step;minimumTimeConstantMultiplier=multiplier;}
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine) {
         loadAndCorrectParameters();
         if(tr<0||td<0||ta<0||te<0||tf<0||ka<=EPS)return false;
@@ -55,7 +64,7 @@ public final class Dc4bExciter extends AnnotateExciter
         if(!Double.isFinite(vr0)||vt<=EPS)return false;
         double normalizedVr=vr0/vt;
         vrmax=Math.max(vrmax,normalizedVr); vrmin=Math.min(vrmin,normalizedVr);
-        state[EFD]=efd0;state[VSENSE]=vt;state[PID_I]=vr0/(ka*vt);
+        state[EFD]=efd0;state[VSENSE]=sensedVoltage(machine);state[PID_I]=vr0/(ka*vt);
         state[PID_D_LAG]=0;state[VR]=vr0;state[FB_LAG]=efd0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         reference=state[VSENSE]-stabilizerSignal(machine)-directUel()+directOel();
@@ -89,7 +98,7 @@ public final class Dc4bExciter extends AnnotateExciter
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);double vt=machine.getDStabBus().getVoltageMag();
-        dx[VSENSE]=lagDerivative(vt,x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],td);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],td);
         double integralRate=ki*a.error;
         if((a.proportionalIntegralOutput>=vrmax/ka-EPS&&integralRate>0)
                 ||(a.proportionalIntegralOutput<=vrmin/ka+EPS&&integralRate<0))integralRate=0;
@@ -101,7 +110,7 @@ public final class Dc4bExciter extends AnnotateExciter
         dx[FB_LAG]=lagDerivative(x[EFD],x[FB_LAG],tf);
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double feedback=tf>EPS?kf*(x[EFD]-x[FB_LAG])/tf:0;
         double error=reference-sensed+stabilizerSignal(machine)+directUel()-directOel()-feedback;
         double derivative=td>EPS?kd*(error-x[PID_D_LAG])/td:0;

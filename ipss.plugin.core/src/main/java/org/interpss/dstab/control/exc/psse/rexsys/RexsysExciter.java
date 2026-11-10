@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.rexsys;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -46,6 +48,7 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         integrationStep=dt; minimumTimeConstantMultiplier=multiplier;
     }
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrectParameters();
         if(tr<0||ta<0||tb1<0||tb2<0||tf<0||tf2<0||tp<0||te<=EPS
@@ -54,19 +57,28 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         double ve0=Exac1Exciter.solveInternalVoltage(machine.getEfd(),kc*ifd);
         if(!Double.isFinite(ve0)) return false;
         double vf0=fieldFeedback(ve0,ifd);
-        double vr0=kh*vf0;
+        // A zero integral gain is a proportional-only controller, not an
+        // integrator with an arbitrary frozen bias. Backsolve both PI inputs
+        // from the required equilibrium output before setting the voltage reference.
+        // Otherwise KII=0 invents a constant current-PI source and KVI=0 places
+        // the regulator at the wrong operating point despite a flat EFD output.
+        if (kii==0. && kip==0. && Math.abs(vf0)>EPS) return false;
+        double currentError0=kii==0. && kip!=0. ? vf0/kip : 0.;
+        double vr0=kh*vf0+currentError0;
+        if (kvi==0. && kvp==0. && Math.abs(vr0)>EPS) return false;
+        double voltageError0=kvi==0. && kvp!=0. ? vr0/kvp : 0.;
         double scale=limitScale(machine);
         vrmax=Math.max(vrmax,vr0/scale); vrmin=Math.min(vrmin,vr0/scale);
         vfmax=Math.max(vfmax,vf0/scale); vfmin=Math.min(vfmin,vf0/scale);
-        vimax=Math.max(Math.abs(vimax),Math.abs(vr0));
-        state[VE]=ve0; state[VSENSE]=bus.getVoltageMag(); state[VR]=vr0;
-        state[CURRENT_I]=vf0; state[VF]=vf0; state[VOLTAGE_I]=vr0;
+        vimax=Math.max(Math.abs(vimax),Math.abs(voltageError0));
+        state[VE]=ve0; state[VSENSE]=sensedVoltage(machine); state[VR]=vr0;
+        state[CURRENT_I]=kii==0.?0.:vf0; state[VF]=vf0; state[VOLTAGE_I]=kvi==0.?0.:vr0;
         state[LL1]=leadLagState(vr0,vr0,tc1,tb1);
         state[LL2]=leadLagState(vr0,vr0,tc2,tb2);
         double selected=fbf==0?vr0:feedbackInput(state,machine);
         state[FB_LAG]=selected; state[FB_LL]=0;
         System.arraycopy(state,0,trial,0,state.length); active=state;
-        reference=state[VSENSE]-stabilizerSignal(machine);
+        reference=state[VSENSE]+voltageError0-stabilizerSignal(machine);
         outputSignal=rectifierOutput(ve0,ifd); initialized=true; return true;
     }
 
@@ -98,8 +110,11 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0); Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
-        dx[VOLTAGE_I]=limitedIntegratorDerivative(kvi*a.voltageError,x[VOLTAGE_I],a.voltagePi,-vimax,vimax);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
+        // VIMAX bounds the voltage error BEFORE KVP+KVI/s. It is not an
+        // output/integrator bound: clamping the PI output suppresses high-gain
+        // AVR action and changes the stabilizer-to-field transfer function.
+        dx[VOLTAGE_I]=kvi*a.voltageError;
         dx[LL1]=leadLagDerivative(a.voltagePi,x[LL1],tc1,tb1);
         dx[LL2]=leadLagDerivative(a.ll1,x[LL2],tc2,tb2);
         double vrRate=lagDerivative(a.ll2,x[VR],ta);
@@ -129,12 +144,11 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         return algebraicsWithFeedback(x,machine,feedbackInput(x,machine));
     }
     private Algebraic algebraicsWithFeedback(double[] x,Machine machine,double selected){
-        double vt=machine.getDStabBus().getVoltageMag();
-        double sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double washout=tf>EPS?kf*(selected-x[FB_LAG])/tf:0;
         double feedback=leadLagOutput(washout,x[FB_LL],tf1,tf2);
-        double error=reference+stabilizerSignal(machine)-sensed-feedback;
-        double voltagePi=clamp(kvp*error+x[VOLTAGE_I],-vimax,vimax);
+        double error=clamp(reference+stabilizerSignal(machine)-sensed-feedback,-vimax,vimax);
+        double voltagePi=kvp*error+x[VOLTAGE_I];
         double ll1=leadLagOutput(voltagePi,x[LL1],tc1,tb1);
         double ll2=leadLagOutput(ll1,x[LL2],tc2,tb2);
         double scale=limitScale(machine),rmin=scale*vrmin,rmax=scale*vrmax;
@@ -167,6 +181,9 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
 
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
     public double getVoltagePiIntegralState(){return active[VOLTAGE_I];}
+    public double getCurrentPiIntegralState(){return active[CURRENT_I];}
+    /** Limited regulator input, before the voltage proportional/integral gains. */
+    public double getVoltageErrorInput(){return algebraics(active,getMachine()).voltageError;}
     public double getVoltagePiOutput(){return algebraics(active,getMachine()).voltagePi;}
     public double getFirstVoltageLeadLagOutput(){return algebraics(active,getMachine()).ll1;}
     public double getSecondVoltageLeadLagOutput(){return algebraics(active,getMachine()).ll2;}

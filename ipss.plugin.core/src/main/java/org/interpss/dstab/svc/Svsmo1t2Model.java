@@ -83,6 +83,8 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
         fastIntegrator = susceptance;
         slowIntegrator = 0.0;
         slowBias = 0.0;
+        tripped=false;deadbandLocked=true;
+        deadbandTimer=uv1Timer=uvTripTimer=ov1Timer=ov2Timer=pllTimer=shortTimer=0;
         predictorStart = null;
         predictorRates = null;
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
@@ -184,12 +186,14 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
         uvTripTimer = voltage < data.uvTrip() ? uvTripTimer + dt : 0.0;
         ov1Timer = voltage > data.ov1() ? ov1Timer + dt : 0.0;
         ov2Timer = voltage > data.ov2() ? ov2Timer + dt : 0.0;
-        if (uv1Timer >= data.uvTime1()) pllTimer += dt;
+        if (voltage < data.uv1() && uv1Timer >= data.uvTime1()) pllTimer += dt;
         else pllTimer = 0.0;
         shortTimer = susceptance > data.bMax() ? shortTimer + dt : 0.0;
-        if ((data.uvTime2() >= 0.0 && uvTripTimer >= data.uvTime2())
-                || (data.ovTime1() >= 0.0 && ov1Timer >= data.ovTime1())
-                || (data.ovTime2() >= 0.0 && ov2Timer >= data.ovTime2())) tripped = true;
+        // Zero delay means immediate operation after pickup, not unconditional
+        // operation at a healthy voltage where the reset timer is also zero.
+        if ((voltage < data.uvTrip() && data.uvTime2() >= 0.0 && uvTripTimer >= data.uvTime2())
+                || (voltage > data.ov1() && data.ovTime1() >= 0.0 && ov1Timer >= data.ovTime1())
+                || (voltage > data.ov2() && data.ovTime2() >= 0.0 && ov2Timer >= data.ovTime2())) tripped = true;
 
         double slowOutput = clamp(slowIntegrator, data.vrMin(), data.vrMax());
         slowBias = clamp(slowOutput,
@@ -201,7 +205,7 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
         if (tripped) return 0.0;
         double voltage = remoteBus == null ? 1.0 : remoteBus.getVoltageMag();
         if (voltage < data.uv2() || voltage > data.ov1()) return data.bMin();
-        if (uv1Timer >= data.uvTime1()) return Math.min(data.uvSbMax(), data.bShort());
+        if (voltage < data.uv1() && uv1Timer >= data.uvTime1()) return Math.min(data.uvSbMax(), data.bShort());
         if (pllTimer > 0.0 && pllTimer < data.pllDelay()) return Math.min(data.uvSbMax(), data.bShort());
         return shortTimer >= data.shortTime() ? data.bMax() : data.bShort();
     }

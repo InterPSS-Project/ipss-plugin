@@ -220,7 +220,6 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
     private St4DirectEvaluation directEvaluation;
     /** Release bindings before reinitializing or changing the graph. */
     public void clearDirectEvaluation(){directEvaluation=null;}
-    @Override public void invalidateRuntimePlan(){clearDirectEvaluation();super.invalidateRuntimePlan();}
     private int bridgeScopeDepth;
     private boolean bridgeCached;
     private double fixedBridge;
@@ -254,15 +253,100 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
     public long getEndpointOutputReuseCount(){return directEvaluation==null?0:directEvaluation.endpointOutputReuses;}
     private void beginBridgeScope() {if(bridgeScopeDepth++==0)bridgeCached=false;}
     private void endBridgeScope() {if(--bridgeScopeDepth==0)bridgeCached=false;}
+    private DelayControlBlock feedbackTr,feedbackTa;
+    private Esst4bPIControlBlock feedbackVr,feedbackVm;
+    private GainBlock feedbackKg;
+
+    @Override public void invalidateRuntimePlan() {
+        clearDirectEvaluation();
+        feedbackTr=null;feedbackTa=null;feedbackVr=null;feedbackVm=null;feedbackKg=null;
+        super.invalidateRuntimePlan();
+    }
+    private void bindInnerFeedback() {
+        // Nonpublic annotated Java fields can remain null: the initialized
+        // blocks live in the CML wrappers. Bind those actual storage objects.
+        for(var wrapper:getFieldWrapperList())switch(wrapper.getFieldName()) {
+            case "trDelayBlock" -> feedbackTr=(DelayControlBlock)wrapper.getField();
+            case "taDelayBlock" -> feedbackTa=(DelayControlBlock)wrapper.getField();
+            case "vrPIBlock" -> feedbackVr=(Esst4bPIControlBlock)wrapper.getField();
+            case "vmPIBlock" -> feedbackVm=(Esst4bPIControlBlock)wrapper.getField();
+            case "kgGainBlock" -> feedbackKg=(GainBlock)wrapper.getField();
+            default -> { }
+        }
+    }
+    /** Solve the proportional inner feedback at frozen integral coordinates.
+     * A forward sweep has slope -VB*Kpm*Kg and need not be contractive. The
+     * actual clipped scalar residual is monotone for nonnegative gains, so
+     * bracketing between the physical output limits gives its unique root.
+     * Input refreshes never advance state or overwrite predictor derivatives. */
+    boolean refreshInnerFeedback(Machine machine) {
+        if(feedbackTr==null && getClass()==IEEE2005ST4BExciter.class)bindInnerFeedback();
+        if(getClass()!=IEEE2005ST4BExciter.class || feedbackTr==null || feedbackTa==null
+                || feedbackVr==null || feedbackVm==null || feedbackKg==null || feedbackVm.getKp()<0 || feedbackKg.getK()<0)return false;
+        double terminal=machine instanceof com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider provider
+                ?provider.getCmlMachineVoltage():getDStabBus().getVoltageMag()/machine.getVMultiFactor();
+        feedbackTr.setStageInput(terminal);
+        double stabilizer=machine.getStabilizer()==null?0:machine.getStabilizer().getOutput(machine);
+        feedbackVr.setStageInput(getRefPoint()-feedbackTr.getY()+stabilizer+vuel);
+        feedbackTa.setStageInput(feedbackVr.getY());
+        double amplifier=feedbackTa.getY();
+        double savedInput=customBlock.getU();customBlock.eulerStep2(1,0);
+        double bridge=customBlock.getY();customBlock.eulerStep2(savedInput,0);
+        if(!Double.isFinite(bridge)||bridge<0) {
+            log.error("ST4 bridge unavailable: id={}, bridge={}, Ifd={}, Efd={}, current={}",getId(),bridge,
+                    machine.calculateIfd(MachineIfdBase.EXCITER),machine.getEfd(),machine.getIxy());return false;
+        }
+        double pGain=feedbackVm.getKp(),fieldGain=feedbackKg.getK();
+        double min=feedbackVm.getLimit().getMin(),max=feedbackVm.getLimit().getMax();
+        double gmin=feedbackKg.getLimit().getMin(),gmax=feedbackKg.getLimit().getMax();
+        double lower=bridge*Math.min(min,voel),upper=bridge*Math.min(max,voel);
+        if(!Double.isFinite(lower)||!Double.isFinite(upper)||lower>upper)return false;
+        double root=Double.NaN;
+        // The three feedback segments are affine. Check their closed roots
+        // against the complete clipped equation before using the bracketed
+        // fallback at a rounded active-boundary intersection.
+        for(int segment=0;segment<3;segment++) {
+            double slope=segment==0?fieldGain:0,offset=segment==0?0:segment==1?gmin:gmax;
+            double candidate=bridge*(feedbackVm.getStateX()+pGain*(amplifier-offset))/(1+bridge*pGain*slope);
+            candidate=Math.max(lower,Math.min(upper,candidate));
+            double feedback=Math.max(gmin,Math.min(gmax,fieldGain*candidate));
+            double regulator=Math.max(min,Math.min(max,feedbackVm.getStateX()+pGain*(amplifier-feedback)));
+            if(Double.isFinite(candidate)&&Math.abs(candidate-bridge*Math.min(regulator,voel))<=1e-14*(1+Math.abs(candidate))) {
+                root=candidate;break;
+            }
+        }
+        if(Double.isNaN(root))for(int iteration=0;iteration<80;iteration++) {
+            double middle=lower+.5*(upper-lower);
+            double feedback=Math.max(gmin,Math.min(gmax,fieldGain*middle));
+            double regulator=Math.max(min,Math.min(max,feedbackVm.getStateX()+pGain*(amplifier-feedback)));
+            double residual=middle-bridge*Math.min(regulator,voel);
+            if(residual>0)upper=middle;else lower=middle;
+            if(upper-lower<=1e-14*(1+Math.abs(middle)))break;
+        }
+        double output=Double.isFinite(root)?root:lower+.5*(upper-lower);
+        feedbackKg.eulerStep2(output,0);
+        feedbackVm.setStageInput(amplifier-feedbackKg.getY());
+        customBlock.eulerStep2(Math.min(feedbackVm.getY(),voel),0);
+        boolean valid=Double.isFinite(customBlock.getY());
+        if(!valid)log.error("ST4 root unavailable: id={}, amplifier={}, integral={}, vr={}, ta={}, bridge={}",
+                getId(),amplifier,feedbackVm.getStateX(),feedbackVr.getStateX(),feedbackTa.getStateX(),bridge);
+        return valid;
+    }
+
     @Override public boolean eulerStep(boolean predictor,double dt,Machine machine) {
-        if(directEvaluation==null)return super.eulerStep(predictor,dt,machine);
         beginBridgeScope();
-        try{return directEvaluation.step(predictor,dt);}finally{endBridgeScope();}
+        try {
+            refreshInnerFeedback(machine);
+            boolean accepted=directEvaluation==null?super.eulerStep(predictor,dt,machine):directEvaluation.step(predictor,dt);
+            refreshInnerFeedback(machine);return accepted;
+        } finally{endBridgeScope();}
     }
     @Override public double getOutput(Machine machine) {
-        if(directEvaluation==null)return super.getOutput(machine);
         beginBridgeScope();
-        try{return directEvaluation.output();}finally{endBridgeScope();}
+        try {
+            if(refreshInnerFeedback(machine))return customBlock.getY();
+            return directEvaluation==null?super.getOutput(machine):directEvaluation.output();
+        } finally{endBridgeScope();}
     }
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
@@ -361,6 +445,7 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	        this.k1 =1.0;
 	        // always add the following statement
 	        boolean initialized = super.initStates(bus, mach);
+            if(initialized)bindInnerFeedback();
             if (initialized && rebuildDirectEvaluation) enableDirectEvaluationExperiment();
             return initialized;
 	    }

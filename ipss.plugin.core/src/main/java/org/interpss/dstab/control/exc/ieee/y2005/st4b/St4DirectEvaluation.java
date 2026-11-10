@@ -129,6 +129,7 @@ final class St4DirectEvaluation {
         return false;
     }
     double output() {
+        if(model.refreshInnerFeedback(model.getMachine()))return y(5);
         if(!refreshing && algebraic()) {
             refreshing=true;
             try {

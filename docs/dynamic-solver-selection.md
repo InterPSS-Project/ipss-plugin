@@ -37,7 +37,7 @@ Callers can explicitly configure the generic engine and individual models.
 | Bus-frequency measurements | Standard factories create measurement blocks; the solver does not select dependencies | Selects required local, remote and output dependencies; unknown/custom consumers retain all-bus coverage |
 | Controller preparation | Existing CML execution; callers/models can select compiled paths | Automatically prepares qualified controller graphs for modified Euler; custom graphs keep compatible execution |
 | Model-specific event memory | General engine event and network lifecycle | Also synchronizes bus-frequency angle memory and supported voltage-derivative/plant-controller acceptance hooks at the prescribed boundaries |
-| Maximum network iterations | Constructor default is 20 | Constructor default is 50; setters accept 1 through 50 |
+| Maximum network iterations | Constructor default is 20 | Constructor default is 50; an explicit positive caller override can raise the budget |
 | Network convergence defaults | `1e-4` pu voltage correction, `MAX_COMPONENT`, two minimum fresh iterations | Inherits those settings; benchmark overrides remain explicit |
 | Anderson network mixing | Disabled by default | Disabled by default; qualified bounded mixing requires explicit opt-in |
 
@@ -149,6 +149,62 @@ trajectories. The [SVSMO3T2 qualification](dynamic-models/svsmo3t2-current-runti
 reports both methods and clocks separately. Its initially inactive/reactivated
 bus devices require coherent network initialization; invalidate the prepared
 network initialization state before activating new model membership.
+
+## Selective local model substeps
+
+Local model subdivision is an explicit modified-Euler option, disabled by default.
+It addresses a model's unresolved differential states while retaining the outer
+network/event interval. It does not add a network solve or advance protection
+clocks at each internal step.
+
+```java
+var solver = (DefaultDynamicSimulationSolver) algorithm.getSolver();
+solver.setStepSensitiveModelSubstepsEnabled(true); // before initialization
+// Solve power flow, configure monitoring, then initialize as usual.
+```
+
+After initialization, inspect `getLocalSubstepPreparationReport()`. Each selected
+entry includes model identity/class, affected coordinates, an entered time
+constant, outer interval, local count and actual local interval. Inactive,
+uninitialized metadata attachments are excluded. Initialization prepares the
+final controller storage before binding optimized execution.
+
+The qualified families are:
+
+- Standard two-cage three-phase induction motors: local intervals are bounded by
+  the smaller of 1 ms, Tp0/2 and Tpp0/2. Every internal Heun stage recomputes the
+  algebraic source voltage and current. Corrector integration replays the
+  accepted state with interpolated terminal phasors. Existing `subStepN` metadata
+  is retained; it historically did not subdivide ordinary `nextStep()` calls.
+- Exact standard ESST1A graphs: the selection considers positive lag constants
+  and regulator/washout feedback gain. A coupled loop can be faster than every
+  individual lag. Selected controllers use at least the resolved 1 ms local
+  ceiling, with finer intervals when the conservative resolution indicator
+  requires them. The complete regulator, feedback, lead-lag and transducer graph
+  advances together. It does not nest separate transducer-block steps.
+
+This selection is a numerical resolution policy, not a general eigenvalue or
+accuracy certificate. Entered physical time constants and control limits remain
+unchanged. Qualify the intended outer step, model mix and disturbances against a
+finer run and independent references as available. The shared staggered solver
+has its own recurrence and does not use this ordinary modified-Euler option.
+
+The ESST1A predictor holds accepted boundary inputs. Its outer corrector starts
+from the same accepted graph origin and interpolates sensed voltage, physical
+terminal magnitude, exciter-base field current, PSS output and finite external
+reference/limiter values. It retains pending origin and block histories across
+zero-duration observations. An unqualified finite/infinite limiter transition
+requires an explicit coherent event boundary; it is not silently blended or
+bypassed. Detached snapshots from `getModifiedEulerLocalIntegrationSnapshot()`
+are diagnostic evidence, not a cross-controller state-rebinding API.
+
+For explicit component experiments, `DelayControlBlock.setLocalIntegrationSteps`
+supports unlimited positive-time lags with one through 128 intervals. One keeps
+the original arithmetic; larger counts own a staged local-Heun replay and require
+an appropriate controller runtime plan. `DelayControlBlockState` preserves the
+configuration and pending stage. A whole ESST1A graph uses
+`setModifiedEulerLocalIntegrationSteps` instead of nested block-local steps.
+Neither API changes imported model data or qualifies arbitrary custom graphs.
 
 ## Shared performance features
 

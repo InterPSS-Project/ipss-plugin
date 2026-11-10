@@ -23,6 +23,24 @@ import com.interpss.dstab.cache.StateMonitor;
 public class PsseWt2g1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
+    @Test void saturatedResistanceInitializationUsesActualTerminalVoltage() throws Exception {
+        for(double v:new double[]{.9,1.1}) {
+            var b=DStabBuilderTestFixture.createBuilder();var bus=b.getDStabNetwork().getDStabBus("Bus1");
+            var gen=(com.interpss.dstab.DStabGen)bus.getContributeGen("1");
+            gen.setGen(new org.apache.commons.math3.complex.Complex(.5,.1));
+            bus.setVoltage(new org.apache.commons.math3.complex.Complex(v*Math.cos(.2),v*Math.sin(.2)));
+            var d=new Wt2g1Data(.14,6.5,.2,.005,.12,1,.03,1.2,.29,
+                    new double[]{0,.15,.45,.75,.95},new double[]{0,.006,.025,.055,.11});
+            var m=b.addWt2g1("Bus1","1",100,16.5,d);assertTrue(m.initStates(bus));
+            assertEquals(.5,m.getPe(),2e-9,"Solved rotor resistance must balance power at actual saturated flux");
+            var initial=m.getNamedStates();
+            for(int i=0;i<10;i++)for(int stage=0;stage<2;stage++)
+                assertTrue(m.nextStepElectrical(.0001,DynamicSimuMethod.MODIFIED_EULER,b.getDStabNetwork(),stage));
+            assertEquals(.5,m.getPe(),2e-8);
+            for(var s:initial.entrySet())assertEquals(s.getValue(),m.getNamedStates().get(s.getKey()),2e-8);
+        }
+    }
+
     @Test
     void exactNativeRecordAttachesAndInitializes() throws Exception {
         IpssCorePlugin.init();

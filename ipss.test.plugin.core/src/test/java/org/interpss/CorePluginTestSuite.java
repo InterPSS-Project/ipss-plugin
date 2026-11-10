@@ -37,6 +37,8 @@ import org.interpss.core.adapter.builder.dstab.Ac8bAndesEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ac7bDynawoEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ac7bImportTest;
 import org.interpss.core.adapter.builder.dstab.RexsysExciterTest;
+import org.interpss.core.adapter.builder.dstab.RexsysVoltageInputLimitTest;
+import org.interpss.core.adapter.psse.raw.DynamicRunConfigTest;
 import org.interpss.core.adapter.builder.dstab.Esac6aExciterTest;
 import org.interpss.core.adapter.builder.dstab.Expic1ExciterTest;
 import org.interpss.core.dstab.Expic1NativeVerificationTest;
@@ -1041,6 +1043,8 @@ import org.junit.platform.suite.api.Suite;
 	Ac7bDynawoEquationConformanceTest.class,
 	Ac7bImportTest.class,
 	RexsysExciterTest.class,
+	RexsysVoltageInputLimitTest.class,
+    DynamicRunConfigTest.class,
 	Esac6aExciterTest.class,
 	Expic1ExciterTest.class,
 	Expic1NativeVerificationTest.class,

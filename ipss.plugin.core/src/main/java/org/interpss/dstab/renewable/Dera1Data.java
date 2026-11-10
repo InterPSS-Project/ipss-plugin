@@ -24,7 +24,10 @@ public record Dera1Data(
         }
         if (trv < 0 || trf < 0 || tp < 0 || tiq < 0 || tpord < 0 || tv < 0
                 || tvl0 < 0 || tvl1 < 0 || tvh0 < 0 || tvh1 < 0 || tfl < 0 || tfh < 0
-                || tg <= 0 || ddn <= 0 || dup <= 0 || dpmax <= 0 || dpmin >= 0
+                // Ddn/Dup multiply the frequency error; zero is a disabled
+                // gain, not a division by zero. Native startup retains zero,
+                // including when frequency control is disabled by its ICON.
+                || tg <= 0 || ddn < 0 || dup < 0 || dpmax <= 0 || dpmin >= 0
                 || rrpwr < 0 || imax <= 0 || dbd1 > 0 || dbd2 < 0
                 || fdbd1 > 0 || fdbd2 < 0 || femax < femin || pmax < pmin
                 || vl1 < vl0 || vh0 < vh1 || vrfrac < 0 || vrfrac > 1

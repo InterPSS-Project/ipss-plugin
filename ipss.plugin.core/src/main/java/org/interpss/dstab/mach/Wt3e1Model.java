@@ -29,7 +29,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
     private double powerFactorAngle;
     private double speedDeviation;
     private double controlBaseMva;
-    private double systemBaseMva;
+    private double deviceBaseMva;
     private boolean initialized;
 
     public Wt3e1Model(Wt3e1Data data, Wt3GeneratorModel generator) {
@@ -42,10 +42,13 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
 
     public void initialize() {
         double voltage = terminalVoltage();
-        systemBaseMva = generator.getDStabBus().getNetwork().getBaseMva();
+        // WT3 generator measurements and commands use its own MVA base, not
+        // the network base. Convert once to/from the online aggregate MW base
+        // used by this controller. Equal-base fixtures cannot expose this bug.
+        deviceBaseMva = generator.getDeviceBaseMva();
         controlBaseMva = generator.getAggregateRatedMw() * data.onlineFraction();
-        double pControl = generator.getP() * systemBaseMva / controlBaseMva;
-        double qControl = generator.getQ() * systemBaseMva / controlBaseMva;
+        double pControl = generator.getP() * deviceBaseMva / controlBaseMva;
+        double qControl = generator.getQ() * deviceBaseMva / controlBaseMva;
         double compensated = compensatedVoltage(voltage, pControl, qControl);
         voltageReference = compensated;
         qReference = qControl;
@@ -134,7 +137,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
 
     private Derivative derivatives(State s) {
         double voltage = terminalVoltage();
-        double scale = systemBaseMva / controlBaseMva;
+        double scale = deviceBaseMva / controlBaseMva;
         double pControl = generator.getP() * scale;
         double qControl = generator.getQ() * scale;
         double compensated = compensatedVoltage(voltage, pControl, qControl);
@@ -188,7 +191,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
         double pOrder = clamp(value.torqueFilter, data.pmin(), data.pmax());
         double ipControl = clamp(pOrder / Math.max(EPS, voltage), 0.0, data.ipmax());
         double eq = data.voltageLimitFlag() == 0 ? value.qVrefIntegral : value.verrorEqIntegral;
-        generator.setCommands(ipControl * controlBaseMva / systemBaseMva, eq);
+        generator.setCommands(ipControl * controlBaseMva / deviceBaseMva, eq);
     }
 
     private double compensatedVoltage(double voltage, double p, double q) {

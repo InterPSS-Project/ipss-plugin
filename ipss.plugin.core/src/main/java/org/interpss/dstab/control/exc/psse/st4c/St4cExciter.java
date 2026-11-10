@@ -20,7 +20,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** Native PSS/E implementation of the IEEE 421.5-2016 ST4C exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St4cExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider {
+public final class St4cExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider,
+        org.interpss.dstab.control.exc.UnderExcitationLimiterTarget,org.interpss.dstab.control.exc.OverExcitationLimiterTarget {
     private static final double EPS=1e-12;
     private static final int SENSED=0,VR_I=1,VM_I=2,VG=3,VA=4;
     private final St4cData data;
@@ -169,6 +170,18 @@ public final class St4cExciter extends AnnotateExciter implements IntegrationSte
     public double getPotentialSource(){return potentialSource(getMachine());}
     public double getAvailableBridge(){return algebraics(active,getMachine()).vb;}
     public double[] getStateSnapshot(){return active.clone();}
+    /** Published five-state coordinates. A bypassed lag has no advancing
+     * differential storage, but its reported coordinate is its algebraic output.
+     * Keep getStateSnapshot() as the actual integrator storage for rollback and
+     * diagnostics; translating an observation must not rewrite that storage. */
+    public double[] getNativeStateSnapshot(){
+        double[] values=active.clone();var output=algebraics(active,getMachine());
+        if(tr<=EPS)values[SENSED]=output.sensed;
+        if(tg<=EPS)values[VG]=output.feedback;
+        if(ta<=EPS)values[VA]=output.va;
+        return values;
+    }
+
     @Override public Map<String,Double> getNamedStates(){return Map.of(
             "VM",getVmIntegratorState(),"Sensed Vt",getSensedVoltage(),"VA",getVaOutput(),
             "VR",getVrOutput(),"VG",getVgOutput());}

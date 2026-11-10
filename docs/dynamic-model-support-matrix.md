@@ -11,6 +11,14 @@ loadability inventory.
 The [dynamic-model implementation work list](dynamic-model-implementation-tracker-2026-10-30.md)
 records remaining implementation and verification tasks.
 
+The [native import compatibility audit](dynamic-models/native-import-compatibility.md)
+documents real-valued selectors, local SVC sensing, zero and signed gains,
+degenerate induction circuits, dormant wind ramps, and retained invalid-source
+diagnostics. These import-boundary repairs do not upgrade verification labels.
+Its [explicit correction follow-up](dynamic-models/native-import-compatibility.md#explicit-corrections-and-auxiliary-battery-hosts)
+also covers audited source overrides, zero-weight auxiliary channels and battery
+auxiliary ownership; these remain scoped compatibility changes.
+
 The [additional Texas7k exciter integration](benchmarks/texas7k-optimized-exciters-2026-10-24.md)
 extends the opt-in staggered solver to eight more exciter families. Its complete
 no-event gate passes, but full-network fault accuracy remains open; catalog
@@ -53,6 +61,8 @@ source-approved families that have no implementation or parser descriptor.
 | SVSMO1T2 | SWITCHED_SHUNT | SVSMO1T3 | 65 | LOADABLE | `org.interpss.dstab.svc.Svsmo1t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO1.htm) |
 | SVSMO3T2 | FACTS_DEVICE |  | 64 | PARTIAL | `org.interpss.dstab.svc.Svsmo3t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO3.htm) |
 | CDC6T | HVDC_LINK |  | 32 | LOADABLE | `org.interpss.dstab.hvdc.Cdc6tDyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md) |
+| CHVDC2 | HVDC_LINK |  | 51 | PARTIAL | `org.interpss.dstab.hvdc.Chvdc2DyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/chvdc2-named-link.md) |
+| CHVDC2U1 | HVDC_LINK |  | 57 | PARTIAL | `org.interpss.dstab.hvdc.Chvdc2DyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/chvdc2-named-link.md) |
 | AC11C | EXCITER |  | 40 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC11C.htm) |
 | AC1C | EXCITER |  | 23 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC1C.htm) |
 | AC2C | EXCITER |  | 25 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac2c.Ac2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC2C.htm) |
@@ -122,7 +132,7 @@ source-approved families that have no implementation or parser descriptor.
 | GASTWDD | GOVERNOR | GASTWDDU | 34 | LOADABLE | `org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GASTWD%20and%20GASTWDD.htm) |
 | GGOV1 | GOVERNOR |  | 35 | LOADABLE | `org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GGOV1%20and%20GGOV1D.htm) |
 | GGOV1D | GOVERNOR | GGOV1DU | 37 | LOADABLE | `org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GGOV1%20and%20GGOV1D.htm) |
-| H6E | GOVERNOR | H6EU1 | 63 | LOADABLE | `org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20H6E.htm) |
+| H6E | GOVERNOR | H6E1, H6EU1 | 63 | LOADABLE | `org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20H6E.htm) |
 | HYG3 | GOVERNOR | HYG3U1 | 37 | LOADABLE | `org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20HYG3.htm) |
 | HYGOV | GOVERNOR |  | 12 | LOADABLE | `org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20HYGOV%20and%20HYGOVD.htm) |
 | HYGOV2D | GOVERNOR | HYGOV2DU | 19 | LOADABLE | `org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20HYGOV2%20and%20HYGOV2D.htm) |
@@ -162,7 +172,7 @@ source-approved families that have no implementation or parser descriptor.
 | UEL2C | UNDER_EXCITATION_LIMITER | UEL2CU1 | 51 | LOADABLE | `org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Under%20Excitation%20Limiter%20UEL2C.htm) |
 | BASOEL2 | OVER_EXCITATION_LIMITER |  | 15 | LOADABLE | `org.interpss.dstab.control.oel.psse.basoel2.Basoel2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20BASOEL2.htm) |
 | OEL2C | OVER_EXCITATION_LIMITER | OEL2CU1 | 43 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL2C.htm) |
-| OEL3C | OVER_EXCITATION_LIMITER |  | 12 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel3c.Oel3cModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL3C.htm) |
+| OEL3C | OVER_EXCITATION_LIMITER | OEL3CU | 12 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel3c.Oel3cModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL3C.htm) |
 | GEWTECU1 | ELECTRICAL_CONTROLLER |  | 82 | LOADABLE | `org.interpss.dstab.mach.Gewtecu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REAX3BU1 | ELECTRICAL_CONTROLLER |  | 14 | LOADABLE | `org.interpss.dstab.mach.Reaxbu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REAX4BU1 | ELECTRICAL_CONTROLLER |  | 14 | LOADABLE | `org.interpss.dstab.mach.Reaxbu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |

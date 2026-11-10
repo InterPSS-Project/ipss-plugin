@@ -20,6 +20,30 @@ import com.interpss.dstab.cache.StateMonitor;
 public class PsseWt2e1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
+    @Test void initializationLimitCorrectionIsEffectiveReportedAndReset() {
+        var generatorData=new org.interpss.dstab.mach.Wt2g1Data(.14,6.5,.2,.005,.12,1.02,0,1.22,0,
+                new double[]{0,.15,.45,.75,.95},new double[]{0,.006,.025,.055,.11});
+        var entered=new org.interpss.dstab.mach.Wt2e1Data(.05,.05,2,.1,.15,.05);
+        var control=new Wt2e1Model(entered,generatorData);
+        for(double initial:new double[]{0,.2}) {
+            control.initialize(.03,.5,initial);
+            assertTrue(control.isInitializationLimitCorrected());
+            assertEquals(initial,control.getOutput(),0);
+            assertEquals(Math.min(.05,initial),control.getEffectiveOutputMin(),0);
+            assertEquals(Math.max(.15,initial),control.getEffectiveOutputMax(),0);
+            for(int i=0;i<100;i++)for(int stage=0;stage<2;stage++)control.step(.001,.03,.5,stage);
+            assertEquals(initial,control.getOutput(),1e-12,"Zero error preserves the physical initialization command");
+            assertEquals(.15,entered.outputMax(),0);assertEquals(.05,entered.outputMin(),0);
+            control.initialize(.03,.5,.1);
+            org.junit.jupiter.api.Assertions.assertFalse(control.isInitializationLimitCorrected());
+            assertEquals(.15,control.getEffectiveOutputMax(),0);assertEquals(.05,control.getEffectiveOutputMin(),0);
+        }
+        control.initialize(.03,.5,.2);
+        for(int stage=0;stage<2;stage++)control.step(.01,.03,.8,stage);
+        assertEquals(.2,control.getNamedStates().get("PI integrator"),1e-12,"Anti-windup uses the effective upper bound");
+        assertEquals(.2,control.getOutput(),1e-12);
+    }
+
     @Test
     void exactPublishedRecordAttachesAndInitializes() throws Exception {
         IpssCorePlugin.init();

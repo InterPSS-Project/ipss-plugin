@@ -31,6 +31,7 @@ import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 		   display= {})
 public class PsseTGov1SteamTurGovernor extends AnnotateGovernor
         implements org.interpss.dstab.control.util.InitialMechanicalPowerPreparation {
+    private boolean travelPolicyInitialized;
 	public double k=1,
 		loadLimit =1.0;
 	public double dt =0.0;
@@ -113,6 +114,7 @@ public FilterControlBlock t2t3FilterBlock;
 	     */
 	    @Override
 		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+            travelPolicyInitialized = false;
 	        this.t1 = getData().getT1();
 	        this.t2 = getData().getT2();
 	        this.t3 = getData().getT3();
@@ -138,7 +140,7 @@ public FilterControlBlock t2t3FilterBlock;
 	        k1=1/R;
 	   
 	        
-	        return super.initStates(bus, mach);
+	        return travelPolicyInitialized = super.initStates(bus, mach);
 	    }
 	    
 	    
@@ -157,6 +159,27 @@ public FilterControlBlock t2t3FilterBlock;
 	public Object getFieldObject(Field field) throws Exception {
 		return field.get(this);
 	}
+
+    /** Update the effective field AND its initialized numeric CML limiter in place.
+     * Recreating/initializing the block would discard the valve and turbine histories.
+     * Numeric limits remain live in both compatible and compiled CML execution. */
+    public void applyInitialUpperTravelLimit(double value) {
+        if (!travelPolicyInitialized) throw new IllegalStateException("Initialize before applying travel policy");
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Travel cap must be finite");
+        var block = (DelayControlBlock) runtimeBlock("t1DelayBlock");
+        var limit = block.getLimit();
+        if (limit == null || limit.getMaxExp() != null || limit.getMinExp() != null)
+            throw new IllegalStateException("Travel policy requires the initialized numeric valve limiter");
+        double delta = value - limit.getMax();
+        if (!Double.isFinite(delta)) throw new IllegalArgumentException("Travel cap delta must be finite");
+        // LimitType's constructor validates bounds, whereas this object is an
+        // additive vector. Construct an ordered magnitude first, then apply its
+        // sign, so lowering a valid cap does not log a false max<min error.
+        var adjustment = new org.interpss.numeric.datatype.LimitType(Math.abs(delta), 0.0);
+        adjustment.multiplyTo(Math.signum(delta));
+        limit.addTo(adjustment);
+        vmax = value;
+    }
 
 	/** PowerWorld diagram state: output of the T1 valve-position lag. */
 	public double getValvePosition() {

@@ -13,7 +13,10 @@ public final class Reecd1Model
     private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
     private final Reecd1Data data;
+    private final RenewableConverterHost converter;
+    private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
     private Repca1Model plantController;
+    private WindControlStack windControlStack;
     private WtgwgoaModel weakGridController;
     private WtgibffraModel inertialResponseController;
     private java.util.function.DoubleSupplier inertialFrequency;
@@ -66,8 +69,9 @@ public final class Reecd1Model
     private double ipcmd;
     private double iqcmd;
 
-    public Reecd1Model(Reecd1Data data) {
-        this.data = data;
+    public Reecd1Model(Reecd1Data data) {this(data,null);}
+    public Reecd1Model(Reecd1Data data,RenewableConverterHost converter) {
+        this.data = data;this.converter=converter;
     }
 
     @Override
@@ -120,16 +124,27 @@ public final class Reecd1Model
         if (plantController != null) {
             plantController.initialize(p, q, measuredVoltage);
         }
+        if(auxiliaryController!=null) {
+            double system=converter==null?100:converter.getDStabBus().getNetwork().getBaseMva();
+            double machine=converter==null?system:converter.getParentGen().getMvaBase();
+            auxiliaryController.initializeOutputs(reactiveReference,p,system/(machine>0?machine:system));
+        }
+        if (windControlStack != null) windControlStack.initialize(p);
         if (weakGridController != null) weakGridController.initialize(v, p);
         initialized = true;
     }
 
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
+        if(auxiliaryController!=null&&dt>0){auxiliaryController.step(dt,0);auxiliaryController.step(dt,1);}
         if (inertialResponseController != null) {
             inertialResponseController.step(dt, p, inertialFrequency.getAsDouble());
             inertialAuxiliaryPower = inertialResponseController.getAuxiliaryPower();
             refreshAuxiliaryPowerCommands();
+        }
+        if(windControlStack!=null) {
+            windControlStack.step(dt,p,powerOrder,getSelectedPowerReference(initialP),isVoltageDip());
+            generatorSpeed=windControlStack.getGeneratorSpeed();
         }
         advanceControls(dt, p, q, v, frequency);
     }
@@ -137,10 +152,15 @@ public final class Reecd1Model
     @Override
     public void step(double dt, double p, double q, double v, double frequency, int flag) {
         if (flag != 0 && flag != 1) throw new IllegalArgumentException("REECD stage must be 0 or 1");
+        if(auxiliaryController!=null&&dt>0)auxiliaryController.step(dt,flag);
         if (inertialResponseController != null) {
             inertialResponseController.step(dt, p, inertialFrequency.getAsDouble(), flag);
             inertialAuxiliaryPower = inertialResponseController.getAuxiliaryPower();
             refreshAuxiliaryPowerCommands();
+        }
+        if(windControlStack!=null) {
+            windControlStack.step(dt,p,powerOrder,getSelectedPowerReference(initialP),isVoltageDip(),flag);
+            generatorSpeed=windControlStack.getGeneratorSpeed();
         }
         // Keep the established REECD realization. Only the inertia kernel uses
         // both stages; its corrected Paux refreshes final current limits without
@@ -174,7 +194,8 @@ public final class Reecd1Model
         updateBlocking(dt);
 
         if (!dip) {
-            double selected = getSelectedPowerReference(initialP);
+            double selected = windControlStack!=null&&windControlStack.isTorqueControllerActive()
+                    ?windControlStack.getPref():getSelectedPowerReference(initialP);
             if (data.powerFlag() == 1) selected *= generatorSpeed;
             double target = clamp(selected, effectivePmin, effectivePmax);
             double requestedRate = effectiveTpord <= EPS
@@ -187,7 +208,7 @@ public final class Reecd1Model
 
         double plantQ = plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.powerFactorFlag() == 1
-                ? measuredPower * powerFactorRatio : reactiveReference + plantQ;
+                ? measuredPower * powerFactorRatio : auxiliaryController!=null?auxiliaryController.getReactiveOutput():reactiveReference + plantQ;
         double qTarget = clamp(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(measuredVoltage);
         // WECC REEC_D Figure 3: Paux is power on machine base, summed
@@ -430,9 +451,20 @@ public final class Reecd1Model
         return Math.max(minimum, Math.min(maximum, value));
     }
 
+    @Override public org.interpss.dstab.mach.Reaxbu1Model getAuxiliaryController(){return auxiliaryController;}
+    @Override public void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model value){
+        if(value!=null&&(auxiliaryController!=null||plantController!=null||weakGridController!=null))
+            throw new IllegalStateException("Electrical reference port is occupied");
+        auxiliaryController=value;
+    }
+    @Override public WindControlStack getWindControlStack(){return windControlStack;}
+    @Override public void setWindControlStack(WindControlStack stack){windControlStack=stack;}
     public Reecd1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
-    @Override public void setPlantController(Repca1Model value) { plantController = value; }
+    @Override public void setPlantController(Repca1Model value) {
+        if(value!=null&&auxiliaryController!=null)throw new IllegalStateException("Auxiliary reference port is occupied");
+        plantController = value;
+    }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
     @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     @Override public WtgibffraModel getInertialResponseController() { return inertialResponseController; }

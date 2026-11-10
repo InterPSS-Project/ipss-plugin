@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.st6b;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -31,6 +33,7 @@ public final class St6bExciter extends AnnotateExciter implements IntegrationSte
     @Override public void configureIntegrationStep(double step){configureIntegrationStep(step,1);}
     public void configureIntegrationStep(double step,double multiplier){integrationStep=step;minimumTimeConstantMultiplier=multiplier;}
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrectParameters();double denominator=kff+km;
         if(tr<0||tda<0||tg<0||ts<0||Math.abs(denominator)<=EPS)return false;
@@ -39,9 +42,9 @@ public final class St6bExciter extends AnnotateExciter implements IntegrationSte
         double vr0=efd0/vb,vg0=kg*efd0,va0=(vr0+km*vg0)/denominator;
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
         if(va0>vamax+EPS||va0<vamin-EPS)return false;
-        state[EFD]=efd0;state[VSENSE]=vt;state[PID_I]=va0;state[PID_D_LAG]=0;state[VG]=vg0;
+        state[EFD]=efd0;state[VSENSE]=sensedVoltage(machine);state[PID_I]=va0;state[PID_D_LAG]=0;state[VG]=vg0;
         System.arraycopy(state,0,trial,0,5);active=state;
-        reference=vt-stabilizerSignal(machine)+oelBefore()+oelAfter();outputSignal=efd0;initialized=true;return true;
+        reference=state[VSENSE]-stabilizerSignal(machine)+oelBefore()+oelAfter();outputSignal=efd0;initialized=true;return true;
     }
     private void loadAndCorrectParameters(){oel=data.getOel();vrmult=data.getVrmult();tr=correctedBypass(data.getTr());
         kpa=data.getKpa()==0?1:data.getKpa();kia=data.getKia()==0?1:data.getKia();kda=data.getKda();tda=data.getTda();
@@ -57,11 +60,11 @@ public final class St6bExciter extends AnnotateExciter implements IntegrationSte
         else if(stage==1){double[] d=new double[5];derivatives(trial,d,machine);for(int i=0;i<5;i++)state[i]+=.5*(oldDerivative[i]+d[i])*dt;constrain(state);active=state;}
         else{double[] d=new double[5];derivatives(state,d,machine);for(int i=0;i<5;i++)state[i]+=d[i]*dt;constrain(state);active=state;}
         outputSignal=algebraics(active,machine).efd;return true;}
-    private void derivatives(double[] x,double[] dx,Machine machine){Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);double vt=machine.getDStabBus().getVoltageMag();
-        dx[VSENSE]=lagDerivative(vt,x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],tda);
+    private void derivatives(double[] x,double[] dx,Machine machine){Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],tda);
         double iRate=kia*a.error;if((a.va>=vamax-EPS&&iRate>0)||(a.va<=vamin+EPS&&iRate<0))iRate=0;dx[PID_I]=iRate;
         dx[VG]=lagDerivative(kg*a.exciterInput,x[VG],tg);dx[EFD]=lagDerivative(a.exciterInput,x[EFD],ts);}
-    private Algebraic algebraics(double[] x,Machine machine){double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+    private Algebraic algebraics(double[] x,Machine machine){double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double before=reference-sensed-oelBefore(),high=hasVuel?Math.max(before,vuel):before;
         double error=high+stabilizerSignal(machine)-oelAfter();double derivative=tda>EPS?kda*(error-x[PID_D_LAG])/tda:0;
         double va=clamp(kpa*error+x[PID_I]+derivative,vamin,vamax),vb=vrmult!=0?vt:1;

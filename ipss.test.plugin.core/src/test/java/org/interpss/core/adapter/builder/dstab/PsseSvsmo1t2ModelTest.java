@@ -24,6 +24,26 @@ public class PsseSvsmo1t2ModelTest extends CorePluginTestSetup {
     private static final Path DYR = Path.of("testData", "psse", "v35",
             "PSSE_5Bus_svsmo1t2_synthetic.dyr");
 
+    @Test void zeroProtectionDelayRequiresPickupAndReinitializationClearsTheTrip(@org.junit.jupiter.api.io.TempDir Path temp) throws Exception {
+        var source=new StringBuilder();
+        for(var record:org.interpss.fadapter.psse.dyr.PsseDyrRecordReader.read(DYR)) {
+            var fields=new java.util.ArrayList<>(record.fields());
+            if(record.canonicalModelName().equals("SVSMO1T2"))for(int index:new int[]{27,28,29,30})fields.set(index,"0");
+            source.append(String.join(" ",fields)).append(" /\n");
+        }
+        Path dyr=temp.resolve("zero-delay.dyr");Files.writeString(dyr,source);
+        var context=new PSSEMultiFileLoader().loadDStab(RAW.toString(),dyr.toString());var algorithm=context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());algorithm.setSimuOutputHandler(new StateMonitor());assertTrue(algorithm.initialization());
+        var bus=context.getDStabilityNet().getDStabBus("Bus4");
+        var model=(Svsmo1t2Model)bus.getDynamicBusDeviceList().stream().filter(Svsmo1t2Model.class::isInstance).findFirst().orElseThrow();
+        double initial=model.getSusceptance(),voltage=model.getRemoteBus().getVoltageMag();assertTrue(Math.abs(initial)>1e-6);
+        for(int i=0;i<20;i++)step(model,.0005);
+        assertEquals(initial,model.getSusceptance(),1e-10);
+        model.getRemoteBus().setVoltage(new Complex(2.1,0));step(model,.0005);assertEquals(0,model.getSusceptance(),0);
+        model.getRemoteBus().setVoltage(new Complex(voltage,0));assertTrue(model.initStates(bus));step(model,.0005);
+        assertEquals(initial,model.getSusceptance(),1e-10);
+    }
+
     @Test
     void parserRetainsExactT2SchemaAndTargetsSwitchedShunt() throws Exception {
         var context = new PSSEMultiFileLoader().loadDStab(RAW.toString(), DYR.toString());

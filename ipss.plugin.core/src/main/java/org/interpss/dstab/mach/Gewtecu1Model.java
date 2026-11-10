@@ -56,9 +56,12 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         rotorSpeed = speedReference(p);
         availablePower = p / Math.max(EPS, data.onlineFraction());
         double reactiveCommand = generator.getReactiveState();
-        state = new State(q, 0.0, p, p / Math.max(EPS, 1.0 + rotorSpeed),
+        // WindVAR's PI output supplies Q at equilibrium. The proportional
+        // voltage-error lag starts at zero; Q is stored in the integrator,
+        // not duplicated in that lag or added a second time as a reference.
+        state = new State(q, q, p, p / Math.max(EPS, 1.0 + rotorSpeed),
                 voltage, rotorSpeed,
-                voltage, reactiveCommand, q, machineP, availablePower, 0.0,
+                voltage, reactiveCommand, 0.0, machineP, availablePower, 0.0,
                 voltage, 0.0, 0.0, droop, 0.0, 0.0);
         initialized = true;
         tripped = outsideOperatingEnvelope();
@@ -110,8 +113,7 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         double windVarRate = freezeReactive ? 0.0
                 : rate(data.voltageProportionalGain() * voltageError,
                         s.windVarLag, data.windVarTime());
-        double voltageRegulatorOutput = clamp(reactiveReference
-                        + s.voltageIntegrator + s.windVarLag,
+        double voltageRegulatorOutput = clamp(s.voltageIntegrator + s.windVarLag,
                 data.reactiveMinimum(), data.reactiveMaximum());
         double voltageFilterRate = rate(voltageRegulatorOutput,
                 s.voltageFilter, data.voltageFilterTime());
@@ -165,7 +167,11 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         double commandedPower = targetPower * lvplFactor;
         double brakingEnergyRate = brakingPower(s.brakingIntegrator,
                 commandedPower, p);
-        double highWindTripRate = windVelocity > data.highWindTripThreshold() ? 1.0 : 0.0;
+        // WTTHRES bounds the integrated excess over SPDWMAX, not wind speed
+        // itself. Normal wind above WTTHRES must not produce a timed shutdown.
+        // The exposure is retained when wind returns below pickup; the native
+        // gust discriminator holds the accumulated value rather than unwinding.
+        double highWindTripRate = Math.max(0.0, windVelocity - data.maximumWindSpeed());
 
         return new Derivative(voltageFilterRate, voltageIntegralRate,
                 torqueFilterRate, torqueIntegralRate,
@@ -285,16 +291,15 @@ public final class Gewtecu1Model implements ICMLStateProvider {
     }
 
     private boolean outsideOperatingEnvelope() {
-        return 1.0 + rotorSpeed < data.lowRotorSpeedTrip()
+        return rotorSpeed < data.lowRotorSpeedTrip()
                 || windVelocity < data.minimumWindSpeed()
-                || windVelocity > data.maximumWindSpeed()
-                || (state != null && state.highWindTripIntegrator >= 1.0);
+                || (state != null && state.highWindTripIntegrator >= data.highWindTripThreshold());
     }
 
     private void applyAlgebraicBypasses() {
         double voltage = measuredVoltage(generator.getDStabBus().getVoltageMag());
         if (data.voltageFilterTime() <= EPS) state = state.withVoltageFilter(
-                clamp(reactiveReference + state.voltageIntegrator + state.windVarLag,
+                clamp(state.voltageIntegrator + state.windVarLag,
                         data.reactiveMinimum(), data.reactiveMaximum()));
         if (data.voltageSensorTime() <= EPS) state = state.withVoltageSensor(
                 voltage);
@@ -341,7 +346,21 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         if (!Double.isFinite(value) || value <= 0.0) {
             throw new IllegalArgumentException("GEWTECU1 rotor speed must be positive and finite");
         }
-        rotorSpeed = value;
+        // The shaft exposes absolute pu speed, whereas the published torque
+        // regulator uses SPEED deviation and explicitly adds 1 for power.
+        rotorSpeed = value - 1.0;
+    }
+
+    /** Absolute shaft speed consistent with the initialized torque reference. */
+    public double getInitialRotorSpeed() {
+        return 1.0 + speedReference(toTurbineBase(machineP()));
+    }
+
+    /** Live wind input from the attached gust/aerodynamic chain, in m/s. */
+    public void setWindSpeed(double value) {
+        if (!Double.isFinite(value) || value <= 0.0)
+            throw new IllegalArgumentException("GEWTECU1 wind speed must be positive and finite");
+        windVelocity = value;
     }
 
     /** Override measured terminal power for deterministic staged-input replay. */
@@ -373,7 +392,7 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         values[6] = clamp(values[6], data.voltageMinimum(), data.voltageMaximum());
         values[7] = clamp(values[7], data.internalVoltageMinimum(),
                 data.internalVoltageMaximum());
-        values[13] = clamp(values[13], 0.0, 1.0);
+        values[13] = Math.max(0.0, values[13]);
         state = State.of(values);
     }
 

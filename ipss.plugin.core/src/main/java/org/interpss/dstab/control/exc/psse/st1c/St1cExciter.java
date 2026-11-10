@@ -11,7 +11,7 @@ import org.interpss.dstab.control.exc.OverExcitationLimiterTarget;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
-import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.mach.Machine;
@@ -46,9 +46,15 @@ public final class St1cExciter extends AnnotateExciter
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrectParameters();
         if(uel<0||uel>3||oel<0||oel>3||vos<1||vos>2||tr<0||tb<0||tb1<0||ta<0||tf<0||Math.abs(ka)<=EPS)return false;
-        double vt=sensingVoltage(machine),ifd=ifd(machine),efd=machine.getEfd();
-        if(!Double.isFinite(vt)||vt<=EPS||!Double.isFinite(ifd)||!Double.isFinite(efd))return false;
-        vrmax=Math.max(vrmax,(efd+kc*ifd)/vt);vrmin=Math.min(vrmin,efd/vt);
+        double vt=sensingVoltage(machine),terminal=terminalVoltage(machine),ifd=ifd(machine),efd=machine.getEfd();
+        if(!Double.isFinite(vt)||vt<=EPS||!Double.isFinite(terminal)||terminal<=EPS||!Double.isFinite(ifd)||!Double.isFinite(efd))return false;
+        // IEEEVC changes ECOMP at the AVR measurement, not its physical supply.
+        // Keep this engine's existing runtime range-correction policy separate
+        // from the independently qualified ceiling equation. Native invalid-
+        // initial-condition handling is not qualified as automatic expansion.
+        // Its inverse must still use the same physical VT as the final clamp;
+        // entered limit data remains unchanged.
+        vrmax=Math.max(vrmax,(efd+kc*ifd)/terminal);vrmin=Math.min(vrmin,efd/terminal);
         double pss=stabilizer(machine),lr=fieldCurrentLimiter(ifd),va=efd+lr-(vos==2?pss:0);
         vamax=Math.max(vamax,va);vamin=Math.min(vamin,va);
         double vi=va/ka;vimax=Math.max(vimax,vi);vimin=Math.min(vimin,vi);
@@ -98,7 +104,10 @@ public final class St1cExciter extends AnnotateExciter
         double va=ta>EPS?clamp(x[VA],vamin,vamax):clamp(ka*secondOutput,vamin,vamax);
         double pre=va+(vos==2?pss:0)-fieldCurrentLimiter(ifd(machine));
         if(uel==3)pre=Math.max(pre,gateVuel());if(oel==3)pre=Math.min(pre,gateVoel());
-        double lower=sensingVoltage(machine)*vrmin,upper=sensingVoltage(machine)*vrmax-kc*ifd(machine);
+        // Keep terminal-dependent ceilings distinct from compensated sensing.
+        // Reusing ECOMP here makes an IEEEVC setting alter the available supply.
+        double terminal=terminalVoltage(machine);
+        double lower=terminal*vrmin,upper=terminal*vrmax-kc*ifd(machine);
         double efd=clamp(pre,lower,upper);
         return new Algebraic(sensed,feedback,error,vi,firstInput,firstOutput,secondOutput,va,pre,lower,upper,efd);
     }
@@ -128,7 +137,8 @@ public final class St1cExciter extends AnnotateExciter
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private static void add(double[] x,double[] d,double dt,double[] y){for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;}
     private void limitState(double[] x){if(ta>EPS)x[VA]=clamp(x[VA],vamin,vamax);for(int i=0;i<x.length;i++)if(!Double.isFinite(x[i]))x[i]=0;}
-    private static double sensingVoltage(Machine machine){if(machine instanceof ICMLMachineVoltageProvider p){double v=p.getCmlMachineVoltage();if(Double.isFinite(v))return v;}return machine.getDStabBus().getVoltageMag();}
+    private static double sensingVoltage(Machine machine){return IeeeVoltageCompensatedMachine.sensedVoltage(machine);}
+    private static double terminalVoltage(Machine machine){return machine.getDStabBus().getVoltageMag()/machine.getVMultiFactor();}
     private static double ifd(Machine machine){double v=machine.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(v)?v:0;}
     private static double stabilizer(Machine machine){return machine.getStabilizer()==null?0:machine.getStabilizer().getOutput(machine);}
 

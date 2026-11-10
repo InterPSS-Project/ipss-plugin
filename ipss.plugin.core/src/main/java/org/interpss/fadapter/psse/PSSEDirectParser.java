@@ -546,6 +546,11 @@ public class PSSEDirectParser {
             qb = reactiveData.qMin();
         }
 
+        // RMPCT is repeated plant data. The last source record sets the common
+        // plant weight, even when that particular machine is out of service.
+        // Retain individual record factors too; never divide by active unit count.
+        bus.setPlantMvarControlPFactor(rmpct * 0.01);
+
         boolean genStatus = (stat == 1);
         if (!bus.isActive()) genStatus = false;
 

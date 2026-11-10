@@ -17,6 +17,7 @@ public final class Reecb1Model implements RenewableElectricalController {
     private final Reecb1Data data;
     private final RenewableConverterHost converter;
     private Repca1Model plantController;
+    private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
     private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
@@ -119,9 +120,20 @@ public final class Reecb1Model implements RenewableElectricalController {
         if (plantController != null) plantController.setActivePowerResponseLimits(responseLimits);
         responseLimitsInitialized = true;
         if (plantController != null) plantController.initialize(p, q, sensedV);
+        if(auxiliaryController!=null) {
+            double system=converter==null?100:converter.getDStabBus().getNetwork().getBaseMva();
+            double machine=converter==null?system:converter.getParentGen().getMvaBase();
+            auxiliaryController.initializeOutputs(q0,p,system/(machine>0?machine:system));
+        }
         if (weakGridController != null) weakGridController.initialize(v, p);
     }
 
+    @Override public org.interpss.dstab.mach.Reaxbu1Model getAuxiliaryController(){return auxiliaryController;}
+    @Override public void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model value){
+        if(value!=null&&(auxiliaryController!=null||plantController!=null||weakGridController!=null))
+            throw new IllegalStateException("Electrical reference port is occupied");
+        auxiliaryController=value;
+    }
     private void loadEffectiveParameters() {
         effectiveTrv = correctedBypass(data.trv());
         effectiveTp = correctedBypass(data.tp());
@@ -149,6 +161,20 @@ public final class Reecb1Model implements RenewableElectricalController {
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
         if (dt <= 0.0) return;
+        if(auxiliaryController!=null){auxiliaryController.step(dt,0);auxiliaryController.step(dt,1);}
+        advanceControls(dt,p,q,v,frequency);
+    }
+
+    @Override public void step(double dt,double p,double q,double v,double frequency,int flag) {
+        if(flag!=0&&flag!=1)throw new IllegalArgumentException("Electrical integration stage must be 0 or 1");
+        if(dt<=0)return;
+        if(auxiliaryController!=null)auxiliaryController.step(dt,flag);
+        // Preserve the existing bounded electrical integration at the predictor;
+        // the auxiliary itself receives both network endpoint stages exactly once.
+        if(flag==0)advanceControls(dt,p,q,v,frequency);
+    }
+
+    private void advanceControls(double dt,double p,double q,double v,double frequency) {
         double sensedV = sensedVoltage(v);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0));
@@ -169,7 +195,7 @@ public final class Reecb1Model implements RenewableElectricalController {
 
         double plantQref = plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
-                ? pMeasured * powerFactorRatio : q0 + plantQref;
+                ? pMeasured * powerFactorRatio : auxiliaryController!=null?auxiliaryController.getReactiveOutput():q0 + plantQref;
         double qTarget = limit(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(vMeasured);
         double rawIp = pOrder / voltage;
@@ -269,7 +295,10 @@ public final class Reecb1Model implements RenewableElectricalController {
 
     public Reecb1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
-    @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    @Override public void setPlantController(Repca1Model controller) {
+        if(controller!=null&&auxiliaryController!=null)throw new IllegalStateException("Auxiliary reference port is occupied");
+        plantController = controller;
+    }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
     @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public double getMeasuredVoltage() { return vMeasured; }

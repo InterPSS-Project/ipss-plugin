@@ -221,6 +221,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
 
     public Wt3g1Data getData() { return data; }
     @Override public double getAggregateRatedMw() { return data.aggregateRatedMw(); }
+    @Override public double getDeviceBaseMva() { return deviceBaseMva; }
     public double getActiveCurrentState() { return ipState; }
     public double getInternalVoltageState() { return eqState; }
     public double getPllIntegralState() { return pllIntegral; }

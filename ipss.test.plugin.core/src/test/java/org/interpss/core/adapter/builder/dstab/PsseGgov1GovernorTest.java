@@ -345,6 +345,35 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
     }
 
     @ParameterizedTest
+    @CsvSource({"-2", "0", ".2"})
+    void dampingBranchesKeepNominalOperatingPointAndUseSpeedDeviation(double dm) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setRating(234,org.interpss.numeric.datatype.Unit.UnitType.mVA,
+                machine.getDStabBus().getNetwork().getBaseKva());
+        machine.setSpeed(1.0); machine.setPm(104.0/234.0); machine.setPe(104.0/234.0);
+        var data = texasData();
+        data.setTrate(174); data.setDm(dm); data.setKturb(1.4); data.setWfnl(.15);
+        data.setTb(.016668); data.setTc(.2); data.setTeng(0); data.setLdref(10);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(.001);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double pm = machine.getPm();
+        assertEquals(.15 + (104.0/174.0)/1.4, governor.getValveStroke(), TOL);
+        double[] rates = new double[10];
+        governor.evaluateStaggered(.001, rates, 0);
+        assertEquals(pm, governor.getOutput(machine), TOL);
+        for (int i=0;i<20;i++) step(governor,machine,.001);
+        assertEquals(pm, governor.getOutput(machine), TOL, "no turbine lead pulse at nominal speed");
+        // Flag=0 leaves fuel unchanged at this frozen state. Only positive
+        // Dm subtracts mechanical power when speed is above nominal.
+        machine.setSpeed(1.02);
+        governor.evaluateStaggered(.001, rates, 0);
+        assertEquals(pm - Math.max(0,dm)*.02*174.0/234.0,
+                governor.getOutput(machine), TOL);
+    }
+
+    @ParameterizedTest
     @CsvSource({"0,0,.98", "0,0,1.02", "0,1,.98", "0,1,1.02",
             ".2,0,.98", ".2,1,1.02", "-1,0,.98", "-1,1,1.02"})
     void temperatureDetectorKeepsFuelFlagSeparateFromNegativeDampingCharacteristic(

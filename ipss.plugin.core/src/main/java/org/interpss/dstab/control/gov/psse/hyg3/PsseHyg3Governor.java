@@ -451,7 +451,7 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
                 d.getAt(), d.getDturb(), d.getTrate(), d.getDbH(), d.getEps(), d.getDbL())) return false;
         if (d.getTt() < 0.0 || d.getTd() < 0.0 || d.getTf() < 0.0 || d.getTp() < 0.0
                 || d.getKg() <= 0.0 || d.getVelopen() <= 0.0 || d.getVelclose() >= 0.0
-                || d.getH0() <= 0.0 || d.getQnl() < 0.0 || d.getTw() < 0.0
+                || d.getH0() <= 0.0 || d.getTw() < 0.0
                 || d.getTrate() < 0.0 || d.getDb2() < 0.0 || d.getDbH() < 0.0
                 || d.getDbL() > 0.0 || d.getEps() < 0.0) return false;
         double[] gv = d.getGv();
@@ -662,9 +662,13 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
     private static double[][] withImplicitEndpoints(double[] x, double[] y) {
         double[] xx=new double[x.length+2],yy=new double[y.length+2];int count=1;
         for(int i=0;i<x.length;i++) {
-            if(x[i]==0 && y[i]==0)continue;
+            // An unused zero gate slot can retain a stale ordinate. It does
+            // not introduce a segment returning to zero after a positive gate.
+            if(x[i]==0 && (y[i]==0 || count>1))continue;
             if(x[i]==xx[count-1] && y[i]==yy[count-1])continue;
-            if(x[i]<=xx[count-1] || y[i]<yy[count-1])
+            // The entered gate characteristic may have a negative intercept or
+            // a descending power segment. It is not a limiter-order constraint.
+            if(x[i]<xx[count-1])
                 throw new IllegalArgumentException("HYG3 gate points must be ordered");
             xx[count]=x[i];yy[count++]=y[i];
         }
