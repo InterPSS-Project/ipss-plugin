@@ -443,7 +443,11 @@ public class OpenDSSDataParser {
 						no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
 					}
 					else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
-						this.lineParser.parseLineData(str);
+						LogicalLine line = collectLogicalContinuationLine(str, reader);
+						lineCnt += line.consumedLineCount;
+						nextLine = line.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.lineParser.parseLineData(line.logicalLine);
 					}
 					else if(tempAry[1].contains("Reactor.") ||tempAry[1].contains("reactor.")){
 						no_error = no_error && parseReactorData(str);
@@ -821,7 +825,11 @@ public class OpenDSSDataParser {
 						no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
 					}
 					else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
-						this.lineParser.parseLineData(str);
+						LogicalLine line = collectLogicalContinuationLine(str, reader);
+						lineCnt += line.consumedLineCount;
+						nextLine = line.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.lineParser.parseLineData(line.logicalLine);
 					}
 					else if(tempAry[1].contains("Reactor.") ||tempAry[1].contains("reactor.")){
 						no_error = no_error && parseReactorData(str);
