@@ -53,7 +53,7 @@ def main():
     parser.add_argument('--auxiliary-index', type=int, choices=[1,2], help='Independent voltage-driven HVDCAT routing discriminator')
     parser.add_argument('--profile', choices=['flat', 'rectifier-fault', 'inverter-fault', 'modulation'], default='flat')
     parser.add_argument('--flags', nargs=3, type=int, choices=[0, 1], default=[0, 0, 0])
-    parser.add_argument('--step', type=float, choices=[.0005, .00025, 1/240, 1/480], default=.0005)
+    parser.add_argument('--step', type=float, choices=[.005, .0005, .00025, 1/240, 1/480], default=.0005)
     parser.add_argument('--repeat', choices=['a', 'b'], required=True)
     parser.add_argument('--batch', default='chvdc2-initial-20261102')
     args = parser.parse_args()
