@@ -110,3 +110,24 @@ correction is required for its reactive-power gate; the
 [converted comparison](legacy-ge-import-verification.md#converted-terminal-angle-and-bypass-reference-correction)
 records both effects and their separate implementation boundaries. Neither
 generic result establishes exact support for a legacy wind-model identifier.
+
+
+## Reactive Norton current ceiling
+
+WT3G2 converts the internal voltage state to a device-base Norton reactive
+current before subtracting the parallel admittance current. The entered
+CURHVRCR also caps the positive source current after the high-voltage
+correction. The solver now enforces this cap at the current publication
+boundary. The internal voltage state, active-current law, rotation and
+parallel network admittance keep their existing equations.
+
+An independent source-stack probe reconstructed the source current from the
+recorded terminal voltage and reactive power. Its plateau followed the
+entered current limits 1.2, 1.3 and 1.5 pu. Changing source reactance moved
+the effective voltage ceiling in the same proportion while the source
+current plateau stayed fixed. Changing initial voltage, the upstream
+controller voltage limit or the power-flow reactive limits preserved the
+entered source-current ceiling when it was reached. This separates the
+network output cap from the dynamic voltage state. The focused regression
+checks physical terminal reactive power and also verifies that reading the
+capped network output leaves the internal voltage state intact.

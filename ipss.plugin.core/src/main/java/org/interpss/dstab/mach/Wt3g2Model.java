@@ -220,7 +220,12 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
                 data.highVoltageReactiveCurrentGain());
         double lowVoltageActiveGain = fixedLowVoltageActiveGain(voltage);
         double active = ipState * lowVoltageActiveGain;
-        double reactive = -(eqState / equivalentReactance - deltaQ);
+        // CURHVRCR also bounds the positive reactive current of the
+        // Norton source. Apply it after the high-voltage correction and
+        // before rotating/scaling the source. The filtered Eq state and
+        // the network's parallel admittance are independent of this cap.
+        double reactive = -Math.min(eqState / equivalentReactance - deltaQ,
+                data.highVoltageReactiveCurrentGain());
         // With both PLL gains bypassed, the current axes follow the terminal
         // voltage angle. Keep the stored PLL angle as its own numerical state.
         if (data.pllGain() == 0.0 && data.pllIntegratorGain() == 0.0 && voltage > EPS) {
