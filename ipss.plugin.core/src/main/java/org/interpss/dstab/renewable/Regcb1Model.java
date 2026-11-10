@@ -194,9 +194,20 @@ public final class Regcb1Model extends DynamicBusDeviceImpl
     }
 
     private Complex internalVoltage(Complex terminalVoltage) {
-        Complex dq = new Complex(active[ED], active[EQ]);
-        return dq.multiply(new Complex(Math.cos(terminalVoltage.getArgument()),
-                Math.sin(terminalVoltage.getArgument())));
+        Complex dq;
+        if (data.te() <= EPS) {
+            // With the inner lag bypassed, E is algebraic. Reconstruct it
+            // from each network iterate's terminal voltage, including both
+            // event-side solves that run without advancing converter states.
+            double voltage = terminalVoltage.abs();
+            double filteredVoltage = data.tfltr() > EPS ? active[V] : voltage;
+            double id = data.rateFlag() == 1 ? active[IP] / nonzero(filteredVoltage) : active[IP];
+            dq = internalVoltageTarget(id, active[IQ], voltage);
+        } else {
+            dq = new Complex(active[ED], active[EQ]);
+        }
+        double angle = terminalVoltage.getArgument();
+        return dq.multiply(new Complex(Math.cos(angle), Math.sin(angle)));
     }
 
     private Complex unlimitedPhysicalCurrent(Complex terminalVoltage) {

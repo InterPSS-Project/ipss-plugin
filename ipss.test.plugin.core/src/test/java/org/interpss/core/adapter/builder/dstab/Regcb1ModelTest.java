@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.renewable.Regcb1Data;
 import org.interpss.dstab.renewable.Regcb1Model;
@@ -99,6 +100,48 @@ public class Regcb1ModelTest {
         assertEquals(.002, model.getEffectiveTg(), 0.0);
         assertEquals(.5003, model.getStateSnapshot()[0], 1.0e-12);
         assertEquals(.2001, model.getStateSnapshot()[1], 1.0e-12);
+    }
+
+    @Test
+    void bypassedInnerLagKeepsCurrentAcrossAZeroTimeVoltageChange() throws Exception {
+        for (int rateFlag : new int[] {0, 1}) {
+            var model = DStabBuilderTestFixture.createBuilder().addRegcb1(
+                    "Bus1", "1", new Regcb1Data(rateFlag, 1, .0167, .0167,
+                            77.0, -77.0, .3633, 0.0, 1.3));
+            var bus = model.getDStabBus();
+            bus.setVoltage(1.0, .2);
+            model.initializeWithSignals(1.0, .46, .13);
+            double[] initial = model.getStateSnapshot();
+            Complex before = terminalCurrentInVoltageFrame(model);
+            bus.setVoltage(.63, -.3);
+            Complex after = terminalCurrentInVoltageFrame(model);
+            assertEquals(before.getReal(), after.getReal(), 1.0e-12);
+            assertEquals(before.getImaginary(), after.getImaginary(), 1.0e-12);
+            assertArrayEquals(initial, model.getStateSnapshot());
+        }
+    }
+
+    @Test
+    void finiteInnerLagHoldsInternalVoltageAcrossAZeroTimeVoltageChange() throws Exception {
+        var model = DStabBuilderTestFixture.createBuilder().addRegcb1("Bus1", "1", data(0, 1));
+        var bus = model.getDStabBus();
+        bus.setVoltage(1.0, .2);
+        model.initializeWithSignals(1.0, .46, .13);
+        double[] initial = model.getStateSnapshot();
+        Complex before = terminalCurrentInVoltageFrame(model);
+        bus.setVoltage(.63, -.3);
+        Complex after = terminalCurrentInVoltageFrame(model);
+        assertTrue(after.subtract(before).abs() > .1);
+        assertArrayEquals(initial, model.getStateSnapshot());
+    }
+
+    private static Complex terminalCurrentInVoltageFrame(Regcb1Model model) {
+        var bus = model.getDStabBus();
+        var voltage = bus.getVoltage();
+        var gen = model.getParentGen();
+        var impedance = gen.getPosGenZ().multiply(gen.getZMultiFactor());
+        var current = ((Complex) model.getOutputObject()).subtract(voltage.divide(impedance));
+        return current.multiply(new Complex(Math.cos(bus.getVoltageAng()), -Math.sin(bus.getVoltageAng())));
     }
 
     @Test
