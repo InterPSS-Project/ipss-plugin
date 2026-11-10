@@ -36,6 +36,45 @@ import com.interpss.core.threephase.Static3PhaseFactory;
 
 public class QstsStudyTest {
 	@Test
+	void explicitWindingMappingRetainsSecondaryVoltageLoadAndGeneratorSamplesAtZeroVoltage()
+			throws InterpssException {
+		Static3PNetwork network = twoPhaseNetworkWithGenerator();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setPhaseCode(PhaseCode.C);
+		Complex3x3 primary = new Complex3x3();
+		primary.cc = Complex.ONE;
+		Complex3x3 secondary = new Complex3x3();
+		secondary.aa = Complex.ONE;
+		secondary.bb = Complex.ONE;
+		Complex3x3 forward = new Complex3x3();
+		forward.ca = Complex.ONE.negate();
+		forward.cb = Complex.ONE;
+		Complex3x3 reverse = new Complex3x3();
+		reverse.ac = Complex.ONE.negate();
+		reverse.bc = Complex.ONE;
+		branch.setExplicitYabc(primary, forward, reverse, secondary);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		powerFlow.loadVoltageScale = 0.0;
+		QstsStepResult step = QstsStudy.from(network, null).setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1).run().getStep(0);
+		assertEquals(List.of("A", "B"), step.getBusVoltages().stream()
+				.filter(sample -> sample.getBusId().equals("load"))
+				.map(QstsBusVoltageSample::getPhase).toList());
+		assertEquals(List.of("C"), step.getBusVoltages().stream()
+				.filter(sample -> sample.getBusId().equals("source"))
+				.map(QstsBusVoltageSample::getPhase).toList());
+		assertTrue(step.getBusVoltages().stream().filter(sample -> sample.getBusId().equals("load"))
+				.allMatch(sample -> sample.getMagnitude() == 0.0));
+		assertEquals(List.of("A", "B"), step.getLoadPowers().stream()
+				.map(QstsDevicePowerSample::getPhase).toList());
+		assertEquals(List.of("A", "B"), step.getGeneratorPowers().stream()
+				.map(QstsDevicePowerSample::getPhase).toList());
+		assertEquals(List.of("A", "B"), step.getBranchPowers().stream()
+				.filter(sample -> sample.getTerminal() == 2)
+				.map(QstsBranchPowerSample::getPhase).toList());
+	}
+
+	@Test
 	void runnerAppliesLoadAndGeneratorSchedulesSequentially() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		QstsScheduleData schedule = schedule(3);
