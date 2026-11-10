@@ -47,6 +47,15 @@ public class QstsCsvExporter {
 		return builder.toString();
 	}
 
+	/**
+	 * Exports phase powers without changing their per-unit convention.
+	 * The {@code p_pu}/{@code q_pu} columns use {@code networkBaseKva / 3} for
+	 * {@code device_class=load} and {@code networkBaseKva} for
+	 * {@code device_class=generator}. Multiply by the corresponding base for
+	 * kW/kvar. The CSV does not contain the study's network base; retain it
+	 * alongside the export.
+	 * @see QstsDevicePowerSample
+	 */
 	public String exportDevicePowers(Iterable<QstsDevicePowerSample> samples) {
 		StringBuilder builder = new StringBuilder("step,hour,device_class,device,phase,p_pu,q_pu\n");
 		if(samples == null) {
