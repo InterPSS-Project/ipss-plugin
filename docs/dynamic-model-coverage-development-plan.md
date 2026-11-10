@@ -11,9 +11,10 @@ fixture correction changes no numerical acceptance threshold. Disturbed-motoring
 energy checks retain active attachment and negative mechanical power.
 
 The [AC7B boundary correction](dynamic-models/ac7b-pid-boundary.md) removes spurious
-outer-integral tracking at outward PID limits and fixes the zero-inner-integral-
-gain initial allocation. Other dialects and nonzero inner-gain behavior remain
-scoped separately. Independent bus-attached limiters also gate their physical
+outer- and inner-integral tracking at outward PID/PI limits and fixes the
+zero-inner-integral-gain initial allocation. Nonzero inner-gain saturation and
+release now have exact-source component evidence; reordered dialects and complete
+state/system acceptance remain scoped separately. Independent bus-attached limiters also gate their physical
 inputs on the generator, machine and exciter status: an out-of-service machine
 may never have been initialized. Inactive-host histories remain frozen; active
 host failures remain visible. Complete system event stability is a separate

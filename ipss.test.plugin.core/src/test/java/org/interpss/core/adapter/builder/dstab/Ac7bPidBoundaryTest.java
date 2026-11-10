@@ -124,12 +124,46 @@ public class Ac7bPidBoundaryTest extends CorePluginTestSetup {
         Fixture f=fixture();f.e.setVuel(2);assertEquals(2,f.e.getPiOutput(),TOL);
         f.e.setVuel(-2);assertEquals(-2,f.e.getPiOutput(),TOL);assertEquals(0,storage(f,"state")[PI_I],0);
     }
-    @Test void nonzeroInnerIntegralRetainsTrackingAtBothAmplifierLimits()throws Exception{
+    @Test void reorderedDialectRetainsInnerTrackingAtBothAmplifierLimits()throws Exception{
+        for(double sign:new double[]{1,-1}){
+            Ac7bData d=parameters();d.setKia(4);d.setVamax(1.1);d.setVamin(-1.1);
+            Fixture f=fixture(d,"ESAC7B",1,true);integral(f,PI_I,2*sign);f.e.setVuel(.1*sign);
+            assertEquals(-8*sign,rhs(f)[PI_I],TOL);assertEquals(.3*sign,rhs(f)[PID_I],TOL);
+        }
+    }
+    @Test void nativeInnerIntegralHoldsAtEitherOutwardAmplifierLimit()throws Exception{
         for(double sign:new double[]{1,-1}){
             Ac7bData d=parameters();d.setKia(4);d.setVamax(1.1);d.setVamin(-1.1);
             Fixture f=fixture(d,"AC7B",1,true);integral(f,PI_I,2*sign);f.e.setVuel(.1*sign);
-            assertEquals(-8*sign,rhs(f)[PI_I],TOL);assertEquals(.3*sign,rhs(f)[PID_I],TOL);
+            assertEquals(1.1*sign,f.e.getPiOutput(),TOL);
+            assertEquals(0,rhs(f)[PI_I],0,"Clipping cannot back-calculate the integral");
+            assertEquals(.3*sign,rhs(f)[PID_I],TOL,"Inner clipping does not freeze outer PI");
         }
+    }
+    @Test void nativeInnerIntegralReleasesInwardWhileAmplifierStillClips()throws Exception{
+        for(double sign:new double[]{1,-1}){
+            Ac7bData d=parameters();d.setKia(4);d.setVamax(1.1);d.setVamin(-1.1);
+            Fixture f=fixture(d,"AC7B",1,true);integral(f,PI_I,2*sign);f.e.setVuel(-.1*sign);
+            assertEquals(1.1*sign,f.e.getPiOutput(),TOL);
+            assertEquals(-.8*sign,rhs(f)[PI_I],TOL,"The ordinary inward PI rate remains active");
+        }
+    }
+    @Test void nativeInnerIntegralIncludesExactLimitsAndSignedGains()throws Exception{
+        for(double sign:new double[]{1,-1}){
+            Ac7bData d=parameters();d.setKia(4);d.setVamax(1);d.setVamin(-1);
+            Fixture f=fixture(d,"AC7B",1,true);integral(f,PI_I,.5*sign);f.e.setVuel(.25*sign);
+            assertEquals(sign,f.e.getPiOutput(),0);assertEquals(0,rhs(f)[PI_I],0);
+            // Reversing integral gain makes the same positive error an inward
+            // rate; error-based clamping would incorrectly hold it.
+            f.e.kia=-4;assertEquals(-2*sign,rhs(f)[PI_I],TOL);
+        }
+    }
+    @Test void nativeInnerIntegralDoesNotAcquireTrackingBiasDuringAcceptedSteps()throws Exception{
+        Ac7bData d=parameters();d.setKia(4);d.setVamax(1.1);d.setVamin(-1.1);
+        Fixture f=fixture(d,"AC7B",1,true);integral(f,PI_I,2);f.e.setVuel(.1);
+        step(f,.001);assertEquals(2,storage(f,"state")[PI_I],0);
+        f.e.setVuel(-.1);step(f,.001);
+        assertTrue(storage(f,"state")[PI_I]<2,"Both stages permit inward recovery");
     }
     @Test void legacyReorderedDialectRetainsBothInitializationAndOuterTracking()throws Exception{
         Fixture f=fixture(parameters(),"ESAC7B",1,true);

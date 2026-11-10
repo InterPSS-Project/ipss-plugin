@@ -242,9 +242,24 @@ public final class Ac7bExciter extends AnnotateExciter
             dx[PID_INTEGRAL] = kir * (a.pidError
                     - ANTI_WINDUP_GAIN * (a.pidUnlimited - a.pidOutput));
         }
-        // Nonzero-KIA inner PI tracking is separately unqualified and retained.
-        dx[PI_INTEGRAL] = kia * (a.piError
-                - ANTI_WINDUP_GAIN * (a.piUnlimited - a.piOutput));
+        if (usesNativeAc7bPid()) {
+            // The 27-CON AC7B inner PI is also directional nonwindup. When
+            // its amplifier clips, independent nonzero-KIA captures hold the
+            // integral against outward motion; a tracking term proportional
+            // to clipping instead creates a large artificial state excursion
+            // and suppresses field voltage after the external fault clears.
+            // Gate the signed rate, not the error, so inward release and
+            // negative integral gains retain their ordinary PI equation.
+            double rate = kia * a.piError;
+            if ((a.piUnlimited >= vamax && rate > 0.0)
+                    || (a.piUnlimited <= vamin && rate < 0.0)) rate = 0.0;
+            dx[PI_INTEGRAL] = rate;
+        } else {
+            // The reordered ESAC7B dialect has no matching inner-boundary
+            // qualification in these captures. Preserve its existing equation.
+            dx[PI_INTEGRAL] = kia * (a.piError
+                    - ANTI_WINDUP_GAIN * (a.piUnlimited - a.piOutput));
+        }
         dx[RATE_LAG] = lagDerivative(a.vfe, x[RATE_LAG], tf);
 
         double fieldRate = te > EPS ? (a.regulator - a.vfe) / te : 0.0;

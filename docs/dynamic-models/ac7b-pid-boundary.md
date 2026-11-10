@@ -1,4 +1,4 @@
-# AC7B PID boundary and zero-integral-gain initialization
+# AC7B PID/PI boundaries and zero-integral-gain initialization
 
 ## Scope and dialect selection
 
@@ -6,7 +6,7 @@
 
 | Record | Layout | Behavior covered by this correction |
 |---|---|---|
-| `AC7B` | 27 constants | Directional outer-PID nonwindup and `KIA=0` inverse initialization |
+| `AC7B` | 27 constants | Directional outer-PID and inner-PI nonwindup, plus `KIA=0` inverse initialization |
 | `ESAC7B` | 28 constants; reordered field/feedback parameters and trailing `SPDMLT` | Existing tracking and initialization retained |
 
 The reader preserves that distinction through attachment. Sharing a class does
@@ -66,39 +66,75 @@ bias. That allocation can agree in the interior but changes the amplifier
 response when the outer PID clips. When both inner gains are zero, a required
 nonzero `VA0` is unrepresentable and initialization fails explicitly.
 
-## Preserved behavior
+## Inner PI limit with nonzero integral gain
 
-For nonzero `KIA`, including `KIA>0`, inner initialization remains `IA0=VA0`
-and `IR0=FB0`. Its existing tracking equation is unchanged:
+The native 27-constant `AC7B` record uses the same directional nonwindup rule at
+its inner amplifier. With `eA`, `uA` and `vA` defined above:
 
 ```text
-dIA/dt = KIA*(eA - 2*(uA-vA))
+rA = KIA*eA
+
+dIA/dt = 0    if uA >= VAMAX and rA > 0
+         0    if uA <= VAMIN and rA < 0
+         rA   otherwise
 ```
 
-The outer directional rule still selects by the `AC7B` name; this does not
-qualify its interaction with a nonzero inner integral. `ESAC7B` retains both
-its prior frozen-bias initialization and outer tracking equation. Existing
-field limits, rectifier/saturation paths, time-constant policy and integration
-stages remain unchanged. Zero-duration steps preserve stored stages and rates.
-Runtime range admission of the solved initial point remains a legacy engine
-policy, separate from the independently established correction; its persistence
-in a synthetic test is not evidence of reference limit expansion.
+Equality at the amplifier limits is included. The signed rate permits inward
+recovery while the amplifier still clips; a negative integral gain must not be
+treated as though its rate had the sign of the error. Inner clipping does not
+freeze the separate outer integral. A zero integral gain remains zero-rate.
+Inside the amplifier limits, the ordinary PI equation and local Jacobian are
+unchanged because the former clipping residual was also zero.
+
+The previous implementation used `KIA*(eA - 2*(uA-vA))` for this native branch.
+Independent nonzero-gain captures show a held inner integral during the stable
+outward-saturation interval. The tracking term instead drove the integral far
+from its initial value even while the clipped amplifier output still matched.
+After clearing the disturbance, that hidden state displacement suppressed field
+voltage and enlarged the machine's first rotor-angle swing. Restoring nonwindup
+removes the artificial displacement without changing a gain, limiter, reference,
+initial operating point, integration step or damping coefficient.
+
+Nonzero-`KIA` initialization is unchanged: `IA0=VA0` and `IR0=FB0`. The inner
+integral is not itself clipped to the amplifier's output bounds; the gate acts
+on its derivative. Existing predictor/corrector states and saved slopes retain
+their coordinates. Focused regressions cover both limits, equality, signed gains,
+inward release and accepted-step history; they fail with the old equation.
+
+## Preserved behavior
+
+The reordered `ESAC7B` dialect retains its earlier tracking equation for both
+integrators and its frozen-bias initial allocation. Independent captures in this
+slice qualify the 27-constant record only. Field limits, rectifier/saturation,
+time-constant preparation and integration scheduling remain unchanged. Runtime
+range admission of the solved initial point remains a legacy engine policy;
+synthetic persistence tests do not establish reference limit expansion.
 
 ## Qualification limits
 
-Focused synthetic tests cover both outward and inward directions, exact
-boundaries, signed gains, amplifier-only clipping, inverse initialization,
-retained nonzero-`KIA`/`ESAC7B` behavior and integration history. Retained private
-small-network captures independently establish outward hold at both PID limits
-and zero-`KIA` initialization; the qualified profile has `KDR=0` and `KIA=0`.
+The source-specific coupled component has nonzero `KIA`, `KDR=0`, both amplifier
+limits active, and its actual machine/exciter/stabilizer stack. Cold reference
+RAW, DYR, primary boundary CSV and complete controller CSV repeat byte for byte.
+The corrected ten-second component substantially reduces angle and field-voltage
+errors with unchanged source constants; quantitative trajectories remain in
+private QA. All 27 selected parser/equation/initialization/limiter tests pass; the
+four new native
+inner-boundary discriminators fail against the retained old implementation.
 
-Independent inward release remains open: an attempted injected-state probe did
-not preserve the requested state through the reference integration history.
-There is also no exact independent nonzero-`KIA` boundary proof or derivative-kick
-proof from those captures. Synthetic coverage is not a substitute for either.
-Full corrected-controller trajectory parity and full-network event stability
-remain separate qualification gates. Source-specific vectors, simulator
-provenance and complete captures stay in private QA evidence.
+This is not complete state-trajectory qualification. Internal-state residuals
+are retained against the strict paired state gate, including failures. Halving
+the component step does not uniformly improve its comparison with the unchanged
+reference step, so it is not used as a fitted correction or as evidence that
+remaining integration/event-side differences vanish. The original boundary rows,
+saturation transitions and both event sides remain in primary errors. No
+complete derivative-kick or reordered-dialect boundary proof is added here.
+
+A separate full-network first-swing diagnostic and supplied-horizon rerun retain
+the original solver/case configuration with only the corrected class overriding
+the old runtime. Their actual terminal manifests determine completion; a live
+run or successful small component is not a full-system parity acceptance.
+Source-specific data, exact simulator/manual provenance, original trajectories
+and comparison artifacts stay in private QA. Catalog support status is unchanged.
 
 Implementation: [`Ac7bExciter`](../../ipss.plugin.core/src/main/java/org/interpss/dstab/control/exc/psse/ac7b/Ac7bExciter.java).
 Focused tests: [`Ac7bPidBoundaryTest`](../../ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/builder/dstab/Ac7bPidBoundaryTest.java).
