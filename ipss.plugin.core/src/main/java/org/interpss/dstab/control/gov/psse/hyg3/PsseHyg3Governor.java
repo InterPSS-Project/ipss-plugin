@@ -614,8 +614,17 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
         double[] x = prepared ? preparedGatePoints : curveGv();
         double[] y = prepared ? preparedPowerPoints : curvePgv();
         double scale=curveScale();
+        boolean source=sourceConvention();
+        // The native source curve uses the entered segments below normalized
+        // full opening. Exactly at full opening its flow input is unity on
+        // that same scale, even if the last entered ordinate is smaller.
+        // Holding the last ordinate here hides the native water-head and
+        // mechanical-power transient when the gate first reaches this bound.
+        // A gate limit below unity remains on the ordinary curve; typed
+        // curves retain their original endpoint and extrapolation law.
+        if (source && gate >= scale) return scale;
         double value=interpolate(gate/scale,x,y)*scale;
-        return sourceConvention()?clamp(value,0,scale):value;
+        return source?clamp(value,0,scale):value;
     }
 
     public double inverseGateCurve(double power) {

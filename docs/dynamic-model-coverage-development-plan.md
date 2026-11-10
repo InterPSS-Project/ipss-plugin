@@ -2,6 +2,12 @@
 
 ## Current checkpoint
 
+The [HYG3 full-opening correction](dynamic-models/hyg3-prepared-curves.md)
+restores the independently observed native normalized gate endpoint while
+preserving the entered interior curve, inverse initialization, and typed law.
+Recorded-input replay recovers the mechanical-power transient and saturated
+level; event-resolution and full-network comparisons remain separate.
+
 The [Type-J voltage-state correction](dynamic-models/type-j-voltage-state-realization.md)
 separates its four electrical equations from the winding-state engine, uses the
 scaled saturation curve and distinct axis factors, and preserves the voltage/
