@@ -3,13 +3,19 @@ package org.interpss.dstab.mach;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Published WT4E1 electrical controller for a Type-4 converter. */
 public final class Wt4e1Model implements ICMLStateProvider {
+    private static final Logger LOG = LoggerFactory.getLogger(Wt4e1Model.class);
     private static final double EPS = 1.0e-10;
     private final Wt4e1Data data;
     private final Wt4g1Model generator;
+    private BaseDStabBus<?, ?> voltageSensorBus;
     private State state;
     private State oldState;
     private Derivative predictor;
@@ -25,16 +31,29 @@ public final class Wt4e1Model implements ICMLStateProvider {
     }
 
     public void initialize() {
-        double voltage = generator.getDStabBus().getVoltageMag();
+        BaseDStabBus<?, ?> terminal = generator.getDStabBus();
+        voltageSensorBus = terminal;
+        if (data.remoteBus() != 0) {
+            var remote = terminal.getNetwork().getBus("Bus" + data.remoteBus());
+            if (remote instanceof BaseDStabBus<?, ?> bus) {
+                voltageSensorBus = bus;
+            } else {
+                // PSS/E uses the terminal sensor when the requested bus is absent.
+                LOG.warn("WT4E1 at {} cannot find voltage control bus {}; using terminal voltage",
+                        terminal.getId(), data.remoteBus());
+            }
+        }
+        double voltage = terminal.getVoltageMag();
+        double sensorVoltage = voltageSensorBus.getVoltageMag();
         double p = generator.getP();
         double q = generator.getQ();
-        voltageReference = voltage;
+        voltageReference = sensorVoltage;
         reactiveReference = q;
         powerReference = p;
         powerFactorAngle = Math.atan2(q, p);
         double ip = p / Math.max(EPS, voltage);
         double iq = q / Math.max(EPS, voltage);
-        state = new State(q, q, 0.0, 0.0, voltage, p, voltage, iq, 0.0, p);
+        state = new State(q, q, 0.0, 0.0, sensorVoltage, p, voltage, iq, 0.0, p);
         initialized = true;
         generator.setCommands(ip, iq);
     }
@@ -58,7 +77,10 @@ public final class Wt4e1Model implements ICMLStateProvider {
         double voltage = generator.getDStabBus().getVoltageMag();
         double p = generator.getP();
         double q = generator.getQ();
-        double sensedVoltage = algebraicOrState(voltage, s.voltageSensor, data.voltageSensorTime());
+        // WindVAR regulates the selected bus. The inner voltage loop and
+        // converter current calculations still use the physical terminal.
+        double sensorVoltage = voltageSensorBus.getVoltageMag();
+        double sensedVoltage = algebraicOrState(sensorVoltage, s.voltageSensor, data.voltageSensorTime());
         double vError = voltageReference - sensedVoltage;
         double vProp = algebraicOrState(data.voltageProportionalGain() * vError,
                 s.windVarLag, data.windVarTime());
@@ -85,7 +107,7 @@ public final class Wt4e1Model implements ICMLStateProvider {
                         s.voltageFilter, data.voltageFilterTime()),
                 vIntegralRate, powerIntegralRate, rate(piOutput, s.powerFeedback,
                         data.rateFeedbackTime()),
-                rate(voltage, s.voltageSensor, data.voltageSensorTime()),
+                rate(sensorVoltage, s.voltageSensor, data.voltageSensorTime()),
                 rate(p, s.powerFilter, data.powerFilterTime()), qVoltageRate, iqRate,
                 rate(data.voltageProportionalGain() * vError, s.windVarLag, data.windVarTime()),
                 rate(p, s.powerFactorFilter, data.powerFactorFilterTime()));
