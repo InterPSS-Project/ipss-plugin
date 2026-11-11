@@ -126,4 +126,13 @@ public class DStabNetworkBuilderAc5cTest extends CorePluginTestSetup {
     private static double[] add(double[] x,double[] d,double dt){double[] y=new double[x.length];for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;return y;}
     private static void step(Ac5cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Ac5cExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcAc5c("Bus1", "1", data);
+        });
+    }
 }

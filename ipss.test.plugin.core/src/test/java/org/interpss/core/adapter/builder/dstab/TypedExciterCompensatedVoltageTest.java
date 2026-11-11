@@ -215,4 +215,43 @@ public class TypedExciterCompensatedVoltageTest extends CorePluginTestSetup {
     private static String dataJson(Fixture f)throws Exception{return new Gson().toJson(f.exciter.getClass().getMethod("getData").invoke(f.exciter));}
     private static double potential(Fixture f){return switch(f.family){case DC4C->((Dc4cExciter)f.exciter).getCompoundSource();case ST6C->((St6cExciter)f.exciter).getPotentialSource();case ESST2A->((Esst2aExciter)f.exciter).getCompoundSourceVoltage();default->throw new IllegalArgumentException();};}
     private static double bridge(Fixture f){return switch(f.family){case DC4C->((Dc4cExciter)f.exciter).getAvailableSupply();case ST6C->((St6cExciter)f.exciter).getAvailableBridge();case ESST2A->((Esst2aExciter)f.exciter).getBridgeVoltage();default->throw new IllegalArgumentException();};}
+
+    static void checkSensing(java.util.function.BiFunction<
+            org.interpss.fadapter.builder.DStabNetworkBuilder, Double, AnnotateExciter> attach)
+            throws Exception {
+        for (double time : new double[]{0.0, .05}) {
+            var builder = DStabBuilderTestFixture.createWithMachine();
+            Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+            assertTrue(machine.initStates(machine.getDStabBus()));
+            machine.setEfd(1.2);
+            var provider = assertInstanceOf(IeeeVoltageCompensatedMachine.class, machine);
+            AnnotateExciter exciter = attach.apply(builder, time);
+            Method sensor = exciter.getClass().getMethod("getSensedVoltage");
+            assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+            double plainReference = exciter.getRefPoint();
+            double terminal = machine.getDStabBus().getVoltageMag();
+
+            provider.setIeeeVcData(LEFT);
+            double initial = provider.getCmlMachineVoltage();
+            assertTrue(Math.abs(initial - terminal) > 1e-4);
+            assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+            assertEquals(initial - terminal, exciter.getRefPoint() - plainReference, TOL);
+            assertEquals(initial, (double) sensor.invoke(exciter), TOL);
+            assertEquals(1.2, exciter.getOutput(machine), TOL);
+
+            provider.setIeeeVcData(RIGHT);
+            double left = provider.getCmlMachineVoltage(), h = .001;
+            assertTrue(exciter.nextStep(h, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            double predicted = time == 0 ? left : initial + h * (left - initial) / time;
+            assertEquals(predicted, (double) sensor.invoke(exciter), TOL);
+
+            provider.setIeeeVcData(new IeeeVcData(-.012, .019));
+            double right = provider.getCmlMachineVoltage();
+            assertTrue(exciter.nextStep(h, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            double corrected = time == 0 ? right
+                    : initial + .5 * h * ((left - initial) + (right - predicted)) / time;
+            assertEquals(corrected, (double) sensor.invoke(exciter), TOL);
+            assertEquals(terminal, machine.getDStabBus().getVoltageMag(), 0.0);
+        }
+    }
 }

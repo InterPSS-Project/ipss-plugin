@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac8c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 import org.interpss.dstab.control.exc.OverExcitationLimiterTarget;
 
@@ -87,12 +89,12 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
         // PowerWorld's AC8C initialization treatment expands only the regulator
         // output limits. The rotating-exciter field limits remain model data.
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
-        state[VE]=ve0;state[VSENSE]=vt0;state[PID_DERIVATIVE_LAG]=0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[PID_DERIVATIVE_LAG]=0;
         state[PID_INTEGRAL]=pid0;state[VR]=vr0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         double pss=stabilizerSignal(machine);
         // Initialize the limiter only after the physical field state is available.
-        reference=vt0-(vosLocation==PSS_AT_ERROR?pss:0);
+        reference=state[VSENSE]-(vosLocation==PSS_AT_ERROR?pss:0);
         if(auxiliaryOel3c!=null&&!auxiliaryOel3c.initializeAfterExciter(vfe0))return false;
         reference-=summationLimiterInput();
         outputSignal=speedAdjusted(rectifierOutput(ve0,ifd0),machine);initialized=true;return true;
@@ -125,7 +127,7 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[PID_DERIVATIVE_LAG]=lagDerivative(a.pidError,x[PID_DERIVATIVE_LAG],tdr);
         dx[PID_INTEGRAL]=kir*(a.pidError-PID_TRACKING_GAIN*(a.pidUnlimited-a.pidLimited));
         double vrRate=ta>EPS?(ka*a.pidOutput-x[VR])/ta:0;
@@ -141,7 +143,7 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
         return algebraicsAtField(x,machine,field,ifd);
     }
     private Algebraic algebraicsAtField(double[] x,Machine machine,double field,double ifd){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double pss=stabilizerSignal(machine),pidError=reference-sensed+summationLimiterInput()
                 +(vosLocation==PSS_AT_ERROR?pss:0);
         pidError=hvGate(pidError,GATE_1);if(vosLocation==PSS_AFTER_HV_GATE)pidError+=pss;

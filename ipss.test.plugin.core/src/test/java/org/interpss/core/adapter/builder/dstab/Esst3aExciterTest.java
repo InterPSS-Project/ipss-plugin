@@ -208,4 +208,13 @@ public class Esst3aExciterTest extends CorePluginTestSetup {
     }
 
     private record Fixture(Machine machine, IEEE2005ST3AExciter exciter) {}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return attach(builder, data);
+        });
+    }
 }

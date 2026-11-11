@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.ieee.y2005.st3a;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -76,10 +78,10 @@ public class IEEE2005ST3AExciter extends AnnotateExciter implements IntegrationS
         vmmax = Math.max(vmmax, vm0); vmmin = Math.min(vmmin, vm0);
         vrmax = Math.max(vrmax, vr0); vrmin = Math.min(vrmin, vr0);
         vimax = Math.max(vimax, vi0); vimin = Math.min(vimin, vi0);
-        state[VM] = vm0; state[VSENSE] = vt0; state[VR] = vr0; state[LEAD_LAG] = vi0;
+        state[VM] = vm0; state[VSENSE] = sensedVoltage(machine); state[VR] = vr0; state[LEAD_LAG] = vi0;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
-        reference = vi0 + vt0 - stabilizerSignal(machine);
+        reference = vi0 + state[VSENSE] - stabilizerSignal(machine);
         outputSignal = efd0;
         initialized = true;
         return true;
@@ -140,14 +142,14 @@ public class IEEE2005ST3AExciter extends AnnotateExciter implements IntegrationS
     private void derivatives(double[] values, double[] derivatives, Machine machine) {
         Arrays.fill(derivatives, 0.0);
         Algebraic a = algebraics(values, machine);
-        derivatives[VSENSE] = lag(machine.getDStabBus().getVoltageMag(), values[VSENSE], tr);
+        derivatives[VSENSE] = lag(sensedVoltage(machine), values[VSENSE], tr);
         derivatives[LEAD_LAG] = lag(a.gatedInput, values[LEAD_LAG], tb);
         derivatives[VR] = limitedRate(ka * a.leadLag, values[VR], ta, vrmin, vrmax);
         derivatives[VM] = limitedRate(km * a.vrs, values[VM], tm, vmmin, vmmax);
     }
 
     private Algebraic algebraics(double[] values, Machine machine) {
-        double sensed = tr > EPS ? values[VSENSE] : machine.getDStabBus().getVoltageMag();
+        double sensed = tr > EPS ? values[VSENSE] : sensedVoltage(machine);
         double error = reference - sensed + stabilizerSignal(machine);
         double limitedInput = clamp(error, vimin, vimax);
         double gatedInput = hasVuel ? Math.max(limitedInput, vuel) : limitedInput;

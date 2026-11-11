@@ -193,4 +193,13 @@ public class DStabNetworkBuilderAc11cTest extends CorePluginTestSetup {
         FixedOutputStabilizer(Machine machine,double output){super("fixed-pss","Fixed PSS","test");this.output=output;setMachine(machine);}
         @Override public double getOutput(Machine machine){return output;}
     }
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = dynamicData();
+            data.setTr(time);
+            return builder.addExcAc11c("Bus1", "1", data);
+        });
+    }
 }

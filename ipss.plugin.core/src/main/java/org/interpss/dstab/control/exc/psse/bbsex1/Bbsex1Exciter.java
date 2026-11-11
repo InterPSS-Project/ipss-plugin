@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.bbsex1;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -81,12 +83,12 @@ public final class Bbsex1Exciter extends AnnotateExciter implements IntegrationS
         vrmax = Math.max(vrmax, vr);
         vrmin = Math.min(vrmin, vr);
         double regulatorInput = vr / k;
-        state[SENSED] = vt;
+        state[SENSED] = sensedVoltage(machine);
         state[LEAD_LAG] = regulatorInput;
         state[INVERSE_FEEDBACK] = inverseFeedbackGain() * vr;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
-        reference = vt + regulatorInput - limiterInput()
+        reference = state[SENSED] + regulatorInput - limiterInput()
                 - (switchLocation == SUPPLEMENT_AT_ERROR ? pss : 0.0);
         outputSignal = efd;
         initialized = true;
@@ -146,8 +148,7 @@ public final class Bbsex1Exciter extends AnnotateExciter implements IntegrationS
 
     private void derivatives(double[] values, double[] derivative, Machine machine) {
         Algebraic algebraic = algebraics(values, machine);
-        double vt = machine.getDStabBus().getVoltageMag();
-        derivative[SENSED] = tf > EPS ? (vt - values[SENSED]) / tf : 0.0;
+        derivative[SENSED] = tf > EPS ? (sensedVoltage(machine) - values[SENSED]) / tf : 0.0;
         derivative[LEAD_LAG] = (algebraic.error - values[LEAD_LAG]) / t4;
         derivative[INVERSE_FEEDBACK] =
                 (inverseFeedbackGain() * algebraic.vr - values[INVERSE_FEEDBACK]) / t2;
@@ -155,7 +156,7 @@ public final class Bbsex1Exciter extends AnnotateExciter implements IntegrationS
 
     private Algebraic algebraics(double[] values, Machine machine) {
         double vt = machine.getDStabBus().getVoltageMag();
-        double sensed = tf > EPS ? values[SENSED] : vt;
+        double sensed = tf > EPS ? values[SENSED] : sensedVoltage(machine);
         double pss = stabilizerSignal(machine);
         double error = reference - sensed + limiterInput()
                 + (switchLocation == SUPPLEMENT_AT_ERROR ? pss : 0.0);

@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac5c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -60,10 +62,10 @@ public class Ac5cExciter extends AnnotateExciter implements IntegrationStepAware
         if(ve0<vemin-EPS||ve0>upper+EPS)return false;
         double vfe0=fieldFeedback(ve0,ifd0),error0=vfe0/ka;
         vamax=Math.max(vamax,vfe0);vamin=Math.min(vamin,vfe0);
-        state[VE]=ve0;state[VSENSE]=vt0;state[VR]=vfe0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[VR]=vfe0;
         state[FEEDBACK_1]=vfe0;state[FEEDBACK_2]=vfe0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=error0+vt0-stabilizerSignal(machine)-summationLimiterInput();
+        reference=error0+state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
         outputSignal=machine.getEfd();initialized=true;return true;
     }
 
@@ -94,7 +96,7 @@ public class Ac5cExciter extends AnnotateExciter implements IntegrationStepAware
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         double vrRate=ta>EPS?(ka*a.error-x[VR])/ta:0;
         if((x[VR]>=vamax-EPS&&vrRate>0)||(x[VR]<=vamin+EPS&&vrRate<0))vrRate=0;
         dx[VR]=vrRate;
@@ -105,7 +107,7 @@ public class Ac5cExciter extends AnnotateExciter implements IntegrationStepAware
         dx[VE]=veRate;
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double base=reference-sensed+stabilizerSignal(machine)+summationLimiterInput();
         double direct=tf2>EPS?tf3/tf2:1,stored=tf2>EPS?(1-tf3/tf2)*x[FEEDBACK_1]:0;
         double va;

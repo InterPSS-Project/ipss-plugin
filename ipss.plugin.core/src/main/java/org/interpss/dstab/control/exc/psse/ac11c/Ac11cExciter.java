@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac11c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -70,13 +72,13 @@ public final class Ac11cExciter extends AnnotateExciter implements IntegrationSt
         vrmax=Math.max(vrmax,va0);vrmin=Math.min(vrmin,va0);
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
         vrsmax=Math.max(vrsmax,0);vrsmin=Math.min(vrsmin,0);
-        state[VE]=ve0;state[VSENSE]=vt0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);
         state[MAIN_Q]=va0;state[MAIN_I]=va0;
         state[PSS_Q]=0;state[PSS_I]=0;
         state[UEL_Q]=va0;state[UEL_I]=va0;state[OEL_I]=va0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         double vs=stabilizerSignal(machine);
-        reference=vt0-summationLimiterInput()-(vosLocation==VOS_ERROR?vs:0);
+        reference=state[VSENSE]-summationLimiterInput()-(vosLocation==VOS_ERROR?vs:0);
         outputSignal=rectifierOutput(ve0,ifd0);initialized=true;return true;
     }
 
@@ -119,7 +121,7 @@ public final class Ac11cExciter extends AnnotateExciter implements IntegrationSt
 
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[MAIN_Q]=altPidLagDerivative(a.mainPi,x[MAIN_Q]);
         dx[MAIN_I]=altPidIntegralDerivative(a.gatedError,a.mainUnlimited,kpa,tia,vrmin,vrmax);
         dx[PSS_Q]=altPidLagDerivative(a.pssPi,x[PSS_Q]);
@@ -149,7 +151,7 @@ public final class Ac11cExciter extends AnnotateExciter implements IntegrationSt
         return algebraicsAtField(x,machine,field,ifd);
     }
     private Algebraic algebraicsAtField(double[] x,Machine machine,double field,double ifd){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double vs=stabilizerSignal(machine),vs1=0,vs2=0;
         double error=reference-sensed+summationLimiterInput();
         if(vosLocation==VOS_ERROR)error+=vs;

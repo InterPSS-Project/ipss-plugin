@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac2c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -62,7 +64,7 @@ public final class Ac2cExciter extends AnnotateExciter implements IntegrationSte
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
         efemax=Math.max(efemax,vfe0);efemin=Math.min(efemin,vfe0);
         double error0=va0/ka;
-        state[VE]=ve0;state[VSENSE]=machine.getDStabBus().getVoltageMag();
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);
         state[LEAD_LAG]=error0;state[VA]=va0;state[VFE_LAG]=vfe0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         reference=error0+state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
@@ -108,7 +110,7 @@ public final class Ac2cExciter extends AnnotateExciter implements IntegrationSte
 
     private void derivatives(double[] x,double[] dx,Machine machine) {
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[LEAD_LAG]=lagDerivative(a.error,x[LEAD_LAG],tb);
         double vaRate=ta>EPS?(ka*a.leadLag-x[VA])/ta:0;
         if((x[VA]>=vamax-EPS&&vaRate>0)||(x[VA]<=vamin+EPS&&vaRate<0))vaRate=0;
@@ -120,7 +122,7 @@ public final class Ac2cExciter extends AnnotateExciter implements IntegrationSte
     }
 
     private Algebraic algebraics(double[] x,Machine machine) {
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         if(te>EPS)return algebraicsForField(x,machine,sensed,x[VE]);
         double field=solveAlgebraicField(x,machine,sensed);
         return algebraicsForField(x,machine,sensed,field);

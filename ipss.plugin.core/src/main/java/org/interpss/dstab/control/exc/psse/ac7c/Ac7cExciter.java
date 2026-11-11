@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac7c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -66,11 +68,11 @@ public final class Ac7cExciter extends AnnotateExciter implements IntegrationSte
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
         vfemax=Math.max(vfemax,vfe0);vemin=Math.min(vemin,ve0);
-        state[VE]=ve0;state[VSENSE]=vt0;state[PID_INTEGRAL]=vr0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[PID_INTEGRAL]=vr0;
         state[PID_DERIVATIVE_LAG]=0;state[PI_INTEGRAL]=va0;state[RATE_LAG]=vfe0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         double pss=stabilizerSignal(machine);
-        reference=vt0-summationLimiterInput()-(vosLocation==PSS_AT_ERROR?pss:0);
+        reference=state[VSENSE]-summationLimiterInput()-(vosLocation==PSS_AT_ERROR?pss:0);
         outputSignal=speedAdjusted(rawEfd0,machine);initialized=true;return true;
     }
 
@@ -104,7 +106,7 @@ public final class Ac7cExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[PID_DERIVATIVE_LAG]=lagDerivative(a.pidError,x[PID_DERIVATIVE_LAG],tdr);
         double pidRate=kir*a.pidError;
         if((a.pidUnlimited>=vrmax&&pidRate>0)||(a.pidUnlimited<=vrmin&&pidRate<0))pidRate=0;
@@ -124,7 +126,7 @@ public final class Ac7cExciter extends AnnotateExciter implements IntegrationSte
         return algebraicsAtField(x,machine,field,ifd);
     }
     private Algebraic algebraicsAtField(double[] x,Machine machine,double field,double ifd){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double rawEfd=rectifierOutput(field,ifd),vfe=fieldFeedback(field,ifd);
         double rateFeedback=tf>EPS?kf3*(vfe-x[RATE_LAG])/tf:0;
         double pss=stabilizerSignal(machine);
