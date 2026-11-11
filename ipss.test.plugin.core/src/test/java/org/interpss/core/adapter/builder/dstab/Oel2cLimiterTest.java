@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.MachineIfdBase;
 
 /** Exact-schema, equation, boundary, and named-state tests for OEL2C. */
 public class Oel2cLimiterTest extends CorePluginTestSetup {
@@ -69,6 +70,28 @@ public class Oel2cLimiterTest extends CorePluginTestSetup {
         inverseBuilder.getDStabNetwork().getMachine("Bus1-mach1").setEfd(.5);
         for(int i=0;i<500;i++){step(fixed,.001);step(inverse,.001);}
         assertNotEquals(fixed.getStateSnapshot()[5],inverse.getStateSnapshot()[5],1e-6);
+    }
+
+    @ParameterizedTest @ValueSource(doubles={2.0, 4.0})
+    void parsedFieldCurrentInputUsesRatedBaseBeforeInputGain(double rating, @TempDir Path directory)
+            throws Exception {
+        var builder = fixtureBuilder(true);
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        assertTrue(machine.initStates(machine.getDStabBus()));
+        double ifd = machine.calculateIfd(MachineIfdBase.EXCITER);
+        assertTrue(ifd > 0.0);
+
+        Path dyr = directory.resolve("oel2c.dyr");
+        Files.writeString(dyr, "1 'OEL2C' '1' 2 1 .015 .08 .02 .10 .35 .8 .01 .08 "
+                + "0 -1 0 -1 0 -1 0 .12 .4 .04 .7 .02 1.02 .9 1.45 1.10 .05 "
+                + "1.8 .2 2 .05 .5 -.5 1 -1 .2 1 0 0 -2 2 .1 " + rating + " /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var limiter = machine.getDStabBus().getDynamicBusDeviceList().stream()
+                .filter(Oel2cOverExcitationLimiter.class::isInstance)
+                .map(Oel2cOverExcitationLimiter.class::cast).findFirst().orElseThrow();
+        assertEquals(rating, limiter.getData().ratedFieldCurrent(), 0.0);
+        assertTrue(limiter.initStates());
+        assertEquals(.7 * ifd / rating, limiter.getNamedStates().get("Sensed input"), TOL);
     }
 
     private static void step(Oel2cOverExcitationLimiter o,double dt){assertTrue(o.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,0));assertTrue(o.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,1));assertTrue(o.afterStep(dt));}

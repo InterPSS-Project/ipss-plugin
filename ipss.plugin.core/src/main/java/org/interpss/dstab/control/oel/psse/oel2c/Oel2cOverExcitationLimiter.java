@@ -177,7 +177,9 @@ public final class Oel2cOverExcitationLimiter extends DynLoadModelImpl
     private double scaledInput(){
         double raw=switch(data.inputMode()){
             case 1->machine.getEfd();
-            case 2->machine.calculateIfd(MachineIfdBase.EXCITER);
+            // Convert the exciter-base field current to rated-field per unit
+            // before applying the entered input gain.
+            case 2 -> machine.calculateIfd(MachineIfdBase.EXCITER) / data.ratedFieldCurrent();
             default->machine.getEfd();
         };
         return data.inputScale()*raw;
