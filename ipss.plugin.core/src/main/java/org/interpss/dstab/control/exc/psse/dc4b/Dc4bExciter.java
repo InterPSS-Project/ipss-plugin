@@ -100,8 +100,10 @@ public final class Dc4bExciter extends AnnotateExciter
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);double vt=machine.getDStabBus().getVoltageMag();
         dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],td);
         double integralRate=ki*a.error;
-        if((a.proportionalIntegralOutput>=vrmax/ka-EPS&&integralRate>0)
-                ||(a.proportionalIntegralOutput<=vrmin/ka+EPS&&integralRate<0))integralRate=0;
+        // The PID has one non-windup limit after the derivative is added.
+        // Hold outward integral motion at that limit and allow inward release.
+        if((a.pidUnlimited>=vrmax/ka-EPS&&integralRate>0)
+                ||(a.pidUnlimited<=vrmin/ka+EPS&&integralRate<0))integralRate=0;
         dx[PID_I]=integralRate;
         double vrRate=ta>EPS?(ka*vt*a.gatedPid-x[VR])/ta:0,low=vt*vrmin,high=vt*vrmax;
         if((x[VR]>=high&&vrRate>0)||(x[VR]<=low&&vrRate<0))vrRate=0;dx[VR]=vrRate;
@@ -114,7 +116,7 @@ public final class Dc4bExciter extends AnnotateExciter
         double feedback=tf>EPS?kf*(x[EFD]-x[FB_LAG])/tf:0;
         double error=reference-sensed+stabilizerSignal(machine)+directUel()-directOel()-feedback;
         double derivative=td>EPS?kd*(error-x[PID_D_LAG])/td:0;
-        double proportionalIntegral=clamp(kp*error+x[PID_I],vrmin/ka,vrmax/ka);
+        double proportionalIntegral=kp*error+x[PID_I];
         double unlimited=proportionalIntegral+derivative;
         double pid=clamp(unlimited,vrmin/ka,vrmax/ka),gated=pid;
         if(uel==2&&hasVuel)gated=Math.max(gated,vuel);
