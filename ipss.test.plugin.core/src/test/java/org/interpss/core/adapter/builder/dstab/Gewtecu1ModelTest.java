@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -210,4 +211,23 @@ public class Gewtecu1ModelTest {
     }
 
     private record Fixture(Gewtgcu1Model generator, Gewtecu1Model controller) { }
+
+    @Test void reinitializationDiscardsPendingConverterAndControllerHistory(@TempDir Path directory)
+            throws Exception {
+        var fixture = load(directory);
+        var generator = fixture.generator;
+        var controller = fixture.controller;
+        var method = com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER;
+        assertFalse(generator.nextStep(.001, method, 1));
+        assertTrue(generator.nextStep(.001, method, 0));
+        assertTrue(generator.initStates(generator.getDStabBus()));
+        var converterState = generator.getNamedStates();
+        var controlState = controller.getNamedStates();
+        assertFalse(generator.nextStep(.001, method, 1));
+        assertFalse(controller.step(.001, 1));
+        assertEquals(converterState, generator.getNamedStates());
+        assertEquals(controlState, controller.getNamedStates());
+        assertTrue(generator.nextStep(.001, method, 0));
+        assertTrue(generator.nextStep(.001, method, 1));
+    }
 }

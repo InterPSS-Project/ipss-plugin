@@ -63,6 +63,8 @@ public final class Gewtecu1Model implements ICMLStateProvider {
                 voltage, rotorSpeed,
                 voltage, reactiveCommand, 0.0, machineP, availablePower, 0.0,
                 voltage, 0.0, 0.0, droop, 0.0, 0.0);
+        oldState = null;
+        predictor = null;
         initialized = true;
         tripped = outsideOperatingEnvelope();
         updateCommands();

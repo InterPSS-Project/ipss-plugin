@@ -69,6 +69,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         ipCommand = ipState;
         reactiveCommand = reactiveState;
         filteredVoltage = compensatedVoltage(voltage, reactiveState);
+        oldState = null;
+        predictor = null;
         initialized = true;
         if (driveTrain != null) {
             // Initialize the shaft on the electrical controller's steady
@@ -109,6 +111,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
+        // Reject an unmatched corrector before advancing any attached controls.
+        if (flag == 1 && oldState == null) return false;
         if (auxiliaryController != null) {
             auxiliaryController.step(dt, flag);
             if (electricalController != null) electricalController.setPlantAuxiliarySignals(
@@ -128,7 +132,6 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
             predictor = derivative;
             apply(advance(oldState, predictor, dt));
         } else {
-            if (oldState == null || predictor == null) return false;
             apply(advance(oldState, predictor.add(derivative), 0.5 * dt));
             oldState = null;
             predictor = null;

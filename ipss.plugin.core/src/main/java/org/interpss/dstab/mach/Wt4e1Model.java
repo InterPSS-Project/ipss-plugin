@@ -54,6 +54,8 @@ public final class Wt4e1Model implements ICMLStateProvider {
         double ip = p / Math.max(EPS, voltage);
         double iq = q / Math.max(EPS, voltage);
         state = new State(q, q, 0.0, 0.0, sensorVoltage, p, voltage, iq, 0.0, p);
+        oldState = null;
+        predictor = null;
         initialized = true;
         generator.setCommands(ip, iq);
     }
@@ -65,6 +67,7 @@ public final class Wt4e1Model implements ICMLStateProvider {
             predictor = derivatives(state);
             state = advance(oldState, predictor, dt);
         } else {
+            if (oldState == null) return;
             Derivative corrected = derivatives(state);
             state = advance(oldState, predictor.add(corrected), .5 * dt);
             oldState = null;
@@ -145,7 +148,10 @@ public final class Wt4e1Model implements ICMLStateProvider {
         values.put("Voltage regulator integrator", state.voltageIntegral);
         values.put("Active-power regulator integrator", state.powerIntegral);
         values.put("Active-power regulator feedback", state.powerFeedback);
-        values.put("Voltage sensor", state.voltageSensor);
+        // With TRV bypassed, the native sensor slot follows the live input.
+        // Keep the dormant integration memory separate from that observation.
+        values.put("Voltage sensor", algebraicOrState(voltageSensorBus.getVoltageMag(),
+                state.voltageSensor, data.voltageSensorTime()));
         values.put("Power filter", state.powerFilter);
         values.put("MVAR/Vref integrator", state.qVoltageIntegral);
         values.put("Voltage-error/internal-voltage integrator", state.internalVoltage);

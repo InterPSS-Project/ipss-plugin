@@ -63,6 +63,8 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
         iqCommand = iqState;
         deltaQ = highVoltageCorrection(voltage, data.highVoltageThreshold(),
                 data.highVoltageReactiveCurrentGain());
+        oldState = null;
+        predictor = null;
         initialized = true;
         if (electricalController != null) electricalController.initialize();
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
@@ -73,6 +75,8 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
+        // Reject an unmatched corrector before advancing any attached controls.
+        if (flag == 1 && oldState == null) return false;
         if (electricalController != null) electricalController.step(dt, flag);
         State current = state();
         Derivative derivative = derivatives(current);
@@ -81,7 +85,6 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
             predictor = derivative;
             apply(advance(oldState, predictor, dt));
         } else {
-            if (oldState == null || predictor == null) return false;
             apply(advance(oldState, predictor.add(derivative), .5 * dt));
             oldState = null;
             predictor = null;
