@@ -19,12 +19,11 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
     
 
     
-    // Dclf screening options
-    private boolean dclfScreening = false;
+    // Unused DCLF screening options — not wired into analyzers; retained for possible future use.
+    // private boolean dclfScreening = false;
+    // private double dcLoadingCutoff = 100.0; // in percent
+    // private double dcFlowChangeCutoff = 200.0; // in percent of base case flow
     private boolean dclfInclLoss = true;
-    private double dcLoadingCutoff = 100.0; // in percent
-    private double dcFlowChangeCutoff = 200.0; // in percent of base case flow
-    
 
     public AclfMethodType getLfMethod() { return lfMethod; }
     public void setLfMethod(AclfMethodType lfMethod) { this.lfMethod = lfMethod; }
@@ -43,19 +42,18 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
 
     public int getParallelism() { return parallelism; }
     public void setParallelism(int parallelism) { this.parallelism = Math.max(1, parallelism); }
-    
 
-    public boolean isDclfScreening() { return dclfScreening; }
-    public void setDclfScreening(boolean dclfScreening) { this.dclfScreening = dclfScreening; }
-    
+    // public boolean isDclfScreening() { return dclfScreening; }
+    // public void setDclfScreening(boolean dclfScreening) { this.dclfScreening = dclfScreening; }
+
     public boolean isDclfInclLoss() { return dclfInclLoss; }
     public void setDclfInclLoss(boolean dclfInclLoss) { this.dclfInclLoss = dclfInclLoss; }
-    
-    public double getDcLoadingCutoff() { return dcLoadingCutoff; }
-    public void setDcLoadingCutoff(double dcLoadingCutoff) { this.dcLoadingCutoff = dcLoadingCutoff; }
-    
-    public double getDcFlowChangeCutoff() { return dcFlowChangeCutoff; }
-    public void setDcFlowChangeCutoff(double dcFlowChangeCutoff) { this.dcFlowChangeCutoff = dcFlowChangeCutoff; }
+
+    // public double getDcLoadingCutoff() { return dcLoadingCutoff; }
+    // public void setDcLoadingCutoff(double dcLoadingCutoff) { this.dcLoadingCutoff = dcLoadingCutoff; }
+
+    // public double getDcFlowChangeCutoff() { return dcFlowChangeCutoff; }
+    // public void setDcFlowChangeCutoff(double dcFlowChangeCutoff) { this.dcFlowChangeCutoff = dcFlowChangeCutoff; }
     
     /**
      * Create a default configuration instance for Python convenience
