@@ -216,6 +216,19 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         return bus;
     }
 
+    @Override protected boolean initializeInductionMotor(InductionMotor motor) {
+        // The composite card supplies performance reactances without a leakage
+        // reactance. The two-cage equivalent uses 80% of Xpp. The generic
+        // performance-data initializer can instead select 80% of Xp when
+        // Xp and Xpp are close, changing both rotor resistances and initial slip.
+        // Keep explicit leakage and single-cage preparation with the base motor.
+        if (motor.getXl() == 0.0 && motor.getTpp0() > 0.0
+                && motor.getXpp() > 0.0 && motor.getXpp() < motor.getXp()) {
+            motor.setXl(0.8 * motor.getXpp());
+        }
+        return super.initializeInductionMotor(motor);
+    }
+
     @Override protected boolean initializeSinglePhaseMotor(LD1PAC motor) {
         if (getLoadBus() == getDStabBus() && motor instanceof LD1PACImpl compressor) {
             double active = getLoadBus().getInitLoad().getReal() * getFmD();
