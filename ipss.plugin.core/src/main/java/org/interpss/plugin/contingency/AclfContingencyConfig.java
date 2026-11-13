@@ -1,6 +1,7 @@
 package org.interpss.plugin.contingency;
 
 import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.dclf.BaseContingencyConfig;
 
 /**
  * Configuration class for contingency analysis parameters
