@@ -138,7 +138,7 @@ public class PsseReecb1ControllerTest extends CorePluginTestSetup {
 
     @Test
     void fullRegcaReecbRepcaStackInitializesAndRuns() throws Exception {
-        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilderWithBalancedLoad();
         Regca1Model converter = builder.addRegca1("Bus1", "1", regcaData());
         Reecb1Model electrical = builder.addReecb1("Bus1", "1",
                 data(0, 0, 1.11, .02, .05, .02));

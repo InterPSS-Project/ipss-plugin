@@ -462,7 +462,17 @@ public class AclfNetworkBuilder {
         gen.setQGenLimit(new LimitType(qMaxPU, qMinPU));
         gen.setPGenLimit(new LimitType(pMaxPU, pMinPU));
 
-        if (sourceZ != null) gen.setSourceZ(sourceZ);
+        if (sourceZ != null) {
+            gen.setSourceZ(sourceZ);
+            // DStab/ACSC Y formation stamps Pos/Neg/Zero sequence Z. Pos/Neg already
+            // fall back to sourceZ in AcscGenImpl; Zero does not, so set all three
+            // explicitly when the builder only receives RAW source impedance.
+            if (gen instanceof AcscGen acscGen) {
+                acscGen.setPosGenZ(sourceZ);
+                acscGen.setNegGenZ(sourceZ);
+                acscGen.setZeroGenZ(sourceZ);
+            }
+        }
         if (xfrZ != null && (xfrZ.getReal() != 0.0 || xfrZ.getImaginary() != 0.0)) {
             gen.setXfrZ(xfrZ);
             gen.setXfrTap(xfrTap != 0.0 ? xfrTap : 1.0);

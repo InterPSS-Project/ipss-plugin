@@ -182,6 +182,10 @@ public final class CgmesAclfUtil {
 		algo.setInitBusVoltage(false);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+		// Keep the SV seed: outer tap/PV-limit adjust walks off SvVoltage, and
+		// CGMES maxQ==minQ machines cannot recover voltage regulation under the
+		// fixed-Q backoff guard.
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		if (net.getNoBus() > 1000) {
 			algo.setVariableUpdateLimit(true);
 		}

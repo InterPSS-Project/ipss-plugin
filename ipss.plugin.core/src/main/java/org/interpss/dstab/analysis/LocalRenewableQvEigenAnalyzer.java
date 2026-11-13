@@ -393,9 +393,27 @@ public final class LocalRenewableQvEigenAnalyzer {
         throw new IllegalStateException("Limiter constraint has no device: " + deviceId);
     }
 
+    private static EigenDecomposition eigenDecomposition(double[][] state) {
+        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(state, false);
+        try {
+            return new EigenDecomposition(matrix);
+        } catch (org.apache.commons.math3.exception.MaxCountExceededException first) {
+            // Large multi-plant envelopes can leave a near-defective Schur form;
+            // a tiny diagonal regularizer restores commons-math convergence.
+            for (int index = 0; index < state.length; index++) {
+                matrix.addToEntry(index, index, 1.0e-12);
+            }
+            try {
+                return new EigenDecomposition(matrix);
+            } catch (org.apache.commons.math3.exception.MaxCountExceededException retry) {
+                retry.initCause(first);
+                throw retry;
+            }
+        }
+    }
+
     private static Mode dominantMode(double[][] state, List<Device> devices) {
-        EigenDecomposition decomposition = new EigenDecomposition(
-                new Array2DRowRealMatrix(state, false));
+        final EigenDecomposition decomposition = eigenDecomposition(state);
         int dominant = java.util.stream.IntStream.range(0, state.length).boxed()
                 .max(Comparator.comparingDouble(decomposition::getRealEigenvalue))
                 .orElseThrow();

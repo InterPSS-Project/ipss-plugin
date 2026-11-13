@@ -49,6 +49,10 @@ public class Reecc1NativeConformanceTest {
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setOutPutPerSteps(1);
+        ((com.interpss.dstab.algo.defaultImpl.DStabSolverImpl) algorithm.getSolver())
+                .setMaxIterationTimes(40);
+        ((com.interpss.dstab.algo.defaultImpl.DStabSolverImpl) algorithm.getSolver())
+                .setNetworkAccelerationEnabled(true);
         algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus2", network, SimpleFaultCode.GROUND_3P,

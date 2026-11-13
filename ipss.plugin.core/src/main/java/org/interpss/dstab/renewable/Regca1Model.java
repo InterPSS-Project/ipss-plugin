@@ -12,8 +12,10 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
+import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.device.DynamicGenDevice;
+import com.interpss.dstab.device.NetworkIterationAware;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /**
@@ -21,7 +23,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * composed as controllers while this device owns the network current source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider {
+        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider,
+        NetworkIterationAware {
     private static final double EPS = 1.0e-9;
 
     private final Regca1Data data;
@@ -46,6 +49,9 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double dip0;
     private double diq0;
     private double integrationStep;
+    /** Under-relaxed terminal voltage for algebraic LVG/HV current during network solves. */
+    private Complex acceleratedVoltage = Complex.ZERO;
+    private boolean networkSolveActive;
 
     @Override
     public void configureIntegrationStep(double timeStepSec) {
@@ -174,16 +180,50 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     @Override
+    public void beginNetworkSolution(Context context) throws DStabSimuException {
+        networkSolveActive = true;
+        acceleratedVoltage = terminalVoltage();
+    }
+
+    @Override
+    public void beforeNetworkIteration(int iteration) throws DStabSimuException {
+        Complex terminal = terminalVoltage();
+        double accel = data.accel();
+        // Accel in (0, 1) under-relaxes the voltage seen by LVG/HV algebraic current.
+        // Accel <= 0 or Accel >= 1 disables blending (use the live terminal voltage).
+        if (accel > EPS && accel < 1.0 - EPS) {
+            acceleratedVoltage = terminal.multiply(accel)
+                    .add(acceleratedVoltage.multiply(1.0 - accel));
+        } else {
+            acceleratedVoltage = terminal;
+        }
+    }
+
+    @Override
+    public void endNetworkSolution(boolean converged) {
+        networkSolveActive = false;
+    }
+
+    @Override
     public Object getOutputObject() {
-        Complex voltage = getDStabBus().getVoltage();
-        Complex injected = injectedCurrent(voltage);
+        Complex terminal = terminalVoltage();
+        Complex injected = injectedCurrent(injectionVoltage());
         Complex z = parentGen.getPosGenZ();
         Complex norton = injected;
         if (z != null) {
             z = z.multiply(parentGen.getZMultiFactor());
-            if (z.abs() > EPS) norton = norton.add(voltage.divide(z));
+            // Norton shunt term always uses the physical bus voltage so Y·V cancels it.
+            if (z.abs() > EPS) norton = norton.add(terminal.divide(z));
         }
         return norton;
+    }
+
+    private Complex terminalVoltage() {
+        return getDStabBus() == null ? Complex.ZERO : getDStabBus().getVoltage();
+    }
+
+    private Complex injectionVoltage() {
+        return networkSolveActive ? acceleratedVoltage : terminalVoltage();
     }
 
     private Complex injectedCurrent(Complex voltage) {

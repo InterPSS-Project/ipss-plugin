@@ -132,6 +132,18 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
                 ? CGMESUnitConverter.apparentPowerToMVA(ratedSVA)
                 : baseMVA;
 
+        // Equal maxQ/minQ cannot regulate voltage under the fixed-Q PV-limit
+        // backoff guard. 0/0 means unspecified → unlimited PV (no Q-limit object).
+        // Equal non-zero is a fixed-Q injection → map as PQ, not PV.
+        boolean equalQLimits = qMaxPU <= qMinPU;
+        boolean unspecifiedQLimits = equalQLimits
+                && Math.abs(qMaxPU) < 1.0e-12
+                && Math.abs(qMinPU) < 1.0e-12;
+        boolean fixedQOnly = equalQLimits && !unspecifiedQLimits;
+        double pvQMaxPU = unspecifiedQLimits ? 0.0 : qMaxPU;
+        double pvQMinPU = unspecifiedQLimits ? 0.0 : qMinPU;
+        boolean mapAsPv = isPV && !fixedQOnly;
+
         builder.addContributeGen(busId, genId, true,
                 pPU, qPU, mvaBase, targetVPU,
                 qMaxPU, qMinPU, pMaxPU, pMinPU,
@@ -141,26 +153,27 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
         if (bus != null && bus.getGenCode() == AclfGenCode.SWING) {
             // Keep swing; refresh P
             bus.setGenP(pPU);
-        } else if (isPV) {
+        } else if (mapAsPv) {
             // First voltage-controlling machine sets bus PV; later machines only
             // contribute gen (initContributeGen sums P). Avoid overwriting V.
             if (bus.getGenCode() != AclfGenCode.GEN_PV) {
-                builder.setPVBus(busId, pPU, targetVPU, qMaxPU, qMinPU, true);
+                builder.setPVBus(busId, pPU, targetVPU, pvQMaxPU, pvQMinPU, true);
             } else {
                 double busV = busDesiredVoltMag(bus);
                 if (hasExplicitTarget && busV > 0 && Math.abs(busV - 1.0) < 1e-9
                         && Math.abs(targetVPU - 1.0) > 1e-9) {
                     // Earlier gens used default 1.0 pu; adopt this RegulatingControl target
                     syncContributeGenDesiredV(bus, targetVPU);
-                    builder.setPVBus(busId, pPU, targetVPU, qMaxPU, qMinPU, true);
+                    builder.setPVBus(busId, pPU, targetVPU, pvQMaxPU, pvQMinPU, true);
                 }
             }
         } else {
-            builder.setPQBus(busId, pPU, qPU, 0.0, 0.0);
+            double fixedQ = fixedQOnly ? qMaxPU : qPU;
+            builder.setPQBus(busId, pPU, fixedQ, 0.0, 0.0);
         }
 
         log.debug(String.format("Created generator: %s on bus %s, type=%s, P=%.2f MW, Q=%.2f MVAr, targetV=%.4f",
-            name, busId, isPV ? AclfGenCode.GEN_PV : AclfGenCode.GEN_PQ,
+            name, busId, mapAsPv ? AclfGenCode.GEN_PV : AclfGenCode.GEN_PQ,
             CGMESUnitConverter.siPowerToMVA(pW), CGMESUnitConverter.siPowerToMVA(qVar), targetVPU));
     }
 
