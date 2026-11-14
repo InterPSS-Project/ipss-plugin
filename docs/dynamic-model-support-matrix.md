@@ -54,7 +54,7 @@ source-approved families that have no implementation or parser descriptor.
 | SVSMO3T2 | FACTS_DEVICE |  | 64 | PARTIAL | `org.interpss.dstab.svc.Svsmo3t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO3.htm) |
 | CDC6T | HVDC_LINK |  | 32 | LOADABLE | `org.interpss.dstab.hvdc.Cdc6tDyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md) |
 | AC11C | EXCITER |  | 40 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC11C.htm) |
-| AC1C | EXCITER |  | 23 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC1C.htm) |
+| AC1C | EXCITER |  | 23 | LOADABLE | `com.interpss.dstab.controller.exc.ac1c.Ac1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC1C.htm) |
 | AC2C | EXCITER |  | 25 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac2c.Ac2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC2C.htm) |
 | AC3C | EXCITER |  | 30 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac3c.Ac3cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC3C.htm) |
 | AC4C | EXCITER |  | 12 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac4c.Ac4cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC4C.htm) |
@@ -85,7 +85,7 @@ source-approved families that have no implementation or parser descriptor.
 | ESST3A | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST3A.htm) |
 | ESST4B | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST4B.htm) |
 | ESURRY | EXCITER | EXAC1M | 20 | LOADABLE | `org.interpss.dstab.control.exc.psse.esurry.EsurryExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter.htm) |
-| EXAC1 | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC1.htm) |
+| EXAC1 | EXCITER |  | 17 | LOADABLE | `com.interpss.dstab.controller.exc.exac1.Exac1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC1.htm) |
 | EXAC1A | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC1A.htm) |
 | EXAC2 | EXCITER |  | 23 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC2.htm) |
 | EXAC4 | EXCITER |  | 10 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC4.htm) |

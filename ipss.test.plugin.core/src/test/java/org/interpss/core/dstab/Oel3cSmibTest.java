@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
 import org.interpss.dstab.control.oel.psse.oel3c.Oel3cModel;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseDStabSolver;

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;

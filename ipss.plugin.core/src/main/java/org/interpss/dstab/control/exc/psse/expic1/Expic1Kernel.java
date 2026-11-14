@@ -3,7 +3,7 @@ package org.interpss.dstab.control.exc.psse.expic1;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
 import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
 import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;

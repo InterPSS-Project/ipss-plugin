@@ -2,7 +2,7 @@ package org.interpss.dstab.control.exc.psse.esac2a;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 import com.interpss.dstab.controller.runtime.DynamicLimitIntegrationBlock;
 import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 

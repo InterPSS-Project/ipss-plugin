@@ -24,7 +24,7 @@ final class BusFrequencySelection {
         "org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter",
         "org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter",
         "org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter",
-        "org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter",
+        "com.interpss.dstab.controller.exc.exac1.Exac1Exciter",
         "org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter",
         "org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter",
         "org.interpss.dstab.control.exc.psse.scrx.ScrxExciter",

@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
 
 import com.interpss.dstab.BaseDStabBus;

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
 import org.interpss.dstab.control.oel.psse.basoel2.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;

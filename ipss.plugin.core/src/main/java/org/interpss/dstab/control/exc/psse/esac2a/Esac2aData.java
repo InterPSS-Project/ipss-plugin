@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.esac2a;
 
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
+import com.interpss.dstab.controller.exc.exac1.Exac1Data;
 
 /** PSS/E/PowerWorld ESAC2A parameters in model units. */
 public class Esac2aData extends Exac1Data {

@@ -9,8 +9,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cData;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

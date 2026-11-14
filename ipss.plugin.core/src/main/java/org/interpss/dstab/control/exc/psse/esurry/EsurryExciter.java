@@ -2,7 +2,7 @@ package org.interpss.dstab.control.exc.psse.esurry;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;

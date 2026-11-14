@@ -3,7 +3,7 @@ package org.interpss.dstab.control.exc.psse.ieeet4;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;

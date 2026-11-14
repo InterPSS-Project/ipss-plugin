@@ -19,7 +19,7 @@ import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
 import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
 import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
 import org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
