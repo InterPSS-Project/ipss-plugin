@@ -556,7 +556,7 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 | UCTE | `UCTEFormatIEEE14BusTest`, `UCTEFormatAusPowerTest`, `UCTE2000CasesTest` | `UCTEFormat` |
 | EPC | `GESampleTestCases`, `EpcDirectParser_SectionGate_Test`, `Epc2k10kComparisonTest` (`GEAdapterTestSuite`) | `GEFormat` + `EpcDirectParser`; fixtures under `testData/adpter/ge/` (+ `unit/` for SHUNT / PS angle) |
 | PWD | `PWDIEEE14BusTestCase`, `PWDDirectParser_ObjectGate_Test`, `SixBus_DclfPsXfr_pwd`, `SixBus_XfrControl_pwd` (`PWDAdapterTestSuite`) | `PWDFormat` + `PWDDirectParser`; fixtures under `testData/adpter/pwd/` (+ `unit/` for SHUNT) |
-| BPA | `BPASampleTestCases`, `BPADirectParser_CardGate_Test`, `Bpa07c_0615_Test`, `BpaO7CTest` (`BPAAdapterTestSuite`) | `BPAFormat` + `BPADirectParser`; fixtures under `testData/adpter/bpa/` (+ `unit/` for E / R-TP-skip) |
+| BPA | `BPASampleTestCases`, `BPADirectParser_CardGate_Test`, `Bpa07c_0615_Test`, `BpaO7CTest` (`BPAAdapterTestSuite`) | `BPAFormat` + `BPADirectParser`; fixtures under `testData/adpter/bpa/{ieee9,omib,07c,eqg,unit}/` |
 | CIM / CGMES | `CIMDirectParserTest`, `CGMESCasCoverageStubTest`, `CGMESCasP4AclfSmokeStubTest`, `CGMESCasP4AclfUnconvergedStubTest`, `CGMESCasType3HourCoverageStubTest`, `CGMESReliCapDcCoverageStubTest` | `CGMESDirectParser`; fixtures under `testData/adpter/cim/`; P4 seeds from SvVoltage and compares \|V\|/angle/flow via `CgmesSvCompareSupport` |
 | Internal format | `IEEE14Test`, `Bus1824Test`, `Bus6384Test`, `Bus11856Test` | `IpssInternalFormat` round-trip |
 | Compare / regression | `IEEE14JsonCompareTest`, `PSSE_ACTIVSg25kObjectCompareTest` | Load twice, `AclfNetJsonComparator` |
@@ -568,7 +568,7 @@ BPA IPF card coverage (`BPADirectParser`):
 | `B` / `BE` / `BQ` / `BS` | AC bus subtypes | `BPASampleTestCases`, `BPADirectParser_CardGate_Test` |
 | `L` / `T` | Line / transformer | IEEE9 + Test009 gates |
 | `E` | Equivalent branch | `unit/equiv_e_branch.dat` |
-| `A` | Area interchange | `IEEE9_cn.dat` |
+| `A` | Area interchange | `ieee9/IEEE9_cn.dat` |
 | `R` / `TP` / `+` | Unimplemented — skip-safe | `unit/skip_r_tp_plus.dat` |
 | `/MVA_BASE` | Currently ignored (always 100 MVA) | same skip fixture |
 | Regional | `07c_0615_notBE.dat` parse + LF | `Bpa07c_0615_Test`, `BpaO7CTest` |

@@ -20,7 +20,7 @@ public class BpaO7CTest extends CorePluginTestSetup {
 
 	@Test
 	public void sys2010_busCount() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c_0615_notBE.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c/07c_0615_notBE.dat");
 		assertEquals(141, net.getBusList().size());
 		assertTrue(net.getBranchList().size() > 100);
 
@@ -33,7 +33,7 @@ public class BpaO7CTest extends CorePluginTestSetup {
 	@Test
 	@Disabled("Large 07c-dc2load case — keep out of default CI (encoding / L+ / runtime)")
 	public void sys2011_lfTestCase() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c-dc2load.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c/07c-dc2load.dat");
 		assertEquals(536, net.getBusList().size());
 		assertEquals(707, net.getBranchList().size());
 

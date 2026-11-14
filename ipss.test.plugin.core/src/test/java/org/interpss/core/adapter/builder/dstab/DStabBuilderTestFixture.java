@@ -15,6 +15,10 @@ final class DStabBuilderTestFixture {
 
 	private DStabBuilderTestFixture() {}
 
+	/** Gen P/Q used by {@link #createBuilder()} / {@link #createBuilderWithBalancedLoad()}. */
+	static final double GEN_P_PU = 0.7164;
+	static final double GEN_Q_PU = 0.2705;
+
 	/**
 	 * One-bus swing network with a contribute gen (no machine yet).
 	 */
@@ -25,9 +29,23 @@ final class DStabBuilderTestFixture {
 		topo.setNetworkInfo("ut", "ut", 100000.0, OriginalDataFormat.PSSE);
 		topo.addBus("Bus1", "Gen", 1L, 16500.0, 1.04, 0.0, null, null, null);
 		topo.setSwingBus("Bus1", 1.04, 0.0);
-		topo.addContributeGen("Bus1", "1", true, 0.7164, 0.2705, 100.0, 1.04,
+		topo.addContributeGen("Bus1", "1", true, GEN_P_PU, GEN_Q_PU, 100.0, 1.04,
 				0.0, 0.0, 0.0, 0.0, new Complex(0.0, 0.04), null, 0.0, null, 0.0, 0.0);
 		return new DStabNetworkBuilder(net);
+	}
+
+	/**
+	 * Same as {@link #createBuilder()} plus a matching constant-P load.
+	 * REGCA Norton current {@code Icmd + V/Z} needs {@code Y_rest ≠ 0}; a
+	 * swing-only one-bus network makes the algebraic fixed-point walk by
+	 * {@code Z·Icmd} each iteration and never converges.
+	 */
+	static DStabNetworkBuilder createBuilderWithBalancedLoad() throws Exception {
+		DStabNetworkBuilder builder = createBuilder();
+		new AclfNetworkBuilder(builder.getDStabNetwork()).addContributeLoad(
+				"Bus1", "1", true, new Complex(GEN_P_PU, GEN_Q_PU),
+				null, null, null, false);
+		return builder;
 	}
 
 	/**

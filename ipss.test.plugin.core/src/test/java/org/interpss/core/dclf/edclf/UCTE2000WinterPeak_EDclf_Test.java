@@ -1,6 +1,6 @@
 package org.interpss.core.dclf.edclf;
 
-import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
+import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.PredicateConnectBus;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -61,14 +61,14 @@ public class UCTE2000WinterPeak_EDclf_Test extends CorePluginTestSetup {
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
-		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
+		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, PredicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		
 		DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet)
         					 .updateConnectBusVoltage();
 
 		System.out.println("EDclf/VCorrection Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));		
-		mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
+		mis = aclfNet.maxMismatch(AclfMethodType.NR, PredicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 		assertTrue(mis.maxMis.abs() < 0.0001);

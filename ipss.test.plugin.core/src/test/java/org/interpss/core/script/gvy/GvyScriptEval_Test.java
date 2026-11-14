@@ -87,5 +87,13 @@ public class GvyScriptEval_Test extends CorePluginTestSetup {
 		System.out.println("Result: " + result);
 		assertTrue(NumericUtil.equals(net.getBranch("Bus1", "Bus2", "1").getZ(), new Complex(0.02, 0.06), 1.0E-4), "Branch z should be 0.02+j0.06");
 		assertFalse(net.getBranch("Bus1", "Bus2", "1").isActive(), "Branch should be off");
+
+		scriptFile = "script/ieee14_calDv_dQ.gvy";
+		groovyCode = FileUtil.readFileAsString(scriptFile);
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
+		assertTrue(result instanceof Number, "dV/dQ script should return a Number");
+		assertTrue(NumericUtil.equals(((Number) result).doubleValue(), 0.0608355, 1.0E-4),
+					"Bus14→Bus13 dV/dQ should be non-zero");
 	}
 }

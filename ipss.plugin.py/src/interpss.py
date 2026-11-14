@@ -9,12 +9,15 @@ class ipss:
     from org.apache.commons.math3.complex import Complex
     from java.io import File as JavaFile
     from java.util import HashSet as JavaHashSet
+    from org.interpss.numeric.datatype.Unit import UnitType
 
     #
     # InterPSS Core Classes
     #
     from com.interpss.core import CoreObjectFactory
-      
+
+    from com.interpss.core.aclf import AclfNetwork
+
     from com.interpss.core.aclf import AclfGenCode
     from com.interpss.core.aclf import AclfLoadCode
     from com.interpss.core.aclf import AclfBranchCode
@@ -39,6 +42,7 @@ class ipss:
 
     from org.interpss.display import AclfOutFunc
     
+    from org.interpss.plugin.pssl.plugin import IpssAdapter
     from org.interpss.display.impl import AclfOut_PSSE
     from org.interpss.display.impl.AclfOut_PSSE import Format as PSSEOutFormat
 
