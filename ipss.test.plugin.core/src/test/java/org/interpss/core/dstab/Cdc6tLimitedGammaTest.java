@@ -9,7 +9,7 @@ import java.util.zip.ZipFile;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.interpss.fadapter.psse.dyr.*;
 
 /** Independent fixed-tap gamma control with a binding static rectifier limit. */

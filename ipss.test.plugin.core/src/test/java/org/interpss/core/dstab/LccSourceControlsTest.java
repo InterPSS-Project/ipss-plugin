@@ -3,7 +3,7 @@ package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 import org.interpss.fadapter.psse.export.PSSEJsonExporter;

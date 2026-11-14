@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.svc.Svsmo3t2Data;
-import org.interpss.dstab.svc.Svsmo3t2MssController;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Data;
+import com.interpss.dstab.svc.Svsmo3t2MssController;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

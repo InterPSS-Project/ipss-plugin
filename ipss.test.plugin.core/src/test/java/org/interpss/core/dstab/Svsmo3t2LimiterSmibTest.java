@@ -14,7 +14,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

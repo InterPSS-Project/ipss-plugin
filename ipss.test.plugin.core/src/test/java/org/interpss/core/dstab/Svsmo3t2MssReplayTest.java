@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.svc.Svsmo3t2Model;
-import org.interpss.dstab.svc.Svsmo3t2MssController;
+import com.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2MssController;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

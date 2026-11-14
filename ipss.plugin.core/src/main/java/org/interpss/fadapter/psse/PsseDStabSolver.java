@@ -104,7 +104,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
             int st4Controllers,int pss2aControllers,int ieeestControllers,int compatibleControllers) { }
     private final ModifiedEulerControllerPreparation controllerPreparation=new ModifiedEulerControllerPreparation();
     private ControllerPreparationReport controllerPreparationReport;
-    private final java.util.List<org.interpss.dstab.svc.Svsmo3t2Model> statcomEventModels = new java.util.ArrayList<>();
+    private final java.util.List<com.interpss.dstab.svc.Svsmo3t2Model> statcomEventModels = new java.util.ArrayList<>();
     private record EventInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
             com.interpss.dstab.controller.runtime.NetworkEventInput input) { }
     private final java.util.List<EventInput> networkEventInputs = new java.util.ArrayList<>();
@@ -320,7 +320,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         // This is outside network iteration and does not commit any timer.
         for (var bus : dstabAlgo.getNetwork().getBusList()) if (bus.isActive())
             for (var device : bus.getDynamicBusDeviceList())
-                if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model model
+                if (device.isActive() && device instanceof com.interpss.dstab.svc.Svsmo3t2Model model
                         && !model.nextStep(0, method, 0))
                     throw new DStabSimuException("Could not refresh bus-device inputs for " + model.getId());
     }
@@ -332,7 +332,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         reactivation.prepare(dstabAlgo,hotReactivationIds);hotReactivationEvent=false;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
-        org.interpss.dstab.hvdc.Cdc6tDyrModel.prepareNetwork(network);
+        com.interpss.dstab.hvdc.model.Cdc6tDyrModel.prepareNetwork(network);
         var validation=validateModelParameters();
         validation.requireNoErrors();
         if(validation.count(DynamicParameterValidator.Severity.WARNING)>0||!validation.uncoveredModels().isEmpty())
@@ -347,7 +347,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         if (!super.initialization()) return false;
         for (var bus : network.getBusList())
             for (var device : bus.getDynamicBusDeviceList()) {
-                if (device instanceof org.interpss.dstab.svc.Svsmo3t2Model model) statcomEventModels.add(model);
+                if (device instanceof com.interpss.dstab.svc.Svsmo3t2Model model) statcomEventModels.add(model);
                 if (device instanceof com.interpss.dstab.controller.runtime.NetworkEventInput input)
                     networkEventInputs.add(new EventInput(device, bus, input));
                 if (device instanceof com.interpss.dstab.controller.runtime.IntegrationStepContext input)
@@ -404,7 +404,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
             if (!bus.isActive()) continue;
             for (var device : bus.getDynamicBusDeviceList())
-                if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model statcom
+                if (device.isActive() && device instanceof com.interpss.dstab.svc.Svsmo3t2Model statcom
                         && !statcom.acceptSwitchingEndpoint()) return false;
             for (var device : bus.getDynamicBusDeviceList())
                 if (device.isActive() && device instanceof com.interpss.dstab.controller.runtime.InitialEndpointAction action

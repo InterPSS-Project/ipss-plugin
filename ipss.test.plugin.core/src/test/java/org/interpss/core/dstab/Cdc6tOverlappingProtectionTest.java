@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.zip.ZipFile;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;

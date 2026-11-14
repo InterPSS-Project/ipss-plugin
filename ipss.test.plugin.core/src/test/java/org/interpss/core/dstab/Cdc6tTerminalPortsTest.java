@@ -3,7 +3,7 @@ package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;

@@ -13,7 +13,7 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

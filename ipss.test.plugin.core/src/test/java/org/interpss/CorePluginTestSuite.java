@@ -303,7 +303,6 @@ import org.interpss.core.dstab.Tiocr1AcceptedHistoryTest;
 import org.interpss.core.dstab.Tiocr1ResetReferenceTest;
 import org.interpss.core.dstab.Tiocr1LoadOnlyReferenceTest;
 import org.interpss.core.dstab.Cdc6tReferenceContractTest;
-import org.interpss.core.dstab.Cdc6tMeasurementsTest;
 import org.interpss.core.dstab.Cdc6tTransducerBoundaryTest;
 import org.interpss.core.dstab.Cdc6tCurrentOrderTest;
 import org.interpss.core.dstab.Cdc6tVoltageCurrentLimitTest;
@@ -434,7 +433,7 @@ import org.interpss.core.dstab.Svsmo3t2StaggeredSmibTest;
 import org.interpss.core.dstab.Svsmo3t2LimiterSmibTest;
 import org.interpss.core.dstab.Svsmo3t2MssKernelTest;
 import org.interpss.core.dstab.Svsmo3t2MssReplayTest;
-import org.interpss.dstab.svc.Svsmo3t2MssBoundaryTest;
+import com.interpss.dstab.svc.Svsmo3t2MssBoundaryTest;
 import org.interpss.core.adapter.builder.dstab.PsseSvsmo3t2ModelTest;
 import org.interpss.core.dstab.mach.Wt1g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt2g1PsseSmibConformanceTest;
@@ -935,7 +934,7 @@ import org.junit.platform.suite.api.Suite;
     Svsmo3t2MssKernelTest.class,
     Svsmo3t2MssReplayTest.class,
     Svsmo3t2MssBoundaryTest.class,
-    org.interpss.dstab.svc.Svsmo3t2OwnershipMetadataTest.class,
+    com.interpss.dstab.svc.Svsmo3t2OwnershipMetadataTest.class,
     org.interpss.core.dstab.Svsmo3t2MssTripOrderingTest.class,
     PsseSvsmo3t2ModelTest.class,
 	Wt1g1PsseSmibConformanceTest.class,
@@ -1372,7 +1371,6 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.dstab.dynLoad.CompositeMotorOverlapTest.class,
     org.interpss.core.dstab.dynLoad.CompositeLoadChangeTest.class,
     Cdc6tReferenceContractTest.class,
-    Cdc6tMeasurementsTest.class,
     Cdc6tTransducerBoundaryTest.class,
     Cdc6tCurrentOrderTest.class,
     Cdc6tVoltageCurrentLimitTest.class,

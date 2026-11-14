@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 

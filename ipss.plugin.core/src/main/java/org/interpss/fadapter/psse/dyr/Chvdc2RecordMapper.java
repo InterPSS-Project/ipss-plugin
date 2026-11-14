@@ -1,7 +1,7 @@
 package org.interpss.fadapter.psse.dyr;
 
-import org.interpss.dstab.hvdc.Chvdc2Parameters;
-import org.interpss.dstab.hvdc.Chvdc2Parameters.Dialect;
+import com.interpss.dstab.hvdc.model.Chvdc2Parameters;
+import com.interpss.dstab.hvdc.model.Chvdc2Parameters.Dialect;
 
 /** Strict standard/legacy named-link decoding. Neither form is automatically attached by this mapper. */
 public final class Chvdc2RecordMapper {

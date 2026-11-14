@@ -1,4 +1,4 @@
-package org.interpss.dstab.svc;
+package com.interpss.dstab.svc;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.lang.management.ManagementFactory;
@@ -9,6 +9,9 @@ import org.interpss.core.dstab.Svsmo3t2MssKernelTest;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import com.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2MssBoundary;
+import com.interpss.dstab.svc.Svsmo3t2PeerRegistry;
 
 /** Synthetic metadata cost only; no electrical performance claim. */
 public class Svsmo3t2OwnershipMetadataTest extends CorePluginTestSetup {

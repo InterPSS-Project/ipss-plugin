@@ -7,7 +7,7 @@ import java.security.MessageDigest;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;

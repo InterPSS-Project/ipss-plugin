@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.core.dstab.reference.RelativeRmse;
 import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;

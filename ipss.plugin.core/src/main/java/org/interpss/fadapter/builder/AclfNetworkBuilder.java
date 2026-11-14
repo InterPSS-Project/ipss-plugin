@@ -101,6 +101,7 @@ import com.interpss.core.net.NameTag;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.core.net.Owner;
 import com.interpss.core.net.Zone;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 
 /**
  * Shared builder for constructing AclfNetwork objects directly from parsed file data,

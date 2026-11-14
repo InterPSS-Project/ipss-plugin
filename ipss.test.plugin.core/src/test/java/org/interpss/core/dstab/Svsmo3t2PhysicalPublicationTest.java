@@ -3,7 +3,7 @@ package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 
 /** Physical publication is separate from the zero-time algebraic observation. */
 public class Svsmo3t2PhysicalPublicationTest extends org.interpss.CorePluginTestSetup {

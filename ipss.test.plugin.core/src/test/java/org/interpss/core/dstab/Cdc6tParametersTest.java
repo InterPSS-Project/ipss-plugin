@@ -3,8 +3,8 @@ package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.StringReader;
 import java.util.Arrays;
-import org.interpss.dstab.hvdc.*;
-import org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode;
+import com.interpss.dstab.hvdc.model.*;
+import com.interpss.dstab.hvdc.model.Cdc6tNormalRuntime.OperatingMode;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Test;
 

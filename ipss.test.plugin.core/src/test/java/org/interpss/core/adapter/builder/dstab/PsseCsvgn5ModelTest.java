@@ -10,8 +10,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.svc.Csvgn5Data;
-import org.interpss.dstab.svc.Csvgn5Model;
+import com.interpss.dstab.svc.Csvgn5Data;
+import com.interpss.dstab.svc.Csvgn5Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

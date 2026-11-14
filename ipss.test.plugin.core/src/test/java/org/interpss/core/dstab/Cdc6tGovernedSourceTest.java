@@ -10,7 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
-import org.interpss.dstab.hvdc.Cdc6tParameters;
+import com.interpss.dstab.hvdc.model.Cdc6tParameters;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
@@ -167,8 +167,8 @@ public class Cdc6tGovernedSourceTest extends CorePluginTestSetup {
         while(a.getSimuTime()<r.end()-r.step()/2){
             var previousMode=f.protection().operatingMode();
             assertTrue(a.solveDEqnStep(true));assertTrue(solver.getLastNetworkSolutionDiagnostics().iterations()<=50);
-            if(previousMode==org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode.RECOVERING
-                    &&f.protection().operatingMode()==org.interpss.dstab.hvdc.Cdc6tNormalRuntime.OperatingMode.NORMAL)
+            if(previousMode==com.interpss.dstab.hvdc.model.Cdc6tNormalRuntime.OperatingMode.RECOVERING
+                    &&f.protection().operatingMode()==com.interpss.dstab.hvdc.model.Cdc6tNormalRuntime.OperatingMode.NORMAL)
                 recoveryCompletion=a.getSimuTime();
             capture(samples,machines,governors,a.getSimuTime(),r.step());
         }

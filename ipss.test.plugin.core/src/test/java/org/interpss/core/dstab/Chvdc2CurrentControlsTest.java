@@ -2,8 +2,8 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.lang.management.ManagementFactory;
-import org.interpss.dstab.hvdc.*;
-import org.interpss.dstab.hvdc.Chvdc2Parameters.Dialect;
+import com.interpss.dstab.hvdc.model.*;
+import com.interpss.dstab.hvdc.model.Chvdc2Parameters.Dialect;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

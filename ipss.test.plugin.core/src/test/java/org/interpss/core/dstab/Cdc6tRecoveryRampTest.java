@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.zip.ZipFile;
-import org.interpss.dstab.hvdc.Cdc6tRecoveryRamp;
+import com.interpss.dstab.hvdc.model.Cdc6tRecoveryRamp;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

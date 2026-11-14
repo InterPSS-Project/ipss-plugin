@@ -75,7 +75,7 @@ final class BusFrequencySelection {
             // Keep even initially inactive devices: switching can activate a consumer later.
             if(bus.getDynLoadModelList()!=null&&!bus.getDynLoadModelList().isEmpty())return all("dynamic load");
             for(var device:bus.getDynamicBusDeviceList())
-                if(device instanceof org.interpss.dstab.svc.Svsmo3t2Model) {
+                if(device instanceof com.interpss.dstab.svc.Svsmo3t2Model) {
                     // Final built-in current controller reads local/remote voltage,
                     // not bus frequency. Observers retain conservative fallback.
                     if(!device.eAdapters().isEmpty())return all("STATCOM observer");

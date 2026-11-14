@@ -1,6 +1,6 @@
 package org.interpss.fadapter.psse.dyr;
 
-import org.interpss.dstab.hvdc.Cdc6tParameters;
+import com.interpss.dstab.hvdc.model.Cdc6tParameters;
 
 /** Decode exact named records into source constants; runtime preparation follows solved load flow. */
 public final class Cdc6tRecordMapper {

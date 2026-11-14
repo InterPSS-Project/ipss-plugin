@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

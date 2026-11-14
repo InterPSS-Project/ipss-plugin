@@ -48,9 +48,9 @@ import com.interpss.dstab.renewable.Wtptb1Data;
 import com.interpss.dstab.renewable.WtgwgoaData;
 import com.interpss.dstab.renewable.WtgibffraData;
 import com.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.svc.Csvgn5Data;
-import org.interpss.dstab.svc.Svsmo1t2Data;
-import org.interpss.dstab.svc.Svsmo1t2Data.MssDevice;
+import com.interpss.dstab.svc.Csvgn5Data;
+import com.interpss.dstab.svc.Svsmo1t2Data;
+import com.interpss.dstab.svc.Svsmo1t2Data.MssDevice;
 import com.interpss.dstab.mach.model.GenqecData;
 import com.interpss.dstab.mach.model.Cimtr4Data;
 import com.interpss.dstab.mach.model.GenqejData;
@@ -4534,12 +4534,12 @@ public class PSSEDStabDirectParser {
 
     private boolean procSvsmo3t2(PsseDyrRecord record) {
         if (!record.hasNamedTarget() || record.parameterCount() != 64) return false;
-        var mss = new ArrayList<org.interpss.dstab.svc.Svsmo3t2Data.MssDevice>();
-        for (int i = 0; i < 8; i++) mss.add(new org.interpss.dstab.svc.Svsmo3t2Data.MssDevice(
+        var mss = new ArrayList<com.interpss.dstab.svc.Svsmo3t2Data.MssDevice>();
+        for (int i = 0; i < 8; i++) mss.add(new com.interpss.dstab.svc.Svsmo3t2Data.MssDevice(
                 record.intParameter(4 + 2 * i), record.parameter(5 + 2 * i)));
         double[] c = new double[44];
         for (int i = 0; i < c.length; i++) c[i] = record.doubleParameter(20 + i);
-        var data = new org.interpss.dstab.svc.Svsmo3t2Data(record.intParameter(0),
+        var data = new com.interpss.dstab.svc.Svsmo3t2Data(record.intParameter(0),
                 record.intParameter(1), record.intParameter(2), record.intParameter(3), mss,
                 c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10],
                 c[11], c[12], c[13], c[14], c[15], c[16], c[17], c[18], c[19], c[20],

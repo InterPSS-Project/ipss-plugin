@@ -1,7 +1,7 @@
 package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

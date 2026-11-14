@@ -7,6 +7,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.*;
+import com.interpss.dstab.svc.*;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

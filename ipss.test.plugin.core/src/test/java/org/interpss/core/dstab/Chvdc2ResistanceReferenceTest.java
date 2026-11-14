@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
-import org.interpss.dstab.hvdc.Chvdc2TerminalPorts;
+import com.interpss.dstab.hvdc.model.Chvdc2TerminalPorts;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;

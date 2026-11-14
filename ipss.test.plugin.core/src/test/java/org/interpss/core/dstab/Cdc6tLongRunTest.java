@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.zip.ZipFile;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.interpss.fadapter.psse.dyr.*;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.junit.jupiter.api.Assumptions;

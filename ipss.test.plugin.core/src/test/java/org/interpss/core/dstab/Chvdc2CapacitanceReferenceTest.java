@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.*;
-import org.interpss.dstab.hvdc.Chvdc2Parameters;
+import com.interpss.dstab.hvdc.model.Chvdc2Parameters;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;

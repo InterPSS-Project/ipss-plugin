@@ -1,4 +1,4 @@
-package org.interpss.dstab.svc;
+package com.interpss.dstab.svc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,12 +11,15 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.Svsmo3t2MssKernelTest;
-import org.interpss.fadapter.builder.FixedShuntAdmittance;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.svc.Svsmo3t2Data;
+import com.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2MssBoundary;
 
 /** Exact physical stamps, including off-state conductance and unrelated faults. */
 public class Svsmo3t2MssBoundaryTest extends CorePluginTestSetup {

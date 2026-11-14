@@ -13,7 +13,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

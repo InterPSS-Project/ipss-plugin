@@ -10,7 +10,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
-import org.interpss.dstab.hvdc.Cdc6tParameters;
+import com.interpss.dstab.hvdc.model.Cdc6tParameters;
 import org.interpss.fadapter.psse.dyr.Cdc6tRecordMapper;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Assumptions;
@@ -43,7 +43,7 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
         Recorder(Cdc6tCoupledNetworkTest.Fixture f){this(f,.05,.1);}
         Recorder(Cdc6tCoupledNetworkTest.Fixture f,double... eventTimes){this.f=f;this.eventTimes=eventTimes.clone();}
         void recordInternalTransitions(){recordInternalTransitions(null);}
-        void recordInternalTransitions(java.util.function.Consumer<org.interpss.dstab.hvdc.Cdc6tNetworkTransition> observer){
+        void recordInternalTransitions(java.util.function.Consumer<com.interpss.dstab.hvdc.model.Cdc6tNetworkTransition> observer){
             f.ports().setTransitionObserver(event->{
                 if(enabled){
                     capture(event.time(),event.before());capture(event.time(),event.after());
@@ -51,7 +51,7 @@ public class Cdc6tCoupledReferenceTest extends CorePluginTestSetup {
                 }
             });
         }
-        private void capture(double t,org.interpss.dstab.hvdc.Cdc6tNetworkTransition.Boundary b){
+        private void capture(double t,com.interpss.dstab.hvdc.model.Cdc6tNetworkTransition.Boundary b){
             rows.add(new double[]{t,Math.hypot(b.rectifierReal(),b.rectifierImaginary()),Math.toDegrees(Math.atan2(b.rectifierImaginary(),b.rectifierReal())),
                     Math.hypot(b.inverterReal(),b.inverterImaginary()),Math.toDegrees(Math.atan2(b.inverterImaginary(),b.inverterReal())),
                     b.measuredInverterVolts(),b.measuredAmperes(),b.measuredRectifierVolts(),b.rectifierP(),b.rectifierQ(),Math.toDegrees(b.alphaRadians()),

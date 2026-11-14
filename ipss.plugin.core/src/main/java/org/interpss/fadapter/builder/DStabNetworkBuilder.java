@@ -88,12 +88,12 @@ import com.interpss.dstab.controller.exc.st5b.St5bData;
 import com.interpss.dstab.controller.exc.st5b.St5bExciter;
 import com.interpss.dstab.controller.exc.rexsys.RexsysData;
 import com.interpss.dstab.controller.exc.rexsys.RexsysExciter;
-import org.interpss.dstab.svc.Csvgn5Data;
-import org.interpss.dstab.svc.Csvgn5Model;
-import org.interpss.dstab.svc.Svsmo1t2Data;
-import org.interpss.dstab.svc.Svsmo1t2Model;
-import org.interpss.dstab.svc.Svsmo3t2Data;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Csvgn5Data;
+import com.interpss.dstab.svc.Csvgn5Model;
+import com.interpss.dstab.svc.Svsmo1t2Data;
+import com.interpss.dstab.svc.Svsmo1t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Data;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
 import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
 import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciterData;
@@ -300,6 +300,7 @@ import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.AcscFactory;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 
 public class DStabNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(DStabNetworkBuilder.class);
@@ -4116,7 +4117,7 @@ public class DStabNetworkBuilder {
         return gen.getMach();
     }
     /** Retain the exact named link before load flow; prepare its terminal equations at initialization. */
-    public org.interpss.dstab.hvdc.Cdc6tDyrModel addCdc6t(org.interpss.dstab.hvdc.Cdc6tParameters parameters) {
-        return org.interpss.dstab.hvdc.Cdc6tDyrModel.attach(getBaseDStabNetwork(),parameters);
+    public com.interpss.dstab.hvdc.model.Cdc6tDyrModel addCdc6t(com.interpss.dstab.hvdc.model.Cdc6tParameters parameters) {
+        return com.interpss.dstab.hvdc.model.Cdc6tDyrModel.attach(getBaseDStabNetwork(),parameters);
     }
 }

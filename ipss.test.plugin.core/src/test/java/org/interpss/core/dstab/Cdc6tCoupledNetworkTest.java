@@ -3,7 +3,7 @@ package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.*;
+import com.interpss.dstab.hvdc.model.*;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;

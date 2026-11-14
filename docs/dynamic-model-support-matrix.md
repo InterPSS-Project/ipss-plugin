@@ -36,7 +36,7 @@ source-approved families that have no implementation or parser descriptor.
 | GENTRA | SYNCHRONOUS_MACHINE |  | 9 | LOADABLE | `com.interpss.dstab.mach.model.GentraMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENTRA.htm) |
 | WT1G1 | SYNCHRONOUS_MACHINE |  | 10 | LOADABLE | `com.interpss.dstab.mach.model.Wt1g1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20WT1G.htm) |
 | WT2G1 | SYNCHRONOUS_MACHINE |  | 19 | LOADABLE | `com.interpss.dstab.mach.model.Wt2g1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT2G1.htm) |
-| CSVGN5 | CONVERTER_MACHINE |  | 15 | LOADABLE | `org.interpss.dstab.svc.Csvgn5Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CSVGN5.htm) |
+| CSVGN5 | CONVERTER_MACHINE |  | 15 | LOADABLE | `com.interpss.dstab.svc.Csvgn5Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CSVGN5.htm) |
 | DERA1 | CONVERTER_MACHINE | DERAU1 | 47 | LOADABLE | `com.interpss.dstab.renewable.Dera1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20DER_A.htm) |
 | GEWTGCU1 | CONVERTER_MACHINE |  | 26 | LOADABLE | `com.interpss.dstab.mach.model.Gewtgcu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REGCA1 | CONVERTER_MACHINE | REGCAU1 | 15 | LOADABLE | `com.interpss.dstab.renewable.Regca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm) |
@@ -50,9 +50,9 @@ source-approved families that have no implementation or parser descriptor.
 | WT3G2 | CONVERTER_MACHINE |  | 14 | LOADABLE | `com.interpss.dstab.mach.model.Wt3g2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT3G2.htm) |
 | WT4G1 | CONVERTER_MACHINE |  | 9 | LOADABLE | `com.interpss.dstab.mach.model.Wt4g1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT4G1.htm) |
 | IEEEVC | COMPENSATOR |  | 2 | LOADABLE | `com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Voltage%20Compensator%20IEEEVC.htm) |
-| SVSMO1T2 | SWITCHED_SHUNT | SVSMO1T3 | 65 | LOADABLE | `org.interpss.dstab.svc.Svsmo1t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO1.htm) |
-| SVSMO3T2 | FACTS_DEVICE |  | 64 | PARTIAL | `org.interpss.dstab.svc.Svsmo3t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO3.htm) |
-| CDC6T | HVDC_LINK |  | 32 | LOADABLE | `org.interpss.dstab.hvdc.Cdc6tDyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md) |
+| SVSMO1T2 | SWITCHED_SHUNT | SVSMO1T3 | 65 | LOADABLE | `com.interpss.dstab.svc.Svsmo1t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO1.htm) |
+| SVSMO3T2 | FACTS_DEVICE |  | 64 | PARTIAL | `com.interpss.dstab.svc.Svsmo3t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO3.htm) |
+| CDC6T | HVDC_LINK |  | 32 | LOADABLE | `com.interpss.dstab.hvdc.model.Cdc6tDyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md) |
 | AC11C | EXCITER |  | 40 | LOADABLE | `com.interpss.dstab.controller.exc.ac11c.Ac11cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC11C.htm) |
 | AC1C | EXCITER |  | 23 | LOADABLE | `com.interpss.dstab.controller.exc.ac1c.Ac1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC1C.htm) |
 | AC2C | EXCITER |  | 25 | LOADABLE | `com.interpss.dstab.controller.exc.ac2c.Ac2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC2C.htm) |

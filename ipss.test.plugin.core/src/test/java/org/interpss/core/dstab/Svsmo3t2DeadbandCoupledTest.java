@@ -4,7 +4,7 @@ import java.nio.file.*;
 import java.util.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;

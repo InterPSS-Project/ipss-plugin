@@ -11,7 +11,7 @@ import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.builder.FixedShuntAdmittance;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 import org.interpss.fadapter.psse.*;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.DStabGen;

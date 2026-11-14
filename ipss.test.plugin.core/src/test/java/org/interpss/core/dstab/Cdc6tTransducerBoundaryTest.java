@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.zip.ZipFile;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.hvdc.Cdc6tParameters;
+import com.interpss.dstab.hvdc.model.Cdc6tParameters;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;

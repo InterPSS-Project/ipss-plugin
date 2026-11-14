@@ -35,7 +35,7 @@ import com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine;
 import com.interpss.dstab.mach.model.Wt3g2Model;
 import com.interpss.dstab.mach.model.Wt3g2IntegrationBundle;
 import com.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.dstab.dynLoad.impl.Cmldznu2Model;
@@ -607,9 +607,9 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             var bus=dstabAlgo.getNetwork().getBusList().get(runtimeIndex0);
             for (var device : bus.getDynamicBusDeviceList()) {
                 if (device.getDeviceType() != DynamicBusDeviceType.DYNAMIC_GENERATOR && !(device instanceof Svsmo3t2Model)
-                        && !(device instanceof org.interpss.dstab.hvdc.Cdc6tNormalTerminalPorts.Port)
-                        && !(device instanceof org.interpss.dstab.hvdc.Cdc6tDyrModel)
-                        && !(device instanceof org.interpss.dstab.hvdc.Chvdc2TerminalPorts.Port)
+                        && !(device instanceof com.interpss.dstab.hvdc.model.Cdc6tNormalTerminalPorts.Port)
+                        && !(device instanceof com.interpss.dstab.hvdc.model.Cdc6tDyrModel)
+                        && !(device instanceof com.interpss.dstab.hvdc.model.Chvdc2TerminalPorts.Port)
                         && !supportedLoad(device)
                         && !org.interpss.dstab.relay.Tiocr1RelayModel.isAcceptedStepDevice(device))
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
@@ -906,7 +906,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 attachmentsUnchanged.add(() -> !participant.active.getAsBoolean() || participant.wasActive);
             }
 
-            for(var device:bus.getDynamicBusDeviceList()) if(device instanceof org.interpss.dstab.hvdc.Cdc6tNormalTerminalPorts.Port port) {
+            for(var device:bus.getDynamicBusDeviceList()) if(device instanceof com.interpss.dstab.hvdc.model.Cdc6tNormalTerminalPorts.Port port) {
                 attachmentsUnchanged.add(port::attachmentIntact);
                 if(port.isStateOwner()) {
                     extendedStack=true;
@@ -915,7 +915,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     attachmentsUnchanged.add(()->!participant.active.getAsBoolean()||participant.wasActive);
                 }
             }
-            for(var device:bus.getDynamicBusDeviceList()) if(device instanceof org.interpss.dstab.hvdc.Chvdc2TerminalPorts.Port port) {
+            for(var device:bus.getDynamicBusDeviceList()) if(device instanceof com.interpss.dstab.hvdc.model.Chvdc2TerminalPorts.Port port) {
                 attachmentsUnchanged.add(port::attachmentIntact);
                 if(port.isStateOwner()) {
                     extendedStack=true;

@@ -117,11 +117,11 @@ public final class DynamicModelCatalog {
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
             new DynamicModelDescriptor("CDC6T", Set.of(), DynamicModelCategory.HVDC_LINK,
-                    DynamicModelRecordSchema.exact(32), LOADABLE,"org.interpss.dstab.hvdc.Cdc6tDyrModel",
+                    DynamicModelRecordSchema.exact(32), LOADABLE,"com.interpss.dstab.hvdc.model.Cdc6tDyrModel",
                     URI.create("https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md")),
 
             descriptor("SVSMO3T2", Set.of(), DynamicModelCategory.FACTS_DEVICE, 64,
-                    DynamicModelSupportStatus.PARTIAL, "org.interpss.dstab.svc.Svsmo3t2Model",
+                    DynamicModelSupportStatus.PARTIAL, "com.interpss.dstab.svc.Svsmo3t2Model",
                     "Switched%20Shunt%20SVSMO3.htm"),
             descriptor("REGCC", Set.of(), CONVERTER_MACHINE, 15, LOADABLE,
                     "com.interpss.dstab.renewable.RegccModel", "Machine%20Model%20REGC_C.htm"),
@@ -145,10 +145,10 @@ public final class DynamicModelCatalog {
                     "com.interpss.dstab.renewable.Regfmb1Model","Machine%20Model%20REGFM_B1.htm"),
             descriptorWithVariants("SVSMO1T2", Set.of("SVSMO1T3"), SWITCHED_SHUNT,
                     65, new int[]{66}, LOADABLE,
-                    "org.interpss.dstab.svc.Svsmo1t2Model",
+                    "com.interpss.dstab.svc.Svsmo1t2Model",
                     "Switched%20Shunt%20SVSMO1.htm"),
             descriptor("CSVGN5", Set.of(), CONVERTER_MACHINE, 15, LOADABLE,
-                    "org.interpss.dstab.svc.Csvgn5Model",
+                    "com.interpss.dstab.svc.Csvgn5Model",
                     "Machine%20Model%20CSVGN5.htm"),
             descriptor("WTDTA1", Set.of("WTDTAU1", "WTDAT1"), DRIVE_TRAIN, 5, LOADABLE,
                     "com.interpss.dstab.renewable.Wtdta1Model",
