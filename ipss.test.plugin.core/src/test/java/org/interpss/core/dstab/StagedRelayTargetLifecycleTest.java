@@ -6,6 +6,7 @@ import java.util.List;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.dstab.relay.*;
+import com.interpss.dstab.relay.model.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import com.interpss.dstab.algo.DynamicSimuMethod;

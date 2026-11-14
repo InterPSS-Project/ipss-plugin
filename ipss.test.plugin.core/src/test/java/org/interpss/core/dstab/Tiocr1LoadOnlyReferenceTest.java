@@ -67,7 +67,7 @@ public class Tiocr1LoadOnlyReferenceTest {
             }
         }
         assertTrue(latchedSamples>500,"Complete post-operation history is checked");
-        var curve=new org.interpss.dstab.relay.Tiocr1Data(new double[]{.4,.1,1.1,.04,1.5,.03,2,.02,3,.01,5,.005,.01,.1});
+        var curve=new com.interpss.dstab.relay.model.Tiocr1Data(new double[]{.4,.1,1.1,.04,1.5,.03,2,.02,3,.01,5,.005,.01,.1});
         double leftPosition=0,rightPosition=0,leftError=0,rightError=0,actualPositionError=0;
         for(int i=1;i<reference.size();i++) {
             var left=reference.get(i-1);var right=reference.get(i);

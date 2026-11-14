@@ -9,8 +9,8 @@ import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor;
-import org.interpss.dstab.relay.Tiocr1Data;
-import org.interpss.dstab.relay.Tiocr1RelayModel;
+import com.interpss.dstab.relay.model.Tiocr1Data;
+import com.interpss.dstab.relay.model.Tiocr1RelayModel;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -268,9 +268,9 @@ public class HspUsageRankedModelTest {
         assertTrue(relay.afterStep(.01));assertEquals(1,relay.getNetworkActionVersion(),"One revision per accepted physical action");
         int index=bus.getSortNumber();var expected=net.getYMatrix().getA(index,index);
         net.formYMatrix4DStab();
-        org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(net);
+        com.interpss.dstab.relay.model.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(net);
         assertEquals(0,expected.subtract(net.getYMatrix().getA(index,index)).abs(),1e-12);
-        org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(net);
+        com.interpss.dstab.relay.model.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(net);
         assertEquals(0,expected.subtract(net.getYMatrix().getA(index,index)).abs(),1e-12);
     }
 

@@ -566,7 +566,7 @@ public final class DynamicModelCatalog {
                     "org.interpss.dstab.relay.VtgtpatRelayModel",
                     "Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm"),
             descriptor("TIOCR1", Set.of(), DynamicModelCategory.BRANCH_PROTECTION, 28, LOADABLE,
-                    "org.interpss.dstab.relay.Tiocr1RelayModel",
+                    "com.interpss.dstab.relay.model.Tiocr1RelayModel",
                     "Line%20Relays%20TIOCR1.htm"),
             descriptor("LDS3BL", Set.of(), LOAD_PROTECTION, 24, LOADABLE,
                     "org.interpss.dstab.relay.Lds3blRelayModel",

@@ -466,7 +466,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         hasMachineEventLeft = true;
     }
 
-    private final List<org.interpss.dstab.relay.Tiocr1RelayModel> acceptedRelays = new ArrayList<>();
+    private final List<com.interpss.dstab.relay.model.Tiocr1RelayModel> acceptedRelays = new ArrayList<>();
     private long[] acceptedRelayActions = new long[0];
 
     @Override public void afterStep(double time) throws DStabSimuException {
@@ -611,7 +611,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                         && !(device instanceof com.interpss.dstab.hvdc.model.Cdc6tDyrModel)
                         && !(device instanceof com.interpss.dstab.hvdc.model.Chvdc2TerminalPorts.Port)
                         && !supportedLoad(device)
-                        && !org.interpss.dstab.relay.Tiocr1RelayModel.isAcceptedStepDevice(device))
+                        && !com.interpss.dstab.relay.model.Tiocr1RelayModel.isAcceptedStepDevice(device))
                     throw new IllegalArgumentException("Unsupported dynamic bus device: " + device.getId());
                 if (supportedLoad(device) && (bus.getDynLoadModelList() == null
                         || bus.getDynLoadModelList().stream().noneMatch(load -> load == device)))
@@ -873,10 +873,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             }
 
             if (bus.getDynamicBusDeviceList().stream().anyMatch(
-                    org.interpss.dstab.relay.Tiocr1RelayModel::isAcceptedStepDevice)) {
+                    com.interpss.dstab.relay.model.Tiocr1RelayModel::isAcceptedStepDevice)) {
                 var membership = List.copyOf(bus.getDynamicBusDeviceList());
                 for(var device:membership)
-                    if(device instanceof org.interpss.dstab.relay.Tiocr1RelayModel relay)acceptedRelays.add(relay);
+                    if(device instanceof com.interpss.dstab.relay.model.Tiocr1RelayModel relay)acceptedRelays.add(relay);
                 attachmentsUnchanged.add(() -> {
                     var current = bus.getDynamicBusDeviceList();
                     if (current.size() != membership.size()) return false;

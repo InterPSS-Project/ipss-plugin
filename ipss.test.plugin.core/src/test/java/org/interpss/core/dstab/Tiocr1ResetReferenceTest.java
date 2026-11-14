@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.interpss.dstab.relay.Tiocr1Data;
+import com.interpss.dstab.relay.model.Tiocr1Data;
 
 /** Complete independent reset/re-pickup boundaries and accepted protection milestones. */
 public class Tiocr1ResetReferenceTest {

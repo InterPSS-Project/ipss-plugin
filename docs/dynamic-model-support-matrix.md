@@ -207,4 +207,4 @@ source-approved families that have no implementation or parser descriptor.
 | LVS3BL | LOAD_PROTECTION |  | 29 | LOADABLE | `org.interpss.dstab.relay.Lvs3blRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20LVS3.htm) |
 | FRQTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.FrqtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20FRQDCAT%20and%20FRQTPAT.htm) |
 | VTGTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.VtgtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm) |
-| TIOCR1 | BRANCH_PROTECTION |  | 28 | LOADABLE | `org.interpss.dstab.relay.Tiocr1RelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Line%20Relays%20TIOCR1.htm) |
+| TIOCR1 | BRANCH_PROTECTION |  | 28 | LOADABLE | `com.interpss.dstab.relay.model.Tiocr1RelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Line%20Relays%20TIOCR1.htm) |

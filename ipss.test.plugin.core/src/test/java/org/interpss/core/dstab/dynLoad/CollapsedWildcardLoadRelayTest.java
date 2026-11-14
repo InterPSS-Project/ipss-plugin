@@ -6,6 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.dynLoad.impl.Cmldblu1Model;
 import org.interpss.dstab.relay.*;
+import com.interpss.dstab.relay.model.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

@@ -81,9 +81,9 @@ import com.interpss.dstab.mach.model.Wt12a1bData;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
-import org.interpss.dstab.relay.LoadSheddingStage;
+import com.interpss.dstab.relay.model.LoadSheddingStage;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
-import org.interpss.dstab.relay.StagedLoadSheddingRelayData;
+import com.interpss.dstab.relay.model.StagedLoadSheddingRelayData;
 import org.interpss.dstab.relay.VtgtpatRelayModel;
 import com.interpss.dstab.controller.pss.st2cut.St2cutData;
 import com.interpss.dstab.controller.pss.st2cut.St2cutStabilizer;
@@ -4451,9 +4451,9 @@ public class PSSEDStabDirectParser {
         }
         double[] constants=new double[14];
         for(int i=0;i<14;i++)constants[i]=Double.parseDouble(f.get(17+i));
-        org.interpss.dstab.relay.Tiocr1RelayModel.forExactLoad(monitored,
+        com.interpss.dstab.relay.model.Tiocr1RelayModel.forExactLoad(monitored,
                 monitored.getFromBusId().equals(BUS_ID_PREFIX+from),slot,mode==1,host,loadId,
-                transfers,new org.interpss.dstab.relay.Tiocr1Data(constants));
+                transfers,new com.interpss.dstab.relay.model.Tiocr1Data(constants));
         return true;
     }
 

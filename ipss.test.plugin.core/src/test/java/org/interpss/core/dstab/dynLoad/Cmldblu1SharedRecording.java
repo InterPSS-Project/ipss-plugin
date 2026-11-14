@@ -80,7 +80,7 @@ final class Cmldblu1SharedRecording {
             values.put("Load.PreparedV",prepared);
         }
         for (var bus : net.getBusList()) for (var device : bus.getDynamicBusDeviceList())
-            if (device instanceof org.interpss.dstab.relay.Tiocr1RelayModel relay) {
+            if (device instanceof com.interpss.dstab.relay.model.Tiocr1RelayModel relay) {
                 values.put("RELAY.Current", relay.currentMagnitude());
                 values.put("RELAY.Position", relay.getPosition());
                 values.put("RELAY.Shed", relay.getShedFraction());
@@ -159,7 +159,7 @@ final class Cmldblu1SharedRecording {
                 algorithm.getNetwork().getDStabBus("Bus2").getInfoOnlyDynModel());
         result.recordRelayEvents = algorithm.getNetwork().getBusList().stream()
                 .anyMatch(bus -> bus.getDynamicBusDeviceList().stream()
-                        .anyMatch(org.interpss.dstab.relay.Tiocr1RelayModel.class::isInstance));
+                        .anyMatch(com.interpss.dstab.relay.model.Tiocr1RelayModel.class::isInstance));
         result.initial = result.capture(0, "INITIAL"); result.enabled = true;
         while (algorithm.getSimuTime() < endTime - h / 2) assertTrue(algorithm.solveDEqnStep(true));
         result.frames.add(result.capture(algorithm.getSimuTime(), "FINAL"));

@@ -277,7 +277,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
     }
 
     @Override public boolean networkSolutionStep() throws DStabSimuException {
-        org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(dstabAlgo.getNetwork());
+        com.interpss.dstab.relay.model.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(dstabAlgo.getNetwork());
         boolean solved=super.networkSolutionStep();
         // The event handler rebases after one linear Norton solve. Nonlinear
         // current sources can still move the angle during INITIAL convergence.
@@ -431,7 +431,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
             String previousStage = networkSolutionStage;
             networkSolutionStage = "INITIAL";
             try {
-                org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(network);
+                com.interpss.dstab.relay.model.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(network);
                 if (!super.networkSolutionStep()) return false;
                 for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
                     for (var device : bus.getDynamicBusDeviceList())
