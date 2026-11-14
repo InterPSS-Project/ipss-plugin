@@ -5,7 +5,7 @@ import org.interpss.dstab.analysis.Pss5cLocalLinearizer;
 import org.interpss.dstab.analysis.Pss5cTransducerCoordinates;
 import org.interpss.dstab.analysis.Pss5cTransducerCoordinates.Companion;
 import org.interpss.dstab.analysis.Pss5cTransducerCoordinates.Cascade;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeData;
 import org.interpss.core.dstab.reference.Pss5cNativeReplayProbe.ReplayStepper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeStabilizer;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

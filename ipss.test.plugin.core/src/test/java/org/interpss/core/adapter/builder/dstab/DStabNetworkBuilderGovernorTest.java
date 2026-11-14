@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
-import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
-import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
+import com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor;
+import com.interpss.dstab.controller.gov.ieesgo.PsseIEESGOSteamTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;

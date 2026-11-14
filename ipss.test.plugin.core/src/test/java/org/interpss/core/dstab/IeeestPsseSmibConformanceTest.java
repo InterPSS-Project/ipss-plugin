@@ -19,8 +19,8 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;

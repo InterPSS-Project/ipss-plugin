@@ -6,7 +6,7 @@ import java.util.*;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.Tgov1BaseNativeReference;
 import org.interpss.core.dstab.reference.Tgov1BaseNativeReference.Profile;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;

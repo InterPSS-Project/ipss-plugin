@@ -12,8 +12,8 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

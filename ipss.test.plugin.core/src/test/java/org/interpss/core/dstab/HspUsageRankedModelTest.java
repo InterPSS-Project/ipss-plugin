@@ -8,7 +8,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor;
 import org.interpss.dstab.relay.Tiocr1Data;
 import org.interpss.dstab.relay.Tiocr1RelayModel;
 import org.junit.jupiter.api.*;
@@ -246,7 +246,7 @@ public class HspUsageRankedModelTest {
         context.getDynSimuAlgorithm().setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         assertTrue(context.getDynSimuAlgorithm().initialization());
         var machine=context.getDStabilityNet().getMachine("Bus1-mach1");
-        var pss=(org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer)machine.getStabilizer();
+        var pss=(com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer)machine.getStabilizer();
         pss.getData().setIcs1(6);
         assertTrue(pss.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,machine,0));
         assertTrue(Double.isFinite(pss.input1Signal));

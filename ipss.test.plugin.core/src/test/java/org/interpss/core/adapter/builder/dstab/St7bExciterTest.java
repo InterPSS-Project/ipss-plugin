@@ -10,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.st7b.St7bData;
-import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
+import com.interpss.dstab.controller.exc.st7b.St7bData;
+import com.interpss.dstab.controller.exc.st7b.St7bExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

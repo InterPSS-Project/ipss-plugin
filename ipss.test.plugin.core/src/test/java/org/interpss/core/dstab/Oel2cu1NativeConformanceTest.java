@@ -11,7 +11,7 @@ import java.util.*;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter;
+import com.interpss.dstab.controller.oel.oel2c.Oel2cOverExcitationLimiter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

@@ -11,7 +11,7 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3Governor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.PowerWorldCsvRepeatability;
-import org.interpss.dstab.control.oel.psse.oel4c.Oel4cData;
+import com.interpss.dstab.controller.oel.oel4c.Oel4cData;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;

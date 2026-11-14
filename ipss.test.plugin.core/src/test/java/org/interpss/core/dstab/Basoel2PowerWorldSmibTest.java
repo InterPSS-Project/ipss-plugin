@@ -3,7 +3,7 @@ package org.interpss.core.dstab;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.interpss.dstab.control.oel.psse.basoel2.Basoel2Kernel;
+import com.interpss.dstab.controller.oel.basoel2.Basoel2Kernel;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

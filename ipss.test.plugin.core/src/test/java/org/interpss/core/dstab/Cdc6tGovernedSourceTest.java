@@ -9,7 +9,7 @@ import java.util.zip.ZipFile;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.hvdc.Cdc6tParameters;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Assumptions;

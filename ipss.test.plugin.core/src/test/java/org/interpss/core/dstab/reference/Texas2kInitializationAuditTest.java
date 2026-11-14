@@ -2,7 +2,7 @@ package org.interpss.core.dstab.reference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Map;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.controller.cml.annotate.AbstractChildAnnotateController;
 import com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController;
@@ -15,9 +15,9 @@ import com.interpss.dstab.controller.cml.wrapper.ControllerFieldAnWrapper;
 class Texas2kInitializationAuditTest {
     @Test void secondOrderStabilizerSlopesAreCompleteAndReadOnly() throws Exception {
         var controller = new Ieee1992PSS2AStabilizer();
-        var lag = new org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock(1., .1, .02);
+        var lag = new com.interpss.dstab.controller.pss.ieeest.SecondOrderLagBlock(1., .1, .02);
         lag.initStateU0(.2); lag.setStateX(.1); lag.setRate(.3);
-        var lagField = new BlockFieldAnWrapper<org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock>("lag");
+        var lagField = new BlockFieldAnWrapper<com.interpss.dstab.controller.pss.ieeest.SecondOrderLagBlock>("lag");
         lagField.setField(lag); installFixtureField(controller, lagField);
         var first = Texas2kInitializationAudit.controller(controller);
         assertEquals(.3, ((Map<?, ?>)first.get("rates")).get("lag.output"));
@@ -25,9 +25,9 @@ class Texas2kInitializationAuditTest {
         assertTrue(((java.util.List<?>)first.get("rate_coverage_gaps")).isEmpty());
         assertEquals(first, Texas2kInitializationAudit.controller(controller));
         assertEquals(.1, lag.getStateX()); assertEquals(.3, lag.getRate());
-        var lead = new org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock(.1, .02, .3, .04);
+        var lead = new com.interpss.dstab.controller.pss.ieeest.SecondOrderLeadLagBlock(.1, .02, .3, .04);
         lead.initStateU0(.2); lead.setStateX(.1); lead.setSecondState(.15);
-        var leadField = new BlockFieldAnWrapper<org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock>("lead");
+        var leadField = new BlockFieldAnWrapper<com.interpss.dstab.controller.pss.ieeest.SecondOrderLeadLagBlock>("lead");
         leadField.setField(lead); installFixtureField(controller, leadField);
         var second = Texas2kInitializationAudit.controller(controller);
         assertEquals(2., (double)((Map<?, ?>)second.get("rates")).get("lead.first"), 1.e-12);

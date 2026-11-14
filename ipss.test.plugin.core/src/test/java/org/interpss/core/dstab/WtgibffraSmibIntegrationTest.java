@@ -80,7 +80,7 @@ public class WtgibffraSmibIntegrationTest extends CorePluginTestSetup {
             if(tick>0)assertTrue(algorithm.solveDEqnStep(true),kind+" tick "+tick);
             if(tick==changeTick&&(kind.equals("speed")||kind.equals("trip")))remote.setSpeed(.98);
             if(tick==changeTick&&kind.equals("governor")) {
-                var governor=assertInstanceOf(org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor.class,remote.getGovernor());
+                var governor=assertInstanceOf(com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor.class,remote.getGovernor());
                 governor.setRefPoint(governor.getRefPoint()-.01);
             }
             double[] s=inertia.getNativeStates();var named=converter.getNamedStates();modes.add(inertia.getMode());

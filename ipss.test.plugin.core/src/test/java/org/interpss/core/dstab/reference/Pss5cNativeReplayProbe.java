@@ -7,7 +7,7 @@ import java.util.Locale;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.analysis.Pss5cLocalLinearizer;
 import org.interpss.dstab.analysis.Pss5cTransducerCoordinates;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeStabilizer;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeStabilizer;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.google.gson.JsonParser;

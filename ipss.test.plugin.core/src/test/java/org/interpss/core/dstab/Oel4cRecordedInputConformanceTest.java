@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.interpss.core.dstab.Oel4cPowerWorldArtifactConformanceTest.Profile;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
-import org.interpss.dstab.control.oel.psse.oel4c.Oel4cKernel;
+import com.interpss.dstab.controller.oel.oel4c.Oel4cKernel;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;

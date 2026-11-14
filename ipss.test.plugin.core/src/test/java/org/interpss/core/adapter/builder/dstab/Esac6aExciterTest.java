@@ -11,8 +11,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aData;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aExciter;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;

@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernor;
+import com.interpss.dstab.controller.gov.weccwshygp.WshygpGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

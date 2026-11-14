@@ -22,11 +22,11 @@ public class Pss2bImportValidationTest {
         Path file=folder.resolve("standard.dyr");Files.writeString(file,record+"\n");
         var builder=DStabBuilderTestFixture.createWithMachine();
         assertNotNull(new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(file.toString()));
-        var model=assertInstanceOf(org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer.class,
+        var model=assertInstanceOf(com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer.class,
                 builder.getDStabNetwork().getMachine("Bus1-mach1").getStabilizer());
         assertTrue(model.getData().isSampledInputPathOutputs());
         assertTrue(model.getData().isStandardInputLagPreparation());
-        assertFalse(new org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizerData()
+        assertFalse(new com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizerData()
                 .isSampledInputPathOutputs());
     }
 

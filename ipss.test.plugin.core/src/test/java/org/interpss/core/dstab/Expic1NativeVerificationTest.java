@@ -7,7 +7,7 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.RepcaNativeVerification;
-import org.interpss.dstab.control.exc.psse.expic1.*;
+import com.interpss.dstab.controller.exc.expic1.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.*;
 

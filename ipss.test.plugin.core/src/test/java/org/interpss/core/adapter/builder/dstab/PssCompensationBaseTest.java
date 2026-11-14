@@ -5,14 +5,14 @@ import java.nio.file.Path;
 import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizer;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
 import com.interpss.dstab.mach.Machine;
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizerData;
 
 /** Physical phasor/base identities independent of recorded trajectories. */
 public class PssCompensationBaseTest {

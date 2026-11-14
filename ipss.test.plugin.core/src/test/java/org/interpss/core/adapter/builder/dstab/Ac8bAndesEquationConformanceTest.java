@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
-import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
+import com.interpss.dstab.controller.exc.ac8b.Ac8bData;
+import com.interpss.dstab.controller.exc.ac8b.Ac8bExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;
 

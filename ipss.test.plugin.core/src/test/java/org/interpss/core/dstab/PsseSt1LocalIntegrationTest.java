@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

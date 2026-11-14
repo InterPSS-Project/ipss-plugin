@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
-import org.interpss.dstab.control.exc.psse.exeli.ExeliExciter;
+import com.interpss.dstab.controller.exc.exeli.ExeliData;
+import com.interpss.dstab.controller.exc.exeli.ExeliExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

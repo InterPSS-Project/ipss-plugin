@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
 import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
-import org.interpss.dstab.control.oel.psse.basoel2.*;
+import com.interpss.dstab.controller.oel.basoel2.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ public class Basoel2ModelTest extends CorePluginTestSetup {
         var b=host(1);var m=machine(b);
         assertThrows(NullPointerException.class,()->b.addBasoel2("Bus1","1",data(0,0),null));
         assertNotNull(attach(b,0,0));assertNull(attach(b,0,0));
-        assertNull(b.addOel3c("Bus1","1",new org.interpss.dstab.control.oel.psse.oel3c.Oel3cData(1,1,4,1,0,.1,.1,1,0,-1,0,-1)));
+        assertNull(b.addOel3c("Bus1","1",new com.interpss.dstab.controller.oel.oel3c.Oel3cData(1,1,4,1,0,.1,.1,1,0,-1,0,-1)));
         assertEquals(1,m.getDStabBus().getDynamicBusDeviceList().stream().filter(Basoel2Model.class::isInstance).count());
     }
     @Test void timerMemoryAdvancesOnceOnlyAfterTheAcceptedContinuousStep()throws Exception{

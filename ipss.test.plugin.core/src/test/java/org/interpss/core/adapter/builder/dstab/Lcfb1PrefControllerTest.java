@@ -10,8 +10,8 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
-import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
+import com.interpss.dstab.controller.gov.lcfb1.Lcfb1Data;
+import com.interpss.dstab.controller.gov.lcfb1.Lcfb1PrefController;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

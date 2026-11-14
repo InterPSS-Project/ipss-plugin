@@ -11,8 +11,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciterData;
+import com.interpss.dstab.controller.exc.ieee2005st3a.IEEE2005ST3AExciter;
+import com.interpss.dstab.controller.exc.ieee2005st3a.IEEE2005ST3AExciterData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

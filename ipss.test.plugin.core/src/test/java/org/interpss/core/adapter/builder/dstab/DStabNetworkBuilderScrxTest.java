@@ -10,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
+import com.interpss.dstab.controller.exc.scrx.ScrxData;
+import com.interpss.dstab.controller.exc.scrx.ScrxExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

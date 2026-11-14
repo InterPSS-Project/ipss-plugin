@@ -1,7 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.interpss.dstab.control.oel.psse.oel4c.*;
+import com.interpss.dstab.controller.oel.oel4c.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

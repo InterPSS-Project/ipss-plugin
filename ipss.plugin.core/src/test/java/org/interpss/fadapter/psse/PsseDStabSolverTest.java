@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1GovernorData;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;

@@ -13,7 +13,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.test.TestConfig;
 import org.interpss.core.dstab.reference.Tgov3dPsseReference;
-import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
+import com.interpss.dstab.controller.gov.tgov3.PsseTgov3dGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

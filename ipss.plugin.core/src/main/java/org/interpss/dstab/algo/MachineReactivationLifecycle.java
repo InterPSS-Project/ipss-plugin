@@ -6,8 +6,8 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tGovernor;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor;
 import com.interpss.dstab.controller.runtime.DisconnectedStateParticipant;
 
 /** Prepared, opt-in retained-coordinate lifecycle. Physical outputs remain disconnected. */

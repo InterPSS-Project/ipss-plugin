@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeData;
 
 /** Read-only continuous-time A/B diagnostic for the supported PSS5C orders.
  * These are controller internal-state modes, including potentially unobservable

@@ -13,7 +13,7 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

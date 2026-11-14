@@ -61,13 +61,13 @@ public final class Texas2kInitializationAudit {
           String name=prefix+entry.getKey()+".section"+i++;
           states.put(name,block.getStateX());rates.put(name,block.getDX_dt());
         }
-      } else if(entry.getValue() instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock block) {
+      } else if(entry.getValue() instanceof com.interpss.dstab.controller.pss.ieee1992pss2a.Pss2aLeadLagBlock block) {
         rates.put(prefix+entry.getKey(),block.getStateDerivative());
-      } else if(entry.getValue() instanceof org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock b) {
+      } else if(entry.getValue() instanceof com.interpss.dstab.controller.pss.ieeest.SecondOrderLagBlock b) {
         states.put(prefix+entry.getKey()+".rate", b.getRate());
         rates.put(prefix+entry.getKey()+".output", b.getOutputSlope());
         rates.put(prefix+entry.getKey()+".rate", b.getRateSlope());
-      } else if(entry.getValue() instanceof org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock b) {
+      } else if(entry.getValue() instanceof com.interpss.dstab.controller.pss.ieeest.SecondOrderLeadLagBlock b) {
         states.put(prefix+entry.getKey()+".second", b.getSecondState());
         rates.put(prefix+entry.getKey()+".first", b.getFirstStateSlope());
         rates.put(prefix+entry.getKey()+".second", b.getSecondStateSlope());

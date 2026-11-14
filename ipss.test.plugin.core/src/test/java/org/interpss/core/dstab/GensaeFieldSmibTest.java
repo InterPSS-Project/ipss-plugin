@@ -7,7 +7,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.GensalNativeReference;
 import org.interpss.core.dstab.reference.GensaeFieldReference;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.mach.GensaeMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;

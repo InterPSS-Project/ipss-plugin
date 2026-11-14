@@ -10,9 +10,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.psse.dc1c.Dc1cData;
-import org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter;
-import org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter;
+import com.interpss.dstab.controller.exc.dc1c.Dc1cData;
+import com.interpss.dstab.controller.exc.dc1c.Dc1cExciter;
+import com.interpss.dstab.controller.exc.dc2c.Dc2cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;

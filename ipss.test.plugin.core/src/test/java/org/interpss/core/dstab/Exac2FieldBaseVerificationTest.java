@@ -6,7 +6,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.RepcaNativeVerification;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
+import com.interpss.dstab.controller.exc.exac2.Exac2Exciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.*;
 

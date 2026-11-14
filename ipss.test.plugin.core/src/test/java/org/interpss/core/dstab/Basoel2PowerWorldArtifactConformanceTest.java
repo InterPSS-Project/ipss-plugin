@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import org.interpss.core.dstab.reference.PowerWorldCsvRepeatability;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.oel.psse.basoel2.Basoel2Data;
+import com.interpss.dstab.controller.oel.basoel2.Basoel2Data;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.io.TempDir;

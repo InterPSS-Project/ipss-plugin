@@ -20,11 +20,11 @@ import com.interpss.dstab.controller.cml.field.ICMLLimitBlock;
 import com.interpss.dstab.controller.cml.wrapper.BlockFieldAnWrapper;
 import com.interpss.dstab.controller.cml.wrapper.FunctionFieldAnWrapper;
 import com.interpss.dstab.datatype.ExpCalculator;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 
 /** Prepare audited controller graphs once, retaining compatible custom dispatch. */
 final class ModifiedEulerControllerPreparation {
@@ -59,7 +59,7 @@ final class ModifiedEulerControllerPreparation {
                     ||machine.getClass()==com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine.class
                         &&machine.getExciter()==null&&machine.getStabilizer()==null
                         &&machine.getGovernor()!=null&&machine.getGovernor().getClass()
-                            ==org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor.class);
+                            ==com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor.class);
             // Include inactive attachments, which may become active after initialization.
             for(var candidate:Arrays.asList(machine.getExciter(),machine.getStabilizer(),machine.getGovernor())) {
                 if(candidate==null||!seen.add(candidate))continue;

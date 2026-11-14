@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.oel.psse.basoel2.*;
+import com.interpss.dstab.controller.oel.basoel2.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;

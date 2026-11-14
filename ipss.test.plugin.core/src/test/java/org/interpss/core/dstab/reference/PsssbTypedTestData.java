@@ -1,6 +1,6 @@
 package org.interpss.core.dstab.reference;
 
-import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizerData;
+import com.interpss.dstab.controller.pss.psssb.PsssbStabilizerData;
 
 /** Explicit typed profiles, never interpreted as a native dynamic record. */
 public final class PsssbTypedTestData {

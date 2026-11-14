@@ -9,7 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
 import com.interpss.dstab.algo.*;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.DStabObjectFactory;

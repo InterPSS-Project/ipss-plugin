@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

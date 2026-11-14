@@ -75,9 +75,9 @@ public final class Texas7kSingleCpuCaseRun {
                 var machine=generator.getMach();if(machine==null)continue;
                 for(Object controller:new Object[]{machine.getExciter(),machine.getGovernor(),machine.getStabilizer()})
                     if(controller instanceof com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController c) {
-                        try {c.compileRuntimePlan();compiled++;if(c instanceof org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer && c.hasCompiledStageEvaluator())typedStages++;
-                            if(c instanceof org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter st4){st4.enableDirectEvaluationExperiment();st4Direct++;}
-                            if(c instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer pss){pss.enableDirectEvaluationExperiment();pssDirect++;}
+                        try {c.compileRuntimePlan();compiled++;if(c instanceof com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer && c.hasCompiledStageEvaluator())typedStages++;
+                            if(c instanceof com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter st4){st4.enableDirectEvaluationExperiment();st4Direct++;}
+                            if(c instanceof com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer pss){pss.enableDirectEvaluationExperiment();pssDirect++;}
                         }
                         catch(com.interpss.common.exp.InterpssException unsupported){uncovered++;}
                     }

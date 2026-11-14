@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import com.interpss.dstab.DStabObjectFactory;
@@ -82,7 +82,7 @@ class ModifiedEulerControllerPreparationTest {
         values.add(Double.doubleToRawLongBits(block.getStateX()));
         if(block instanceof com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter first)
             values.add(Double.doubleToRawLongBits(first.getDX_dt()));
-        else if(block instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock lead)
+        else if(block instanceof com.interpss.dstab.controller.pss.ieee1992pss2a.Pss2aLeadLagBlock lead)
             values.add(Double.doubleToRawLongBits(lead.getStateDerivative()));
         values.add(Double.doubleToRawLongBits(block.getU()));
     }

@@ -7,9 +7,9 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.st1c.St1cData;
-import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
-import org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter;
+import com.interpss.dstab.controller.exc.st1c.St1cData;
+import com.interpss.dstab.controller.uel.uel2c.Uel2cData;
+import com.interpss.dstab.controller.uel.uel2c.Uel2cUnderExcitationLimiter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

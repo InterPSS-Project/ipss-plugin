@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import org.interpss.core.dstab.reference.IeeestMeasurementReference;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.GenrouNativeReference;
-import org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLagBlock;
+import com.interpss.dstab.controller.pss.ieeest.SecondOrderLagBlock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.BaseDStabBus;

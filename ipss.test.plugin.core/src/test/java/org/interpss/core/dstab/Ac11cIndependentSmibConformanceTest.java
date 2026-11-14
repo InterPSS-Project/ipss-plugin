@@ -14,7 +14,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.Ac11cFreshPowerWorldReference;
 import java.nio.file.Files;
-import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
+import com.interpss.dstab.controller.exc.ac11c.Ac11cExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

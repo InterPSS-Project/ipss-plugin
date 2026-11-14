@@ -2,9 +2,9 @@ package org.interpss.fadapter.psse;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
@@ -17,25 +17,25 @@ import com.interpss.dstab.mach.Machine;
 final class BusFrequencySelection {
     // Audited families use local machine/bus inputs except the remote selectors below.
     private static final Set<String> LOCAL_CONTROLLERS = Set.of(
-        "org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter",
-        "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter",
-        "org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter",
-        "org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter",
-        "org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter",
-        "org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter",
-        "org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter",
+        "com.interpss.dstab.controller.exc.ieee1968type1.Ieee1968Type1Exciter",
+        "com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter",
+        "com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter",
+        "com.interpss.dstab.controller.exc.esac1a.Esac1aExciter",
+        "com.interpss.dstab.controller.exc.esac6a.Esac6aExciter",
+        "com.interpss.dstab.controller.exc.esdc1a.Esdc1aExciter",
+        "com.interpss.dstab.controller.exc.esdc2a.Esdc2aExciter",
         "com.interpss.dstab.controller.exc.exac1.Exac1Exciter",
-        "org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter",
-        "org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter",
-        "org.interpss.dstab.control.exc.psse.scrx.ScrxExciter",
-        "org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor",
-        "org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor",
-        "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
-        "org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor",
-        "org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor",
-        "org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor",
-        "org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor",
-        "org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor$SecondaryShaft");
+        "com.interpss.dstab.controller.exc.exac2.Exac2Exciter",
+        "com.interpss.dstab.controller.exc.expic1.Expic1Exciter",
+        "com.interpss.dstab.controller.exc.scrx.ScrxExciter",
+        "com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor",
+        "com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor",
+        "com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor",
+        "com.interpss.dstab.controller.gov.ieesgo.PsseIEESGOSteamTurGovernor",
+        "com.interpss.dstab.controller.gov.ggov1.PsseGgov1Governor",
+        "com.interpss.dstab.controller.gov.hygov.PsseHygovGovernor",
+        "com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor",
+        "com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor$SecondaryShaft");
     record Result(Set<String> required, String reason) { }
     static boolean isAuditedController(Object controller) {
         return LOCAL_CONTROLLERS.contains(controller.getClass().getName())

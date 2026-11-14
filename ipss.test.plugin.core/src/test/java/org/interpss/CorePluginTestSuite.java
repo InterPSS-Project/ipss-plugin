@@ -76,14 +76,14 @@ import org.interpss.core.dstab.Pss4bPsseSmibConformanceTest;
 import org.interpss.core.dstab.PsssbIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St2cutPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss2bIndependentSmibConformanceTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCompiledStageTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bSharedStateTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bReferenceReplayTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledBoundaryConformanceTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bLongRunConformanceTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bCoupledPlaybackTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bInputLagPreparationTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Pss2bAcceptedPathHistoryTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bCompiledStageTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bSharedStateTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bReferenceReplayTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bCoupledBoundaryConformanceTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bLongRunConformanceTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bCoupledPlaybackTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bInputLagPreparationTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Pss2bAcceptedPathHistoryTest;
 import org.interpss.core.adapter.builder.dstab.Pss2bImportValidationTest;
 import org.interpss.core.dstab.Pss3cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss5cIndependentSmibConformanceTest;
@@ -151,39 +151,38 @@ import org.interpss.core.adapter.builder.dstab.PsseExst1FieldLimitTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseH6eGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseHyg3GovernorTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3PreparedCurveTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedStateTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3SharedSmibTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3StateConformanceTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LimitConformanceTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3LongDurationConformanceTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3BypassConformanceTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3DerivativePreparationConformanceTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3ParameterValidationTest;
-import org.interpss.dstab.control.gov.psse.hyg3.Hyg3FastFeedbackReferenceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedStateTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tSharedStateTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReferenceTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tCommandBoundaryTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tPowerBoundaryTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tRunBoundaryTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tProductionStepTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tValveLimitsTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tMachineTripTest;
-import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tValveReleaseTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1SharedSmibTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1StateConformanceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BypassLimitConformanceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1TimePreparationTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1TimeReferenceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InitialLimitsTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InitialReferenceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1ShaftInitializationTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BaseConformanceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1InactiveReferenceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1BoundaryPlaybackTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1MachineEventConformanceTest;
-import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1MeasurementDependenciesTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3SharedStateTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3SharedSmibTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3StateConformanceTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3LimitConformanceTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3LongDurationConformanceTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3BypassConformanceTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3DerivativePreparationConformanceTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3ParameterValidationTest;
+import com.interpss.dstab.controller.gov.hyg3.Hyg3FastFeedbackReferenceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1SharedStateTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tSharedStateTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tReferenceTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tCommandBoundaryTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tPowerBoundaryTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tRunBoundaryTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tProductionStepTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tValveLimitsTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tMachineTripTest;
+import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tValveReleaseTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1SharedSmibTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1StateConformanceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1BypassLimitConformanceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1TimePreparationTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1TimeReferenceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1InitialLimitsTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1InitialReferenceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1ShaftInitializationTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1BaseConformanceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1InactiveReferenceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1BoundaryPlaybackTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1MachineEventConformanceTest;
+import com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1MeasurementDependenciesTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
 import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
@@ -412,7 +411,7 @@ import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.PsseSt1LocalIntegrationTest;
 import org.interpss.core.dstab.DynamicParameterValidationTest;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.St1InputEquationsTest;
+import com.interpss.dstab.controller.exc.ieee1981st1.St1InputEquationsTest;
 import org.interpss.core.dstab.PsseStaticCurrentLoadVoltageCurveTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
@@ -466,7 +465,7 @@ import org.interpss.core.dstab.Ieeeg1dPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss2aIndependentSmibConformanceTest;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aScalarPreparationTest;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Pss2aScalarPreparationTest;
 import org.interpss.core.dstab.Pss1aPowerWorldPlaybackConformanceTest;
 import org.interpss.core.dstab.Pss1aPowerWorldActiveConformanceTest;
 import org.interpss.core.dstab.Wtdtb1PowerWorldPlaybackConformanceTest;
@@ -630,8 +629,6 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterNthOrderBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
-import org.interpss.core.dstab.cml.block.Esst4bPIControlBlockTest;
-import org.interpss.core.dstab.cml.block.Pss2aLeadLagBlockTest;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
@@ -767,8 +764,6 @@ import org.junit.platform.suite.api.Suite;
 	FilterNthOrderBlockTests.class,
 	IntegrationControlBlockTests.class,
 	PIControlBlockTests.class,
-	Esst4bPIControlBlockTest.class,
-	Pss2aLeadLagBlockTest.class,
 	WashoutControlBlockTests.class,
 
 	// DStab Machine
@@ -836,8 +831,6 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.adapter.builder.dstab.Pss5cCoordinateObservationTest.class,
     org.interpss.core.adapter.builder.dstab.Pss5cStaticLowTest.class,
     org.interpss.core.dstab.RegfmaLimitNativeTest.class,
-    org.interpss.core.adapter.builder.dstab.Oel3cKernelTest.class,
-    org.interpss.core.adapter.builder.dstab.Basoel2KernelTest.class,
     org.interpss.core.adapter.builder.dstab.Basoel2ModelTest.class,
     org.interpss.core.adapter.builder.dstab.Oel3cModelTest.class,
     org.interpss.core.dstab.Pss5cNativeSmibTest.class,
@@ -905,8 +898,8 @@ import org.junit.platform.suite.api.Suite;
 	PsseSt1LocalIntegrationTest.class,
 	DynamicParameterValidationTest.class,
     St1InputEquationsTest.class,
-    org.interpss.dstab.control.exc.ieee.y1981.st1.St1BoundaryReuseTest.class,
-    org.interpss.dstab.control.exc.ieee.y1981.st1.St1FixedScheduleTest.class,
+    com.interpss.dstab.controller.exc.ieee1981st1.St1BoundaryReuseTest.class,
+    com.interpss.dstab.controller.exc.ieee1981st1.St1FixedScheduleTest.class,
 	PsseStaticCurrentLoadVoltageCurveTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,
@@ -1191,15 +1184,14 @@ import org.junit.platform.suite.api.Suite;
 	PsseGgov1GovernorTest.class,
 	PsseH6eGovernorTest.class,
 	PsseHyg3GovernorTest.class,
-    Hyg3PreparedCurveTest.class,
     Hyg3SharedStateTest.class,
     Hyg3SharedSmibTest.class,
     Hyg3StateConformanceTest.class,
     Hyg3LimitConformanceTest.class,
     Hyg3LongDurationConformanceTest.class,
-    org.interpss.dstab.control.gov.psse.hyg3.Hyg3InitialCoordinateReplayTest.class,
-    org.interpss.dstab.control.gov.psse.hyg3.Hyg3InitialBoundReferenceTest.class,
-    org.interpss.dstab.control.gov.psse.hyg3.Hyg3MechanicalBoundaryReplayTest.class,
+    com.interpss.dstab.controller.gov.hyg3.Hyg3InitialCoordinateReplayTest.class,
+    com.interpss.dstab.controller.gov.hyg3.Hyg3InitialBoundReferenceTest.class,
+    com.interpss.dstab.controller.gov.hyg3.Hyg3MechanicalBoundaryReplayTest.class,
     Hyg3BypassConformanceTest.class,
     Hyg3DerivativePreparationConformanceTest.class,
     Hyg3ParameterValidationTest.class,
@@ -1214,12 +1206,12 @@ import org.junit.platform.suite.api.Suite;
     Urgs3tValveLimitsTest.class,
     Urgs3tMachineTripTest.class,
     Urgs3tValveReleaseTest.class,
-    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationLifecycleTest.class,
-    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tReactivationReferenceTest.class,
-    org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tTripPublicationOrderTest.class,
+    com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tReactivationLifecycleTest.class,
+    com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tReactivationReferenceTest.class,
+    com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tTripPublicationOrderTest.class,
     Wsieg1SharedSmibTest.class,
     Wsieg1StateConformanceTest.class,
-    org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1ReactivationTest.class,
+    com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1ReactivationTest.class,
     Wsieg1BypassLimitConformanceTest.class,
     Wsieg1TimePreparationTest.class,
     Wsieg1TimeReferenceTest.class,

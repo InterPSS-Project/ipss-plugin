@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
-import org.interpss.dstab.control.oel.psse.oel4c.*;
+import com.interpss.dstab.controller.oel.oel4c.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -55,7 +55,7 @@ public class Oel4cModelTest {
     }
     @Test void portOwnershipIsExclusiveWithoutReplacingTheExciter()throws Exception {
         var h=host(1,100);var exc=h.machine().getExciter();assertNotNull(attach(h,data()));assertNull(attach(h,data()));
-        assertNull(h.builder().addOel3c("Bus1","1",new org.interpss.dstab.control.oel.psse.oel3c.Oel3cData(1,1,4,1,0,.1,.1,1,0,-1,0,-1)));
+        assertNull(h.builder().addOel3c("Bus1","1",new com.interpss.dstab.controller.oel.oel3c.Oel3cData(1,1,4,1,0,.1,.1,1,0,-1,0,-1)));
         assertSame(exc,h.machine().getExciter());assertThrows(IllegalStateException.class,()->((Ac1cExciter)exc).setVoel(.1));
     }
     @Test void explicitPickupDoesNotDependOnAnUnavailableStaticReactiveLimit()throws Exception {

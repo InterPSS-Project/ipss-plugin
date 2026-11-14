@@ -19,9 +19,9 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutTransducerBlock;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutWashoutBlock;
+import com.interpss.dstab.controller.pss.st2cut.St2cutStabilizer;
+import com.interpss.dstab.controller.pss.st2cut.St2cutTransducerBlock;
+import com.interpss.dstab.controller.pss.st2cut.St2cutWashoutBlock;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

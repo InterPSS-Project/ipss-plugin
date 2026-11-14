@@ -8,9 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
-import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
-import org.interpss.dstab.control.exc.psse.exst2.Exst2Exciter;
+import com.interpss.dstab.controller.exc.esst2a.Esst2aExciter;
+import com.interpss.dstab.controller.exc.exst2.Exst2Data;
+import com.interpss.dstab.controller.exc.exst2.Exst2Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

@@ -9,7 +9,7 @@ import java.util.HexFormat;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.Pss1aPowerWorldPlaybackReference;
-import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;

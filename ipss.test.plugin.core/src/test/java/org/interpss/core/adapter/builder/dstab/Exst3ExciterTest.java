@@ -10,8 +10,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Exciter;
+import com.interpss.dstab.controller.exc.exst3.Exst3Data;
+import com.interpss.dstab.controller.exc.exst3.Exst3Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

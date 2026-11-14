@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernor;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernorData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

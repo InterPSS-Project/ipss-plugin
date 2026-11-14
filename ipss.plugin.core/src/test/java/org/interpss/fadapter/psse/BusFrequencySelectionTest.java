@@ -7,7 +7,7 @@ import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.mach.MachineModelType;
-import org.interpss.dstab.control.pss.psse.ieeest.*;
+import com.interpss.dstab.controller.pss.ieeest.*;
 
 class BusFrequencySelectionTest {
     private com.interpss.dstab.algo.DynamicSimuAlgorithm fixture() throws Exception {
@@ -65,7 +65,7 @@ class BusFrequencySelectionTest {
         converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
         gen.setDynamicGenDevice(converter);
         assertEquals(Set.of("Bus1"),BusFrequencySelection.select(a).required());
-        var pss=new org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer();
+        var pss=new com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer();
         pss.setInputSignalBuses(a.getNetwork().getDStabBus("Bus2"),a.getNetwork().getDStabBus("Bus3"));
         assertEquals(Set.of("Bus2","Bus3"),pss.requiredBusFrequencyIds());
     }
@@ -77,10 +77,10 @@ class BusFrequencySelectionTest {
         assertNull(BusFrequencySelection.select(a).required());
     }
 
-    private org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer
+    private com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer
             attachPss2a(com.interpss.dstab.algo.DynamicSimuAlgorithm algorithm) {
         var machine=algorithm.getNetwork().getMachine("M");
-        var pss=new org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer("S","S","test");
+        var pss=new com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer("S","S","test");
         pss.setMachine(machine);
         pss.setInputSignalBuses(algorithm.getNetwork().getDStabBus("Bus2"),algorithm.getNetwork().getDStabBus("Bus2"));
         machine.getControllerList().add((com.interpss.dstab.mach.MachineController)(Object)pss.customBlock1);
@@ -99,7 +99,7 @@ class BusFrequencySelectionTest {
     @Test void foreignOrDetachedPss2aChildrenKeepConservativeCoverage() throws Exception {
         var a=fixture();var pss=attachPss2a(a);
         Object old=pss.customBlock1;
-        var other=new org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer("X","X","test");
+        var other=new com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer("X","X","test");
         Object foreign=other.customBlock1;
         pss.getClass().getField("customBlock1").set(pss,foreign);
         assertFalse(pss.isBuiltInSignalConditioner(old));
@@ -119,14 +119,14 @@ class BusFrequencySelectionTest {
 
     @Test void standardLocalExciterAndGovernorsDoNotRequirePassiveFrequency() throws Exception {
         var a=fixture();var machine=a.getNetwork().getMachine("M");
-        new org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter("E","E","test").setMachine(machine);
+        new com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter("E","E","test").setMachine(machine);
         for(var governor:java.util.List.of(
-                new org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor("G1","G1","test"),
-                new org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor("G2","G2","test"),
-                new org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor("G3","G3","test")))
+                new com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor("G1","G1","test"),
+                new com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor("G2","G2","test"),
+                new com.interpss.dstab.controller.gov.ieesgo.PsseIEESGOSteamTurGovernor("G3","G3","test")))
             governor.setMachine(machine);
         assertEquals(Set.of("Bus1"),BusFrequencySelection.select(a).required());
-        new org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor("C","C","test"){}.setMachine(machine);
+        new com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor("C","C","test"){}.setMachine(machine);
         assertNull(BusFrequencySelection.select(a).required());
     }
 }

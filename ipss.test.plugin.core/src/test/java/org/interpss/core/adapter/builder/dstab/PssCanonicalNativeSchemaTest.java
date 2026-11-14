@@ -7,8 +7,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizer;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;

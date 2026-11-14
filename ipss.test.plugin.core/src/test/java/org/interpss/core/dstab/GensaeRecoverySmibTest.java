@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.GensaeRecoveryReference;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.interpss.numeric.datatype.Unit.UnitType;

@@ -85,59 +85,59 @@ import org.interpss.dstab.relay.LoadSheddingStage;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.dstab.relay.StagedLoadSheddingRelayData;
 import org.interpss.dstab.relay.VtgtpatRelayModel;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
-import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
-import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
-import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
-import org.interpss.dstab.control.exc.psse.sexs.SexsData;
-import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
+import com.interpss.dstab.controller.pss.st2cut.St2cutData;
+import com.interpss.dstab.controller.pss.st2cut.St2cutStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.IeeestData;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1GovernorData;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernorData;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3GovernorData;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernorData;
+import com.interpss.dstab.controller.gov.lcfb1.Lcfb1Data;
+import com.interpss.dstab.controller.uel.uel1.Uel1Data;
+import com.interpss.dstab.controller.uel.uel2c.Uel2cData;
+import com.interpss.dstab.controller.oel.oel2c.Oel2cData;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciterData;
+import com.interpss.dstab.controller.exc.scrx.ScrxData;
+import com.interpss.dstab.controller.exc.sexs.SexsData;
+import com.interpss.dstab.controller.exc.esac5a.Esac5aData;
 import com.interpss.dstab.controller.exc.ac1c.Ac1cData;
-import org.interpss.dstab.control.exc.psse.ac2c.Ac2cData;
-import org.interpss.dstab.control.exc.psse.ac3c.Ac3cData;
-import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
-import org.interpss.dstab.control.exc.psse.ac5c.Ac5cData;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
+import com.interpss.dstab.controller.exc.ac2c.Ac2cData;
+import com.interpss.dstab.controller.exc.ac3c.Ac3cData;
+import com.interpss.dstab.controller.exc.ac4c.Ac4cData;
+import com.interpss.dstab.controller.exc.ac5c.Ac5cData;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cData;
 import com.interpss.dstab.controller.exc.exac1.Exac1Data;
-import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
-import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
-import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
-import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
-import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
-import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
-import org.interpss.dstab.control.exc.psse.st1c.St1cData;
-import org.interpss.dstab.control.exc.psse.st2c.St2cData;
-import org.interpss.dstab.control.exc.psse.st3c.St3cData;
-import org.interpss.dstab.control.exc.psse.st4c.St4cData;
-import org.interpss.dstab.control.exc.psse.st5c.St5cData;
-import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
-import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
-import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
-import org.interpss.dstab.control.exc.psse.st6b.St6bData;
-import org.interpss.dstab.control.exc.psse.st6c.St6cData;
-import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
-import org.interpss.dstab.control.exc.psse.st7b.St7bData;
-import org.interpss.dstab.control.exc.psse.st7c.St7cData;
-import org.interpss.dstab.control.exc.psse.st8c.St8cData;
-import org.interpss.dstab.control.exc.psse.st9c.St9cData;
-import org.interpss.dstab.control.exc.psse.st10c.St10cData;
-import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
-import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
-import org.interpss.dstab.control.exc.psse.st5b.St5bData;
+import com.interpss.dstab.controller.exc.esurry.EsurryData;
+import com.interpss.dstab.controller.exc.exac1a.Exac1aData;
+import com.interpss.dstab.controller.exc.exac2.Exac2Data;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aData;
+import com.interpss.dstab.controller.exc.esac2a.Esac2aData;
+import com.interpss.dstab.controller.exc.esac3a.Esac3aData;
+import com.interpss.dstab.controller.exc.esac8b.Esac8bData;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aData;
+import com.interpss.dstab.controller.exc.esac4a.Esac4aData;
+import com.interpss.dstab.controller.exc.st1c.St1cData;
+import com.interpss.dstab.controller.exc.st2c.St2cData;
+import com.interpss.dstab.controller.exc.st3c.St3cData;
+import com.interpss.dstab.controller.exc.st4c.St4cData;
+import com.interpss.dstab.controller.exc.st5c.St5cData;
+import com.interpss.dstab.controller.exc.exac4.Exac4Data;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bData;
+import com.interpss.dstab.controller.exc.dc4c.Dc4cData;
+import com.interpss.dstab.controller.exc.dc3a.Dc3aData;
+import com.interpss.dstab.controller.exc.st6b.St6bData;
+import com.interpss.dstab.controller.exc.st6c.St6cData;
+import com.interpss.dstab.controller.exc.exeli.ExeliData;
+import com.interpss.dstab.controller.exc.st7b.St7bData;
+import com.interpss.dstab.controller.exc.st7c.St7cData;
+import com.interpss.dstab.controller.exc.st8c.St8cData;
+import com.interpss.dstab.controller.exc.st9c.St9cData;
+import com.interpss.dstab.controller.exc.st10c.St10cData;
+import com.interpss.dstab.controller.exc.esst2a.Esst2aData;
+import com.interpss.dstab.controller.exc.exst2.Exst2Data;
+import com.interpss.dstab.controller.exc.exst3.Exst3Data;
+import com.interpss.dstab.controller.exc.st5b.St5bData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,8 +181,8 @@ public class PSSEDStabDirectParser {
     private final List<PsseDyrRecord> pendingOel3c = new ArrayList<>();
     private final List<PsseDyrRecord> pendingBasoel2 = new ArrayList<>();
     /** Declared documented model contract; loadability does not assert reference-tool parity. */
-    public static final org.interpss.dstab.control.oel.psse.basoel2.Basoel2Kernel.TimerSemantics BASOEL2_TIMER_POLICY =
-            org.interpss.dstab.control.oel.psse.basoel2.Basoel2Kernel.TimerSemantics.POWERWORLD_DOCUMENTED;
+    public static final com.interpss.dstab.controller.oel.basoel2.Basoel2Kernel.TimerSemantics BASOEL2_TIMER_POLICY =
+            com.interpss.dstab.controller.oel.basoel2.Basoel2Kernel.TimerSemantics.POWERWORLD_DOCUMENTED;
     private boolean strictImport;
     /** Pin a known native schema when legacy cardinality inference is not appropriate. */
     public enum Regfma1RecordFormat { AUTO_COMPATIBLE, NATIVE_PSSE_36_7, TEXAS2K_LEGACY }
@@ -811,7 +811,7 @@ public class PSSEDStabDirectParser {
                 double[] constants = new double[24];
                 for (int i=0;i<constants.length;i++) constants[i]=record.doubleParameter(i);
                 return builder.addExcExpic1(busId, genId,
-                        org.interpss.dstab.control.exc.psse.expic1.Expic1Data.fromNativeParameters(constants)) != null;
+                        com.interpss.dstab.controller.exc.expic1.Expic1Data.fromNativeParameters(constants)) != null;
             }
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
@@ -1302,8 +1302,8 @@ public class PSSEDStabDirectParser {
     //                 VFEMAX VEMIN TA KA TE KC KD KE E1 SE1 E2 SE2
     private boolean procExcAc8b(String busId, String genId, String[] f) {
         if (f.length < 24) return false;
-        org.interpss.dstab.control.exc.psse.ac8b.Ac8bData d =
-                new org.interpss.dstab.control.exc.psse.ac8b.Ac8bData();
+        com.interpss.dstab.controller.exc.ac8b.Ac8bData d =
+                new com.interpss.dstab.controller.exc.ac8b.Ac8bData();
         d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
         d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
         d.setTdr(getDouble(f,7,0)); d.setVpidmax(getDouble(f,8,0));
@@ -1344,8 +1344,8 @@ public class PSSEDStabDirectParser {
                     ||getInt(f,8,-1)!=5||getInt(f,9,-1)!=3){
                 log.warn("Invalid native AC8CU1 allocation at bus {}",busId);return false;
             }
-            org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
-                    new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();
+            com.interpss.dstab.controller.exc.ac8c.Ac8cData d=
+                    new com.interpss.dstab.controller.exc.ac8c.Ac8cData();
             d.setOelLocation(getInt(f,10,0));d.setUelLocation(getInt(f,11,0));
             d.setSclLocation(getInt(f,12,0));d.setVosLocation(getInt(f,13,1));
             d.setSw1(getInt(f,14,1));int c=15;
@@ -1365,8 +1365,8 @@ public class PSSEDStabDirectParser {
             return builder.addExcAc8c(busId,genId,d)!=null;
         }
         if(f.length<34)return false;
-        org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
-                new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();
+        com.interpss.dstab.controller.exc.ac8c.Ac8cData d=
+                new com.interpss.dstab.controller.exc.ac8c.Ac8cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));
         d.setKpr(getDouble(f,8,0));d.setKir(getDouble(f,9,0));d.setKdr(getDouble(f,10,0));
@@ -1388,8 +1388,8 @@ public class PSSEDStabDirectParser {
     // THETAP VBMAX1 VBMAX2 VLIM1 VLIM2
     private boolean procExcAc9c(String busId,String genId,String[] f){
         if(f.length<48)return false;
-        org.interpss.dstab.control.exc.psse.ac9c.Ac9cData d=
-                new org.interpss.dstab.control.exc.psse.ac9c.Ac9cData();
+        com.interpss.dstab.controller.exc.ac9c.Ac9cData d=
+                new com.interpss.dstab.controller.exc.ac9c.Ac9cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setSw1(getInt(f,5,1));d.setTr(getDouble(f,6,0));d.setKpr(getDouble(f,7,0));
         d.setKir(getDouble(f,8,0));d.setKdr(getDouble(f,9,0));d.setTdr(getDouble(f,10,0));
@@ -1417,8 +1417,8 @@ public class PSSEDStabDirectParser {
     // E1 SE1 E2 SE2 KP KI XL THETAP KC1 VBMAX1 KI2 KC2 VBMAX2 KBOOST VBOOST
     private boolean procExcAc11c(String busId,String genId,String[] f){
         if(f.length<43)return false;
-        org.interpss.dstab.control.exc.psse.ac11c.Ac11cData d=
-                new org.interpss.dstab.control.exc.psse.ac11c.Ac11cData();
+        com.interpss.dstab.controller.exc.ac11c.Ac11cData d=
+                new com.interpss.dstab.controller.exc.ac11c.Ac11cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));
         d.setKpa(getDouble(f,8,0));d.setTia(getDouble(f,9,0));
@@ -1445,8 +1445,8 @@ public class PSSEDStabDirectParser {
     // IBUS 'BBSEX1' ID Tf K T1 T2 T3 T4 Vrmax Vrmin Efdmax Efdmin Switch
     private boolean procExcBbsex1(String busId, String genId, String[] f) {
         if (f.length < 14) return false;
-        org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data d =
-                new org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data();
+        com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data d =
+                new com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data();
         d.setTf(getDouble(f, 3, 0.0));
         d.setK(getDouble(f, 4, 0.0));
         d.setT1(getDouble(f, 5, 0.0));
@@ -1874,8 +1874,8 @@ public class PSSEDStabDirectParser {
     private boolean procExcAc7b(String modelName, String busId, String genId, String[] f) {
         int required = modelName.equals("ESAC7B") ? 31 : 30;
         if (f.length < required) return false;
-        org.interpss.dstab.control.exc.psse.ac7b.Ac7bData d =
-                new org.interpss.dstab.control.exc.psse.ac7b.Ac7bData();
+        com.interpss.dstab.controller.exc.ac7b.Ac7bData d =
+                new com.interpss.dstab.controller.exc.ac7b.Ac7bData();
         d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
         d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
         d.setTdr(getDouble(f,7,0)); d.setVrmax(getDouble(f,8,0));
@@ -1908,8 +1908,8 @@ public class PSSEDStabDirectParser {
     //         FBF KIP KII TP VFMAX VFMIN KH KE TE KC KD E1 SE1 E2 SE2 FLIMF
     private boolean procExcRexsys(String busId,String genId,String[] f) {
         if (f.length < 34) return false;
-        org.interpss.dstab.control.exc.psse.rexsys.RexsysData d =
-                new org.interpss.dstab.control.exc.psse.rexsys.RexsysData();
+        com.interpss.dstab.controller.exc.rexsys.RexsysData d =
+                new com.interpss.dstab.controller.exc.rexsys.RexsysData();
         d.setTr(getDouble(f,3,0));d.setKvp(getDouble(f,4,0));d.setKvi(getDouble(f,5,0));
         d.setVimax(getDouble(f,6,0));d.setTa(getDouble(f,7,0));d.setTb1(getDouble(f,8,0));
         d.setTc1(getDouble(f,9,0));d.setTb2(getDouble(f,10,0));d.setTc2(getDouble(f,11,0));
@@ -1952,7 +1952,7 @@ public class PSSEDStabDirectParser {
                 vrmax, vrmin, kf, tf, kc, vimax, vimin);
         if (exciter == null) return false;
         exciter.getData().setFieldVoltageLimitConvention(
-                org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1ExciterData
+                com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1ExciterData
                         .FieldVoltageLimitConvention.EXST1);
         return true;
     }
@@ -2137,8 +2137,8 @@ public class PSSEDStabDirectParser {
     // E1 SE1 E2 SE2 KI XL THETAP KC1 VBMAX KR. SCL and Spdmlt are typed-only.
     private boolean procExcAc7c(String busId,String genId,String[] f){
         if(f.length<41)return false;
-        org.interpss.dstab.control.exc.psse.ac7c.Ac7cData d=
-                new org.interpss.dstab.control.exc.psse.ac7c.Ac7cData();
+        com.interpss.dstab.controller.exc.ac7c.Ac7cData d=
+                new com.interpss.dstab.controller.exc.ac7c.Ac7cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setSw2(getInt(f,7,1));
         d.setTr(getDouble(f,8,0));d.setKpr(getDouble(f,9,0));d.setKir(getDouble(f,10,0));
@@ -2545,7 +2545,7 @@ public class PSSEDStabDirectParser {
 
     private boolean procOel3c(PsseDyrRecord record) {
         if(!record.sourceModelName().equals("OEL3C")||record.parameterCount()!=12)return false;
-        var d=new org.interpss.dstab.control.oel.psse.oel3c.Oel3cData(record.intParameter(0),record.intParameter(1),
+        var d=new com.interpss.dstab.controller.oel.oel3c.Oel3cData(record.intParameter(0),record.intParameter(1),
             record.doubleParameter(2),record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),
             record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),
             record.doubleParameter(10),record.doubleParameter(11));
@@ -2554,7 +2554,7 @@ public class PSSEDStabDirectParser {
 
     private boolean procBasoel2(PsseDyrRecord record) {
         if(!record.sourceModelName().equals("BASOEL2")||record.parameterCount()!=15)return false;
-        var d=new org.interpss.dstab.control.oel.psse.basoel2.Basoel2Data(
+        var d=new com.interpss.dstab.controller.oel.basoel2.Basoel2Data(
             record.intParameter(0),record.intParameter(1),record.intParameter(2),
             record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),
             record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),
@@ -2770,7 +2770,7 @@ public class PSSEDStabDirectParser {
                     || other==machine || other.getGovernor()!=null)return false;
             secondary=other;
         }
-        var governor = new org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor(machine.getId()+"_Gov", constants);
+        var governor = new com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor(machine.getId()+"_Gov", constants);
         governor.setMachine(machine);
         if(secondary!=null)governor.attachSecondaryShaft(secondary);
         return true;
@@ -3013,7 +3013,7 @@ public class PSSEDStabDirectParser {
     //           TauF Kf K5 K4 T3 T4 TauT T5 Af1 Bf1 Af2 Bf2 Cf2 Tr K6 Tc Td dbH dbL
     private boolean procGovGastwdd(String busId, String genId, String[] f) {
         if (f.length < 37) return false;
-        var d = new org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData();
+        var d = new com.interpss.dstab.controller.gov.gastwd.PsseGastwddGovernorData();
         d.setKdroop(getDouble(f,3,0)); d.setKp(getDouble(f,4,0)); d.setKi(getDouble(f,5,0));
         d.setKd(getDouble(f,6,0)); d.setEtd(getDouble(f,7,0)); d.setTcd(getDouble(f,8,0));
         d.setTrate(getDouble(f,9,0)); d.setT(getDouble(f,10,0)); d.setMaxLimit(getDouble(f,11,0));
@@ -3033,7 +3033,7 @@ public class PSSEDStabDirectParser {
     //           K5 K4 T3 T4 TauT T5 Af1 Bf1 Af2 Bf2 Cf2 Tr K6 Tc dbH dbL
     private boolean procGovGast2ad(String busId, String genId, String[] f) {
         if (f.length < 36) return false;
-        var d = new org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernorData();
+        var d = new com.interpss.dstab.controller.gov.gast2a.PsseGast2adGovernorData();
         d.setW(getDouble(f, 3, 0)); d.setX(getDouble(f, 4, 0));
         d.setY(getDouble(f, 5, 0)); d.setZ(getInt(f, 6, 0));
         d.setEtd(getDouble(f, 7, 0)); d.setTcd(getDouble(f, 8, 0));
@@ -3107,8 +3107,8 @@ public class PSSEDStabDirectParser {
     // Native PSS/E HYGOVR1 order: 26 CONs, no ICONs.
     private boolean procGovHygovr1(String busId, String genId, String[] f) {
         if (f.length < 29) return false;
-        org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData d =
-                new org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData();
+        com.interpss.dstab.controller.gov.hygovr.PsseHygovrGovernorData d =
+                new com.interpss.dstab.controller.gov.hygovr.PsseHygovrGovernorData();
         int p = 3;
         d.setDb1(getDouble(f, p++, 0)); d.setErr(getDouble(f, p++, 0));
         d.setTd(getDouble(f, p++, 0)); d.setT1(getDouble(f, p++, 0));

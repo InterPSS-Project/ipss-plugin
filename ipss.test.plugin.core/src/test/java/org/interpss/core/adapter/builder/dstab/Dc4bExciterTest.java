@@ -10,8 +10,8 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bData;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

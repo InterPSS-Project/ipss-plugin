@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
-import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
+import com.interpss.dstab.controller.exc.rexsys.RexsysData;
+import com.interpss.dstab.controller.exc.rexsys.RexsysExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

@@ -75,7 +75,7 @@ public final class Texas7kSingleCpuBenchmark {
         }
         var implementations=new TreeMap<String,String>();
         for(String name:List.of("com.interpss.dstab.impl.BaseDStabNetworkImpl","com.interpss.dstab.impl.BaseDStabBusImpl","com.interpss.dstab.algo.defaultImpl.DStabSolverImpl",
-                "org.interpss.dstab.algo.DefaultDynamicSimulationSolver","org.interpss.dstab.renewable.Regca1Model","org.interpss.dstab.control.pss.psse.ieeest.IeeestDirectStage")){
+                "org.interpss.dstab.algo.DefaultDynamicSimulationSolver","org.interpss.dstab.renewable.Regca1Model","com.interpss.dstab.controller.pss.ieeest.IeeestDirectStage")){
             var type=Class.forName(name);implementations.put(name,digest(type.getResourceAsStream(type.getSimpleName()+".class")));
         }
         write(output.resolve("summary.json"),Map.of("status","completed","warmups",warmups,"measurements",measurements,"measured_median_whole_seconds",median(totals),

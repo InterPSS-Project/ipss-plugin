@@ -12,8 +12,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
+import com.interpss.dstab.controller.exc.exac2.Exac2Data;
+import com.interpss.dstab.controller.exc.exac2.Exac2Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

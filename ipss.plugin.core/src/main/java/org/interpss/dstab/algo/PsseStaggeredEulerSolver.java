@@ -7,27 +7,27 @@ import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
 
-import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
-import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
-import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
-import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
-import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
+import com.interpss.dstab.controller.exc.ieee1968type1.Ieee1968Type1Exciter;
+import com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.ieesgo.PsseIEESGOSteamTurGovernor;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1Governor;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernor;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aExciter;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aExciter;
+import com.interpss.dstab.controller.exc.esdc1a.Esdc1aExciter;
+import com.interpss.dstab.controller.exc.esdc2a.Esdc2aExciter;
 import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
-import org.interpss.dstab.control.exc.psse.expic1.Expic1Exciter;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.Esst4bPIControlBlock;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.exc.exac2.Exac2Exciter;
+import com.interpss.dstab.controller.exc.expic1.Expic1Exciter;
+import com.interpss.dstab.controller.exc.scrx.ScrxExciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.Esst4bPIControlBlock;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Pss2aLeadLagBlock;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import com.interpss.dstab.controller.runtime.FreezeNonWindupPIControlBlock;
 import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
@@ -587,13 +587,13 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 && type != PsseTGov1SteamTurGovernor.class && type != PsseIEESGOSteamTurGovernor.class
                 && type != IeeeSteamTCDRGovernor.class && type != PsseGgov1Governor.class
                 && type != PsseHygovGovernor.class
-                && type != org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor.class
-                && type != org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.class
-                && type != org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor.class
-                && !org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor.isSecondaryShaft(c)
+                && type != com.interpss.dstab.controller.gov.hyg3.PsseHyg3Governor.class
+                && type != com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor.class
+                && type != com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tGovernor.class
+                && !com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor.isSecondaryShaft(c)
                 && type != IEEE1981ST1Exciter.class
                 && type != IEEE2005ST4BExciter.class && type != Ieee1992PSS2AStabilizer.class
-                && type != org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer.class
+                && type != com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer.class
                 && type != IeeestStabilizer.class && type != Exac1Exciter.class
                 && type != Exac2Exciter.class && type != Esac1aExciter.class
                 && type != Esac6aExciter.class && type != Esdc1aExciter.class
@@ -1063,10 +1063,10 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                     || machine.getDStabBus().getClass()!=com.interpss.dstab.impl.DStabBusImpl.class
                     || ((com.interpss.dstab.impl.DStabBusImpl)machine.getDStabBus()).eNotificationRequired())return false;
             if (governor instanceof PsseGgov1Governor g && (g.eNotificationRequired()
-                    || g.getData().getClass()!=org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData.class))return false;
+                    || g.getData().getClass()!=com.interpss.dstab.controller.gov.ggov1.PsseGgov1GovernorData.class))return false;
             if (stabilizer instanceof Ieee1992PSS2AStabilizer pss) {
                 if (pss.eNotificationRequired()
-                        || pss.getData().getClass()!=org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizerData.class)return false;
+                        || pss.getData().getClass()!=com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizerData.class)return false;
                 int first=pss.getData().getIcs1(), second=pss.getData().getIcs2();
                 if (first==4 || second==4 || first==6 || second==6)return false;
             }

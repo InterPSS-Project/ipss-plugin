@@ -12,9 +12,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
-import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
+import com.interpss.dstab.controller.exc.ieeex1.Ieeex1Exciter;
+import com.interpss.dstab.controller.exc.ieeex2.Ieeex2Exciter;
+import com.interpss.dstab.controller.uel.uel1.Uel1UnderExcitationLimiter;
 import org.interpss.dstab.relay.Lds3blRelayModel;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -114,7 +114,7 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
                 + ".03 1 0 3 0 4 0 /\n");
         parser.parseDynFile(dyr.toString());
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
-        assertEquals(org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter.class,
+        assertEquals(com.interpss.dstab.controller.exc.exdc2.Exdc2Exciter.class,
                 builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter().getClass());
     }
 

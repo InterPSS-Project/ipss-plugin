@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Map;
 import org.interpss.dstab.analysis.Pss5cLocalLinearizer;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeData;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 

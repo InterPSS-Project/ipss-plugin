@@ -2,8 +2,8 @@ package org.interpss.dstab.analysis;
 
 import java.util.Map;
 import java.util.Objects;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData;
-import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeStabilizer;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeData;
+import com.interpss.dstab.controller.pss.pss5c.Pss5cNativeStabilizer;
 
 /** Read-only coordinate algebra for the published full-order transducers.
  * These equivalent cascade coordinates are not automatically certified aliases

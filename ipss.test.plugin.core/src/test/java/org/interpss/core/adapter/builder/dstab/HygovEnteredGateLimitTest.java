@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernor;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernorData;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

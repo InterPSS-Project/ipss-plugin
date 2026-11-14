@@ -93,11 +93,11 @@ class OptionalBusFrequencyIntegrationTest {
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         var machine=network.getMachine("Bus1-mach1");
         var pss=assertInstanceOf(com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer.class,machine.getStabilizer());
-        org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizerData data;
-        if(pss instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer model) {
+        com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizerData data;
+        if(pss instanceof com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer model) {
             model.setInputSignalBuses(network.getDStabBus(remote?"Bus3":"Bus1"),network.getDStabBus("Bus1"));data=model.getData();
         } else {
-            var model=(org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer)pss;
+            var model=(com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer)pss;
             model.setInputSignalBuses(network.getDStabBus(remote?"Bus3":"Bus1"),network.getDStabBus("Bus1"));data=model.getData();
         }
         data.setIcs1(5);data.setIcs2(1);

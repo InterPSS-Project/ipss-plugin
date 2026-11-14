@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cExciter;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cData;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
