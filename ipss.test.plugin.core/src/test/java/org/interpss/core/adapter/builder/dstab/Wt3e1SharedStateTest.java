@@ -2,7 +2,7 @@ package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.mach.*;
+import com.interpss.dstab.mach.model.*;
 import org.junit.jupiter.api.Test;
 
 /** Shared WT3E1 equations, trial isolation and ordinary integration controls. */

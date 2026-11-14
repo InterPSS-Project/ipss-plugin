@@ -5,6 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.*;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;

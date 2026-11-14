@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.mach.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqecMachine;
 import org.interpss.core.dstab.reference.GenqecSalientNativeReference;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;

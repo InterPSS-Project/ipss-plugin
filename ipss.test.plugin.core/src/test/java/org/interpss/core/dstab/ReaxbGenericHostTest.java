@@ -6,9 +6,9 @@ import java.nio.file.*;
 import java.util.*;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.RepcaNativeVerification;
-import org.interpss.dstab.mach.Reaxbu1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.mach.model.Reaxbu1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.*;
 
@@ -73,7 +73,7 @@ public class ReaxbGenericHostTest {
             var settings=com.google.gson.JsonParser.parseString(Files.readString(directory.resolve("manifest.json"))).getAsJsonObject().getAsJsonObject("settings");
             var rows=RepcaNativeVerification.rows(Files.readString(directory.resolve("native.csv")));
             var first=rows.getFirst();var previous=first;
-            var model=new Reaxbu1Model("REAX3BU1",new org.interpss.dstab.mach.Reaxbu1Data(2,(double)(float).066667,1,1,9999,-9999,9999,-9999));
+            var model=new Reaxbu1Model("REAX3BU1",new com.interpss.dstab.mach.model.Reaxbu1Data(2,(double)(float).066667,1,1,9999,-9999,9999,-9999));
             double mva=settings.has("machine_mva")?settings.get("machine_mva").getAsDouble():100;
             model.initializeOutputs(first.get("AUX_STATE0"),first.get("AUX_STATE1"),100/mva);
             double dt=settings.get("step_s").getAsDouble();double[] error=new double[2];

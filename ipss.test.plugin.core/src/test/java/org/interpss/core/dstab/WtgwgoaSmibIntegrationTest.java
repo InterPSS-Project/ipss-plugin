@@ -9,6 +9,7 @@ import org.interpss.core.dstab.reference.WtgwgoaNativeReference;
 import org.interpss.core.dstab.reference.WtgwgoaNetworkCoarse;
 import org.interpss.core.dstab.reference.WtgwgoaNetworkFine;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

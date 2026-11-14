@@ -7,7 +7,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.Repcgfmc1NativeContractReference;
 import org.interpss.core.dstab.reference.Repcgfmc1ImportNativeReference;
-import org.interpss.dstab.renewable.Regfmc1Model;
+import com.interpss.dstab.renewable.Regfmc1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.interpss.dstab.*;
 import com.interpss.dstab.algo.DynamicSimuMethod;

@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.RepccData;
+import com.interpss.dstab.renewable.RepccData;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 
 /** Native shunt profiles. Lockout datasets retain a documented source/tool discrepancy. */

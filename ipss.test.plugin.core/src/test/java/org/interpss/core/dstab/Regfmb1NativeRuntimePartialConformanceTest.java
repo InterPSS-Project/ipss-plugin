@@ -5,8 +5,8 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.Regfmb1NativeContractReference;
 import org.interpss.core.dstab.reference.Regfmb1SelectorNativeReference;
-import org.interpss.dstab.renewable.Regfmb1Data;
-import org.interpss.dstab.renewable.Regfmb1Kernel;
+import com.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Regfmb1Kernel;
 import org.junit.jupiter.api.Test;
 
 /** Recorded terminal-input replay only; no native states are model inputs. */

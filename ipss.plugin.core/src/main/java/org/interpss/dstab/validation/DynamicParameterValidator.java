@@ -19,7 +19,7 @@ import com.interpss.dstab.controller.gov.ggov1.PsseGgov1Governor;
 import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
 import com.interpss.dstab.controller.exc.ieee1968type1.Ieee1968Type1Exciter;
 import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 
 /**
  * Non-mutating, pre-initialization checks for selected machine/controller families.
@@ -237,7 +237,7 @@ public final class DynamicParameterValidator {
                     positive("Xq'",q.getXq1(),false);order("Xl < Xq'",q.getXl(),q.getXq1(),true);
                     order("Xq'' <= Xq'",q.getXq11(),q.getXq1(),false);order("Xq' <= Xq",q.getXq1(),q.getXq(),false);
                     // The documented salient branch removes the q-axis transient state.
-                    boolean removedQTransient=q instanceof org.interpss.dstab.mach.GenqecMachine
+                    boolean removedQTransient=q instanceof com.interpss.dstab.mach.model.GenqecMachine
                             && q.getTq01()==0. && q.getXq1()==q.getXq();
                     time("Tq0'",q.getTq01(),removedQTransient);
                 }

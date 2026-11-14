@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
 
 /** Cold-paired native electrical states, inputs and complete history/event rows. */
 public final class ReecaNativeReference {

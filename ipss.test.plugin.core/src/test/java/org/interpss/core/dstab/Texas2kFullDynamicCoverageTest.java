@@ -27,10 +27,10 @@ import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelCategory;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.WindControlStack;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -296,10 +296,10 @@ public class Texas2kFullDynamicCoverageTest {
                     : regca(generator).getActiveElectricalController();
             case PLANT_CONTROLLER -> plantController(generator);
             case POWER_REFERENCE_CONTROLLER -> generator.getDynamicGenDevice()
-                    instanceof org.interpss.dstab.renewable.Regca1Model converter
+                    instanceof com.interpss.dstab.renewable.Regca1Model converter
                     && converter.getActiveElectricalController() != null
                     ? converter.getActiveElectricalController().getWeakGridController()
-                    : generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regcb1Model converter
+                    : generator.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.Regcb1Model converter
                         && converter.getActiveElectricalController() != null
                         ? converter.getActiveElectricalController().getWeakGridController() : null;
             case DRIVE_TRAIN -> windStack(generator) == null ? null

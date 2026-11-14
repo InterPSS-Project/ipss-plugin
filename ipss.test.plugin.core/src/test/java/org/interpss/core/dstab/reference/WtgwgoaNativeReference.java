@@ -3,7 +3,7 @@ import java.util.List;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
-import org.interpss.dstab.renewable.WtgwgoaData;
+import com.interpss.dstab.renewable.WtgwgoaData;
 /** Native 36.7 inputs and unmodified selected STATE/VAR observations. Mode labels
  * are inferred from recorded states/VARs, not exported native internal flags.
  * Discontinuous callback/handoff differences are retained as diagnostic evidence.

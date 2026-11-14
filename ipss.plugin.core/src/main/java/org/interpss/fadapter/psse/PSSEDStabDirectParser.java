@@ -1,6 +1,6 @@
 package org.interpss.fadapter.psse;
 
-import org.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Reeca1Model;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,55 +29,55 @@ import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
-import org.interpss.dstab.renewable.Reecb1Data;
-import org.interpss.dstab.renewable.Reecc1Data;
-import org.interpss.dstab.renewable.Reecd1Data;
-import org.interpss.dstab.renewable.Reece1Data;
-import org.interpss.dstab.renewable.Regfmb1Data;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Dera1Data;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regcb1Data;
-import org.interpss.dstab.renewable.Regfma1Data;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Wtara1Data;
-import org.interpss.dstab.renewable.Wtdta1Data;
-import org.interpss.dstab.renewable.Wtdtb1Data;
-import org.interpss.dstab.renewable.Wtpta1Data;
-import org.interpss.dstab.renewable.Wtptb1Data;
-import org.interpss.dstab.renewable.WtgwgoaData;
-import org.interpss.dstab.renewable.WtgibffraData;
-import org.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Reecb1Data;
+import com.interpss.dstab.renewable.Reecc1Data;
+import com.interpss.dstab.renewable.Reecd1Data;
+import com.interpss.dstab.renewable.Reece1Data;
+import com.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Dera1Data;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regcb1Data;
+import com.interpss.dstab.renewable.Regfma1Data;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Wtara1Data;
+import com.interpss.dstab.renewable.Wtdta1Data;
+import com.interpss.dstab.renewable.Wtdtb1Data;
+import com.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.WtgwgoaData;
+import com.interpss.dstab.renewable.WtgibffraData;
+import com.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.svc.Svsmo1t2Data;
 import org.interpss.dstab.svc.Svsmo1t2Data.MssDevice;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.Cimtr4Data;
-import org.interpss.dstab.mach.GenqejData;
-import org.interpss.dstab.mach.Gentpj1Data;
-import org.interpss.dstab.mach.GentraData;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.Cimtr4Data;
+import com.interpss.dstab.mach.model.GenqejData;
+import com.interpss.dstab.mach.model.Gentpj1Data;
+import com.interpss.dstab.mach.model.GentraData;
 import com.interpss.dstab.mach.ieeevc.IeeeVcData;
-import org.interpss.dstab.mach.Wt1g1Data;
-import org.interpss.dstab.mach.Wt2g1Data;
-import org.interpss.dstab.mach.Wt2e1Data;
-import org.interpss.dstab.mach.Wt3g1Data;
-import org.interpss.dstab.mach.Gewtgcu1Data;
-import org.interpss.dstab.mach.Gewtecu1Data;
-import org.interpss.dstab.mach.Gewt2mu1Data;
-import org.interpss.dstab.mach.Gewtaru1Data;
-import org.interpss.dstab.mach.Gewtgdu1Data;
-import org.interpss.dstab.mach.Gewtptu1Data;
-import org.interpss.dstab.mach.Reaxbu1Data;
-import org.interpss.dstab.mach.Plntbu1Data;
-import org.interpss.dstab.mach.Wt3g2Data;
-import org.interpss.dstab.mach.Wt4g1Data;
-import org.interpss.dstab.mach.Wt4e1Data;
-import org.interpss.dstab.mach.Wt3e1Data;
-import org.interpss.dstab.mach.Wt3t1Data;
-import org.interpss.dstab.mach.Wt3p1Data;
-import org.interpss.dstab.mach.Wt12t1Data;
-import org.interpss.dstab.mach.Wt12a1Data;
-import org.interpss.dstab.mach.Wt12a1bData;
+import com.interpss.dstab.mach.model.Wt1g1Data;
+import com.interpss.dstab.mach.model.Wt2g1Data;
+import com.interpss.dstab.mach.model.Wt2e1Data;
+import com.interpss.dstab.mach.model.Wt3g1Data;
+import com.interpss.dstab.mach.model.Gewtgcu1Data;
+import com.interpss.dstab.mach.model.Gewtecu1Data;
+import com.interpss.dstab.mach.model.Gewt2mu1Data;
+import com.interpss.dstab.mach.model.Gewtaru1Data;
+import com.interpss.dstab.mach.model.Gewtgdu1Data;
+import com.interpss.dstab.mach.model.Gewtptu1Data;
+import com.interpss.dstab.mach.model.Reaxbu1Data;
+import com.interpss.dstab.mach.model.Plntbu1Data;
+import com.interpss.dstab.mach.model.Wt3g2Data;
+import com.interpss.dstab.mach.model.Wt4g1Data;
+import com.interpss.dstab.mach.model.Wt4e1Data;
+import com.interpss.dstab.mach.model.Wt3e1Data;
+import com.interpss.dstab.mach.model.Wt3t1Data;
+import com.interpss.dstab.mach.model.Wt3p1Data;
+import com.interpss.dstab.mach.model.Wt12t1Data;
+import com.interpss.dstab.mach.model.Wt12a1Data;
+import com.interpss.dstab.mach.model.Wt12a1bData;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
@@ -3584,8 +3584,8 @@ public class PSSEDStabDirectParser {
             icon = 0;
             offset = 0;
         }
-        var reference=record.deviceId().equals("*")?org.interpss.dstab.mach.Wt12a1bModel.Specification.PUBLISHED
-                :org.interpss.dstab.mach.Wt12a1bModel.Specification.NATIVE_STANDARD;
+        var reference=record.deviceId().equals("*")?com.interpss.dstab.mach.model.Wt12a1bModel.Specification.PUBLISHED
+                :com.interpss.dstab.mach.model.Wt12a1bModel.Specification.NATIVE_STANDARD;
         return builder.addWt12a1b(busId, genId, new Wt12a1bData(icon,
                 record.doubleParameter(offset),record.doubleParameter(offset+1),
                 record.doubleParameter(offset+2),record.doubleParameter(offset+3),
@@ -3634,7 +3634,7 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
         var converter = builder.addRegca1(busId, genId, data);
         if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId, genId)))
-            converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+            converter.setActiveElectricalController(new com.interpss.dstab.renewable.ConverterCurrentCommands());
         return converter != null;
     }
 
@@ -3648,9 +3648,9 @@ public class PSSEDStabDirectParser {
                 getDouble(f,17,0.),getDouble(f,18,0.),getDouble(f,19,0.),getDouble(f,20,0.),
                 getDouble(f,21,0.),getDouble(f,22,0.),getDouble(f,23,0.),getDouble(f,24,0.));
         var converter = builder.addRegcau2(busId,genId,
-                new org.interpss.dstab.renewable.Regcau2Data(controls,getDouble(f,25,0.)));
+                new com.interpss.dstab.renewable.Regcau2Data(controls,getDouble(f,25,0.)));
         if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId,genId)))
-            converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+            converter.setActiveElectricalController(new com.interpss.dstab.renewable.ConverterCurrentCommands());
         return converter != null;
     }
 
@@ -3683,7 +3683,7 @@ public class PSSEDStabDirectParser {
         int rate=Integer.parseInt(f[3]),priority=Integer.parseInt(f[4]);
         double[] c=new double[13];
         for(int i=0;i<c.length;i++)c[i]=Double.parseDouble(f[i+5].replace('D','E').replace('d','e'));
-        return builder.addRegcc(busId,genId,new org.interpss.dstab.renewable.RegccData(rate,priority,
+        return builder.addRegcc(busId,genId,new com.interpss.dstab.renewable.RegccData(rate,priority,
                 c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]))!=null;
     }
 
@@ -3751,7 +3751,7 @@ public class PSSEDStabDirectParser {
         int[] flags=new int[3];double[] constants=new double[34];
         for(int i=0;i<3;i++)flags[i]=record.intParameter(6+i);
         for(int i=0;i<34;i++)constants[i]=record.doubleParameter(9+i);
-        return builder.addRegfmc1(busId,genId,org.interpss.dstab.renewable.Regfmc1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
+        return builder.addRegfmc1(busId,genId,com.interpss.dstab.renewable.Regfmc1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
     }
 
     private boolean procRepcc(String busId,String genId,PsseDyrRecord r){
@@ -3765,13 +3765,13 @@ public class PSSEDStabDirectParser {
             if(!unused&&!tokens.get(r.parameterOffset()+index).startsWith("'"))return false;
         }
         for(int i=0;i<35;i++)if(!character.contains(i))r.intParameter(i);
-        var shunts=new java.util.ArrayList<org.interpss.dstab.renewable.RepccData.Shunt>();
-        for(int i=0;i<10;i++)shunts.add(new org.interpss.dstab.renewable.RepccData.Shunt(r.intParameter(13+2*i),r.parameter(14+2*i)));
+        var shunts=new java.util.ArrayList<com.interpss.dstab.renewable.RepccData.Shunt>();
+        for(int i=0;i<10;i++)shunts.add(new com.interpss.dstab.renewable.RepccData.Shunt(r.intParameter(13+2*i),r.parameter(14+2*i)));
         double[] c=new double[57];for(int i=0;i<57;i++)c[i]=r.doubleParameter(35+i);
-        var d=new org.interpss.dstab.renewable.RepccData(r.intParameter(0),
-                new org.interpss.dstab.renewable.RepccData.Branch(r.intParameter(1),r.intParameter(2),r.parameter(3)),
+        var d=new com.interpss.dstab.renewable.RepccData(r.intParameter(0),
+                new com.interpss.dstab.renewable.RepccData.Branch(r.intParameter(1),r.intParameter(2),r.parameter(3)),
                 r.intParameter(4),r.intParameter(5),r.intParameter(6),r.intParameter(7),r.intParameter(8),r.intParameter(9),
-                new org.interpss.dstab.renewable.RepccData.Branch(r.intParameter(10),r.intParameter(11),r.parameter(12)),
+                new com.interpss.dstab.renewable.RepccData.Branch(r.intParameter(10),r.intParameter(11),r.parameter(12)),
                 shunts,r.intParameter(33),r.intParameter(34),c);
         return builder.addRepcc(busId,genId,d)!=null;
     }
@@ -3783,7 +3783,7 @@ public class PSSEDStabDirectParser {
         for(int i=0;i<=record.parameterOffset()+9;i++)if(!tokens.find())return false;
         if(!tokens.group().startsWith("'"))return false;
         double[] constants=new double[54];for(int i=0;i<54;i++)constants[i]=record.doubleParameter(13+i);
-        var data=new org.interpss.dstab.renewable.Repcgfmc1Data(record.intParameter(6),record.intParameter(7),record.intParameter(8),record.parameter(9),
+        var data=new com.interpss.dstab.renewable.Repcgfmc1Data(record.intParameter(6),record.intParameter(7),record.intParameter(8),record.parameter(9),
                 record.intParameter(10),record.intParameter(11),record.intParameter(12),constants);
         return builder.addRepcgfmc1(busId,genId,data)!=null;
     }

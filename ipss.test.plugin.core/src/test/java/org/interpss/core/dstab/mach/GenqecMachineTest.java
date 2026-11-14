@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.GenqecMachine;
-import org.interpss.dstab.mach.GenqejData;
-import org.interpss.dstab.mach.GenqejMachine;
-import org.interpss.dstab.mach.Gentpj1Data;
-import org.interpss.dstab.mach.Gentpj1Machine;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqejData;
+import com.interpss.dstab.mach.model.GenqejMachine;
+import com.interpss.dstab.mach.model.Gentpj1Data;
+import com.interpss.dstab.mach.model.Gentpj1Machine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;

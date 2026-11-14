@@ -10,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
-import org.interpss.dstab.renewable.Reecc1Model;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Reecc1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

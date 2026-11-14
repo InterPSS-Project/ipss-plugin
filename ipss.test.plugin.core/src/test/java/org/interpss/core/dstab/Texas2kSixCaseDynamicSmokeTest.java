@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

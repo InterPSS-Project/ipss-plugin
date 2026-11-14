@@ -415,7 +415,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if (generator.getDynamicGenDevice() instanceof Machine machine && machine.isActive()
                         && machine.getStabilizer() instanceof com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement stabilizer
                         && stabilizer.isActive()) stabilizer.synchronizeVoltageDerivativeMemory();
-                if (generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regca1Model converter
+                if (generator.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.Regca1Model converter
                         && converter.isActive()) {
                     var electrical=converter.getActiveElectricalController();
                     if (electrical!=null && electrical.getRepccController()!=null)

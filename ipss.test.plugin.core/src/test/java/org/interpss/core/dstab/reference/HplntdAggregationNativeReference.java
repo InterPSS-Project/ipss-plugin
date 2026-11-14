@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.psse.dyr.*;
 
 /** Frozen hybrid aggregation/interface references, not a controller-runtime claim. */

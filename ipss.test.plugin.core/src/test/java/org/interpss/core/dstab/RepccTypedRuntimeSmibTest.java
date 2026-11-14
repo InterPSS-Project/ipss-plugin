@@ -7,6 +7,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.RepccNativeReference;
 import org.interpss.core.dstab.reference.RepccShuntNativeReference;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;

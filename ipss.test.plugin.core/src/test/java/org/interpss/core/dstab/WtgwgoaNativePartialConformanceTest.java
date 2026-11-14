@@ -5,7 +5,7 @@ import java.util.*;
 import org.interpss.core.dstab.reference.WtgwgoaNativeReference;
 import org.interpss.core.dstab.reference.WtgwgoaNativeReference.Profile;
 import org.interpss.core.dstab.reference.WtgwgoaNativeReference.Transition;
-import org.interpss.dstab.renewable.WtgwgoaModel;
+import com.interpss.dstab.renewable.WtgwgoaModel;
 import org.junit.jupiter.api.Test;
 
 /** Hybrid timing/overlap evidence, explicitly not pointwise acceptance of callback handoffs. */

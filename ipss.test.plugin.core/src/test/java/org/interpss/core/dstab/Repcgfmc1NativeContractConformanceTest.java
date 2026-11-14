@@ -5,7 +5,7 @@ import java.io.StringReader;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.Repcgfmc1NativeContractReference;
-import org.interpss.dstab.renewable.Repcgfmc1Initialization;
+import com.interpss.dstab.renewable.Repcgfmc1Initialization;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Test;
 
@@ -82,7 +82,7 @@ public class Repcgfmc1NativeContractConformanceTest {
         }
     }
     @Test void subsequentExactImportDoesNotCreateAnUnprovedSourceNameAlias(){
-        assertEquals("org.interpss.dstab.renewable.Repcgfmc1Model",DynamicModelCatalog.find("REPCGFMC1U").orElseThrow().runtimeClassName());
+        assertEquals("com.interpss.dstab.renewable.Repcgfmc1Model",DynamicModelCatalog.find("REPCGFMC1U").orElseThrow().runtimeClassName());
         assertTrue(DynamicModelCatalog.find("REPCGFMC1").isEmpty());
     }
 }

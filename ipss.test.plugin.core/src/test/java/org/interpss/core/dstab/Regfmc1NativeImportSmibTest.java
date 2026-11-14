@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Regfmc1Model;
+import com.interpss.dstab.renewable.Regfmc1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.interpss.dstab.*;
 import com.interpss.dstab.algo.DynamicSimuMethod;

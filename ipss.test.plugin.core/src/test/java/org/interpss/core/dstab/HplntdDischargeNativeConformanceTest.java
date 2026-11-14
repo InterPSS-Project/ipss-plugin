@@ -1,13 +1,14 @@
 package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.interpss.dstab.renewable.HplntdData.Parameter.*;
+import static com.interpss.dstab.renewable.HplntdData.Parameter.*;
 import java.nio.file.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.*;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import org.junit.jupiter.api.Test;

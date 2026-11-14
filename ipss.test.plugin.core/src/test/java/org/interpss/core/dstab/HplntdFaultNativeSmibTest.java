@@ -6,6 +6,7 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
 import org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile;

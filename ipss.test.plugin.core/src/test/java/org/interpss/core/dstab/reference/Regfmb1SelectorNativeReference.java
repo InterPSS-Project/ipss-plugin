@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Regfmb1Data;
 /** Cold-paired native selector/PLL discriminators, not complete coupled acceptance. */
 public final class Regfmb1SelectorNativeReference {
     private Regfmb1SelectorNativeReference(){}

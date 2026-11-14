@@ -10,9 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Wt1g1Machine;
-import org.interpss.dstab.mach.Wt12a1bData;
-import org.interpss.dstab.mach.Wt12a1bModel;
+import com.interpss.dstab.mach.model.Wt1g1Machine;
+import com.interpss.dstab.mach.model.Wt12a1bData;
+import com.interpss.dstab.mach.model.Wt12a1bModel;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;

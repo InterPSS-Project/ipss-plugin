@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Wtara1Data;
+import com.interpss.dstab.renewable.Wtara1Data;
 
 /** Native algebraic boundary references with every history, event and driver-API row. */
 public final class WtaraNativeReference {

@@ -43,7 +43,7 @@ class OptionalBusFrequencyIntegrationTest {
                 com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0,.01),null,.05,.05),"fault");
         assertTrue(algorithm.initialization());
         assertEquals(mode==DefaultDynamicSimulationSolver.BusFrequencyMode.ALL?3:2,solver.getBusFrequencyReport().measuredBuses());
-        var converter=(org.interpss.dstab.renewable.Regca1Model)((com.interpss.dstab.DStabGen)
+        var converter=(com.interpss.dstab.renewable.Regca1Model)((com.interpss.dstab.DStabGen)
                 network.getDStabBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         var result=new ArrayList<double[]>();
         for(int i=0;i<2000;i++) {

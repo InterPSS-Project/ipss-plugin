@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import org.interpss.core.dstab.reference.Wtptb1NativeReference;
 import org.interpss.core.dstab.reference.Wtptb1NativeReference.Profile;
-import org.interpss.dstab.renewable.Wtptb1Model;
+import com.interpss.dstab.renewable.Wtptb1Model;
 import org.junit.jupiter.api.Test;
 
 /** Recorded-input source-kernel evidence, not native import or coupled-network acceptance. */

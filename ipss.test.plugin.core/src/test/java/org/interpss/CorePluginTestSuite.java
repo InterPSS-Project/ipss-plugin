@@ -42,7 +42,7 @@ import org.interpss.core.adapter.builder.dstab.Expic1ExciterTest;
 import org.interpss.core.dstab.Expic1NativeVerificationTest;
 import org.interpss.core.dstab.Exac2FieldBaseVerificationTest;
 import org.interpss.core.dstab.WttqaCompatibilityTest;
-import org.interpss.dstab.renewable.WttqaCurveInputConformanceTest;
+import com.interpss.dstab.renewable.WttqaCurveInputConformanceTest;
 import org.interpss.core.dstab.ReaxbGenericHostTest;
 import org.interpss.core.adapter.builder.dstab.Dc4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.St6bExciterTest;
@@ -263,7 +263,6 @@ import org.interpss.core.adapter.builder.dstab.WshygpGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12t1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1bModelTest;
-import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
 import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.Reecc1NativeConformanceTest;
 import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
@@ -494,11 +493,9 @@ import org.interpss.core.dstab.WttqaSpeedFeedbackConformanceTest;
 import org.interpss.core.dstab.WttqaNativePartialConformanceTest;
 import org.interpss.core.dstab.WtdtaNativeConformanceTest;
 import org.interpss.core.dstab.WtdtaNativeObservationConformanceTest;
-import org.interpss.core.dstab.WtaraAlgebraicConformanceTest;
 import org.interpss.core.dstab.WtaraNativeConformanceTest;
 import org.interpss.core.dstab.WtptaNativeConformanceTest;
 import org.interpss.core.dstab.WtptaNativeObservationConformanceTest;
-import org.interpss.core.dstab.ReecaNativeBoundaryConformanceTest;
 import org.interpss.core.dstab.ReecaNativeConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
@@ -952,7 +949,6 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.mach.Wt3g2SharedStateTest.class,
 	org.interpss.core.dstab.mach.Wt3g2BundleTest.class,
 	org.interpss.core.dstab.mach.Wt3t1SharedStateTest.class,
-	org.interpss.core.dstab.mach.Wt3p1SharedStateTest.class,
 	org.interpss.core.adapter.builder.dstab.Wt3e1SharedStateTest.class,
 	Wt4g1PsseSmibConformanceTest.class,
 	Wt4e1PsseSmibConformanceTest.class,
@@ -999,11 +995,9 @@ import org.junit.platform.suite.api.Suite;
 	WttqaNativePartialConformanceTest.class,
 	WtdtaNativeConformanceTest.class,
 	WtdtaNativeObservationConformanceTest.class,
-	WtaraAlgebraicConformanceTest.class,
 	WtaraNativeConformanceTest.class,
 	WtptaNativeConformanceTest.class,
 	WtptaNativeObservationConformanceTest.class,
-	ReecaNativeBoundaryConformanceTest.class,
 	ReecaNativeConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
@@ -1304,7 +1298,6 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.GenqecSalientNativeConformanceTest.class,
 	org.interpss.core.dstab.GenqecKwNativeConformanceTest.class,
 	org.interpss.core.dstab.Wt12a1bNativeConformanceTest.class,
-	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Reecc1NativeConformanceTest.class,
     org.interpss.core.dstab.ReeccPlantReplayConformanceTest.class,

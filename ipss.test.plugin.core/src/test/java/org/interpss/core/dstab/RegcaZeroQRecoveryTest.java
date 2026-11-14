@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EndpointAlignedStateMonitor;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import com.interpss.core.acsc.fault.SimpleFaultCode;

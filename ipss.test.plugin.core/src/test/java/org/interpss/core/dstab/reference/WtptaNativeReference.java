@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtpta1Data;
 
 /** Native pitch states and boundary inputs with complete history/event rows. */
 public final class WtptaNativeReference {

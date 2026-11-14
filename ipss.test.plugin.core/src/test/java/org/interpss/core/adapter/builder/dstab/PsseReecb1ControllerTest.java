@@ -9,12 +9,12 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Reecb1Data;
-import org.interpss.dstab.renewable.Reecb1Model;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.Reecb1Data;
+import com.interpss.dstab.renewable.Reecb1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;

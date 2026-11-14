@@ -60,9 +60,9 @@ class BusFrequencySelectionTest {
     @Test void constantConverterCommandsAndConfiguredRemoteSignalBusesAreKnown() throws Exception {
         var a=fixture();var bus=a.getNetwork().getDStabBus("Bus1");
         var gen=(com.interpss.dstab.DStabGen)bus.getContributeGen("1");
-        var data=new org.interpss.dstab.renewable.Regca1Data(1,.02,10.,.9,.4,1.2,1.2,.8,.4,-1.3,.02,0.,999.,-999.,.3);
-        var converter=new org.interpss.dstab.renewable.Regca1Model(gen,bus,"1",data);
-        converter.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+        var data=new com.interpss.dstab.renewable.Regca1Data(1,.02,10.,.9,.4,1.2,1.2,.8,.4,-1.3,.02,0.,999.,-999.,.3);
+        var converter=new com.interpss.dstab.renewable.Regca1Model(gen,bus,"1",data);
+        converter.setActiveElectricalController(new com.interpss.dstab.renewable.ConverterCurrentCommands());
         gen.setDynamicGenDevice(converter);
         assertEquals(Set.of("Bus1"),BusFrequencySelection.select(a).required());
         var pss=new com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer();

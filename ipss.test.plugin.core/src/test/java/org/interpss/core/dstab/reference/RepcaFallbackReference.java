@@ -1,7 +1,7 @@
 package org.interpss.core.dstab.reference;
 import java.util.List;
 import org.interpss.core.dstab.reference.RepcaNativeReference.Profile;
-import org.interpss.dstab.renewable.Repca1Model.MeasurementSource;
+import com.interpss.dstab.renewable.Repca1Model.MeasurementSource;
 
 /** Exact missing/zero branch and signed-target inputs; no selector is rewritten. */
 public final class RepcaFallbackReference {

@@ -30,11 +30,11 @@ import com.interpss.dstab.controller.pss.ieee1992pss2a.Pss2aLeadLagBlock;
 import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import com.interpss.dstab.controller.runtime.FreezeNonWindupPIControlBlock;
 import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine;
-import org.interpss.dstab.mach.Wt3g2Model;
-import org.interpss.dstab.mach.Wt3g2IntegrationBundle;
-import org.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.mach.model.Wt3g2Model;
+import com.interpss.dstab.mach.model.Wt3g2IntegrationBundle;
+import com.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
@@ -636,7 +636,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {
                     if (!(r.getActiveElectricalController()
-                            instanceof org.interpss.dstab.renewable.TwoStepElectricalController))
+                            instanceof com.interpss.dstab.renewable.TwoStepElectricalController))
                         throw new IllegalArgumentException("Unsupported REGCA1 electrical controller: "+bus.getId()+"/"+gen.getId());
                     continue;
                 }

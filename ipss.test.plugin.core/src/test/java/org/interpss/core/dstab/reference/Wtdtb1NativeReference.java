@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.List;
-import org.interpss.dstab.renewable.Wtdtb1Data;
+import com.interpss.dstab.renewable.Wtdtb1Data;
 
 /** Native PSS/E 36.7 declared-step inputs and selected five-state/network checkpoints.
  * Complete immutable raw clocks, negative prehistory, channels and cold provenance

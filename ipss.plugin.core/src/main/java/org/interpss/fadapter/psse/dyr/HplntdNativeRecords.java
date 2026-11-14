@@ -2,6 +2,7 @@ package org.interpss.fadapter.psse.dyr;
 
 import java.util.*;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 
 /** Exact hybrid bus/unit wrapper decoder. Decoding is not runtime attachment;
  * no standard-name alias, alternate allocation or cross-vendor layout is inferred. */

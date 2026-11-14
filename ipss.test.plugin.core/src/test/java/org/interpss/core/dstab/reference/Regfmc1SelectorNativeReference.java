@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Regfmc1Data;
+import com.interpss.dstab.renewable.Regfmc1Data;
 /** Native selector/manual-reference and active-bound profiles, never fitted. */
 public final class Regfmc1SelectorNativeReference {
     private Regfmc1SelectorNativeReference(){}

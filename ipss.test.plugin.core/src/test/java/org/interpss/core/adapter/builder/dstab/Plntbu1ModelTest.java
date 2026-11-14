@@ -10,9 +10,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Gewtgcu1Model;
-import org.interpss.dstab.mach.Plntbu1Data;
-import org.interpss.dstab.mach.Plntbu1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Plntbu1Data;
+import com.interpss.dstab.mach.model.Plntbu1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;

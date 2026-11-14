@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Repcgfmc1Data;
+import com.interpss.dstab.renewable.Repcgfmc1Data;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 
 /** Immutable native hybrid-plant profiles. Foundation evidence, not a runtime. */

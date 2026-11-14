@@ -16,8 +16,8 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.WindControlStack;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -45,22 +45,22 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         // This historical ANDES oracle explicitly uses the older angular-frequency mechanical realization.
         var historicalStack=((Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1"))
                 .getDynamicGenDevice()).getReeca1Controller().getWindControlStack();
-        historicalStack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
+        historicalStack.setDriveTrain(new com.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
         // Keep this older benchmark's declared pitch/torque wiring separate from native-record conformance.
-        historicalStack.setPitchController(new org.interpss.dstab.renewable.Wtpta1Model(historicalStack.getPitchController().getData()));
+        historicalStack.setPitchController(new com.interpss.dstab.renewable.Wtpta1Model(historicalStack.getPitchController().getData()));
         // This historical fixture also uses the published filtered-power curve input.
-        historicalStack.setTorqueController(new org.interpss.dstab.renewable.Wttqa1Model(historicalStack.getTorqueController().getData()));
+        historicalStack.setTorqueController(new com.interpss.dstab.renewable.Wttqa1Model(historicalStack.getTorqueController().getData()));
         // This historical oracle declares incremental plant PI bounds, not native absolute power bounds.
         var historicalConverter=(Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         var historicalElectrical=historicalConverter.getReeca1Controller();
-        historicalElectrical.setPlantController(new org.interpss.dstab.renewable.Repca1Model(historicalElectrical.getPlantController().getData(),historicalConverter));
+        historicalElectrical.setPlantController(new com.interpss.dstab.renewable.Repca1Model(historicalElectrical.getPlantController().getData(),historicalConverter));
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         // ANDES disables REEC_A's speed multiplier when WTTQ_A supplies Pref.
         // Keep that explicit dialect boundary for this existing ANDES oracle.
         ((Regca1Model) ((DStabGen) network.getBus("Bus1").getContributeGen("1"))
                 .getDynamicGenDevice()).getReeca1Controller().setWindSpeedConvention(
-                        org.interpss.dstab.renewable.Reeca1Model.WindSpeedConvention.WTTQA_POWER_REFERENCE);
+                        com.interpss.dstab.renewable.Reeca1Model.WindSpeedConvention.WTTQA_POWER_REFERENCE);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "Type-3 public load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         double simulationStep = Double.parseDouble(CONFIG.string(

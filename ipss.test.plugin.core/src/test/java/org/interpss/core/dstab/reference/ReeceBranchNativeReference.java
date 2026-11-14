@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Reece1Data;
+import com.interpss.dstab.renewable.Reece1Data;
 /** Cold-paired native 36.7 branch replays, not complete REECE acceptance. */
 public final class ReeceBranchNativeReference {
     private ReeceBranchNativeReference(){}

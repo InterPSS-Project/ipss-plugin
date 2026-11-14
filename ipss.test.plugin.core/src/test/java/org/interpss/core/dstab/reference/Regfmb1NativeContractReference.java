@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Regfmb1Data;
 /** Exact native REGFMB1U contract references, not an implemented dynamic runtime. */
 public final class Regfmb1NativeContractReference {
     private Regfmb1NativeContractReference(){}

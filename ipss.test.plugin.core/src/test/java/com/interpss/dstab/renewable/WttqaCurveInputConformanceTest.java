@@ -1,4 +1,4 @@
-package org.interpss.dstab.renewable;
+package com.interpss.dstab.renewable;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
@@ -8,6 +8,9 @@ import org.interpss.core.dstab.reference.WttqaNativeReference;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
 
 /** Distinguish the native raw-power curve junction from the published filtered-power cascade. */
 public class WttqaCurveInputConformanceTest extends CorePluginTestSetup {

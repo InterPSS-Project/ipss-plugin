@@ -17,7 +17,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;

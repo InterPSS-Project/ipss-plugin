@@ -15,8 +15,8 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.renewable.Reecc1Model;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Reecc1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

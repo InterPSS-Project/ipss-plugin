@@ -55,7 +55,7 @@ class Texas2kInitializationAuditTest {
         algorithm.setSimuStepSec(.0005);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         assertTrue(algorithm.initialization());
-        var model=(org.interpss.dstab.renewable.Regfma1Model)
+        var model=(com.interpss.dstab.renewable.Regfma1Model)
             ((com.interpss.dstab.DStabGen)net.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         var before=model.getNamedStates();var rates=model.getStateDerivativeSnapshot();
         var file=directory.resolve("initial-states.json");
@@ -71,8 +71,8 @@ class Texas2kInitializationAuditTest {
         assertEquals(rates,model.getStateDerivativeSnapshot());
     }
     @Test void customStateAccessReportsMissingEvaluationAndDetectsNonzeroRate() {
-        var model=new org.interpss.dstab.renewable.Wtdta1Model(
-                new org.interpss.dstab.renewable.Wtdta1Data(4,0,.5,1,0));
+        var model=new com.interpss.dstab.renewable.Wtdta1Model(
+                new com.interpss.dstab.renewable.Wtdta1Data(4,0,.5,1,0));
         model.initialize(.8,1);
         var unobserved=Texas2kInitializationAudit.controller(model);
         assertFalse(((java.util.List<?>)unobserved.get("rate_coverage_gaps")).isEmpty());

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.interpss.core.dstab.reference.ReeceLocalPiNativeReference;
 import org.interpss.core.dstab.reference.ReeceRegcbNativeBoundaryReference;
-import org.interpss.dstab.renewable.Reece1Model;
+import com.interpss.dstab.renewable.Reece1Model;
 import org.junit.jupiter.api.Test;
 
 /** Native 36.7 discriminator; the printed freeze arrow differs from the executable. */

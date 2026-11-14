@@ -1,7 +1,7 @@
 package org.interpss.core.dstab.reference;
 
 import java.util.List;
-import org.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.Wtptb1Data;
 import org.interpss.core.dstab.reference.Wtptb1NativeReference.Profile;
 
 /** PSS/E 36.7 WTPTB1 native branch inputs and unmodified selected state/network rows.

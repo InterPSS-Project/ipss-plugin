@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.DStabGen;

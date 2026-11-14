@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Repca1Data;
 
 /** Cold-paired native plant states, physical boundary inputs and all raw rows. */
 public final class RepcaNativeReference {

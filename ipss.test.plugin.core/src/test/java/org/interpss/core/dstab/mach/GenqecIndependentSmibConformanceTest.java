@@ -13,7 +13,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference.Sample;
-import org.interpss.dstab.mach.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqecMachine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

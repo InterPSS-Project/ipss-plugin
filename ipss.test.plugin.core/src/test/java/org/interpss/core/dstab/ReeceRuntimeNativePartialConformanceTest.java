@@ -8,7 +8,7 @@ import java.util.zip.GZIPInputStream;
 import org.interpss.core.dstab.reference.ReeceLocalPiNativeReference;
 import org.interpss.core.dstab.reference.ReeceBranchNativeReference;
 import org.interpss.core.dstab.reference.WtgibffraNativeReference;
-import org.interpss.dstab.renewable.Reece1Model;
+import com.interpss.dstab.renewable.Reece1Model;
 import org.junit.jupiter.api.Test;
 
 /** Full runtime replay for one QFLAG=2/PEFLAG=1 branch, not complete acceptance. */
@@ -57,7 +57,7 @@ public class ReeceRuntimeNativePartialConformanceTest {
         for(var p:ReeceBranchNativeReference.profiles())if(p.name().startsWith("limit-lower")) {
             var rows=p.body().lines().map(line->Arrays.stream(line.split(",")).mapToDouble(Double::parseDouble).toArray()).toList();
             double initialQ=rows.getFirst()[2],oldMaximum=0,sameMaximum=0;
-            double imax=(float)p.parameters().value(org.interpss.dstab.renewable.Reece1Data.Parameter.IMAX);
+            double imax=(float)p.parameters().value(com.interpss.dstab.renewable.Reece1Data.Parameter.IMAX);
             for(int i=1;i<rows.size();i++) {
                 double[] now=rows.get(i),previous=rows.get(i-1);double target=Math.max(-1,Math.min(1,initialQ+now[5]));
                 double limit=Math.sqrt(Math.max(0,imax*imax-previous[14]*previous[14]));

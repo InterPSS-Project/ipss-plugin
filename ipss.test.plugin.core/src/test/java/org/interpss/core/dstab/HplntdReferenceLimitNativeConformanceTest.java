@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.interpss.core.dstab.reference.HplntdReferenceLimitNativeReference;
 import org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile;
 import org.interpss.dstab.renewable.*;
-import static org.interpss.dstab.renewable.HplntdData.Parameter.*;
+import com.interpss.dstab.renewable.*;
+import static com.interpss.dstab.renewable.HplntdData.Parameter.*;
 
 /** Published-limit checks and explicit native discrepancies, not voltage parity. */
 public class HplntdReferenceLimitNativeConformanceTest {

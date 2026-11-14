@@ -6,7 +6,7 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.GenqecSchemaNativeReference;
-import org.interpss.dstab.mach.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqecMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
 import org.junit.jupiter.api.Test;

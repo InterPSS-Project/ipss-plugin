@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Wtdta1Data;
+import com.interpss.dstab.renewable.Wtdta1Data;
 
 /** Four-state native mechanical references, retaining every raw history/event sample. */
 public final class WtdtaNativeReference {

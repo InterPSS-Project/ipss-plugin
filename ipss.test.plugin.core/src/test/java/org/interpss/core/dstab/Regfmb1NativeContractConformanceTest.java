@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.Regfmb1NativeContractReference;
-import org.interpss.dstab.renewable.Regfmb1NetworkBoundary;
+import com.interpss.dstab.renewable.Regfmb1NetworkBoundary;
 import org.junit.jupiter.api.Test;
 
 /** Native schema/boundary evidence; separate import tests cover the loadable adapter. */
@@ -50,6 +50,6 @@ public class Regfmb1NativeContractConformanceTest {
     }
     @Test void nativeRuntimeDoesNotInferTheSourceListAlias() {
         assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMB1").isEmpty());
-        assertEquals("org.interpss.dstab.renewable.Regfmb1Model",org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMB1U").orElseThrow().runtimeClassName());
+        assertEquals("com.interpss.dstab.renewable.Regfmb1Model",org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMB1U").orElseThrow().runtimeClassName());
     }
 }

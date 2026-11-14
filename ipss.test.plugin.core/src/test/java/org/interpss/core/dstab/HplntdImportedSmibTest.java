@@ -9,6 +9,7 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
 import org.interpss.fadapter.psse.dyr.*;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import com.interpss.dstab.*;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import org.junit.jupiter.api.Test;

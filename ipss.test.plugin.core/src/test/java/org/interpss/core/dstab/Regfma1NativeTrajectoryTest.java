@@ -11,7 +11,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.Regfma1NativeReferenceCheckpoints;
 import org.interpss.core.dstab.reference.Regfma1NativeReferenceCheckpoints.Reference;
-import org.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

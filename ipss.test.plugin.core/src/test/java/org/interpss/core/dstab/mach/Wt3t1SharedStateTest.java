@@ -2,7 +2,7 @@ package org.interpss.core.dstab.mach;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.interpss.dstab.mach.*;
+import com.interpss.dstab.mach.model.*;
 import org.junit.jupiter.api.Test;
 
 /** Shared leaf integration and lifecycle checks; converter bundle qualification is separate. */

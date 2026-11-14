@@ -16,7 +16,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Wt1g1Machine;
+import com.interpss.dstab.mach.model.Wt1g1Machine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

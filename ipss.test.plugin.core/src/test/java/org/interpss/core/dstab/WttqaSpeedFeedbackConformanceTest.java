@@ -2,8 +2,8 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
 import org.junit.jupiter.api.Test;
 
 /** Native speed feedback is generator speed minus reference; power feedback is a separate selector. */

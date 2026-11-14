@@ -1,6 +1,6 @@
 package org.interpss.core.dstab.reference;
 import java.util.List;
-import org.interpss.dstab.renewable.WtgwgoaData;
+import com.interpss.dstab.renewable.WtgwgoaData;
 import org.interpss.core.dstab.reference.WtgwgoaNativeReference.Profile;
 import org.interpss.core.dstab.reference.WtgwgoaNativeReference.Transition;
 final class WtgwgoaNativePart7 {

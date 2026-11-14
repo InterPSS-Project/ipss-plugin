@@ -6,7 +6,7 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.RepccNativeReference;
 import org.interpss.core.dstab.reference.RepccShuntNativeReference;
-import org.interpss.dstab.renewable.RepccInitialization;
+import com.interpss.dstab.renewable.RepccInitialization;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Test;
 
@@ -75,7 +75,7 @@ public class RepccNativeContractConformanceTest {
     }
     @Test void nativeRuntimeDoesNotInventTheUnprovedSourceAlias() {
         assertEquals(92,DynamicModelCatalog.find("REPCC").orElseThrow().parameterCount());
-        assertEquals("org.interpss.dstab.renewable.RepccModel",DynamicModelCatalog.find("REPCC").orElseThrow().runtimeClassName());
+        assertEquals("com.interpss.dstab.renewable.RepccModel",DynamicModelCatalog.find("REPCC").orElseThrow().runtimeClassName());
         assertTrue(DynamicModelCatalog.find("REPCCU").isEmpty());
     }
     @Test void enabledSwitchingDoesNotChangeContinuousStateInitialization() {

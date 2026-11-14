@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.Regfmc1NativeContractReference;
-import org.interpss.dstab.renewable.Regfmc1NetworkBoundary;
+import com.interpss.dstab.renewable.Regfmc1NetworkBoundary;
 import org.junit.jupiter.api.Test;
 
 /** Boundary replay of recorded native states, not dynamic-kernel trajectory acceptance. */
@@ -94,6 +94,6 @@ public class Regfmc1NativeContractConformanceTest {
     }
     @Test void nativeRuntimeDoesNotInferTheSourceListAlias() {
         assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMC1").isEmpty());
-        assertEquals("org.interpss.dstab.renewable.Regfmc1Model",org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMC1U").orElseThrow().runtimeClassName());
+        assertEquals("com.interpss.dstab.renewable.Regfmc1Model",org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMC1U").orElseThrow().runtimeClassName());
     }
 }

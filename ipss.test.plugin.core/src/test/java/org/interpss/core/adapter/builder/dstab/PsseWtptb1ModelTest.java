@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;

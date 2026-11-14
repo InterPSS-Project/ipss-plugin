@@ -17,8 +17,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
 
 import com.google.gson.GsonBuilder;
 import com.interpss.dstab.BaseDStabNetwork;

@@ -6,7 +6,7 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.Wt12a1bNativeReference;
-import org.interpss.dstab.mach.*;
+import com.interpss.dstab.mach.model.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
 import com.interpss.core.acsc.fault.SimpleFaultCode;

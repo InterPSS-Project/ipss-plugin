@@ -14,10 +14,10 @@ import org.interpss.dstab.validation.DynamicParameterValidator;
 import org.interpss.dstab.validation.DynamicParameterValidator.Severity;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseDStabSolver;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.RenewableElectricalController;
-import org.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.Repca1Model;
 
 /** Imported-parameter checks must not mutate the model or mistake local and network steps. */
 public class DynamicParameterValidationTest {

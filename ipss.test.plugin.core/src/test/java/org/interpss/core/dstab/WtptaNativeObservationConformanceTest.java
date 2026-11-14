@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
 import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.junit.jupiter.api.Test;
 
 /** Native input ports, canonical coordinates and actual evaluation/history observations. */

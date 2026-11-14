@@ -15,11 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Repca1Data;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -8,8 +8,8 @@ import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 import com.interpss.dstab.mach.impl.SalientPoleMachineImpl;
 import com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController;
 import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
 import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
 import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 /**

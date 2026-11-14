@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.RegccModel;
+import com.interpss.dstab.renewable.RegccModel;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

@@ -8,7 +8,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.GensalNativeReference;
 import org.interpss.core.dstab.reference.GensaeFieldReference;
 import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.mach.GensaeMachine;
+import com.interpss.dstab.mach.model.GensaeMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
 import org.junit.jupiter.api.Test;

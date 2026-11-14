@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
-import org.interpss.dstab.renewable.RegccModel;
+import com.interpss.dstab.renewable.RegccModel;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.google.gson.*;
 import com.interpss.core.acsc.fault.SimpleFaultCode;

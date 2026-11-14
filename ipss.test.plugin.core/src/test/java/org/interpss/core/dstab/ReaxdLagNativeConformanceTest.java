@@ -4,6 +4,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.core.dstab.reference.HplntdAggregationNativeReference;
 import org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile;
 import static org.junit.jupiter.api.Assertions.*;

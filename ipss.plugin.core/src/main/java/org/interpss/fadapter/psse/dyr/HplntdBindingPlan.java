@@ -1,7 +1,7 @@
 package org.interpss.fadapter.psse.dyr;
 
 import java.util.*;
-import org.interpss.dstab.renewable.HplntdData;
+import com.interpss.dstab.renewable.HplntdData;
 
 /** Immutable, order-independent hybrid ownership plan. LINKABLE is structural
  * only: network eligibility, ratings, live status and command-port ownership

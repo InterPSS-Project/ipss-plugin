@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.List;
-import org.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.Wtptb1Data;
 
 /** PSS/E 36.7 recorded pitch inputs/checkpoints. Raw clocks, prehistory, all
  * channels, scripts and cold-run manifests stay in the private archive.

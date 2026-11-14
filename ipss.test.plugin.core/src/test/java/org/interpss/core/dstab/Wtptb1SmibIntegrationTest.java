@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.core.dstab.reference.Wtptb1NativeExtendedReference;
 import org.interpss.core.dstab.reference.Wtptb1NativeReference.Profile;

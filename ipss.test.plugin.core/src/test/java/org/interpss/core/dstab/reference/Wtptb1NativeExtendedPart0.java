@@ -1,5 +1,5 @@
 package org.interpss.core.dstab.reference;
-import org.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.Wtptb1Data;
 import org.interpss.core.dstab.reference.Wtptb1NativeReference.Profile;
 final class Wtptb1NativeExtendedPart0 {
     static Profile p0() { return new Profile("fault-coarse",new Wtptb1Data(29.0, 177.0, 23.72, 2.93, 0.25, 0.3, 27.0, 0.0, 10.0, -10.0, 5.0, -5.0, 25.0, 0.0),

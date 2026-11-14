@@ -10,7 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseDStabSolver;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
 
 import com.google.gson.GsonBuilder;

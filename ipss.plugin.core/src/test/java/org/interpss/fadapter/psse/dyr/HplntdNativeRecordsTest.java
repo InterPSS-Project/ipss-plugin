@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HplntdNativeRecordsTest {

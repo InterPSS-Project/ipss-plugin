@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Reece1Data;
+import com.interpss.dstab.renewable.Reece1Data;
 /** Native 36.7 REECE local-PI recorded-input profiles only, not a complete model. */
 public final class ReeceLocalPiNativeReference {
     private ReeceLocalPiNativeReference() {}

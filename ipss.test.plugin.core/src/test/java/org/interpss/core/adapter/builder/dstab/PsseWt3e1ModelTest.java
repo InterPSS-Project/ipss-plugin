@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.interpss.dstab.mach.Wt3e1Data;
-import org.interpss.dstab.mach.Wt3e1Model;
-import org.interpss.dstab.mach.Wt3g1Data;
+import com.interpss.dstab.mach.model.Wt3e1Data;
+import com.interpss.dstab.mach.model.Wt3e1Model;
+import com.interpss.dstab.mach.model.Wt3g1Data;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;

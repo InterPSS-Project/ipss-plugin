@@ -5,7 +5,7 @@ import java.util.*;
 import org.interpss.core.dstab.reference.WtgibffraNativeReference;
 import org.interpss.core.dstab.reference.WtgibffraNativeReference.Profile;
 import org.interpss.core.dstab.reference.WtgibffraNativeReference.Transition;
-import org.interpss.dstab.renewable.WtgibffraModel;
+import com.interpss.dstab.renewable.WtgibffraModel;
 import org.junit.jupiter.api.Test;
 
 /** Kernel replay only: no assertion of native import, network coupling or callback parity. */
@@ -32,7 +32,7 @@ public class WtgibffraNativePartialConformanceTest {
     @Test void automaticRecoveryUsesPublishedEnergyBalanceNotTheObservedNativeShortRecovery() {
         var constants=WtgibffraNativeReference.profiles().getFirst().constants();
         for(int i=37;i<43;i++)constants[i]=0;
-        var data=org.interpss.dstab.renewable.WtgibffraData.fromNativeParameters(3,constants);
+        var data=com.interpss.dstab.renewable.WtgibffraData.fromNativeParameters(3,constants);
         assertEquals(.7,data.bands().getFirst().effectiveRecoveryTime(),1e-15);
         // Native 36.7 discriminator reports ~.52 and completes recovery in a
         // single sample. Preserve that observation as a discrepancy, not an oracle.

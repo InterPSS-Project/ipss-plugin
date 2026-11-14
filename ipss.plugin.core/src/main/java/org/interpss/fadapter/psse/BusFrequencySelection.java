@@ -6,6 +6,7 @@ import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
 import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
 import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
 

@@ -180,107 +180,107 @@ import com.interpss.dstab.controller.pss.ieee2005pss3b.Ieee2005PSS3BStabilizerDa
 import com.interpss.dstab.controller.pss.ieee2005pss4b.Ieee2005PSS4BStabilizer;
 import com.interpss.dstab.controller.pss.ieee2005pss4b.Ieee2005PSS4BStabilizerData;
 import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
-import org.interpss.dstab.renewable.Reecb1Data;
-import org.interpss.dstab.renewable.Reecb1Model;
-import org.interpss.dstab.renewable.Reecc1Data;
-import org.interpss.dstab.renewable.Reecc1Model;
-import org.interpss.dstab.renewable.Reecd1Data;
-import org.interpss.dstab.renewable.Reecd1Model;
-import org.interpss.dstab.renewable.Reece1Data;
-import org.interpss.dstab.renewable.Reece1Model;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Dera1Data;
-import org.interpss.dstab.renewable.Dera1Model;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regcb1Data;
-import org.interpss.dstab.renewable.Regcb1Model;
-import org.interpss.dstab.renewable.Regfma1Data;
-import org.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.dstab.renewable.Regfmb1Data;
-import org.interpss.dstab.renewable.Regfmb1Model;
-import org.interpss.dstab.renewable.Regfmc1Data;
-import org.interpss.dstab.renewable.Regfmc1Model;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Repca1Model;
-import org.interpss.dstab.renewable.WindControlStack;
-import org.interpss.dstab.renewable.Wtara1Data;
-import org.interpss.dstab.renewable.Wtara1Model;
-import org.interpss.dstab.renewable.Wtdta1Data;
-import org.interpss.dstab.renewable.Wtdta1Model;
-import org.interpss.dstab.renewable.WtgtAData;
-import org.interpss.dstab.renewable.Wtdtb1Data;
-import org.interpss.dstab.renewable.Wtdtb1Model;
-import org.interpss.dstab.renewable.Wtpta1Data;
-import org.interpss.dstab.renewable.Wtpta1Model;
-import org.interpss.dstab.renewable.Wtptb1Data;
-import org.interpss.dstab.renewable.Wtptb1Model;
-import org.interpss.dstab.renewable.WtgwgoaData;
-import org.interpss.dstab.renewable.WtgibffraData;
-import org.interpss.dstab.renewable.WtgibffraModel;
-import org.interpss.dstab.renewable.WtgwgoaModel;
-import org.interpss.dstab.renewable.RenewableElectricalController;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.GenqecMachine;
-import org.interpss.dstab.mach.GenqejData;
-import org.interpss.dstab.mach.GenqejMachine;
-import org.interpss.dstab.mach.Gentpj1Data;
-import org.interpss.dstab.mach.Gentpj1Machine;
-import org.interpss.dstab.mach.GentraData;
-import org.interpss.dstab.mach.GentraMachine;
+import com.interpss.dstab.renewable.Reecb1Data;
+import com.interpss.dstab.renewable.Reecb1Model;
+import com.interpss.dstab.renewable.Reecc1Data;
+import com.interpss.dstab.renewable.Reecc1Model;
+import com.interpss.dstab.renewable.Reecd1Data;
+import com.interpss.dstab.renewable.Reecd1Model;
+import com.interpss.dstab.renewable.Reece1Data;
+import com.interpss.dstab.renewable.Reece1Model;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Dera1Data;
+import com.interpss.dstab.renewable.Dera1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regcb1Data;
+import com.interpss.dstab.renewable.Regcb1Model;
+import com.interpss.dstab.renewable.Regfma1Data;
+import com.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Regfmb1Model;
+import com.interpss.dstab.renewable.Regfmc1Data;
+import com.interpss.dstab.renewable.Regfmc1Model;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Wtara1Data;
+import com.interpss.dstab.renewable.Wtara1Model;
+import com.interpss.dstab.renewable.Wtdta1Data;
+import com.interpss.dstab.renewable.Wtdta1Model;
+import com.interpss.dstab.renewable.WtgtAData;
+import com.interpss.dstab.renewable.Wtdtb1Data;
+import com.interpss.dstab.renewable.Wtdtb1Model;
+import com.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtpta1Model;
+import com.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.Wtptb1Model;
+import com.interpss.dstab.renewable.WtgwgoaData;
+import com.interpss.dstab.renewable.WtgibffraData;
+import com.interpss.dstab.renewable.WtgibffraModel;
+import com.interpss.dstab.renewable.WtgwgoaModel;
+import com.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqejData;
+import com.interpss.dstab.mach.model.GenqejMachine;
+import com.interpss.dstab.mach.model.Gentpj1Data;
+import com.interpss.dstab.mach.model.Gentpj1Machine;
+import com.interpss.dstab.mach.model.GentraData;
+import com.interpss.dstab.mach.model.GentraMachine;
 import com.interpss.dstab.mach.ieeevc.IeeeVcData;
 import com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine;
 import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
 import com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine;
 import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
-import org.interpss.dstab.mach.Cimtr4Data;
-import org.interpss.dstab.mach.Cimtr4Machine;
-import org.interpss.dstab.mach.Wt1g1Data;
-import org.interpss.dstab.mach.Wt1g1Machine;
-import org.interpss.dstab.mach.Wt2g1Data;
-import org.interpss.dstab.mach.Wt2g1Machine;
-import org.interpss.dstab.mach.Wt2e1Data;
-import org.interpss.dstab.mach.Wt2e1Model;
-import org.interpss.dstab.mach.Wt3g1Data;
-import org.interpss.dstab.mach.Wt3g1Model;
-import org.interpss.dstab.mach.Gewtgcu1Data;
-import org.interpss.dstab.mach.Gewtgcu1Model;
-import org.interpss.dstab.mach.Gewtecu1Data;
-import org.interpss.dstab.mach.Gewtecu1Model;
-import org.interpss.dstab.mach.Gewt2mu1Data;
-import org.interpss.dstab.mach.Gewt2mu1Model;
-import org.interpss.dstab.mach.Gewtaru1Data;
-import org.interpss.dstab.mach.Gewtaru1Model;
-import org.interpss.dstab.mach.Gewtgdu1Data;
-import org.interpss.dstab.mach.Gewtgdu1Model;
-import org.interpss.dstab.mach.Gewtptu1Data;
-import org.interpss.dstab.mach.Gewtptu1Model;
-import org.interpss.dstab.mach.Reaxbu1Data;
-import org.interpss.dstab.mach.Reaxbu1Model;
-import org.interpss.dstab.mach.Plntbu1Data;
-import org.interpss.dstab.mach.Plntbu1Model;
-import org.interpss.dstab.mach.Wt3g2Data;
-import org.interpss.dstab.mach.Wt3g2Model;
-import org.interpss.dstab.mach.Wt4g1Data;
-import org.interpss.dstab.mach.Wt4g1Model;
-import org.interpss.dstab.mach.Wt4e1Data;
-import org.interpss.dstab.mach.Wt4e1Model;
-import org.interpss.dstab.mach.Wt3GeneratorModel;
-import org.interpss.dstab.mach.Wt3e1Data;
-import org.interpss.dstab.mach.Wt3e1Model;
-import org.interpss.dstab.mach.Wt3t1Data;
-import org.interpss.dstab.mach.Wt3t1Model;
-import org.interpss.dstab.mach.Wt3p1Data;
-import org.interpss.dstab.mach.Wt3p1Model;
-import org.interpss.dstab.mach.Wt12t1Data;
-import org.interpss.dstab.mach.Wt12t1Model;
-import org.interpss.dstab.mach.Wt12a1Data;
-import org.interpss.dstab.mach.Wt12a1Model;
-import org.interpss.dstab.mach.Wt12a1bData;
-import org.interpss.dstab.mach.Wt12a1bModel;
+import com.interpss.dstab.mach.model.Cimtr4Data;
+import com.interpss.dstab.mach.model.Cimtr4Machine;
+import com.interpss.dstab.mach.model.Wt1g1Data;
+import com.interpss.dstab.mach.model.Wt1g1Machine;
+import com.interpss.dstab.mach.model.Wt2g1Data;
+import com.interpss.dstab.mach.model.Wt2g1Machine;
+import com.interpss.dstab.mach.model.Wt2e1Data;
+import com.interpss.dstab.mach.model.Wt2e1Model;
+import com.interpss.dstab.mach.model.Wt3g1Data;
+import com.interpss.dstab.mach.model.Wt3g1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Data;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Gewtecu1Data;
+import com.interpss.dstab.mach.model.Gewtecu1Model;
+import com.interpss.dstab.mach.model.Gewt2mu1Data;
+import com.interpss.dstab.mach.model.Gewt2mu1Model;
+import com.interpss.dstab.mach.model.Gewtaru1Data;
+import com.interpss.dstab.mach.model.Gewtaru1Model;
+import com.interpss.dstab.mach.model.Gewtgdu1Data;
+import com.interpss.dstab.mach.model.Gewtgdu1Model;
+import com.interpss.dstab.mach.model.Gewtptu1Data;
+import com.interpss.dstab.mach.model.Gewtptu1Model;
+import com.interpss.dstab.mach.model.Reaxbu1Data;
+import com.interpss.dstab.mach.model.Reaxbu1Model;
+import com.interpss.dstab.mach.model.Plntbu1Data;
+import com.interpss.dstab.mach.model.Plntbu1Model;
+import com.interpss.dstab.mach.model.Wt3g2Data;
+import com.interpss.dstab.mach.model.Wt3g2Model;
+import com.interpss.dstab.mach.model.Wt4g1Data;
+import com.interpss.dstab.mach.model.Wt4g1Model;
+import com.interpss.dstab.mach.model.Wt4e1Data;
+import com.interpss.dstab.mach.model.Wt4e1Model;
+import com.interpss.dstab.mach.model.Wt3GeneratorModel;
+import com.interpss.dstab.mach.model.Wt3e1Data;
+import com.interpss.dstab.mach.model.Wt3e1Model;
+import com.interpss.dstab.mach.model.Wt3t1Data;
+import com.interpss.dstab.mach.model.Wt3t1Model;
+import com.interpss.dstab.mach.model.Wt3p1Data;
+import com.interpss.dstab.mach.model.Wt3p1Model;
+import com.interpss.dstab.mach.model.Wt12t1Data;
+import com.interpss.dstab.mach.model.Wt12t1Model;
+import com.interpss.dstab.mach.model.Wt12a1Data;
+import com.interpss.dstab.mach.model.Wt12a1Model;
+import com.interpss.dstab.mach.model.Wt12a1bData;
+import com.interpss.dstab.mach.model.Wt12a1bModel;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -918,7 +918,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENSAL: {}", busId);
             return null;
         }
-        SalientPoleMachine mach = exponential?new org.interpss.dstab.mach.GensaeMachine():new IeeeVcSalientPoleMachine();
+        SalientPoleMachine mach = exponential?new com.interpss.dstab.mach.model.GensaeMachine():new IeeeVcSalientPoleMachine();
         configureMachineIdentity(mach, exponential?"GENSAE":"GENSAL", MachineModelType.EQ11_SALIENT_POLE,
                 busId, genId);
 
@@ -3589,7 +3589,7 @@ public class DStabNetworkBuilder {
 
     /** Attach the distinct effective-reactance variant without modifying RAW source data. */
     public Regca1Model addRegcau2(String busId, String genId,
-            org.interpss.dstab.renewable.Regcau2Data data) {
+            com.interpss.dstab.renewable.Regcau2Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
         if (gen == null) return null;
@@ -3608,15 +3608,15 @@ public class DStabNetworkBuilder {
     }
 
     /** Attach the nine-state PLL converter, retaining the physical source impedance. */
-    public org.interpss.dstab.renewable.RegccModel addRegcc(String busId,String genId,
-            org.interpss.dstab.renewable.RegccData data) {
+    public com.interpss.dstab.renewable.RegccModel addRegcc(String busId,String genId,
+            com.interpss.dstab.renewable.RegccData data) {
         var bus=network.getDStabBus(busId);
         DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
         if(gen==null || gen.getMach()!=null || gen.getDynamicGenDevice()!=null)return null;
         if(gen.getPosGenZ()==null || gen.getPosGenZ().abs()<1e-12
                 || (gen.getXfrZ()!=null && gen.getXfrZ().abs()>0))
             throw new IllegalArgumentException("REGCC requires nonzero source impedance and no implicit transformer");
-        return new org.interpss.dstab.renewable.RegccModel(gen,bus,genId,data);
+        return new com.interpss.dstab.renewable.RegccModel(gen,bus,genId,data);
     }
 
     /** Attach the combined DERA1 converter and controls to a renewable generator. */
@@ -3648,11 +3648,11 @@ public class DStabNetworkBuilder {
         return new Regfmc1Model(gen,bus,genId,data);
     }
 
-    public org.interpss.dstab.renewable.Repcgfmc1Model addRepcgfmc1(String busId,String genId,org.interpss.dstab.renewable.Repcgfmc1Data data){
+    public com.interpss.dstab.renewable.Repcgfmc1Model addRepcgfmc1(String busId,String genId,com.interpss.dstab.renewable.Repcgfmc1Data data){
         var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
         if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||!(gen.getDynamicGenDevice() instanceof Regfmc1Model converter)
                 ||converter.getPlantController()!=null)return null;
-        var plant=new org.interpss.dstab.renewable.Repcgfmc1Model(data,converter);converter.setPlantController(plant);return plant;
+        var plant=new com.interpss.dstab.renewable.Repcgfmc1Model(data,converter);converter.setPlantController(plant);return plant;
     }
 
     public Regfmb1Model addRegfmb1(String busId,String genId,Regfmb1Data data) {
@@ -3769,7 +3769,7 @@ public class DStabNetworkBuilder {
             converter.setActiveElectricalController(controller);
             return controller;
         }
-        if (gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel converter) {
+        if (gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RegccModel converter) {
             if(converter.getActiveElectricalController()!=null)return null;
             converter.setActiveElectricalController(controller);
             return controller;
@@ -3789,7 +3789,7 @@ public class DStabNetworkBuilder {
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
-        if(gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel converter
+        if(gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RegccModel converter
                 &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         return null;
     }
@@ -3808,21 +3808,21 @@ public class DStabNetworkBuilder {
         return controller;
     }
 
-    public record HybridUnit(String busId,String generatorId,org.interpss.dstab.renewable.ReaxdData data) {}
+    public record HybridUnit(String busId,String generatorId,com.interpss.dstab.renewable.ReaxdData data) {}
 
     /** Resolve every downstream host before the shared coordinator mutates ports. */
-    public org.interpss.dstab.renewable.HplntdCoordinator addHplntd(String plantBusId,
-            org.interpss.dstab.renewable.HplntdData data,List<HybridUnit> units){
+    public com.interpss.dstab.renewable.HplntdCoordinator addHplntd(String plantBusId,
+            com.interpss.dstab.renewable.HplntdData data,List<HybridUnit> units){
         var plant=network.getDStabBus(plantBusId);
         if(plant==null)throw new IllegalArgumentException("Hybrid plant bus not found: "+plantBusId);
-        var bindings=new ArrayList<org.interpss.dstab.renewable.HplntdCoordinator.Binding>();
+        var bindings=new ArrayList<com.interpss.dstab.renewable.HplntdCoordinator.Binding>();
         for(var unit:units){
             var converter=findRegca1(unit.busId(),unit.generatorId());
             if(converter==null)throw new IllegalArgumentException("Hybrid unit requires REGCA1: "+unit.busId()+"/"+unit.generatorId());
-            bindings.add(new org.interpss.dstab.renewable.HplntdCoordinator.Binding(converter,unit.data()));
+            bindings.add(new com.interpss.dstab.renewable.HplntdCoordinator.Binding(converter,unit.data()));
         }
-        var nominal=new HashMap<org.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
-        var boundary=new org.interpss.dstab.renewable.HplntdNetworkBoundary(data,plant);
+        var nominal=new HashMap<com.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
+        var boundary=new com.interpss.dstab.renewable.HplntdNetworkBoundary(data,plant);
         if(data.switchingFlag()==1&&data.switchingThresholdsValid()&&boundary.switchingBranchFound())for(var key:data.shunts()){
             if(key.bus()==0)continue;
             var bus=network.getDStabBus("Bus"+key.bus());
@@ -3833,19 +3833,19 @@ public class DStabNetworkBuilder {
                     ()->new IllegalArgumentException("Retained nominal fixed-shunt admittance required: "+key));
             if(nominal.putIfAbsent(key,value)!=null)throw new IllegalArgumentException("Duplicate hybrid shunt "+key);
         }
-        return org.interpss.dstab.renewable.HplntdCoordinator.attach(data,plant,bindings,nominal);
+        return com.interpss.dstab.renewable.HplntdCoordinator.attach(data,plant,bindings,nominal);
     }
 
     /** Dedicated native REPCC port; no legacy controller is overwritten. */
-    public org.interpss.dstab.renewable.RepccModel addRepcc(String busId,String genId,org.interpss.dstab.renewable.RepccData data){
+    public com.interpss.dstab.renewable.RepccModel addRepcc(String busId,String genId,com.interpss.dstab.renewable.RepccData data){
         var converter=findRegca1(busId,genId);
         if(converter==null||!(converter.getActiveElectricalController() instanceof Reeca1Model electrical)
                 ||electrical.getPlantController()!=null||electrical.getRepccController()!=null
                 ||data.frequencyFlag()!=1||data.reactiveFlag()!=1
-                ||data.value(org.interpss.dstab.renewable.RepccData.Parameter.KI)<=0
-                ||data.value(org.interpss.dstab.renewable.RepccData.Parameter.KIG)<=0)return null;
-        var nominal=new HashMap<org.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
-        var boundary=new org.interpss.dstab.renewable.RepccNetworkBoundary(data,converter.getParentGen(),converter.getDStabBus());
+                ||data.value(com.interpss.dstab.renewable.RepccData.Parameter.KI)<=0
+                ||data.value(com.interpss.dstab.renewable.RepccData.Parameter.KIG)<=0)return null;
+        var nominal=new HashMap<com.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
+        var boundary=new com.interpss.dstab.renewable.RepccNetworkBoundary(data,converter.getParentGen(),converter.getDStabBus());
         if(data.switchingFlag()==1&&data.switchingThresholdsValid()&&boundary.isSwitchingBranchFound()) {
             for(var key:data.shunts()) {
                 if(key.bus()==0)continue;
@@ -3858,7 +3858,7 @@ public class DStabNetworkBuilder {
                 if(nominal.putIfAbsent(key,value)!=null)throw new IllegalArgumentException("Duplicate REPCC shunt "+key);
             }
         }
-        var plant=new org.interpss.dstab.renewable.RepccModel(data,converter,nominal);electrical.setRepccController(plant);return plant;
+        var plant=new com.interpss.dstab.renewable.RepccModel(data,converter,nominal);electrical.setRepccController(plant);return plant;
     }
 
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
@@ -4044,9 +4044,9 @@ public class DStabNetworkBuilder {
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
     }
 
-    private org.interpss.dstab.renewable.RegccModel findRegcc(String busId,String genId) {
+    private com.interpss.dstab.renewable.RegccModel findRegcc(String busId,String genId) {
         var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
-        return gen!=null && gen.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.RegccModel model?model:null;
+        return gen!=null && gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RegccModel model?model:null;
     }
 
     private Regcb1Model findRegcb1(String busId, String genId) {
@@ -4065,7 +4065,7 @@ public class DStabNetworkBuilder {
         Regca1Model converter = findRegca1(busId, genId);
         var controller = converter == null ? null : converter.getActiveElectricalController();
         return controller instanceof Reeca1Model
-                || controller instanceof org.interpss.dstab.renewable.ConverterCurrentCommands ? controller : null;
+                || controller instanceof com.interpss.dstab.renewable.ConverterCurrentCommands ? controller : null;
     }
 
     private static WindControlStack windStack(RenewableElectricalController controller) {

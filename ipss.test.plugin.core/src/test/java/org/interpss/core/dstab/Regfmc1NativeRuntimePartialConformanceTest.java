@@ -7,8 +7,8 @@ import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.Regfmc1NativeContractReference;
 import org.interpss.core.dstab.reference.Regfmc1SelectorNativeReference;
-import org.interpss.dstab.renewable.Regfmc1Data;
-import org.interpss.dstab.renewable.Regfmc1Kernel;
+import com.interpss.dstab.renewable.Regfmc1Data;
+import com.interpss.dstab.renewable.Regfmc1Kernel;
 import org.junit.jupiter.api.Test;
 
 /** Recorded voltage is the only replay input; native states are never injected. */

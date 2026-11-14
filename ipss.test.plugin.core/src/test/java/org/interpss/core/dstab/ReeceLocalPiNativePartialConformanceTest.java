@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.interpss.core.dstab.reference.ReeceLocalPiNativeReference;
 import org.interpss.core.dstab.reference.WtgibffraNativeReference;
-import org.interpss.dstab.renewable.Reece1LocalPi;
-import org.interpss.dstab.renewable.Reece1LocalPi.Input;
-import static org.interpss.dstab.renewable.Reece1Data.Parameter.*;
+import com.interpss.dstab.renewable.Reece1LocalPi;
+import com.interpss.dstab.renewable.Reece1LocalPi.Input;
+import static com.interpss.dstab.renewable.Reece1Data.Parameter.*;
 import org.junit.jupiter.api.Test;
 
 /** Prepared-input local PI checks only; not full REECE import or SMIB acceptance. */

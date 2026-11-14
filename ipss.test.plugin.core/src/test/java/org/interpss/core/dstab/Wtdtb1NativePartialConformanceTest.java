@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import org.interpss.core.dstab.reference.Wtdtb1NativeReference;
 import org.interpss.core.dstab.reference.Wtdtb1NativeReference.Profile;
-import org.interpss.dstab.renewable.Wtdtb1Model;
+import com.interpss.dstab.renewable.Wtdtb1Model;
 import org.junit.jupiter.api.Test;
 
 /** Native 36.7 playback; non-unit integrated-coordinate precision is explicitly still open. */

@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.interpss.core.dstab.reference.HplntdProportionalNativeReference;
-import org.interpss.dstab.renewable.HplntdData;
+import com.interpss.dstab.renewable.HplntdData;
 
 /** Proportional-only state replay and explicitly bounded imported coupling. */
 public class HplntdProportionalNativeSmibTest {

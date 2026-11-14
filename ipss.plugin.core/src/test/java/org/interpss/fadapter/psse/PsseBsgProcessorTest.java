@@ -2,7 +2,7 @@ package org.interpss.fadapter.psse;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
-import org.interpss.dstab.renewable.ActivePowerResponseLimits;
+import com.interpss.dstab.renewable.ActivePowerResponseLimits;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

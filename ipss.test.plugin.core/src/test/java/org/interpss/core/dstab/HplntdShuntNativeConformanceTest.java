@@ -6,6 +6,7 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.interpss.core.dstab.reference.HplntdSwitchingNativeReference;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 
 /** Shared switching-kernel evidence, not physical Y/import acceptance. */
 public class HplntdShuntNativeConformanceTest {

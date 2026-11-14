@@ -40,8 +40,8 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.simu.SimuContext;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
 
 /**
  * Opt-in topology-selected three-cycle fault matrix for the private Texas2k

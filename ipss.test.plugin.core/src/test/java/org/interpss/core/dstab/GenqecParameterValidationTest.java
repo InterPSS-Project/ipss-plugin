@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.GenqecSalientNativeReference;
-import org.interpss.dstab.mach.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqecMachine;
 import org.interpss.dstab.validation.DynamicParameterValidator;
 import org.interpss.dstab.validation.DynamicParameterValidator.Severity;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;

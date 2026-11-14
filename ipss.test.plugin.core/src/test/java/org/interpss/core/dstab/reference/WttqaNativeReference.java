@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Data;
 
 /** Exact cold-paired controller histories; native plant-reference inputs are not torque outputs. */
 public final class WttqaNativeReference {

@@ -8,11 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.interpss.dstab.renewable.ActivePowerResponseLimits;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Reecb1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.ActivePowerResponseLimits;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Reecb1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.RenewableElectricalController;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 
 import com.interpss.common.exp.InterpssException;
@@ -77,7 +77,7 @@ public final class PsseBsgProcessor {
             var controller = device instanceof Regca1Model converter
                     ? converter.getActiveElectricalController() : null;
             if (!(controller instanceof Reeca1Model || controller instanceof Reecb1Model
-                    || controller instanceof org.interpss.dstab.renewable.ConverterCurrentCommands))
+                    || controller instanceof com.interpss.dstab.renewable.ConverterCurrentCommands))
                 throw new InterpssException("Unsupported BASEGEN controller (requires REGCA1 current commands or REECA1/REECB1): " + key);
             bindings.put(controller, entry.response());
         }

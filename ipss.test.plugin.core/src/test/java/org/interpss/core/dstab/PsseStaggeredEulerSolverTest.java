@@ -389,7 +389,7 @@ class PsseStaggeredEulerSolverTest {
                 "Bus2",network,com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,
                 new org.apache.commons.math3.complex.Complex(0,.2),null,.002,.002),"FrequencyBoundary");
         assertTrue(algo.initialization());
-        var converter=(org.interpss.dstab.renewable.Regca1Model)
+        var converter=(com.interpss.dstab.renewable.Regca1Model)
                 ((com.interpss.dstab.DStabGen)network.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         converter.setNetworkIterationHighVoltageEnabled(true);
         for (int i=0;i<24;i++) assertTrue(algo.solveDEqnStep(true));
@@ -412,7 +412,7 @@ class PsseStaggeredEulerSolverTest {
         algo.setTotalSimuTimeSec(.002);
         algo.setSimuOutputHandler(new StateMonitor());
         assertTrue(algo.initialization());
-        var converter=(org.interpss.dstab.renewable.Regca1Model)
+        var converter=(com.interpss.dstab.renewable.Regca1Model)
                 ((com.interpss.dstab.DStabGen)algo.getNetwork().getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
         var electrical=converter.getReeca1Controller();
         var models=java.util.List.of(converter,electrical,electrical.getPlantController());

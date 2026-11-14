@@ -13,15 +13,15 @@ import com.interpss.dstab.DStabGen;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Repca1Model;
-import org.interpss.dstab.renewable.WindControlStack;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -268,8 +268,8 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
                         1, 2.4, .5, .04, 60, 1.002, 0,
                         .2, .58, .4, .72, .6, .86, .8, 1, 0)));
-                if (withDrive) stack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(
-                        new org.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
+                if (withDrive) stack.setDriveTrain(new com.interpss.dstab.renewable.Wtdta1Model(
+                        new com.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
                 controller.setWindControlStack(stack);
                 controller.initialize(.625, .11453417, 1.0);
                 assertEquals(.8775, controller.getActivePowerSpeedMultiplier(), 1.e-12);
@@ -310,8 +310,8 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
             stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
                     1, 2.4, .5, .04, 60, 1.002, 0,
                     .2, .58, .4, .72, .6, .86, .8, 1, 0)));
-            if (withDrive) stack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(
-                    new org.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
+            if (withDrive) stack.setDriveTrain(new com.interpss.dstab.renewable.Wtdta1Model(
+                    new com.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
             controller.setWindControlStack(stack);
             controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
             controller.initialize(.625, .1, 1.0);

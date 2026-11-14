@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.mach.Wt12a1bData;
+import com.interpss.dstab.mach.model.Wt12a1bData;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 
 /** Exact standard active-stall inputs; bounded replay is distinct from full coupled parity. */

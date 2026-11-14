@@ -11,7 +11,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
-import org.interpss.dstab.renewable.RegccModel;
+import com.interpss.dstab.renewable.RegccModel;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.test.TestConfig;
 import org.junit.jupiter.api.Test;

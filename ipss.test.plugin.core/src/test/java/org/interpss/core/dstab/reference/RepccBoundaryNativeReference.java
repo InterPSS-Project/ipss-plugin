@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.RepccData;
+import com.interpss.dstab.renewable.RepccData;
 
 /** Direct physical branch-flow API snapshots, distinct from controller plot VARs. */
 public final class RepccBoundaryNativeReference {

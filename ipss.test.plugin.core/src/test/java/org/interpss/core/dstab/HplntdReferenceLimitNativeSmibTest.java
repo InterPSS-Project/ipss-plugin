@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.interpss.core.dstab.reference.HplntdReferenceLimitNativeReference;
-import org.interpss.dstab.renewable.HplntdKernel;
+import com.interpss.dstab.renewable.HplntdKernel;
 
 /** Only source-conforming Q/PF references are trajectory acceptance profiles. */
 public class HplntdReferenceLimitNativeSmibTest {

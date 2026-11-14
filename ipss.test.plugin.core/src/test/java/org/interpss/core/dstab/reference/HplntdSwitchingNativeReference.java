@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.HplntdData;
+import com.interpss.dstab.renewable.HplntdData;
 
 /** Frozen physical-Mvar switching inputs, raw outputs and scoped coupled bounds. */
 public final class HplntdSwitchingNativeReference {

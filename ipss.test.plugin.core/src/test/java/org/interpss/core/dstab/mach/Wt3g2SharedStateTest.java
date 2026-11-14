@@ -8,7 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.DefaultDynamicSimulationSolver;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
-import org.interpss.dstab.mach.Wt3g2Model;
+import com.interpss.dstab.mach.model.Wt3g2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

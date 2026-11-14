@@ -6,6 +6,7 @@ import java.util.*;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.WtaraNativeReference;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;

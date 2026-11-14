@@ -10,8 +10,8 @@ import java.util.HexFormat;
 import org.interpss.core.dstab.reference.Wtdtb1PowerWorldPlaybackReference;
 import org.interpss.core.dstab.reference.Wtdtb1PowerWorldNonUnitReference;
 import org.interpss.core.dstab.reference.Wtdtb1PowerWorldPlaybackReference.Profile;
-import org.interpss.dstab.renewable.Wtdtb1Data;
-import org.interpss.dstab.renewable.Wtdtb1Model;
+import com.interpss.dstab.renewable.Wtdtb1Data;
+import com.interpss.dstab.renewable.Wtdtb1Model;
 import org.junit.jupiter.api.Test;
 
 /** Exact typed WTGT_B recorded-power replay, not native WTDTB1/full-network acceptance. */

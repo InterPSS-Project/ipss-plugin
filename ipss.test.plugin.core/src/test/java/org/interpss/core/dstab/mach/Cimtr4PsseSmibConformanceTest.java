@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Cimtr4Machine;
+import com.interpss.dstab.mach.model.Cimtr4Machine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

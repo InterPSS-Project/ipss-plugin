@@ -2,7 +2,7 @@ package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
-import org.interpss.dstab.mach.*;
+import com.interpss.dstab.mach.model.*;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;

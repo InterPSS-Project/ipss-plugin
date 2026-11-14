@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.renewable.Regfmb1Model;
+import com.interpss.dstab.renewable.Regfmb1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.*;

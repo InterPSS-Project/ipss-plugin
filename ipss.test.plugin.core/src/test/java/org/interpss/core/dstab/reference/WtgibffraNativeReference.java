@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-import org.interpss.dstab.renewable.WtgibffraData;
+import com.interpss.dstab.renewable.WtgibffraData;
 
 /** Native 36.7 kernel-only profiles. Full input tokens are losslessly encoded;
  * checkpoints preserve native float time and all four STATEs/seventeen VARs.

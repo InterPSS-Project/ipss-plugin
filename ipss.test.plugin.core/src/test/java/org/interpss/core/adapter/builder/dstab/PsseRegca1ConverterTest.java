@@ -10,10 +10,10 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.RenewableElectricalController;
-import org.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -41,16 +41,16 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
             var model = builder.addRegca1("Bus1", "1", data(0, 0., 10., 0., 0.));
             RenewableElectricalController controller;
             if (fixed) {
-                controller = new org.interpss.dstab.renewable.ConverterCurrentCommands();
+                controller = new com.interpss.dstab.renewable.ConverterCurrentCommands();
                 model.setActiveElectricalController(controller);
             } else {
-                var parameters = new org.interpss.dstab.renewable.Reeca1Data(0, 0, 0, 0, 0, 0,
+                var parameters = new com.interpss.dstab.renewable.Reeca1Data(0, 0, 0, 0, 0, 0,
                         .8, 1.2, .02, 0, 0, 0, 1, -1, 1, 0, 0, 0,
                         .02, 2, -2, 2, -2, 2, 1, 1, 2, .8, .02,
                         99, -99, 2, -2, 10, .02,
                         0, 0, 0, 0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0, 0, 0, 0);
-                var electrical = new org.interpss.dstab.renewable.Reeca1Model(parameters, model);
+                var electrical = new com.interpss.dstab.renewable.Reeca1Model(parameters, model);
                 model.setReeca1Controller(electrical);controller = electrical;
             }
             assertTrue(model.initStates(model.getDStabBus()));

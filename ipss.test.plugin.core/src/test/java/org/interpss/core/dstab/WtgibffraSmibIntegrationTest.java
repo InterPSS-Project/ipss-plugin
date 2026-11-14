@@ -8,6 +8,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.WtgibffraNativeReference;
 import org.interpss.core.dstab.reference.WtgibffraCoupledReference;
 import org.interpss.dstab.renewable.*;
+import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
