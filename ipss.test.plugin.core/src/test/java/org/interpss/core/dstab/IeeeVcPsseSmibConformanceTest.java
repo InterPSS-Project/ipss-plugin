@@ -19,7 +19,7 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
-import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;

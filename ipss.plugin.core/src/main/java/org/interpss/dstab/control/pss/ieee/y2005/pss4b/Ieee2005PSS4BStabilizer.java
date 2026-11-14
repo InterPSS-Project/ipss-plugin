@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData.BandData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData.InputTransducerData;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;

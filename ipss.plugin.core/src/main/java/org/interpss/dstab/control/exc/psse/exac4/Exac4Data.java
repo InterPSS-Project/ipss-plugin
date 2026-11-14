@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.exac4;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** PSS/E EXAC4 (IEEE Type AC4) excitation-system parameters. */
 public final class Exac4Data extends BaseControllerData {

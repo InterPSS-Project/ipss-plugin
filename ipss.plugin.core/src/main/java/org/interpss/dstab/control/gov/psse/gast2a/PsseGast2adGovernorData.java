@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.gast2a;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters in the thirty-three-value PSS/E GAST2AD/GAST2ADU record. */
 public class PsseGast2adGovernorData extends BaseControllerData {

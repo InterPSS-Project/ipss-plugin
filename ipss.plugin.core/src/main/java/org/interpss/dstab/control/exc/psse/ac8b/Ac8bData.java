@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.ac8b;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /**
  * IEEE 421.5-2005 / PSS/E AC8B parameters.

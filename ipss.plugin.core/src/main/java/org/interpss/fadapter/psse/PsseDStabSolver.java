@@ -14,7 +14,7 @@ import com.interpss.dstab.device.DynamicDevice;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 import org.interpss.dstab.validation.DynamicParameterValidator;
 
 /**
@@ -106,17 +106,17 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private ControllerPreparationReport controllerPreparationReport;
     private final java.util.List<org.interpss.dstab.svc.Svsmo3t2Model> statcomEventModels = new java.util.ArrayList<>();
     private record EventInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
-            org.interpss.dstab.control.util.NetworkEventInput input) { }
+            com.interpss.dstab.controller.runtime.NetworkEventInput input) { }
     private final java.util.List<EventInput> networkEventInputs = new java.util.ArrayList<>();
     private record StepInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
-            org.interpss.dstab.control.util.IntegrationStepContext input) { }
+            com.interpss.dstab.controller.runtime.IntegrationStepContext input) { }
     private final java.util.List<StepInput> integrationStepInputs = new java.util.ArrayList<>();
     private static final class PhysicalStepInput {
         final DynamicDevice device; final BaseDStabBus<?,?> bus;
-        final org.interpss.dstab.control.util.PhysicalStepTrial input;
+        final com.interpss.dstab.controller.runtime.PhysicalStepTrial input;
         boolean pending;
         PhysicalStepInput(DynamicDevice device,BaseDStabBus<?,?> bus,
-                org.interpss.dstab.control.util.PhysicalStepTrial input){this.device=device;this.bus=bus;this.input=input;}
+                com.interpss.dstab.controller.runtime.PhysicalStepTrial input){this.device=device;this.bus=bus;this.input=input;}
     }
     private boolean physicalStepWrapperActive;
     private final java.util.List<PhysicalStepInput> physicalStepInputs=new java.util.ArrayList<>();
@@ -300,7 +300,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 for (DStabGen generator : bus.getContributeGenList()) {
                     if (generator.isActive() && generator.getDynamicGenDevice() instanceof Machine machine
                             && machine.isActive() && machine.getStabilizer() instanceof
-                            org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer
+                            com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement stabilizer
                             && stabilizer.isActive()) {
                         if ("CORRECTOR".equals(networkSolutionStage))
                             stabilizer.acceptVoltageDerivativeEndpoint(networkEvaluationTime, timestep);
@@ -348,11 +348,11 @@ public class PsseDStabSolver extends DStabSolverImpl {
         for (var bus : network.getBusList())
             for (var device : bus.getDynamicBusDeviceList()) {
                 if (device instanceof org.interpss.dstab.svc.Svsmo3t2Model model) statcomEventModels.add(model);
-                if (device instanceof org.interpss.dstab.control.util.NetworkEventInput input)
+                if (device instanceof com.interpss.dstab.controller.runtime.NetworkEventInput input)
                     networkEventInputs.add(new EventInput(device, bus, input));
-                if (device instanceof org.interpss.dstab.control.util.IntegrationStepContext input)
+                if (device instanceof com.interpss.dstab.controller.runtime.IntegrationStepContext input)
                     integrationStepInputs.add(new StepInput(device, bus, input));
-                if (device instanceof org.interpss.dstab.control.util.PhysicalStepTrial input && input.requiresPhysicalStepTrial())
+                if (device instanceof com.interpss.dstab.controller.runtime.PhysicalStepTrial input && input.requiresPhysicalStepTrial())
                     physicalStepInputs.add(new PhysicalStepInput(device,bus,input));
             }
         selectFrequencyMeasurements();
@@ -407,13 +407,13 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if (device.isActive() && device instanceof org.interpss.dstab.svc.Svsmo3t2Model statcom
                         && !statcom.acceptSwitchingEndpoint()) return false;
             for (var device : bus.getDynamicBusDeviceList())
-                if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action
+                if (device.isActive() && device instanceof com.interpss.dstab.controller.runtime.InitialEndpointAction action
                         && !action.isInitialOperatingPointPreparation())
                     initialPhysicalAction |= action.acceptInitialEndpoint();
             for (DStabGen generator : bus.getContributeGenList()) {
                 if (!generator.isActive()) continue;
                 if (generator.getDynamicGenDevice() instanceof Machine machine && machine.isActive()
-                        && machine.getStabilizer() instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer
+                        && machine.getStabilizer() instanceof com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement stabilizer
                         && stabilizer.isActive()) stabilizer.synchronizeVoltageDerivativeMemory();
                 if (generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regca1Model converter
                         && converter.isActive()) {
@@ -435,7 +435,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if (!super.networkSolutionStep()) return false;
                 for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
                     for (var device : bus.getDynamicBusDeviceList())
-                        if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action)
+                        if (device.isActive() && device instanceof com.interpss.dstab.controller.runtime.InitialEndpointAction action)
                             action.acceptInitialNetworkEndpoint();
                 return true;
             }
@@ -449,18 +449,18 @@ public class PsseDStabSolver extends DStabSolverImpl {
      * initial events. Keeping these phases separate preserves real load/trip
      * disturbances instead of absorbing them into generator shaft power. */
     private boolean prepareInitialOperatingPoint(BaseDStabNetwork<?, ?> network) {
-        var preparations = new java.util.ArrayList<org.interpss.dstab.control.util.InitialEndpointAction>();
+        var preparations = new java.util.ArrayList<com.interpss.dstab.controller.runtime.InitialEndpointAction>();
         for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
             for (var device : bus.getDynamicBusDeviceList())
-                if (device.isActive() && device instanceof org.interpss.dstab.control.util.InitialEndpointAction action
+                if (device.isActive() && device instanceof com.interpss.dstab.controller.runtime.InitialEndpointAction action
                         && action.isInitialOperatingPointPreparation()) preparations.add(action);
         if (preparations.isEmpty()) return true;
-        var sources = new java.util.ArrayList<org.interpss.dstab.mach.IeeeVcEConstMachine>();
+        var sources = new java.util.ArrayList<com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine>();
         for (BaseDStabBus<?, ?> bus : network.getBusList()) if (bus.isActive())
             for (DStabGen generator : bus.getContributeGenList()) if (generator.isActive()) {
                 var device = generator.getDynamicGenDevice();
                 if (device == null || !device.isActive()) continue;
-                if (!(device instanceof org.interpss.dstab.mach.IeeeVcEConstMachine machine)
+                if (!(device instanceof com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine machine)
                         || !machine.supportsInitialOperatingPointBalance())
                     throw new IllegalStateException("Initial control-transfer source balance is not qualified for " + generator.getId());
                 sources.add(machine);

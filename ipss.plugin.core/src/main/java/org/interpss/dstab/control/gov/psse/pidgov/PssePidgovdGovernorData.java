@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.pidgov;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameter data shared by the PSS/E PIDGOV and PIDGOVD hydro governors. */
 public class PssePidgovdGovernorData extends BaseControllerData {

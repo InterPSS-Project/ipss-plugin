@@ -1,9 +1,9 @@
 package org.interpss.dstab.hvdc;
 
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Shared CDC6T transducers in volts and amperes; converter controls are owned separately. */
 public final class Cdc6tMeasurements implements StaggeredEulerParticipant, IntegrationStateAccess {

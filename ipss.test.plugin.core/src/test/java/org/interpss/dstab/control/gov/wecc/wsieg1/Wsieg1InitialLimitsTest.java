@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

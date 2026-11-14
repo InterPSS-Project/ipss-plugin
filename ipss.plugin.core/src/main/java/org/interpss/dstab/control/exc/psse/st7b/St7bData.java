@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st7b;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Native PSS/E IEEE ST7B excitation-system parameters. */
 public class St7bData extends BaseControllerData {

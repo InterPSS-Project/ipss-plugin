@@ -15,8 +15,8 @@ public final class Wtptb1Model {
     private final Wtptb1Data originalData;
     private final Parameters data;
     private final boolean clipPiOutputs;
-    private org.interpss.dstab.control.util.IntegrationStateMonitor observer;
-    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage observationStage;
+    private com.interpss.dstab.controller.runtime.IntegrationStateMonitor observer;
+    private com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage observationStage;
     // Native state order: output lag, speed integral, compensation integral.
     private final double[] state = new double[3];
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
@@ -35,7 +35,7 @@ public final class Wtptb1Model {
             throw new IllegalArgumentException("WTPTA1 native rate limits must include zero");
     }
     static Wtptb1Model forPitchA(Wtpta1Data data) { return new Wtptb1Model(data); }
-    void setIntegrationObserver(org.interpss.dstab.control.util.IntegrationStateMonitor monitor) { observer=monitor; }
+    void setIntegrationObserver(com.interpss.dstab.controller.runtime.IntegrationStateMonitor monitor) { observer=monitor; }
 
     private record Parameters(double kiw,double kpw,double kic,double kpc,double kcc,double tp,
             double thetaMax,double thetaMin,double rateMax,double rateMin,double compensationMax,
@@ -76,8 +76,8 @@ public final class Wtptb1Model {
             throw new IllegalArgumentException("WTPTB1 requires dt >= 0 and stage 0 or 1");
         refreshAlgebraicPitch(pOrder,pReference,turbineSpeed,speedReference);
         if (dt == 0) return;
-        observationStage=flag==0?org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR
-                :org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
+        observationStage=flag==0?com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.PREDICTOR
+                :com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.CORRECTOR;
         if (flag == 0) {
             start = state.clone();
             firstRate = rates(pOrder, pReference, turbineSpeed, speedReference);
@@ -102,7 +102,7 @@ public final class Wtptb1Model {
         if(dt<0)throw new IllegalArgumentException("WTPTB1 requires dt >= 0");
         refreshAlgebraicPitch(pOrder,pReference,speed,reference);
         if(dt==0)return;
-        observationStage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP;
+        observationStage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP;
         double[] derivative=rates(pOrder,pReference,speed,reference);
         twoStep.begin(dt);
         for(int i=data.tp()==0?1:0;i<3;i++) {

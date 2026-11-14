@@ -42,7 +42,7 @@ public class MachineOnlyBoundaryDiscriminatorTest {
         }
         Frame frame(double time,String kind){
             var network=algorithm.getNetwork();var machine=network.getMachine("Bus1-mach1");
-            var round=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)machine;
+            var round=(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)machine;
             var bus=network.getDStabBus("Bus1");var voltage=bus.getVoltage();
             var power=voltage.multiply(machine.getIgen().subtract(voltage.multiply(machine.getYgen())).conjugate());
             return new Frame(time,kind,voltage.abs(),power.getImaginary(),round.getPsikd(),machine.getPm());

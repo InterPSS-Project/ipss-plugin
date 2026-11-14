@@ -8,7 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.Regfma1NativeReferenceCheckpoints;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;

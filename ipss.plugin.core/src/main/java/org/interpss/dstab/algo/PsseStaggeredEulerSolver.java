@@ -28,10 +28,10 @@ import org.interpss.dstab.control.exc.ieee.y2005.st4b.Esst4bPIControlBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
-import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.FreezeNonWindupPIControlBlock;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.mach.IeeeVcEConstMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt3g2IntegrationBundle;
 import org.interpss.dstab.renewable.Regfma1Model;
@@ -322,7 +322,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     }
     private static final class Participant {
         final StaggeredEulerParticipant model;
-        final org.interpss.dstab.control.util.LocalStaggeredEulerParticipant local;
+        final com.interpss.dstab.controller.runtime.LocalStaggeredEulerParticipant local;
         final int localSteps;
         final BooleanSupplier active;
         final double[] values, rates, history, trial, eventLeftRates, localEventLeftRates;
@@ -331,7 +331,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         long appliedInputDiscontinuityVersion;
         Participant(StaggeredEulerParticipant model, BooleanSupplier active) {
             this.model=model;this.active=active;
-            local=model instanceof org.interpss.dstab.control.util.LocalStaggeredEulerParticipant p?p:null;
+            local=model instanceof com.interpss.dstab.controller.runtime.LocalStaggeredEulerParticipant p?p:null;
             localSteps=local==null?1:local.staggeredLocalStepCount();
             if(localSteps<1||localSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
             appliedInputDiscontinuityVersion=model.staggeredInputDiscontinuityVersion();
@@ -647,7 +647,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 validateController(m.getGovernor());
                 validateController(m.getStabilizer());
                 if (m instanceof EConstMachineImpl && (m.getExciter()!=null || m.getStabilizer()!=null
-                        || m.getGovernor()!=null && (!(m instanceof org.interpss.dstab.mach.IeeeVcEConstMachine)
+                        || m.getGovernor()!=null && (!(m instanceof com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine)
                             || !(m.getGovernor() instanceof PsseTGov1SteamTurGovernor))))
                     throw new IllegalArgumentException("Classical-machine controls require the qualified TGOV1 source path");
             }
@@ -1043,8 +1043,8 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     private BooleanSupplier endpointEligibility(MachineImpl machine, Object exciter, Object governor, Object stabilizer) {
         Class<?> type=machine.getClass();
         if (type!=RoundRotorMachineImpl.class && type!=SalientPoleMachineImpl.class
-                && type!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
-                && type!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class
+                && type!=com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine.class
+                && type!=com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine.class
                 || governor!=null && governor.getClass()!=PsseGgov1Governor.class
                 || stabilizer!=null && stabilizer.getClass()!=Ieee1992PSS2AStabilizer.class)
             return ()->false;
@@ -1256,7 +1256,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                         && p.wasActive && p.active.getAsBoolean())
                     p.hasEventLeftRates = p.model.readNetworkEventLeftRates(p.eventLeftRates, 0);
         if (discontinuity) for (var p:participants)
-            if (p.active.getAsBoolean() && p.model instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer)
+            if (p.active.getAsBoolean() && p.model instanceof com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement stabilizer)
                 stabilizer.synchronizeVoltageDerivativeMemory();
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();
@@ -1362,7 +1362,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
         // the solved endpoint voltage, not the previous network solution.
         evaluate();
         for (var p:participants)
-            if (p.active.getAsBoolean() && p.model instanceof org.interpss.dstab.control.util.AcceptedVoltageMeasurement stabilizer)
+            if (p.active.getAsBoolean() && p.model instanceof com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement stabilizer)
                 stabilizer.acceptVoltageDerivativeEndpoint(time+dt,dt);
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,1);

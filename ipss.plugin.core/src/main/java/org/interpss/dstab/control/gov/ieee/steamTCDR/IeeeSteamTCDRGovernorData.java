@@ -24,7 +24,7 @@
 
 package org.interpss.dstab.control.gov.ieee.steamTCDR;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class IeeeSteamTCDRGovernorData extends BaseControllerData {
 	private double k = 10.0;

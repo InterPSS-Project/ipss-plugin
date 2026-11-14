@@ -1,6 +1,6 @@
 package org.interpss.dstab.mach;
 
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.BaseDStabBus;
 

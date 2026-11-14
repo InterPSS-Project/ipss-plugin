@@ -126,7 +126,7 @@ public class Cmldblu1InitializationTest {
         // retain all measured differences without asserting that equivalence.
         assertTrue(stateErrors.values().stream().allMatch(Double::isFinite));
         for (var owner : model.getIntegrationStateOwners().values()) {
-            var participant = assertInstanceOf(org.interpss.dstab.control.util.StaggeredEulerParticipant.class, owner);
+            var participant = assertInstanceOf(com.interpss.dstab.controller.runtime.StaggeredEulerParticipant.class, owner);
             double[] rates = new double[participant.staggeredStateCount()];
             participant.evaluateStaggered(.0005,rates,0);
             for (double rate : rates) assertEquals(0,rate,1e-8,"Initial state residual");

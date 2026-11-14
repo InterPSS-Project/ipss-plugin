@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.mach.impl.Eq1MachineImpl;
+import com.interpss.dstab.mach.ieeevc.IeeeVcData;
+import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
 
 /** PSS/E GENTRA transient-level salient-pole generator. */
 public final class GentraMachine extends Eq1MachineImpl

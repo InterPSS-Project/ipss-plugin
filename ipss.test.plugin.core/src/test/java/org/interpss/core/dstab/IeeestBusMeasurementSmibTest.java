@@ -15,8 +15,8 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.common.exp.InterpssException;
-import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
-import org.interpss.dstab.mach.IeeeVcData;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcData;
 
 /** Local and remote bus measurements must not alias machine signals. */
 public class IeeestBusMeasurementSmibTest extends CorePluginTestSetup {

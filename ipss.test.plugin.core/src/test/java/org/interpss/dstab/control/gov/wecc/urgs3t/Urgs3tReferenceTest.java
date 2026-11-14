@@ -296,7 +296,7 @@ public class Urgs3tReferenceTest {
             for(int i=0;i<5;i++){a.put("STATE"+i,states[i]);a.put("VAR"+i,vars[i]);}
             a.put("V1",v.abs());a.put("V2",n.getDStabBus("Bus2").getVoltageMag());a.put("A1",Math.toDegrees(v.getArgument()));a.put("A2",Math.toDegrees(n.getDStabBus("Bus2").getVoltage().getArgument()));
             a.put("P_PU",power.getReal());a.put("Q_PU",power.getImaginary());a.put("ANGLE_DEG",active?Math.toDegrees(m.getAngle()):0.);a.put("SPEED",active?m.getSpeed()-1:0.);a.put("PMECH",active?m.getPm():0.);a.put("EFD",active?m.getEfd():0.);
-            var round=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)m;
+            var round=(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)m;
             a.put("GEN1_STATE0",round.getEq1());a.put("GEN1_STATE1",round.getEd1());
             a.put("GEN1_STATE2",round.getPsikd());a.put("GEN1_STATE3",round.getPsikq());
             a.put("GEN1_STATE4",m.getSpeed()-1);a.put("GEN1_STATE5",m.getAngle());

@@ -2,7 +2,7 @@ package org.interpss.dstab.control.gov.psse.hyg3;
 
 import java.util.Arrays;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /**
  * Data for the WECC/PSLF HYG3 governor as carried by the PSS/E HYG3U1 model.

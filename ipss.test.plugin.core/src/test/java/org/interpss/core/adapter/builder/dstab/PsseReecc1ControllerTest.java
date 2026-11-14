@@ -201,13 +201,13 @@ public class PsseReecc1ControllerTest {
             assertEquals(publishedIq,model.getTwoStepIqcmd(),0.);
         }
         model.stepTwoStep(h,.4,.11,.8,1.);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
                 model.getStateDerivativeSnapshot().stage());
         assertEquals(states.get("Reactive Power PI"),model.getReactivePowerIntegral(),0.);
         assertEquals(states.get("Voltage Error PI"),model.getVoltageIntegral(),0.);
         assertEquals(states.get("Power Order Lag"),model.getActivePowerOrder(),0.);
         model.stepTwoStep(h,.4,.11,.8,1.);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,
                 model.getStateDerivativeSnapshot().stage());
         states=model.getNamedStates();
         for(double invalid:new double[]{-h,Double.NaN,Double.POSITIVE_INFINITY}) {

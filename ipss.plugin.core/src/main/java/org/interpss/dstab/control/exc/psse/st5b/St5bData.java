@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st5b;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** IEEE 421.5-2005 ST5B / PSLF ESST5B excitation-system parameters. */
 public class St5bData extends BaseControllerData {

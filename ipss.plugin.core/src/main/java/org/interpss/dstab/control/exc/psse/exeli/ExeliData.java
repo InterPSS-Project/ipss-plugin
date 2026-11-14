@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.exeli;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** PSS/E EXELI all-static, transformer-fed excitation-system parameters. */
 public final class ExeliData extends BaseControllerData {

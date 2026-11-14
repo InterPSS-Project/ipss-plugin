@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.gastwd;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters in the thirty-four-value PSS/E GASTWDD/GASTWDDU record. */
 public class PsseGastwddGovernorData extends BaseControllerData {

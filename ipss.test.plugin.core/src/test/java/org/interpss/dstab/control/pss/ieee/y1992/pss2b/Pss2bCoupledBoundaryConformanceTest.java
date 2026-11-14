@@ -278,7 +278,7 @@ public class Pss2bCoupledBoundaryConformanceTest {
             values.put("P_PU", power.getReal()); values.put("Q_PU", power.getImaginary());
             values.put("MACH_ANGLE", Math.toDegrees(machine.getAngle())); values.put("MACH_SPEED", machine.getSpeed() - 1.);
             values.put("EFD", machine.getEfd()); values.put("PMECH", machine.getPm());
-            var rotor = (org.interpss.dstab.mach.IeeeVcRoundRotorMachine) machine;
+            var rotor = (com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine) machine;
             values.put("EP_Q", rotor.getEq1()); values.put("EP_D", rotor.getEd1());
             values.put("PSIK_D", rotor.getPsikd()); values.put("PSIK_Q", rotor.getPsikq());
             var exciter = (org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter) machine.getExciter();

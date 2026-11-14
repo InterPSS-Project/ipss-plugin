@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.tgov1;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class PsseTGov1SteamTurGovernorData extends BaseControllerData {
 	

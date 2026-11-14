@@ -44,14 +44,14 @@ public class WtdtaNativeConformanceTest extends CorePluginTestSetup {
     @Test void nativeBundleRebasePublishesAppliedHistoryRatesAndReinitializesCleanly(@TempDir Path input)throws Exception {
         var converter=importedConverter(input);var model=converter.getReeca1Controller().getWindControlStack().getDriveTrain();double pm=model.getInitialInputPower();
         converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
-        model.stepTwoStep(.001,pm,.30);var first=model.getStateDerivativeSnapshot();assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,first.stage());
+        model.stepTwoStep(.001,pm,.30);var first=model.getStateDerivativeSnapshot();assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,first.stage());
         double before=model.getNativeStates()[2];converter.rebaseNextTwoStep();model.stepTwoStep(0,pm,.29);assertEquals(first,model.getStateDerivativeSnapshot());
         model.stepTwoStep(.001,pm,.29);var event=model.getStateDerivativeSnapshot();
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,event.stage());
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,event.stage());
         assertEquals(before+.001*(1.5*event.rates().get("Generator Speed Deviation")-.5*first.rates().get("Generator Speed Deviation")),model.getNativeStates()[2],1e-14);
         assertFalse(event.rates().containsKey("Electrical Power Measurement Filter"));
-        converter.rebaseNextTwoStep();model.initialize(.24,.92);assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.NOT_EVALUATED,model.getStateDerivativeSnapshot().stage());
-        model.stepTwoStep(.001,model.getInitialInputPower(),.24);assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,model.getStateDerivativeSnapshot().stage());
+        converter.rebaseNextTwoStep();model.initialize(.24,.92);assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.NOT_EVALUATED,model.getStateDerivativeSnapshot().stage());
+        model.stepTwoStep(.001,model.getInitialInputPower(),.24);assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,model.getStateDerivativeSnapshot().stage());
     }
 
     @Test void candidateMechanicalEngineReplaysAllFourNativeCoordinates()throws Exception {

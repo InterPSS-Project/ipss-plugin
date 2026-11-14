@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.ac6c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** IEEE 421.5-2016 / PSS/E AC6C excitation-system parameters. */
 public final class Ac6cData extends BaseControllerData {

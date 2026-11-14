@@ -2,8 +2,8 @@ package org.interpss.dstab.hvdc;
 
 import java.util.Hashtable;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.DynamicBusDeviceType;
@@ -101,7 +101,7 @@ public final class Cdc6tNormalTerminalPorts {
                     recovery?protection.voltageFactor():1,recovery?protection.currentFactor():1,currents,0);
         }
     }
-    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware,org.interpss.dstab.control.util.InitialEndpointAction,com.interpss.dstab.device.ConvergedNetworkAction {
+    public final class Port extends DynamicBusDeviceImpl implements StaggeredEulerParticipant,NetworkIterationAware,IntegrationStepAware,com.interpss.dstab.controller.runtime.InitialEndpointAction,com.interpss.dstab.device.ConvergedNetworkAction {
         private final boolean owner;
         private Port(String id,BaseDStabBus<?,?> bus,boolean owner) {
             this.owner=owner;setId(id);setExtendedDeviceId(id);setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);

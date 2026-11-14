@@ -2,9 +2,9 @@ package org.interpss.dstab.hvdc;
 
 import static org.interpss.dstab.hvdc.Chvdc2Parameters.Constant.*;
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Shared rectifier/inverter current PI and firing-angle states, in degrees.
  * Measured currents and externally calculated angle bounds belong to the caller.

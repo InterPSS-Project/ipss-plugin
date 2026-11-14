@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aWashoutBlock;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;

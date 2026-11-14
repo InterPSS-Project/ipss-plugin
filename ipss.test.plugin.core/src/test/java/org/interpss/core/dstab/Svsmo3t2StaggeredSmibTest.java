@@ -11,8 +11,8 @@ import java.util.zip.ZipInputStream;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.interpss.dstab.svc.Svsmo3t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;

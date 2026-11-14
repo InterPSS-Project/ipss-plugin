@@ -25,7 +25,7 @@
 
 package org.interpss.dstab.control.pss.ieee.y1992.pss2a;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 	private int ics1 = 1;

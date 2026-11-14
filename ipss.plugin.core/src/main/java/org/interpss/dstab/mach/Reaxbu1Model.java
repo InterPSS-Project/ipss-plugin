@@ -5,8 +5,8 @@ import java.util.Map;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Two-axis lag translating plant-level auxiliary commands to a wind controller. */
-public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess,
-        org.interpss.dstab.control.util.StaggeredEulerParticipant {
+public final class Reaxbu1Model implements ICMLStateProvider,com.interpss.dstab.controller.runtime.IntegrationStateAccess,
+        com.interpss.dstab.controller.runtime.StaggeredEulerParticipant {
     private static final double EPS = 1.0e-10;
     private final Reaxbu1Data data;
     private final String modelName;
@@ -17,9 +17,9 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
     private State oldState;
     private Derivative predictor;
     private boolean initialized;
-    private final org.interpss.dstab.control.util.IntegrationStateMonitor monitor=new org.interpss.dstab.control.util.IntegrationStateMonitor(
+    private final com.interpss.dstab.controller.runtime.IntegrationStateMonitor monitor=new com.interpss.dstab.controller.runtime.IntegrationStateMonitor(
             "Measurement lag (reactive part)","Measurement lag (real part)");
-    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.NOT_EVALUATED;
+    private com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.NOT_EVALUATED;
 
     public Reaxbu1Model(String modelName, Reaxbu1Data data) {
         this.modelName = modelName;
@@ -56,7 +56,7 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
         reactiveState=reactiveOutput;activeState=activeOutput;
         oldState=null;predictor=null;
         initialized = true;
-        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.INITIALIZATION;derivatives(state());
+        stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.INITIALIZATION;derivatives(state());
     }
     public void step(double dt, int flag) {
         if (!initialized || !Double.isFinite(dt) || dt <= 0.0 || (flag != 0 && flag != 1))
@@ -69,11 +69,11 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
                     plantController.getActiveOutput());
         }
         if (flag == 0) {
-            stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR;
+            stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.PREDICTOR;
             oldState = state(); predictor = derivatives(oldState);
             apply(advance(oldState, predictor, dt));
         } else {
-            stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
+            stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.CORRECTOR;
             if (oldState == null || predictor == null)
                 throw new IllegalStateException("corrector without predictor");
             apply(advance(oldState, predictor.add(derivatives(state())), .5*dt));
@@ -88,7 +88,7 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
     @Override public void evaluateStaggered(double stepSec,double[] values,int offset){
         if(!initialized||oldState!=null)throw new IllegalStateException("Auxiliary state is not an accepted endpoint");
         if(plantController!=null)setExternalSignals(plantController.getReactiveOutput(),plantController.getActiveOutput());
-        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED;
+        stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.STAGGERED;
         Derivative d=derivatives(state());values[offset]=d.reactive();values[offset+1]=d.active();
     }
     @Override public void applyStaggeredState(double[] values,int offset,double stepSec){
@@ -130,10 +130,10 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
     public Plntbu1Model getPlantController(){return plantController;}
     public void setPlantController(Plntbu1Model value){plantController=value;}
     @Override public Map<String,Double> getIntegrationStates(){return getNamedStates();}
-    @Override public org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){
+    @Override public com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){
         var own=monitor.snapshot();var x=new LinkedHashMap<>(own.evaluationStates());var dx=new LinkedHashMap<>(own.rates());
         if(plantController!=null){var p=plantController.getStateDerivativeSnapshot();x.putAll(p.evaluationStates());dx.putAll(p.rates());}
-        return new org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot(own.stage(),x,dx);
+        return new com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Snapshot(own.stage(),x,dx);
     }
     @Override public Map<String,Double> getNamedStates(){
         if (!initialized) return Map.of();

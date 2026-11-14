@@ -3,7 +3,7 @@ package org.interpss.dstab.control.gov.wecc.wsieg1;
 import static org.junit.jupiter.api.Assertions.*;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.mach.Machine;

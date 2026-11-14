@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.ggov1;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters for the PSS/E GGOV1 general-purpose governor/turbine model. */
 public class PsseGgov1GovernorData extends BaseControllerData {

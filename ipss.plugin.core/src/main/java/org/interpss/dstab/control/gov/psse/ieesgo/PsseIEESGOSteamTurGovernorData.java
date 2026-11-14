@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.ieesgo;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class PsseIEESGOSteamTurGovernorData extends BaseControllerData {
 	

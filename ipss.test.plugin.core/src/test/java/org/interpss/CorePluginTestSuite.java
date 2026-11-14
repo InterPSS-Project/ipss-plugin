@@ -630,7 +630,6 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterNthOrderBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
-import org.interpss.core.dstab.cml.block.FreezeNonWindupPIControlBlockTest;
 import org.interpss.core.dstab.cml.block.Esst4bPIControlBlockTest;
 import org.interpss.core.dstab.cml.block.Pss2aLeadLagBlockTest;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
@@ -768,7 +767,6 @@ import org.junit.platform.suite.api.Suite;
 	FilterNthOrderBlockTests.class,
 	IntegrationControlBlockTests.class,
 	PIControlBlockTests.class,
-	FreezeNonWindupPIControlBlockTest.class,
 	Esst4bPIControlBlockTest.class,
 	Pss2aLeadLagBlockTest.class,
 	WashoutControlBlockTests.class,

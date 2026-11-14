@@ -2,9 +2,9 @@ package org.interpss.dstab.dynLoad.impl;
 
 import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.NetworkIterationAware;

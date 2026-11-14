@@ -2,8 +2,8 @@ package org.interpss.dstab.control.gov.psse.wpidhy;
 
 import java.util.Map;
 
-import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.AsymmetricDeadbandBlock;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssRuntimeException;

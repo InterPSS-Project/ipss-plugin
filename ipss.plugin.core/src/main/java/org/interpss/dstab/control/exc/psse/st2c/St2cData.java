@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st2c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Native PSS/E IEEE 421.5-2016 ST2C excitation-system parameters. */
 public final class St2cData extends BaseControllerData {

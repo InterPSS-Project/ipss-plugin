@@ -2,8 +2,8 @@ package org.interpss.dstab.renewable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.junit.jupiter.api.Test;
 
 class RenewableEventFreezeHistoryTest {

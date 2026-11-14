@@ -85,7 +85,7 @@ public class Wsieg1BoundaryPlaybackTest {
             assertTrue(flag==0||flag==1);double[] values=input[tick(time+(flag==1?h:0.))];
             for(int i=1;i<=2;i++) {
                 var m=(com.interpss.dstab.mach.impl.MachineImpl)dstabAlgo.getNetwork().getMachine("Bus"+i+"-mach1");
-                assertInstanceOf(org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class,m);
+                assertInstanceOf(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine.class,m);
                 var history=m.captureMechanicalIntegrationState();double speed=flag==0?m.getSpeed():history.predictedSpeed();
                 double damping=m.getD()*.01*dstabAlgo.getNetwork().getFrequency();
                 // The imported round-rotor realization uses electromagnetic

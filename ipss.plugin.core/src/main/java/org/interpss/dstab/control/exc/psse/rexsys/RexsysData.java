@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.rexsys;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters for the 31-value PSS/E REXSYS excitation-system record. */
 public final class RexsysData extends BaseControllerData {

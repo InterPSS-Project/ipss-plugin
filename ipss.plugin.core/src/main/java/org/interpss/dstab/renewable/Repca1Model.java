@@ -1,8 +1,8 @@
 package org.interpss.dstab.renewable;
 
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

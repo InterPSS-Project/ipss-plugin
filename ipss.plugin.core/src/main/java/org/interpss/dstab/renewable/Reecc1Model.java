@@ -11,13 +11,13 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 /** Published seven-state utility-scale battery electrical controller REECC1. */
 public final class Reecc1Model
         implements TwoStepElectricalController, ICMLStateProvider,
-        org.interpss.dstab.control.util.IntegrationStateAccess {
+        com.interpss.dstab.controller.runtime.IntegrationStateAccess {
     private static final double EPS = 1.0e-9;
     private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
     private final TwoStepHistory twoStep = new TwoStepHistory(7);
-    private final org.interpss.dstab.control.util.IntegrationStateMonitor stateMonitor =
-            new org.interpss.dstab.control.util.IntegrationStateMonitor(
+    private final com.interpss.dstab.controller.runtime.IntegrationStateMonitor stateMonitor =
+            new com.interpss.dstab.controller.runtime.IntegrationStateMonitor(
                     "Voltage Measurement Filter", "Real Power Filter", "Reactive Power PI",
                     "Voltage Error PI", "Reactive Current Lag", "Power Order Lag", "Battery Energy Output");
     private double twoStepIpcmd, twoStepIqcmd;
@@ -227,7 +227,7 @@ public final class Reecc1Model
         double iqRate = voltageDip||data.qFlag()!=0||effectiveTiq<=EPS?0.:
                 (qTarget/nonzero(vMeasured)-qCurrent)/effectiveTiq;
         double energyRate = p/data.dischargeTime();
-        stateMonitor.begin(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP);
+        stateMonitor.begin(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP);
         stateMonitor.record(0,vMeasured,vRate); stateMonitor.record(1,pMeasured,pRate);
         stateMonitor.record(2,qIntegral,qRate); stateMonitor.record(3,vIntegral,voltageRate);
         stateMonitor.record(4,qCurrent,iqRate); stateMonitor.record(5,pOrder,voltageDip?0.:orderRate);
@@ -260,7 +260,7 @@ public final class Reecc1Model
     }
 
     @Override public Map<String,Double> getIntegrationStates() { return getNamedStates(); }
-    @Override public org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+    @Override public com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
         return stateMonitor.snapshot();
     }
 

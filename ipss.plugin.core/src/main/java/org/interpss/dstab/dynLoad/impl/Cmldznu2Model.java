@@ -9,8 +9,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.Cmldznu2Data;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfBranchCode;

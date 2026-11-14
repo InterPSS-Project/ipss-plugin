@@ -221,7 +221,7 @@ public final class DynamicModelCatalog {
             descriptor("GENTRA", Set.of(), SYNCHRONOUS_MACHINE, 9, LOADABLE,
                     "org.interpss.dstab.mach.GentraMachine", "Machine%20Model%20GENTRA.htm"),
             descriptor("IEEEVC", Set.of(), COMPENSATOR, 2, LOADABLE,
-                    "org.interpss.dstab.mach.IeeeVoltageCompensatedMachine",
+                    "com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine",
                     "Voltage%20Compensator%20IEEEVC.htm"),
             descriptor("CIMTR4", Set.of(), SYNCHRONOUS_MACHINE, 13, LOADABLE,
                     "org.interpss.dstab.mach.Cimtr4Machine", "Machine%20Model%20CIMTR4.htm"),

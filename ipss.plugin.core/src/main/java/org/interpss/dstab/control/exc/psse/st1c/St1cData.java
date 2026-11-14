@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st1c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Exact PSS/E IEEE 421.5-2016 ST1C excitation-system parameters. */
 public final class St1cData extends BaseControllerData {

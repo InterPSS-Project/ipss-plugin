@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.tgov3;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameter data for the PSS/E TGOV3D steam turbine-governor. */
 public class PsseTgov3dGovernorData extends BaseControllerData {

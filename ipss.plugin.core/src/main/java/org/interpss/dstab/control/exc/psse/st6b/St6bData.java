@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st6b;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** IEEE 421.5 ST6B / PSLF ESST6B excitation-system parameters. */
 public final class St6bData extends BaseControllerData {

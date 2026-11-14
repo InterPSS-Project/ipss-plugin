@@ -24,7 +24,7 @@
 
 package org.interpss.dstab.control.exc.ieee.y1968.type1;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 

@@ -24,7 +24,7 @@
 
 package org.interpss.dstab.control.exc.ieee.y1968.type2;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class Ieee1968Type2ExciterData extends BaseControllerData {
 	private double ka = 50.0;

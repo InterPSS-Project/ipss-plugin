@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.wesgov;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** PSS/E WESGOVD Westinghouse digital gas-turbine governor data. */
 public class PsseWesgovdGovernorData extends BaseControllerData {

@@ -4,9 +4,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
 
 /** Published WT3E1 Type-3 electrical controller. */
 public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess {

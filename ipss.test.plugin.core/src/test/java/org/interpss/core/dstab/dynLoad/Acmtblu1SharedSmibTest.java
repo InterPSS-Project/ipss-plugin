@@ -151,7 +151,7 @@ public class Acmtblu1SharedSmibTest {
         Map<String,Double> snapshot(double t){var n=a.getNetwork();var r=new LinkedHashMap<String,Double>();r.put("time_s",t);for(int i=1;i<=3;i++){var v=n.getDStabBus("Bus"+i).getVoltage();r.put("V"+i,v.abs());r.put("A"+i,Math.toDegrees(v.getArgument()));}
             var m=n.getMachine("Bus1-mach1");var v=m.getDStabBus().getVoltage();var p=v.multiply(m.getIgen().subtract(v.multiply(m.getYgen())).conjugate());r.put("P_PU",p.getReal());r.put("Q_PU",p.getImaginary());r.put("ANGLE_DEG",Math.toDegrees(m.getAngle()));r.put("SPEED",m.getSpeed()-1);
             if(generatorStatesEnabled){
-                var generatorStates=((org.interpss.dstab.mach.IeeeVcRoundRotorMachine)m).getNamedStates();
+                var generatorStates=((com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)m).getNamedStates();
                 String[] keys={"E'q","E'd","Psi'd","Psi'q","Speed deviation","Angle"};
                 for(int i=0;i<keys.length;i++)r.put("GEN_STATE"+i,generatorStates.get(keys[i]));
                 r.put("GEN_EFD",m.getEfd());

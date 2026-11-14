@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;

@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

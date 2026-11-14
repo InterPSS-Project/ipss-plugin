@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.exc.Oel3cExciterPort;
+import com.interpss.dstab.controller.exc.Oel3cExciterPort;
 import com.interpss.core.net.Network;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;

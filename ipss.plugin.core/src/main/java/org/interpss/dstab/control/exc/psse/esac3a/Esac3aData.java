@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.esac3a;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Native PSS/E ESAC3A parameters in DYR order. */
 public final class Esac3aData extends BaseControllerData {

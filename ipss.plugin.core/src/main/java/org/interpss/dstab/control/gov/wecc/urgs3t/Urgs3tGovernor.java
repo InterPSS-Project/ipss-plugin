@@ -9,16 +9,16 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /** WECC gas governor with shared numerical states and accepted deadband histories. */
 public final class Urgs3tGovernor extends AbstractGovernor
         implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess,
-        org.interpss.dstab.control.util.DisconnectedStateParticipant {
+        com.interpss.dstab.controller.runtime.DisconnectedStateParticipant {
     /** Source-record execution holds the exhaust coordinate, publishes the
      * preceding accepted turbine output, and scales damping with turbine power.
      * Direct Java construction retains the published diagram and machine-base damping. */

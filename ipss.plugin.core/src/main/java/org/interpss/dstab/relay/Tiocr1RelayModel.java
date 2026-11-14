@@ -13,8 +13,8 @@ import org.apache.commons.math3.complex.Complex;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
 
 /** Accepted-step line relay with explicit transfer trips; monitoring alone never opens a branch. */
 public final class Tiocr1RelayModel extends DynamicBusDeviceImpl implements IRelayModel, ICMLStateProvider, IntegrationStateAccess {

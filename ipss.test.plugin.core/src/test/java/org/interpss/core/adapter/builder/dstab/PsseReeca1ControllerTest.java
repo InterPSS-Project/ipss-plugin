@@ -48,7 +48,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0);
         var converterSnapshot = converter.getStateDerivativeSnapshot();
         var controlSnapshot = controller.getStateDerivativeSnapshot();
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP, controlSnapshot.stage());
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP, controlSnapshot.stage());
         assertEquals(-25.0, converterSnapshot.rates().get("Filtered Voltage"), 1.e-12);
         assertEquals(0.0, controlSnapshot.rates().get("Active Power Order"), 0.0);
         assertEquals(0.0, controlSnapshot.rates().get("Reactive Control Integral"), 0.0);
@@ -70,7 +70,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         double initial = controller.getMeasuredVoltage();
         controller.step(.001, .8, .2, .95, 1.0, 0);
         var snapshot = controller.getStateDerivativeSnapshot();
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.APPLIED_STEP, snapshot.stage());
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.APPLIED_STEP, snapshot.stage());
         assertEquals(initial, snapshot.evaluationStates().get("Measured Voltage"), 0.0);
         assertEquals((controller.getMeasuredVoltage()-initial)/.001,
                 snapshot.rates().get("Measured Voltage"), 0.0);

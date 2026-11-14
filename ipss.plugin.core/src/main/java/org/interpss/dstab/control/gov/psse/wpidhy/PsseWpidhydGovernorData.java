@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.wpidhy;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters in the twenty-four-value PSS/E WPIDHYD record. */
 public class PsseWpidhydGovernorData extends BaseControllerData {

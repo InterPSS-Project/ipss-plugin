@@ -8,7 +8,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /** WECC H6E / PSS/E H6EU1 Kaplan hydro turbine-governor. */

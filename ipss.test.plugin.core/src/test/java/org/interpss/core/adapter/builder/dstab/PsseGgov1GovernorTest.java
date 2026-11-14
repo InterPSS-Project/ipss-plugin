@@ -39,7 +39,7 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         double[] rates = new double[10];
         governor.evaluateStaggered(.001, rates, 0);
         var snapshot = governor.getStateDerivativeSnapshot();
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED, snapshot.stage());
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.STAGGERED, snapshot.stage());
         assertEquals(rates[0], snapshot.rates().get("Electrical Power"), 0.0);
         assertEquals(-.2 / data.getTpelec(), rates[0], TOL);
         var states = governor.getIntegrationStates();
@@ -53,10 +53,10 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class,
                 () -> snapshot.rates().put("Electrical Power", 0.0));
         governor.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.PREDICTOR,
                 governor.getStateDerivativeSnapshot().stage());
         governor.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.CORRECTOR,
                 governor.getStateDerivativeSnapshot().stage());
         assertEquals(rates[0], snapshot.rates().get("Electrical Power"), 0.0);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));

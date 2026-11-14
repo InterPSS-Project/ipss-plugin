@@ -227,8 +227,8 @@ final class St1DirectEvaluation {
         var machine=model.getMachine();Class<?> type=machine.getClass();
         if(type!=com.interpss.dstab.mach.impl.RoundRotorMachineImpl.class
                 && type!=com.interpss.dstab.mach.impl.SalientPoleMachineImpl.class
-                && type!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
-                && type!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class)return false;
+                && type!=com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine.class
+                && type!=com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine.class)return false;
         if(((org.eclipse.emf.ecore.impl.BasicEObjectImpl)machine).eNotificationRequired()
                 || model.getDStabBus().getClass()!=com.interpss.dstab.impl.DStabBusImpl.class
                 || ((org.eclipse.emf.ecore.impl.BasicEObjectImpl)model.getDStabBus()).eNotificationRequired())return false;

@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.exc.OverExcitationLimiterTarget;
+import com.interpss.dstab.controller.exc.OverExcitationLimiterTarget;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.core.net.Network;

@@ -421,12 +421,12 @@ class PsseStaggeredEulerSolverTest {
         shared.notifyDiscontinuity();
         assertTrue(algo.solveDEqnStep(true));
         for(var model:models) assertEquals(
-                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
-                ((org.interpss.dstab.control.util.IntegrationStateAccess)model).getStateDerivativeSnapshot().stage());
+                com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+                ((com.interpss.dstab.controller.runtime.IntegrationStateAccess)model).getStateDerivativeSnapshot().stage());
         assertTrue(algo.solveDEqnStep(true));
         for(var model:models) assertEquals(
-                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
-                ((org.interpss.dstab.control.util.IntegrationStateAccess)model).getStateDerivativeSnapshot().stage());
+                com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,
+                ((com.interpss.dstab.controller.runtime.IntegrationStateAccess)model).getStateDerivativeSnapshot().stage());
     }
 
     @Test void classicalSourceAdvancesAlongsideTheExtendedControllerStack() throws Exception {

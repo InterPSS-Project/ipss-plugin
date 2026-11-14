@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.dc3a;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** IEEE 421.5-2005 DC3A / PSLF ESDC3A excitation-system parameters. */
 public final class Dc3aData extends BaseControllerData {

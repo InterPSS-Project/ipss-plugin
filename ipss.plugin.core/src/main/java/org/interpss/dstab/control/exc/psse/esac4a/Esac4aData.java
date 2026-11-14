@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.esac4a;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** PSS/E ESAC4A (IEEE Type AC4A) excitation-system parameters. */
 public final class Esac4aData extends BaseControllerData {

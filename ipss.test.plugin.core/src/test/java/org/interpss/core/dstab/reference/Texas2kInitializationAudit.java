@@ -10,8 +10,8 @@ import com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController;
 import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 /**
  * Read-only benchmark initialization audit using the core state accessors.
  * Cached derivatives must be evaluated by the solver before this is called.

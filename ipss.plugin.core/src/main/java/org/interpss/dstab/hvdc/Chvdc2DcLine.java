@@ -1,9 +1,9 @@
 package org.interpss.dstab.hvdc;
 
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** DC T-circuit in volts, amperes, ohms, henries and farads.
  * One shared RHS serves both integrators. This component does not attach a converter

@@ -158,7 +158,7 @@ public class CompositeTapControlSmibTest {
     void stageOwnershipRejectsInvalidCallsWithoutChangingHistory() throws Exception {
         var a=setup("up",false);var m=model(a);
         var port=m.getDStabBus().getDynLoadModelList().stream().filter(v->v.getId().endsWith("_Tap")).findFirst().orElseThrow();
-        var participant=(org.interpss.dstab.control.util.StaggeredEulerParticipant)port;
+        var participant=(com.interpss.dstab.controller.runtime.StaggeredEulerParticipant)port;
         var aware=(NetworkIterationAware)port;
         var observed=(com.interpss.dstab.controller.cml.ICMLStateProvider)port;
         var initial=observed.getNamedStates();
@@ -196,7 +196,7 @@ public class CompositeTapControlSmibTest {
     void failureRestoresTapMatrixAndHistories(boolean staggered) throws Exception {
         var a=setup("up",staggered);var m=model(a);var net=a.getNetwork();
         var port=m.getDStabBus().getDynLoadModelList().stream().filter(v->v.getId().endsWith("_Tap")).findFirst().orElseThrow();
-        var participant=(org.interpss.dstab.control.util.StaggeredEulerParticipant)port;
+        var participant=(com.interpss.dstab.controller.runtime.StaggeredEulerParticipant)port;
         var aware=(NetworkIterationAware)port;var observed=(com.interpss.dstab.controller.cml.ICMLStateProvider)port;
         assertEquals(port,m.getIntegrationStateOwners().get("TapControl"));
         assertTrue(m.getIntegrationStateOwners().get("TapControl").getIntegrationStates().isEmpty());

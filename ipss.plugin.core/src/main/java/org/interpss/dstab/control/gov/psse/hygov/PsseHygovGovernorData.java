@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.hygov;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters in the twelve-value PSS/E HYGOV record. */
 public class PsseHygovGovernorData extends BaseControllerData {

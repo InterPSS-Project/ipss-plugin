@@ -4,7 +4,7 @@ import static org.interpss.dstab.renewable.HplntdData.Parameter.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Thirteen-state HPLNTDU equation kernel, with default modified-Euler stages
  * and the shared opt-in staggered solver boundary.

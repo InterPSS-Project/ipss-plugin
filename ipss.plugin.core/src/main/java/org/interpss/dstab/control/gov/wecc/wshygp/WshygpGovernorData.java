@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.wecc.wshygp;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Thirty constants of the WSHYGP compatibility governor record. */
 public final class WshygpGovernorData extends BaseControllerData {

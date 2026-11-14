@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.exst3;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Parameters in the native eighteen-CON PSS/E EXST3 record. */
 public final class Exst3Data extends BaseControllerData {

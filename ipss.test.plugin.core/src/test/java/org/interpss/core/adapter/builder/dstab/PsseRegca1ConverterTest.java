@@ -30,8 +30,8 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
             Fixture fixture = fixture(data(1, tg, 10., 0., 0.));
             assertEquals(tg > 0., fixture.model.supportsDeferredCurrentPublication());
         }
-        assertTrue(new org.interpss.dstab.mach.IeeeVcRoundRotorMachine().supportsDeferredCurrentPublication());
-        assertTrue(new org.interpss.dstab.mach.IeeeVcSalientPoleMachine().supportsDeferredCurrentPublication());
+        assertTrue(new com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine().supportsDeferredCurrentPublication());
+        assertTrue(new com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine().supportsDeferredCurrentPublication());
     }
 
     @Test

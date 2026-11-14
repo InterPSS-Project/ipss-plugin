@@ -42,7 +42,7 @@ class RenewableTwoStepIntegrationTest {
     @Test
     void doublePrecisionHeldStateDiscardsHistoryWithoutInjectingAnAveragedRate() {
         var history = new TwoStepHistory(1);
-        var monitor = new org.interpss.dstab.control.util.IntegrationStateMonitor("state");
+        var monitor = new com.interpss.dstab.controller.runtime.IntegrationStateMonitor("state");
         history.begin(.1);
         double x = history.advance(0, 1., 2.);
         history.rebaseNextStep();
@@ -51,7 +51,7 @@ class RenewableTwoStepIntegrationTest {
         assertEquals(x, history.hold(0, x), 0.);
         history.observeRates(monitor);
         var snapshot = monitor.snapshot();
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
                 snapshot.stage());
         assertEquals(0., snapshot.rates().get("state"), 0.);
         assertEquals(x, snapshot.evaluationStates().get("state"), 0.);

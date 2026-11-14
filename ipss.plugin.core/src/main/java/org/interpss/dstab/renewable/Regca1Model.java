@@ -1,8 +1,8 @@
 package org.interpss.dstab.renewable;
 
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 
 import java.util.Collections;
 import java.util.Hashtable;
@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
@@ -29,8 +29,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 public final class Regca1Model extends DynamicBusDeviceImpl
         implements DynamicGenDevice, RenewableConverterHost, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
         NetworkIterationAware, com.interpss.dstab.device.ConverterCompensationPort,
-        org.interpss.dstab.control.util.NetworkEventInput,
-        org.interpss.dstab.control.util.IntegrationStepContext {
+        com.interpss.dstab.controller.runtime.NetworkEventInput,
+        com.interpss.dstab.controller.runtime.IntegrationStepContext {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 

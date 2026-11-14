@@ -14,7 +14,7 @@ import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import com.interpss.dstab.controller.runtime.AsymmetricDeadbandBlock;
 
 /**
  * This model is corresponding to the PSSE TGOV1 type steam-turbine governor
@@ -30,7 +30,7 @@ import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 		   refPoint="this.rGainBlock.u0",
 		   display= {})
 public class PsseTGov1SteamTurGovernor extends AnnotateGovernor
-        implements org.interpss.dstab.control.util.InitialMechanicalPowerPreparation {
+        implements com.interpss.dstab.controller.runtime.InitialMechanicalPowerPreparation {
 	public double k=1,
 		loadLimit =1.0;
 	public double dt =0.0;

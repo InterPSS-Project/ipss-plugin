@@ -278,7 +278,7 @@ public class Texas2kFullDynamicCoverageTest {
             case HVDC_LINK -> org.interpss.dstab.hvdc.Cdc6tDyrModel.models(network).stream()
                     .filter(model -> model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
             case SYNCHRONOUS_MACHINE -> machine;
-            case COMPENSATOR -> machine instanceof org.interpss.dstab.mach.IeeeVoltageCompensatedMachine
+            case COMPENSATOR -> machine instanceof com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine
                     compensated && compensated.getIeeeVcData() != null ? compensated : null;
             case EXCITER -> machine == null ? null : machine.getExciter();
             case GOVERNOR -> machine == null ? null : machine.getGovernor();

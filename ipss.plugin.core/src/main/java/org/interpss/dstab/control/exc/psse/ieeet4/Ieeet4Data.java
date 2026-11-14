@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.ieeet4;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** PSS/E IEEET4 / WECC EXDC4 record data. */
 public final class Ieeet4Data extends BaseControllerData {

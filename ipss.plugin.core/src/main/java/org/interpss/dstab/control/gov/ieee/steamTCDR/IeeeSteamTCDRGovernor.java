@@ -39,8 +39,8 @@ import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
-import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.AsymmetricDeadbandBlock;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 @AnController(

@@ -7,9 +7,9 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.LD1PAC;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -26,10 +26,10 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  * An implementation of the model object '<em><b>LD1PAC</b></em>'.
  */
 public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider,
-        StaggeredEulerParticipant, IntegrationStateAccess, org.interpss.dstab.control.util.NetworkEventInput,
-        org.interpss.dstab.control.util.InitialEndpointAction,
-        org.interpss.dstab.control.util.IntegrationStepContext,
-        org.interpss.dstab.control.util.IntegrationStepAware {
+        StaggeredEulerParticipant, IntegrationStateAccess, com.interpss.dstab.controller.runtime.NetworkEventInput,
+        com.interpss.dstab.controller.runtime.InitialEndpointAction,
+        com.interpss.dstab.controller.runtime.IntegrationStepContext,
+        com.interpss.dstab.controller.runtime.IntegrationStepAware {
     private final double[] integrationRates = new double[9];
     private final double[] timerStart = new double[5], timerFirstRates = new double[5], timerTrial = new double[5];
     private final double[] evaluatedCurrent = new double[2];

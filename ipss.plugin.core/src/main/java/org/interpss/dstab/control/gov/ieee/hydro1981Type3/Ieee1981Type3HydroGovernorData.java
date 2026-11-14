@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.ieee.hydro1981Type3;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class Ieee1981Type3HydroGovernorData extends BaseControllerData {
 	

@@ -2,9 +2,9 @@ package org.interpss.dstab.hvdc;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Joint controller state owner. The electrical owner supplies live terminal inputs,
  * selects local integration intervals and explicitly accepts protection evaluations.

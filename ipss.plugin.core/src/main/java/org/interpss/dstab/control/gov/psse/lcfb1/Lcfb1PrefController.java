@@ -4,7 +4,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import com.interpss.dstab.controller.runtime.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 
 import com.interpss.common.exp.InterpssRuntimeException;

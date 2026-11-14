@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -17,7 +17,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
 public final class Ac1cExciter extends AnnotateExciter implements IntegrationStepAware,
-        org.interpss.dstab.control.exc.Basoel2ExciterPort {
+        com.interpss.dstab.controller.exc.Basoel2ExciterPort {
     public static final int INPUT_UNUSED=0, INPUT_SUMMATION=1, INPUT_TAKEOVER=2;
     private static final double EPS=1.0e-12;
     private static final int VE=0, VSENSE=1, LEAD_LAG=2, VA=3, VFE_LAG=4;
@@ -28,7 +28,7 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
     private boolean initialized, hasVuel, hasVoel, hasVsclSum, hasVsclUel, hasVsclOel;
     private double integrationStep, minimumTimeConstantMultiplier=1.0;
     private double vuel, voel, vsclSum, vsclUel, vsclOel;
-    private org.interpss.dstab.control.exc.Oel3cExciterPort.Limiter auxiliaryOel3c;
+    private com.interpss.dstab.controller.exc.Oel3cExciterPort.Limiter auxiliaryOel3c;
 
     public int oelLocation, uelLocation, sclLocation;
     public double tr,tb,tc,ka,ta,vamax,vamin,te,kf,tf,kc,kd,ke;

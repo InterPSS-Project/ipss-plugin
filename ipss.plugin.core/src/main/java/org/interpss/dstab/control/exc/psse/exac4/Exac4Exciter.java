@@ -3,7 +3,7 @@ package org.interpss.dstab.control.exc.psse.exac4;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;

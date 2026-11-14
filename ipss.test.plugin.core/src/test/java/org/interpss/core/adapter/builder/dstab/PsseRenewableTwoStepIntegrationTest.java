@@ -29,7 +29,7 @@ public class PsseRenewableTwoStepIntegrationTest extends CorePluginTestSetup {
                 0, 0, .1, 0, 0, 1, -1, 2, -2, .2, 20, 0, 0));
         electrical.setPlantController(plant);
         assertTrue(converter.initStates(converter.getDStabBus()));
-        var models = java.util.List.<org.interpss.dstab.control.util.IntegrationStateAccess>of(
+        var models = java.util.List.<com.interpss.dstab.controller.runtime.IntegrationStateAccess>of(
                 converter, electrical, plant, wind.getTorqueController(), pitch, drive);
         var before = models.stream().map(m -> m.getIntegrationStates()).toList();
         converter.rebaseNextTwoStep();
@@ -43,7 +43,7 @@ public class PsseRenewableTwoStepIntegrationTest extends CorePluginTestSetup {
         assertEquals(before, models.stream().map(m -> m.getIntegrationStates()).toList());
         converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0);
         for (var model:models) assertEquals(
-                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+                com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
                 model.getStateDerivativeSnapshot().stage());
         assertEquals(-5., converter.getStateDerivativeSnapshot().rates().get("Filtered Voltage"), 1.e-12);
         assertEquals(-5., electrical.getStateDerivativeSnapshot().rates().get("Measured Voltage"), 1.e-12);
@@ -54,13 +54,13 @@ public class PsseRenewableTwoStepIntegrationTest extends CorePluginTestSetup {
         assertEquals(retained, converter.getStateDerivativeSnapshot());
         converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0);
         for (var model:models) assertEquals(
-                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+                com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,
                 model.getStateDerivativeSnapshot().stage());
         converter.rebaseNextTwoStep();
         assertTrue(converter.initStates(converter.getDStabBus()));
         converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0);
         for (var model:models) assertEquals(
-                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+                com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,
                 model.getStateDerivativeSnapshot().stage());
     }
 
@@ -150,10 +150,10 @@ public class PsseRenewableTwoStepIntegrationTest extends CorePluginTestSetup {
             assertEquals(fixed.getIqcmd(),capability.getTwoStepIqcmd(),0.);
         }
         converter.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
                 plant.getStateDerivativeSnapshot().stage());
         converter.nextStep(H,DynamicSimuMethod.MODIFIED_EULER,0);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP,
                 plant.getStateDerivativeSnapshot().stage());
         var accepted=plant.getIntegrationStates();
         for(double invalid:new double[]{-H,Double.NaN,Double.POSITIVE_INFINITY}) {

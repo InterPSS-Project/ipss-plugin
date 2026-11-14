@@ -55,7 +55,7 @@ final class Cmldblu1SharedRecording {
             values.put("MACHINE.Psikq", round.getPsikq());
         }
         values.putAll(model.getNamedStates());
-        if (model.get1PhaseACMotor() instanceof org.interpss.dstab.control.util.IntegrationStateAccess owner) {
+        if (model.get1PhaseACMotor() instanceof com.interpss.dstab.controller.runtime.IntegrationStateAccess owner) {
             var histories = owner.getIntegrationHistories();
             values.put("MotorD.RunA", histories.get("RunA"));
             values.put("MotorD.RunB", histories.get("RunB"));

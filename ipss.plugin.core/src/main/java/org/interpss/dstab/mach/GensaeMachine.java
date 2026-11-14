@@ -16,6 +16,9 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.funcImpl.DStabFunction;
 import com.interpss.dstab.mach.MachineIfdBase;
 import com.interpss.dstab.mach.impl.SalientPoleMachineImpl;
+import com.interpss.dstab.mach.ieeevc.IeeeVcData;
+import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
+import com.interpss.dstab.mach.ieeevc.PsseSwingEquation;
 
 /**
  * Five-state salient machine with exponential saturation on both axes.

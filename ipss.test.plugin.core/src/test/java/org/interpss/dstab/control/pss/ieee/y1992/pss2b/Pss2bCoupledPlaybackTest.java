@@ -155,7 +155,7 @@ public class Pss2bCoupledPlaybackTest {
         }
         Frame capture(String kind) {
             var net=dstabAlgo.getNetwork();var machine=net.getMachine("Bus1-mach1");var values=new LinkedHashMap<String,Double>();
-            var round=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)machine;
+            var round=(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)machine;
             values.put("EP_Q",round.getEq1());values.put("EP_D",round.getEd1());
             values.put("PSIK_D",round.getPsikd());values.put("PSIK_Q",round.getPsikq());
             for(int id:new int[]{1,2}) {

@@ -1,8 +1,8 @@
 package org.interpss.dstab.renewable;
 
 import java.util.Arrays;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 
 /**
  * Explicit two-step derivative history for the opt-in renewable integration path.

@@ -3,9 +3,9 @@ package org.interpss.dstab.hvdc;
 import static org.interpss.dstab.hvdc.Chvdc2Parameters.Constant.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Shared measurement, voltage-dependent current-order and inverter angle-bound equations.
  * Physical terminal inputs refresh without advancing state. Numerical storage and optional

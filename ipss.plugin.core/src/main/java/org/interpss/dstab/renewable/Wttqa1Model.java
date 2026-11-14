@@ -1,8 +1,8 @@
 package org.interpss.dstab.renewable;
 
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 
 /** WECC WTTQ_A torque/active-power-reference controller. */
 public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.dstab.controller.cml.ICMLStateProvider {

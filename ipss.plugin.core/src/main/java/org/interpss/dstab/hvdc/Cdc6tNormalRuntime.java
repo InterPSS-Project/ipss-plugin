@@ -1,9 +1,9 @@
 package org.interpss.dstab.hvdc;
 
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Shared electrical/transducer runtime. Protection decisions and committed event history have a separate owner. */
 public final class Cdc6tNormalRuntime implements StaggeredEulerParticipant, IntegrationStateAccess {

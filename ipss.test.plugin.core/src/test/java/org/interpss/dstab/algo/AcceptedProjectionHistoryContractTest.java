@@ -1,6 +1,6 @@
 package org.interpss.dstab.algo;
 import static org.junit.jupiter.api.Assertions.*;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.junit.jupiter.api.Test;
 /** Backward-compatible, pure accepted-state history selection. */
 public class AcceptedProjectionHistoryContractTest {

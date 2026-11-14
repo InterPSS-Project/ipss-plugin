@@ -53,7 +53,7 @@ public class Urgs3tPowerBoundaryTest {
         void prescribe(DynamicSimuAlgorithm a,double time) {
             if(!machineStates)return;
             at(time,false);var row=states.get((int)Math.round(time/.0005));
-            var m=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)machine(a);
+            var m=(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)machine(a);
             m.setEq1(row.get("GEN1_STATE0"));m.setEd1(row.get("GEN1_STATE1"));m.setPsikd(row.get("GEN1_STATE2"));m.setPsikq(row.get("GEN1_STATE3"));
             m.setSpeed(1+row.get("GEN1_STATE4"));m.setAngle(row.get("GEN1_STATE5"));m.setEfd(row.get("EFD"));
             var second=(com.interpss.dstab.mach.EConstMachine)a.getNetwork().getMachine("Bus2-mach1");
@@ -61,13 +61,13 @@ public class Urgs3tPowerBoundaryTest {
         }
         void verify(DynamicSimuAlgorithm a,double time) {
             if(!machineStates)return;
-            var row=states.get((int)Math.round(time/.0005));var m=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)machine(a);
+            var row=states.get((int)Math.round(time/.0005));var m=(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)machine(a);
             assertArrayEquals(new double[]{row.get("GEN1_STATE0"),row.get("GEN1_STATE1"),row.get("GEN1_STATE2"),row.get("GEN1_STATE3"),1+row.get("GEN1_STATE4"),row.get("GEN1_STATE5")},new double[]{m.getEq1(),m.getEd1(),m.getPsikd(),m.getPsikq(),m.getSpeed(),m.getAngle()},0.,"Network solve preserves prescribed machine coordinates");networkChecks++;
         }
     }
     private static MachineImpl machine(DynamicSimuAlgorithm a) {
         var m=(MachineImpl)a.getNetwork().getMachine("Bus1-mach1");
-        assertInstanceOf(org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class,m);assertEquals(0.,m.getD(),0.);return m;
+        assertInstanceOf(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine.class,m);assertEquals(0.,m.getD(),0.);return m;
     }
     private static double rate(MachineImpl m,double power,double speed) {
         return (power/speed-m.getPe()-m.getPe_NegSeq())/(2*m.getH());

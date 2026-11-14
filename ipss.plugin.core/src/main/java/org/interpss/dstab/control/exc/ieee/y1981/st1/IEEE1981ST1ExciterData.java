@@ -24,7 +24,7 @@
 
 package org.interpss.dstab.control.exc.ieee.y1981.st1;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /**
  * Define controller plugin data here. The class has to following the JavaBean

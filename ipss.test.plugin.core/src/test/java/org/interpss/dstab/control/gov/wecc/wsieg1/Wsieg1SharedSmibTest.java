@@ -85,7 +85,7 @@ public class Wsieg1SharedSmibTest {
                 values.put("PMECH"+suffix,active?m.getPm():0.);values.put("SPEED"+suffix,active?m.getSpeed()-1.:0.);
                 values.put("ACTIVE"+suffix,active?1.:0.);
                 if(recordMachineStates) {
-                    var round=(org.interpss.dstab.mach.IeeeVcRoundRotorMachine)m;
+                    var round=(com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)m;
                     values.put("GEN_EP_Q"+suffix,round.getEq1());values.put("GEN_EP_D"+suffix,round.getEd1());
                     values.put("GEN_PSIK_D"+suffix,round.getPsikd());values.put("GEN_PSIK_Q"+suffix,round.getPsikq());
                     values.put("GEN_SPEED_DEV"+suffix,m.getSpeed()-1.);values.put("GEN_ANGLE"+suffix,m.getAngle());

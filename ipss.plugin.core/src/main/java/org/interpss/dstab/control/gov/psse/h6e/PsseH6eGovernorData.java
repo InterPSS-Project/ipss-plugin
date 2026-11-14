@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.h6e;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Data for the WECC H6E / PSS/E H6EU1 Kaplan hydro governor. */
 public class PsseH6eGovernorData extends BaseControllerData {

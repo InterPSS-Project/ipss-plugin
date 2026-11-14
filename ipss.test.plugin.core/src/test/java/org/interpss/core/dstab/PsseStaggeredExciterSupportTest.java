@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.util.*;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;

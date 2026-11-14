@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.bbsex1;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Native PSS/E BBSEX1 transformer-fed static-exciter parameters. */
 public final class Bbsex1Data extends BaseControllerData {

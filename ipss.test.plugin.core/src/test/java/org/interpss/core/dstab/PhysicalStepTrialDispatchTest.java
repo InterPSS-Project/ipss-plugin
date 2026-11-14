@@ -1,7 +1,7 @@
 package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.interpss.dstab.control.util.PhysicalStepTrial;
+import com.interpss.dstab.controller.runtime.PhysicalStepTrial;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;

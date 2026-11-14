@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.hygovr;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /**
  * PSS/E HYGOVR1 fourth-order lead-lag hydro governor data.

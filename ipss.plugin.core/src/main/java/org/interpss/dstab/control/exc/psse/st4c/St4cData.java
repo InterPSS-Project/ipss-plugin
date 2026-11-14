@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st4c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Native PSS/E IEEE 421.5-2016 ST4C excitation-system parameters. */
 public final class St4cData extends BaseControllerData {

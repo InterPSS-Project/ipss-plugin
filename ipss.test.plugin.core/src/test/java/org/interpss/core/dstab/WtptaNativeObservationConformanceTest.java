@@ -2,7 +2,7 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.interpss.dstab.renewable.*;
 import org.junit.jupiter.api.Test;
 

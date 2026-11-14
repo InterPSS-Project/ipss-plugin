@@ -7,10 +7,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.dstab.BaseDStabBus;
@@ -27,7 +27,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  */
 public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         implements ICMLStateProvider, IntegrationStateAccess, StaggeredEulerParticipant,
-        org.interpss.dstab.control.util.PhysicalStepTrial {
+        com.interpss.dstab.controller.runtime.PhysicalStepTrial {
     private static final String[] NAMES = {"Voltage measurement filter", "Main PI integrator",
             "STATCOM output lag", "Slow-reset PI integrator", "Short-term rating integral",
             "Transient-gain lead-lag filter"};

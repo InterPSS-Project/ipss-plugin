@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aWashoutBlock;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -22,8 +22,8 @@ import com.interpss.dstab.mach.Machine;
 /** IEEE dual-input PSS2B stabilizer with the PowerWorld extension fields. */
 @AnController(input="mach.speed", output="this.outputBlock.y", refPoint="0.0", display={})
 public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
-        implements IntegrationStepAware, org.interpss.dstab.control.util.AcceptedVoltageMeasurement,
-        org.interpss.dstab.control.util.StaggeredEulerParticipant {
+        implements IntegrationStepAware, com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement,
+        com.interpss.dstab.controller.runtime.StaggeredEulerParticipant {
     private transient Pss2bCompiledStage compiledSignals;
     private transient Pss2bCompiledStage sampledObservationPlan;
     private final Pss2bAcceptedPathHistory pathHistory = new Pss2bAcceptedPathHistory();

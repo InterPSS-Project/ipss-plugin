@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.junit.jupiter.api.Test;
 import com.interpss.core.acsc.fault.SimpleFaultCode;

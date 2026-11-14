@@ -54,9 +54,9 @@ final class ModifiedEulerControllerPreparation {
                 &&Arrays.asList(machine.getExciter(),machine.getStabilizer(),machine.getGovernor()).stream()
                     .allMatch(c->c==null||(c.eAdapters().isEmpty()&&BusFrequencySelection.isAuditedController(c)
                         &&(!(c instanceof AbstractAnnotateController graph)||standard.test(graph))))
-                && (machine.getClass()==org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
-                    ||machine.getClass()==org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class
-                    ||machine.getClass()==org.interpss.dstab.mach.IeeeVcEConstMachine.class
+                && (machine.getClass()==com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine.class
+                    ||machine.getClass()==com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine.class
+                    ||machine.getClass()==com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine.class
                         &&machine.getExciter()==null&&machine.getStabilizer()==null
                         &&machine.getGovernor()!=null&&machine.getGovernor().getClass()
                             ==org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor.class);

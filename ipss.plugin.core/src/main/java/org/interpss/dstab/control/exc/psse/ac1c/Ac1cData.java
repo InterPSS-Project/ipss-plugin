@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.ac1c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** IEEE 421.5-2016 / PSS/E AC1C excitation-system parameters. */
 public final class Ac1cData extends BaseControllerData {

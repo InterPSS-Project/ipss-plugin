@@ -3,7 +3,7 @@ package org.interpss.core.dstab;
 import static org.junit.jupiter.api.Assertions.*;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.*;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
 import org.junit.jupiter.api.Test;
 
 /** Native mechanical coordinates and actual evaluation rates remain pure observations. */

@@ -3,8 +3,8 @@ package org.interpss.dstab.control.exc.ieee.y2005.st4b;
 import java.lang.reflect.Field;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.control.util.IntegrationStepAware;
-import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
+import com.interpss.dstab.controller.exc.UnderExcitationLimiterTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

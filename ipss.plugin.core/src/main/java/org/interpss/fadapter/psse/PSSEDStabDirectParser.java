@@ -56,7 +56,7 @@ import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.mach.GentraData;
-import org.interpss.dstab.mach.IeeeVcData;
+import com.interpss.dstab.mach.ieeevc.IeeeVcData;
 import org.interpss.dstab.mach.Wt1g1Data;
 import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2e1Data;
@@ -1195,7 +1195,7 @@ public class PSSEDStabDirectParser {
                 td10, td110, tq10, tq110, h, d, xd, xq, xd1, xq1, xd11, xl,
                 s100, s120);
         if (machine == null) return false;
-        ((org.interpss.dstab.mach.IeeeVcRoundRotorMachine)machine).setExponentialSaturation(exponential);
+        ((com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)machine).setExponentialSaturation(exponential);
         if (exponential) machine.setName("GENROE");
         return true;
     }

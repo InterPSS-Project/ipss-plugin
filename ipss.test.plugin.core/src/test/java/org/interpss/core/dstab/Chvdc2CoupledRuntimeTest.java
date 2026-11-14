@@ -50,7 +50,7 @@ public class Chvdc2CoupledRuntimeTest {
             double H=.0001,h=H/steps;double[] initial=new double[count],actual=new double[count],expected=new double[count];
             m.readStaggeredState(initial,0);m.beginTransaction();m.beginIntegrationInterval(H);
             m.step(H,0,steps);
-            assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR,m.getStateDerivativeSnapshot().stage());
+            assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.PREDICTOR,m.getStateDerivativeSnapshot().stage());
             assertThrows(IllegalStateException.class,()->m.step(H,1));
             m.setBoundary(1.029,0,1.031,0,1051,0);m.step(H,1,steps);m.completeIntegrationInterval();
             manual.beginIntegrationInterval(H);

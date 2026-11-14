@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.st9c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** Native PSS/E IEEE 421.5-2016 ST9C excitation-system parameters. */
 public final class St9cData extends BaseControllerData {

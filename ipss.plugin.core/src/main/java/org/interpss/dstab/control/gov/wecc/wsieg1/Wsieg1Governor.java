@@ -3,10 +3,10 @@ package org.interpss.dstab.control.gov.wecc.wsieg1;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
@@ -15,7 +15,7 @@ import com.interpss.dstab.mach.Machine;
 
 /** Extended WECC steam governor: two deadbands, valve curve and four turbine stages. */
 public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess,
-        org.interpss.dstab.control.util.IntegrationStepAware, org.interpss.dstab.control.util.DisconnectedStateParticipant {
+        com.interpss.dstab.controller.runtime.IntegrationStepAware, com.interpss.dstab.controller.runtime.DisconnectedStateParticipant {
     private static final String[] STATE_NAMES={"Speed lag","Valve","Turbine 1","Turbine 2","Turbine 3","Turbine 4"};
     /** Constant order after the secondary bus and machine identifier. */
     public static final java.util.List<String> CONSTANT_NAMES=java.util.List.of(
@@ -57,7 +57,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     /** The companion owns an output binding, never another copy of the turbine states. */
     public static boolean isSecondaryShaft(Object controller) { return controller instanceof SecondaryShaft; }
-    private static final class SecondaryShaft extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, org.interpss.dstab.control.util.DisconnectedStateParticipant {
+    private static final class SecondaryShaft extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, com.interpss.dstab.controller.runtime.DisconnectedStateParticipant {
         private final Wsieg1Governor owner;
         private Machine initializedMachine;
         SecondaryShaft(Wsieg1Governor owner) {super(owner.getId()+"_LP","WSIEG1_LP","WECC");this.owner=owner;}

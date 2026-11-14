@@ -13,12 +13,12 @@ import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** PSS/E IEEEST stabilizer following the PowerWorld/WECC block ordering. */
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
 public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant,
-        org.interpss.dstab.control.util.AcceptedVoltageMeasurement {
+        com.interpss.dstab.controller.runtime.AcceptedVoltageMeasurement {
     @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
             throws com.interpss.common.exp.InterpssException {
         if (getClass() != IeeestStabilizer.class) return super.bindCompiledParameter(name);

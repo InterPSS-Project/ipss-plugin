@@ -34,6 +34,7 @@ import javax.swing.JTextField;
 
 import org.interpss.dstab.ui.SwingInputVerifyUtil;
 import org.interpss.numeric.util.Number2String;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class EditHelper {
 	/**

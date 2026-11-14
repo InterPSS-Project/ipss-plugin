@@ -399,7 +399,7 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(0.4, exc.getData().getTm(), TOL);
 		assertEquals(99.0, exc.getData().getVmmax(), TOL);
 		assertEquals(0.0, exc.getData().getVmmin(), TOL);
-		assertTrue(exc instanceof org.interpss.dstab.control.util.IntegrationStepAware);
+		assertTrue(exc instanceof com.interpss.dstab.controller.runtime.IntegrationStepAware);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
 	}
 

@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.exc.psse.dc4c;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** IEEE 421.5-2016 / native PSS/E DC4C excitation-system parameters. */
 public final class Dc4cData extends BaseControllerData {

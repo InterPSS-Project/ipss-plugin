@@ -172,14 +172,14 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         var predictor = plant.getStateDerivativeSnapshot();
         assertEquals(-.5, predictor.rates().get("Measured Reactive Or Voltage"), 1.e-12);
         assertEquals(1.0, predictor.evaluationStates().get("Measured Reactive Or Voltage"), 0.0);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR, predictor.stage());
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.PREDICTOR, predictor.stage());
         var state = plant.getIntegrationStates();
         for (int i=0;i<20;i++) {
             assertEquals(predictor, plant.getStateDerivativeSnapshot());
             assertEquals(state, plant.getIntegrationStates());
         }
         plant.step(.001, .8, .2, .94, 1.0, 1);
-        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR,
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.CORRECTOR,
                 plant.getStateDerivativeSnapshot().stage());
         assertEquals(1.0, predictor.evaluationStates().get("Measured Reactive Or Voltage"), 0.0);
         plant.initialize(.8, .2, 1.0);

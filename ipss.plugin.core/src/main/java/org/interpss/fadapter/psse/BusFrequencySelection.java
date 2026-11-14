@@ -86,9 +86,9 @@ final class BusFrequencySelection {
                 if(device==null)continue;
                 if(device instanceof Machine machine) {
                     if(!machine.eAdapters().isEmpty())return all("machine observer");
-                    if(machine.getClass()!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
-                        &&machine.getClass()!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class
-                        &&machine.getClass()!=org.interpss.dstab.mach.IeeeVcEConstMachine.class
+                    if(machine.getClass()!=com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine.class
+                        &&machine.getClass()!=com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine.class
+                        &&machine.getClass()!=com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine.class
                         &&machine.getClass()!=com.interpss.dstab.mach.impl.EConstMachineImpl.class)
                         return all("unclassified machine: "+machine.getClass().getName());
                     for(var controller:machine.getControllerList()) {

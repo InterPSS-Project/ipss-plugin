@@ -1,6 +1,6 @@
 package org.interpss.dstab.renewable;
 
-import org.interpss.dstab.control.util.IntegrationStepAware;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 /** Common signal contract between a REGC_A converter and REEC_A/REEC_B controls. */
 public interface RenewableElectricalController extends IntegrationStepAware {

@@ -14,15 +14,15 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  * Seven-state PLNTBU1 plant controller shared by the associated REAXB devices.
  * Outputs are incremental commands on the system MVA base.
  */
-public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.control.util.IntegrationStateAccess,
-        org.interpss.dstab.control.util.StaggeredEulerParticipant {
+public final class Plntbu1Model implements ICMLStateProvider,com.interpss.dstab.controller.runtime.IntegrationStateAccess,
+        com.interpss.dstab.controller.runtime.StaggeredEulerParticipant {
     private static final double EPS = 1.0e-12;
     private static final String[] STATE_NAMES={"Voltage measurement filter","Reactive power measurement filter",
             "Reactive power PI integrator","Reactive power lead-lag state","Real power measurement filter",
             "Real power PI integrator","Power controller output lag"};
-    private final org.interpss.dstab.control.util.IntegrationStateMonitor monitor=
-            new org.interpss.dstab.control.util.IntegrationStateMonitor(STATE_NAMES);
-    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.NOT_EVALUATED;
+    private final com.interpss.dstab.controller.runtime.IntegrationStateMonitor monitor=
+            new com.interpss.dstab.controller.runtime.IntegrationStateMonitor(STATE_NAMES);
+    private com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.NOT_EVALUATED;
 
     private final Plntbu1Data data;
     private final BaseDStabBus<?, ?> attachmentBus;
@@ -119,7 +119,7 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
         predictorStart = null;
         predictorRates = null;
         initialized = true;
-        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.INITIALIZATION;
+        stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.INITIALIZATION;
         rates(state(),input);
         return finiteState();
     }
@@ -136,7 +136,7 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
     @Override public void evaluateStaggered(double stepSec,double[] values,int offset){
         if(!initialized||!refreshBoundary())throw new IllegalStateException("Invalid plant control boundary");
         if(predictorStart!=null)throw new IllegalStateException("Unaccepted plant predictor");
-        stage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED;
+        stage=com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.STAGGERED;
         Rates r=rates(state(),measurement());
         values[offset]=r.voltageMeasurement();values[offset+1]=r.reactiveMeasurement();values[offset+2]=r.reactiveIntegral();
         values[offset+3]=r.reactiveLeadLagState();values[offset+4]=r.activeMeasurement();
@@ -157,8 +157,8 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
         if (flag == 1 && predictorStart == null) return true;
         if (!refreshBoundary()) return false;
         Measurement endpoint = measurement();
-        stage=flag==0?org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR:
-                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
+        stage=flag==0?com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.PREDICTOR:
+                com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.CORRECTOR;
         if (flag == 0) {
             predictorStart = state();
             predictorRates = rates(predictorStart, endpoint);
@@ -406,7 +406,7 @@ public final class Plntbu1Model implements ICMLStateProvider,org.interpss.dstab.
 
     public Plntbu1Data getData() { return data; }
     @Override public Map<String,Double> getIntegrationStates(){return getNamedStates();}
-    @Override public org.interpss.dstab.control.util.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){return monitor.snapshot();}
+    @Override public com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){return monitor.snapshot();}
     public double getReactiveOutput() { return reactiveOutput; }
     public double getActiveOutput() { return activeOutput; }
     public double getVoltageMeasurement() { return voltageMeasurement; }

@@ -2,9 +2,9 @@ package org.interpss.dstab.hvdc;
 
 import static org.interpss.dstab.hvdc.Chvdc2Parameters.Constant.*;
 import java.util.Map;
-import org.interpss.dstab.control.util.IntegrationStateAccess;
-import org.interpss.dstab.control.util.IntegrationStateMonitor;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 
 /** Shared RAML washout state and explicitly accepted protection history.
  * Network trials may refresh inputs and evaluate rates without committing a timer.

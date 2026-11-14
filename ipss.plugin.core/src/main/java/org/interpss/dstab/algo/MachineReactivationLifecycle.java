@@ -8,7 +8,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 import org.interpss.dstab.control.gov.wecc.urgs3t.Urgs3tGovernor;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor;
-import org.interpss.dstab.control.util.DisconnectedStateParticipant;
+import com.interpss.dstab.controller.runtime.DisconnectedStateParticipant;
 
 /** Prepared, opt-in retained-coordinate lifecycle. Physical outputs remain disconnected. */
 public final class MachineReactivationLifecycle {

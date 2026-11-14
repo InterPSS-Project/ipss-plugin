@@ -9,7 +9,7 @@ import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interpss.core.dstab.reference.BenchmarkOutputGuard;
 import org.interpss.core.dstab.reference.RelativeRmse;
-import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.interpss.dstab.hvdc.*;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;

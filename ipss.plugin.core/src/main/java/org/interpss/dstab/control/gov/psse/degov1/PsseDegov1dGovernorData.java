@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.psse.degov1;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 /** PSS/E DEGOV1D Woodward diesel-governor parameters. */
 public class PsseDegov1dGovernorData extends BaseControllerData {

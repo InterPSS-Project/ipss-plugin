@@ -45,10 +45,10 @@ public class Hyg3InitialBoundReferenceTest {
         assertEquals(first.get("VAR4"),governor.getTurbineHead(),2e-6);assertEquals(first.get("PMECH"),governor.getOutput(machine),2e-6);
         double expectedHead=Math.pow(governor.getWaterFlow()/governor.gateCurve(governor.getGatePosition()),2);
         assertEquals(expectedHead,governor.getTurbineHead(),1e-14);
-        org.interpss.dstab.control.util.IntegrationStateAccess diagnostic=governor;
+        com.interpss.dstab.controller.runtime.IntegrationStateAccess diagnostic=governor;
         var snapshot=diagnostic.getStateDerivativeSnapshot();
-        assertEquals(staggered ? org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED
-                : org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.INITIALIZATION,snapshot.stage());
+        assertEquals(staggered ? com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.STAGGERED
+                : com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.INITIALIZATION,snapshot.stage());
         assertEquals(diagnostic.getIntegrationStates(),snapshot.evaluationStates());
         assertEquals(snapshot.evaluationStates().keySet(),snapshot.rates().keySet());
         assertTrue(snapshot.evaluationStates().values().stream().allMatch(Double::isFinite));

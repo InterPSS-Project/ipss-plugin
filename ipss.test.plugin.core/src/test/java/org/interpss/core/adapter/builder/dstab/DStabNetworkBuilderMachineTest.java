@@ -19,7 +19,7 @@ import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.dstab.mach.Gentpj1Machine;
 import org.interpss.dstab.mach.GentraMachine;
-import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
