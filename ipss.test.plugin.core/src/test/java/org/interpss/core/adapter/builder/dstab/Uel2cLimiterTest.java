@@ -82,6 +82,51 @@ public class Uel2cLimiterTest extends CorePluginTestSetup {
         assertTrue(Double.isFinite(u.getNormalizedReactiveReference()));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void zeroIntegralGainKeepsTheProportionalPathUnbiased(boolean bypassLags) throws Exception {
+        var limiter = fixtureBuilder().addUel2c("Bus1", "1", data(0.0, bypassLags));
+        limiter.initializeWithSignals(1.0, 0.0, -.10, 0.0, 0.0);
+        var initial = limiter.getNamedStates();
+        assertEquals(0.0, initial.get("Integrator"), 0.0);
+        double proportionalOutput = .8 * (.0125 + .10);
+        double initialLag = bypassLags ? proportionalOutput : 0.0;
+        assertEquals(initialLag, initial.get("First lead-lag"), 1.0e-12);
+        assertEquals(initialLag, initial.get("Second lead-lag"), 1.0e-12);
+        for (int tick = 0; tick < 1_500; tick++) {
+            for (int stage = 0; stage < 2; stage++) {
+                assertTrue(limiter.nextStepWithSignals(.001, DynamicSimuMethod.MODIFIED_EULER,
+                        stage, 1.0, 0.0, -.10, 0.0, 0.0));
+            }
+        }
+        assertEquals(proportionalOutput, limiter.getOutput(), 1.0e-7);
+        assertEquals(0.0, limiter.getNamedStates().get("Integrator"), 0.0);
+    }
+
+    @Test void capabilityReferenceReturnsToZeroBeyondMaximumPower(@TempDir Path dir) throws Exception {
+        Path dyr = dir.resolve("capability.dyr");
+        Files.writeString(dyr, "1 'UEL2C' '1' 2 2 1 1 0 0 0 0 .1 1 -3 0 0 0 0 0 0 0"
+                + " -.2 -.6 .2 -.5 .6 -.4 1 -.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+                + " 99 0 1 1 3 0 1 -3 1 -3 .76 /\n");
+        var builder = fixtureBuilder();
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var limiter = builder.getDStabNetwork().getBus("Bus1").getDynamicBusDeviceList().stream()
+                .filter(Uel2cUnderExcitationLimiter.class::isInstance)
+                .map(Uel2cUnderExcitationLimiter.class::cast).findFirst().orElseThrow();
+        limiter.initializeWithSignals(1.0, -.25, -.8, 0.0, 0.0);
+        assertEquals(-.6125, limiter.getNormalizedReactiveReference(), 1.0e-12);
+        double[] power = {.4, 1.0, 1.01, 5.0, .4};
+        double[] expected = {-.45, -.3, 0.0, 0.0, -.45};
+        for (int i = 0; i < power.length; i++) {
+            assertTrue(limiter.nextStepWithSignals(.0033333, DynamicSimuMethod.MODIFIED_EULER,
+                    0, 1.0, power[i], -.8, 0.0, 0.0));
+            assertTrue(limiter.nextStepWithSignals(.0033333, DynamicSimuMethod.MODIFIED_EULER,
+                    1, 1.0, power[i], -.8, 0.0, 0.0));
+            assertEquals(expected[i], limiter.getNormalizedReactiveReference(), 1.0e-12);
+            assertEquals(expected[i], limiter.getNamedStates().get("Reactive power reference"), 1.0e-12);
+        }
+    }
+
     private static DStabNetworkBuilder fixtureBuilder()throws Exception{return fixtureBuilder(false);}
     private static DStabNetworkBuilder fixtureBuilder(boolean typeJ)throws Exception{
         DStabNetworkBuilder b=typeJ?DStabBuilderTestFixture.createBuilder():DStabBuilderTestFixture.createWithMachine();
@@ -92,7 +137,10 @@ public class Uel2cLimiterTest extends CorePluginTestSetup {
         d.setTc1(0);d.setTb1(0);d.setKa(1);d.setTa(0);d.setVamax(9);d.setVamin(-9);d.setVrmax(9);d.setVrmin(-9);
         d.setKc(0);d.setKf(0);d.setTf(0);d.setKlr(0);d.setIlr(99);assertNotNull(b.addExcSt1c("Bus1","1",d));return b;
     }
-    private static Uel2cData data(){return new Uel2cData(2,2,1,2,.02,.03,.025,.4,.8,.5,-.2,0,0,.08,.02,.07,.015,.06,
+    private static Uel2cData data(){return data(.4, false);}
+    private static Uel2cData data(double integralGain, boolean bypassLags){
+        return new Uel2cData(2,2,1,2,.02,.03,.025,integralGain,.8,.5,-.2,0,0,.08,
+                .02,bypassLags?0:.07,.015,bypassLags?0:.06,
             -.2,.0125,.2,.0125,.6,.0125,1,.0125,0,0,0,0,0,0,0,0,0,0,0,0,0,0,.6,-.3,.95,.9,.1,.04,.55,-.25,.5,-.2,.6);}
     @Test void zeroGainSelectorUsesFixedGainAndDoesNotAdvanceTheAdjustableGainState() throws Exception {
         var original=data();var components=Uel2cData.class.getRecordComponents();

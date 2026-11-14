@@ -20,6 +20,27 @@ import com.interpss.dstab.cache.StateMonitor;
 public class PsseWt2e1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({
+        "-.0101, -.0101", "-.0099, 0", ".0099, 0", ".0101, .0101"
+    })
+    void nativePowerDeadbandGatesBothPiTerms(double error, double effectiveError) {
+        var generator = new org.interpss.dstab.mach.Wt2g1Data(.14, 6.5, .2, .005, .12,
+                1.02, 0, 1.22, 0, new double[]{0, .25, .5, .75, 1},
+                new double[]{0, .01, .02, .03, .04});
+        double initial = .2, speed = .02, dt = .001, ti = .25, kp = 5;
+        var controller = new Wt2e1Model(new org.interpss.dstab.mach.Wt2e1Data(0, 0, ti, kp, .37, 0),
+                generator);
+        controller.initialize(speed, .5, initial);
+
+        controller.step(dt, speed, .5 + error, 0);
+        controller.step(dt, speed, .5 + error, 1);
+        double integrator = initial + dt * effectiveError / ti;
+        assertEquals(integrator, controller.getNamedStates().get("PI integrator"), 1e-12);
+        assertEquals(integrator + kp * effectiveError, controller.getOutput(), 1e-12);
+        assertEquals(.5 + error, controller.getNamedStates().get("Power filter"), 1e-12);
+    }
+
     @Test void initializationLimitCorrectionIsEffectiveReportedAndReset() {
         var generatorData=new org.interpss.dstab.mach.Wt2g1Data(.14,6.5,.2,.005,.12,1.02,0,1.22,0,
                 new double[]{0,.15,.45,.75,.95},new double[]{0,.006,.025,.055,.11});

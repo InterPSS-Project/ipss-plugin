@@ -1800,7 +1800,10 @@ public class PSSEDStabDirectParser {
         d.setVamax(getDouble(f,15,0)); d.setVamin(getDouble(f,16,0)); d.setVrmax(getDouble(f,17,0));
         d.setVrmin(getDouble(f,18,0)); d.setKc(getDouble(f,19,0)); d.setKf(getDouble(f,20,0));
         d.setTf(getDouble(f,21,0)); d.setKlr(getDouble(f,22,0)); d.setIlr(getDouble(f,23,0));
-        return builder.addExcSt1c(busId,genId,d) != null;
+        var exciter = builder.addExcSt1c(busId, genId, d);
+        if (exciter == null) return false;
+        exciter.useNativeAlgebraicSampling();
+        return true;
     }
 
     // ST4C flat interchange form, or the ST4CU1 USRMDL wrapper with five ICONs,
@@ -2754,7 +2757,7 @@ public class PSSEDStabDirectParser {
     // PSS2A: IBUS 'PSS2A' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
     //         Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3 T8 T9 Ks1 T1 T2 T3 T4 VSTMAX VSTMIN
     private boolean procPss2a(String busId, String genId, String[] f) {
-        return builder.addPss2a(busId, genId,
+        var stabilizer = builder.addPss2a(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0),
                 getInt(f, 5, 0), getInt(f, 6, 0),
                 getInt(f, 7, 0), getInt(f, 8, 0),
@@ -2764,7 +2767,12 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
                 getDouble(f, 20, 0), getDouble(f, 21, 0),
                 getDouble(f, 22, 0), getDouble(f, 23, 0),
-                getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
+                getDouble(f, 24, 0), getDouble(f, 25, 0));
+        if (stabilizer == null) {
+            return false;
+        }
+        stabilizer.useTerminalElectricalPowerInput();
+        return true;
     }
 
     // PSS2B: IBUS 'PSS2B' ID ICS1 ICS2 M N Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3
@@ -2799,9 +2807,10 @@ public class PSSEDStabDirectParser {
             pss.getData().setStandardInputLagPreparation(true);
             pss.getData().setSampledInputPathOutputs(true);
             pss.setInputSignalBuses(b1, b2);
+            pss.useTerminalElectricalPowerInput();
             return true;
         }
-        return builder.addPss2b(busId, genId,
+        var pss = builder.addPss2b(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0),
                 getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
                 getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
@@ -2812,7 +2821,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 24, 0), getDouble(f, 25, 0), getDouble(f, 26, 0),
                 getDouble(f, 27, 0), getDouble(f, 28, 0), getDouble(f, 29, 0),
                 getDouble(f, 30, 1), getDouble(f, 31, 0), getDouble(f, 32, 0),
-                getDouble(f, 33, 1)) != null;
+                getDouble(f, 33, 1));
+        if (pss == null) return false;
+        if (f.length == 30) pss.useTerminalElectricalPowerInput();
+        return true;
     }
 
     // PSS2C: IBUS 'PSS2C' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
@@ -2829,7 +2841,7 @@ public class PSSEDStabDirectParser {
             }
             offset=10;
         } else if(f.length<38)return false;
-        return builder.addPss2c(busId, genId,
+        var pss = builder.addPss2c(busId, genId,
                 getInt(f,offset,0),getInt(f,offset+1,0),getInt(f,offset+2,0),getInt(f,offset+3,0),
                 getInt(f,offset+4,0),getInt(f,offset+5,0),
                 getDouble(f,offset+6,0),getDouble(f,offset+7,0),getDouble(f,offset+8,0),
@@ -2841,7 +2853,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f,offset+24,0),getDouble(f,offset+25,0),getDouble(f,offset+26,0),
                 getDouble(f,offset+27,0),getDouble(f,offset+28,0),getDouble(f,offset+29,0),
                 getDouble(f,offset+30,0),getDouble(f,offset+31,0),getDouble(f,offset+32,0),
-                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0)) != null;
+                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0));
+        if (pss == null) return false;
+        pss.setUseTerminalElectricalPowerInput(true);
+        return true;
     }
 
     // PSS3B: IBUS 'PSS3B' ID ICS1 REMBUS1 ICS2 REMBUS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
@@ -3346,6 +3361,7 @@ public class PSSEDStabDirectParser {
         PsseH6eGovernorData d = new PsseH6eGovernorData();
         boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
         boolean nativeH6e1 = record.sourceModelName().equals("H6E1");
+        d.setNativeH6e1Derivative(nativeH6e1);
         if (nativeH6e1 && wrapped) throw new IllegalArgumentException("H6E1 requires the standard native header");
         if (wrapped || nativeH6e1 || "H6EU1".equalsIgnoreCase(record.sourceModelName())) {
             int icon = wrapped ? 10 : 3;

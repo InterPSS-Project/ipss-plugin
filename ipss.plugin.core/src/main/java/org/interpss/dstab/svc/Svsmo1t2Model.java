@@ -29,6 +29,7 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
     private static final double EPS = 1.0e-12;
 
     private final Svsmo1t2Data data;
+    private final Svsmo1t2MssBoundary switching;
     private final SwitchedShunt switchedShunt;
     private final BaseDStabBus<?, ?> remoteBus;
     private final Hashtable<String, Object> states = new Hashtable<>();
@@ -48,7 +49,7 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
     private double uvTripTimer;
     private double ov1Timer;
     private double ov2Timer;
-    private double pllTimer;
+    private double pllRecoveryRemaining;
     private double shortTimer;
     private ModelState predictorStart;
     private Derivatives predictorRates;
@@ -58,6 +59,7 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
         this.data = data;
         this.remoteBus = remoteBus;
         this.switchedShunt = switchedShunt;
+        switching = new Svsmo1t2MssBoundary(bus, id, data);
         setDeviceType(DynamicBusDeviceType.DYNAMIC_LOAD);
         setDStabBus(bus);
         setName("SVSMO1T2");
@@ -84,9 +86,10 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
         slowIntegrator = 0.0;
         slowBias = 0.0;
         tripped=false;deadbandLocked=true;
-        deadbandTimer=uv1Timer=uvTripTimer=ov1Timer=ov2Timer=pllTimer=shortTimer=0;
+        deadbandTimer=uv1Timer=uvTripTimer=ov1Timer=ov2Timer=pllRecoveryRemaining=shortTimer=0;
         predictorStart = null;
         predictorRates = null;
+        switching.initialize();
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finiteState();
     }
@@ -111,7 +114,14 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
             predictorStart = null;
             predictorRates = null;
         }
-        susceptance = clamp(susceptance, activeBMin(), activeBMax());
+        // Native UV1 capping and OV1 forcing change the firing command.
+        // Keep the susceptance state continuous through its lag until the
+        // delayed protection trip actually opens the SVC.
+        double voltage = endpoint.sensedVoltage();
+        boolean commandOnlyLimit = !tripped && (voltage > data.ov1()
+                || (underVoltageCapActive() && voltage >= data.uv2()));
+        double outputMaximum = commandOnlyLimit ? ratedBMax() : activeBMax();
+        susceptance = clamp(susceptance, activeBMin(), outputMaximum);
         return finiteState();
     }
 
@@ -182,12 +192,20 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
             if (deadbandTimer >= data.deadbandTime()) deadbandLocked = true;
         } else deadbandTimer = 0.0;
 
-        uv1Timer = voltage < data.uv1() ? uv1Timer + dt : 0.0;
+        // Native SVSMO1T3 applies the UV1 cap at filtered-voltage pickup.
+        // Tuv1 qualifies the PLL hold. Keep reloading the full hold while the
+        // measured voltage is low, then consume it only on accepted recovery
+        // steps. A zero-duration topology solve cannot consume the timer.
+        boolean underVoltage = getVoltageMeasurement() < data.uv1();
+        uv1Timer = underVoltage ? uv1Timer + dt : 0.0;
         uvTripTimer = voltage < data.uvTrip() ? uvTripTimer + dt : 0.0;
         ov1Timer = voltage > data.ov1() ? ov1Timer + dt : 0.0;
         ov2Timer = voltage > data.ov2() ? ov2Timer + dt : 0.0;
-        if (voltage < data.uv1() && uv1Timer >= data.uvTime1()) pllTimer += dt;
-        else pllTimer = 0.0;
+        if (underVoltage && uv1Timer >= data.uvTime1()) {
+            pllRecoveryRemaining = data.pllDelay();
+        } else if (!underVoltage) {
+            pllRecoveryRemaining = Math.max(0.0, pllRecoveryRemaining - dt);
+        }
         shortTimer = susceptance > data.bMax() ? shortTimer + dt : 0.0;
         // Zero delay means immediate operation after pickup, not unconditional
         // operation at a healthy voltage where the reset timer is also zero.
@@ -205,8 +223,15 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
         if (tripped) return 0.0;
         double voltage = remoteBus == null ? 1.0 : remoteBus.getVoltageMag();
         if (voltage < data.uv2() || voltage > data.ov1()) return data.bMin();
-        if (voltage < data.uv1() && uv1Timer >= data.uvTime1()) return Math.min(data.uvSbMax(), data.bShort());
-        if (pllTimer > 0.0 && pllTimer < data.pllDelay()) return Math.min(data.uvSbMax(), data.bShort());
+        if (underVoltageCapActive()) return Math.min(data.uvSbMax(), ratedBMax());
+        return ratedBMax();
+    }
+
+    private boolean underVoltageCapActive() {
+        return getVoltageMeasurement() < data.uv1() || pllRecoveryRemaining > EPS;
+    }
+
+    private double ratedBMax() {
         return shortTimer >= data.shortTime() ? data.bMax() : data.bShort();
     }
 
@@ -229,7 +254,13 @@ public final class Svsmo1t2Model extends DynamicBusDeviceImpl
     }
 
     @Override public boolean updateAttributes(boolean netChange) { return finiteState(); }
-    @Override public boolean afterStep(double dt) { return true; }
+    @Override public boolean afterStep(double dt) {
+        if (predictorStart != null || !finiteState()) return false;
+        if (!tripped) switching.advance(dt, susceptance);
+        return true;
+    }
+
+    public Map<String, Double> getSwitchingNamedStates() { return switching.getNamedStates(); }
 
     @Override
     public Hashtable<String, Object> getStates(Object ref) {

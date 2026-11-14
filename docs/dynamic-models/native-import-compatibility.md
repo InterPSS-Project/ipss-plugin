@@ -141,6 +141,22 @@ Since flow is gate times a piecewise-linear blade factor, its derivative is
 affine on each segment; checking both endpoint derivatives prevents hidden
 interior reversals. No entered curve or time constant is changed.
 
+### Native H6E1 speed derivative
+
+Reference-simulator recordings of the gate command and derivative state
+show that H6E1 adds the derivative of filtered speed to the gate command.
+The same sign reconstructs the recorded command for electrical-power and
+gate-command droop. Subtracting it reverses the immediate command change
+and can alter the mechanical-power response after a disturbance.
+
+The DYR importer selects this convention from the H6E1 source name. The
+builder copies it with the entered parameters. The governor applies the
+sign in the shared gate-command calculation before limiting, so it is
+consistent across predictor and corrector. The model uses the existing
+derivative state and time constant. Typed H6E and legacy H6EU1 keep their
+existing derivative convention. The focused tests exercise both droop
+selectors and verify that the source convention survives import.
+
 ## GENTPJ1 Zero Current Multiplier
 
 `Gentpj1Data` previously required `0 < Kis < 1`, copying the open interval in
@@ -666,3 +682,33 @@ stage-origin regressions also remove a first-order mechanics/electrical split
 for Type-J and Type-1 induction generation. See the
 [Type-J derivation](type-j-voltage-state-realization.md#native-parameter-preservation-and-coupled-stage-origins)
 for the reason, input ownership and focused verification scope.
+
+### Network-frequency dependence in GENQEC and GENQECU
+
+The imported NETFRQ setting selects the frequency-dependent equations
+when the solver initializes either GENQEC dialect. At the stator,
+shaft speed multiplies the internal flux to obtain the EMF. The
+local electrical frequency ratio multiplies each saturated
+subtransient reactance and the leakage reactance in the air-gap
+flux calculation. Shaft speed also normalizes air-gap flux.
+The physical current enters the existing Norton compensation
+against the nominal admittance. This keeps the sparse matrix
+stamp independent of the instantaneous frequency and keeps the
+terminal P/Q and air-gap power measurements on their original bases.
+
+The NETFRQ swing derivative divides the accelerating power by shaft
+speed before applying the inertia coefficient. With NETFRQ disabled,
+GENQEC uses the nominal reactances and undivided accelerating power.
+GENQEJ retains its own existing policy pending native verification.
+
+Reference-simulator component checks with NETFRQ on and off recorded six machine
+states, both bus phasors and frequencies, terminal P/Q and shaft
+power. They cover the standard and wrapped dialects, nonzero
+resistance, unequal d/q subtransient reactances, and independent
+shaft-speed steps. The corrected enabled current law reduces RMS
+active-power reconstruction error from approximately 0.89 kW to
+3.3 W in the source fixture. The independent speed steps distinguish
+shaft frequency from electrical frequency and support the
+shaft-speed divisor in the enabled swing law. A configuration
+regression verifies the enabled and default terminal equations,
+the nominal Norton admittance, and the first mechanical step.

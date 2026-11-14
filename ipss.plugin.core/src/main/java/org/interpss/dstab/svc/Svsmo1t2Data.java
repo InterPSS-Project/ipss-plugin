@@ -19,7 +19,14 @@ public record Svsmo1t2Data(int remoteBusNumber,
         double mssBreakerTime, double largeDelay, double smallDelay,
         double capacitorDischargeTime, double vrefMin, double vrefMax) {
 
-    public record MssDevice(int enabled, String id) { }
+    public record MssDevice(int enabled, String id) {
+        public MssDevice {
+            id = id == null ? "" : id.strip();
+        }
+
+        /** The existing component name is retained for callers. A zero bus means an unused slot. */
+        public int busNumber() { return enabled; }
+    }
 
     public Svsmo1t2Data {
         mssDevices = List.copyOf(mssDevices);

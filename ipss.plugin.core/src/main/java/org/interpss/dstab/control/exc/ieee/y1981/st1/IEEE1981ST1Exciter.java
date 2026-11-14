@@ -147,6 +147,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
 	public double klr = 0.0, ilr = 0.0;
 	/** External UEL signal; zero is the absent value for error summation. */
 	public double vuel = 0.0;
+	private boolean hasVuel;
 	/** Nonbinding input for gate 1 unless UEL=2. */
 	public double vuelGate1 = Double.NEGATIVE_INFINITY;
 	/** External OEL ceiling; positive infinity denotes no connected OEL. */
@@ -267,7 +268,9 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
 		this.uel = getData().getUel();
 		this.vos = getData().getVos();
 		this.uelError = this.uel < 2 ? 1.0 : 0.0;
-		this.vuelGate1 = this.uel == 2 ? this.vuel : Double.NEGATIVE_INFINITY;
+		// UEL selects the connection point. An absent signal leaves the
+		// high-value gate transparent, including for negative voltage error.
+		this.vuelGate1 = this.uel == 2 && hasVuel ? this.vuel : Double.NEGATIVE_INFINITY;
 		this.vosError = this.vos == 1 ? 1.0 : 0.0;
 		this.vosOutput = this.vos == 2 ? 1.0 : 0.0;
 		this.tr = getData().getTr();
@@ -331,7 +334,15 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
 	/** Set the external under-excitation limiter signal. */
 	public void setVuel(double value) {
 		this.vuel = value;
+		this.hasVuel = true;
 		this.vuelGate1 = this.uel == 2 ? value : Double.NEGATIVE_INFINITY;
+	}
+
+	@Override
+	public void clearVuel() {
+		this.hasVuel = false;
+		this.vuel = 0.0;
+		this.vuelGate1 = Double.NEGATIVE_INFINITY;
 	}
 
 	/** Set the external over-excitation limiter ceiling. */
@@ -461,7 +472,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
 				- (exst1FieldVoltageLimits ? kc * observedFieldCurrent() : 0.0);
 	}
 
-	private double stabilizerSignal() {
+	double stabilizerSignal() {
         if(prescribedLocalBoundary)return prescribedPss;
 		return getMachine().getStabilizer() == null
 				? 0.0 : getMachine().getStabilizer().getOutput(getMachine());
@@ -486,6 +497,39 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
     private double prescribedFieldCurrent, prescribedTerminalMagnitude, prescribedPss;
     private int modifiedEulerLocalIntegrationSteps=1;
 
+    /** External input sampling during whole-graph modified-Euler substeps. */
+    public enum LocalInputSampling {
+        INTERPOLATED_ENDPOINTS,
+        HELD_AT_INTERVAL_START
+    }
+
+    private LocalInputSampling modifiedEulerLocalInputSampling = LocalInputSampling.INTERPOLATED_ENDPOINTS;
+
+    /** Select the physical inputs used by all substeps of the ESST1A corrector.
+     * The held mode uses the voltage, field current, stabilizer, reference and
+     * limiter inputs sampled at the beginning of the physical interval. A
+     * zero-time event observation continues to use the live event-side inputs.
+     * This setting applies when whole-graph local substeps are enabled.
+     */
+    public void setModifiedEulerLocalInputSampling(LocalInputSampling sampling) {
+        java.util.Objects.requireNonNull(sampling, "sampling");
+        requireIdleLocalIntegration();
+        if (sampling == LocalInputSampling.HELD_AT_INTERVAL_START
+                && (getClass() != IEEE1981ST1Exciter.class || !"ESST1A".equals(getName())))
+            throw new IllegalArgumentException("Held local inputs require exact ESST1A");
+        modifiedEulerLocalInputSampling = sampling;
+    }
+
+    public LocalInputSampling getModifiedEulerLocalInputSampling() {
+        return modifiedEulerLocalInputSampling;
+    }
+
+    private void requireIdleLocalIntegration() {
+        if (getRuntimePhase() != RuntimePhase.IDLE
+                || directEvaluation != null && directEvaluation.isWholeModifiedEulerBusy())
+            throw new IllegalStateException("Configure whole-graph integration before staging");
+    }
+
     /** Explicit whole-graph ESST1A Heun subdivision. Configuration changes are
      * accepted only before physical staging, never in a pending predictor. This
      * changes numerical resolution, not source constants or protection clocks.
@@ -493,8 +537,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
      */
     public void setModifiedEulerLocalIntegrationSteps(int steps) {
         if(steps<1||steps>128)throw new IllegalArgumentException("ESST1A local integration steps must be in [1,128]");
-        if(getRuntimePhase()!=RuntimePhase.IDLE || directEvaluation!=null&&directEvaluation.isWholeModifiedEulerBusy())
-            throw new IllegalStateException("Configure whole-graph integration before staging");
+        requireIdleLocalIntegration();
         if(steps>1) {
             if(getClass()!=IEEE1981ST1Exciter.class||!"ESST1A".equals(getName()))
                 throw new IllegalArgumentException("Whole-graph local integration requires exact ESST1A");
@@ -511,6 +554,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
     public Map<String,Object> getModifiedEulerLocalIntegrationSnapshot() {
         var snapshot=new LinkedHashMap<String,Object>();
         snapshot.put("configuredSteps",modifiedEulerLocalIntegrationSteps);
+        snapshot.put("inputSampling", modifiedEulerLocalInputSampling.name());
         if(directEvaluation==null)snapshot.put("pending",false);
         else snapshot.putAll(directEvaluation.wholeModifiedEulerSnapshot());
         return Collections.unmodifiableMap(snapshot);
@@ -525,8 +569,9 @@ public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitati
     void prescribeLocalBoundary(double fieldCurrent,double terminalMagnitude,double pss) {
         prescribedFieldCurrent=fieldCurrent;prescribedTerminalMagnitude=terminalMagnitude;prescribedPss=pss;prescribedLocalBoundary=true;
     }
+    boolean hasPrescribedLocalBoundary() { return prescribedLocalBoundary; }
     void releaseLocalBoundary(){prescribedLocalBoundary=false;}
-    private double observedTerminalMagnitude() {
+    double observedTerminalMagnitude() {
         return prescribedLocalBoundary?prescribedTerminalMagnitude:getMachine().getDStabBus().getVoltageMag();
     }
     private double observedFieldCurrent() {

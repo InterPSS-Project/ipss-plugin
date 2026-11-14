@@ -11,6 +11,9 @@ import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
 import org.interpss.dstab.control.gov.wecc.wsieg1.Wsieg1Governor;
+import org.interpss.dstab.mach.GenqecMachine;
+import org.interpss.dstab.mach.Gentpj1Machine;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
@@ -41,6 +44,7 @@ public final class Lcfb1PrefController extends DynLoadModelImpl
     private final Hashtable<String, Object> states = new Hashtable<>();
 
     private double powerSetpoint;
+    private double powerMeasurementScale = 1.0;
     private double baseReference;
     private double governorBaseReference;
     private boolean governorReferencePending;
@@ -100,15 +104,25 @@ public final class Lcfb1PrefController extends DynLoadModelImpl
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
         if (bus == null || machine.getGovernor() != governor) return false;
-        // Secondary dynamic-load devices can initialize before the full
-        // solver populates the machine Pe/Pm caches. Prefer explicit machine
-        // initialization, then fall back to the solved parent-generator P.
-        sensedPower = machine.getPe();
-        if (Math.abs(sensedPower) <= EPS) sensedPower = machine.getPm();
-        if (Math.abs(sensedPower) <= EPS)
-            sensedPower = machine.getParentGen().getGen().getReal()
-                    * bus.getNetwork().getBaseKva() / 1000.0
-                    / machine.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+        // Native LCFB1 on HYGOVR1 measures terminal MW on the entered
+        // turbine rating, with machine MVA as the zero-rating fallback.
+        // Establish the conversion before the governor's initialization.
+        powerMeasurementScale = 1.0;
+        if (governor instanceof PsseHygovrGovernor hygovr && hygovr.getData().getTrate() > EPS) {
+            double machineMva = machine.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+            powerMeasurementScale = machineMva / hygovr.getData().getTrate();
+        }
+        // These stator models expose terminal MW separately from the swing
+        // input. Seed from solved dispatch before host initialization.
+        if (machine instanceof Gentpj1Machine || machine instanceof IeeeVcRoundRotorMachine
+                || machine instanceof GenqecMachine) {
+            sensedPower = solvedTerminalPower(bus);
+        } else {
+            sensedPower = machine.getPe();
+            if (Math.abs(sensedPower) <= EPS) sensedPower = machine.getPm();
+            if (Math.abs(sensedPower) <= EPS) sensedPower = solvedTerminalPower(bus);
+        }
+        sensedPower *= powerMeasurementScale;
         powerSetpoint = sensedPower;
         baseReference = sensedPower;
         // The diagram adds bias to Pref0, not to Pgen. Different governors
@@ -145,12 +159,12 @@ public final class Lcfb1PrefController extends DynLoadModelImpl
             oldPowerDerivative = powerDerivative(sensedPower);
             oldIntegratorDerivative = integratorDerivative(sensedPower, integrator);
             sensedPower = data.powerTransducerTime() <= EPS
-                    ? machine.getPe() : sensedPower + dt * oldPowerDerivative;
+                    ? measuredPower() : sensedPower + dt * oldPowerDerivative;
             integrator = limitPath(integrator + dt * oldIntegratorDerivative);
         } else if (flag == 1) {
             double correctedPowerDerivative = powerDerivative(sensedPower);
             double correctedIntegratorDerivative = integratorDerivative(sensedPower, integrator);
-            sensedPower = data.powerTransducerTime() <= EPS ? machine.getPe()
+            sensedPower = data.powerTransducerTime() <= EPS ? measuredPower()
                     : oldSensedPower + 0.5 * dt * (oldPowerDerivative + correctedPowerDerivative);
             integrator = limitPath(oldIntegrator
                     + 0.5 * dt * (oldIntegratorDerivative + correctedIntegratorDerivative));
@@ -162,9 +176,25 @@ public final class Lcfb1PrefController extends DynLoadModelImpl
         return finite(sensedPower, integrator, referenceBias);
     }
 
+    private double solvedTerminalPower(BaseDStabBus<?, ?> bus) {
+        double baseKva = bus.getNetwork().getBaseKva();
+        return machine.getParentGen().getGen().getReal() * baseKva / 1000.0
+                / machine.getRating(UnitType.mVA, baseKva);
+    }
+
+    private double measuredPower() {
+        if (machine instanceof Gentpj1Machine typeJ)
+            return typeJ.getTerminalActivePower() * powerMeasurementScale;
+        if (machine instanceof IeeeVcRoundRotorMachine roundRotor)
+            return roundRotor.getTerminalActivePower() * powerMeasurementScale;
+        if (machine instanceof GenqecMachine genqec)
+            return genqec.getTerminalActivePower() * powerMeasurementScale;
+        return machine.getPe() * powerMeasurementScale;
+    }
+
     private double powerDerivative(double state) {
         return data.powerTransducerTime() <= EPS
-                ? 0.0 : (machine.getPe() - state) / data.powerTransducerTime();
+                ? 0.0 : (measuredPower() - state) / data.powerTransducerTime();
     }
 
     private double integratorDerivative(double measuredPower, double integralState) {

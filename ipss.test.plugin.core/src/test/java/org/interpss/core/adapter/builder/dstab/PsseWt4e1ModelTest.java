@@ -78,6 +78,32 @@ public class PsseWt4e1ModelTest {
         }
     }
 
+    @Test void innerCurrentIntegratorFollowsTerminalVoltageEnvelope(@TempDir Path directory)
+            throws Exception {
+        var converter = loadSensorFixture(directory, 2);
+        var controller = converter.getElectricalController();
+        var terminal = converter.getDStabBus();
+        String state = "Voltage-error/internal-voltage integrator";
+        double dt = .001;
+        terminal.setVoltage(.8, 0.0);
+        for (int i = 0; i < 500; i++) {
+            controller.step(dt, 0);
+            controller.step(dt, 1);
+        }
+        // Independent voltage and QMX sweeps give the same affine envelope.
+        assertEquals(.68, controller.getNamedStates().get(state), 1e-12);
+        terminal.setVoltage(.95, 0.0);
+        controller.step(dt, 0);
+        assertEquals(.5075, controller.getNamedStates().get(state), 1e-12);
+        controller.step(dt, 1);
+        terminal.setVoltage(1.13, 0.0);
+        for (int i = 0; i < 500; i++) {
+            controller.step(dt, 0);
+            controller.step(dt, 1);
+        }
+        assertEquals(-.3005, controller.getNamedStates().get(state), 1e-12);
+    }
+
     private static Wt4g1Model loadSensorFixture(Path directory, int remote) throws Exception {
         return loadSensorFixture(directory, remote, false);
     }

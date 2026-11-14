@@ -481,12 +481,12 @@ public class PSSEDirectParser {
         String genId = rec.getString(1, "1").trim();
 
         double pg, qg, qt, qb, vs;
-        int ireg, stat, wmod = 0;
+        int ireg, stat, wmod = 0, baseLoadFlag = 0;
         double mbase, zr, zx, rt, xt, gtap, rmpct, pt, pb;
         double wpf = 1.0;
 
         if (version >= 35) {
-            // V35+: I, ID, PG, QG, QT, QB, VS, IREG, NREG, MBASE, ZR, ZX, RT, XT, GTAP, STAT, RMPCT, PT, PB, BASELOAD...
+            // V35+: I, ID, PG, QG, QT, QB, VS, IREG, NREG, MBASE, ZR, ZX, RT, XT, GTAP, STAT, RMPCT, PT, PB, BASLOD...
             pg = rec.getDouble(2, 0.0);
             qg = rec.getDouble(3, 0.0);
             qt = rec.getDouble(4, 0.0);
@@ -504,6 +504,7 @@ public class PSSEDirectParser {
             rmpct = rec.getDouble(16, 100.0);
             pt = rec.getDouble(17, 0.0);
             pb = rec.getDouble(18, 0.0);
+            baseLoadFlag = rec.getInt(19, 0);
             wmod = rec.getInt(28, 0);
             wpf = rec.getDouble(29, 1.0);
         } else {
@@ -567,14 +568,16 @@ public class PSSEDirectParser {
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
         Complex xfrZ = (rt != 0.0 || xt != 0.0) ? new Complex(rt, xt) : null;
 
-        applyNameTagMetadata(rec, builder.addContributeGen(busId, genId, genStatus,
+        var generator = builder.addContributeGen(busId, genId, genStatus,
                 pg / baseMva, qg / baseMva, mbase,
                 vs,
                 qt / baseMva, qb / baseMva,
                 pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap,
                 remoteBusId,
-                rmpct * 0.01, 1.0));
+                rmpct * 0.01, 1.0);
+        generator.setBaseLoadFlag(baseLoadFlag);
+        applyNameTagMetadata(rec, generator);
 
         // Refine bus gen code based on generator data
         if (bus.getGenCode() == AclfGenCode.SWING) {
@@ -867,6 +870,9 @@ public class PSSEDirectParser {
                         rata1, ratb1, ratc1,
                         tab1, stat == 1);
             }
+            // MAG1/MAG2 are converted to winding one's bus voltage base.
+            // Keep the admittance ahead of the ideal tap for all tap positions.
+            if (magY != null) branch.setFromShuntOnBusSide(true);
             applyNameTagMetadata(metadata, branch);
 
             String branchId = branch.getId();
@@ -1015,6 +1021,7 @@ public class PSSEDirectParser {
                 inService);
 
         if (branch3W != null) {
+            if (magY != null) branch3W.getFromAclfBranch().setFromShuntOnBusSide(true);
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
             if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);

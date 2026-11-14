@@ -765,3 +765,54 @@ threshold, so the pre-existing sensor offset also contributes. Projecting
 the sensor to binary32 after each step does not reproduce the source crossing.
 The full network/input and accepted-state stages need localization before
 enabling selective history or changing the return threshold.
+
+### Short firing lags in the staggered solver
+
+A firing lag of at most two nominal staggered integration steps
+uses the sampled algebraic firing path. The model retains its
+entered lag. Each initialization selects the path again from the
+integration method and step. The ordinary modified Euler solver
+uses the same sampled firing boundary for a positive lag at most
+two nominal steps. Longer lags keep their continuous firing state.
+Zero lag in the ordinary solver keeps its existing algebraic
+publication path.
+
+The ordinary solver advances the sampled model's differential
+coordinates once per physical interval. It uses the current
+derivative and half the scaled difference from the preceding
+accepted derivative. The history weight scales with the interval
+divided by the nominal sampling step. This keeps a short fragment
+at an off-grid event from amplifying the following derivative
+correction. At an event the first post-event advance uses the
+average of the observed pre-event and post-event rates. The
+corrector completes the physical trial. The previous rate changes
+only after acceptance, so a rejected trial can be retried with the
+same pre-event rate, state and held current.
+
+The algebraic command and published current have different
+lifetimes. During a network solve the current is held at the
+command prepared for that interval. After convergence, the
+regulator evaluates its droop using the held current and the solved
+sensing voltage. It projects the next command with the accepted
+PI state. The new command does not change the current used by the
+completed network solve. The existing trial lifecycle restores
+the command and physical histories if a step fails.
+
+The short-lag regression verifies eligibility at the two-step
+boundary, retention of the entered lag, projection after
+network convergence, delayed publication, and restoration of the
+dynamic lag on reinitialization with a finer step. Independent
+small and medium nominal-step component trajectories reproduce
+the qualified sampled-firing trial. The dynamic firing half-step
+control and three modified Euler controls are byte-identical
+to their matched baseline traces. The staggered driver retains
+its fixed-step event timing.
+
+
+The ordinary-solver event test exercises both sides of the
+two-step eligibility boundary, an off-grid fragment and a rejected
+trial after current publication. The three matched ordinary
+component traces reproduce the qualified local integration trial
+byte for byte. A separate comparison with the current staggered
+solver is also byte-identical before and after this change for
+both nominal profiles and the half-step control.

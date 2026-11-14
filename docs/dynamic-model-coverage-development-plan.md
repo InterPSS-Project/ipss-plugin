@@ -1147,6 +1147,15 @@ Source/run/report hashes retain the scoped evidence; equations and existing
 trajectory tolerances are unchanged. Broader model verification remains open.
 See the [schema separation checklist](benchmarks/pss-canonical-native-schema-2026-10-19.md).
 
+The GENQEC and GENQECU electrical derivatives use the rotor angle and speed
+at the same solved endpoint as the terminal voltage. The swing derivative
+retains the air-gap power from that endpoint while the electrical states
+advance. Advancing the rotor first rotated the current calculation against
+the previous network voltage and introduced a terminal-power bias during
+sustained off-nominal frequency. A two-stage nonzero-slip regression checks
+the electrical and rotor states, and a separate frequency-playback
+comparison checks the terminal-power response.
+
 Signed-input follow-up: [runtime compensation uses the magnitude of Kw](dynamic-models/genqec-kw-magnitude.md) while retaining the finite entered sign. Independent standard/wrapper probes distinguish both current directions and signed product limits; full-system trajectory acceptance remains open. The following paragraph records the earlier positive-input verification snapshot.
 
 GENQEC bounded field-compensation correction: finite Kw>=0 now replaces
@@ -2233,6 +2242,27 @@ records the permanent log/CSV quality gate and remaining full-transient errors.
   reconcile the native wind startup/no-event contract and rerun latest-source
   combined acceptance. Those concurrent commits were not in the clean tested
   baseline above; do not reuse its green result for the newer source tree.
+- [x] Apply the SVSMO1T2/T3 mechanical shunt controls to the named fixed
+  shunts. The shared dynamic model now resolves each of the eight optional
+  bus and ID slots against individual RAW or RAWX fixed shunts. The small and
+  large capacitive and inductive susceptance thresholds are converted from
+  Mvar at one pu voltage to system pu. Each direction uses its own pickup
+  timer, followed by the breaker delay. Dispatch follows the DYR slot order
+  for banks that can supply the requested susceptance change. Opening a
+  capacitor starts the discharge timer. The physical bank status, nominal
+  conductance and susceptance, dynamic Y diagonal, and sequence caches
+  are updated together. Only accepted positive-duration steps advance
+  the timers. Missing or duplicate bank targets are logged at setup.
+  Reference-simulator susceptance playback reproduces all bank operations at the
+  same integration step across 15 independent component profiles. The
+  continuous controller and network response have separate conformance
+  checks, including the coupled recovery timing after fault removal.
+- [x] Keep the firing-lag state continuous at SVSMO1T2/T3 overvoltage
+  pickup. OV1 forces the firing command to the inductive limit. Native
+  samples from a strong recovery show the state retaining its pre-pickup
+  value on the first command-limited step, followed by a lagged response.
+  The overvoltage timers and the zero output of a completed trip retain
+  their original semantics. A focused test exercises pickup before trip.
 - [ ] Resolve SVSMO1T2 native point-control initialization and remaining
   transient discrepancies. Two cold native runs reproduce the original full
   reference exactly and pass run-quality checks, but the corrected comparison

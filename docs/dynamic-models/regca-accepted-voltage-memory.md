@@ -13,6 +13,13 @@ converter.setNetworkVoltageMemoryPolicy(
     Regca1Model.NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY);
 ```
 
+For imported cases, set `"regca1HighVoltageNetworkIterationEnabled": true` in
+the version 1 dynamic run JSON to select this same policy for every imported
+REGCA1 converter at initialization. Omitting the field preserves the existing
+model setting. Explicit false disables the iteration correction. The option
+leaves DYR values and network iteration settings under their existing owners.
+Active correction can require more iterations than the default budget.
+
 The policy separates committed saved voltage and accepted terminal voltage from
 trial network output. `prepareIntegrationStep` records only the physical clock;
 it does not sample voltage. Initialization seeds the committed values. A

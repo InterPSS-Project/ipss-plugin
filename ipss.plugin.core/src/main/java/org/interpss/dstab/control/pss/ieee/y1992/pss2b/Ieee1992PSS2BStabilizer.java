@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aWashoutBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.util.PhysicalStepTrial;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -18,12 +20,13 @@ import com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock;
 import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 
 /** IEEE dual-input PSS2B stabilizer with the PowerWorld extension fields. */
 @AnController(input="mach.speed", output="this.outputBlock.y", refPoint="0.0", display={})
 public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         implements IntegrationStepAware, org.interpss.dstab.control.util.AcceptedVoltageMeasurement,
-        org.interpss.dstab.control.util.StaggeredEulerParticipant {
+        org.interpss.dstab.control.util.StaggeredEulerParticipant, PhysicalStepTrial {
     private transient Pss2bCompiledStage compiledSignals;
     private transient Pss2bCompiledStage sampledObservationPlan;
     private final Pss2bAcceptedPathHistory pathHistory = new Pss2bAcceptedPathHistory();
@@ -33,6 +36,7 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     private long staggeredEvaluations;
     private BaseDStabBus<?, ?> initializedInput1Bus, initializedInput2Bus;
     private int initializedIcs1, initializedIcs2;
+    private LocalStaggeredStep localStaggeredStep;
 
     @Override
     protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
@@ -246,6 +250,7 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        localStaggeredStep = null;
         initialized = false; sharedStage = null; sharedStageInvalidated = sharedEvaluationActive = predictorPending = false;
         sampledObservationPlan = null; pathHistory.initialize(0., 0.);
         staggeredEvaluations = 0;
@@ -293,8 +298,126 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
+        if (localStaggeredStep != null && dt > 0.) {
+            if (method != DynamicSimuMethod.MODIFIED_EULER)
+                throw new IllegalStateException("Local PSS2B integration requires modified Euler coupling");
+            return advanceLocalStaggered(dt, flag);
+        }
         refreshInputSignals(machine);
         return super.nextStep(dt, method, machine, flag);
+    }
+
+    /**
+     * Select the native rate-history update for the qualified GENROU profile.
+     * The source speed path bypasses its transducer, while terminal active
+     * power goes through a dynamic transducer and the existing PSS2B graph.
+     */
+    public boolean prepareGenrouLocalStaggeredIntegration() {
+        if (!initialized || getClass() != Ieee1992PSS2BStabilizer.class
+                || getMachine().getClass() != IeeeVcRoundRotorMachine.class
+                || ((IeeeVcRoundRotorMachine) getMachine()).isExponentialSaturation()
+                || !sampledPathPolicy || !terminalElectricalPowerInput
+                || getData().getIcs1() != 1 || getData().getIcs2() != 3 || t6 != 0. || t7 <= 0.)
+            return false;
+        try {
+            localStaggeredStep = new LocalStaggeredStep(staggeredStateCount());
+            return true;
+        } catch (IllegalArgumentException | IllegalStateException unsupportedGraph) {
+            return false;
+        }
+    }
+
+    @Override public boolean requiresPhysicalStepTrial() { return localStaggeredStep != null; }
+
+    @Override public void beginPhysicalStepTrial(double time, double dt) {
+        var step = localStaggeredStep;
+        if (step == null || step.pending || !Double.isFinite(time) || !Double.isFinite(dt) || dt <= 0.)
+            throw new IllegalStateException("Invalid PSS2B physical interval");
+        readStaggeredState(step.savedState, 0);
+        step.savedInputs.copyFrom(pathHistory);
+        step.savedSignal1 = input1Signal;
+        step.savedSignal2 = input2Signal;
+        step.savedEvaluations = staggeredEvaluations;
+        step.savedSharedEvaluation = sharedEvaluationActive;
+        step.dt = dt;
+        step.end = time + dt;
+        step.contiguous = Math.abs(step.acceptedEnd - time) <= 8. * Math.ulp(time);
+        step.pending = true;
+    }
+
+    private boolean advanceLocalStaggered(double dt, int flag) {
+        var step = localStaggeredStep;
+        if (!step.pending || step.dt != dt || flag < 0 || flag > 1 || (flag == 0) == step.predicted
+                || step.corrected)
+            throw new IllegalStateException("Unexpected local PSS2B integration stage");
+        if (flag == 0) {
+            evaluateStaggered(dt, step.trialRates, 0);
+            double ratio = step.contiguous ? dt / step.previousDt : 0.;
+            // A very short event fragment cannot supply a stable derivative
+            // extrapolation when the nominal network step resumes.
+            double weight = ratio > 0. && ratio <= 2. ? .5 * (step.event ? 1. : ratio) : 0.;
+            for (int i = 0; i < step.trialRates.length; i++) {
+                double rate = step.trialRates[i];
+                if (step.event && step.contiguous && averageStaggeredRateAtDiscontinuity(i))
+                    rate = .5 * (rate + step.previousRates[i]);
+                step.trialRates[i] = rate;
+                step.trialState[i] = step.savedState[i] + dt * (rate + weight * (rate - step.previousRates[i]));
+            }
+            applyStaggeredState(step.trialState, 0, dt);
+            step.predicted = true;
+        } else {
+            completeStaggeredStep(dt);
+            refreshInputSignals(getMachine());
+            sharedStage().refreshSharedAlgebraic();
+            step.corrected = true;
+        }
+        return true;
+    }
+
+    @Override public void publishPhysicalStepTrial() {
+        // The ordinary machine/stabilizer call observes the predictor state.
+    }
+
+    @Override public void validatePhysicalStepAcceptance() {
+        var step = localStaggeredStep;
+        if (step == null || !step.pending || !step.corrected)
+            throw new IllegalStateException("PSS2B did not complete its physical interval");
+    }
+
+    @Override public void acceptPhysicalStepTrial() {
+        var step = localStaggeredStep;
+        System.arraycopy(step.trialRates, 0, step.previousRates, 0, step.trialRates.length);
+        step.previousDt = step.dt;
+        step.acceptedEnd = step.end;
+        step.event = false;
+        step.pending = step.predicted = step.corrected = false;
+    }
+
+    @Override public void discardPhysicalStepTrial() {
+        var step = localStaggeredStep;
+        if (step == null || !step.pending) return;
+        pathHistory.copyFrom(step.savedInputs);
+        input1Signal = step.savedSignal1;
+        input2Signal = step.savedSignal2;
+        applyStaggeredState(step.savedState, 0, step.dt);
+        sharedEvaluationActive = step.savedSharedEvaluation;
+        staggeredEvaluations = step.savedEvaluations;
+        step.pending = step.predicted = step.corrected = false;
+    }
+
+    private static final class LocalStaggeredStep {
+        final double[] savedState, trialState, previousRates, trialRates;
+        final Pss2bAcceptedPathHistory savedInputs = new Pss2bAcceptedPathHistory();
+        double acceptedEnd = Double.NaN, previousDt, dt, end, savedSignal1, savedSignal2;
+        long savedEvaluations;
+        boolean pending, predicted, corrected, contiguous, event, savedSharedEvaluation;
+
+        LocalStaggeredStep(int count) {
+            savedState = new double[count];
+            trialState = new double[count];
+            previousRates = new double[count];
+            trialRates = new double[count];
+        }
     }
 
     private void refreshInputSignals(Machine machine) {
@@ -423,6 +546,8 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
 
     @Override public void synchronizeVoltageDerivativeMemory() {
         requireAcceptedPathBoundary();
+        if (localStaggeredStep != null && localStaggeredStep.previousDt > 0.)
+            localStaggeredStep.event = true;
         if (getData().getIcs1() == 6) derivative1.synchronizeVoltage(input1Bus.getVoltageMag());
         if (getData().getIcs2() == 6) derivative2.synchronizeVoltage(input2Bus.getVoltageMag());
         if (initialized && sampledPathPolicy) {
@@ -432,7 +557,8 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
     }
 
     private void requireAcceptedPathBoundary() {
-        if (initialized && sampledPathPolicy && predictorPending)
+        if (initialized && sampledPathPolicy && (predictorPending
+                || localStaggeredStep != null && localStaggeredStep.pending && !localStaggeredStep.corrected))
             throw new IllegalStateException("Finish the PSS2B corrector before accepting an input-path endpoint");
     }
 
@@ -486,12 +612,22 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         return (float) value <= 2.0f * (float) minimum ? 0.0 : value;
     }
 
-    private static double limitedInput(int code, BaseDStabBus<?, ?> bus, Machine machine,
+    private boolean terminalElectricalPowerInput;
+
+    /** Use terminal MW on machine base for native electrical-power input code 3. */
+    public void useTerminalElectricalPowerInput() {
+        terminalElectricalPowerInput = true;
+    }
+
+    private double limitedInput(int code, BaseDStabBus<?, ?> bus, Machine machine,
             double max, double min) {
         double value = switch (code) {
             case 1 -> machine.getSpeed() - 1.0;
             case 2 -> bus.getFreq() - 1.0;
-            case 3 -> machine.getPe();
+            // Typed callers can prescribe Pe directly. The native selector
+            // measures terminal MW, while accelerating power uses air-gap MW.
+            case 3 -> terminalElectricalPowerInput && machine instanceof RoundRotorMachineImpl rotor
+                    ? rotor.getTerminalActivePower() : machine.getPe();
             case 4 -> machine.getPm() - machine.getPe();
             case 5 -> bus.getVoltageMag();
             case 6 -> 0.0;

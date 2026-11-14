@@ -87,7 +87,71 @@ reproduce identical baseline errors. The coupled checks use existing
 tolerances. The focused checks use the changed Java sources with local
 InterPSS dependencies.
 
-Open verification includes GEWTECU1 remote-mode equation boundaries,
+At this checkpoint, open verification included GEWTECU1 remote-mode equation boundaries,
 other model-specific limiter and bypass combinations, and full-network
 parity after these changes. The compensated feedback result does not
 qualify the separate native AC8CU1 wrapper or unrelated equations.
+
+## Follow-up screen of loadable and partial models
+
+The source scan was extended to all 184 catalog entries with a runtime,
+including the three partial entries. It resolved all entries to 171
+distinct runtime classes. These counts describe catalog coverage and
+flag source candidates for inspection.
+
+| Source pattern | Catalog entries |
+| --- | ---: |
+| Raw or ambiguous voltage feedback | 7 |
+| Manually managed stage history | 105 |
+| Zero-time or algebraic path | 98 |
+| Network injection or output boundary | 31 |
+| Limit, saturation, or bounded rate | 102 |
+| Nonlocal measurement | 23 |
+| Named-state observation | 120 |
+| Unfinished-path marker | 9 |
+
+GEWTECU1 initialized the WindVAR voltage sensor and low-voltage power
+logic (LVPL) from the terminal even when a remote bus was selected. Its
+inner converter voltage equation also used that selected remote voltage.
+The controller now initializes WindVAR and LVPL from the selected bus
+and uses terminal voltage in the inner equation. A missing selector falls
+back to the terminal and logs the missing bus once per initialization.
+When the LVPL time constant is zero, both the active-current command
+and the braking-power input use the selected voltage in the current
+stage. The published LVPL block takes the live measurement at zero
+time constant.
+
+Three native two-bus probes varied only the voltage selector. With
+line-drop compensation zero, the local and missing-bus sensor and LVPL
+states initialized at 0.97866738 pu. The remote selection initialized
+both at 0.98000002 pu, and the Mvar/Volt integrator initialized at
+0.97866738 pu for every selector. The native solver reported suspect
+initial conditions on the synthetic network, so these observations
+qualify signal routing only. The nonzero line-drop experiment exposed
+a separate open discrepancy. The diagram places the drop ahead of the
+transducer, and the synthetic remote-selector/nonzero-XC combination
+ended in a native access violation. Line-drop equations need an
+independent native discriminator before correction.
+
+WT12T1, WT12A1, WT2E1, and GEWTPTU1 now clear the stored predictor state
+and derivative on initialization. The previous implementations could
+accept a corrector against a snapshot from the previous operating point.
+The new tests interrupt a predictor, reinitialize with changed inputs,
+verify that a standalone corrector is rejected with no state change,
+then complete a fresh step. The shared WT12T1 kernel also supplies the
+history to GEWT2MU1.
+
+The same 73 selected tests ran against the baseline and the corrected
+classes. The baseline passed 66 and the correction passed 72. The two
+new GEWTECU1 regressions and all four interrupted-step regressions
+failed on the baseline and passed with the correction. An additional
+missing-bus regression passed on both. The sole remaining failure,
+GEWT2MU1's generator-speed equation test, differs by 7.1823e-10 pu on
+both runs. The shared kernel applies the generator-to-turbine speed
+ratio to shaft torque, while the GE-specific test equation omits it.
+Native GEWT2MU1 evidence is needed to resolve that equation difference.
+
+The later native GEWT2MU1 probe resolves the remaining test failure.
+GEWT2MU1 uses direct shaft torque in the generator equation. Its shared
+integrator now selects that equation, and the original GE regression
+passes without a tolerance change. See [the shaft model notes](wt12t1-shaft-transfer.md).

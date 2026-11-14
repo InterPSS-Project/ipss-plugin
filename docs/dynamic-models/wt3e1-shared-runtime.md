@@ -22,9 +22,8 @@ the controller does not introduce a second equation implementation.
   rates. Reading diagnostics does not run the equations. The ten named-state
   keys remain unchanged.
 
-The speed-reference curve is prepared once from immutable parameters. Its
-interpolation and floating-point operation order are unchanged. Existing state
-and derivative records remain; this slice does not claim zero allocation.
+The speed-reference curve is prepared once from immutable parameters. The
+curve is used for shaft initialization and during every integration mode.
 
 ## Validation boundary
 
@@ -79,3 +78,19 @@ regulation left the reference controller states and electrical trajectories
 unchanged. The focused regression varies the remote voltage while holding
 terminal voltage fixed. It fails on the old implementation, and the
 existing local-control and integration tests pass after the correction.
+
+## Full-speed pickup and rated-power interpolation
+
+WT3E1 forms its speed reference from electrical power on the online plant
+rating. Below the entered full-speed pickup Pwp, the final linear segment
+runs from the speed at 60% rated power to the speed at 100% rated power.
+At and above Pwp, the reference is set to the full-speed value. In the
+previous implementation Pwp was also the endpoint of the interpolation,
+which raised the speed reference early and changed the initial shaft
+speed and torque command.
+
+A reference-simulator dispatch sweep exercises this boundary with three Pwp
+values. A 10-second component replay with the native terminal voltage as
+input verifies the shaft speed on the original operating point. The
+focused test verifies initialization on both sides of Pwp and in the
+lower segments using its own speed-curve data.

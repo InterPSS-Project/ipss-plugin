@@ -105,6 +105,22 @@ public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
         assertTrue(maxError<1e-12,"EXAC2 blockwise modified-Euler max error="+maxError);
     }
 
+    @Test void negativeSaturationInterceptUsesAbsoluteCutoffInInitializationAndFeedback() throws Exception {
+        Exac2Data data=baseData();
+        // Independent synthetic fit with A=-2 and B=1/32.
+        data.setE1(2.0); data.setSe1(.25); data.setE2(8.0); data.setSe2(.390625);
+        Fixture fixture=fixture(data);
+        Exac2Exciter exciter=fixture.exciter();
+        assertEquals(1.2,exciter.getInternalFieldVoltage(),TOL);
+        assertEquals(1.2,exciter.getFieldVaule("this.vfe.y"),TOL);
+        assertEquals(1.8,exciter.getRegulatorOutput(),TOL);
+        assertEquals(0.0,exciter.saturation.eval(new double[]{2.0}),0.0);
+        assertTrue(exciter.saturation.eval(new double[]{Math.nextUp(2.0)})>.249);
+        assertEquals(.390625,exciter.saturation.eval(new double[]{8.0}),TOL);
+        step(exciter,fixture.machine(),.001);
+        assertEquals(1.2,exciter.getOutput(fixture.machine()),TOL);
+    }
+
     @Test void publishedGateAndInitializationEquationsAreApplied() throws Exception {
         Exac2Data data=baseData();data.setKh(.5);data.setKl(4);data.setKb(2);data.setVlr(0);
         Fixture fixture=fixture(data);double vfe=fixture.exciter.getFieldVaule("this.vfe.y");

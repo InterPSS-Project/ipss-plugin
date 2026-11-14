@@ -73,6 +73,14 @@ public class St5bExciter extends AnnotateExciter implements IntegrationStepAware
         return value;
     }
     private double correctedInverseTime(double value){
+        // PSS/E ST5B evaluates the final lag algebraically when T1 is strictly
+        // below two nominal integration steps. The native CON retains the
+        // entered T1, including after initialization. Keeping the lag active
+        // in this range delays field response to a fast stabilizer transient.
+        // Use the configured step so an event-clipped step cannot switch modes.
+        if ("ST5B".equalsIgnoreCase(modelName) && value > 0.0 && value < 2.0 * integrationStep) {
+            return 0.0;
+        }
         double minimum=minimumTimeConstantMultiplier*integrationStep;
         // PowerWorld's published inverse-timing rule: raise T1 to min/4 when
         // it is below min/4, otherwise raise a sub-minimum T1 to min.

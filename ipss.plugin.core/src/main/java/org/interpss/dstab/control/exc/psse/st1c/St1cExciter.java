@@ -34,17 +34,26 @@ public final class St1cExciter extends AnnotateExciter
     public double tr,vimax,vimin,tc,tb,tc1,tb1,ka,ta,vamax,vamin;
     public double vrmax,vrmin,kc,kf,tf,klr,ilr,reference,outputSignal;
     private double vuel,voel;
+    private boolean nativeAlgebraicSampling, sampleAtStepStart, outputSampled;
 
     public St1cExciter(String id,St1cData data,Machine machine){
         super(id,"ST1C","PSS/E");this.data=data;this._data=data;setMachine(machine);
     }
     public St1cData getData(){return data;}
 
+    /** Enable native step-start sampling for the fully algebraic regulator. */
+    public void useNativeAlgebraicSampling() {
+        nativeAlgebraicSampling = true;
+    }
+
     @Override public void configureIntegrationStep(double stepSeconds){configureIntegrationStep(stepSeconds,1);}
     public void configureIntegrationStep(double stepSeconds,double multiplier){integrationStep=stepSeconds;minimumTimeConstantMultiplier=multiplier;}
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrectParameters();
+        outputSampled = false;
+        sampleAtStepStart = nativeAlgebraicSampling && tr == 0.0 && ta == 0.0 && kf == 0.0
+                && (tb == 0.0 || tc == tb) && (tb1 == 0.0 || tc1 == tb1);
         if(uel<0||uel>3||oel<0||oel>3||vos<1||vos>2||tr<0||tb<0||tb1<0||ta<0||tf<0||Math.abs(ka)<=EPS)return false;
         double vt=sensingVoltage(machine),terminal=terminalVoltage(machine),ifd=ifd(machine),efd=machine.getEfd();
         if(!Double.isFinite(vt)||vt<=EPS||!Double.isFinite(terminal)||terminal<=EPS||!Double.isFinite(ifd)||!Double.isFinite(efd))return false;
@@ -77,18 +86,41 @@ public final class St1cExciter extends AnnotateExciter
 
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag){
         if(!initialized||dt<0)return false;if(dt==0)return true;int stage=method==DynamicSimuMethod.MODIFIED_EULER?flag:2;
-        if(stage==0){derivatives(state,oldDerivative,machine);add(state,oldDerivative,dt,trial);limitState(trial);active=trial;}
-        else if(stage==1){double[] d=new double[5];derivatives(trial,d,machine);for(int i=0;i<5;i++)state[i]+=.5*(oldDerivative[i]+d[i])*dt;limitState(state);active=state;}
-        else{double[] d=new double[5];derivatives(state,d,machine);add(state,d,dt,state);limitState(state);active=state;}
-        outputSignal=algebraics(active,machine).efd;return true;
+        if (stage == 0) {
+            double stepStartOutput = derivatives(state, oldDerivative, machine);
+            add(state, oldDerivative, dt, trial);
+            limitState(trial);
+            active = trial;
+            // The algebraic regulator samples the accepted input before
+            // the predictor changes the network. The sampled output includes
+            // the physical field ceiling at that same electrical boundary.
+            outputSampled = sampleAtStepStart;
+            if (outputSampled) outputSignal = stepStartOutput;
+        } else if (stage == 1) {
+            double[] d = new double[5];
+            derivatives(trial, d, machine);
+            for (int i = 0; i < state.length; i++) state[i] += .5 * (oldDerivative[i] + d[i]) * dt;
+            limitState(state);
+            active = state;
+        } else {
+            outputSampled = false;
+            double[] d = new double[5];
+            derivatives(state, d, machine);
+            add(state, d, dt, state);
+            limitState(state);
+            active = state;
+        }
+        if (!outputSampled) outputSignal = algebraics(active, machine).efd;
+        return true;
     }
-    private void derivatives(double[] x,double[] d,Machine machine){
+    private double derivatives(double[] x,double[] d,Machine machine){
         Arrays.fill(d,0);Algebraic a=algebraics(x,machine);
         d[SENSED]=lagDerivative(sensingVoltage(machine),x[SENSED],tr);
         d[LL1]=lagDerivative(a.firstLeadLagInput,x[LL1],tb);
         d[LL2]=lagDerivative(a.firstLeadLagOutput,x[LL2],tb1);
         if(ta>EPS){double raw=(ka*a.secondLeadLagOutput-x[VA])/ta;d[VA]=nonWindup(raw,x[VA],vamin,vamax);}
         d[FEEDBACK_LAG]=lagDerivative(a.preField,x[FEEDBACK_LAG],tf);
+        return a.efd;
     }
 
     private Algebraic algebraics(double[] x,Machine machine){
@@ -160,7 +192,10 @@ public final class St1cExciter extends AnnotateExciter
             "VA",getRegulatorOutput(),"Sensed Vt",getSensedVoltage(),
             "LL",getFirstLeadLagOutput(),"LL1",getSecondLeadLagOutput(),
             "Feedback",getRateFeedback());}
-    @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
+    @Override public double getOutput(Machine machine) {
+        if (!outputSampled) outputSignal = algebraics(active, machine).efd;
+        return outputSignal;
+    }
     @Override public void setRefPoint(double v){reference=v;}@Override public double getRefPoint(){return reference;}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
     @Override public Field getField(String name)throws Exception{return getClass().getField(name);}

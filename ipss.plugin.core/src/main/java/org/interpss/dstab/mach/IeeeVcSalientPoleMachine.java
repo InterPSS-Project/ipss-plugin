@@ -11,6 +11,19 @@ public final class IeeeVcSalientPoleMachine extends SalientPoleMachineImpl
         implements IeeeVoltageCompensatedMachine, ICMLStateProvider {
     static { IeeeVcMachineState.register(IeeeVcSalientPoleMachine.class,IeeeVcSalientPoleMachine::new); }
     private IeeeVcData ieeeVcData;
+    private boolean networkFrequencyDependenceEnabled;
+
+    /** Configure the native Flux0 stator policy before dynamic initialization. */
+    public void setNetworkFrequencyDependenceEnabled(boolean enabled) {
+        networkFrequencyDependenceEnabled = enabled;
+    }
+
+    @Override
+    protected double statorFrequencyRatio() {
+        // The core uses this ratio for both stator reactance and flux-induced EMF.
+        // Its Pe stays in torque coordinates, so the swing equation is unchanged.
+        return networkFrequencyDependenceEnabled ? getDStabBus().getFreq() : 1.0;
+    }
 
     @Override public boolean supportsDeferredCurrentPublication() { return true; }
 

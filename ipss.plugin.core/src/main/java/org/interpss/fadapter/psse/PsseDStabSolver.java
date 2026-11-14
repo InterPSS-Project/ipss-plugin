@@ -7,14 +7,23 @@ import org.apache.commons.math3.complex.Complex;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.ConstantCurrentLoadVoltageCurve;
+import com.interpss.dstab.ConstantPowerLoadVoltageCurve;
+import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.device.DynamicDevice;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
+import org.interpss.dstab.mach.GenqecMachine;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
+import org.interpss.dstab.mach.IeeeVcSalientPoleMachine;
+import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.validation.DynamicParameterValidator;
 
 /**
@@ -38,6 +47,24 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private boolean hotReactivationEvent;
     /** Explicitly select qualified machine IDs before initialization; empty preserves existing behavior. */
     private Boolean sourceImpedanceReconciliationEnabled;
+    private boolean genqecNetworkFrequencyDependenceEnabled;
+    private boolean fluxMachineNetworkFrequencyDependenceEnabled;
+    private Boolean regca1HighVoltageNetworkIterationEnabled;
+
+    /** Configure the REGCA1 correction policy for the next initialization. */
+    public void setRegca1HighVoltageNetworkIterationEnabled(boolean enabled) {
+        regca1HighVoltageNetworkIterationEnabled = enabled;
+    }
+
+    /** Select the qualified Flux0 frequency law for the next initialization. */
+    public void setFluxMachineNetworkFrequencyDependenceEnabled(boolean enabled) {
+        fluxMachineNetworkFrequencyDependenceEnabled = enabled;
+    }
+
+    /** Select the qualified GENQEC/GENQECU frequency law for the next initialization. */
+    public void setGenqecNetworkFrequencyDependenceEnabled(boolean enabled) {
+        genqecNetworkFrequencyDependenceEnabled = enabled;
+    }
     private org.interpss.plugin.dstab.config.LoadModelThresholds loadModelThresholds;
     public record SourceImpedanceReconciliation(String bus,String generator,boolean enabled,
             double originalResistance,double originalReactance,double effectiveResistance,
@@ -228,17 +255,56 @@ public class PsseDStabSolver extends DStabSolverImpl {
     private record StepInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
             org.interpss.dstab.control.util.IntegrationStepContext input) { }
     private final java.util.List<StepInput> integrationStepInputs = new java.util.ArrayList<>();
+    private record Esst4bStepOwner(BaseDStabBus<?, ?> bus, DStabGen generator, Machine machine,
+            IEEE2005ST4BExciter exciter) {
+        boolean active() {
+            return bus.isActive() && generator.isActive() && machine.isActive() && exciter.isActive()
+                    && machine.getExciter() == exciter;
+        }
+    }
+    private java.util.Set<String> esst4bLocalStaggeredMachineIds = java.util.Set.of();
+    private final java.util.List<Esst4bStepOwner> esst4bStepOwners = new java.util.ArrayList<>();
+
+    /** Select initialized ESST4B hosts for native local rate-history integration. */
+    public void setEsst4bLocalStaggeredMachineIds(java.util.Set<String> machineIds) {
+        if (dstabAlgo.getNetwork().isDStabNetInitialized())
+            throw new IllegalStateException("Configure ESST4B local integration before initialization");
+        esst4bLocalStaggeredMachineIds = java.util.Set.copyOf(machineIds);
+    }
+
+    private boolean genrouPss2bLocalStaggeredEnabled;
+
+    /** Select the qualified GENROU stabilizer path before dynamic initialization. */
+    public void setGenrouPss2bLocalStaggeredEnabled(boolean enabled) {
+        if (dstabAlgo.getNetwork().isDStabNetInitialized())
+            throw new IllegalStateException("Configure GENROU PSS2B local integration before initialization");
+        genrouPss2bLocalStaggeredEnabled = enabled;
+    }
+
     private static final class PhysicalStepInput {
         final DynamicDevice device; final BaseDStabBus<?,?> bus;
         final org.interpss.dstab.control.util.PhysicalStepTrial input;
+        final java.util.function.BooleanSupplier activeOwner;
         boolean pending;
         PhysicalStepInput(DynamicDevice device,BaseDStabBus<?,?> bus,
-                org.interpss.dstab.control.util.PhysicalStepTrial input){this.device=device;this.bus=bus;this.input=input;}
+                org.interpss.dstab.control.util.PhysicalStepTrial input) {
+            this(device, bus, input, null);
+        }
+        PhysicalStepInput(DynamicDevice device, BaseDStabBus<?, ?> bus,
+                org.interpss.dstab.control.util.PhysicalStepTrial input, java.util.function.BooleanSupplier activeOwner) {
+            this.device = device;
+            this.bus = bus;
+            this.input = input;
+            this.activeOwner = activeOwner;
+        }
+        boolean active() {
+            return activeOwner == null ? device.isActive() && bus.isActive() : activeOwner.getAsBoolean();
+        }
     }
     private boolean physicalStepWrapperActive;
     private final java.util.List<PhysicalStepInput> physicalStepInputs=new java.util.ArrayList<>();
     protected final void beginPhysicalStepTrials(double time,double dt) {
-        for(var p:physicalStepInputs)if(p.device.isActive()&&p.bus.isActive()) {
+        for(var p:physicalStepInputs)if(p.active()) {
             if(p.pending)throw new IllegalStateException("Unfinished physical-output trial");
             p.pending=true;p.input.beginPhysicalStepTrial(time,dt);
         }
@@ -264,6 +330,14 @@ public class PsseDStabSolver extends DStabSolverImpl {
     /** Actual initialized coverage, including custom or unsupported compatible controllers. */
     public ControllerPreparationReport getControllerPreparationReport(){return controllerPreparationReport;}
     protected boolean usesModifiedEulerControllerPreparation(){return true;}
+
+    protected boolean usesStaggeredStatcomFiring() { return false; }
+
+    protected final void refreshSolvedEndpointStatcomFiringCommands() {
+        for (var model : statcomEventModels)
+            if (model.isActive() && model.getDStabBus() != null && model.getDStabBus().isActive())
+                model.refreshSolvedEndpointFiringCommand();
+    }
     private com.interpss.dstab.common.IDStabSimuOutputHandler frequencyOutputHandler;
     private java.util.Set<String> frequencyOutputIds;
     private final java.util.Map<BaseDStabBus<?,?>,com.interpss.dstab.controller.cml.field.ICMLControlBlock>
@@ -421,6 +495,18 @@ public class PsseDStabSolver extends DStabSolverImpl {
         super.setMaxIterationTimes(maximum);
     }
 
+    @Override protected void requireNetworkSolution(double stepStart, double evaluationTime, String stage)
+            throws DStabSimuException {
+        super.requireNetworkSolution(stepStart, evaluationTime, stage);
+        if ("PRE_EVENT".equals(stage)) {
+            for (var owner : esst4bStepOwners)
+                if (owner.active()) owner.exciter().captureLocalStaggeredPreEvent(evaluationTime);
+        } else if ("POST_EVENT".equals(stage)) {
+            for (var owner : esst4bStepOwners)
+                if (owner.active()) owner.exciter().confirmLocalStaggeredPostEvent(evaluationTime);
+        }
+    }
+
     @Override public boolean networkSolutionStep() throws DStabSimuException {
         org.interpss.dstab.relay.AbstractStagedLoadSheddingRelayModel.reapplyAfterNetworkRebuild(dstabAlgo.getNetwork());
         boolean solved=super.networkSolutionStep();
@@ -455,6 +541,11 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 }
             }
         }
+        // The held current belongs to the completed solve. Form the next
+        // sampled STATCOM command only on a settled voltage boundary.
+        // The staggered solver refreshes it at its own accepted boundary.
+        if (solved && !usesStaggeredStatcomFiring() && !"PREDICTOR".equals(networkSolutionStage))
+            refreshSolvedEndpointStatcomFiringCommands();
         return solved;
     }
 
@@ -474,12 +565,40 @@ public class PsseDStabSolver extends DStabSolverImpl {
     public boolean initialization() {
         initializedCompensationOwner=null;initializedCompensationBaseline=java.util.Map.of();
         discardPhysicalStepTrials(null);
+        esst4bStepOwners.clear();
         governorBlockingReport=governorBlockingPolicy;
         controllerPreparation.clear();controllerPreparationReport=null;statcomEventModels.clear();networkEventInputs.clear();integrationStepInputs.clear();physicalStepInputs.clear();
         reactivation.prepare(dstabAlgo,hotReactivationIds);hotReactivationEvent=false;
         restoreFrequencyMeasurements();
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         prepareImportedInitializationSettings(network);
+        for (var bus : network.getBusList()) {
+            for (var generator : bus.getContributeGenList()) {
+                var device = generator.getDynamicGenDevice();
+                if (device instanceof IeeeVcRoundRotorMachine machine) {
+                    machine.setNetworkFrequencyDependenceEnabled(fluxMachineNetworkFrequencyDependenceEnabled);
+                } else if (device instanceof IeeeVcSalientPoleMachine machine) {
+                    machine.setNetworkFrequencyDependenceEnabled(fluxMachineNetworkFrequencyDependenceEnabled);
+                } else if (device instanceof GenqecMachine machine && machine.getClass() == GenqecMachine.class) {
+                    // GENQEJ has a separate saturation law and native policy evidence.
+                    machine.setNetworkFrequencyDependenceEnabled(genqecNetworkFrequencyDependenceEnabled);
+                } else if (regca1HighVoltageNetworkIterationEnabled != null && device instanceof Regca1Model converter
+                        && converter.getClass() == Regca1Model.class) {
+                    // The native correction accumulates inside the network solve.
+                    // Sample its saved voltage once per accepted physical boundary.
+                    converter.setNetworkIterationHighVoltageEnabled(regca1HighVoltageNetworkIterationEnabled);
+                    if (regca1HighVoltageNetworkIterationEnabled) {
+                        converter.setNetworkVoltageMemoryPolicy(Regca1Model.NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY);
+                    }
+                }
+            }
+        }
+        // PSS/E creates a separate current/impedance equivalent at STRT
+        // for each on-line unit lacking a machine model. Ordinary CONL
+        // settings do not determine the voltage law of that late conversion.
+        if (network instanceof com.interpss.dstab.impl.BaseDStabNetworkImpl<?, ?> implementation) {
+            implementation.setUseNativeGeneratorEquivalentVoltageDependence(true);
+        }
         org.interpss.dstab.hvdc.Cdc6tDyrModel.prepareNetwork(network);
         org.interpss.dstab.hvdc.Chvdc2DyrModel.prepareNetwork(network, dstabAlgo.getSimuStepSec());
         var validation=validateModelParameters();
@@ -492,7 +611,15 @@ public class PsseDStabSolver extends DStabSolverImpl {
         // elliptic reduction. The generic core's sine curve remains available
         // to other solvers. Apply this before load-current initialization.
         network.setConstantCurrentLoadVoltageCurve(ConstantCurrentLoadVoltageCurve.ELLIPTIC);
-        configureIntegrationStepAwareModels(dstabAlgo.getNetwork(), dstabAlgo.getSimuStepSec());
+        // An explicit P/Q static conversion retains the native low-voltage
+        // constant-power ellipse using the imported PQBRAK, independently of
+        // the fixed breakpoint for a constant-current component.
+        boolean hasConstantPower = network.getStaticLoadModel() == StaticLoadModel.CONST_P
+                || network.getReactiveStaticLoadModel() == StaticLoadModel.CONST_P;
+        network.setConstantPowerLoadVoltageCurve(hasConstantPower
+                ? ConstantPowerLoadVoltageCurve.ELLIPTIC : ConstantPowerLoadVoltageCurve.COSINE);
+        configureIntegrationStepAwareModels(network, dstabAlgo.getSimuStepSec(), usesStaggeredStatcomFiring(),
+                dstabAlgo.getSimuMethod() == DynamicSimuMethod.MODIFIED_EULER);
         if (!super.initialization()) return false;
         for (var bus : network.getBusList())
             for (var device : bus.getDynamicBusDeviceList()) {
@@ -556,18 +683,58 @@ public class PsseDStabSolver extends DStabSolverImpl {
             org.slf4j.LoggerFactory.getLogger(getClass()).info("Initial governor policy outcomes: {}; inspect getGovernorBlockingReport() for source/old/new limits",counts);
             if(counts.containsKey(PsseGovernorBsgProcessor.Status.ERROR))return false;
         }
+        if (!prepareEsst4bLocalStaggeredModels(network)) return false;
         prepareStepSensitiveModelSubsteps(network);
         // Startup control transfers can reinitialize controller blocks and
         // references. Bind optimized execution only to their final storage.
         if(controllerRuntimePreparationEnabled&&usesModifiedEulerControllerPreparation()
                 &&dstabAlgo.getSimuMethod()==com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER)
             controllerPreparationReport=controllerPreparation.prepare(dstabAlgo);
+        prepareGenrouPss2bLocalStaggeredModels(network);
         var currents=network.getCustomBusCurrInjHashtable();
         if(currents!=null&&currents==network.getExtraInfo().get(COMPENSATION_KEY)) {
             initializedCompensationOwner=currents;
             initializedCompensationBaseline=java.util.Map.copyOf(currents);
         }
         return true;
+    }
+
+    private void prepareGenrouPss2bLocalStaggeredModels(BaseDStabNetwork<?, ?> network) {
+        if (!genrouPss2bLocalStaggeredEnabled) return;
+        if (!usesModifiedEulerControllerPreparation() || dstabAlgo.getSimuMethod() != DynamicSimuMethod.MODIFIED_EULER)
+            throw new IllegalStateException("GENROU PSS2B local staggered integration requires modified Euler coupling");
+        for (var bus : network.getBusList()) for (DStabGen gen : bus.getContributeGenList()) {
+            if (!(gen.getDynamicGenDevice() instanceof Machine machine)
+                    || !(machine.getStabilizer() instanceof Ieee1992PSS2BStabilizer stabilizer)
+                    || !stabilizer.prepareGenrouLocalStaggeredIntegration()) continue;
+            physicalStepInputs.add(new PhysicalStepInput(stabilizer, bus, stabilizer,
+                    () -> bus.isActive() && gen.isActive() && gen.getDynamicGenDevice() == machine
+                            && machine.isActive() && machine.getStabilizer() == stabilizer
+                            && stabilizer.isActive() && stabilizer.requiresPhysicalStepTrial()));
+        }
+    }
+
+    private boolean prepareEsst4bLocalStaggeredModels(BaseDStabNetwork<?, ?> network) {
+        if (esst4bLocalStaggeredMachineIds.isEmpty()) return true;
+        if (!usesModifiedEulerControllerPreparation()
+                || dstabAlgo.getSimuMethod() != DynamicSimuMethod.MODIFIED_EULER)
+            throw new IllegalStateException("ESST4B local staggered integration requires modified Euler network coupling");
+        var missing = new java.util.LinkedHashSet<>(esst4bLocalStaggeredMachineIds);
+        for (var bus : network.getBusList()) for (DStabGen gen : bus.getContributeGenList()) {
+            if (!(gen.getDynamicGenDevice() instanceof Machine machine)
+                    || !missing.contains(machine.getId())
+                    || !(machine.getExciter() instanceof IEEE2005ST4BExciter exciter)) continue;
+            var owner = new Esst4bStepOwner(bus, gen, machine, exciter);
+            if (owner.active() && exciter.prepareLocalStaggeredIntegration()) {
+                missing.remove(machine.getId());
+                esst4bStepOwners.add(owner);
+                physicalStepInputs.add(new PhysicalStepInput(exciter, bus, exciter, owner::active));
+            }
+        }
+        if (missing.isEmpty()) return true;
+        org.slf4j.LoggerFactory.getLogger(getClass()).error(
+                "Selected ESST4B hosts are absent, inactive or outside the qualified local integration path: {}", missing);
+        return false;
     }
 
     /**
@@ -737,14 +904,22 @@ public class PsseDStabSolver extends DStabSolverImpl {
         }
     }
 
-    static void configureIntegrationStepAwareModels(BaseDStabNetwork<?, ?> network,
-            double timeStep) {
+    static void configureIntegrationStepAwareModels(BaseDStabNetwork<?, ?> network, double timeStep) {
+        configureIntegrationStepAwareModels(network, timeStep, false, false);
+    }
+
+    private static void configureIntegrationStepAwareModels(BaseDStabNetwork<?, ?> network,
+            double timeStep, boolean staggeredStatcomFiring, boolean localStatcomSampling) {
         var prepared = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
         for (BaseDStabBus<?, ?> bus : network.getBusList()) {
             // Composite owners must forward preparation before expanding their leaves.
             configure(bus.getInfoOnlyDynModel(), timeStep);
-            for (DynamicDevice device : bus.getDynamicBusDeviceList())
-                if (prepared.add(device)) configure(device, timeStep);
+            for (DynamicDevice device : bus.getDynamicBusDeviceList()) {
+                if (!prepared.add(device)) continue;
+                configure(device, timeStep);
+                if (device instanceof org.interpss.dstab.svc.Svsmo3t2Model model)
+                    model.configureFiringIntegration(timeStep, staggeredStatcomFiring, localStatcomSampling);
+            }
             if (bus.getDynLoadModelList() != null)
                 for (DynamicDevice device : bus.getDynLoadModelList())
                     if (prepared.add(device)) configure(device, timeStep);

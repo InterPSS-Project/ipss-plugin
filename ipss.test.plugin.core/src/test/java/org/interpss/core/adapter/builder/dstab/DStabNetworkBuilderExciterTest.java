@@ -274,6 +274,29 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void parseIeeet4_zeroKeDerivesGainFromInitialField() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("ieeet4-automatic-gain.dyr");
+		Files.writeString(dyr, "1 'IEEET4' '1' .02 20 .05 5 -2 1 0 1 .1 2 .2 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		Ieeet4Exciter exciter = (Ieeet4Exciter) machine.getExciter();
+		assertNotNull(exciter);
+		assertEquals(0.0, exciter.getData().getKe(), 0.0);
+
+		machine.setEfd(1.25);
+		assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+		// The initial rheostat is 10% of the 5 pu ceiling. With SE(1.25) = 0.125,
+		// field equilibrium requires KE = 0.5 / 1.25 - 0.125 = 0.275.
+		assertEquals(0.275, exciter.ke, 1.0e-12);
+		assertEquals(0.5, exciter.getRheostatOutput(), 1.0e-12);
+		assertEquals(1.25, exciter.getOutput(machine), 1.0e-12);
+		assertEquals(0.0, exciter.getData().getKe(), 0.0);
+	}
+
+	@Test
 	public void parseAc8b_mapsNativeRecordWithoutUsingAlternateExportOrdering() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
 		Path dyr = tempDir.resolve("ac8b.dyr");

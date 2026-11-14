@@ -50,6 +50,7 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
     private double breakerElapsedTime;
     private double lastAcceptedStep;
     private double actionTime = Double.NaN;
+    private boolean intervalBeganInBand;
     private boolean pickedUp;
     private boolean tripped;
     private boolean physicalTripPerformed;
@@ -136,7 +137,18 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-        return Double.isFinite(dt) && dt >= 0.0;
+        if (!Double.isFinite(dt) || dt < 0.0) return false;
+        if (flag == 0 && dt > 0.0 && !pickedUp && !tripped) {
+            // The predictor starts from the accepted or post-event sample. If
+            // the next outside sample occurs at the corrector endpoint, pickup
+            // starts there and the preceding interval contributes no time.
+            intervalBeganInBand = !isOutsideBand(getMonitoredValue());
+        }
+        return true;
+    }
+
+    private boolean isOutsideBand(double value) {
+        return value < data.lowerThreshold() || value > data.upperThreshold();
     }
 
     @Override
@@ -150,22 +162,24 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
         if (!Double.isFinite(value)) return false;
         elapsedTime += dt;
         lastAcceptedStep = dt;
-        boolean outsideBand = value < data.lowerThreshold() || value > data.upperThreshold();
+        boolean outsideBand = isOutsideBand(value);
+        boolean beganInBand = intervalBeganInBand;
+        intervalBeganInBand = false;
 
         if (!pickedUp) {
-            if (!outsideBand) {
+            if (!outsideBand || beganInBand) {
                 timerMemory = 0.0;
                 breakerElapsedTime = 0.0;
-                return true;
+                if (!outsideBand || data.pickupTime() > 0.0) return true;
             }
-            timerMemory += dt;
+            double outsideInterval = beganInBand ? 0.0 : dt;
+            timerMemory += outsideInterval;
             if (!delayReached(timerMemory, data.pickupTime(), dt)) return true;
             pickedUp = true;
             // A positive pickup stage ends at this accepted endpoint. Its
-            // rounding remainder is not elapsed breaker time. A zero pickup
-            // instead starts the breaker at the beginning of the first outside
-            // interval, so that interval counts toward its positive delay.
-            breakerElapsedTime = data.pickupTime() == 0.0 ? dt : 0.0;
+            // rounding remainder is not elapsed breaker time. With zero
+            // pickup, credit only the time since the first outside sample.
+            breakerElapsedTime = data.pickupTime() == 0.0 ? outsideInterval : 0.0;
         } else {
             timerMemory += dt;
             breakerElapsedTime += dt;
@@ -248,6 +262,7 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
         breakerElapsedTime = 0.0;
         lastAcceptedStep = 0.0;
         actionTime = Double.NaN;
+        intervalBeganInBand = false;
         pickedUp = false;
         tripped = false;
         physicalTripPerformed=false;

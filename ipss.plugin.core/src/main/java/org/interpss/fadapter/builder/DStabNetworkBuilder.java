@@ -2730,6 +2730,7 @@ public class DStabNetworkBuilder {
     }
 
     private static void copyH6eData(PsseH6eGovernorData s, PsseH6eGovernorData t) {
+        t.setNativeH6e1Derivative(s.isNativeH6e1Derivative());
         t.setFd(s.getFd()); t.setRe(s.getRe()); t.setRg(s.getRg());
         t.setTpe(s.getTpe()); t.setTsp(s.getTsp()); t.setKp(s.getKp());
         t.setKi(s.getKi()); t.setKd(s.getKd()); t.setTd(s.getTd());

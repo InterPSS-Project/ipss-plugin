@@ -105,6 +105,35 @@ public class Esst1aWholeLocalIntegrationTest {
         double expected=1.06+(.5*r-1)*(1.06-start)/m*(1-Math.pow(amplification,m))/(1-amplification);
         assertEquals(expected,f.exciter.getSensedVoltage(),1e-13);
     }
+    @Test public void heldInputsPreserveLeftBoundaryAndRestoreEndpointOwnership() throws Exception {
+        var held = fixture(false, true, 4);
+        var constant = fixture(false, false, 4);
+        var mode = IEEE1981ST1Exciter.LocalInputSampling.HELD_AT_INTERVAL_START;
+        held.exciter.setModifiedEulerLocalInputSampling(mode);
+        double step = .0033333;
+        double reference = held.exciter.getRefPoint();
+        double nextReference = reference + .0002;
+        double leftVoltage = 1.035;
+        double rightVoltage = 1.062;
+
+        held.machine.getDStabBus().setVoltageMag(leftVoltage);
+        assertTrue(held.exciter.nextStep(step, DynamicSimuMethod.MODIFIED_EULER, held.machine, 0));
+        assertThrows(IllegalStateException.class, () -> held.exciter.setModifiedEulerLocalInputSampling(
+                IEEE1981ST1Exciter.LocalInputSampling.INTERPOLATED_ENDPOINTS));
+        held.machine.getDStabBus().setVoltageMag(rightVoltage);
+        held.exciter.setRefPoint(nextReference);
+        assertTrue(held.exciter.nextStep(step, DynamicSimuMethod.MODIFIED_EULER, held.machine, 1));
+        step(constant, step, leftVoltage, leftVoltage);
+        same(held, constant, 1e-12);
+        assertEquals(nextReference, held.exciter.getRefPoint(), 0.);
+        assertEquals(rightVoltage, held.machine.getDStabBus().getVoltageMag(), 1e-12);
+
+        assertTrue(held.exciter.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, held.machine, 0));
+        same(held, constant, 1e-12);
+        held.exciter.clearDirectEvaluation();
+        assertEquals(mode, held.exciter.getModifiedEulerLocalInputSampling());
+    }
+
     @Test public void intervalConfigurationGraphAndMethodFailuresAreExplicit() throws Exception {
         var f=fixture(false,false,1);
         for(int count:new int[]{0,-1,129})assertThrows(IllegalArgumentException.class,()->f.exciter.setModifiedEulerLocalIntegrationSteps(count));

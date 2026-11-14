@@ -17,8 +17,7 @@ import com.interpss.dstab.mach.Machine;
  * PSS/E IEEET4 / WECC EXDC4 IEEE Type 4 rotating DC excitation system.
  *
  * <p>The implementation follows the two-state topology already represented by
- * the legacy InterPSS IEEE Type 4 model, while adding the missing PSS/E
- * {@code KR} path and applying the published contact-selection equations.
+ * the legacy InterPSS IEEE Type 4 model, while adding the separate rheostat and fast voltage contacts and applying the published contact-selection equations.
  * Direct state integration avoids a circular CML initialization dependency
  * between {@code VRH} and {@code EFD}.</p>
  */
@@ -67,9 +66,26 @@ public final class Ieeet4Exciter extends AnnotateExciter {
         if (trh <= 0.0 || te <= 0.0 || kv < 0.0) return false;
 
         double efd0 = machine.getEfd();
-        double vr0 = fieldFeedback(efd0);
         double high = Math.max(data.getVrmax(), data.getVrmin());
         double low = Math.min(data.getVrmax(), data.getVrmin());
+        if (high <= 0.0) {
+            // A missing positive regulator ceiling uses the upper saturation
+            // point and the entered gain, before the automatic gain is solved.
+            double defaultUpper = e2 * (ke + se2);
+            if (defaultUpper > 0.0) {
+                high = defaultUpper;
+                low = -defaultUpper;
+            }
+        }
+        if (ke == 0.0 && efd0 != 0.0) {
+            // A zero input requests an operating-point gain. Set the initial
+            // rheostat at 10% of the positive regulator ceiling and solve the
+            // field equilibrium with the same saturation used during stepping.
+            // Keep this coefficient on the exciter so reinitialization uses
+            // the entered value and the new machine operating point.
+            ke = 0.1 * Math.max(0.0, high) / efd0 - fieldSaturation(efd0);
+        }
+        double vr0 = fieldFeedback(efd0);
         vrmax = Math.max(high, vr0);
         vrmin = Math.min(low, vr0);
         state[VRH] = vr0;
@@ -123,7 +139,12 @@ public final class Ieeet4Exciter extends AnnotateExciter {
     }
 
     public double rateCommand(double voltageReference, double terminalVoltage) {
-        return clamp(kr * (voltageReference - terminalVoltage), -1.0, 1.0);
+        double error = voltageReference - terminalVoltage;
+        // KR is the slow rheostat contact threshold. Inside that band the
+        // rheostat holds its position. A closed contact moves it at 1/TRH
+        // independently of the fast excitation contacts selected by KV.
+        if (Math.abs(error) <= Math.max(0.0, kr)) return 0.0;
+        return Math.copySign(1.0, error);
     }
 
     public double selectControl(double voltageReference, double terminalVoltage,
@@ -135,7 +156,13 @@ public final class Ieeet4Exciter extends AnnotateExciter {
     }
 
     private double fieldFeedback(double field) {
-        return field * (ke + Exac1Exciter.saturation(field, e1, se1, e2, se2));
+        return field * (ke + fieldSaturation(field));
+    }
+
+    private double fieldSaturation(double field) {
+        // Saturation starts above the magnitude of the fitted intercept.
+        // Above that boundary the quadratic still uses the signed intercept.
+        return Exac1Exciter.saturation(field, e1, se1, e2, se2, true);
     }
 
     public double getRheostatOutput() { return active[VRH]; }

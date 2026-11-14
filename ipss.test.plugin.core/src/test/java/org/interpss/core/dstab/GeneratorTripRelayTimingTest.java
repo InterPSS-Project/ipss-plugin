@@ -75,6 +75,36 @@ class GeneratorTripRelayTimingTest {
         assertEquals(breaker,relay.getData().breakerTime(),0.0);
     }
 
+    static Stream<Arguments> recordedEndpointCrossings() {
+        return Stream.of(
+                Arguments.of(true, .0033333, .008334, 0.0, 3),
+                Arguments.of(true, .00166665, .008334, 0.0, 5),
+                Arguments.of(true, .0033333, .007, 0.0, 2),
+                Arguments.of(true, .0033333, .008334, .008334, 6),
+                Arguments.of(false, .0033333, .008334, 0.0, 3),
+                Arguments.of(false, .00166665, .008334, 0.0, 5));
+    }
+
+    @ParameterizedTest @MethodSource("recordedEndpointCrossings")
+    void startsTimingAtFirstOutsideEndpoint(boolean frequency, double dt, double pickup,
+            double breaker, int expectedIntervalsAfterCrossing) throws Exception {
+        var relay = relay(frequency, pickup, breaker);
+        assertTrue(relay.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 0));
+        outside(relay);
+        assertTrue(relay.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 1));
+        assertTrue(relay.afterStep(dt));
+        assertEquals(0.0, relay.getTimerMemory(), 0.0);
+        assertFalse(relay.isPickedUp());
+
+        for (int interval = 1; interval <= expectedIntervalsAfterCrossing; interval++) {
+            assertTrue(relay.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 0));
+            assertTrue(relay.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 1));
+            assertTrue(relay.afterStep(dt));
+            assertEquals(interval == expectedIntervalsAfterCrossing, relay.isTripped());
+        }
+        assertEquals((1 + expectedIntervalsAfterCrossing) * dt, relay.getActionTime(), 1e-12);
+    }
+
     @Test void resetBeforePickupDoesNotLeakIntoLatchedBreaker() throws Exception {
         var relay=relay(false,.0204,.0204);outside(relay);
         for(int i=0;i<19;i++)assertTrue(relay.afterStep(.001));

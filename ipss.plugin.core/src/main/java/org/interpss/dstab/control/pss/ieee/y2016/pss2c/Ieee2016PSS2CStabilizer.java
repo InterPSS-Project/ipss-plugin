@@ -19,6 +19,7 @@ import com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock;
 import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 
 /** IEEE Std 421.5-2016 dual-input PSS2C stabilizer. */
 @AnController(input="mach.speed", output="this.outputBlock.y", refPoint="0.0", display={})
@@ -83,6 +84,7 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
     private boolean pssActive;
+    private boolean terminalElectricalPowerInput;
     private double filteredPgen;
     private double pgenFilterDerivative;
     private double pgenFilterTrial;
@@ -170,12 +172,23 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
         minimumTimeConstantMultiplier = multiplier;
     }
 
+    /** Select terminal MW for the native electrical-power input and activation logic. */
+    public void setUseTerminalElectricalPowerInput(boolean enabled) {
+        terminalElectricalPowerInput = enabled;
+    }
+
+    private double measuredGeneratorPower(Machine machine, double airGapPower) {
+        return terminalElectricalPowerInput && machine instanceof RoundRotorMachineImpl rotor
+                ? rotor.getTerminalActivePower() : airGapPower;
+    }
+
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         Ieee2016PSS2CStabilizerData d = getData();
         // Capture the initialized electrical-power state before current access.
         // Some machine implementations refresh Pe while evaluating getIxy().
-        double initialPgen = machine.getPe();
+        double airGapPower = machine.getPe();
+        double initialPgen = measuredGeneratorPower(machine, airGapPower);
         if (input1Bus == null) input1Bus = bus;
         if (input2Bus == null) input2Bus = bus;
         tw1 = d.getTw1(); tw2 = d.getTw2(); t6 = d.getT6();
@@ -196,9 +209,9 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
                 ? compensatedVoltageAngle(machine, d.getXcomp()) : 0.0;
         compensatedFrequencyState = 0.0;
         input1Signal = limitedInput(d.getIcs1(), input1Bus, machine,
-                vsi1max, vsi1min, 0.0, initialPgen);
+                vsi1max, vsi1min, 0.0, initialPgen, airGapPower);
         input2Signal = limitedInput(d.getIcs2(), input2Bus, machine,
-                vsi2max, vsi2min, 0.0, initialPgen);
+                vsi2max, vsi2min, 0.0, initialPgen, airGapPower);
         inputPath1 = new InputPath(tw1, tw2, 1.0, t6);
         inputPath2 = new InputPath(tw3, tw4, ks2, t7);
         filteredPgen = initialPgen;
@@ -210,7 +223,8 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
         Ieee2016PSS2CStabilizerData d = getData();
-        double instantaneousPgen = machine.getPe();
+        double airGapPower = machine.getPe();
+        double instantaneousPgen = measuredGeneratorPower(machine, airGapPower);
         double compensatedFrequency = d.getIcs1() == 7
                 ? updateCompensatedFrequency(machine, d.getXcomp(), d.getTcomp(), dt, flag)
                 : 0.0;
@@ -218,13 +232,18 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
                 ? clamp((input1Bus.getVoltageMag() - input1PreviousVoltage) / dt,
                         vsi1max, vsi1min)
                 : limitedInput(d.getIcs1(), input1Bus, machine,
-                        vsi1max, vsi1min, compensatedFrequency, instantaneousPgen);
+                        vsi1max, vsi1min, compensatedFrequency, instantaneousPgen, airGapPower);
         input2Signal = d.getIcs2() == 6
                 ? clamp((input2Bus.getVoltageMag() - input2PreviousVoltage) / dt,
                         vsi2max, vsi2min)
                 : limitedInput(d.getIcs2(), input2Bus, machine,
-                        vsi2max, vsi2min, 0.0, instantaneousPgen);
-        double measuredPgen = updateFilteredPgen(instantaneousPgen, dt, flag);
+                        vsi2max, vsi2min, 0.0, instantaneousPgen, airGapPower);
+        // For the native unfiltered gate, flag 0 samples accepted terminal
+        // power. Commit that sample in flag 1 so a trial network voltage
+        // cannot switch the hysteresis. The continuous PSS inputs still use
+        // the electrical power evaluated at their respective stages.
+        double measuredPgen = terminalElectricalPowerInput && tpgfilt <= 0.0 && flag != 0
+                ? filteredPgen : updateFilteredPgen(instantaneousPgen, dt, flag);
         boolean result = super.nextStep(dt, method, machine, flag);
         if (flag != 0) {
             input1PreviousVoltage = input1Bus.getVoltageMag();
@@ -325,12 +344,12 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
     }
 
     private static double limitedInput(int code, BaseDStabBus<?, ?> bus, Machine machine,
-            double max, double min, double compensatedFrequency, double pgen) {
+            double max, double min, double compensatedFrequency, double pgen, double airGapPower) {
         double value = switch (code) {
             case 1 -> machine.getSpeed() - 1.0;
             case 2 -> bus.getFreq() - 1.0;
             case 3 -> pgen;
-            case 4 -> machine.getPm() - pgen;
+            case 4 -> machine.getPm() - airGapPower;
             case 5 -> bus.getVoltageMag();
             case 6 -> 0.0;
             case 7 -> compensatedFrequency;

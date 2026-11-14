@@ -38,7 +38,7 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
     public Wt3e1Model(Wt3e1Data data, Wt3GeneratorModel generator) {
         this.data = data;
         this.generator = generator;
-        speedPower = new double[] {0.0, .2, .4, .6, data.minimumPowerAtFullSpeed()};
+        speedPower = new double[] {0.0, .2, .4, .6, 1.0};
         speedValues = new double[] {data.omegaPmin(), data.omegaP20(), data.omegaP40(),
                 data.omegaP60(), data.omegaP100()};
     }
@@ -218,6 +218,11 @@ public final class Wt3e1Model implements ICMLStateProvider, StaggeredEulerPartic
     }
 
     private double optimalSpeed(double p) {
+        // Native WT3E1 interpolates the 60% to 100% speed segment on
+        // rated power. Pwp independently selects full speed once reached.
+        // Using Pwp as the interpolation endpoint increases the reference
+        // prematurely and changes both shaft initialization and torque control.
+        if (p >= data.minimumPowerAtFullSpeed()) return data.omegaP100() - 1.0;
         double[] px = speedPower;
         double[] wy = speedValues;
         if (p <= px[0]) return wy[0] - 1.0;

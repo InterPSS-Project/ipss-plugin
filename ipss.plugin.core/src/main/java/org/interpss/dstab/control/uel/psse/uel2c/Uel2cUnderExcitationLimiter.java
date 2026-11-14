@@ -76,11 +76,19 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
     public void initializeWithSignals(double vt,double pt,double qt,double vf,double vfb){
         state[V]=vt;double u=voltageBias(vt);state[P]=pt*inversePower(u,data.k1());state[Q]=qt;
         double normalizedQ=limitAt(state[P])*power(u,data.k2());state[QREF]=normalizedQ;
-        state[I]=data.vuimin();state[FB]=data.kfb()*vfb;state[LL1]=data.vuimin();state[LL2]=data.vuimin();
+        // With zero integral gain, a lower-limit seed becomes a permanent
+        // bias in the proportional path. The inactive integrator and physical
+        // lead-lag states start at zero; bypassed stages publish their input.
+        boolean proportionalOnly = data.kui() == 0.0;
+        double initialControl = proportionalOnly ? 0.0 : data.vuimin();
+        state[I]=initialControl;state[FB]=data.kfb()*vfb;state[LL1]=initialControl;state[LL2]=initialControl;
         // Native selectors 0 and 1 use the fixed-gain branch; only position 2
         // owns the adjustable-gain lag state. Preserve the source selector.
-        state[GAIN]=data.gainMode()==2?adjustableGain(vt,pt,qt):0;System.arraycopy(state,0,trial,0,state.length);active=state;
-        output=output(state,new Signals(vt,pt,qt,vf,vfb));exciter.setVuel(output);initialized=finite(state)&&Double.isFinite(output);
+        state[GAIN]=data.gainMode()==2?adjustableGain(vt,pt,qt):0;
+        Signals signals = new Signals(vt,pt,qt,vf,vfb);
+        if (proportionalOnly) normalize(state, signals);
+        System.arraycopy(state,0,trial,0,state.length);active=state;
+        output=output(state,signals);exciter.setVuel(output);initialized=finite(state)&&Double.isFinite(output);
     }
 
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag){
@@ -138,9 +146,18 @@ public final class Uel2cUnderExcitationLimiter extends DynLoadModelImpl implemen
                 exciter.getUelStabilizingSignal(),exciter.getUelReferenceFeedbackSignal());
     }
     private double limitAt(double p){
-        double query=p<0&&data.thirdQuadrantMode()==0?-p:p;double[] ps=data.pPoints(),qs=data.qPoints();int n=data.pointCount();
-        int hi=1;if(query<=ps[0])hi=1;else if(query>=ps[n-1])hi=n-1;else while(hi<n-1&&query>ps[hi])hi++;
-        int lo=hi-1;return qs[lo]+(qs[hi]-qs[lo])*(query-ps[lo])/(ps[hi]-ps[lo]);
+        double query = p < 0 && data.thirdQuadrantMode() == 0 ? -p : p;
+        double[] ps = data.pPoints();
+        double[] qs = data.qPoints();
+        int n = data.pointCount();
+        // Above the highest entered P, the reference limiter uses zero Q,
+        // including when the final Q is nonzero and extrapolation stays negative.
+        // The first segment still extends below the lowest entered P.
+        if (query > ps[n - 1]) return 0.0;
+        int hi = 1;
+        while (hi < n - 1 && query > ps[hi]) hi++;
+        int lo = hi - 1;
+        return qs[lo] + (qs[hi] - qs[lo]) * (query - ps[lo]) / (ps[hi] - ps[lo]);
     }
     private double voltageBias(double v){if(data.vbias()<0)return v;if(v>1)return v;if(v>data.vbias())return 1;return data.vbias()>EPS?v/data.vbias():v;}
     private double adjustableGain(double v,double p,double q){double axis=v*v/data.xq()+q;return axis/Math.max(EPS,Math.hypot(axis,p));}

@@ -16,6 +16,7 @@ import com.interpss.dstab.device.NetworkIterationAware;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
+import com.interpss.dstab.mach.MachineController;
 
 /** Auxiliary OEL3C with no network injection and an explicitly compatible summation port. */
 public final class Oel3cModel extends DynLoadModelImpl
@@ -96,6 +97,14 @@ public final class Oel3cModel extends DynLoadModelImpl
         }catch(RuntimeException failure){return false;}
     }
     @Override public double output(){return ready&&sameOwner()&&enabled()?output:0;}
+    @Override public double observeOutput(){
+        if(!ready||!isActive()||!machine.isActive()||!machine.getParentGen().isActive()
+                ||!getDStabBus().isActive()||!(port instanceof MachineController controller)
+                ||!controller.isActive()||!machine.getControllerList().contains(port))return 0;
+        // A filtered OEL keeps its accepted measurement across a zero-time event.
+        // The normal output lookup updates controller dispatch counters.
+        return data.filterTime()>0?output:Double.NaN;
+    }
     @Override public double getOutput(){return output();}
     @Override public Object getOutputObject(){return Complex.ZERO;}
     @Override public boolean afterStep(double dt){return sameOwner()&&(!enabled()||ready);}

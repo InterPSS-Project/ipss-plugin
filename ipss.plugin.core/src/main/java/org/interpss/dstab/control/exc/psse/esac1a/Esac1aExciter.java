@@ -80,15 +80,17 @@ public class Esac1aExciter extends AnnotateExciter implements IntegrationStepAwa
     @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction saturation = new CMLFunctionAdapter() {
         @Override public double eval(double[] values) {
-            return Exac1Exciter.saturation(values[0], e1, se1, e2, se2);
+            return saturationAt(values[0]);
         }
     };
 
-    @AnFunctionField(input={"this.fieldIntegrator.y", "mach.ifd"})
+    @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction vfe = new CMLFunctionAdapter() {
         @Override public double eval(double[] values) {
-            double ifd = Double.isFinite(values[1]) ? values[1] : 0.0;
-            return values[0]*(ke+saturation.eval(new double[] {values[0]}))+kd*ifd;
+            // KD and the rectifier KC both use exciter-base field current.
+            // The general CML mach.ifd signal is on the machine field base.
+            double ifd = exciterIfd();
+            return values[0]*(ke+saturationAt(values[0]))+kd*ifd;
         }
     };
 
@@ -142,7 +144,7 @@ public class Esac1aExciter extends AnnotateExciter implements IntegrationStepAwa
         washoutGain=kf/tf;
         double ifd=exciterIfd();
         double ve0=Exac1Exciter.solveInternalVoltage(machine.getEfd(),kc*ifd);
-        double vr0=ve0*(ke+Exac1Exciter.saturation(ve0,e1,se1,e2,se2))+kd*ifd;
+        double vr0=ve0*(ke+saturationAt(ve0))+kd*ifd;
         vamax=Math.max(Math.max(data.getVamax(),data.getVamin()),vr0);
         vamin=Math.min(Math.min(data.getVamax(),data.getVamin()),vr0);
         vrmax=Math.max(Math.max(data.getVrmax(),data.getVrmin()),vr0);
@@ -176,6 +178,12 @@ public class Esac1aExciter extends AnnotateExciter implements IntegrationStepAwa
                 e1,se1,e2,se2,data.getVrmax(),data.getVrmin(),spdmlt};
         for(double value:values)if(!Double.isFinite(value))return false;
         return true;
+    }
+
+    private double saturationAt(double ve) {
+        // Use the absolute fitted intercept for the cutoff and retain the
+        // signed intercept in the quadratic above it.
+        return Exac1Exciter.saturation(ve, e1, se1, e2, se2, true);
     }
 
     private double exciterIfd() {

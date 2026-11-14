@@ -297,8 +297,10 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     }
     /** Local modified-Euler integration inside an already opened outer interval.
      * The outer predictor holds the accepted inputs. The outer corrector replays
-     * from the left numerical state with linearly interpolated trial-endpoint
-     * inputs. Protection history remains owned by the outer network transaction.
+     * from the left numerical state. For the native-qualified CHVDC2U1 RL
+     * profile, both stages hold the left AC phasors over the local integration
+     * interval. Other inputs may interpolate to the trial endpoint. Protection
+     * history remains owned by the outer network transaction.
      * Coefficients and interval samples are never prepared at the local step. */
     public void step(double seconds,int stage,int localSteps) {
         if(localSteps<1||localSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
@@ -330,6 +332,12 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private void localInputs(int stage,double fraction) {
         for(int k=0;k<inputs.length;k++)inputs[k]=stage==0?localStart.inputs[k]:
                 localStart.inputs[k]+fraction*(localRightInputs[k]-localStart.inputs[k]);
+        if (nonnegativeRlCurrent && laggedCurrentMeasurement) {
+            // Native voltage-playback traces show that measured AC voltage and
+            // line current react to the last solved phasors during these substeps.
+            // The corrector restores the right phasors before electrical output.
+            System.arraycopy(localStart.inputs, 0, inputs, 0, 4);
+        }
     }
     public void cancelPrediction(){ready();if(pending){restore(pendingLocalSteps==1?prediction:localStart);pending=false;pendingLocalSteps=1;}}
     public void beginTransaction(){ready();exclusive();if(inTransaction)throw new IllegalStateException("Coupled transaction already open");save(transaction);inTransaction=true;}

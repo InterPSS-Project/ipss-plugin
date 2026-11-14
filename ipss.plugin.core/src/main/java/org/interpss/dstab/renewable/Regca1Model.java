@@ -389,7 +389,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         controller.refreshTwoStep(p,q,controlVoltage,frequency);
         if (flag == 0 && dt > 0.0) {
             double dv = derivative(v, vFiltered, data.tfltr());
-            double dip = activeCurrentDerivative(controller.getTwoStepIpcmd(), ipState);
+            // The two-step regulator evaluates the command and recovery rate,
+            // advances filtered voltage, then projects Ip onto that new LVPL
+            // ceiling. Blocking the rate at the old ceiling loses the first
+            // permitted recovery step and feeds a zero rate into the history.
+            double dip = activeCurrentRecoveryRate(derivative(controller.getTwoStepIpcmd(), ipState, data.tg()));
             double diq = reactiveCurrentDerivative(controller.getTwoStepIqcmd(), iqState);
             stateMonitor.begin(Stage.TWO_STEP);
             stateMonitor.record(0, vFiltered, dv);
@@ -410,7 +414,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         double derivative = derivative(command, state, data.tg());
         double lvpl = lowVoltagePowerLimit();
         if (state >= lvpl && derivative > 0.0) derivative = 0.0;
-        return data.rrpwr() > 0.0 ? Math.min(data.rrpwr(), derivative) : derivative;
+        return activeCurrentRecoveryRate(derivative);
+    }
+
+    private double activeCurrentRecoveryRate(double rate) {
+        return data.rrpwr() > 0.0 ? Math.min(data.rrpwr(), rate) : rate;
     }
 
     private double reactiveCurrentDerivative(double command, double state) {

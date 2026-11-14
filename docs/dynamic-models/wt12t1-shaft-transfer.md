@@ -38,3 +38,39 @@ convergence after the correction. This qualifies the tested equation boundary;
 full-system fault trajectories and unqualified mechanical/angle observation
 mappings require their separate acceptance checks. No catalog-wide VERIFIED
 status is inferred.
+
+## Uncontrolled turbine torque and mechanical-power output
+
+For WT1G1 and WT2G1 with WT12T1, the reference simulator holds the initialized
+aerodynamic torque when no aerodynamic controller is attached. If `Pa0`
+and `wt0` are the initialized power and speed, the held input is
+`Ta0 = Pa0 / wt0`. The instantaneous aerodynamic power is
+`Ta0 * wt`. An attached aerodynamic controller or an explicit power
+input supplies power directly. The two modes share the same stage
+integration and do not advance any additional controller state.
+
+The native PMEC output is `(Kshaft * phi + Dshaft * (wt - wg)) * wg`
+in two-mass mode and the aerodynamic input power in one-mass mode.
+The machine publishes this value after shaft initialization and after
+each mechanical stage. The two-mass output uses the physical shaft
+torque before the generator equation applies its speed normalization.
+WT1G1 and WT2G1 without a drive train retain their initialized mechanical
+power. No load-flow or entered dynamic constants are modified.
+
+Native source-matched Type 1 and independent Type 2 traces confirm the
+shaft power formula within 1.56e-6 machine pu. A native one-mass case
+matches its aerodynamic power channel exactly. For the uncontrolled
+turbine, measured aerodynamic torque stays constant within 1.30e-7 pu
+in these probes while aerodynamic power varies with turbine speed.
+
+## GEWT2MU1 generator shaft torque
+
+GEWT2MU1 uses the shared mechanical integrator with the generator-side
+shaft speed normalization disabled. An initialized native GE fixture
+with a synthetic two-mass allocation was perturbed in both directions
+at the shaft angle and both speeds. At the 20-microsecond step, the RMS
+generator torque-equation residual is 2.98e-4 pu for direct shaft torque
+and 4.92e-3 pu for the normalized WT12T1 equation. The smaller-step
+probes agree on the choice within the resolution of native states.
+WT12T1 retains its independently verified speed ratio. GEWT2MU1's
+explicit aerodynamic input remains a power input.

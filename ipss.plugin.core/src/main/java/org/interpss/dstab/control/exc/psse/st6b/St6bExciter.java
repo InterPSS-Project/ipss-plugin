@@ -64,11 +64,44 @@ public final class St6bExciter extends AnnotateExciter implements IntegrationSte
         dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],tda);
         double iRate=kia*a.error;if((a.va>=vamax-EPS&&iRate>0)||(a.va<=vamin+EPS&&iRate<0))iRate=0;dx[PID_I]=iRate;
         dx[VG]=lagDerivative(kg*a.exciterInput,x[VG],tg);dx[EFD]=lagDerivative(a.exciterInput,x[EFD],ts);}
-    private Algebraic algebraics(double[] x,Machine machine){double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
+    private Algebraic algebraics(double[] x,Machine machine){
+        return algebraics(x,machine.getDStabBus().getVoltageMag(),
+                tr>EPS?x[VSENSE]:sensedVoltage(machine),exciterIfd(machine),stabilizerSignal(machine));
+    }
+
+    /** Observe the field output with frozen controller state and supplied endpoint signals. */
+    public double observeFieldVoltage(double terminalVoltage,double compensatedVoltage,
+            double fieldCurrent,double stabilizerOutput){
+        double sensed=tr>EPS?active[VSENSE]:compensatedVoltage;
+        return algebraics(active,terminalVoltage,sensed,fieldCurrent,stabilizerOutput).efd;
+    }
+
+    /**
+     * The transducer and feedback retain their states at a zero-duration
+     * switch. A potential-fed output follows the new terminal magnitude if
+     * both current ceilings are inactive and the stabilizer output is held.
+     * The caller establishes that last condition from the attached stabilizer.
+     */
+    public double observePotentialFedEvent(double terminalBefore, double terminalAfter,
+            double currentBefore, double currentAfter, double fieldBefore) {
+        if (!initialized || tr <= EPS || tg <= EPS || ts > EPS || vrmult == 0 || hasVuel || hasVoel
+                || !Double.isFinite(terminalBefore) || terminalBefore <= EPS
+                || !Double.isFinite(terminalAfter) || terminalAfter < 0.0
+                || !Double.isFinite(currentBefore) || !Double.isFinite(currentAfter)
+                || !Double.isFinite(fieldBefore) || !unconstrainedAt(currentBefore)
+                || !unconstrainedAt(currentAfter)) return Double.NaN;
+        return fieldBefore * (terminalAfter / terminalBefore);
+    }
+
+    private boolean unconstrainedAt(double fieldCurrent) {
+        return Math.max(vrmin, klr * (kcl * ilr - fieldCurrent)) >= vrmax;
+    }
+
+    private Algebraic algebraics(double[] x,double vt,double sensed,double ifd,double stabilizerOutput){
         double before=reference-sensed-oelBefore(),high=hasVuel?Math.max(before,vuel):before;
-        double error=high+stabilizerSignal(machine)-oelAfter();double derivative=tda>EPS?kda*(error-x[PID_D_LAG])/tda:0;
+        double error=high+stabilizerOutput-oelAfter();double derivative=tda>EPS?kda*(error-x[PID_D_LAG])/tda:0;
         double va=clamp(kpa*error+x[PID_I]+derivative,vamin,vamax),vb=vrmult!=0?vt:1;
-        double currentLimit=Math.max(vrmin,klr*(kcl*ilr-exciterIfd(machine))),vg=x[VG],inner=0,vr=0,input=0;
+        double currentLimit=Math.max(vrmin,klr*(kcl*ilr-ifd)),vg=x[VG],inner=0,vr=0,input=0;
         for(int iteration=0;iteration<(tg>EPS?1:30);iteration++){
             inner=clamp(kff*va+km*(va-vg),vrmin,vrmax);vr=Math.min(inner,currentLimit);input=vr*vb;
             if(tg>EPS)break;double next=kg*input;if(Math.abs(next-vg)<1e-12){vg=next;break;}vg=next;

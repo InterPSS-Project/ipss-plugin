@@ -102,3 +102,20 @@ converter voltage/event-memory changes. The private evidence set is
 `2026-10-19-ieeest-power-inputs`: exact cold pairs, unused-VAR pilots,
 failing-before input guards, rejected signed-zero assertion, complete playback/
 coupled diagnostics, source contracts and final terminal reports are retained.
+
+
+## Nonzero-resistance mode-3 follow-up
+
+For imported round-rotor hosts, mode 3 reads machine-base terminal active
+power from the most recent stator evaluation. That value and the input
+reference use the same physical measurement. The existing algebraic
+measurement supplies it to the annotated and typed stage evaluators.
+Mode 4 retains its mechanical-minus-air-gap signal at the nominal
+stator frequency.
+
+The native mode-3 filter recurrence discriminates terminal power from
+air-gap power for a nonzero-resistance machine. A separate native mode-4
+probe with the same constants confirms the air-gap term. A regression
+checks the input during both solver stages, changes terminal voltage to
+produce independently calculated terminal MW, and verifies that reading
+the measurement leaves the swing input intact.

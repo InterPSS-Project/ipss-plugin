@@ -198,18 +198,41 @@ public class IEEE2005ST3AExciter extends AnnotateExciter implements IntegrationS
     public double getBridgeVoltage() { return bridgeVoltage(getMachine()); }
 
     private double compoundSourceVoltage(Machine machine) {
+        return compoundSourceVoltage(machine.getDStabBus().getVoltage(), machine.getIxy(),
+                machine.getIMultiFactor());
+    }
+
+    private double compoundSourceVoltage(Complex terminalVoltage, Complex systemCurrent,
+            double currentBaseFactor) {
         double angle = Math.toRadians(angKp_deg);
         Complex kpComplex = new Complex(kp * Math.cos(angle), kp * Math.sin(angle));
-        Complex vt = machine.getParentGen().getParentBus().getVoltage();
-        Complex it = machine.getIxy();
-        return vt.multiply(kpComplex).add(Complex.I
+        // The compounding gain uses machine-base current. Using network current
+        // can collapse the bridge supply during faults on small machine bases.
+        Complex it = systemCurrent.divide(currentBaseFactor);
+        return terminalVoltage.multiply(kpComplex).add(Complex.I
                 .multiply(kpComplex.multiply(xl).add(ki)).multiply(it)).abs();
     }
 
     private double bridgeVoltage(Machine machine) {
         double ve = compoundSourceVoltage(machine);
+        return ve <= EPS ? 0.0 : bridgeVoltage(ve, machine.calculateIfd(MachineIfdBase.EXCITER));
+    }
+
+    /**
+     * Reconstructs field voltage at a zero-duration network event with the inner
+     * regulator state held. The caller supplies the accepted terminal phasors
+     * to avoid refreshing the machine's Norton or controller state.
+     * Returns NaN when the inner regulator itself has algebraic feedthrough.
+     */
+    public double observeFieldVoltage(Complex terminalVoltage, Complex systemCurrent,
+            double currentBaseFactor, double fieldCurrent) {
+        if (!initialized || tm <= EPS) return Double.NaN;
+        double ve = compoundSourceVoltage(terminalVoltage, systemCurrent, currentBaseFactor);
+        return clamp(active[VM], vmmin, vmmax) * bridgeVoltage(ve, fieldCurrent);
+    }
+
+    private double bridgeVoltage(double ve, double ifd) {
         if (ve <= EPS) return 0.0;
-        double ifd = machine.calculateIfd(MachineIfdBase.EXCITER);
         if (!Double.isFinite(ifd)) ifd = 0.0;
         return Math.max(0.0, Math.min(vbmax,
                 ve * Esst2aExciter.rectifierFactor(kc * ifd / ve)));

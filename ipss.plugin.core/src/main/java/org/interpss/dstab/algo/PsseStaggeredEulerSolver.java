@@ -100,6 +100,8 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
 @Deprecated(since="1.4.8",forRemoval=false)
 public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
     @Override protected boolean usesModifiedEulerControllerPreparation(){return false;}
+
+    @Override protected boolean usesStaggeredStatcomFiring() { return true; }
     /**
      * Boundary supplying synchronous-machine stator currents and air-gap power.
      * LAST_NETWORK_INJECTION retains the measurements used to assemble the final
@@ -540,6 +542,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
             if (!super.networkSolutionStep())
                 throw new DStabSimuException("Network did not converge to " + converge_tol
                         + " at " + dstabAlgo.getSimuTime());
+            refreshSolvedEndpointStatcomFiringCommands();
             // Injection evaluation precedes the linear solve. The selected boundary
             // must remain the same for ordinary solves, events and endpoint reuse.
             // Refreshing here changes controller inputs and electrical derivatives;
@@ -1159,7 +1162,7 @@ public class PsseStaggeredEulerSolver extends DefaultDynamicSimulationSolver {
                 if (p!=null) p.model.evaluateStaggered(fixedStep,p.rates,0);
                 else if (!m.getGovernor().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
                     throw new DStabSimuException("Governor derivative failed: "+m.getId());
-                m.setPm(m.getGovernor().getOutput(m));
+                m.publishGovernorMechanicalPower(m.getGovernor().getOutput(m));
             }
             // Classical machines have mechanical states and constant internal
             // voltage; they do not inherit the electrical-state implementation.

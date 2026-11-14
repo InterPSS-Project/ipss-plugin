@@ -43,8 +43,18 @@
     "allowGeneratorsWithoutMachine": {
       "type": "boolean"
     },
+    "regca1HighVoltageNetworkIterationEnabled": {
+      "type": "boolean",
+      "description": "Enable accumulated high-voltage correction and accepted voltage memory for imported REGCA1 converters."
+    },
     "networkFrequencyDependenceEnabled": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Enable frequency corrections for passive branches, shunts, missing-machine equivalents, and GENQEC/GENQECU stators."
+    },
+    "fluxMachineNetworkFrequencyDependenceEnabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Use local bus frequency for GENROU, GENROE, and GENSAL stators. Independent of networkFrequencyDependenceEnabled."
     },
     "relativeAnglesEnabled": {
       "type": "boolean"

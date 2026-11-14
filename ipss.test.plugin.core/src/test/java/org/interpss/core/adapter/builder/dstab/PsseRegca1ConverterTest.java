@@ -162,6 +162,33 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void twoStepActiveCurrentCanRecoverWhenTheFilteredVoltageLiftsTheLvplCeiling() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var model = builder.addRegca1("Bus1", "1", data(1, .1, 10., .8, -.6));
+        model.setActiveElectricalController(new org.interpss.dstab.renewable.ConverterCurrentCommands());
+        model.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        var bus = model.getDStabBus();
+        assertTrue(model.initStates(bus));
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        double dt = .005;
+        bus.setVoltage(new Complex(.3, 0.));
+        for (int i = 0; i < 80; i++) assertTrue(model.nextStep(dt, method, 0));
+        assertEquals(0., model.getIpRegulatorState(), TOL);
+        double previousVoltage = model.getFilteredVoltage();
+        assertTrue(previousVoltage < .4);
+
+        bus.setVoltage(Complex.ONE);
+        assertTrue(model.nextStep(0., method, 1));
+        assertEquals(previousVoltage, model.getFilteredVoltage(), TOL);
+        assertEquals(0., model.getIpRegulatorState(), TOL);
+        assertTrue(model.nextStep(dt, method, 0));
+        double newLimit = (model.getFilteredVoltage() - .4) * 1.22 / (.9 - .4);
+        assertTrue(newLimit > 0.);
+        assertTrue(model.getIpRegulatorState() > 0.);
+        assertTrue(model.getIpRegulatorState() <= newLimit);
+    }
+
+    @Test
     void reactiveRecoveryRatePrecedesAlgebraicHighVoltageManagement() throws Exception {
         Fixture fixture = fixture(data(10.0, 0.1, -0.1));
         double initialState = fixture.model.getIqRegulatorState();

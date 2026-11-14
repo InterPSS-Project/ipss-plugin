@@ -9,6 +9,7 @@ import org.interpss.core.dstab.reference.GenqecSchemaNativeReference;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
+import org.interpss.plugin.dstab.config.DStabRunConfigRec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -23,11 +24,19 @@ public class GenqecNativeSelectorConformanceTest extends CorePluginTestSetup {
     private static GenqecSchemaNativeReference.Profile profile(String name){return GenqecSchemaNativeReference.profiles().stream().filter(p->p.name().equals(name)).findFirst().orElseThrow();}
     private record Fixture(DynamicSimuAlgorithm algorithm,GenqecMachine machine,Machine reference){}
     private static Fixture load(GenqecSchemaNativeReference.Profile p,Path dir)throws Exception{
+        return load(p, dir, false);
+    }
+
+    private static Fixture load(GenqecSchemaNativeReference.Profile p, Path dir, boolean netfrq) throws Exception {
         Files.createDirectories(dir);Path raw=dir.resolve("network.raw"),dyr=dir.resolve("dynamic.dyr");Files.writeString(raw,p.network());Files.writeString(dyr,p.input());
         var context=new PSSEMultiFileLoader().loadDStab(raw.toString());var net=context.getDStabilityNet();
         var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setStrictImport(true);parser.parseDynFile(dyr.toString());assertTrue(parser.getLastImportReport().isStrictlyComplete());
         var algorithm=context.getDynSimuAlgorithm();algorithm.getAclfAlgorithm().setTolerance(1e-10);assertTrue(algorithm.getAclfAlgorithm().loadflow());algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(p.step());algorithm.setTotalSimuTimeSec(.3);algorithm.setSimuOutputHandler(new StateMonitor());
         net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"three-cycle-generator-schema");
+        if (netfrq) {
+            var config = DStabRunConfigRec.fromJson("{\"networkFrequencyDependenceEnabled\":true}");
+            assertTrue(config.applyTo(algorithm, true).isEmpty());
+        }
         assertTrue(algorithm.initialization());var machine=(GenqecMachine)net.getMachine("Bus1-mach1");
         assertEquals(p.selector()==0?0:1,machine.getGenqecData().satFunc());assertEquals(.035,machine.getGenqecData().kw());assertEquals(0,machine.getGenqecData().accel());
         return new Fixture(algorithm,machine,net.getMachine("Bus2-mach1"));
@@ -69,6 +78,47 @@ public class GenqecNativeSelectorConformanceTest extends CorePluginTestSetup {
                 if(tick<ticks)for(var fixture:fixtures)assertTrue(fixture.algorithm().solveDEqnStep(true));
             }
             for(int i=0;i<names.size();i++)save(names.get(i)+"-"+scale,traces.get(i));
+        }
+    }
+
+    @Test void netfrqScalesReactanceUsingTerminalFrequencyAndRetainsRotorEmf(@TempDir Path dir) throws Exception {
+        var profile = profile("standard-0-coarse");
+        var nominal = load(profile, dir.resolve("nominal"));
+        var enabled = load(profile, dir.resolve("netfrq"), true);
+        double speed = .987;
+        double frequency = 1.024;
+        for (var fixture : List.of(nominal, enabled)) {
+            var machine = fixture.machine();
+            var bus = machine.getDStabBus();
+            machine.setSpeed(speed);
+            bus.setFreq(frequency);
+            var nominalAdmittance = machine.getYgen();
+            machine.getIgen();
+            var voltage = machine.getVdq();
+            var current = machine.getIdq();
+            var states = machine.getNamedStates();
+            double psiD = (states.get("E'q") * (machine.getXd11() - machine.getXl())
+                    + states.get("Psi'd") * (machine.getXd1() - machine.getXd11()))
+                    / (machine.getXd1() - machine.getXl());
+            double psiQ = (-states.get("E'd") * (machine.getXq11() - machine.getXl())
+                    - states.get("Psi'q") * (machine.getXq1() - machine.getXq11()))
+                    / (machine.getXq1() - machine.getXl());
+            double ratio = fixture == enabled ? frequency : 1.;
+            assertEquals(-speed * psiQ, voltage.d + machine.getRa() * current.d
+                    - ratio * machine.getXqppSaturated() * current.q, 1e-7);
+            assertEquals(speed * psiD, voltage.q + machine.getRa() * current.q
+                    + ratio * machine.getXdppSaturated() * current.d, 1e-7);
+            assertEquals(nominalAdmittance, machine.getYgen());
+
+            double step = .001;
+            double damping = machine.getD() * .01 * fixture.algorithm().getNetwork().getFrequency();
+            double acceleratingPower = machine.getPm() - machine.getPe() - machine.getPe_NegSeq()
+                    - damping * (speed - 1.);
+            double speedScale = fixture == enabled ? speed : 1.;
+            assertTrue(machine.nextStepMechanical(step, DynamicSimuMethod.MODIFIED_EULER,
+                    fixture.algorithm().getNetwork(), 0));
+            assertEquals(speed + step * acceleratingPower / (2 * machine.getH() * speedScale),
+                    machine.getSpeed(), 1e-12);
         }
     }
 

@@ -105,6 +105,7 @@ public class PsseH6eGovernorTest extends CorePluginTestSetup {
             parser.parseDynFile(path.toString());
             var data = ((PsseH6eGovernor) builder.getDStabNetwork().getMachine("Bus1-mach1").getGovernor()).getData();
             assertEquals(1.75, data.getTw(), TOL); assertEquals(75, data.getTrate(), TOL);
+            assertEquals(model.equals("H6E1"), data.isNativeH6e1Derivative());
             for (int i = 0; i < 10; i++) {
                 assertEquals(.1 + .1 * i, data.getGv(i), TOL);
                 assertEquals(.05 + .09 * i, data.getPgv(i), TOL);
@@ -246,6 +247,29 @@ public class PsseH6eGovernorTest extends CorePluginTestSetup {
         assertEquals(.4, governor.getOutput(machine), 2e-8);
         governor.getData().setBgv(1, 20);
         assertTrue(!governor.validateParameters(), "A reversed physical flow curve must still be rejected");
+    }
+
+    @Test void nativeH6e1AddsSpeedDerivativeInBothFeedbackModes() throws Exception {
+        for (int fd : new int[] {0, 1}) {
+            for (boolean nativeH6e1 : new boolean[] {false, true}) {
+                Fixture fixture = initialized(fd);
+                var governor = fixture.governor;
+                var data = governor.getData();
+                data.setNativeH6e1Derivative(nativeH6e1);
+                // Isolate the derivative input so droop and proportional terms
+                // cannot mask the sign at the first predictor boundary.
+                data.setKp(0.0);
+                assertTrue(governor.initStates(fixture.machine.getDStabBus(), fixture.machine));
+                double initialCommand = governor.getGateCommand();
+                fixture.machine.setSpeed(1.01);
+                assertTrue(governor.nextStep(.0025, DynamicSimuMethod.MODIFIED_EULER, fixture.machine, 0));
+                double derivative = (governor.getMeasuredSpeed() - 1.0 - governor.getDerivativeState())
+                        / governor.getEffectiveTd();
+                assertTrue(derivative > 0.0);
+                double signedGain = nativeH6e1 ? data.getKd() : -data.getKd();
+                assertEquals(initialCommand + signedGain * derivative, governor.getGateCommand(), TOL);
+            }
+        }
     }
 
     private static Fixture initialized(int fd) throws Exception { return initialized(fd, .02, 0.0); }

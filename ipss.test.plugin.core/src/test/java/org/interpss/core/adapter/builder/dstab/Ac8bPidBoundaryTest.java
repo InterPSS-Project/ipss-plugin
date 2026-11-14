@@ -46,6 +46,34 @@ public class Ac8bPidBoundaryTest extends CorePluginTestSetup {
         assertTrue(f.exciter.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,f.machine,0));
         assertTrue(f.exciter.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,f.machine,1));
     }
+    @Test
+    void saturatedFieldReachesAndHoldsItsNonlinearCeilingBeforeReleasing() throws Exception {
+        Ac8bData data = parameters();
+        data.setE1(2.0);
+        data.setSe1(.2);
+        data.setE2(4.0);
+        data.setSe2(.45);
+        data.setVfemax(2.4); // E1 * (KE + SE1)
+        data.setVemin(0.0);
+        data.setVpidmax(20.0);
+        for (double dt : new double[] {.05, .025}) {
+            Fixture f = fixture(data);
+            f.exciter.setVuel(5.0);
+            double previous = f.exciter.getInternalFieldVoltage();
+            for (int sample = 0; sample < 60; sample++) {
+                step(f, dt);
+                double field = f.exciter.getInternalFieldVoltage();
+                assertTrue(field >= previous - TOL, "The field must approach the ceiling monotonically");
+                assertTrue(field <= 2.0 + TOL, "The field feedback must stay within its ceiling");
+                previous = field;
+            }
+            assertEquals(2.0, previous, TOL);
+            f.exciter.setVuel(-5.0);
+            step(f, dt);
+            assertTrue(f.exciter.getInternalFieldVoltage() < previous);
+        }
+    }
+
     @Test void defaultAc8bIntegratesInteriorErrorWithoutTracking()throws Exception {
         Fixture f=fixture(parameters());assertFalse(f.exciter.getData().isEsac8bPti());
         f.exciter.setVuel(.1);assertEquals(.3,rhs(f)[2],TOL);

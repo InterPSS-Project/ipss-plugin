@@ -67,30 +67,7 @@ final class Svsmo3t2MssBoundary {
             peerRegistry.preflight();
             var binding = bindings[changed];
             boolean active = controller.isInService(changed);
-            var delta = binding.nominal().multiply(active ? 1 : -1);
-            var bus = binding.bus();
-            var cache = bus.captureSequenceEquivalentState();
-            var oldShunt = bus.getShuntY();
-            boolean oldStatus = binding.device().isActive();
-            boolean oldDirty = network.isYMatrixDirty();
-            int index = bus.getSortNumber();
-            var oldDiagonal = bus.isActive() ? network.getYMatrix().getA(index, index) : null;
-            try {
-                binding.device().setStatus(active);
-                bus.setShuntY(oldShunt.add(new Complex(delta.getReal(), 0)));
-                bus.applyPositiveSequenceShuntAdmittanceChange(delta);
-                if (bus.isActive()) {
-                    network.getYMatrix().addToA(delta, index, index);
-                    network.setYMatrixDirty(true);
-                }
-            } catch (RuntimeException failure) {
-                binding.device().setStatus(oldStatus);
-                bus.setShuntY(oldShunt);
-                bus.restoreSequenceEquivalentState(cache);
-                if (oldDiagonal != null) network.getYMatrix().setA(oldDiagonal, index, index);
-                network.setYMatrixDirty(oldDirty);
-                throw failure;
-            }
+            FixedMssBank.apply(network, binding.bus(), binding.device(), binding.nominal(), active);
             // An actual bank stamp is an electrical event, including for a
             // different tripped controller. Continuous state is not integrated.
             peerRegistry.acceptPreparedEvent();

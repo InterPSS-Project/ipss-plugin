@@ -97,13 +97,13 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
         if(!initialized||dt<0)return false;if(dt==0)return true;
         int stage=method==DynamicSimuMethod.MODIFIED_EULER?flag:2;
         if(stage==0){
-            derivatives(state,oldDerivative,machine);recordRates(IntegrationStateMonitor.Stage.PREDICTOR,state,oldDerivative);add(state,oldDerivative,dt,trial);constrain(trial);active=trial;
+            derivatives(state,oldDerivative,machine);recordRates(IntegrationStateMonitor.Stage.PREDICTOR,state,oldDerivative);add(state,oldDerivative,dt,trial);constrain(trial,machine);active=trial;
         } else if(stage==1){
             double[] d=new double[5];derivatives(trial,d,machine);recordRates(IntegrationStateMonitor.Stage.CORRECTOR,trial,d);
             for(int i=0;i<state.length;i++)state[i]+=.5*(oldDerivative[i]+d[i])*dt;
-            constrain(state);active=state;
+            constrain(state,machine);active=state;
         } else {
-            double[] d=new double[5];derivatives(state,d,machine);recordRates(IntegrationStateMonitor.Stage.APPLIED_STEP,state,d);add(state,d,dt,state);constrain(state);active=state;
+            double[] d=new double[5];derivatives(state,d,machine);recordRates(IntegrationStateMonitor.Stage.APPLIED_STEP,state,d);add(state,d,dt,state);constrain(state,machine);active=state;
         }
         outputSignal=rectifierOutput(active[VE],exciterIfd(machine),machine);return true;
     }
@@ -129,7 +129,7 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
         outputSignal=rectifierOutput(state[VE],exciterIfd(getMachine()),getMachine());
     }
     @Override public void applyStaggeredState(double[] values,int offset,double stepSec){
-        requireInitialized();System.arraycopy(values,offset,state,0,state.length);constrain(state);active=state;
+        requireInitialized();System.arraycopy(values,offset,state,0,state.length);constrain(state,getMachine());active=state;
         outputSignal=rectifierOutput(state[VE],exciterIfd(getMachine()),getMachine());
     }
     @Override public java.util.Map<String,Double> getIntegrationStates(){
@@ -144,11 +144,19 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
     }
     private void requireInitialized(){if(!initialized)throw new IllegalStateException("Initialize ESAC6A before evaluating states");}
 
+    private double voltageError(Machine machine, double sensed) {
+        return reference + stabilizerSignal(machine) + vuel - sensed;
+    }
+
+    private double regulatorTransferOutput(double[] x, double error) {
+        return transferOutput(error, x[TA_BLOCK], ka, tk, ta);
+    }
+
     private Algebraic algebraics(double[] x,Machine machine){
         double vt=machine.getDStabBus().getVoltageMag();
         double sensed=tr>EPS?x[VSENSE]:sensingVoltage(machine);
-        double error=reference+stabilizerSignal(machine)+vuel-sensed;
-        double taOutput=transferOutput(error,x[TA_BLOCK],ka,tk,ta);
+        double error=voltageError(machine,sensed);
+        double taOutput=regulatorTransferOutput(x,error);
         double va=clamp(transferOutput(taOutput,x[VLL],1,tc,tb),vamin,vamax);
         double ifd=exciterIfd(machine),vfe=fieldFeedback(x[VE],ifd);
         double vh=clamp(kh*(vfe-vfelim),0,vhmax);
@@ -176,7 +184,20 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
     }
     private static double lagDerivative(double input,double state,double t){return t>EPS?(input-state)/t:0;}
     private static void add(double[] x,double[] d,double dt,double[] y){for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;}
-    private static void constrain(double[] x){if(x[VE]<0)x[VE]=0;}
+    private void constrain(double[] x, Machine machine) {
+        if (x[VE] < 0) x[VE] = 0;
+        if (tb > EPS) {
+            // Native ESAC6A bounds the lead-lag output by projecting its state.
+            // The direct term shifts the allowed state interval as the regulator
+            // input moves. Preserving an out-of-range state behind an output
+            // clamp winds up the block and delays its release after a fault.
+            // The subsequent terminal-voltage-scaled VR limit acts separately.
+            double sensed = tr > EPS ? x[VSENSE] : sensingVoltage(machine);
+            double taOutput = regulatorTransferOutput(x, voltageError(machine, sensed));
+            double feedthrough = tc / tb * taOutput;
+            x[VLL] = clamp(x[VLL], vamin - feedthrough, vamax - feedthrough);
+        }
+    }
     private static double clamp(double value,double min,double max){return Math.max(min,Math.min(max,value));}
     private static double stabilizerSignal(Machine machine){
         return machine.getStabilizer()==null?0:machine.getStabilizer().getOutput(machine);

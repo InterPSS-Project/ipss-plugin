@@ -196,7 +196,8 @@ public class TypedExciterCompensatedVoltageTest extends CorePluginTestSetup {
         d.setKf(.1);d.setTf(.4);d.setKp(1);d.setKc(.2);d.setEfdmax(5);return d;}
     private static Dc3aData dc3a(double tr){Dc3aData d=new Dc3aData();d.setTr(tr);d.setKv(.005);d.setVrmax(2);d.setTrh(1);d.setTe(.3);d.setKe(1);return d;}
     private static Esac4aData esac4a(double tr){Esac4aData d=new Esac4aData();d.setTr(tr);d.setVimax(5);d.setVimin(-5);d.setTc(.2);d.setTb(.4);d.setKa(2);d.setTa(.3);d.setVrmax(5);d.setVrmin(-5);d.setKc(.1);return d;}
-    private static Ieeet4Data ieeet4(){Ieeet4Data d=new Ieeet4Data();d.setKr(2);d.setTrh(.1);d.setKv(.2);d.setVrmax(5);d.setVrmin(-5);d.setTe(.3);d.setKe(1);return d;}
+    // The compensation change must close the rheostat contact to exercise its input.
+    private static Ieeet4Data ieeet4(){Ieeet4Data d=new Ieeet4Data();d.setKr(.002);d.setTrh(.1);d.setKv(.2);d.setVrmax(5);d.setVrmin(-5);d.setTe(.3);d.setKe(1);return d;}
 
     private static double sensed(Fixture f)throws Exception{return (double)f.exciter.getClass().getMethod("getSensedVoltage").invoke(f.exciter);}
     private static Field field(Class<?> type,String name)throws Exception {

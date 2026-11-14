@@ -2199,3 +2199,31 @@ the large-case QA repository.
 Ten existing local updates keep the isolated equilibrium flat at outer
 0.0033333 s; one local update is unstable. This does not qualify a complete
 system or alter the default local count.
+
+## Filtered inverter voltage for commutation recovery
+
+The short release compares the entered recovery threshold with the
+existing inverter AC measurement after the configured measurement lag.
+Independent native voltage profiles distinguish the two signals. A raw
+terminal rebound above threshold can occur several samples before the
+short releases. The release coincides with the filtered state crossing
+the threshold once the hold time is satisfied. A zero measurement time
+naturally supplies the algebraic terminal voltage through the same
+measurement output. The electrical converter continues to use the live
+terminal phasors when evaluating AC current.
+
+
+## Accepted AC samples in CHVDC2U1 local integration
+
+For the CHVDC2U1 configuration with all three source controls enabled,
+entered zero line capacitance, and a finite measurement lag, the
+modified-Euler local corrector holds the same accepted AC terminal
+phasors as its predictor. Native terminal voltage playback at the
+entered interval and at half that interval shows that the filtered AC
+voltage and DC current advance from the preceding solved phasors.
+Interpolating to the next trial voltage advances their response and
+can shift commutation-short transitions. The end of the corrector
+restores the right phasors for the electrical solve. Non-AC inputs
+retain their existing interpolation and protection remains owned by
+the outer network transaction. The first interval after a scheduled
+network event still uses both event-side rates.

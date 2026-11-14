@@ -83,13 +83,19 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
     @Override
     public boolean nextStepMechanical(double dt, DynamicSimuMethod method,
             Network network, int flag) {
+        // The stage network solve has published a new terminal voltage.
+        // Refresh Pe from that voltage and the current rotor flux before the
+        // shaft and rotor-resistance controller consume it. The cached Pe can
+        // still describe the previous voltage, especially at the corrector.
+        // The stator calculation does not depend on the subsequent speed update.
+        solver.updateOutputs();
         if (driveTrain != null) {
             driveTrain.stepCoupled(dt, getPe(), getDStabBus().getVoltageMag(), flag);
+            setPm(driveTrain.getGeneratorMechanicalPower());
             double speed = driveTrain.getGeneratorSpeed();
             if (!Double.isFinite(speed) || speed <= 0) throw new IllegalStateException("Invalid WT2G1 shaft speed");
             setSpeed(speed);
         }
-        solver.updateOutputs();
         if (rotorResistanceController != null) {
             rotorResistanceController.step(dt, getSpeed() - 1.0,
                     solver.electricalTorque, flag);
@@ -139,7 +145,7 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             SteadyCircuit steady = steadyCircuit(getSlip(), voltage, rotorResistance);
             rotorFlux = steady.airGapFlux.subtract(steady.rotorCurrent.multiply(data.x1()));
             rotorControlVoltage = (rotorResistance - data.rotorResistance())
-                    / Math.max(EPS, data.maximumRotorResistance() - data.rotorResistance());
+                    / data.maximumRotorResistance();
             Complex actualGeneratorCurrent = getParentGen().getGen().divide(bus.getVoltage())
                     .conjugate().divide(getIMultiFactor());
             Complex rawCompensation = steady.machineCurrent.negate()
@@ -152,6 +158,7 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             if (driveTrain != null) {
                 driveTrain.initialize(electricalTorque, getSpeed(), bus.getNetwork().getFrequency());
                 driveTrain.initializeAerodynamicController(electricalTorque, bus.getVoltageMag());
+                setPm(driveTrain.getGeneratorMechanicalPower());
             }
             if (rotorResistanceController != null) {
                 rotorResistanceController.initialize(getSpeed() - 1.0,
@@ -191,10 +198,10 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
 
         private void setRotorControlVoltage(double value) {
             rotorControlVoltage = value;
-            double resistance = data.rotorResistance() + Math.max(0.0, value)
-                    * (data.maximumRotorResistance() - data.rotorResistance());
-            rotorResistance = Math.max(data.rotorResistance(),
-                    Math.min(data.maximumRotorResistance(), resistance));
+            // PSS/E scales the external contribution by the entered R_ROT_MAX.
+            // WT2E1 owns the command limits. The total can exceed R_ROT_MAX
+            // or fall below the machine resistance with a negative command.
+            rotorResistance = resistanceAtCommand(value);
         }
 
         private CircuitPoint circuit(Complex voltage, Complex flux) {
@@ -236,9 +243,13 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             return coefficient * Math.pow(flux - threshold, 2.0) / flux;
         }
 
+        private double resistanceAtCommand(double command) {
+            return Math.max(EPS, data.rotorResistance() + data.maximumRotorResistance() * command);
+        }
+
         private double solveRotorResistance(double requestedP, double voltage, double slip) {
-            double lower = data.rotorResistance();
-            double upper = data.maximumRotorResistance();
+            double lower = resistanceAtCommand(0.0);
+            double upper = resistanceAtCommand(1.0);
             double lowerError = generatorPower(lower, slip, voltage) - requestedP;
             double upperError = generatorPower(upper, slip, voltage) - requestedP;
             if (lowerError * upperError > 0.0) {

@@ -555,6 +555,7 @@ public class PSSEJsonDirectParser {
         double rmpct = getDouble(row, "rmpct", 100.0);
         double pt = getDouble(row, "pt", 0.0);
         double pb = getDouble(row, "pb", 0.0);
+        int baseLoadFlag = getInt(row, "baslod", 0);
         int wmod = getInt(row, "wmod", 0);
         double wpf = getDouble(row, "wpf", 1.0);
 
@@ -583,10 +584,11 @@ public class PSSEJsonDirectParser {
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
         Complex xfrZ = (rt != 0.0 || xt != 0.0) ? new Complex(rt, xt) : null;
 
-        builder.addContributeGen(busId, genId, genStatus,
+        var generator = builder.addContributeGen(busId, genId, genStatus,
                 pg / baseMva, qg / baseMva, mbase, vs,
                 qt / baseMva, qb / baseMva, pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap, remoteBusId, rmpct * 0.01, 1.0);
+        generator.setBaseLoadFlag(baseLoadFlag);
 
         if (bus.getGenCode() == AclfGenCode.SWING) {
             builder.setSwingBus(busId, vs, bus.getVoltageAng());
@@ -707,6 +709,9 @@ public class PSSEJsonDirectParser {
         if (branch == null) {
             return;
         }
+        // MAG1/MAG2 are converted to winding one's bus voltage base.
+        // Keep the admittance ahead of the ideal tap for all tap positions.
+        if (magY != null) branch.setFromShuntOnBusSide(true);
         String branchId = branch.getId();
         if (Math.abs(cod1) == 1 && cont1 != 0) {
             String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
@@ -798,6 +803,7 @@ public class PSSEJsonDirectParser {
                 inService);
 
         if (branch3W != null) {
+            if (magY != null) branch3W.getFromAclfBranch().setFromShuntOnBusSide(true);
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
             if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);

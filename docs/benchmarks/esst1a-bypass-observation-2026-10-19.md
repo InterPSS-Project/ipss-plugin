@@ -55,6 +55,16 @@ about 8.89e-6 pu and several fine-step regulator errors increase rather than
 shrink. Those results are open numerical/event-side gaps, not accepted by
 increasing a bound. The observation correction does not claim to resolve them.
 
+## Unconnected UEL input gate
+
+The UEL selector chooses the injection point for an external limiter signal.
+With UEL=2 and no connected signal, the input high-value gate passes the
+voltage error, including its negative values. An explicitly supplied zero
+remains an active floor. Clearing the signal restores the transparent gate.
+An implicit zero floor prevented the first lead-lag from responding to
+negative voltage error and delayed regulator recovery. The regression drives
+the same negative error through all three connection states.
+
 ## Verification TODO
 
 - [x] Capture failing-before observation regression and verify the correction

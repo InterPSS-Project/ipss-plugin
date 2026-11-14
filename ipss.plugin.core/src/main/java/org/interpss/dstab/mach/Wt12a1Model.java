@@ -23,6 +23,9 @@ public final class Wt12a1Model implements Wt12AerodynamicController {
         speedReference = turbineSpeedDeviation;
         powerReference = powerFilter = electricalPower;
         integrator = outputFilter1 = outputFilter2 = aerodynamicPower;
+        // A new operating point invalidates the pending modified Euler stage.
+        oldState = null;
+        oldDerivative = null;
         initialized = true;
     }
 

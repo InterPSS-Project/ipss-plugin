@@ -6,7 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
+import com.interpss.dstab.impl.BaseDStabNetworkImpl;
 import org.interpss.fadapter.psse.PsseDStabSolver;
 
 /** Versioned dynamic-run settings. Null means preserve the imported/current value.
@@ -21,10 +21,16 @@ public final class DStabRunConfigRec {
     /** Omitted fields preserve the imported or caller-selected static conversion. */
     public com.interpss.dstab.StaticLoadModel activeStaticLoadModel, reactiveStaticLoadModel;
     public Boolean sourceImpedanceReconciliationEnabled, allowGeneratorsWithoutMachine;
+    /** Select the qualified local PSS2B update for imported GENROU machines. */
+    public Boolean genrouPss2bLocalStaggeredEnabled;
+    /** Enable REGCA1's accumulated network correction with accepted voltage memory. */
+    public Boolean regca1HighVoltageNetworkIterationEnabled;
     public LoadModelThresholds loadModelThresholds;
-    // These source policies are retained explicitly. They must never be silently
-    // equated to another algorithm or to bus-frequency measurement selection.
+    /** Apply local-frequency corrections to passive network terms and GENQEC/GENQECU stators. */
     public Boolean networkFrequencyDependenceEnabled;
+    /** Opt in to local-frequency stator calculations for GENROU, GENROE and GENSAL.
+     * New solvers default to nominal stator frequency for these models. */
+    public Boolean fluxMachineNetworkFrequencyDependenceEnabled;
     public Double sourceNetworkAccelerationFactor;
     public Boolean relativeAnglesEnabled;
     public Integer angleReferenceBus;
@@ -83,11 +89,25 @@ public final class DStabRunConfigRec {
      * rejected before any mutation. A parsed value is not proof it was applied. */
     public List<String> applyTo(DynamicSimuAlgorithm algorithm,boolean requireMatchedSettings) {
         validate();List<String> gaps=new ArrayList<>();
-        if(Boolean.TRUE.equals(networkFrequencyDependenceEnabled))gaps.add("Network-parameter frequency dependence is not implemented by this solver");
+        var network = algorithm.getNetwork();
+        if (Boolean.TRUE.equals(networkFrequencyDependenceEnabled) && !(network instanceof BaseDStabNetworkImpl<?, ?>))
+            gaps.add("The selected dynamic network does not support passive branch, shunt and generator-equivalent frequency corrections");
         if(sourceNetworkAccelerationFactor!=null&&networkRelaxationFactor==null)gaps.add("Source network acceleration has no qualified equivalent; use explicit networkRelaxationFactor for an override");
         if(Boolean.TRUE.equals(relativeAnglesEnabled))gaps.add("Relative-angle policy requires an output recorder using the requested reference; physical rotor states remain absolute");
         if(requireMatchedSettings&&!gaps.isEmpty())throw new IllegalArgumentException(String.join("; ",gaps));
         if(!(algorithm.getSolver() instanceof PsseDStabSolver solver))throw new IllegalArgumentException("Imported dynamic solver required");
+        if (networkFrequencyDependenceEnabled != null && network instanceof BaseDStabNetworkImpl<?, ?> frequencyNetwork) {
+            frequencyNetwork.setPassiveBranchFrequencyCorrectionEnabled(networkFrequencyDependenceEnabled);
+            frequencyNetwork.setFixedShuntFrequencyCorrectionEnabled(networkFrequencyDependenceEnabled);
+            frequencyNetwork.setGeneratorEquivalentFrequencyCorrectionEnabled(networkFrequencyDependenceEnabled);
+            solver.setGenqecNetworkFrequencyDependenceEnabled(networkFrequencyDependenceEnabled);
+        }
+        if (fluxMachineNetworkFrequencyDependenceEnabled != null)
+            solver.setFluxMachineNetworkFrequencyDependenceEnabled(fluxMachineNetworkFrequencyDependenceEnabled);
+        if (regca1HighVoltageNetworkIterationEnabled != null)
+            solver.setRegca1HighVoltageNetworkIterationEnabled(regca1HighVoltageNetworkIterationEnabled);
+        if(genrouPss2bLocalStaggeredEnabled!=null)
+            solver.setGenrouPss2bLocalStaggeredEnabled(genrouPss2bLocalStaggeredEnabled);
         if(stepSec!=null)algorithm.setSimuStepSec(stepSec);
         if(totalTimeSec!=null)algorithm.setTotalSimuTimeSec(totalTimeSec);
         if(frequencyHz!=null)algorithm.getNetwork().setFrequency(frequencyHz);
@@ -99,7 +119,6 @@ public final class DStabRunConfigRec {
         if(sourceImpedanceReconciliationEnabled!=null)solver.setSourceImpedanceReconciliationEnabled(sourceImpedanceReconciliationEnabled);
         if(loadModelThresholds!=null)solver.setLoadModelThresholds(loadModelThresholds);
         if(activeStaticLoadModel!=null||reactiveStaticLoadModel!=null) {
-            var network=algorithm.getNetwork();
             if(activeStaticLoadModel!=null)network.setStaticLoadModel(activeStaticLoadModel);
             if(reactiveStaticLoadModel!=null)network.setReactiveStaticLoadModel(reactiveStaticLoadModel);
             // A non-Z part needs the core's explicit current-injection path.

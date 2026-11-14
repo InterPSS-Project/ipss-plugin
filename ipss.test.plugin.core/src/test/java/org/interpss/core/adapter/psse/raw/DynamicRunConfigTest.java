@@ -2,6 +2,12 @@ package org.interpss.core.adapter.psse.raw;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
+import java.util.Hashtable;
+import org.apache.commons.math3.complex.Complex;
+import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.sparse.impl.klu.JKLUSparseEqnComplexImpl;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.impl.DStabilityNetworkImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.interpss.plugin.dstab.config.*;
@@ -15,6 +21,84 @@ public class DynamicRunConfigTest {
     private static final Path FIXTURE=Path.of("testData/adpter/psse/v33/HspModels");
     @BeforeAll static void setup(){org.interpss.IpssCorePlugin.init();org.interpss.IpssCorePlugin.configureSparseSolver("java-klu");}
     private Path file(String name,String text)throws Exception {Path p=temp.resolve(name);Files.createDirectories(p.getParent());Files.writeString(p,text);return p;}
+    @Test void fluxStatorFrequencyIsOptInAndIndependentOfSourceNetfrq() throws Exception {
+        var fixture = Path.of("testData/adpter/psse/v33/SMIB");
+        var idv = file("flux-frequency.idv", "BAT_SET_NETFRQ,1\n");
+        for (String family : new String[]{"genrou", "genroe", "gensal"}) {
+            var dyr = fixture.resolve("SMIB_v33_" + (family.equals("genroe") ? "genrou" : family) + ".dyr");
+            if (family.equals("genroe")) {
+                dyr = file("genroe.dyr", Files.readString(dyr).replace("'GENROU'", "'GENROE'"));
+            }
+            for (String json : new String[]{
+                    "{}",
+                    "{\"fluxMachineNetworkFrequencyDependenceEnabled\":true}",
+                    "{\"fluxMachineNetworkFrequencyDependenceEnabled\":false}",
+                    "{\"networkFrequencyDependenceEnabled\":false,\"fluxMachineNetworkFrequencyDependenceEnabled\":true}"
+            }) {
+                boolean enabled = Boolean.TRUE.equals(
+                        DStabRunConfigRec.fromJson(json).fluxMachineNetworkFrequencyDependenceEnabled);
+                var loader = new PSSEMultiFileLoader().setRunConfigurationFiles(idv)
+                        .setRequireMatchedRunSettings(true).setDynamicRunConfigJson(json);
+                var context = loader.loadDStab(fixture.resolve("SMIB_v33_wt1g1.raw").toString(), dyr.toString());
+                var algorithm = context.getDynSimuAlgorithm();
+                assertTrue(algorithm.getAclfAlgorithm().loadflow(), family);
+                algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+                assertTrue(algorithm.initialization(), family);
+                var machine = algorithm.getNetwork().getMachine("Bus1-mach1");
+                var bus = machine.getDStabBus();
+                var voltage = bus.getVoltage();
+                var y = machine.getYgen();
+                var z = y.reciprocal();
+                bus.setFreq(1.0);
+                var nominal = (Complex) machine.getOutputObject();
+                var emf = voltage.add(nominal.subtract(voltage.multiply(y)).multiply(z));
+                double ratio = 1.04;
+                bus.setFreq(ratio);
+                var actual = (Complex) machine.getOutputObject();
+                var expected = enabled ? emf.multiply(ratio).subtract(voltage)
+                        .divide(new Complex(z.getReal(), ratio * z.getImaginary())).add(voltage.multiply(y))
+                        : nominal;
+                assertEquals(0.0, actual.subtract(expected).abs(), 1e-10, family);
+                assertEquals(y, machine.getYgen(), family);
+                if (enabled) {
+                    var off = DStabRunConfigRec.fromJson("{\"fluxMachineNetworkFrequencyDependenceEnabled\":false}");
+                    assertTrue(off.applyTo(algorithm, true).isEmpty());
+                    assertTrue(algorithm.initialization(), family);
+                    bus.setFreq(1.0);
+                    var resetNominal = (Complex) machine.getOutputObject();
+                    bus.setFreq(ratio);
+                    assertEquals(resetNominal, machine.getOutputObject(), family);
+                }
+            }
+        }
+    }
+
+    @Test void regca1RunConfigSelectsAcceptedVoltageMemoryAndPreservesOmittedPolicy() throws Exception {
+        var fixture = Path.of("testData/adpter/psse/v33/renewable");
+        var raw = fixture.resolve("regca_reeca_repca_bus1062.raw").toString();
+        var dyr = fixture.resolve("regca_reeca_repca_bus1062.dyr").toString();
+        var enabled = DStabRunConfigRec.fromJson("{\"regca1HighVoltageNetworkIterationEnabled\":true}");
+        var disabled = DStabRunConfigRec.overlayJson(enabled, "{\"regca1HighVoltageNetworkIterationEnabled\":false}");
+        assertFalse(disabled.regca1HighVoltageNetworkIterationEnabled);
+        for (var config : new DStabRunConfigRec[]{new DStabRunConfigRec(), enabled, disabled}) {
+            var context = new PSSEMultiFileLoader().setDynamicRunConfigJson(config.toJson()).loadDStab(raw, dyr);
+            var algorithm = context.getDynSimuAlgorithm();
+            var generator = (com.interpss.dstab.DStabGen) context.getDStabilityNet().getDStabBus("Bus1").getContributeGen("1");
+            var converter = assertInstanceOf(org.interpss.dstab.renewable.Regca1Model.class,
+                    generator.getDynamicGenDevice());
+            // An omitted run setting preserves an explicit component setting.
+            converter.setNetworkIterationHighVoltageEnabled(config != enabled);
+            assertTrue(algorithm.getAclfAlgorithm().loadflow());
+            algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+            assertTrue(algorithm.initialization());
+            assertEquals(config != disabled, converter.getNetworkHighVoltageState().enabled());
+            if (config == enabled) {
+                assertEquals(org.interpss.dstab.renewable.Regca1Model.NetworkVoltageMemoryPolicy.ACCEPTED_BOUNDARY,
+                        converter.getNetworkVoltageMemoryPolicy());
+            }
+        }
+    }
+
     @Test void cutoffEqualityZeroQAndSignedPowerAreIndependent() {
         var t=new LoadModelThresholds(5,1.61,.97);
         assertTrue(t.violations(5,5/1.61,.97).isEmpty());
@@ -249,9 +333,124 @@ public class DynamicRunConfigTest {
         var r=PsseIdvRunConfigConverter.convert(file("gnet.idv","GNET\n101\n102\n0\n"));assertTrue(r.fullyConverted());
         assertEquals(1,r.commands().size());assertEquals(PsseIdvRunConfigConverter.Disposition.PREPARATION,r.commands().get(0).disposition());
     }
+    @Test void importedNetfrqAndJsonOverrideApplyToBranchesAndFixedShunts() throws Exception {
+        var network = (DStabilityNetworkImpl) DStabObjectFactory.createDStabilityNetwork();
+        var from = DStabObjectFactory.createDStabBus("from", network).orElseThrow();
+        var to = DStabObjectFactory.createDStabBus("to", network).orElseThrow();
+        from.setSortNumber(0);
+        to.setSortNumber(1);
+        network.setBusNumberArranged(true);
+        network.setPolarCoordinate(false);
+        network.setStaticLoadIncludedInYMatrix(true);
+        var branch = DStabObjectFactory.createDStabBranch("from", "to", network);
+        branch.setBranchCode(AclfBranchCode.LINE);
+        branch.setZ(new Complex(.02, .2));
+        var fixedShunt = new Complex(0., .12);
+        from.setShuntY(fixedShunt);
+        var ground = new Complex(.8, -.2);
+        var y = new JKLUSparseEqnComplexImpl(2);
+        y.setA(ground.add(branch.yff()).add(fixedShunt), 0, 0);
+        y.setA(branch.yft(), 0, 1);
+        y.setA(branch.ytf(), 1, 0);
+        y.setA(ground.add(branch.ytt()), 1, 1);
+        network.setYMatrix(y);
+        network.setYMatrixDirty(true);
+        var injection = new Hashtable<String, Complex>();
+        network.setCustomBusCurrInjHashtable(injection);
+        var algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        var solver = new PsseDStabSolver(algorithm);
+        algorithm.setSolver(solver);
+        solver.setNetworkVoltageTolerance(1e-10);
+        from.setVoltage(Complex.ONE);
+        to.setVoltage(Complex.ONE);
+        from.setFreq(1.05);
+        to.setFreq(.99);
+        var imported = PsseIdvRunConfigConverter.convert(file("frequency.idv", "BAT_SET_NETFRQ,1\n")).config();
+        assertTrue(imported.applyTo(algorithm, true).isEmpty());
+        assertTrue(DStabRunConfigRec.fromJson("{}").applyTo(algorithm, true).isEmpty());
+        var expectedFrom = new Complex(1.02, .04);
+        var expectedTo = new Complex(.97, -.03);
+        var series = expectedFrom.subtract(expectedTo).divide(new Complex(.02, .2 * 1.02));
+        injection.put("from", series.add(expectedFrom.multiply(ground.add(fixedShunt.multiply(1.05)))));
+        injection.put("to", series.negate().add(expectedTo.multiply(ground)));
+        assertTrue(solver.networkSolutionStep());
+        assertEquals(0., from.getVoltage().subtract(expectedFrom).abs(), 1e-8);
+        assertEquals(0., to.getVoltage().subtract(expectedTo).abs(), 1e-8);
+
+        var disabled = DStabRunConfigRec.overlayJson(imported, "{\"networkFrequencyDependenceEnabled\":false}");
+        assertTrue(disabled.applyTo(algorithm, true).isEmpty());
+        series = expectedFrom.subtract(expectedTo).divide(branch.getAdjustedZ());
+        injection.put("from", series.add(expectedFrom.multiply(ground.add(fixedShunt))));
+        injection.put("to", series.negate().add(expectedTo.multiply(ground)));
+        assertTrue(solver.networkSolutionStep());
+        assertEquals(0., from.getVoltage().subtract(expectedFrom).abs(), 1e-8);
+        assertEquals(0., to.getVoltage().subtract(expectedTo).abs(), 1e-8);
+    }
+    @Test void importedLineEndShuntsUseLocalFrequencyIndependentlyOfCharging() throws Exception {
+        Path rawx = file("line-shunts.rawx", """
+                {"network":{
+                  "caseid":{"fields":["sbase","basfrq"],"data":[100.0,60.0]},
+                  "bus":{"fields":["ibus","name","baskv","ide","vm","va"],
+                         "data":[[1,"FROM",230.0,1,1.0,0.0],[2,"TO",230.0,1,1.0,0.0]]},
+                  "acline":{"fields":["ibus","jbus","ckt","rpu","xpu","bpu","gi","bi","gj","bj","stat"],
+                            "data":[[1,2,"1",0.015,0.22,0.08,0.12,-0.04,0.06,0.05,1]]}
+                }}
+                """);
+        var loader = new PSSEMultiFileLoader()
+                .setRunConfigurationFiles(file("line-shunts.idv", "BAT_SET_NETFRQ,1\n"))
+                .setRequireMatchedRunSettings(true);
+        var context = loader.loadDStab(rawx.toString());
+        assertTrue(loader.getLastRunConfigApplicationGaps().isEmpty());
+
+        var network = context.getDStabilityNet();
+        var branch = network.getBranch("Bus1", "Bus2", "1");
+        assertEquals(new Complex(0., .04), branch.getHShuntY());
+        assertEquals(new Complex(.12, -.04), branch.getFromShuntY());
+        assertEquals(new Complex(.06, .05), branch.getToShuntY());
+        var from = network.getDStabBus("Bus1");
+        var to = network.getDStabBus("Bus2");
+        from.setFreq(1.05);
+        to.setFreq(.97);
+        network.setPolarCoordinate(false);
+        network.formYMatrix4DStab();
+
+        var injection = new Hashtable<String, Complex>();
+        network.setCustomBusCurrInjHashtable(injection);
+        var algorithm = context.getDynSimuAlgorithm();
+        var solver = (org.interpss.dstab.algo.DefaultDynamicSimulationSolver) algorithm.getSolver();
+        solver.setNetworkVoltageTolerance(1.e-10);
+
+        var expectedFrom = new Complex(1.02, .04);
+        var expectedTo = new Complex(.97, -.03);
+        var voltageDrop = expectedFrom.subtract(expectedTo);
+        // Series reactance uses mean frequency. The from-end reactor cancels
+        // charging at unity frequency, but the two terms scale oppositely.
+        var series = voltageDrop.divide(new Complex(.015, .22 * 1.01));
+        var fromShunt = new Complex(.12, .04 * 1.05 - .04 / 1.05);
+        var toShunt = new Complex(.06, (.04 + .05) * .97);
+        injection.put("Bus1", series.add(expectedFrom.multiply(fromShunt)));
+        injection.put("Bus2", series.negate().add(expectedTo.multiply(toShunt)));
+        assertTrue(solver.networkSolutionStep());
+        assertEquals(0., from.getVoltage().subtract(expectedFrom).abs(), 1.e-8,
+                "from end with frequency dependence");
+        assertEquals(0., to.getVoltage().subtract(expectedTo).abs(), 1.e-8,
+                "to end with frequency dependence");
+
+        var disabled = DStabRunConfigRec.fromJson("{\"networkFrequencyDependenceEnabled\":false}");
+        assertTrue(disabled.applyTo(algorithm, true).isEmpty());
+        series = voltageDrop.divide(new Complex(.015, .22));
+        injection.put("Bus1", series.add(expectedFrom.multiply(.12)));
+        injection.put("Bus2", series.negate().add(expectedTo.multiply(new Complex(.06, .09))));
+        assertTrue(solver.networkSolutionStep());
+        assertEquals(0., from.getVoltage().subtract(expectedFrom).abs(), 1.e-8,
+                "from end with frequency dependence disabled");
+        assertEquals(0., to.getVoltage().subtract(expectedTo).abs(), 1.e-8,
+                "to end with frequency dependence disabled");
+    }
+
     @Test void strictApplicationRejectsPhysicalGapsBeforeMutatingAnySetting()throws Exception {
         var c=load("cmldblu1","{}");double step=c.getDynSimuAlgorithm().getSimuStepSec();
-        var cfg=DStabRunConfigRec.fromJson("{\"stepSec\":0.01,\"networkFrequencyDependenceEnabled\":true}");
+        var cfg=DStabRunConfigRec.fromJson("{\"stepSec\":0.01,\"sourceNetworkAccelerationFactor\":0.4}");
         assertThrows(IllegalArgumentException.class,()->cfg.applyTo(c.getDynSimuAlgorithm(),true));assertEquals(step,c.getDynSimuAlgorithm().getSimuStepSec());
     }
 }

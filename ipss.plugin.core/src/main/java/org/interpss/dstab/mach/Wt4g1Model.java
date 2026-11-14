@@ -110,7 +110,9 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
     public Object getOutputObject() {
         if (getDStabBus() == null || parentGen == null) return Complex.ZERO;
         Complex voltage = getDStabBus().getVoltage();
-        Complex norton = injectedCurrent(voltage);
+        deltaQ = highVoltageCorrection(voltage.abs(), data.highVoltageThreshold(),
+                data.highVoltageReactiveCurrentGain());
+        Complex norton = injectedCurrent(voltage, deltaQ);
         Complex impedance = parentGen.getPosGenZ();
         if (impedance != null) {
             impedance = impedance.multiply(parentGen.getZMultiFactor());
@@ -119,12 +121,10 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
         return norton;
     }
 
-    private Complex injectedCurrent(Complex voltage) {
+    private Complex injectedCurrent(Complex voltage, double highVoltageCorrection) {
         double magnitude = voltage.abs();
         double activeCurrent = ipState * fixedLowVoltageActiveGain(magnitude);
-        deltaQ = highVoltageCorrection(magnitude, data.highVoltageThreshold(),
-                data.highVoltageReactiveCurrentGain());
-        double reactiveCurrent = iqState - deltaQ;
+        double reactiveCurrent = iqState - highVoltageCorrection;
         double angle = voltage.getArgument();
         double scale = systemBaseMva > EPS ? deviceBaseMva / systemBaseMva : 0.0;
         return new Complex(
@@ -132,12 +132,29 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
                 scale * (activeCurrent * Math.sin(angle) - reactiveCurrent * Math.cos(angle)));
     }
 
+    /**
+     * Compute physical terminal P/Q on the system base using the solved voltage
+     * and the present regulator states. The recorder can sample both sides of a
+     * switching event before the usual attribute update publishes the P/Q cache.
+     * This observation neither updates that cache nor advances converter states.
+     */
+    public Complex observeTerminalPower(Complex voltage) {
+        double correction = highVoltageCorrection(voltage.abs(), data.highVoltageThreshold(),
+                data.highVoltageReactiveCurrentGain());
+        return terminalPower(voltage, correction);
+    }
+
+    private Complex terminalPower(Complex voltage, double highVoltageCorrection) {
+        return voltage.multiply(injectedCurrent(voltage, highVoltageCorrection).conjugate());
+    }
+
     @Override
     public boolean updateAttributes(boolean netChange) {
         if (!initialized || getDStabBus() == null) return false;
         Complex voltage = getDStabBus().getVoltage();
-        Complex power = voltage.multiply(injectedCurrent(voltage).conjugate())
-                .multiply(systemBaseMva / deviceBaseMva);
+        deltaQ = highVoltageCorrection(voltage.abs(), data.highVoltageThreshold(),
+                data.highVoltageReactiveCurrentGain());
+        Complex power = terminalPower(voltage, deltaQ).multiply(systemBaseMva / deviceBaseMva);
         double newP = power.getReal();
         double newQ = power.getImaginary();
         if (netChange) {

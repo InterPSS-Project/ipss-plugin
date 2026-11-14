@@ -14,6 +14,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
 
 /** PSS/E IEEEST stabilizer following the PowerWorld/WECC block ordering. */
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
@@ -61,14 +62,13 @@ public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEul
 
     @AnControllerField(type=CMLFieldEnum.ControlBlock,
             input="this.speedGain*mach.speed-this.speedGain*this.speedRef"
-                    + "+this.peGain*mach.pe-this.peGain*this.peRef"
-                    + "+this.pmGain*mach.pm-this.pmGain*this.pmRef"
-                    + "+this.busMeasurement.y",
+                    + "+this.busMeasurement.y"
+                    + "+this.pmGain*mach.pm-this.pmGain*this.pmRef",
             parameter={"this.one", "this.a1", "this.a2"},
             y0="this.secondOrderLeadLag.u0", initOrderNumber=1)
     public SecondOrderLagBlock secondOrderLag;
 
-    // A measurement is algebraic: it must sample the selected bus at each
+    // The selected machine or bus measurement is algebraic and sampled at each
     // integration stage, without introducing another filter or stored state.
     @AnControllerField(type=CMLFieldEnum.StaticBlock, input="this.one",
             y0="0.0", initOrderNumber=-1)
@@ -79,6 +79,10 @@ public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEul
         }
         @Override public double getY() {
             if (data.mode() == 2) return measurementBus.getFreq() - freqRef;
+
+            if (data.mode() == 3 || data.mode() == 4) {
+                return peGain * electricalPower(getMachine()) - peGain * peRef;
+            }
             if (data.mode() == 5) return measurementBus.getVoltageMag() - vtRef;
             if (data.mode() == 6) return voltageDerivative.getDerivative();
             return 0.0;
@@ -133,6 +137,16 @@ public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEul
 
     public IeeestData getData() { return data; }
 
+    // IEEEST mode 3 measures terminal MW. The native mode-4 acceleration
+    // uses air-gap power, the round-rotor swing coordinate at nominal frequency.
+    private double electricalPower(Machine machine) {
+        if (data.mode() == 3 && machine instanceof IeeeVcRoundRotorMachine roundRotor) {
+            return roundRotor.getTerminalActivePower();
+        }
+        return machine.getPe();
+    }
+
+
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         staggeredBlocks = null;
@@ -142,7 +156,7 @@ public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEul
                 : (BaseDStabBus<?, ?>) bus.getNetwork().getBus("Bus" + data.remoteBus());
         if (measurementBus == null || !measurementBus.isActive()) return false;
         speedRef = machine.getSpeed();
-        peRef = machine.getPe();
+        peRef = electricalPower(machine);
         pmRef = machine.getPm();
         vtRef = measurementBus.getVoltageMag();
         freqRef = measurementBus.getFreq();

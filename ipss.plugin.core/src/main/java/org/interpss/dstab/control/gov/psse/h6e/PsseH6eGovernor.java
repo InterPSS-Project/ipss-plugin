@@ -264,7 +264,11 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
                 ? propInput : speedError - d.getRe() * measuredPe;
         double derivative = effective.td > SMALL
                 ? (measuredSpeed - 1.0 - s.derivativeLag) / effective.td : 0.0;
-        double command = clamp(d.getKp() * propInput + s.integrator - d.getKd() * derivative,
+        // H6E1's native gate-command channel adds Kd times the derivative of
+        // filtered speed for both feedback selectors. The typed H6E and legacy
+        // H6EU1 implementations use the opposite polarity.
+        double derivativeGain = d.isNativeH6e1Derivative() ? d.getKd() : -d.getKd();
+        double command = clamp(d.getKp() * propInput + s.integrator + derivativeGain * derivative,
                 effective.gmin, effective.gmax);
         double gate = backlash(s.gate, priorGate, effective.blg);
         double bladeCommand = bladeCurve(command);

@@ -143,9 +143,8 @@ final class St1DirectEvaluation {
         };
     }
     double pss() {
-        var machine=model.getMachine();
         if(fixedInputs && fixedPss && pssRead)return fixedPssValue;
-        double value=machine.getStabilizer()==null ? 0. : machine.getStabilizer().getOutput(machine);
+        double value=model.stabilizerSignal();
         if(fixedInputs && fixedPss){fixedPssValue=value;pssRead=true;}
         return value;
     }
@@ -376,7 +375,7 @@ final class St1DirectEvaluation {
         }
     }
     private void sampleWholeBoundary(double[] boundary) {
-        boundary[0]=voltage();boundary[1]=model.getMachine().getDStabBus().getVoltageMag();
+        boundary[0]=voltage();boundary[1]=model.observedTerminalMagnitude();
         boundary[2]=model.sampleLocalFieldCurrent();boundary[3]=pss();
         boundary[4]=model.getRefPoint();boundary[5]=model.vuel;boundary[6]=model.vuelGate1;boundary[7]=model.voel;
         for(int i=0;i<boundary.length;i++)if(Double.isNaN(boundary[i]) || i<6&&!Double.isFinite(boundary[i]))
@@ -436,10 +435,11 @@ final class St1DirectEvaluation {
         }
         return result;
     }
-    /** Each outer stage owns a complete local Heun integration. Corrector starts
-     * at the SAME accepted graph origin, with linearly interpolated boundary
-     * inputs; continuing the full predictor would double-advance physical time.
-     * The ordinary graph evaluator retains all limiter and preparation passes.
+    /** Each outer stage owns a complete local Heun integration. The corrector
+     * starts at the same accepted graph origin and uses the selected input
+     * sampling policy throughout the interval. Continuing the full predictor
+     * would advance the states twice. Both modes retain the normal limiter and
+     * preparation passes and refresh live inputs for zero-time event solves.
      */
     void wholeModifiedEulerStep(boolean predictor,double dt,int count) {
         requireWholeModifiedEulerGraph();
@@ -450,10 +450,14 @@ final class St1DirectEvaluation {
             if(!predictor&&(dt!=wholeDt||count!=wholeCount))throw new IllegalArgumentException("ESST1A corrector interval/count mismatch");
         }
         wholeInProgress=true;boolean boundarySampled=false,rollbackSaved=false;
+        boolean callerPrescribed = model.hasPrescribedLocalBoundary();
         double[] endpoint=wholeEndpoint;
+        boolean holdInputs = model.getModifiedEulerLocalInputSampling()
+                == IEEE1981ST1Exciter.LocalInputSampling.HELD_AT_INTERVAL_START;
         try {
             sampleWholeBoundary(endpoint);boundarySampled=true;
-            if(dt>0.&&!predictor)for(int i=4;i<8;i++)interpolateWhole(wholeLeft[i],endpoint[i],.5);
+            if (dt > 0. && !predictor && !holdInputs)
+                for (int i = 4; i < 8; i++) interpolateWhole(wholeLeft[i], endpoint[i], .5);
             saveWholeBlocks(wholeRollback);rollbackSaved=true;
             if(dt>0.&&predictor) {
                 System.arraycopy(endpoint,0,wholeLeft,0,8);saveWholeBlocks(wholeOrigin);wholeDt=dt;wholeCount=count;
@@ -467,10 +471,11 @@ final class St1DirectEvaluation {
             }
             if(!predictor)restoreWholeBlocks(wholeOrigin);
             double localDt=dt/count;
+            double[] intervalEnd = predictor || holdInputs ? wholeLeft : endpoint;
             for(int i=0;i<count;i++) {
-                wholeBoundary(predictor?wholeLeft:endpoint,(double)i/count);
+                wholeBoundary(intervalEnd,(double)i/count);
                 modifiedEulerStep(true,localDt);
-                wholeBoundary(predictor?wholeLeft:endpoint,(double)(i+1)/count);
+                wholeBoundary(intervalEnd,(double)(i+1)/count);
                 modifiedEulerStep(false,localDt);
             }
             wholePending=predictor;
@@ -478,8 +483,17 @@ final class St1DirectEvaluation {
         } catch(RuntimeException|Error failure) {
             if(rollbackSaved)restoreWholeBlocks(wholeRollback);throw failure;
         } finally {
-            if(boundarySampled)restoreExternalBoundary(endpoint);
-            model.releaseLocalBoundary();fixedInputs=false;fixedPss=false;voltageRead=false;pssRead=false;wholeInProgress=false;
+            if (boundarySampled) {
+                restoreExternalBoundary(endpoint);
+                // Local interpolation owns a temporary override. Preserve the
+                // caller's accepted endpoint for output and the next step.
+                if (callerPrescribed) {
+                    model.prescribeLocalBoundary(endpoint[2], endpoint[1], endpoint[3]);
+                } else {
+                    model.releaseLocalBoundary();
+                }
+            }
+            fixedInputs=false;fixedPss=false;voltageRead=false;pssRead=false;wholeInProgress=false;
         }
     }
 

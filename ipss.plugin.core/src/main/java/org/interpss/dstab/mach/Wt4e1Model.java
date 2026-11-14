@@ -13,6 +13,7 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 public final class Wt4e1Model implements ICMLStateProvider {
     private static final Logger LOG = LoggerFactory.getLogger(Wt4e1Model.class);
     private static final double EPS = 1.0e-10;
+    private static final double ZERO_VOLTAGE_REACTIVE_CURRENT_LIMIT = 1.6;
     private final Wt4e1Data data;
     private final Wt4g1Model generator;
     private BaseDStabBus<?, ?> voltageSensorBus;
@@ -62,17 +63,20 @@ public final class Wt4e1Model implements ICMLStateProvider {
 
     public void step(double dt, int flag) {
         if (!initialized || dt <= 0 || (flag != 0 && flag != 1)) return;
+        if (flag == 1 && oldState == null) return;
+        double limit = reactiveCurrentLimit(generator.getDStabBus().getVoltageMag());
+        state = state.withReactiveCurrentLimit(limit);
         if (flag == 0) {
             oldState = state;
             predictor = derivatives(state);
             state = advance(oldState, predictor, dt);
         } else {
-            if (oldState == null) return;
             Derivative corrected = derivatives(state);
             state = advance(oldState, predictor.add(corrected), .5 * dt);
             oldState = null;
             predictor = null;
         }
+        state = state.withReactiveCurrentLimit(limit);
         updateCommands();
     }
 
@@ -100,7 +104,9 @@ public final class Wt4e1Model implements ICMLStateProvider {
         double qVoltageRate = boundedRate(s.qVoltageIntegral,
                 data.reactiveVoltageGain() * (qCommand - q),
                 data.voltageMinimum(), data.voltageMaximum());
-        double iqRate = data.voltageErrorGain() * (s.qVoltageIntegral - voltage);
+        double currentLimit = reactiveCurrentLimit(voltage);
+        double iqRate = boundedRate(s.internalVoltage,
+                data.voltageErrorGain() * (s.qVoltageIntegral - voltage), -currentLimit, currentLimit);
 
         double measuredP = algebraicOrState(p, s.powerFilter, data.powerFilterTime());
         double pError = measuredP - powerReference;
@@ -114,6 +120,15 @@ public final class Wt4e1Model implements ICMLStateProvider {
                 rate(p, s.powerFilter, data.powerFilterTime()), qVoltageRate, iqRate,
                 rate(data.voltageProportionalGain() * vError, s.windVarLag, data.windVarTime()),
                 rate(p, s.powerFactorFilter, data.powerFactorFilterTime()));
+    }
+
+    private double reactiveCurrentLimit(double voltage) {
+        // The converter's symmetric reactive-current envelope joins 1.6 pu at
+        // zero terminal voltage to QMX at one pu. Iqhl caps the envelope.
+        // Use the physical terminal voltage even when WindVAR senses a remote bus.
+        double envelope = ZERO_VOLTAGE_REACTIVE_CURRENT_LIMIT
+                + (data.reactiveMaximum() - ZERO_VOLTAGE_REACTIVE_CURRENT_LIMIT) * voltage;
+        return clamp(envelope, 0.0, data.hardReactiveCurrentMaximum());
     }
 
     private void updateCommands() {
@@ -144,7 +159,15 @@ public final class Wt4e1Model implements ICMLStateProvider {
     @Override public Map<String, Double> getNamedStates() {
         if (!initialized) return Map.of();
         Map<String, Double> values = new LinkedHashMap<>();
-        values.put("Voltage regulator filter", state.voltageFilter);
+        // A bypassed filter exposes the algebraic order on the same
+        // boundary as the live voltage sensor, with no integration memory.
+        double voltageError = voltageReference - algebraicOrState(voltageSensorBus.getVoltageMag(),
+                state.voltageSensor, data.voltageSensorTime());
+        double windVar = algebraicOrState(data.voltageProportionalGain() * voltageError,
+                state.windVarLag, data.windVarTime());
+        values.put("Voltage regulator filter", algebraicOrState(
+                clamp(state.voltageIntegral + windVar, data.reactiveMinimum(), data.reactiveMaximum()),
+                state.voltageFilter, data.voltageFilterTime()));
         values.put("Voltage regulator integrator", state.voltageIntegral);
         values.put("Active-power regulator integrator", state.powerIntegral);
         values.put("Active-power regulator feedback", state.powerFeedback);
@@ -174,7 +197,16 @@ public final class Wt4e1Model implements ICMLStateProvider {
     private record State(double voltageFilter, double voltageIntegral, double powerIntegral,
             double powerFeedback, double voltageSensor, double powerFilter,
             double qVoltageIntegral, double internalVoltage, double windVarLag,
-            double powerFactorFilter) { }
+            double powerFactorFilter) {
+        State withReactiveCurrentLimit(double limit) {
+            double current = clamp(internalVoltage, -limit, limit);
+            if (current == internalVoltage) return this;
+            // Project the integrator itself so voltage recovery releases the
+            // limit immediately. Clipping only the command leaves it wound up.
+            return new State(voltageFilter, voltageIntegral, powerIntegral, powerFeedback,
+                    voltageSensor, powerFilter, qVoltageIntegral, current, windVarLag, powerFactorFilter);
+        }
+    }
     private record Derivative(double voltageFilter, double voltageIntegral, double powerIntegral,
             double powerFeedback, double voltageSensor, double powerFilter,
             double qVoltageIntegral, double internalVoltage, double windVarLag,

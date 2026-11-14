@@ -10,8 +10,13 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
+import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.mach.Gentpj1Data;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -77,7 +82,7 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
 
     @Test
     void solvedPowerFallbackConvertsSystemToMachineBase() throws Exception {
-        var builder = DStabBuilderTestFixture.createWithMachine();
+        var builder = classicalMachineBuilder();
         var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setRating(200, org.interpss.numeric.datatype.Unit.UnitType.mVA,
                 builder.getDStabNetwork().getBaseKva());
@@ -91,6 +96,131 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void typeJTransducerUsesTerminalPowerWithNonzeroStatorResistance() throws Exception {
+        for (double transducerTime : new double[]{0.0, 0.1}) {
+            var builder = DStabBuilderTestFixture.createBuilder();
+            var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+            var machine = builder.addGentpj1("Bus1", "1", 100.0, 16.5,
+                    new Gentpj1Data(5., .04, .5, .03, 3., .1, 1.8, 1., .6, .5, .3, .3, .1, .1, .3, 0.));
+            machine.setRa(.02);
+            var governor = builder.addGovTgov1("Bus1", "1", .05, .1, 1, 0, .2, .5, 0);
+            var controller = builder.addLcfb1("Bus1", "1",
+                    new Lcfb1Data(0, 1, 0, transducerTime, 0, .1, 0, .1, .5));
+            double dispatch = machine.getParentGen().getGen().getReal();
+            assertTrue(controller.initStates(bus));
+            assertTrue(machine.initStates(bus));
+            assertTrue(governor.initStates(bus, machine));
+            assertTrue(machine.getPe() - dispatch > .005, "The fixture must have measurable stator loss");
+            for (int i = 0; i < 10; i++) step(controller, .01);
+            assertEquals(dispatch, controller.getSensedPower(), TOL);
+            assertEquals(0.0, controller.getReferenceBias(), TOL);
+
+            bus.setVoltage(.98, .025);
+            var voltage = bus.getVoltage();
+            var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+            double terminalPower = voltage.multiply(current.conjugate()).getReal();
+            double airGapPower = machine.getPe();
+            assertTrue(Math.abs(terminalPower - dispatch) > 1e-4);
+            step(controller, .01);
+            double coefficient = .01 / transducerTime;
+            double expected = transducerTime == 0 ? terminalPower
+                    : dispatch + (coefficient - .5 * coefficient * coefficient) * (terminalPower - dispatch);
+            assertEquals(expected, controller.getSensedPower(), TOL);
+            assertEquals(airGapPower, machine.getPe(), 0.0, "Reading terminal MW must leave Pe untouched");
+
+            assertTrue(controller.initStates(bus));
+            assertEquals(dispatch, controller.getPowerSetpoint(), TOL, "Reinitialization uses solved dispatch");
+        }
+    }
+
+    @Test
+    void roundRotorTransducerReadsMachineBasePowerFromTheStatorBoundary() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setRating(200.0, UnitType.mVA, builder.getDStabNetwork().getBaseKva());
+        machine.calMultiFactors();
+        machine.setRa(.04);
+        var governor = builder.addGovTgov1("Bus1", "1", .05, .1, 1, 0, .2, .5, 0);
+        var controller = builder.addLcfb1("Bus1", "1",
+                new Lcfb1Data(0, 1, 0, .1, 0, .1, 0, .1, .5));
+        double dispatch = machine.getParentGen().getGen().getReal() / machine.getRating();
+
+        assertTrue(controller.initStates(bus));
+        assertTrue(machine.initStates(bus));
+        assertTrue(governor.initStates(bus, machine));
+        machine.getIgen();
+        assertTrue(machine.getPe() - dispatch > .004, "The fixture must have measurable stator loss");
+        var initialBoundary = machine.captureRoundElectricalState();
+        for (int i = 0; i < 10; i++) step(controller, .01);
+        assertEquals(dispatch, controller.getSensedPower(), TOL);
+        assertEquals(0.0, controller.getReferenceBias(), TOL);
+
+        bus.setVoltage(.98, .025);
+        assertEquals(dispatch, machine.getTerminalActivePower(), TOL, "The read must not recalculate current");
+        var voltage = bus.getVoltage();
+        var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        double terminalPower = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+        double swingInput = machine.getPe();
+        assertTrue(Math.abs(terminalPower - dispatch) > 1e-4);
+        assertEquals(terminalPower, machine.getTerminalActivePower(), TOL);
+        step(controller, .01);
+        assertEquals(dispatch + .095 * (terminalPower - dispatch), controller.getSensedPower(), TOL);
+        assertEquals(swingInput, machine.getPe(), 0.0);
+
+        assertTrue(controller.initStates(bus));
+        assertEquals(dispatch, controller.getPowerSetpoint(), TOL, "Reinitialization uses solved dispatch");
+        machine.restoreRoundElectricalState(initialBoundary);
+        assertEquals(dispatch, machine.getTerminalActivePower(), TOL, "Rollback restores the terminal sample");
+    }
+
+    @Test
+    void genqecHydroTransducerMeasuresTerminalPowerOnTurbineBase() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var network = builder.getDStabNetwork();
+        var bus = network.getDStabBus("Bus1");
+        var machine = builder.addGenqec("Bus1", "1", 100.0, 16.5,
+                new GenqecData(3.17, 0.0, .025,
+                        2.37, 1.87, .32, .52, .28, .20, .19,
+                        6.81, .85, .02, .02, .233, .797,
+                        0.0, 0.0, 0.0, .1, 1));
+        machine.setRa(.025);
+        var hydro = new PsseHygovrGovernorData();
+        hydro.setR(.05);
+        hydro.setAt(1.0);
+        hydro.setTw(1.0);
+        hydro.setTrate(80.0);
+        var governor = builder.addGovHygovr1("Bus1", "1", hydro);
+        var controller = builder.addLcfb1("Bus1", "1",
+                new Lcfb1Data(0, 1, 0, .1, 0, .1, 0, .1, .5));
+
+        double scale = 100.0 / 80.0;
+        double dispatch = machine.getParentGen().getGen().getReal();
+        assertTrue(controller.initStates(bus));
+        assertEquals(dispatch * scale, controller.getPowerSetpoint(), TOL);
+        assertTrue(machine.initStates(bus));
+        assertTrue(governor.initStates(bus, machine));
+        machine.getIgen();
+        assertEquals(dispatch, machine.getTerminalActivePower(), 1.0e-7);
+        assertTrue(machine.getPe() - dispatch > .005);
+        step(controller, .01);
+        assertEquals(dispatch * scale, controller.getSensedPower(), 1.0e-7);
+
+        bus.setVoltage(.98, .025);
+        assertEquals(dispatch, machine.getTerminalActivePower(), 1.0e-7);
+        var voltage = bus.getVoltage();
+        var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        double terminalPower = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+        double swingInput = machine.getPe();
+        assertTrue(Math.abs(terminalPower - dispatch) > 1.0e-4);
+        assertEquals(terminalPower, machine.getTerminalActivePower(), TOL);
+        step(controller, .01);
+        assertEquals(scale * (dispatch + .095 * (terminalPower - dispatch)),
+                controller.getSensedPower(), 1.0e-7);
+        assertEquals(swingInput, machine.getPe(), 0.0);
+    }
+
+    @Test
     void powerDeficitRaisesReferenceAndHonorsBiasLimit() throws Exception {
         Fixture f = fixture(new Lcfb1Data(0, 1, 0, 0, 0, 1, 2, 1, .05));
         f.machine.setPe(.3);
@@ -101,7 +231,7 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
 
     @Test
     void preservesInitializedGgovDroopReferenceOnUnequalBases() throws Exception {
-        var builder = DStabBuilderTestFixture.createWithMachine();
+        var builder = classicalMachineBuilder();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setRating(100, org.interpss.numeric.datatype.Unit.UnitType.mVA,
                 builder.getDStabNetwork().getBaseKva());
@@ -154,7 +284,7 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
 
     @Test
     void preservesHydroDigitalGovernorSpeedReference() throws Exception {
-        var builder = DStabBuilderTestFixture.createWithMachine();
+        var builder = classicalMachineBuilder();
         var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1);
         var data = new org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData();
@@ -220,8 +350,14 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
         assertTrue(Double.isFinite(controller.getGovernorReference()));
     }
 
+    private static DStabNetworkBuilder classicalMachineBuilder() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        builder.addGencls("Bus1", "1", 100.0, 16.5, 5.0, 0.0, 0.0, .25);
+        return builder;
+    }
+
     private static Fixture fixture(Lcfb1Data data) throws Exception {
-        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        DStabNetworkBuilder builder = classicalMachineBuilder();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1.0);
         assertNotNull(builder.addGovTgov1("Bus1", "1", .05, .1, 1, 0, .2, .5, 0));

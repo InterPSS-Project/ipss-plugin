@@ -3,15 +3,20 @@ package org.interpss.dstab.mach;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Published eighteen-state electrical controller for the GE wind-converter host. */
 public final class Gewtecu1Model implements ICMLStateProvider {
+    private static final Logger LOG = LoggerFactory.getLogger(Gewtecu1Model.class);
     private static final double EPS = 1.0e-10;
 
     private final Gewtecu1Data data;
     private final Gewtgcu1Model generator;
+    private BaseDStabBus<?, ?> remoteVoltageBus;
     private State state;
     private State oldState;
     private Derivative predictor;
@@ -40,15 +45,28 @@ public final class Gewtecu1Model implements ICMLStateProvider {
     public boolean initialize() {
         BaseDStabBus<?, ?> bus = generator.getDStabBus();
         if (bus == null) return false;
-        double voltage = bus.getVoltageMag();
-        if (voltage <= EPS) return false;
+        double terminalVoltage = bus.getVoltageMag();
+        if (terminalVoltage <= EPS) return false;
+        remoteVoltageBus = null;
+        if (data.remoteBus() != 0) {
+            var remote = bus.getNetwork().getBus("Bus" + data.remoteBus());
+            if (remote instanceof BaseDStabBus<?, ?> dynamicBus) {
+                remoteVoltageBus = dynamicBus;
+            } else {
+                LOG.warn("GEWTECU1 at {} cannot find voltage control bus {}; using terminal voltage",
+                        bus.getId(), data.remoteBus());
+            }
+        }
+        // The outer regulator and LVPL start on the same selected bus that
+        // drives them during integration. The converter voltage loop is local.
+        double sensorVoltage = measuredVoltage(terminalVoltage);
         double machineP = machineP();
         double p = toTurbineBase(machineP);
         double q = machineQ();
         qDroopInput = q;
-        double currentSquared = currentSquared(voltage, machineP, q);
+        double currentSquared = currentSquared(terminalVoltage, machineP, q);
         double droop = reactiveDroopTarget(currentSquared);
-        voltageReference = voltage + currentSquared * data.lineDropReactance()
+        voltageReference = sensorVoltage + currentSquared * data.lineDropReactance()
                 + data.reactiveDroopGain() * droop;
         reactiveReference = q;
         powerReference = p;
@@ -60,9 +78,9 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         // voltage-error lag starts at zero; Q is stored in the integrator,
         // not duplicated in that lag or added a second time as a reference.
         state = new State(q, q, p, p / Math.max(EPS, 1.0 + rotorSpeed),
-                voltage, rotorSpeed,
-                voltage, reactiveCommand, 0.0, machineP, availablePower, 0.0,
-                voltage, 0.0, 0.0, droop, 0.0, 0.0);
+                sensorVoltage, rotorSpeed,
+                terminalVoltage, reactiveCommand, 0.0, machineP, availablePower, 0.0,
+                sensorVoltage, 0.0, 0.0, droop, 0.0, 0.0);
         oldState = null;
         predictor = null;
         initialized = true;
@@ -92,13 +110,13 @@ public final class Gewtecu1Model implements ICMLStateProvider {
     }
 
     private Derivative derivatives(State s) {
-        double terminalVoltage = Math.max(EPS,
-                measuredVoltage(generator.getDStabBus().getVoltageMag()));
+        double terminalVoltage = generator.getDStabBus().getVoltageMag();
+        double sensorVoltage = Math.max(EPS, measuredVoltage(terminalVoltage));
         double machineP = machineP();
         double p = toTurbineBase(machineP);
         double q = machineQ();
-        double currentSquared = currentSquared(terminalVoltage, machineP, q);
-        double sensedVoltage = algebraicOrState(terminalVoltage, s.voltageSensor,
+        double currentSquared = currentSquared(sensorVoltage, machineP, q);
+        double sensedVoltage = algebraicOrState(sensorVoltage, s.voltageSensor,
                 data.voltageSensorTime());
         double droopInput = reactiveDroopTarget(currentSquared);
         double droopSignal = algebraicOrState(droopInput, s.reactiveDroopFilter,
@@ -107,7 +125,7 @@ public final class Gewtecu1Model implements ICMLStateProvider {
                         - currentSquared * data.lineDropReactance()
                         - data.reactiveDroopGain() * droopSignal,
                 data.reactiveErrorMinimum(), data.reactiveErrorMaximum());
-        boolean freezeReactive = terminalVoltage < data.reactiveFreezeVoltage();
+        boolean freezeReactive = sensorVoltage < data.reactiveFreezeVoltage();
         double voltageIntegralRate = freezeReactive ? 0.0
                 : boundedRate(s.voltageIntegrator,
                         data.voltageIntegralGain() * voltageError,
@@ -156,7 +174,7 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         double targetPower = Math.min(s.torqueFilter, frequencyPower);
         double powerCommandRate = rateLimitStorageDerivative(targetPower,
                 s.powerCommandRate);
-        double lvplRate = rate(terminalVoltage, s.lvplLimit, data.lvplSensorTime());
+        double lvplRate = rate(sensorVoltage, s.lvplLimit, data.lvplSensorTime());
 
         double frequencyError = deadband(1.0 - systemFrequency - externalActiveSignal,
                 data.windInertiaDeadband());
@@ -164,8 +182,7 @@ public final class Gewtecu1Model implements ICMLStateProvider {
                 data.windInertiaFilterTime());
         double inertiaWashoutRate = rate(s.windInertiaFilter, s.windInertiaWashout,
                 data.windInertiaWashoutTime());
-        double lvplFactor = Math.min(1.0, Math.max(0.0,
-                s.lvplLimit / Math.max(EPS, data.lvplBreakpoint())));
+        double lvplFactor = lowVoltagePowerFactor(sensorVoltage, s.lvplLimit);
         double commandedPower = targetPower * lvplFactor;
         double brakingEnergyRate = brakingPower(s.brakingIntegrator,
                 commandedPower, p);
@@ -177,7 +194,7 @@ public final class Gewtecu1Model implements ICMLStateProvider {
 
         return new Derivative(voltageFilterRate, voltageIntegralRate,
                 torqueFilterRate, torqueIntegralRate,
-                rate(terminalVoltage, s.voltageSensor, data.voltageSensorTime()),
+                rate(sensorVoltage, s.voltageSensor, data.voltageSensorTime()),
                 speedReferenceRate, mvarVoltRate, voltMvarRate, windVarRate,
                 rate(machineP, s.fastPowerFactorFilter,
                         data.fastPowerFactorFilterTime()),
@@ -206,10 +223,9 @@ public final class Gewtecu1Model implements ICMLStateProvider {
             generator.setCommands(0.0, 0.0);
             return;
         }
-        double voltage = Math.max(0.01, generator.getDStabBus().getVoltageMag());
-        double lvpl = Math.min(1.0, Math.max(0.0,
-                algebraicOrState(voltageReference, state.lvplLimit,
-                        data.lvplSensorTime()) / Math.max(EPS, data.lvplBreakpoint())));
+        double terminalVoltage = generator.getDStabBus().getVoltageMag();
+        double voltage = Math.max(0.01, terminalVoltage);
+        double lvpl = lowVoltagePowerFactor(measuredVoltage(terminalVoltage), state.lvplLimit);
         double inertia = windInertiaOutput(state);
         double targetPower = Math.min(state.torqueFilter,
                 data.activePowerControlFlag() == 1
@@ -237,13 +253,17 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         generator.setCommands(active, reactive);
     }
 
+    private double lowVoltagePowerFactor(double sensorVoltage, double filteredVoltage) {
+        // A bypassed LVPL lag uses the selected bus voltage at this stage.
+        // The WindVAR reference and the previous lag state are different inputs.
+        double lvplVoltage = algebraicOrState(sensorVoltage, filteredVoltage, data.lvplSensorTime());
+        return clamp(lvplVoltage / Math.max(EPS, data.lvplBreakpoint()), 0.0, 1.0);
+    }
+
     private double measuredVoltage(double voltage) {
-        if (data.remoteBus() != 0) {
-            BaseDStabBus<?, ?> remote = (BaseDStabBus<?, ?>) generator.getDStabBus()
-                    .getNetwork().getBus("Bus" + data.remoteBus());
-            if (remote != null && remote.getVoltageMag() > EPS) return remote.getVoltageMag();
-        }
-        return voltage;
+        if (remoteVoltageBus == null) return voltage;
+        double remoteVoltage = remoteVoltageBus.getVoltageMag();
+        return remoteVoltage > EPS ? remoteVoltage : voltage;
     }
 
     private static double currentSquared(double voltage, double p, double q) {

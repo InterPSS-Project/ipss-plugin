@@ -133,6 +133,144 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({"3.0, 0.7, 0.0", "3.0, 0.7, 10.0", "0.0, 0.7, 0.0", "3.0, 0.0, 0.0"})
+    void speedIntegralTracksTheSelectedFuelCommand(double kp, double ki, double ka) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        var data = texasData();
+        data.setTrate(0.0);
+        data.setRselect(0);
+        data.setKpgov(kp);
+        data.setKigov(ki);
+        data.setKdgov(20.0);
+        data.setTdgov(5.0);
+        data.setKa(ka);
+        data.setAset(0.0);
+        data.setLdref(10.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        double dt = 0.0033333;
+        governor.configureIntegrationStep(dt);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+
+        double speed = ka == 0.0 ? 0.995 : 1.005;
+        machine.setSpeed(speed);
+        double error = 1.0 - speed;
+        double initialIntegral = governor.getGovernorIntegralState();
+        double speedCommand = initialIntegral + (kp + 20.0 / 5.0) * error;
+        double expectedSelector = ka == 0.0 ? speedCommand
+                : Math.min(speedCommand, initialIntegral + ka * dt * error / data.getTa());
+        double expectedRate = kp == 0.0 ? ki * error : ki / kp * (expectedSelector - initialIntegral);
+
+        double[] rates = new double[governor.staggeredStateCount()];
+        governor.evaluateStaggered(dt, rates, 0);
+        assertEquals(expectedSelector, governor.getFsr(), TOL);
+        assertEquals(expectedRate, rates[2], TOL);
+        assertTrue(governor.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(initialIntegral + dt * expectedRate, governor.getGovernorIntegralState(), TOL);
+        assertTrue(governor.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+    }
+
+    @Test
+    void disabledAccelerationLimiterAllowsFuelCommandToRecover() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(.4);
+        machine.setPe(.4);
+        var data = texasData();
+        data.setTrate(0.0);
+        data.setKa(0.0);
+        data.setLdref(10.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        double dt = .0033333;
+        governor.configureIntegrationStep(dt);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double initialStroke = governor.getValveStroke();
+        machine.setSpeed(1.005);
+        for (int i = 0; i < 300; i++) step(governor, machine, dt);
+        double reducedStroke = governor.getValveStroke();
+        assertTrue(reducedStroke < initialStroke - .005);
+
+        machine.setSpeed(.99);
+        double[] rates = new double[10];
+        governor.evaluateStaggered(dt, rates, 0);
+        assertTrue(rates[3] > 0.0, "staggered evaluation must permit valve opening");
+        for (int i = 0; i < 600; i++) step(governor, machine, dt);
+        assertTrue(governor.getValveStroke() > initialStroke + .01);
+        assertTrue(governor.getOutput(machine) > .4);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0.0", "0.5"})
+    void zeroLoadProportionalGainStartsAtTheSelectorCeiling(double integralGain) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        var data = texasData();
+        data.setTrate(0.0);
+        data.setRselect(0);
+        data.setKa(0.0);
+        data.setKpload(0.0);
+        data.setKiload(integralGain);
+        data.setLdref(0.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        double dt = .0033333;
+        governor.configureIntegrationStep(dt);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double initialValve = governor.getValveStroke();
+        assertEquals(1.0, governor.getLoadLimiterIntegralState(), TOL);
+        assertEquals(0.4, governor.getOutput(machine), TOL);
+
+        machine.setSpeed(0.99);
+        double[] rates = new double[governor.staggeredStateCount()];
+        governor.evaluateStaggered(dt, rates, 0);
+        assertTrue(governor.getFsr() > initialValve);
+        assertTrue(rates[3] > 0.0, "the speed governor must be able to open the valve");
+        assertEquals(-integralGain * 0.4 / data.getKturb(), rates[5], TOL);
+        step(governor, machine, dt);
+        assertTrue(governor.getValveStroke() > initialValve);
+        assertTrue(governor.getOutput(machine) > 0.4);
+        if (integralGain == 0.0) {
+            assertEquals(1.0, governor.getLoadLimiterIntegralState(), TOL);
+        } else {
+            assertTrue(governor.getLoadLimiterIntegralState() < 1.0);
+        }
+    }
+
+    @Test
+    void electricalPowerTransducerUsesTerminalPowerWithStatorLoss() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (com.interpss.dstab.mach.impl.RoundRotorMachineImpl)
+                builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setRa(.02);
+        var data = texasData();
+        data.setTrate(50.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        var bus = machine.getDStabBus();
+        assertTrue(machine.initStates(bus));
+        assertTrue(machine.getPe() > machine.getTerminalActivePower());
+        double initialTerminal = machine.getTerminalActivePower();
+        assertEquals(initialTerminal * 2.0, governor.getMeasuredElectricalPower(), TOL);
+        assertEquals(data.getR() * initialTerminal, governor.getRefPoint(), TOL);
+
+        bus.setVoltage(bus.getVoltage().multiply(.97));
+        machine.getIgen();
+        double terminal = machine.getTerminalActivePower();
+        double airGap = machine.getPe();
+        assertTrue(Math.abs(terminal - initialTerminal) > 1e-4);
+        assertTrue(Math.abs(terminal - airGap) > 1e-4);
+        double[] rates = new double[10];
+        governor.evaluateStaggered(.0033333, rates, 0);
+        assertEquals(2.0 * (terminal - initialTerminal) / data.getTpelec(), rates[0], TOL);
+        assertEquals(airGap, machine.getPe(), 0.0);
+    }
+
     @Test
     void builderAttachesExactDataIncludingTransportDelay() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
@@ -577,6 +715,37 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
         assertEquals(0.005, governor.getEffectiveTpelec(), TOL);
         assertEquals(0.01, governor.getEffectiveTb(), TOL);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0.5", "0.0"})
+    void supervisoryLoadControlUsesTheElectricalPowerMeasurement(double tpelec) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        var data = texasData();
+        data.setTrate(0.0);
+        data.setTpelec(tpelec);
+        data.setKimw(0.5);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        double dt = 0.01;
+        governor.configureIntegrationStep(dt);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+
+        machine.setPe(0.2);
+        double initialMeasurement = tpelec > 0.0 ? 0.4 : 0.2;
+        double predictorMeasurement = tpelec > 0.0
+                ? 0.4 + dt * (0.2 - 0.4) / tpelec : 0.2;
+        double predictorRate = data.getKimw() * (0.4 - initialMeasurement);
+        double correctorRate = data.getKimw() * (0.4 - predictorMeasurement);
+        assertTrue(governor.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(predictorRate, governor.getStateDerivativeSnapshot().rates().get("Supervisory Load Control"), TOL);
+        assertTrue(governor.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        assertEquals(correctorRate, governor.getStateDerivativeSnapshot().rates().get("Supervisory Load Control"), TOL);
+        assertEquals(dt * (predictorRate + correctorRate) / 2.0,
+                governor.getIntegrationStates().get("Supervisory Load Control"), TOL);
     }
 
     @Test

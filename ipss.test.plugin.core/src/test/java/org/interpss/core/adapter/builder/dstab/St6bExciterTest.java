@@ -51,6 +51,44 @@ public class St6bExciterTest extends CorePluginTestSetup {
         St6bData scaled=baseData();scaled.setVrmult(1);scaled.setTs(0);scaled.setVrmax(2);scaled.setVrmin(-2);Fixture s=fixture("ESST6B",scaled);
         s.machine.getDStabBus().setVoltage(new Complex(.5,0));s.exciter.setRefPoint(s.exciter.getRefPoint()+100);assertEquals(1,s.exciter.getOutput(s.machine),TOL);
     }
+    @Test void observesBypassedFieldOutputWithoutChangingControllerState() throws Exception {
+        St6bData data = baseData();
+        data.setTr(0);
+        data.setTs(0);
+        data.setKda(0);
+        data.setVrmult(1);
+        Fixture fixture = fixture("ST6B", data);
+        var exciter = fixture.exciter;
+        double storedOutput = exciter.outputSignal;
+        double integral = exciter.getPidIntegralOutput();
+        double derivativeLag = exciter.getPidDerivativeLag();
+        double terminal = .90;
+        double compensated = exciter.getRefPoint() - .15;
+        double expected = terminal * (1.2 / fixture.machine.getDStabBus().getVoltageMag() + data.getKpa() * .15);
+
+        assertEquals(expected, exciter.observeFieldVoltage(terminal, compensated, 1, 0), TOL);
+        assertEquals(storedOutput, exciter.outputSignal, 0);
+        assertEquals(integral, exciter.getPidIntegralOutput(), 0);
+        assertEquals(derivativeLag, exciter.getPidDerivativeLag(), 0);
+        assertEquals(1.2, fixture.machine.getEfd(), 0);
+    }
+    @Test void potentialFedEventUsesNewTerminalMagnitudeAndLeavesAcceptedStatesIntact() throws Exception {
+        var data = baseData();
+        data.setVrmult(1);
+        var fixture = fixture("ST6B", data);
+        var exciter = fixture.exciter;
+        var states = exciter.getNamedStates();
+        double storedOutput = exciter.outputSignal;
+        assertEquals(1.08, exciter.observePotentialFedEvent(1.0, 0.9, 1.0, 1.1, 1.2), TOL);
+        assertTrue(Double.isNaN(exciter.observePotentialFedEvent(1.0, 0.9, 1.0, 99.0, 1.2)));
+        assertTrue(Double.isNaN(exciter.observePotentialFedEvent(1.0, 0.9, 99.0, 1.0, 1.2)));
+        assertEquals(states, exciter.getNamedStates());
+        assertEquals(storedOutput, exciter.outputSignal, 0.0);
+        assertEquals(1.2, fixture.machine.getEfd(), 0.0);
+        exciter.setVoel(0.0);
+        assertTrue(Double.isNaN(exciter.observePotentialFedEvent(1.0, 0.9, 1.0, 1.1, 1.2)));
+    }
+
     @Test void appliesPowerWorldCorrectionsAndInitializationExpansion()throws Exception{
         St6bData d=baseData();d.setTr(.004);d.setTg(.015);d.setTs(.015);d.setKpa(0);d.setKia(0);d.setVamax(-5);d.setVamin(5);d.setVrmax(-3);d.setVrmin(-2);
         DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();St6bExciter e=b.addExcSt6b("Bus1","1","ESST6B",d);Machine m=b.getDStabNetwork().getMachine("Bus1-mach1");m.setEfd(1.2);

@@ -70,11 +70,21 @@ public final class WshyddGovernor extends AbstractGovernor implements ICMLStateP
         double firstDerivative = c(4)>EPS ? c(3)/c(4)*(filtered-s.k1State) : 0.0;
         double secondDerivative = c(4)>EPS ? c(5)/c(4)*(firstHighPass-s.kdSecond) : 0.0;
         double feedback = c(8)>EPS ? s.generatorPower : s.controlValve;
-        double cvDot = c(6)*(reference + firstDerivative + secondDerivative-c(7)*feedback);
-        double servoTarget = c(9)*(s.controlValve-s.gate);
-        double valveDot = c(10)>EPS ? (servoTarget-s.valveSpeed)/c(10) : 0.0;
-        double requestedRate = c(10)>EPS ? s.valveSpeed : servoTarget;
-        double gateDot = clamp(requestedRate, -Math.abs(c(12)), Math.abs(c(11)));
+        // The filtered speed error has a direct path as well as the derivative paths.
+        // It supplies the sustained droop response after both derivative outputs decay.
+        double cvDot = c(6) * (reference + filtered + firstDerivative + secondDerivative - c(7) * feedback);
+        double servoTarget = c(9) * (s.controlValve - s.gate);
+        double valveMin = -c(12);
+        double valveMax = c(11);
+        double valveDot = c(10) > EPS ? (servoTarget - s.valveSpeed) / c(10) : 0.0;
+        // The travel-rate limits bound the servo lag state itself. Suppressing
+        // outward motion at the bound lets the valve respond when the command reverses.
+        if ((s.valveSpeed >= valveMax && valveDot > 0.0)
+                || (s.valveSpeed <= valveMin && valveDot < 0.0)) {
+            valveDot = 0.0;
+        }
+        double requestedRate = c(10) > EPS ? s.valveSpeed : servoTarget;
+        double gateDot = clamp(requestedRate, valveMin, valveMax);
         if ((s.gate>=c(13)&&gateDot>0)||(s.gate<=c(14)&&gateDot<0)) gateDot=0;
         double peDot = c(8)>EPS ? (getMachine().getPe()/baseScale-s.generatorPower)/c(8):0;
         double gatePower = gateCurve(applyDeadband(s.gate,c(15)));
@@ -88,7 +98,7 @@ public final class WshyddGovernor extends AbstractGovernor implements ICMLStateP
         double gate=clamp(s.gate,c(14),c(13));
         return new State(c(2)>EPS?s.inputFilter:speed, c(4)>EPS?s.k1State:0,
                 c(4)>EPS?s.kdFirst:0,c(4)>EPS?s.kdSecond:0,s.controlValve,
-                c(10)>EPS?s.valveSpeed:0,gate,c(8)>EPS?s.generatorPower:getMachine().getPe()/baseScale,
+                c(10)>EPS?clamp(s.valveSpeed,-c(12),c(11)):0,gate,c(8)>EPS?s.generatorPower:getMachine().getPe()/baseScale,
                 c(27)*c(28)>EPS?s.turbineState:gateCurve(applyDeadband(gate,c(15))));
     }
     private double turbineOutput(State s) {

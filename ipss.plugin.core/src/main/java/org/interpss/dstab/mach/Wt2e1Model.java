@@ -8,6 +8,7 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 /** Rotor-resistance controller for the Type-2 wind generator. */
 public final class Wt2e1Model implements ICMLStateProvider {
     private static final double EPS = 1.0e-10;
+    private static final double POWER_ERROR_DEADBAND = 0.01;
 
     private final Wt2e1Data data;
     private final Wt2g1Data generatorData;
@@ -42,6 +43,9 @@ public final class Wt2e1Model implements ICMLStateProvider {
         effectiveOutputMin=Math.min(data.outputMin(),rotorResistance);
         effectiveOutputMax=Math.max(data.outputMax(),rotorResistance);
         output = limit(rotorResistance);
+        // A new operating point invalidates the pending modified Euler stage.
+        oldState = null;
+        oldDerivative = null;
         initialized = true;
     }
 
@@ -74,7 +78,7 @@ public final class Wt2e1Model implements ICMLStateProvider {
     private Derivative derivatives(State state, double speed, double power) {
         double filteredSpeed = data.speedFilterTime() <= EPS ? speed : state.speedFilter;
         double filteredPower = data.powerFilterTime() <= EPS ? power : state.powerFilter;
-        double error = filteredPower - generatorData.powerAtSpeedDeviation(filteredSpeed);
+        double error = controlError(filteredSpeed, filteredPower);
         double unconstrained = state.integrator + data.proportionalGain() * error;
         double integralDerivative = error / data.integratorTime();
         if ((unconstrained >= effectiveOutputMax && integralDerivative > 0.0)
@@ -101,8 +105,15 @@ public final class Wt2e1Model implements ICMLStateProvider {
     }
 
     private void updateOutput() {
-        double error = powerFilter - generatorData.powerAtSpeedDeviation(speedFilter);
+        double error = controlError(speedFilter, powerFilter);
         output = limit(integrator + data.proportionalGain() * error);
+    }
+
+    private double controlError(double filteredSpeed, double filteredPower) {
+        double error = filteredPower - generatorData.powerAtSpeedDeviation(filteredSpeed);
+        // Native WT2E1 gates both PI terms inside the fixed machine-base power
+        // deadband. Outside it, the PI receives the full signed error.
+        return Math.abs(error) <= POWER_ERROR_DEADBAND ? 0.0 : error;
     }
 
     private double limit(double value) {

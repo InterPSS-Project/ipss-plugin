@@ -93,7 +93,7 @@ public final class Ac7bExciter extends AnnotateExciter
         double va0 = vfe0 / vb0;
         double vr0 = kf1 * rawEfd0 + kf2 * vfe0;
         double piIntegral0 = va0;
-        if (usesNativeAc7bPid() && kia == 0.0) {
+        if (isNativeAc7b() && kia == 0.0) {
             // With no inner integral gain the native 27-CON regulator is a
             // proportional amplifier, not a proportional amplifier plus a
             // frozen VA bias. Invert VA=KPA*(VR-feedback) to obtain the outer
@@ -136,7 +136,7 @@ public final class Ac7bExciter extends AnnotateExciter
         return true;
     }
 
-    private boolean usesNativeAc7bPid() {
+    private boolean isNativeAc7b() {
         return "AC7B".equalsIgnoreCase(modelName);
     }
 
@@ -224,7 +224,7 @@ public final class Ac7bExciter extends AnnotateExciter
         double sensedVoltage = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         dx[VSENSE] = lagDerivative(sensedVoltage, x[VSENSE], tr);
         dx[PID_DERIVATIVE_LAG] = lagDerivative(a.pidError, x[PID_DERIVATIVE_LAG], tdr);
-        if (usesNativeAc7bPid()) {
+        if (isNativeAc7b()) {
             double rate = kir * a.pidError;
             // Native 27-CON captures hold the integral at either outward
             // PID limit. Back-calculation instead injects a large artificial
@@ -242,7 +242,7 @@ public final class Ac7bExciter extends AnnotateExciter
             dx[PID_INTEGRAL] = kir * (a.pidError
                     - ANTI_WINDUP_GAIN * (a.pidUnlimited - a.pidOutput));
         }
-        if (usesNativeAc7bPid()) {
+        if (isNativeAc7b()) {
             // The 27-CON AC7B inner PI is also directional nonwindup. When
             // its amplifier clips, independent nonzero-KIA captures hold the
             // integral against outward motion; a tracking term proportional
@@ -289,7 +289,12 @@ public final class Ac7bExciter extends AnnotateExciter
         double piError = pidOutput - combinedFeedback;
         double piUnlimited = kpa * piError + x[PI_INTEGRAL];
         double piOutput = clamp(piUnlimited, vamin, vamax);
-        double regulator = Math.max(potentialFactor(vt) * piOutput, -kl * vfe);
+        double regulator = potentialFactor(vt) * piOutput;
+        // In native AC7B, KL=0 disables the negative regulator limit.
+        // A zero clamp would suppress de-excitation even when VA permits it.
+        if (kl != 0.0 || !isNativeAc7b()) {
+            regulator = Math.max(regulator, -kl * vfe);
+        }
         regulator = Math.min(999.0, regulator);
         double field = te > EPS ? limitedField(x[VE], machine)
                 : solveAlgebraicField(regulator, x[VE], machine);
@@ -329,10 +334,16 @@ public final class Ac7bExciter extends AnnotateExciter
     }
 
     private double fieldUpperLimit(double field, double ifd) {
-        double denominator = ke
-                + Exac1Exciter.saturation(Math.max(field, 0.0), e1, se1, e2, se2);
+        double saturation = Exac1Exciter.saturation(Math.max(field, 0.0), e1, se1, e2, se2);
+        double denominator = ke + saturation;
         if (denominator <= EPS) return Double.POSITIVE_INFINITY;
-        return (vfemax - kd * ifd) / denominator;
+        double upper = (vfemax - kd * ifd) / denominator;
+        if (!isNativeAc7b() || ke < 0.0 || saturation <= 0.0
+                || field <= Math.max(0.0, vemin) || field <= upper) return upper;
+
+        // An overshoot needs a ceiling evaluated at its projected field.
+        return Exac1Exciter.projectFieldFeedbackCeiling(field, vemin, vfemax,
+                candidate -> fieldFeedback(candidate, ifd));
     }
 
     private double fieldFeedback(double field, double ifd) {

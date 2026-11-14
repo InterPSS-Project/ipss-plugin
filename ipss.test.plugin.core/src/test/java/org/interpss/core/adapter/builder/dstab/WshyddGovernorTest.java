@@ -82,11 +82,48 @@ public class WshyddGovernorTest extends CorePluginTestSetup {
         }
     }
 
+    @Test
+    void sustainedSpeedErrorChangesTheValveCommandAfterDerivativesDecay() throws Exception {
+        double[] parameters = DATA.clone();
+        parameters[0] = parameters[1] = parameters[3] = parameters[5] = parameters[8] = parameters[15] = 0.0;
+        parameters[6] = 20.0;
+        parameters[7] = 0.10;
+        Fixture fixture = fixture(parameters);
+        double initialGate = fixture.governor.getGatePosition();
+        fixture.machine.setSpeed(0.996);
+        advance(fixture.governor, fixture.machine, 8_000, .001);
+
+        assertEquals(initialGate + .004 / .10, fixture.governor.getNamedStates().get("CV"), 1.0e-6);
+        assertEquals(initialGate + .004 / .10, fixture.governor.getGatePosition(), 2.0e-4);
+    }
+
+    @Test
+    void travelRatesBoundTheServoStateBeforeAndAfterCommandReversal() throws Exception {
+        double[] parameters = DATA.clone();
+        parameters[11] = .02;
+        parameters[12] = 0.0;
+        Fixture fixture = fixture(parameters);
+        double initialGate = fixture.governor.getGatePosition();
+        fixture.governor.setRefPoint(-.10);
+        advance(fixture.governor, fixture.machine, 1_000, .001);
+        assertEquals(0.0, fixture.governor.getNamedStates().get("Valve speed"), 1.0e-12);
+        assertEquals(initialGate, fixture.governor.getGatePosition(), 1.0e-12);
+
+        fixture.governor.setRefPoint(.25);
+        advance(fixture.governor, fixture.machine, 2_000, .001);
+        assertEquals(.02, fixture.governor.getNamedStates().get("Valve speed"), 1.0e-12);
+        assertTrue(fixture.governor.getGatePosition() > initialGate);
+    }
+
     private static Fixture fixture() throws Exception {
+        return fixture(DATA.clone());
+    }
+
+    private static Fixture fixture(double[] parameters) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setPm(.60); machine.setPe(.60); machine.setSpeed(1.0);
-        WshyddGovernor governor = builder.addGovWshydd("Bus1", "1", DATA.clone());
+        WshyddGovernor governor = builder.addGovWshydd("Bus1", "1", parameters);
         assertNotNull(governor); assertTrue(governor.initStates(machine.getDStabBus(), machine));
         return new Fixture(machine, governor);
     }

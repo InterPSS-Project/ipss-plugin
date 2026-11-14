@@ -36,6 +36,29 @@ public class GenqecMachine extends RoundRotorMachineImpl
     private final GenqecData data;
     private final GenqecEqnSolver genqecSolver;
     private IeeeVcData ieeeVcData;
+    private boolean networkFrequencyDependenceEnabled;
+
+    /** Apply the native GENQEC/GENQECU NETFRQ policy before initialization. */
+    public void setNetworkFrequencyDependenceEnabled(boolean enabled) {
+        networkFrequencyDependenceEnabled = enabled;
+    }
+
+    private double statorReactanceFrequencyRatio() {
+        if (!networkFrequencyDependenceEnabled) return 1.;
+        double ratio = getDStabBus().getFreq();
+        if (!Double.isFinite(ratio) || ratio <= 0.) {
+            throw new ArithmeticException("GENQEC stator frequency ratio must be finite and positive");
+        }
+        return ratio;
+    }
+
+    @Override
+    protected double cal_dW_dt(double speed, double baseFrequency) {
+        double rate = super.cal_dW_dt(speed, baseFrequency);
+        // Pe remains air-gap power. NETFRQ converts accelerating power to
+        // torque using shaft speed while retaining the same output power base.
+        return networkFrequencyDependenceEnabled ? rate / speed : rate;
+    }
 
     public GenqecMachine(GenqecData data) {
         super();
@@ -56,6 +79,26 @@ public class GenqecMachine extends RoundRotorMachineImpl
     @Override
     public void setIeeeVcData(IeeeVcData data) {
         ieeeVcData = data;
+    }
+
+    @Override
+    protected boolean advanceElectromechanicalStage(double dt, DynamicSimuMethod method,
+            Network<?, ?> net, int flag) {
+        // The stator RHS uses the solved terminal voltage, rotor angle and
+        // speed at the same predictor/corrector endpoint. Advancing the
+        // angle first rotates the stator coordinates against an older
+        // network voltage and biases the power even at constant slip.
+        double stageAirGapPower = getPe();
+        try {
+            if (!nextStepElectrical(dt, method, net, flag)) {
+                return false;
+            }
+        } finally {
+            // Electrical integration publishes provisional power. The swing
+            // derivative still needs the power of the solved stage.
+            setPe(stageAirGapPower);
+        }
+        return nextStepMechanical(dt, method, net, flag);
     }
 
     /** GENQEC permits Xd'' != Xq'' and zero q-axis time constants. */
@@ -191,6 +234,12 @@ public class GenqecMachine extends RoundRotorMachineImpl
         return getVoltBehindXl();
     }
 
+    /** Machine-base terminal MW sampled during the most recent stator evaluation. */
+    @Override
+    public double getTerminalActivePower() {
+        return genqecSolver.terminalActivePower;
+    }
+
     /** Compensated terminal voltage supplied to a compatible exciter. */
     public double getCompensatedVoltage() {
         Complex terminalCurrent = getIgen().subtract(getDStabBus().getVoltage().multiply(getYgen()));
@@ -233,6 +282,7 @@ public class GenqecMachine extends RoundRotorMachineImpl
         private double id;
         private double iq;
         private double airGapFlux;
+        private double terminalActivePower;
         private double ladIfd;
         private boolean initialized;
 
@@ -253,6 +303,7 @@ public class GenqecMachine extends RoundRotorMachineImpl
             iq = initialCurrent.q;
 
             Vector_dq terminalVoltage = getVdq();
+            terminalActivePower = terminalVoltage.d * id + terminalVoltage.q * iq;
             double vqag = terminalVoltage.q + getRa() * iq + getXl() * id;
             double vdag = terminalVoltage.d + getRa() * id - getXl() * iq;
             airGapFlux = Math.hypot(vqag, vdag) / Math.max(getSpeed(), EPS);
@@ -369,26 +420,31 @@ public class GenqecMachine extends RoundRotorMachineImpl
 
         private void updateCurrent() {
             Vector_dq terminalVoltage = getVdq();
-            // GENQEC's published boundary is Vd = -speed*Psiq'' and
-            // Vq = speed*Psid''. This differs intentionally from the legacy
-            // GENROU Flux0 approximation inherited by the core machine.
+            // GENQEC/GENQECU uses shaft speed in its internal EMF and
+            // saturation flux normalization. With NETFRQ, local electrical
+            // frequency scales the stator and leakage reactances independently.
             double speed = getSpeed();
+            double reactanceRatio = statorReactanceFrequencyRatio();
+            double leakage = reactanceRatio * getXl();
             double dvD = -psiqpp * speed - terminalVoltage.d;
             double dvQ = psidpp * speed - terminalVoltage.q;
             // Current and saturation are weakly coupled through air-gap flux.
             // A short fixed-point iteration makes the boundary solution
             // self-consistent without adding states to the network solver.
             for (int iteration = 0; iteration < 4; iteration++) {
-                double xdppSat = saturatedReactance(getXd11(), airGapFlux);
-                double xqppSat = saturatedReactance(getXq11(), airGapFlux);
+                double xdppSat = reactanceRatio * saturatedReactance(getXd11(), airGapFlux);
+                double xqppSat = reactanceRatio * saturatedReactance(getXq11(), airGapFlux);
                 double determinant = getRa() * getRa() + xdppSat * xqppSat;
                 id = (getRa() * dvD + xqppSat * dvQ) / determinant;
                 iq = (-xdppSat * dvD + getRa() * dvQ) / determinant;
 
-                double vqag = terminalVoltage.q + getRa() * iq + getXl() * id;
-                double vdag = terminalVoltage.d + getRa() * id - getXl() * iq;
+                double vqag = terminalVoltage.q + getRa() * iq + leakage * id;
+                double vdag = terminalVoltage.d + getRa() * id - leakage * iq;
                 airGapFlux = Math.hypot(vqag, vdag) / Math.max(speed, EPS);
             }
+            // The load controller reads the terminal measurement without
+            // recalculating current or changing the swing-equation input.
+            terminalActivePower = terminalVoltage.d * id + terminalVoltage.q * iq;
         }
 
         private void updateElectricalOutputs() {

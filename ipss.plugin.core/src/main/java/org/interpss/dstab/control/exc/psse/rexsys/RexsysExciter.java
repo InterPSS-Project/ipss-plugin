@@ -122,7 +122,9 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         double selected=fbf==0?a.regulator:feedbackInput(x,machine);
         dx[FB_LAG]=lagDerivative(selected,x[FB_LAG],tf);
         dx[FB_LL]=leadLagDerivative(a.feedbackWashout,x[FB_LL],tf1,tf2);
-        dx[CURRENT_I]=limitedIntegratorDerivative(kii*a.currentError,x[CURRENT_I],a.currentPi,a.vfMin,a.vfMax);
+        // REXSYS limits the bridge, downstream of the current PI. The
+        // integrator continues to accumulate while the bridge output saturates.
+        dx[CURRENT_I]=kii*a.currentError;
         dx[VF]=blockedRate(x[VF],lagDerivative(a.currentPi,x[VF],tp),a.vfMin,a.vfMax);
         dx[VE]=(a.bridge-fieldFeedback(x[VE],exciterIfd(machine)))/te;
     }
@@ -155,8 +157,10 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
         double regulator=ta>EPS?clamp(x[VR],rmin,rmax):clamp(ll2,rmin,rmax);
         double currentError=regulator-kh*fieldFeedback(x[VE],exciterIfd(machine));
         double fmin=scale*vfmin,fmax=scale*vfmax;
-        double currentPi=clamp(kip*currentError+x[CURRENT_I],fmin,fmax);
-        double bridge=tp>EPS?clamp(x[VF],fmin,fmax):currentPi;
+        // A dynamic bridge moves toward the full PI output and limits its own state.
+        // With TP=0, the same limit applies directly to the algebraic bridge output.
+        double currentPi=kip*currentError+x[CURRENT_I];
+        double bridge=clamp(tp>EPS?x[VF]:currentPi,fmin,fmax);
         return new Algebraic(sensed,error,voltagePi,ll1,ll2,washout,feedback,regulator,currentError,currentPi,bridge,rmin,rmax,fmin,fmax);
     }
     private double feedbackInput(double[] x,Machine machine){
@@ -172,9 +176,17 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
     private static double leadLagDerivative(double input,double state,double tc,double tb){return tb>EPS?((1-tc/tb)*input-state)/tb:0;}
     private static double lagDerivative(double input,double state,double t){return t>EPS?(input-state)/t:0;}
     private static double blockedRate(double x,double rate,double min,double max){return (x>=max&&rate>0)||(x<=min&&rate<0)?0:rate;}
-    private static double limitedIntegratorDerivative(double rate,double state,double output,double min,double max){return (output>=max&&rate>0)||(output<=min&&rate<0)?0:rate;}
     private static void add(double[] x,double[] d,double dt,double[] y){for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;}
-    private void constrain(double[] x,Machine machine){Algebraic a=algebraics(x,machine);x[VR]=clamp(x[VR],a.vrMin,a.vrMax);x[VF]=clamp(x[VF],a.vfMin,a.vfMax);}
+    private void constrain(double[] x,Machine machine){
+        // A negative bridge command discharges the rotating exciter field to zero.
+        // Project the internal state at each integration stage so it cannot accumulate
+        // negative field voltage while the rectifier is off. The bridge retains its
+        // signed command and the field can rise as soon as the drive recovers.
+        x[VE]=Math.max(0.0,x[VE]);
+        Algebraic a=algebraics(x,machine);
+        x[VR]=clamp(x[VR],a.vrMin,a.vrMax);
+        x[VF]=clamp(x[VF],a.vfMin,a.vfMax);
+    }
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private static double stabilizerSignal(Machine m){return m.getStabilizer()==null?0:m.getStabilizer().getOutput(m);}
     private static double exciterIfd(Machine m){double v=m.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(v)?v:0;}

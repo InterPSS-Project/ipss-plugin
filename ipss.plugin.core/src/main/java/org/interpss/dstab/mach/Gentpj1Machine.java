@@ -155,6 +155,16 @@ public final class Gentpj1Machine extends RoundRotorMachineImpl
                 ? xadIfd / (getXdAdjusted() - getXl()) : xadIfd;
     }
 
+    /**
+     * Machine-base terminal active power at the last electrical boundary.
+     * Controls that measure generator MW can read this value without
+     * refreshing the stator solution or changing the swing-equation input.
+     */
+    public double getTerminalActivePower() {
+        return typeJSolver.initialized ? typeJSolver.terminalActivePower
+                : getParentGen().getGen().getReal() / getRating();
+    }
+
     /** The electrical owner publishes air-gap POWER, including copper loss.
      * The mechanical equation converts both mechanical and electrical power to
      * torque at actual shaft speed. A Flux0 helper that treats cached Pe as
@@ -194,6 +204,7 @@ public final class Gentpj1Machine extends RoundRotorMachineImpl
         private double oldEqpp, oldEdpp, oldEqp, oldEdp;
         private double dEqpp, dEdpp, dEqp, dEdp;
         private double id, iq, airGapFlux, saturation;
+        private double terminalActivePower;
         private double pendingDt;
         private boolean pending, initialized;
 
@@ -340,7 +351,9 @@ public final class Gentpj1Machine extends RoundRotorMachineImpl
             // Exactly Vd*Id + Vq*Iq + Ra*(Id^2+Iq^2), in machine pu.
             // Adding a speed multiplier here would count it twice when the
             // mechanical equation converts this power to electrical torque.
-            setPe(psiD * iq - psiQ * id);
+            double airGapPower = psiD * iq - psiQ * id;
+            setPe(airGapPower);
+            terminalActivePower = airGapPower - getRa() * (id * id + iq * iq);
         }
 
         @Override public Object getOutputObject() {

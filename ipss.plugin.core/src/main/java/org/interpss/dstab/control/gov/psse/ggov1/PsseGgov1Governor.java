@@ -14,6 +14,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
@@ -84,7 +85,7 @@ public class PsseGgov1Governor extends AbstractGovernor
         governorToMachineBase = getData().getTrate() > EPS && machineMva > EPS
                 ? getData().getTrate() / machineMva : 1.0;
         double pm0 = mach.getPm() / governorToMachineBase;
-        double pe0 = mach.getPe() / governorToMachineBase;
+        double pe0 = measuredMachinePower(mach) / governorToMachineBase;
         double speed = mach.getSpeed();
         double speedDeviation = speed - 1.0;
         double damping0 = damping(speedDeviation);
@@ -103,7 +104,11 @@ public class PsseGgov1Governor extends AbstractGovernor
         // Keep the turbine and measurement history at the supplied operating
         // point. A limited actuator produces a real startup transient instead
         // of widening the declared travel range to manufacture equilibrium.
-        double loadIntegrator0 = actuator0;
+        // With Kpload = 0 the load path is a straight integrator initialized
+        // at the normalized upper selector input. Seeding it from the initial
+        // valve stroke would impose an artificial ceiling when Kiload is zero.
+        // A nonzero Kiload can still move this selector input after initialization.
+        double loadIntegrator0 = getData().getKpload() == 0.0 ? 1.0 : actuator0;
         state = new State(pe0, 0.0, valve0, actuator0, pm0 + damping0,
                 loadIntegrator0, 0.0, speedDeviation, tempInput0, tempInput0);
         oldState = state;
@@ -381,7 +386,7 @@ public class PsseGgov1Governor extends AbstractGovernor
             double trackingFsr) {
         PsseGgov1GovernorData d = getData();
         double speedDeviation = getMachine().getSpeed() - 1.0;
-        double pe = getMachine().getPe() / governorToMachineBase;
+        double pe = measuredMachinePower(getMachine()) / governorToMachineBase;
         double peMeasured = effectiveTpelec > EPS ? s.peMeasured : pe;
         double valve = clamp(s.valve, effectiveVmin, effectiveVmax);
         double droop = selectedDroop(peMeasured, valve, trackingFsr);
@@ -412,10 +417,14 @@ public class PsseGgov1Governor extends AbstractGovernor
 
         double acceleration = effectiveTa > EPS
                 ? (speedDeviation - s.accelerationLag) / effectiveTa : 0.0;
-        double fsra = trackingFsr + d.getKa() * stepSize * (d.getAset() - acceleration);
+        // At zero acceleration gain the reference model excludes this path
+        // from the low selector. Reusing the preceding FSR would impose a
+        // one-way valve command that can fall but can never recover.
+        double fsra = d.getKa() == 0.0 ? 1.0
+                : trackingFsr + d.getKa() * stepSize * (d.getAset() - acceleration);
         double fsr = clamp(Math.min(1.0, Math.min(fsrn, Math.min(fsrt, fsra))),
                 effectiveVmin, effectiveVmax);
-        return new Algebraic(pe, error, fsrn, fsrt, fsr, valve, rawTurbineInput, turbineInput,
+        return new Algebraic(pe, peMeasured, error, fsrn, fsrt, fsr, valve, rawTurbineInput, turbineInput,
                 temperatureInput, temperatureLeadLag, loadError, pmech);
     }
 
@@ -456,10 +465,14 @@ public class PsseGgov1Governor extends AbstractGovernor
         double peDot = effectiveTpelec > EPS
                 ? (a.pe - s.peMeasured) / effectiveTpelec : 0.0;
         double derivativeDot = d.getTdgov() > EPS ? (a.error - s.derivativeLag) / d.getTdgov() : 0.0;
-        double governorIntegralDot = d.getKigov() * a.error;
-        if (Math.abs(effectiveKpgov) > EPS) {
-            governorIntegralDot += d.getKigov() / effectiveKpgov * (a.fsr - a.fsrn);
-        }
+        // Track the fuel command selected by all three control paths. With the
+        // speed path selected, this still includes the filtered derivative term
+        // in addition to proportional error. Using only the PI error when the
+        // selector agrees with the speed path drops that part of the response.
+        // The zero-proportional-gain path is a straight error integrator.
+        double governorIntegralDot = Math.abs(effectiveKpgov) > EPS
+                ? d.getKigov() / effectiveKpgov * (a.fsr - s.governorIntegrator)
+                : d.getKigov() * a.error;
         double valveDot = clamp((a.fsr - a.valve) / d.getTact(),
                 effectiveRclose, effectiveRopen);
         double turbineDot = effectiveTb > EPS
@@ -468,7 +481,9 @@ public class PsseGgov1Governor extends AbstractGovernor
         if (Math.abs(d.getKpload()) > EPS) {
             loadIntegralDot += d.getKiload() / d.getKpload() * (a.fsr - a.fsrt);
         }
-        double mwDot = d.getKimw() * (pmwset - a.pe);
+        // GGOV1 uses the electrical-power transducer output for supervisory MW
+        // feedback. With the transducer bypassed this equals instantaneous power.
+        double mwDot = d.getKimw() * (pmwset - a.peMeasured);
         double mwLimit = 1.1 * Math.abs(d.getR());
         if ((s.mwIntegrator >= mwLimit && mwDot > 0.0)
                 || (s.mwIntegrator <= -mwLimit && mwDot < 0.0)) mwDot = 0.0;
@@ -484,6 +499,14 @@ public class PsseGgov1Governor extends AbstractGovernor
                 temperatureLeadDot, temperatureLagDot);
     }
 
+    private static double measuredMachinePower(Machine machine) {
+        // The MW transducer senses terminal active power on the machine base.
+        // The stator cache avoids a second evaluation that would change the
+        // electrical power or torque used by the swing equation at this stage.
+        return machine instanceof RoundRotorMachineImpl rotor
+                ? rotor.getTerminalActivePower() : machine.getPe();
+    }
+
     private double selectedDroop(double peMeasured, double valve, double governorOutput) {
         return switch (getData().getRselect()) {
             case 1 -> peMeasured;
@@ -495,7 +518,7 @@ public class PsseGgov1Governor extends AbstractGovernor
 
     private double currentGovernorError() {
         double speedDeviation = getMachine().getSpeed() - 1.0;
-        double pe = getMachine().getPe() / governorToMachineBase;
+        double pe = measuredMachinePower(getMachine()) / governorToMachineBase;
         double peMeasured = effectiveTpelec > EPS ? state.peMeasured : pe;
         double droop = selectedDroop(peMeasured, getValveStroke(), currentFsr);
         double frequencySignal = applyFrequencyDeadband(speedDeviation);
@@ -587,7 +610,7 @@ public class PsseGgov1Governor extends AbstractGovernor
         return new double[] {Math.min(max, 1.0), Math.max(min, 0.0)};
     }
 
-    private record Algebraic(double pe, double error, double fsrn, double fsrt,
+    private record Algebraic(double pe, double peMeasured, double error, double fsrn, double fsrt,
             double fsr, double valve, double rawTurbineInput, double turbineInput, double temperatureInput,
             double temperatureLeadLag, double loadError, double pmech) { }
 

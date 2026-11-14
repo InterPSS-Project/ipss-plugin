@@ -44,6 +44,22 @@ acceptance. The saturation-initialization difference is addressed by a separate 
 qualification; neither correction rebases saved states or widens existing
 trajectory tolerances.
 
+## Nonlinear field ceiling
+
+For 21-CON AC8B, the field projection at an upper-limit crossing solves
+`VE * (KE + SE(VE)) + KD * Ifd <= VFEMAX` using the field current from
+the current integration stage. Inside the admissible region the solver
+uses the ordinary field equations. An overshooting trial evaluates
+saturation at the projected field. Reusing the overshoot's higher
+saturation in the ceiling quotient was driving the accepted field below
+its admissible limit, causing alternating under- and over-corrections
+and a low field voltage after clearing.
+
+The bracketed projection applies in the monotone saturated region with
+nonnegative KE. The regression exercises reaching, holding, and releasing
+the ceiling at two time steps. A 10-second independent fault replay also
+checks the coupled machine trajectory across the crossing and recovery.
+
 ## Saturation cutoff
 
 The quadratic fit retains its signed intercept A and original normalization.

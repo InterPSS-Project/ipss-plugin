@@ -27,6 +27,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
             "T6","K5","K6","T7","K7","K8","Db1","Err","Db2","Gv1","Pgv1","Gv2","Pgv2",
             "Gv3","Pgv3","Gv4","Pgv4","Gv5","Pgv5","Iblock");
     private final double[] c;
+    private final double speedDeadbandRelease, speedDeadbandOffset;
     private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6], trial = new double[6];
     private final double[] referenceLeftRates = new double[6];
     private final double[] curveX = new double[5], curveY = new double[5];
@@ -110,6 +111,23 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
                 || (c[6]<c[7] && !((c[33]==2||c[33]==3)&&c[6]==0)) || c[20]<0 || c[21]<0 || c[22]<0
                 || c[33]!=(int)c[33] || c[33]<0 || c[33]>3)
             throw new IllegalArgumentException("Invalid WSIEG1 time, rate, deadband or limit settings");
+
+        // DB1 sets activation. The reference simulator uses a continuous
+        // dead zone when ERR is zero and a zero-release bowtie when ERR
+        // equals DB1. Intermediate ERR values set both release and offset.
+        // Above DB1, ERR still offsets output but release occurs at DB1.
+        double width = c[20];
+        double hysteresis = c[21];
+        if (width == 0.0 || hysteresis == width) {
+            speedDeadbandRelease = 0.0;
+            speedDeadbandOffset = 0.0;
+        } else if (hysteresis == 0.0) {
+            speedDeadbandRelease = width;
+            speedDeadbandOffset = width;
+        } else {
+            speedDeadbandRelease = Math.min(width, hysteresis);
+            speedDeadbandOffset = hysteresis;
+        }
         for (int i : new int[]{8,11,14,17}) if(c[i]<0) throw new IllegalArgumentException("Negative turbine time constant");
         for (int i=0;i<5;i++) {
             double a=c[23+2*i], b=c[24+2*i];
@@ -323,13 +341,13 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     private int deadbandMode(double u) {
         if(mode==0) return u>c[20]?1:u< -c[20]?-1:0;
-        if(mode>0 && u<=c[21]) return u< -c[20]?-1:0;
-        if(mode<0 && u>= -c[21]) return u>c[20]?1:0;
+        if(mode>0 && u<=speedDeadbandRelease) return u< -c[20]?-1:0;
+        if(mode<0 && u>= -speedDeadbandRelease) return u>c[20]?1:0;
         return mode;
     }
     private double speedInput(double u) {
         int m=deadbandMode(u);
-        return m>0?u-c[21]:m<0?u+c[21]:0;
+        return m>0?u-speedDeadbandOffset:m<0?u+speedDeadbandOffset:0;
     }
     private double backlash(double u) { return clamp(gateMemory,u-c[22],u+c[22]); }
     private void derivatives(double[] s,double[] d,double speed) {

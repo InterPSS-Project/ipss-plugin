@@ -248,3 +248,26 @@ core repository. Plugin entrypoints and selection are in
 [DefaultDynamicSimulationSolver](../ipss.plugin.core/src/main/java/org/interpss/dstab/algo/DefaultDynamicSimulationSolver.java),
 [StaggeredEulerSolver](../ipss.plugin.core/src/main/java/org/interpss/dstab/algo/StaggeredEulerSolver.java)
 and [PSSEMultiFileLoader](../ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/PSSEMultiFileLoader.java).
+
+
+### Prescribed ESST1A boundaries during whole-graph substeps
+
+An exciter playback can prescribe terminal magnitude, exciter field current
+and stabilizer output at each outer boundary. The whole-graph evaluator
+uses those values for its endpoint samples and temporarily replaces them
+with the selected inputs within the interval. When it leaves the stage,
+it restores any caller-prescribed endpoint. This keeps output observation
+and the next stage on the same boundary, including after a zero-duration
+event observation. Live simulations continue to read the machine's
+terminal values when the caller has supplied no override.
+
+With whole-graph substeps enabled, `setModifiedEulerLocalInputSampling`
+selects how the corrector obtains its input values. The default,
+`INTERPOLATED_ENDPOINTS`, interpolates between the two outer boundaries.
+`HELD_AT_INTERVAL_START` uses the initial voltage, field current, stabilizer
+output, reference and limiter inputs for each substep in the interval.
+The latter mode improved field-voltage MSE in two matched source-stack
+components and their two-second network checks. This numerical setting is
+per exciter and can be selected before a physical step begins. The network
+still solves both sides of each event. The zero-duration controller refresh
+samples the live event-side values and leaves the integrated state intact.

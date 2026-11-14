@@ -54,14 +54,16 @@ public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAwar
 
     @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction saturation = new CMLFunctionAdapter() {
-        @Override public double eval(double[] values) { return saturation(values[0], e1, se1, e2, se2); }
+        @Override public double eval(double[] values) { return saturationAt(values[0]); }
     };
 
-    @AnFunctionField(input={"this.fieldIntegrator.y", "mach.ifd"})
+    @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction vfe = new CMLFunctionAdapter() {
         @Override public double eval(double[] values) {
-            double ifd = Double.isFinite(values[1]) ? values[1] : 0.0;
-            return values[0] * (ke + saturation.eval(new double[] {values[0]})) + kd * ifd;
+            // KD and the rectifier KC both use exciter-base field current.
+            // The general CML mach.ifd signal is on the machine field base.
+            double ifd = exciterIfd();
+            return values[0] * (ke + saturationAt(values[0])) + kd * ifd;
         }
     };
 
@@ -118,7 +120,7 @@ public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAwar
         washoutGain=kf/tf;
         double ifd=exciterIfd();
         double ve0=solveInternalVoltage(machine.getEfd(), kc*ifd);
-        double vr0=ve0*(ke+saturation(ve0,e1,se1,e2,se2))+kd*ifd;
+        double vr0=ve0*(ke+saturationAt(ve0))+kd*ifd;
         vrmax=Math.max(Math.max(data.getVrmax(),data.getVrmin()),vr0);
         vrmin=Math.min(Math.min(data.getVrmax(),data.getVrmin()),vr0);
         return super.initStates(bus,machine);
@@ -145,6 +147,12 @@ public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAwar
                 kf,tf,kc,kd,ke,e1,se1,e2,se2,spdmlt};
         for(double value:values) if(!Double.isFinite(value)) return false;
         return true;
+    }
+
+    private double saturationAt(double ve) {
+        // Use the absolute fitted intercept for the cutoff and retain the
+        // signed intercept in the quadratic above it.
+        return saturation(ve, e1, se1, e2, se2, true);
     }
 
     private double exciterIfd() {
@@ -215,6 +223,23 @@ public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAwar
             if (mid*rectifierFactor(loadedCurrent/mid) < efd) low=mid; else high=mid;
         }
         return .5*(low+high);
+    }
+
+    /**
+     * Finds the highest admissible field between the lower field limit and an
+     * overshooting trial. The caller supplies a nondecreasing feedback curve.
+     */
+    public static double projectFieldFeedbackCeiling(double trialField, double minimumField,
+            double feedbackLimit, java.util.function.DoubleUnaryOperator feedback) {
+        if (feedback.applyAsDouble(minimumField) > feedbackLimit) return minimumField;
+        double low = minimumField;
+        double high = trialField;
+        for (int iteration = 0; iteration < 48 && high - low > 1.0e-12; iteration++) {
+            double midpoint = low + (high - low) * 0.5;
+            if (feedback.applyAsDouble(midpoint) <= feedbackLimit) low = midpoint;
+            else high = midpoint;
+        }
+        return low;
     }
 
     public static double saturation(double ve,double e1,double se1,double e2,double se2) {

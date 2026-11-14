@@ -68,6 +68,23 @@ public class PsseWt3e1ModelTest {
                 trial.get("Voltage-error/internal-voltage integrator"), 1e-12);
     }
 
+    @Test void speedCurveUsesRatedPowerInterpolationAndSeparateFullSpeedPickup() throws Exception {
+        // Native PSS/E tests cover both sides of the entered full-speed pickup.
+        double[][] points = {{.3, -.265}, {.5, -.12}, {.6, -.02}, {.68, .024},
+                {.739, .05645}, {.74, .2}, {.75, .2}};
+        for (double[] point : points) {
+            var builder = DStabBuilderTestFixture.createBuilder();
+            var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+            var gen = (com.interpss.dstab.DStabGen) bus.getContributeGen("1");
+            gen.setMvaBase(100.0);
+            gen.setGen(new org.apache.commons.math3.complex.Complex(point[0], .1));
+            var generator = builder.addWt3g1("Bus1", "1", new Wt3g1Data(1, .33403, 0, 0, .12, 100.0));
+            var controller = builder.addWt3e1("Bus1", "1", data(1, 2));
+            assertTrue(generator.initStates(bus));
+            assertEquals(point[1], controller.getSpeedReferenceState(), 1e-12, "dispatch " + point[0]);
+        }
+    }
+
     @Test void rejectsInvalidFlagsAndBreakpoints() {
         assertThrows(IllegalArgumentException.class,()->data(2,1));
         assertThrows(IllegalArgumentException.class,()->data(1,3));

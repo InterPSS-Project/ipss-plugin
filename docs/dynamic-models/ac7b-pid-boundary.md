@@ -138,3 +138,20 @@ and comparison artifacts stay in private QA. Catalog support status is unchanged
 
 Implementation: [`Ac7bExciter`](../../ipss.plugin.core/src/main/java/org/interpss/dstab/control/exc/psse/ac7b/Ac7bExciter.java).
 Focused tests: [`Ac7bPidBoundaryTest`](../../ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/builder/dstab/Ac7bPidBoundaryTest.java).
+
+## Negative regulator limit with zero KL
+
+The reference AC7B implementation treats zero KL as a bypass of the negative
+regulator limit. The PI amplifier's signed output then feeds the
+regulator through the existing potential factor. Applying
+`max(VB * VA, -KL * VFE)` at zero would force the regulator output
+nonnegative and slow field-voltage recovery after a fault.
+
+The native component test reconstructs the regulator input from
+the recorded internal field-voltage rate and field feedback. For
+zero KL, the signed amplifier gives the measured negative
+regulator trajectory. Changing only KL to 0.2 activates the lower
+bound at `-0.2 * VFE`. The shared algebraic calculation bypasses
+the lower gate only for native AC7B with exact zero KL. The PI
+amplifier bounds, upper regulator cap, dynamic field limits and
+reordered ESAC7B path retain their original behavior.

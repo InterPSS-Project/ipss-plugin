@@ -281,9 +281,18 @@ public class Ac8bExciter extends AnnotateExciter
     }
 
     private double fieldUpperLimit(double field, double ifd) {
-        double denominator = ke + fieldSaturation(Math.max(field, 0.0));
+        double saturation = fieldSaturation(Math.max(field, 0.0));
+        double denominator = ke + saturation;
         if (denominator <= EPS) return Double.POSITIVE_INFINITY;
-        return (vfemax - kd * ifd) / denominator;
+        double upper = (vfemax - kd * ifd) / denominator;
+        if (data.isEsac8bPti() || ke < 0.0 || saturation <= 0.0
+                || field <= Math.max(0.0, vemin) || field <= upper) return upper;
+
+        // At a step overshoot, the trial saturation makes the quotient too
+        // small. Project to the highest admissible field, where the saturation
+        // used in the ceiling comes from the projected state itself.
+        return Exac1Exciter.projectFieldFeedbackCeiling(field, vemin, vfemax,
+                candidate -> fieldFeedback(candidate, ifd));
     }
 
     /**

@@ -45,6 +45,34 @@ public class Ac7bPidBoundaryTest extends CorePluginTestSetup {
         assertTrue(f.e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,f.m,0));
         assertTrue(f.e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,f.m,1));
     }
+    @Test
+    void saturatedFieldProjectsToItsCeilingDuringAnOvershootingStep() throws Exception {
+        Ac7bData data = parameters();
+        data.setE1(2.0);
+        data.setSe1(.2);
+        data.setE2(4.0);
+        data.setSe2(.45);
+        data.setVfemax(2.4); // E1 * (KE + SE1)
+        data.setVemin(0.0);
+        data.setVrmax(20.0);
+        for (double dt : new double[] {.05, .025}) {
+            Fixture f = fixture(data, "AC7B", 1.0, true);
+            f.e.setVuel(5.0);
+            double previous = f.e.getInternalFieldVoltage();
+            for (int sample = 0; sample < 60; sample++) {
+                step(f, dt);
+                double field = f.e.getInternalFieldVoltage();
+                assertTrue(field >= previous - TOL, "The field must approach the ceiling monotonically");
+                assertTrue(field <= 2.0 + TOL, "The field feedback must stay within its ceiling");
+                previous = field;
+            }
+            assertEquals(2.0, previous, TOL);
+            f.e.setVuel(-5.0);
+            step(f, dt);
+            assertTrue(f.e.getInternalFieldVoltage() < previous);
+        }
+    }
+
     @Test void zeroInnerGainInitializesPureProportionalAmplifierBackwards()throws Exception{
         for(double gain:new double[]{.25,-.25}){
             Ac7bData d=parameters();d.setKpa(gain);d.setVrmax(10);d.setVrmin(-10);
@@ -131,6 +159,25 @@ public class Ac7bPidBoundaryTest extends CorePluginTestSetup {
             assertEquals(-8*sign,rhs(f)[PI_I],TOL);assertEquals(.3*sign,rhs(f)[PID_I],TOL);
         }
     }
+    @Test void nativeZeroKlBypassesNegativeRegulatorLimit() throws Exception {
+        Ac7bData d = parameters();
+        d.setKl(0.0);
+        Fixture nativeModel = fixture(d, "AC7B", 1.0, true);
+        nativeModel.e.setVuel(-2.0);
+        assertEquals(-2.0, nativeModel.e.getRegulatorOutput(), TOL);
+        assertEquals(-6.0, rhs(nativeModel)[VE], TOL);
+
+        d.setKl(.2);
+        Fixture limited = fixture(d, "AC7B", 1.0, true);
+        limited.e.setVuel(-2.0);
+        assertEquals(-.2, limited.e.getRegulatorOutput(), TOL);
+
+        d.setKl(0.0);
+        Fixture reordered = fixture(d, "ESAC7B", 1.0, true);
+        reordered.e.setVuel(-2.0);
+        assertEquals(0.0, reordered.e.getRegulatorOutput(), TOL);
+    }
+
     @Test void nativeInnerIntegralHoldsAtEitherOutwardAmplifierLimit()throws Exception{
         for(double sign:new double[]{1,-1}){
             Ac7bData d=parameters();d.setKia(4);d.setVamax(1.1);d.setVamin(-1.1);

@@ -8,7 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
+import org.interpss.dstab.mach.Wt12t1Data;
+import org.interpss.dstab.mach.Wt12t1Model;
+import org.interpss.dstab.mach.Wt2e1Data;
+import org.interpss.dstab.mach.Wt2e1Model;
 import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2g1Machine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -16,6 +21,7 @@ import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
@@ -39,6 +45,83 @@ public class PsseWt2g1ModelTest {
             assertEquals(.5,m.getPe(),2e-8);
             for(var s:initial.entrySet())assertEquals(s.getValue(),m.getNamedStates().get(s.getKey()),2e-8);
         }
+    }
+
+    @Test
+    void shaftAndResistanceControllerUseSolvedVoltageAtBothStages() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var network = builder.getDStabNetwork();
+        var bus = network.getDStabBus("Bus1");
+        ((DStabGen) bus.getContributeGen("1")).setGen(new Complex(0.5, 0.1));
+        bus.setVoltage(Complex.ONE);
+        Wt2g1Data data = data();
+        var machine = builder.addWt2g1("Bus1", "1", 100, 16.5, data);
+        var shaftData = new Wt12t1Data(4, 0, 0, 0, 0);
+        var shaft = new Wt12t1Model(shaftData);
+        var controllerData = new Wt2e1Data(0.03, 0.07, 10, 0.04, 0.9, 0.01);
+        var controller = new Wt2e1Model(controllerData, data);
+        machine.setDriveTrain(shaft);
+        machine.setRotorResistanceController(controller);
+        assertTrue(machine.initStates(bus));
+
+        double dt = 0.0033333;
+        double speed = machine.getSpeed();
+        double initialPower = machine.getPe();
+        double aerodynamicTorque = shaft.getAerodynamicPower() / speed;
+
+        // Emulate the network publishing a different voltage before each
+        // stage without advancing the rotor flux or refreshing the Pe cache.
+        bus.setVoltage(new Complex(0.98, 0.04));
+        double predictorPower = terminalActivePower(machine, bus.getVoltage());
+        assertTrue(Math.abs(predictorPower - initialPower) > 0.01);
+        double predictorRate = (aerodynamicTorque - predictorPower / speed) / (2 * shaftData.h());
+        double predictorFilterRate = (predictorPower - initialPower) / controllerData.powerFilterTime();
+        assertTrue(machine.nextStepMechanical(dt, DynamicSimuMethod.MODIFIED_EULER, network, 0));
+        assertEquals(speed + dt * predictorRate, machine.getSpeed(), 1e-13);
+        assertEquals(aerodynamicTorque * machine.getSpeed(), machine.getPm(), 1e-13);
+        double predictorFilter = initialPower + dt * predictorFilterRate;
+        assertEquals(predictorFilter, controller.getNamedStates().get("Power filter"), 1e-13);
+
+        bus.setVoltage(new Complex(0.96, -0.03));
+        double correctorPower = terminalActivePower(machine, bus.getVoltage());
+        assertTrue(Math.abs(correctorPower - predictorPower) > 0.01);
+        double correctorRate = (aerodynamicTorque - correctorPower / machine.getSpeed()) / (2 * shaftData.h());
+        double correctorFilterRate = (correctorPower - predictorFilter) / controllerData.powerFilterTime();
+        assertTrue(machine.nextStepMechanical(dt, DynamicSimuMethod.MODIFIED_EULER, network, 1));
+        assertEquals(speed + 0.5 * dt * (predictorRate + correctorRate), machine.getSpeed(), 1e-13);
+        assertEquals(aerodynamicTorque * machine.getSpeed(), machine.getPm(), 1e-13);
+        assertEquals(initialPower + 0.5 * dt * (predictorFilterRate + correctorFilterRate),
+                controller.getNamedStates().get("Power filter"), 1e-13);
+    }
+
+    @Test
+    void nativeExternalResistanceCommandUsesEnteredScale() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var network = builder.getDStabNetwork();
+        var bus = network.getDStabBus("Bus1");
+        ((DStabGen) bus.getContributeGen("1")).setGen(new Complex(.5, .1));
+        bus.setVoltage(Complex.ONE);
+        var data = data();
+        var machine = builder.addWt2g1("Bus1", "1", 100, 16.5, data);
+        var controller = new Wt2e1Model(new Wt2e1Data(0, 0, 1, 0, 1.1, -.025), data);
+        machine.setRotorResistanceController(controller);
+        assertTrue(machine.initStates(bus));
+        assertEquals((machine.getRotorResistance() - data.rotorResistance()) / data.maximumRotorResistance(),
+                machine.getRotorControlVoltage(), 1e-12);
+
+        for (double command : new double[]{-.02, .5, .99, 1.1}) {
+            controller.initialize(machine.getSpeed() - 1.0, machine.getPe(), command);
+            assertTrue(machine.nextStepMechanical(.001, DynamicSimuMethod.MODIFIED_EULER, network, 0));
+            assertTrue(machine.nextStepMechanical(.001, DynamicSimuMethod.MODIFIED_EULER, network, 1));
+            assertEquals(command, machine.getRotorControlVoltage(), 1e-12);
+            assertEquals(data.rotorResistance() + data.maximumRotorResistance() * command,
+                    machine.getRotorResistance(), 1e-12);
+        }
+    }
+
+    private static double terminalActivePower(Wt2g1Machine machine, Complex voltage) {
+        Complex terminalCurrent = machine.getIgen().subtract(machine.getYgen().multiply(voltage));
+        return voltage.multiply(terminalCurrent.conjugate()).getReal() / machine.getRating();
     }
 
     @Test

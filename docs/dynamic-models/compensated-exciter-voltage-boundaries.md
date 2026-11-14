@@ -52,6 +52,46 @@ out-of-range startup behavior: an independent invalid-start probe clipped and
 reported a suspect condition rather than expanding VRMAX. That initialization
 policy remains outside the native qualification of the runtime ceiling correction.
 
+## ST6C field voltage at a switching boundary
+
+An ST6C with algebraic sensing and output has an immediate change in field
+voltage when the accepted network voltage changes. The fault recorder emits two
+rows at the same event time. The first uses the pre-event field voltage and
+the second reevaluates the shared regulator and bridge equations from the
+post-event electrical inputs with the accepted controller states. It does not
+write the machine field voltage or advance the regulator.
+
+The ST6C evaluator takes the compensated voltage for sensing and the physical
+terminal phasors for the bridge. The limiter port exposes an independent frozen
+output when OEL3C has a positive measurement lag. A limiter without a qualified
+read-only output returns an unavailable value, so the recorder uses the cached
+field voltage in that case. The recorder limits the new evaluation to
+GENTPJ1 with algebraic ST6C sensing and output, positive feedback lag,
+terminal-fed supply, and no attached stabilizer.
+
+Reference-simulator component testing with the source ST6C, UEL2C, and OEL3CU stack verified
+the immediate change at fault application. The read-only component regression
+checks the accepted output, controller states, and all other recorded channels
+against the previous execution. An independent synthetic fixture also checks
+the field output for both voltage inputs without advancing the controller.
+
+## ESST4B feedback at a switching boundary
+
+For ESST4B with an active amplifier lag, the reference field voltage immediately
+after switching uses the new terminal bridge supply and the accepted pre-event
+field voltage in the inner feedback gain. The amplifier and both integrator
+states remain at their accepted values. Re-solving the feedback loop with the
+new bridge overstates the immediate response to a voltage drop when the inner
+feedback gain is positive. The paired recorder supplies the field voltage from the left
+row to the right row, and the exciter computes the corresponding output
+without advancing its state.
+
+Native probes checked unsaturated fault application and clearing at two timesteps,
+a clearing at the modulation limit, and a zero-feedback-gain control.
+A matched Comanche rerun changed only post-event field-voltage samples.
+Bypassed amplifier configurations continue to use the established observer
+and need separate qualification for their feedback timing.
+
 ## Evidence and limits
 
 Synthetic contracts cover both compensation signs, initialized equilibrium,

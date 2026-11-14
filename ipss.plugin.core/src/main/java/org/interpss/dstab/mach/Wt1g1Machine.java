@@ -96,6 +96,7 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
             // This refresh integrates no state and changes no source parameter.
             solver.updateOutputs();
             driveTrain.stepCoupled(dt, getPe(), getDStabBus().getVoltageMag(), flag);
+            setPm(driveTrain.getGeneratorMechanicalPower());
             setDriveTrainSpeed(driveTrain.getGeneratorSpeed());
         }
         solver.updateOutputs();
@@ -183,6 +184,7 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
                 driveTrain.initialize(electricalTorque, getSpeed(), bus.getNetwork().getFrequency());
                 driveTrain.initializeAerodynamicController(electricalTorque,
                         bus.getVoltageMag());
+                setPm(driveTrain.getGeneratorMechanicalPower());
             }
             return true;
         }

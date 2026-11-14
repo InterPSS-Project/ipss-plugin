@@ -41,6 +41,7 @@ import com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock;
 import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 
 @AnController(
         input="mach.speed",
@@ -318,12 +319,25 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
         return fixedInputObservation ? fixedInputOutput : directEvaluation==null?super.getOutput(machine):directEvaluation.output();
     }
 
-	private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
+    private boolean terminalElectricalPowerInput;
+
+    /**
+     * Select terminal MW on machine base for electrical-power input code 3.
+     * Call before initialization. Typed callers can continue supplying Pe directly.
+     */
+    public void useTerminalElectricalPowerInput() {
+        terminalElectricalPowerInput = true;
+    }
+
+	private double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
 		return switch (code) {
             case 0 -> 0.0; // Disconnected input path; retain the source selector.
 			case 1 -> machine.getSpeed();
 			case 2 -> bus.getFreq();
-			case 3 -> machine.getPe();
+            // Native DYR uses terminal MW for selector 3. Selector 4 uses
+            // air-gap power, including stator copper loss, in both profiles.
+            case 3 -> terminalElectricalPowerInput && machine instanceof RoundRotorMachineImpl rotor
+                    ? rotor.getTerminalActivePower() : machine.getPe();
 			case 4 -> machine.getPm() - machine.getPe();
 			case 5 -> bus.getVoltageMag();
 			case 6 -> 0.0; // populated from voltage memory in nextStep()

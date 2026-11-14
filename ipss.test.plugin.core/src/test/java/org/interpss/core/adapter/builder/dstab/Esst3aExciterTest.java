@@ -1,5 +1,6 @@
 package org.interpss.core.adapter.builder.dstab;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,6 +18,7 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -129,14 +131,24 @@ public class Esst3aExciterTest extends CorePluginTestSetup {
         data.setKp(2); data.setKi(3); data.setXl(.2); data.setAngKp(15);
         data.setKc(0); data.setVbmax(99);
         Fixture fixture = fixture(data);
+        fixture.machine.setRating(.25, UnitType.PU, fixture.machine.getDStabBus().getNetwork().getBaseKva());
+        fixture.machine.calMultiFactors();
+        assertEquals(.25, fixture.machine.getIMultiFactor(), TOL);
         double angle = Math.toRadians(15);
         Complex kpc = new Complex(2 * Math.cos(angle), 2 * Math.sin(angle));
+        Complex systemCurrent = fixture.machine.getIxy();
+        assertTrue(systemCurrent.abs() > .01, "Fixture must exercise current compounding");
         Complex expected = fixture.machine.getDStabBus().getVoltage().multiply(kpc)
-                .add(Complex.I.multiply(kpc.multiply(.2).add(3)).multiply(fixture.machine.getIxy()));
+                .add(Complex.I.multiply(kpc.multiply(.2).add(3)).multiply(systemCurrent.multiply(4.0)));
         assertEquals(expected.abs(), fixture.exciter.getCompoundSourceVoltage(), TOL);
         assertEquals(expected.abs(), fixture.exciter.getBridgeVoltage(), TOL);
         fixture.exciter.vbmax = expected.abs() / 2;
         assertEquals(expected.abs() / 2, fixture.exciter.getBridgeVoltage(), TOL);
+        double[] accepted = fixture.exciter.getStateSnapshot();
+        double eventField = fixture.exciter.observeFieldVoltage(new Complex(.25, 0.0),
+                Complex.ZERO, .25, 0.0);
+        assertEquals(accepted[0] * Math.min(fixture.exciter.vbmax, .5), eventField, TOL);
+        assertArrayEquals(accepted, fixture.exciter.getStateSnapshot(), 0.0);
     }
 
     @Test
