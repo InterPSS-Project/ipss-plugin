@@ -8,7 +8,8 @@ import org.interpss.dstab.dynLoad.Cmldznu2Data;
 import com.interpss.dstab.BaseDStabBus;
 
 /** Bus/load-specific 132-constant composite load using the shared distribution/motor engine. */
-public final class Cmldblu1Model extends Cmldznu2Model {
+public final class Cmldblu1Model extends Cmldznu2Model
+        implements com.interpss.dstab.relay.model.CompositeLoadSheddingTarget {
     public static final int CONSTANT_COUNT = 132;
     public Cmldblu1Model(String id, BaseDStabBus<?,?> bus, Set<String> ids,
             Complex power, double[] constants) {

@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.dynLoad.impl.Cmldblu1Model;
+import com.interpss.dstab.relay.model.CompositeLoadSheddingTarget;
 
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.BaseDStabBus;
@@ -53,7 +53,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
     private double elapsedTime;
     private double shedFraction;
     private Object appliedYMatrix;
-    private Cmldblu1Model compositeTarget;
+    private CompositeLoadSheddingTarget compositeTarget;
     private boolean targetInitialized;
     private static final String LEDGER_KEY = AbstractStagedLoadSheddingRelayModel.class.getName()+".admittanceLedger";
 
@@ -104,7 +104,7 @@ public abstract class AbstractStagedLoadSheddingRelayModel extends DynamicBusDev
         compositeTarget = null;
         collapsedWildcard = false;
         collapsedStaticTargets.clear();
-        if (bus.getInfoOnlyDynModel() instanceof Cmldblu1Model composite
+        if (bus.getInfoOnlyDynModel() instanceof CompositeLoadSheddingTarget composite
                 && (wildcard || composite.getTargetLoadIds().contains(loadId))) {
             double total = Math.min(1., data.stages().stream().mapToDouble(LoadSheddingStage::fraction).sum());
             // The dynamic matrix is built after device initialization. Resolve

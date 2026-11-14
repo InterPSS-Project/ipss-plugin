@@ -444,7 +444,8 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     }
 
     /** Prepared unrelated parent demand and shunt, before owned leaves are allocated. */
-    public record CollapsedParentAllocation(Complex staticPower, Complex shunt) { }
+    public record CollapsedParentAllocation(Complex staticPower, Complex shunt)
+            implements com.interpss.dstab.relay.model.CompositeLoadSheddingTarget.ParentAllocation { }
 
     public CollapsedParentAllocation getCollapsedParentAllocation() {
         if (getLoadBus() != getDStabBus() || collapsedParentRemainder == null
