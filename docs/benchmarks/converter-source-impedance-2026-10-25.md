@@ -1,6 +1,6 @@
 # Converter source-impedance contracts
 
-The later [REGCC implementation](regcc-model-2026-10-28.md) adds the separate
+The later REGCC implementation (Core `docs/benchmarks/regcc-model-2026-10-28.md`) adds the separate
 PLL converter with bounded evidence and explicit remaining accuracy diagnostics.
 The REGC_C status below describes this earlier checkpoint.
 

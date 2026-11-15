@@ -16,7 +16,7 @@ extends the opt-in staggered solver to eight more exciter families. Its complete
 no-event gate passes, but full-network fault accuracy remains open; catalog
 verification labels are unchanged.
 
-The [GENQEC-family salient branch](benchmarks/genqec-salient-branch-2026-10-19.md)
+The GENQEC-family salient branch (Core `docs/benchmarks/genqec-salient-branch-2026-10-19.md`)
 also has a scoped startup-validation rule for T'qo=0 and X'q=Xq. This does not
 qualify other missing-winding configurations or complete coupled trajectories.
 
@@ -52,7 +52,7 @@ source-approved families that have no implementation or parser descriptor.
 | IEEEVC | COMPENSATOR |  | 2 | LOADABLE | `com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Voltage%20Compensator%20IEEEVC.htm) |
 | SVSMO1T2 | SWITCHED_SHUNT | SVSMO1T3 | 65 | LOADABLE | `com.interpss.dstab.svc.Svsmo1t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO1.htm) |
 | SVSMO3T2 | FACTS_DEVICE |  | 64 | PARTIAL | `com.interpss.dstab.svc.Svsmo3t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO3.htm) |
-| CDC6T | HVDC_LINK |  | 32 | LOADABLE | `com.interpss.dstab.hvdc.model.Cdc6tDyrModel` | [Reference](https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md) |
+| CDC6T | HVDC_LINK |  | 32 | LOADABLE | `com.interpss.dstab.hvdc.model.Cdc6tDyrModel` | [Reference](https://github.com/interpss/core/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md) |
 | AC11C | EXCITER |  | 40 | LOADABLE | `com.interpss.dstab.controller.exc.ac11c.Ac11cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC11C.htm) |
 | AC1C | EXCITER |  | 23 | LOADABLE | `com.interpss.dstab.controller.exc.ac1c.Ac1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC1C.htm) |
 | AC2C | EXCITER |  | 25 | LOADABLE | `com.interpss.dstab.controller.exc.ac2c.Ac2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC2C.htm) |

@@ -1151,7 +1151,7 @@ The eight-second objective and independent-reference accuracy remain unresolved.
 
 PSS2A now has a typed stage evaluator for its standard fixed controller graph.
 The block equations and numerical state storage remain in the existing Java
-blocks. `tools/generate_pss2a_stage_inputs.py` generates direct input wiring
+blocks. Core `tools/generate_pss2a_stage_inputs.py` generates direct input wiring
 from the model annotations, retaining operand-read and floating-point reduction
 order. Run its `--check` option after editing the model or generated evaluator.
 Live gains, setpoints and machine measurements remain live.
@@ -1279,7 +1279,7 @@ classpath and all-channel comparison results are recorded privately under
 ## Typed ST4B stage and observation preparation
 
 The standard ST4B graph now binds its input wiring directly to the initialized
-runtime wrappers. `tools/generate_st4b_stage_inputs.py` generates the wiring
+runtime wrappers. Core `tools/generate_st4b_stage_inputs.py` generates the wiring
 from annotations and provides `--check` to detect drift. The existing Java
 blocks remain the authoritative equations and state storage. Function instances
 are bound from runtime wrappers, which can differ from annotation field values.

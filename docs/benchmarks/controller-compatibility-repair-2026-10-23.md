@@ -33,7 +33,7 @@ branch was merged, and no milestone commits were created.
   retain their 100 MVA base and finite admittances rather than propagate NaNs.
 - Permit the previously verified GENQEC-family T'qo=0/X'q=Xq branch during
   startup validation. Other-family, invalid-time and zero-subtransient checks
-  remain active. See the [branch evidence](genqec-salient-branch-2026-10-19.md).
+  remain active. See the branch evidence (Core `docs/benchmarks/genqec-salient-branch-2026-10-19.md`).
 - Give IEEE39 benchmark exports a unique temporary directory for each test.
   This preserves the output guard and avoids overwriting retained exports.
 - Tighten the small VSC parity fixture's load-flow solve to 1e-12, matching its

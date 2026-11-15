@@ -381,7 +381,7 @@ The earlier claim that `StateT5` differs only by a coordinate origin is
 withdrawn. The benchmark reference initializes reheater pressure at 0.50001 versus
 PowerWorld's 0.12273; a constant offset does not establish equation equivalence.
 The registered TGOV3D regression now uses the benchmark reference model with no
-reheater-state translation. See [native evidence](benchmarks/tgov3d-native-2026-10-15.md).
+reheater-state translation. See native evidence (Core `docs/benchmarks/tgov3d-native-2026-10-15.md`).
 
 For GGOV1D, the registered GGOV1 comparison is parameterized over the base and
 deadband variants. Both compare all ten named PowerWorld governor states plus

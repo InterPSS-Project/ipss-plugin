@@ -62,7 +62,7 @@ These were correctness runs, not warmed performance measurements. See the
 
 The one-step default is an explicitly accepted performance/accuracy tradeoff.
 It does not establish agreement with the supplied reference. The earlier
-[one- and four-step comparisons](st1-single-step-experiment-2026-10-21.md)
+one- and four-step comparisons (Core `docs/benchmarks/st1-single-step-experiment-2026-10-21.md`)
 still show numerical differences, and full-network agreement with the supplied
 reference remains unresolved. The historical ten-step reference-response tests
 now select ten explicitly; their expected measurements and tolerances are unchanged.

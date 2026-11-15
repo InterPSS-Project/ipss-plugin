@@ -41,4 +41,4 @@ convergence assertions apply to the declared downstream dynamic channels,
 not every filter or integral. These profiles do not establish complete import,
 all selector/limiter/lifecycle branches, coupled native fault or PowerWorld parity.
 
-See [runtime evidence and remaining gaps](../../../../../docs/benchmarks/reece-runtime-2026-10-18.md).
+See runtime evidence and remaining gaps (Core `docs/benchmarks/reece-runtime-2026-10-18.md`).

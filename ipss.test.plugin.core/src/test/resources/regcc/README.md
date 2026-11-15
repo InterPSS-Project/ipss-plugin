@@ -26,4 +26,4 @@ sample/channel counts and cold-pair identity pass.
 `settings.json` controls the registered comparison. Enabling
 `requireAllTrajectories` also asserts the diagnostic ceilings and currently
 fails. The complete model is not labeled verified. See
-`docs/benchmarks/regcc-model-2026-10-28.md` for errors and remaining work.
+Core `docs/benchmarks/regcc-model-2026-10-28.md` for errors and remaining work.

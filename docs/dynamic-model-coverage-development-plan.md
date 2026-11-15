@@ -2,20 +2,20 @@
 
 ## Current checkpoint
 
-The [CHVDC2 solved-network preparation](dynamic-models/chvdc2-named-link.md#preparation-from-the-solved-network)
+The CHVDC2 solved-network preparation (Core `docs/dynamic-models/chvdc2-named-link.md`)
 resolves and validates the static owner, prepares immutable physical coefficients
 using the outer interval, and initializes the shared runtime without changing
 network ownership. Independent initial states/boundaries and both-method
 fixed-terminal equilibrium pass. Production terminal attachment, local-step
 ownership and complete coupled trajectory acceptance remain unfinished.
 
-The [CHVDC2 same-time event controls](dynamic-models/chvdc2-named-link.md#same-time-event-calls-and-the-measurement-equation)
+The CHVDC2 same-time event controls (Core `docs/dynamic-models/chvdc2-named-link.md`)
 rule out zero-duration `RUN` calls as a way to prepare the missing post-event
 measurement stage. Cold repeats leave complete trajectories and public snapshots
 unchanged at both time grids. Retain the documented first-order lag equation and
 investigate positive-time event/integration history without adding a fitted delay.
 
-The [CHVDC2 sampled-current lifecycle](dynamic-models/chvdc2-named-link.md#sampled-algebraic-current-and-accepted-integration-intervals)
+The CHVDC2 sampled-current lifecycle (Core `docs/dynamic-models/chvdc2-named-link.md`)
 separates live network observations from accepted algebraic-line history under
 both integration methods. Independent component replays pass the current gate;
 explicit outer intervals reduce refined coupled current errors substantially,
@@ -23,21 +23,21 @@ but full trajectories remain unaccepted. Preserve the unchanged dynamic-line
 traces, strict gates and explicit failed-run artifacts while resolving remaining
 controller trajectories, local-step ownership and automatic attachment.
 
-The [shared CHVDC2 published-state accessors](dynamic-models/chvdc2-named-link.md#live-published-measurements-and-numerical-coordinates)
+The shared CHVDC2 published-state accessors (Core `docs/dynamic-models/chvdc2-named-link.md`)
 expose live bypassed measurements without projecting numerical coordinates or
 advancing history. Independent input-driven checks qualify these observations
 under both integration methods. Line-mode controls isolate the first filter
 increment from DC-line inductance; complete coupled trajectories and physical
 input/history sequencing remain unaccepted.
 
-The [CHVDC2 run-boundary clock checks](dynamic-models/chvdc2-named-link.md#independent-run-boundary-clock-checks)
+The CHVDC2 run-boundary clock checks (Core `docs/dynamic-models/chvdc2-named-link.md`)
 separate pure public observations from pause/resume effects on controller
 history. Cold controls at both network intervals retain every sample and show
 that changing run segmentation changes subsequent states. Use this evidence
 when resolving accepted input/history stages; it does not qualify the current
 coupled trajectories or justify a fitted time shift.
 
-The [CHVDC2 network-interval capacitance preparation](dynamic-models/chvdc2-named-link.md#network-interval-capacitance-preparation)
+The CHVDC2 network-interval capacitance preparation (Core `docs/dynamic-models/chvdc2-named-link.md`)
 now freezes the source suppression decision before allocating line states,
 preserves entered constants and keeps local refinement separate. Cold independent
 controls verify suppression/retention; a retained tiny-capacitance reference
@@ -45,7 +45,7 @@ becomes nonfinite and remains rejected. Complete capacitive coupled comparisons
 are retained but still fail strict gates. Production attachment and full
 trajectory qualification remain open.
 
-The [coupled CHVDC2 controller and DC-line runtime](dynamic-models/chvdc2-named-link.md#coupled-controller-and-dc-line-runtime)
+The coupled CHVDC2 controller and DC-line runtime (Core `docs/dynamic-models/chvdc2-named-link.md`)
 uses shared numerical coordinates, live converter injections and transactional
 electrical/protection histories under both integration methods. Repeated
 electrical acceptance is idempotent. Complete synthetic coupled faults now
@@ -53,14 +53,14 @@ evolve without recorded trajectory forcing, but all eight strict reference
 comparisons remain unaccepted. Event/stage sequencing, protected and capacitive
 profiles, production attachment and full model qualification remain open.
 
-The [joint CHVDC2 controller owner](dynamic-models/chvdc2-named-link.md#joint-controller-state-ownership-and-raml-limit-separation)
+The joint CHVDC2 controller owner (Core `docs/dynamic-models/chvdc2-named-link.md`)
 connects shared controller coordinates under both integration methods, provides
 predictor/outer-transaction rollback and preserves accepted electrical history.
 Independent RAML evidence separates the entered PI limit from the moving firing-
 angle floor, eliminating an artificial PI rebase. Strict complete joint replay,
 event/input staging and full coupled network attachment remain open.
 
-The [CHVDC2 named-link foundation](dynamic-models/chvdc2-named-link.md) preserves
+The CHVDC2 named-link foundation (Core `docs/dynamic-models/chvdc2-named-link.md`) preserves
 standard/legacy source identity and exact allocation, validates immutable
 parameters, and provides a shared physical DC-line component for both integration
 methods. Automatic attachment remains unsupported. Stiff-source native controls
@@ -68,7 +68,7 @@ now initialize and cold-repeat successfully; the original coupled startup
 failure remains diagnostic. Complete controller, protection, network and SMIB
 qualification is still required.
 
-The [shared CHVDC2 current-controller component](dynamic-models/chvdc2-named-link.md#shared-current-controller-component)
+The shared CHVDC2 current-controller component (Core `docs/dynamic-models/chvdc2-named-link.md`)
 adds direct PI/angle equations, the bounded PI output, reusable numerical
 storage and both-method lifecycle checks. Cold-repeated active-limit captures
 expose rectifier-state discrepancies under the unchanged strict replay gate.
@@ -76,7 +76,7 @@ A separate binary32 sub-update diagnostic localizes the PI discrepancy to
 reference stepping/precision; production precision remains unchanged and
 complete model qualification remains open.
 
-The [shared CHVDC2 measurement/current-order component](dynamic-models/chvdc2-named-link.md#shared-measurement-and-current-order-component)
+The shared CHVDC2 measurement/current-order component (Core `docs/dynamic-models/chvdc2-named-link.md`)
 adds asymmetric DC-voltage filters, AC current-limit integrators, the DC VDCOL
 curve and calculated inverter angle bound. Cold controls exercise active limits
 and zero-time filters. The zero-down-time observation correction preserves the
@@ -84,14 +84,14 @@ remaining dynamic coordinate. Both-method analytic/allocation checks pass;
 strict finite-lag replay, observation timing, protection and complete coupled
 attachment remain open.
 
-The [signed CHVDC2 converter boundary](dynamic-models/chvdc2-named-link.md#signed-conducting-converter-boundary)
+The signed CHVDC2 converter boundary (Core `docs/dynamic-models/chvdc2-named-link.md`)
 shares prepared conducting-bridge equations with the existing current-order
 converter. Both-method bridge/line analytic convergence, energy balance,
 initial independent boundaries and recorded-input rectifier P/Q gates pass.
 Inverter channel publication, protection, local integration and full coupled
 SMIB qualification remain open; no telemetry time shift is applied.
 
-The [accepted CHVDC2 protection and extinction history](dynamic-models/chvdc2-named-link.md#accepted-protection-and-extinction-angle-history)
+The accepted CHVDC2 protection and extinction history (Core `docs/dynamic-models/chvdc2-named-link.md`)
 adds the shared RAML state, explicit accepted-event sequencing and transactional
 rollback. The valid commutation control qualifies short/release histories under
 both methods. Committed extinction history resolves measured-input inverter
@@ -204,17 +204,17 @@ and internal current-balance gates under both integration methods. Complete
 independent boundary comparisons satisfy the declared voltage and rotor-angle
 limits; internal motor, protection and feeder-floor qualification remain open.
 
-The [REGCC state-reset investigation](benchmarks/regcc-state-reset-2026-10-30.md)
+The REGCC state-reset investigation (Core `docs/benchmarks/regcc-state-reset-2026-10-30.md`)
 localizes the cross-coordinate anomaly to active-PI clipping/history, using
 natural faults and state/memory controls. No runtime reset rule is added;
 the likely reference implementation defect still requires vendor confirmation.
 
-The [REGCC local-integration and PI-limit audit](benchmarks/regcc-substeps-2026-10-30.md)
+The REGCC local-integration and PI-limit audit (Core `docs/benchmarks/regcc-substeps-2026-10-30.md`)
 separates prepared network coefficients from local steps and fixes independently
 observed PI output/integral bounds. The 1/2/4/8 coupled comparison retains one
 step as the default. Unqualified trajectories remain explicit diagnostics.
 
-The [REGCC implementation](benchmarks/regcc-model-2026-10-28.md) adds the distinct
+The REGCC implementation (Core `docs/benchmarks/regcc-model-2026-10-28.md`) adds the distinct
 nine-state PLL converter and exact fifteen-field native parameter schema.
 Bounded standalone trajectories and explicitly unqualified stress diagnostics
 are separate; full model and complete control-chain acceptance remain open.
@@ -262,7 +262,7 @@ recorded trajectory is unchanged. All 3,109 core and 36 focused plugin tests
 pass. Matched experimental timing saves 0.902 seconds in device integration
 and changes the whole-run median from 25.713 to 25.437 seconds, with overlapping
 ranges. The 20-second objective remains open. See the
-[frequency selection and validation](benchmarks/bus-frequency-selection-2026-10-25.md).
+frequency selection and validation (Core `docs/benchmarks/bus-frequency-selection-2026-10-25.md`).
 
 The new typed-controller study records a complete single-CPU median of 21.407
 seconds with default JVM inlining (three measurements). A subsequent combined
@@ -367,7 +367,7 @@ See the [integration scope, counterexamples and timing](benchmarks/texas7k-optim
 WTTQA1 native-record import now feeds raw electrical power to its speed curve,
 removing the extra 20 ms lag identified by all-row SMIB replay. The power-error
 branch retains its filtered-power input, and typed clients retain the published
-cascade. See the [input-junction correction and evidence](benchmarks/wttqa-native-curve-input-2026-10-24.md).
+cascade. See the input-junction correction and evidence (Core `docs/benchmarks/wttqa-native-curve-input-2026-10-24.md`).
 
 All 2,705 supplied Texas7k dynamic records now attach. Power flow converges,
 the complete stack holds a ten-second all-bus/controller-state equilibrium at
@@ -403,7 +403,7 @@ flat/fault, initially active, controller branches and 50/100/200-MVA owners.
 Matched PowerWorld diagnostics retain all 18,032 rows and independently score
 seventeen common coordinates: the physical voltage/speed/angle/P/Q/Efd channels
 pass RMSE < 0.001 in every case, but all ten fault cases still fail at least one
-exciter/limiter channel. See [runtime scope, tests and remaining gaps](benchmarks/oel4c-runtime-2026-10-20.md).
+exciter/limiter channel. See runtime scope, tests and remaining gaps (Core `docs/benchmarks/oel4c-runtime-2026-10-20.md`).
 
 Runtime gates: 331 focused, 435 core and 2,287 registered scoped SMIB/model tests,
 zero failures/errors and seven existing skips, plus 261 offline checks. Standard
@@ -420,7 +420,7 @@ OEL4C now has twelve portable whole-reference fixtures and permanent full-row
 measured-Q replay. A red/green analytic regression identified and fixed premature
 timer expiry based on a predictor whose corrected PI output was still enforcing.
 Only OEL4C's accepted timer-history decision changes; no shared CML behavior or
-reference samples are altered. See [permanent comparisons and remaining gaps](benchmarks/oel4c-recorded-input-2026-10-20.md).
+reference samples are altered. See permanent comparisons and remaining gaps (Core `docs/benchmarks/oel4c-recorded-input-2026-10-20.md`).
 
 Recorded-input/corrector gates: 292 focused, 435 core and 2,244 registered scoped
 SMIB/model tests, zero failures/errors and seven existing skips, plus 253 offline
@@ -437,7 +437,7 @@ OEL4C now has a standalone five-constant delayed-Q/conditional-PI foundation and
 twelve cold-repeatable PowerWorld reference pairs. All 36,064 raw rows and 21
 channels are retained with exact parameter readbacks. This is not yet a runtime
 or import path; five approved limiter rows remain loadable. See the
-[equation/reference contract and remaining TODOs](benchmarks/oel4c-foundation-2026-10-20.md).
+equation/reference contract and remaining TODOs (Core `docs/benchmarks/oel4c-foundation-2026-10-20.md`).
 
 Foundation gates: 267 focused, 435 core and 2,219 registered scoped SMIB/model
 tests, zero failures/errors and seven existing skips, plus 253 offline checks.
@@ -454,7 +454,7 @@ BASOEL2 now has exact three-selector/twelve-constant record import into the
 bounded AC1C summation runtime. Successful import explicitly reports the
 `POWERWORLD_DOCUMENTED` timer policy and leaves independent coupled acceptance
 open. Five approved limiter rows are now loadable; that count is not a verified
-model count. See [import scope and remaining work](benchmarks/basoel2-import-2026-10-19.md).
+model count. See import scope and remaining work (Core `docs/benchmarks/basoel2-import-2026-10-19.md`).
 
 Import-slice gates: 250 focused, 431 core and 2,202 registered scoped SMIB/model
 tests, zero failures/errors and seven existing skips, plus 247 offline checks.
@@ -476,7 +476,7 @@ Worst RMSE is approximately 3.52e-6. This localizes coupled timer discrepancies
 to the sensed-input trajectories in the tested matrix. Input filters, physical
 routing, native-tool semantics and full coupled acceptance remain separate gaps.
 No production equations or references change in this follow-up. See the
-[recorded-boundary scope and results](benchmarks/basoel2-powerworld-2026-10-19.md#recorded-sensed-boundary-conformance).
+recorded-boundary scope and results (Core `docs/benchmarks/basoel2-powerworld-2026-10-19.md`).
 
 Replay-slice gates: 212 focused, 431 core and 2,164 scoped SMIB/model tests,
 zero failures/errors and seven existing skips, plus 247 offline checks. All
@@ -492,7 +492,7 @@ rows and 31 fields; ten full original CSVs are portable permanent fixtures.
 All-row, per-channel diagnostics retain failed initialization/event-phase and
 timer counterexamples. The Efd reference's zero sensed initialization is rejected
 rather than copied into InterPSS. Coupled acceptance and native import stay open.
-See [the equation correction, complete comparisons and remaining gaps](benchmarks/basoel2-powerworld-2026-10-19.md).
+See the equation correction, complete comparisons and remaining gaps (Core `docs/benchmarks/basoel2-powerworld-2026-10-19.md`).
 
 Correction/benchmark gates: 202 focused, 431 core and 2,154 scoped SMIB/model
 tests, zero failures/errors and seven existing skips, plus 247 offline checks.
@@ -510,7 +510,7 @@ profiles, including an initially active V/Hz equilibrium. Automatic native
 import remains rejected: 22 controlled reference runs expose additional
 disabled-state and timer-expiry differences. No native-policy substitution or
 coupled acceptance is claimed; the loadable limiter count remains four.
-See [typed runtime, timer counterexamples and remaining TODOs](benchmarks/basoel2-runtime-2026-10-19.md).
+See typed runtime, timer counterexamples and remaining TODOs (Core `docs/benchmarks/basoel2-runtime-2026-10-19.md`).
 
 Typed-runtime gates: 180 focused, 431 core and 2,132 scoped SMIB/model tests,
 zero failures/errors and seven existing skips, plus 235 offline checks.
@@ -527,7 +527,7 @@ runtime attachment were then missing; the loadable limiter count was four. Seven
 steps were cold-run twice, retaining all 42,140 raw rows. Physical channels
 repeat, but several opaque timer-storage channels do not; whole-export
 repeatability and native timer-dialect acceptance are not claimed. See the
-[BASOEL2 foundation and remaining TODOs](benchmarks/basoel2-foundation-2026-10-19.md).
+BASOEL2 foundation and remaining TODOs (Core `docs/benchmarks/basoel2-foundation-2026-10-19.md`).
 
 BASOEL2 slice gates: 134 focused, 431 core and 2,086 scoped SMIB/model tests,
 zero failures/errors and seven existing skips, plus 227 offline checks. Prior
@@ -547,7 +547,7 @@ physical-input routing acceptance. Proportional peak errors remain reported.
 Pickup-only cold discriminators separately prove that the reference tool's
 entered 0.4/0.5/0.6 pickups produce identical trajectories despite different
 readbacks; no corresponding bias or parameter fitting is added to InterPSS.
-See [recorded-input acceptance and reference initialization diagnosis](benchmarks/oel3c-recorded-input-2026-10-19.md).
+See recorded-input acceptance and reference initialization diagnosis (Core `docs/benchmarks/oel3c-recorded-input-2026-10-19.md`).
 
 Recorded-input slice gates: 106 focused, 431 core and 2,058 scoped SMIB/model
 tests, zero failures/errors and seven existing skips, plus 215 offline checks.
@@ -562,7 +562,7 @@ errors. Bus voltages, speeds and relative angles pass that numerical criterion;
 several controller quantities fail. Reference post-event channels also expose
 mixed observation phases, so the tool comparison remains diagnostic. No model
 equation, parameter, initial state or old tolerance is changed.
-See [event-side evidence and remaining discrepancies](benchmarks/oel3c-event-observations-2026-10-19.md).
+See event-side evidence and remaining discrepancies (Core `docs/benchmarks/oel3c-event-observations-2026-10-19.md`).
 
 Event-slice gates: 91 focused, 431 core and 2,043 scoped SMIB/model tests,
 zero failures/errors and seven existing skips, plus 197 offline checks. All
@@ -593,7 +593,7 @@ limiter from Vfe despite the documented selector/readback. Verify physical
 routing before attributing the coupled difference to AC1C. The user's acceptance
 criterion for new channels is RMSE < 0.001 per channel on declared per-unit bases
 (relative angles in radians), with peak and event-side errors also reported.
-See [exact input translation, switch diagnosis and remaining counterexamples](benchmarks/oel3c-powerworld-switching-2026-10-19.md).
+See exact input translation, switch diagnosis and remaining counterexamples (Core `docs/benchmarks/oel3c-powerworld-switching-2026-10-19.md`).
 Production model equations and established bounds are unchanged.
 
 Measurement follow-up TODO:
@@ -628,8 +628,8 @@ evidence. Sixteen registered SMIB profiles cover flat/fault behavior and two
 timesteps. Independent fault trajectories, proportional-switch observations,
 event-side alignment and new PowerWorld execution artifacts remain open.
 See the [source coverage table](excitation-limiter-coverage.md),
-[runtime/routing evidence and gaps](benchmarks/oel3c-runtime-2026-10-19.md) and
-[earlier equation foundation](benchmarks/oel3c-foundation-2026-10-19.md).
+runtime/routing evidence and gaps (Core `docs/benchmarks/oel3c-runtime-2026-10-19.md`) and
+earlier equation foundation (Core `docs/benchmarks/oel3c-foundation-2026-10-19.md`).
 No full Texas2k dynamics are run.
 
 OEL3C runtime slice validation: 77 focused, 431 core and 2,037 scoped SMIB/model/
@@ -654,7 +654,7 @@ bounds; the failure is retained, not accepted or hidden by larger bounds.
 Matched-method regular endpoints at both steps and default half-step endpoints
 meet unchanged envelopes. Complete coarse/default numerical parity and exact
 event-post acceptance remain open. See the
-[profiles, retained failures and next work](benchmarks/regfma1-lower-and-pq-pi-2026-10-19.md).
+profiles, retained failures and next work (Core `docs/benchmarks/regfma1-lower-and-pq-pi-2026-10-19.md`).
 No full Texas2k dynamics are run.
 
 Final REGFMA1 follow-up gates: 56 focused, 427 core and 1,978 scoped SMIB/model/
@@ -672,7 +672,7 @@ Eight provenance-recorded native attempts produce nonfinite low signals even
 for flat input, while two unchanged control runs remain clean and repeatable.
 Keep these rejected cases separate from source-equation evidence; no native
 trajectory acceptance or complete model verification is claimed. See the
-[implementation, rejection evidence and remaining work](benchmarks/pss5c-static-low-2026-10-19.md).
+implementation, rejection evidence and remaining work (Core `docs/benchmarks/pss5c-static-low-2026-10-19.md`).
 No full Texas2k dynamics are run.
 
 This static-low slice passes 231 focused, 427 core and 1,962 scoped SMIB/model/
@@ -692,7 +692,7 @@ row, event side and explicit raw/step clocks. The matched-method residual is
 much smaller, but no new trajectory acceptance is claimed: safety review rejected
 deriving bounds from observed coupled errors. Independent criteria or numerical
 precision bounds remain required. See the
-[adapter, comparison protocol, diagnostics and TODO](benchmarks/ieeest-staggered-boundary-2026-10-19.md).
+adapter, comparison protocol, diagnostics and TODO (Core `docs/benchmarks/ieeest-staggered-boundary-2026-10-19.md`).
 Final gates pass 143 focused, 427 core and 1,831 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips, plus 59 offline checks.
 Source reconciliation covers 1,875 Java/POM files and 139 unchanged fixture
@@ -707,7 +707,7 @@ bit-identical first-order behavior and an analytic oscillator bound. All
 existing native-playback fixtures and bounds remain unchanged. Derivative-mode
 clipped fault-output parity remains open; this independent bug fix is not
 presented as its complete cause. See the
-[stage equations, before/after evidence and TODO](benchmarks/ieeest-atomic-corrector-2026-10-19.md).
+stage equations, before/after evidence and TODO (Core `docs/benchmarks/ieeest-atomic-corrector-2026-10-19.md`).
 Final gates pass 137 focused, 427 core and 1,825 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips, plus 59 offline checks.
 Source reconciliation covers 1,874 Java/POM files and 139 unchanged fixture
@@ -724,7 +724,7 @@ Seven-coordinate diagnostics localize the remaining numerical-stage issue;
 all seven observed coordinates now have per-channel bounds and half-step
 refinement for the current denominator shape. No fault-output bound or physical
 parameter is widened or fitted. See the
-[derivative implementation, discrepancy and TODO](benchmarks/ieeest-voltage-derivative-2026-10-19.md).
+derivative implementation, discrepancy and TODO (Core `docs/benchmarks/ieeest-voltage-derivative-2026-10-19.md`).
 Final gates pass 130 focused, 420 core and 1,818 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips, plus 59 offline checks.
 The source audit covers 1,873 Java/POM files and 44 lossless fixture parts.
@@ -739,7 +739,7 @@ Sixteen profiles have thirty-two raw-exact cold runs and all-row input/output
 playback with explicit per-profile bounds and half-step refinement. Coupled
 flat/fault runs remain diagnostic, not complete network-frequency parity.
 Mode 6 and complete seven-state/coupled acceptance remain open. See the
-[measurement equations, evidence and TODO](benchmarks/ieeest-bus-measurements-2026-10-19.md).
+measurement equations, evidence and TODO (Core `docs/benchmarks/ieeest-bus-measurements-2026-10-19.md`).
 Final gates pass 118 focused, 415 core and 1,809 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips, plus 57 offline checks.
 The source audit covers 1,869 Java/POM files and 56 lossless fixture parts.
@@ -755,7 +755,7 @@ bounded all-row terminal-state/Vstab playback with approximately fourfold step
 refinement. Four repeated nonzero-DC native initialization failures stay rejected,
 not compensated or fitted. Full coupled/coordinate and broader lifecycle work
 remains open. See the
-[zero-numerator implementation, evidence and TODO](benchmarks/ieeest-zero-numerator-2026-10-19.md).
+zero-numerator implementation, evidence and TODO (Core `docs/benchmarks/ieeest-zero-numerator-2026-10-19.md`).
 No full Texas2k dynamics are run.
 
 IEEEST power-input follow-up: correct mode 4 from mechanical power alone to
@@ -770,7 +770,7 @@ are active, and fault errors refine by more than 60 percent at the half step.
 Coupled trajectories and seven-state observation coordinates remain separate
 open work. Native PSS1A correspondence uses the documented IEEEST record, not
 an invented alias for the typed fourteen-value interface. See the
-[source correction, exact-input evidence and TODO](benchmarks/ieeest-power-inputs-2026-10-19.md).
+source correction, exact-input evidence and TODO (Core `docs/benchmarks/ieeest-power-inputs-2026-10-19.md`).
 Final gates pass 87 focused, 410 core and 1,790 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips; all 53 offline checks pass.
 Source reconciliation covers 1,863 Java/POM files and 26 lossless fixture parts,
@@ -788,7 +788,7 @@ and 25 non-time channels remain in the comparison. Explicit side selection
 removes the artificial 1.6 pu all-bypass boundary error. Native resumed versus
 settled zero-regulator staging retains about 0.0333331 pu difference; no physical
 equation or bound is changed to hide it. See the
-[event-stage equations, evidence and remaining work](benchmarks/esst1a-event-side-staging-2026-10-19.md).
+event-stage equations, evidence and remaining work (Core `docs/benchmarks/esst1a-event-side-staging-2026-10-19.md`).
 Final gates pass 70 focused, 410 core and 1,781 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips, plus 50 offline checks.
 Source reconciliation covers 1,861 Java/POM files and 42 unchanged fixture
@@ -805,7 +805,7 @@ runs converge with unchanged parameter readbacks; twelve raw CSV pairs are
 byte-exact and ten live-state channels agree within 4.92e-12 pu. Full coupled
 all-channel comparisons remain diagnostic, not broad-tolerance acceptance.
 Tf remains positive as required by the native schema. See the
-[bypass evidence and remaining acceptance work](benchmarks/esst1a-bypass-observation-2026-10-19.md).
+bypass evidence and remaining acceptance work (Core `docs/benchmarks/esst1a-bypass-observation-2026-10-19.md`).
 Final gates pass 63 focused, 410 core and 1,774 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips; all 48 offline checks pass.
 Source reconciliation covers 1,858 Java/POM files and 42 fixture parts. The
@@ -825,7 +825,7 @@ Final gates pass 58 focused, 410 plugin-core and 1,769 scoped SMIB/model/solver
 tests with zero failures/errors and seven existing skips across the latter two
 gates. The separately versioned verification core preserves the latest baseline's
 salient-refresh guards without modifying older pinned artifacts. See the
-[coordinate correction, evidence and remaining TODO](benchmarks/esst1a-washout-coordinate-2026-10-19.md).
+coordinate correction, evidence and remaining TODO (Core `docs/benchmarks/esst1a-washout-coordinate-2026-10-19.md`).
 No full Texas2k dynamic simulations are run.
 
 GENSAE composed-recovery follow-up: eighteen three-second GENSAE/ESST1A/TGOV1
@@ -838,7 +838,7 @@ The longer runs expose nonshrinking washout, angle and coupled governor-state
 residuals; these four states remain diagnostics, not accepted with enlarged
 tolerances. Clock and rounded-stage discriminators do not resolve the gap.
 Lossless compact fixtures reconstruct every original CSV byte and hash.
-See the [composed-recovery evidence and open work](benchmarks/gensae-composed-recovery-2026-10-19.md).
+See the composed-recovery evidence and open work (Core `docs/benchmarks/gensae-composed-recovery-2026-10-19.md`).
 Final gates pass 48 focused, 410 plugin-core and 1,760 scoped SMIB/model/solver
 tests with zero failures/errors and only existing skips, plus 35 offline probe
 and six wording checks. Source reconciliation covers 1,854 Java/POM files and
@@ -861,7 +861,7 @@ and six wording tests. The source audit reconciles 1,850 Java/POM files and
 66 public reference files. Complete instantaneous coupled output parity,
 broader selectors/lifecycle, longer composed-governor profiles and GENSAE
 checkpoint reconstruction remain open. See the
-[field-current/feedback evidence and TODO](benchmarks/gensae-field-esst1a-2026-10-19.md).
+field-current/feedback evidence and TODO (Core `docs/benchmarks/gensae-field-esst1a-2026-10-19.md`).
 No full Texas2k dynamic simulations are run.
 
 GENSAL/GENSAE follow-up: retain the core GENSAL solver and implement the native
@@ -878,7 +878,7 @@ downgraded to another model. Final gates pass 62 focused, 410 plugin-core and
 1,743 scoped SMIB/model/solver tests with zero failures/errors and only existing
 skips, plus sixteen offline probe and six wording tests. Complete event-side
 boundary, composed-controller and broader lifecycle acceptance remain open.
-See the [salient-pole evidence and TODO](benchmarks/gensal-gensae-native-2026-10-19.md).
+See the salient-pole evidence and TODO (Core `docs/benchmarks/gensal-gensae-native-2026-10-19.md`).
 No full Texas2k dynamics are run.
 
 GENROU/GENROE saturation follow-up: reuse the existing core round-rotor machine
@@ -890,7 +890,7 @@ The first fault discrepancy is localized to a new benchmark load-law mismatch,
 whose traces remain preserved. Matched-load electrical residuals approximately
 halve with the timestep. Complete event-side voltage/power and lifecycle parity
 remain open; the ANDES gate is unchanged. See the
-[saturation evidence and remaining TODO](benchmarks/genrou-native-saturation-2026-10-19.md).
+saturation evidence and remaining TODO (Core `docs/benchmarks/genrou-native-saturation-2026-10-19.md`).
 Final gates pass 44 focused, 410 core-unit and 1,731 scoped SMIB/model/solver
 tests with zero failures/errors and only existing skips, plus eight offline
 probe and six wording tests. Evidence is retained in the private hash seal;
@@ -906,7 +906,7 @@ All raw rows have bounded staged/history replay; coupled runs remain diagnostic.
 Final latest-baseline gates pass 118 focused, 410 plugin-core and 1,724 scoped SMIB/model/solver
 tests with zero failures/errors and only existing skips, plus eight offline
 probe and six wording guards. See the
-[fallback evidence and TODO](benchmarks/repca-branch-fallback-2026-10-19.md).
+fallback evidence and TODO (Core `docs/benchmarks/repca-branch-fallback-2026-10-19.md`).
 
 REPCA1 native-plant follow-up: correct literal-zero compensation, regulated-bus
 current, signed-origin feedback and absolute active-limit translation. Sixty
@@ -919,7 +919,7 @@ pass 91 focused, 410 plugin-core and 1,697 scoped SMIB/model/solver tests with
 zero failures/errors and only existing skips, plus four offline probe and six
 wording guards. The inventory has nineteen native-partial and eight recorded
 families, none ANDES-only and none VERIFIED. See the
-[plant evidence and remaining TODO](benchmarks/repca-native-plant-2026-10-19.md).
+plant evidence and remaining TODO (Core `docs/benchmarks/repca-native-plant-2026-10-19.md`).
 
 REECA1 native-electrical follow-up: correct calculated PF/voltage bias and
 optional two-point/decreasing-current tables, preserving the historical typed
@@ -931,7 +931,7 @@ and remain counterexamples, not remote acceptance. Strict local import and
 coupled SMIB diagnostics do not establish complete channel/event-side parity.
 The inventory has eighteen native-partial, one ANDES-only and eight recorded
 families; none is VERIFIED. See the
-[electrical evidence and remaining TODO](benchmarks/reeca-native-electrical-2026-10-19.md).
+electrical evidence and remaining TODO (Core `docs/benchmarks/reeca-native-electrical-2026-10-19.md`).
 Final gates pass 55 focused, 410 plugin-core and 1,679 scoped SMIB/model/solver
 tests with zero failures/errors and only existing skips, plus four offline
 probe and six wording guards. Raw repeats, source/report hashes, failed remote
@@ -970,7 +970,7 @@ existing optional skips. The full scoped gate passes 1,671 tests with zero
 failures/errors and one existing diagnostic skip, plus four offline probe and
 six wording guards. Source/reference/report evidence is sealed in the private
 hash-verified archive and retained with the scoped implementation slice.
-See the [pitch evidence and remaining TODO](benchmarks/wtpta-native-pitch-2026-10-19.md).
+See the pitch evidence and remaining TODO (Core `docs/benchmarks/wtpta-native-pitch-2026-10-19.md`).
 
 WTARA1 algebraic-boundary follow-up: retain the published degree/product
 equation and reject nonfinite parameters/inputs before output mutation.
@@ -984,7 +984,7 @@ failures/errors and only existing skips, plus four offline probe guards and
 six wording checks. All source/reference/report evidence is sealed in the
 private hash-verified archive and retained with this scoped implementation
 slice. See the
-[algebraic evidence and TODO](benchmarks/wtara-native-algebraic-2026-10-19.md).
+algebraic evidence and TODO (Core `docs/benchmarks/wtara-native-algebraic-2026-10-19.md`).
 
 WTDTA1 native-mechanics follow-up: correct native-record Hz stiffness and
 synchronous-speed damping by reusing the existing four-coordinate mechanical
@@ -994,7 +994,7 @@ exact pairs; all four mechanical states pass per-profile replay bounds with
 every raw history/event row retained. Coupled fault/event-side and torque-curve
 differences remain explicit diagnostics, not trajectory acceptance. The
 inventory now has fifteen native-partial and four ANDES-only families; none is
-VERIFIED. See the [mechanical evidence and remaining work](benchmarks/wtdta-native-mechanics-2026-10-19.md).
+VERIFIED. See the mechanical evidence and remaining work (Core `docs/benchmarks/wtdta-native-mechanics-2026-10-19.md`).
 Final gates pass 61 focused, 410 plugin-core and 1,649 scoped SMIB/model/solver
 tests, with zero failures/errors and only existing skips, plus four offline
 probe guards and six wording checks. Source, references and reports are sealed
@@ -1009,7 +1009,7 @@ three-state replay, while two nonunit curve profiles retain an explicit native
 raw-power versus published filtered-power input discrepancy. Ten imported SMIB
 executions are finite, not whole-stack native parity. The generated inventory
 now has fourteen native-partial and five ANDES-only families; none is VERIFIED.
-See the [sign correction and remaining work](benchmarks/wttqa-speed-feedback-2026-10-19.md).
+See the sign correction and remaining work (Core `docs/benchmarks/wttqa-speed-feedback-2026-10-19.md`).
 Final gates pass 78 focused, 410 plugin-core and 1,633 scoped SMIB/model/solver
 checks, with zero failures/errors and only existing skips, plus four offline
 probe guards and six wording checks. Source/reference/report hashes preserve
@@ -1022,7 +1022,7 @@ retain all history/event rows and runnable inputs. Recorded-input refinement and
 nine coupled metric bounds pass with unchanged production models. Tightening
 network tolerance alone does not remove the small voltage/angle floor; further
 precision localization and complete-family profiles remain open. See the
-[base/damping checklist](benchmarks/tgov1-machine-base-damping-2026-10-19.md).
+base/damping checklist (Core `docs/benchmarks/tgov1-machine-base-damping-2026-10-19.md`).
 Final gates pass 21 focused, 410 plugin-core and 1,624 scoped SMIB/model/solver
 checks, with zero failures/errors and only existing skips, plus four offline
 probe guards and six language-policy checks. Source, reference and report
@@ -1041,7 +1041,7 @@ Final gates pass 15 focused, 410 plugin-core and 1,621 scoped SMIB/model/solver
 checks, with zero failures/errors and only existing skips, plus four offline
 probe guards and six language-policy checks. All eight raw projections and
 1,815 unchanged Java/POM files are checked against the isolated snapshot.
-See the [independent active-limit checklist](benchmarks/tgov1-powerworld-limits-2026-10-19.md).
+See the independent active-limit checklist (Core `docs/benchmarks/tgov1-powerworld-limits-2026-10-19.md`).
 
 TGOV1 active-valve follow-up: four positive-time-constant upper/lower reference
 steps and inward releases have eight exact cold native runs, with all seven
@@ -1054,7 +1054,7 @@ failures/errors and only existing skips, plus four offline probe guards and
 six language-policy checks. Scoped private hashes retain source/reference/report
 evidence; complete-family and coupled cross-tool
 acceptance remain open. See the
-[active-valve checklist](benchmarks/tgov1-active-valve-limits-2026-10-19.md).
+active-valve checklist (Core `docs/benchmarks/tgov1-active-valve-limits-2026-10-19.md`).
 
 Ten-exciter fresh-reference follow-up: AC7C, AC8C, AC9C, DC1C, DC2C, AC8B,
 EXAC1A, ST2C, ST3C and ST5C now have additional always-active dense SMIB
@@ -1068,7 +1068,7 @@ failures/errors and only existing skips. Private hashes retain source,
 references, exact native trace pairs and final reports for this slice.
 AC8B remains common-profile acceptance;
 active-branch and complete-model verification gaps remain open. See the
-[dense comparison checklist](benchmarks/exciter-fresh-dense-cross-tool-2026-10-19.md).
+dense comparison checklist (Core `docs/benchmarks/exciter-fresh-dense-cross-tool-2026-10-19.md`).
 
 AC11C fresh-reference follow-up: an always-active dense SMIB comparison now
 uses a pinned numerical projection of the recovered cold-run pair, retaining
@@ -1081,7 +1081,7 @@ parameters are unchanged. Final gates pass 18 focused, 406 plugin-core and
 existing skips. Private source/reference/report hashes retain this slice.
 Instantaneous event-side coupled acceptance,
 active auxiliary branches and complete-model verification remain open. See the
-[fresh-reference checklist](benchmarks/ac11c-fresh-cross-tool-2026-10-19.md).
+fresh-reference checklist (Core `docs/benchmarks/ac11c-fresh-cross-tool-2026-10-19.md`).
 
 Exciter input-provenance follow-up: recover eleven missing historical DYR
 inputs by their exact archived hashes and preserve thirty content-addressed
@@ -1092,7 +1092,7 @@ specification byte sequences remain unavailable. Final validation passes
 23 focused, 406 plugin-core and 1,591 scoped SMIB/model/solver checks with
 zero failures/errors and only existing skips, at unchanged model tolerances.
 Source/reference/report hashes retain this scoped provenance slice. See the
-[input recovery checklist](benchmarks/exciter-input-recovery-2026-10-19.md).
+input recovery checklist (Core `docs/benchmarks/exciter-input-recovery-2026-10-19.md`).
 
 PSS6C/PSS7C compensation/canonical follow-up: correct machine impedance-base
 conversion, PSS6C's published negative-input integrator cascade and PSS7C's
@@ -1103,7 +1103,7 @@ Final validation on baseline `100ffc099` passes 107 focused, 406 plugin-core
 and 1,579 scoped SMIB/model/solver checks, with zero failures/errors and only
 existing skips. Source/reference/report hashes retain this scoped correction;
 complete coupled parity and further selector/limit/lifecycle profiles remain open. See the
-[compensation/canonical checklist](benchmarks/pss-compensation-canonical-2026-10-19.md).
+compensation/canonical checklist (Core `docs/benchmarks/pss-compensation-canonical-2026-10-19.md`).
 
 PSS6C/PSS7C native schema separation: exact 34/38-value native records are
 now distinct from the 35/39-value PowerWorld builder layouts. Two schema
@@ -1114,7 +1114,7 @@ baseline `93cb13b54` pass 100 focused, 406 plugin-core and 1,572 scoped
 SMIB/model/solver checks with zero failures/errors and only existing skips.
 Source/run/report hashes retain the scoped evidence; equations and existing
 trajectory tolerances are unchanged. Broader model verification remains open.
-See the [schema separation checklist](benchmarks/pss-canonical-native-schema-2026-10-19.md).
+See the schema separation checklist (Core `docs/benchmarks/pss-canonical-native-schema-2026-10-19.md`).
 
 GENQEC bounded field-compensation correction: finite Kw>=0 now replaces
 the artificial Kw<1 restriction, and NaN is rejected. The existing Kw*Id
@@ -1125,7 +1125,7 @@ strict imported fault checks pass. Final validation on baseline `1b981eb9b`
 passes 23 focused, 406 plugin-core and 1,569 scoped SMIB/model/solver checks,
 with only existing skips and zero failures/errors. Source/run/report hashes
 retain the scoped implementation evidence. Complete coupled parity remains open. See the
-[compensation checklist](benchmarks/genqec-field-compensation-2026-10-19.md).
+compensation checklist (Core `docs/benchmarks/genqec-field-compensation-2026-10-19.md`).
 
 Startup-validation follow-up, 2026-10-23: recognize the implemented GENQEC-family
 T'qo=0/X'q=Xq branch while retaining invalid-time and other-family rejection.
@@ -1144,7 +1144,7 @@ The final gates pass 18 focused, 401 plugin-core and 1,562 SMIB/model/solver
 checks with only existing skips and zero failures/errors. The shared machine
 engine is retained unchanged, with source/run/report hashes for the scoped
 verification commit; complete coupled parity remains open. See the
-[salient-branch checklist](benchmarks/genqec-salient-branch-2026-10-19.md).
+salient-branch checklist (Core `docs/benchmarks/genqec-salient-branch-2026-10-19.md`).
 
 GENQEC bounded native-schema slice: the documented one-ICON/sixteen-CON
 standard record replaces the incorrect flat eighteen-field interchange.
@@ -1156,7 +1156,7 @@ repeatable diagnostics. The final gate passes 1,559 SMIB/model/solver tests
 (one existing diagnostic skip) and 401 plugin-core tests (six optional skips),
 with zero failures/errors. Source/run/report hashes retain the scoped commit
 evidence; complete coupled parity remains open. See the
-[GENQEC source/evidence checklist](benchmarks/genqec-native-schema-2026-10-18.md).
+GENQEC source/evidence checklist (Core `docs/benchmarks/genqec-native-schema-2026-10-18.md`).
 
 WT12A1B bounded slice committed as `53a70fea0`: explicit-ID wrapper parsing, native-versus-published
 initial-reference selection, persistent-low-voltage retriggering and integration
@@ -1170,7 +1170,7 @@ optional skips), with no failures/errors. Three deliberate regressions are
 rejected. The restored-source gate passes 42 checks; private source/run/report
 hashes retain the reproducible evidence for the scoped implementation commit.
 Complete-model verification remains open. See the
-[WT12A1B checklist](benchmarks/wt12a1b-native-smib-2026-10-18.md).
+WT12A1B checklist (Core `docs/benchmarks/wt12a1b-native-smib-2026-10-18.md`).
 
 Updated 2026-10-18; upstream baseline is plugin `dcea9ab30` (1.4.6, core 1.4.3).
 Subsequent local implementation and validation slices are recorded below.
@@ -1215,8 +1215,8 @@ profiles retain origin/timer diagnostics. Exact physical G+jB switching and
 accepted-endpoint dispatch now enable the imported path. Eight coupled profiles
 have bounded acceptance; eight retain clock/origin diagnostics, and native
 discharge-reclose parity remains open. See the
-[switching kernel evidence](benchmarks/hplntd-switching-kernel-2026-10-18.md).
-The [physical-boundary follow-up](benchmarks/hplntd-switching-boundary-2026-10-18.md)
+switching kernel evidence (Core `docs/benchmarks/hplntd-switching-kernel-2026-10-18.md`).
+The physical-boundary follow-up (Core `docs/benchmarks/hplntd-switching-boundary-2026-10-18.md`)
 records exact input networks and clock-only discrepancy discriminators.
 Six additional three-cycle fault profiles now isolate native capacitor
 discharge/reversal discrepancies: changing Tout from 0 to 0.03/0.15 s leaves
@@ -1224,7 +1224,7 @@ all native channels/statuses identical, while direct sign reversal retains
 the native fast timer. InterPSS preserves the published discharge lockout and
 sign-specific persistence; these new profiles are counterexamples, not added
 native trajectory acceptance. See the
-[discharge/reversal evidence](benchmarks/hplntd-discharge-reversal-2026-10-18.md).
+discharge/reversal evidence (Core `docs/benchmarks/hplntd-discharge-reversal-2026-10-18.md`).
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -1249,7 +1249,7 @@ verification. The new `DynamicModelSmibTestSuite` selects model-unit and
 small-network independent comparisons without full Texas2k/WECC/IEEE39 runs.
 Earlier system gates below apply only to their recorded snapshots; the latest
 six-case drift failures are retained in the
-[REGFMA1 report](benchmarks/regfma1-native-schema-2026-10-17.md), outside the
+REGFMA1 report (Core `docs/benchmarks/regfma1-native-schema-2026-10-17.md`), outside the
 revised SMIB acceptance scope.
 
 Scope remains native RAW/DYR with `_gnet.idv` and `_MODREMOVE.idv`
@@ -1309,7 +1309,7 @@ and state definitions agree.
   two-step three-cycle fault, automatic loss estimation, missing-branch fallback,
   alternate plant MVA base, feasible proportional-only voltage control and
   terminal-voltage selection. Retain rejected infeasible/undefined-branch attempts.
-  See [plant foundation evidence](benchmarks/repcgfmc-native-contract-2026-10-18.md).
+  See plant foundation evidence (Core `docs/benchmarks/repcgfmc-native-contract-2026-10-18.md`).
 - [x] Validate the plant foundation on baseline `18414693e`: 53 focused checks,
   307 plugin-core tests (six optional skips), 1,359 registered SMIB/model/solver
   checks (one existing diagnostic skip), zero failures/errors. Audit 23 tested
@@ -1325,7 +1325,7 @@ and state definitions agree.
   - [x] Add ten cold-paired native manual-reference, active P/Q/voltage-limit and
     FFR hold/ramp/re-arm datasets at two steps. Replay all states from recorded
     physical measurements and external references, without injecting native states.
-    See [kernel evidence and remaining work](benchmarks/repcgfmc-kernel-2026-10-18.md).
+    See kernel evidence and remaining work (Core `docs/benchmarks/repcgfmc-kernel-2026-10-18.md`).
   - [x] Validate the kernel: 52 focused checks, 318 plugin-core tests (six optional
     skips), 1,364 SMIB/model/solver checks (one existing diagnostic skip), zero
     failures/errors. Audit 26 tested source/resource files, twenty new native
@@ -1333,7 +1333,7 @@ and state definitions agree.
   - [x] Implement strict native import, signed branch/frequency-bus measurement,
     base conversion and REGFMC1U four-output routing. Add nine bounded coupled
     SMIB profiles and ten new cold native runs (five byte-identical pairs).
-    See [import evidence](benchmarks/repcgfmc-native-import-2026-10-18.md).
+    See import evidence (Core `docs/benchmarks/repcgfmc-native-import-2026-10-18.md`).
     Runtime coverage is now 25/27; the earlier 24/27 counts are historical.
   - [x] Validate import on plugin `c6cdf42ca` and the exact archived updated
     core dependency: 78 focused checks, 318 plugin-core tests (six optional
@@ -1352,7 +1352,7 @@ and state definitions agree.
 - [x] Compare imported flat, three-cycle-fault and trip SMIB profiles against
   native references at both steps; preserve initial offsets and callback limits.
   Four new cold native trip runs form two byte-identical pairs. See
-  [native import evidence](benchmarks/regfmc-native-import-2026-10-18.md).
+  native import evidence (Core `docs/benchmarks/regfmc-native-import-2026-10-18.md`).
 - [x] Validate the native import slice: 75 focused checks, 299 plugin-core tests
   (six optional skips), 1,348 registered SMIB/model/solver checks (one existing
   diagnostic skip), zero failures/errors. Audit seventeen tested source/resource
@@ -1366,7 +1366,7 @@ and state definitions agree.
 - [x] Cold-run flat, three-cycle fault and severe current-limited SMIB profiles
   twice at two steps; retain all native channels, history and event sides.
   Compare GFL priority/deadband and the shared current limiter against every raw row.
-  See [REGFMC1U foundation](benchmarks/regfmc-native-contract-2026-10-18.md).
+  See REGFMC1U foundation (Core `docs/benchmarks/regfmc-native-contract-2026-10-18.md`).
 - [x] Validate the REGFMC1U foundation: 46 focused checks, 290 plugin-core tests
   (six optional skips), 1,333 SMIB/model checks (one existing diagnostic skip),
   zero failures/errors. Audit thirteen tested files and six byte-identical native
@@ -1381,7 +1381,7 @@ and state definitions agree.
     Fflag-only selectors, reference reversals and both active PI/speed limits.
   - [x] Replay all eleven states in twelve datasets at two steps; retain explicit
     native event-history, absolute-speed float-floor and current-circle limitations.
-    See [kernel evidence and remaining work](benchmarks/regfmc-kernel-2026-10-18.md).
+    See kernel evidence and remaining work (Core `docs/benchmarks/regfmc-kernel-2026-10-18.md`).
   - [x] Validate the kernel: 79 focused checks, 298 plugin-core tests (six optional
     skips), 1,338 SMIB/model checks (one existing diagnostic skip), zero failures/errors.
     Audit twelve tested files, all 24 native runs and twelve byte-identical cold pairs.
@@ -1392,7 +1392,7 @@ and state definitions agree.
   23/27 versioned runtime paths; HPLNTD, REPCCU, REGFMC1 and REPCGFMC1 remain missing.
 - [x] Run imported REGFMB1U flat/fault/trip SMIB profiles at two steps and bound
   six physical channels against immutable native output. See
-  [import evidence](benchmarks/regfmb-native-import-2026-10-18.md).
+  import evidence (Core `docs/benchmarks/regfmb-native-import-2026-10-18.md`).
 - [x] Validate REGFMB1U import: 70 focused checks, 283 plugin-core tests (six
   optional skips), 1,327 SMIB/model tests (one existing diagnostic skip), zero
   failures/errors; audit fourteen tested source/fixture files and prior native evidence.
@@ -1415,9 +1415,9 @@ and state definitions agree.
   freeze; retain bounded two-step native coupled fault checks.
 - [ ] Expand native active-limit, zero-time, negative-power and PLL recovery
   profiles, plant disturbances/reconnect and independent PowerWorld acceptance.
-  See [kernel evidence and remaining work](benchmarks/regfmb-kernel-2026-10-18.md).
+  See kernel evidence and remaining work (Core `docs/benchmarks/regfmb-kernel-2026-10-18.md`).
   The earlier foundation checkpoint was 22/27; native import above raises it to 23/27. See
-  [REGFMB1 native foundation](benchmarks/regfmb-native-contract-2026-10-18.md).
+  REGFMB1 native foundation (Core `docs/benchmarks/regfmb-native-contract-2026-10-18.md`).
 - [x] Native REECE import slice: exact eight-ICON/79-CON standard schema,
   deferred REGCA/REGCB attachment and malformed/duplicate/GNET/base guards.
 - [x] Correct REGCB physical-current blocking without clearing retained states;
@@ -1426,7 +1426,7 @@ and state definitions agree.
   skips), 1,306 SMIB/model tests (one existing diagnostic skip), no failures/errors.
 - [x] Resolve the native REECE active PI voltage-dip freeze discrepancy using
   cold-paired recorded-input replay; preserve native-versus-diagram distinction.
-  See [active PI evidence](benchmarks/reece-active-pi-dip-2026-10-18.md).
+  See active PI evidence (Core `docs/benchmarks/reece-active-pi-dip-2026-10-18.md`).
 - [x] Validate the native PI correction: 35 focused checks, 267 plugin-core tests
   (six optional skips), 1,308 SMIB/model tests (one existing diagnostic skip),
   zero failures/errors. Confirm the replay class is discovered in the SMIB XML.
@@ -1434,11 +1434,11 @@ and state definitions agree.
   the blocking and active PI fixes are not full trajectory acceptance.
 - [x] Correct native local reactive PI bound projection during dip freeze and
   immediate blocking entry, with failing-before and two-step native replays.
-  See [reactive blocking evidence](benchmarks/reece-reactive-blocking-2026-10-18.md).
+  See reactive blocking evidence (Core `docs/benchmarks/reece-reactive-blocking-2026-10-18.md`).
 - [x] Validate reactive blocking: 38 focused checks, 269 plugin-core tests
   (six optional skips), 1,309 SMIB/model tests (one existing diagnostic skip),
   zero failures/errors; retain both failing-before attempts and raw native hashes.
-  See [slice evidence](benchmarks/reece-native-import-2026-10-18.md).
+  See slice evidence (Core `docs/benchmarks/reece-native-import-2026-10-18.md`).
 - [x] Visually review pages 3-4 of the user-supplied May 2026 PDF, retain its
   SHA-256 identity, and transcribe all 45 renewable rows into the approval catalog.
 - [x] Separate 29 approved rows, 28 concrete native PTI mappings, and 27 distinct
@@ -1469,7 +1469,7 @@ and state definitions agree.
     at each timestep with unchanged exported parameters and no automatic
     correction. Add permanent five-state power-playback checks, event-side
     retention, frozen fingerprints and negative equation-mutation guards.
-    See [PowerWorld profile scope and native discrepancy](benchmarks/wtdtb1-powerworld-playback-2026-10-18.md).
+    See PowerWorld profile scope and native discrepancy (Core `docs/benchmarks/wtdtb1-powerworld-playback-2026-10-18.md`).
   - [x] Localize a candidate native-only `wg/wt` shaft-feedback term with two
     independently perturbed speed coordinates and exact cold-repeat outputs;
     initially retain it test-only, then promote the explicitly versioned path
@@ -1494,8 +1494,8 @@ and state definitions agree.
   - [ ] Close native non-unit absolute integrated-coordinate precision,
     instantaneous coupled-network event-post export, additional PowerWorld
     branch/base profiles and independently referenced reconnect/restart coverage.
-    See [native implementation and exact acceptance scope](benchmarks/wtdtb1-native-import-2026-10-18.md).
-  See [WTDTB1 foundation evidence and open discrepancies](benchmarks/wtdtb1-foundation-2026-10-18.md).
+    See native implementation and exact acceptance scope (Core `docs/benchmarks/wtdtb1-native-import-2026-10-18.md`).
+  See WTDTB1 foundation evidence and open discrepancies (Core `docs/benchmarks/wtdtb1-foundation-2026-10-18.md`).
 - [ ] Complete WTPTBU1 / current-library WTPTB1 verification; native import and
   runtime integration now exist, with partial independent acceptance.
   - [x] Freeze native fourteen-CON/three-STATE/one-VAR source and visually
@@ -1528,8 +1528,8 @@ and state definitions agree.
   - [ ] Close instantaneous network-post comparison, plant-reference steps,
     additional host/base and reconnect/restart profiles, native opt-in solver
     precision and complete PowerWorld trajectory acceptance.
-    See [WTPTB1 foundation scope and native evidence](benchmarks/wtptb1-foundation-2026-10-18.md).
-    The [native import/SMIB report](benchmarks/wtptb1-native-import-2026-10-18.md)
+    See WTPTB1 foundation scope and native evidence (Core `docs/benchmarks/wtptb1-foundation-2026-10-18.md`).
+    The native import/SMIB report (Core `docs/benchmarks/wtptb1-native-import-2026-10-18.md`)
     records the production path, exact evidence and remaining limitations.
 - [ ] Complete WTGWGOAU verification and implement WTGIBFFRA, auditing installed-release identifiers,
   input/output coupling and weak-grid/inertial-response branches separately.
@@ -1554,8 +1554,8 @@ and state definitions agree.
     independently referenced alternate-host/base/Type-3/reconnect profiles,
     and complete PowerWorld benchmark artifacts. Coverage is now 20/27 loadable;
     neither loadability nor matching-mode playback establishes full verification.
-    See [foundation evidence and remaining acceptance](benchmarks/wtgwgoa-foundation-2026-10-18.md).
-    See [native import and coupled SMIB scope](benchmarks/wtgwgoa-native-import-2026-10-18.md).
+    See foundation evidence and remaining acceptance (Core `docs/benchmarks/wtgwgoa-foundation-2026-10-18.md`).
+    See native import and coupled SMIB scope (Core `docs/benchmarks/wtgwgoa-native-import-2026-10-18.md`).
   - [x] Freeze WTGIBFFRA's documented one-ICON/45-CON/four-STATE/17-VAR
     contract and inspect its diagrams. Runtime six-ICON allocation is not six
     DYR inputs. Trace its distinct Paux port rather than reusing weak-grid Pref.
@@ -1604,9 +1604,9 @@ and state definitions agree.
     voltage residual floors, alternate-host/base native profiles, online
     reconnect and independent PowerWorld artifacts. Loadability is now 21/27,
     not complete verification.
-    See [kernel foundation and explicit limitations](benchmarks/wtgibffra-foundation-2026-10-18.md).
-    See [native import and coupled SMIB verification](benchmarks/wtgibffra-native-import-2026-10-18.md).
-    See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
+    See kernel foundation and explicit limitations (Core `docs/benchmarks/wtgibffra-foundation-2026-10-18.md`).
+    See native import and coupled SMIB verification (Core `docs/benchmarks/wtgibffra-native-import-2026-10-18.md`).
+    See Paux correction and WTGIBFFRA investigation (Core `docs/benchmarks/reecd-paux-native-2026-10-18.md`).
 - [ ] Complete REEC_E across documented native releases, including unresolved
   REECE1/REECEU1 record layouts; do not silently substitute REECD.
   - [x] Inspect native reference REECE eight-ICON/79-CON/eight-STATE/20-VAR schema
@@ -1648,10 +1648,10 @@ and state definitions agree.
     active-boundary, lifecycle, speed/base and time-constant-policy profiles.
     Native reference import raises family runtime presence to 22/27, not full alias
     coverage or complete model acceptance.
-    See [REECE local-PI foundation](benchmarks/reece-local-pi-foundation-2026-10-18.md).
-    The [typed runtime and limiter correction](benchmarks/reece-runtime-2026-10-18.md)
+    See REECE local-PI foundation (Core `docs/benchmarks/reece-local-pi-foundation-2026-10-18.md`).
+    The typed runtime and limiter correction (Core `docs/benchmarks/reece-runtime-2026-10-18.md`)
     supersedes the foundation's inactive-limit-only anti-windup assumption.
-    See [standard-native import and exact release boundary](benchmarks/reece-native-import-2026-10-18.md).
+    See standard-native import and exact release boundary (Core `docs/benchmarks/reece-native-import-2026-10-18.md`).
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
   - [x] Freeze native HPLNTDU bus-wrapper and REAXDU per-unit contracts, including
@@ -1662,7 +1662,7 @@ and state definitions agree.
     raw channels/history/event sides, compare six algebraic interface profiles
     and preserve the explicit-base pause counterexample with its matched
     no-intermediate-pause control. This does not raise runtime presence.
-    See [hybrid aggregation foundation](benchmarks/hplntd-aggregation-foundation-2026-10-18.md).
+    See hybrid aggregation foundation (Core `docs/benchmarks/hplntd-aggregation-foundation-2026-10-18.md`).
   - [x] Validate the foundation on Java baseline `40eb7b164`: 41 focused,
     356 plugin-core (six optional skips), and 1,429 SMIB/model/solver tests
     (one diagnostic skip), zero failures/errors. Audit fourteen native runs,
@@ -1675,7 +1675,7 @@ and state definitions agree.
     This is recorded-input kernel evidence, not attached runtime acceptance.
     Final gates: 26 focused, 362 core-unit (six optional skips), and 1,436
     SMIB/model/solver tests (one existing diagnostic skip), zero failures/errors.
-    See [downstream lag evidence and gaps](benchmarks/reaxd-lag-kernel-2026-10-18.md).
+    See downstream lag evidence and gaps (Core `docs/benchmarks/reaxd-lag-kernel-2026-10-18.md`).
   - [ ] Implement HPLNTDU's thirteen-state kernel and complete REAXDU's interface,
     exact production import/attachment and stage-coherent multi-unit coupling;
     verify all remaining selectors, limits, lifecycle and actual SMIB responses.
@@ -1688,7 +1688,7 @@ and state definitions agree.
       are retained; runtime presence does not increase.
       Final gates on baseline `08c49944f`: 51 focused, 371 core-unit (six optional
       skips), 1,455 SMIB/model/solver (one diagnostic skip), zero failures/errors.
-      See [bounded plant-kernel evidence](benchmarks/hplntd-kernel-2026-10-18.md).
+      See bounded plant-kernel evidence (Core `docs/benchmarks/hplntd-kernel-2026-10-18.md`).
     - [x] Add exact production wrapper-decoder APIs, an immutable two-pass ownership
       plan and a read-only plant-base/Mvar measurement boundary. Verify all 17
       reviewed input contracts, duplicate/ignored links, source order, branch
@@ -1696,7 +1696,7 @@ and state definitions agree.
       This is preflight/measurement support, not main-importer or runtime attachment.
       Gates: 65 focused, 379 core-unit (six optional skips), and 1,469 selected
       SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
-      See [binding/measurement evidence and runtime TODOs](benchmarks/hplntd-binding-boundary-2026-10-18.md).
+      See binding/measurement evidence and runtime TODOs (Core `docs/benchmarks/hplntd-binding-boundary-2026-10-18.md`).
     - [x] Add typed shared runtime composition for bounded REGCA1/REECA1 hosts,
       once-per-stage plant/lag advancement, deterministic command publication,
       ownership guards, trip/rejoin reweighting and whole-group reinitialization.
@@ -1706,7 +1706,7 @@ and state definitions agree.
       alternate host modes and independent fault acceptance remain open.
       Gates: 52 focused hybrid, 379 core-unit (six optional skips), and 1,480
       selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
-      See [typed runtime evidence and remaining gaps](benchmarks/hplntd-typed-runtime-2026-10-18.md).
+      See typed runtime evidence and remaining gaps (Core `docs/benchmarks/hplntd-typed-runtime-2026-10-18.md`).
     - [x] Connect exact HPLNTDU/REAXDU wrappers through the main importer and
       builder, preserving bus ownership, order independence, per-generator
       preprocessing and atomic command-port preflight. Add named-state monitoring,
@@ -1715,7 +1715,7 @@ and state definitions agree.
       paths, not full source-name/selector/host or independent fault acceptance.
       Final gates: 113 focused, 379 core-unit (six optional skips), and 1,490
       selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
-      See [import evidence and remaining work](benchmarks/hplntd-import-2026-10-18.md).
+      See import evidence and remaining work (Core `docs/benchmarks/hplntd-import-2026-10-18.md`).
     - [x] Add a portable cold-repeat fault probe and complete two-timestep
       state/network diagnostics, retaining every raw history/event sample.
       Correct the adapter's frequency rebase at the converged event endpoint
@@ -1726,13 +1726,13 @@ and state definitions agree.
       selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
       Two legacy bounded ANDES wind envelopes are revised only after source-
       controlled frequency-on/off A/B proof; exact/native limits are unchanged.
-      See [fault diagnostics, corrected defect and remaining gaps](benchmarks/hplntd-fault-event-frequency-2026-10-18.md).
+      See fault diagnostics, corrected defect and remaining gaps (Core `docs/benchmarks/hplntd-fault-event-frequency-2026-10-18.md`).
     - [x] Add exact token-only disabled-control/zero-gain reference probes and
       offline artifact negative controls. Keep all states, outputs and duplicate
       samples; require cold equality at two steps and unchanged frozen fault
       hashes after common-runner refactoring. This is a source-discriminator
-      slice, not new runtime support. See [observations and implementation
-      implications](benchmarks/hplntd-control-discriminators-2026-10-18.md).
+      slice, not new runtime support. See observations and implementation
+      implications (Core `docs/benchmarks/hplntd-control-discriminators-2026-10-18.md`).
       Fourteen profiles/28 cold runs are byte-identical by pair; all seven coarse
       exploratory outputs and both frozen fault CSVs are unchanged. Gates on
       baseline `7866eb36e`: ten probe/audit and six wording checks, 379 core-unit
@@ -1743,7 +1743,7 @@ and state definitions agree.
       measurement, both integration stages, algebraic bypasses and group reseeding.
       Add sixteen two-step native state/command replay and imported coupled SMIB
       profiles; preserve explicit cross-method/filter residuals and raw unused-VAR
-      nondeterminism. See [disabled-control implementation](benchmarks/hplntd-disabled-controls-2026-10-18.md).
+      nondeterminism. See disabled-control implementation (Core `docs/benchmarks/hplntd-disabled-controls-2026-10-18.md`).
       Final gates: 36 focused, 382 core-unit (six optional skips), 1,499 selected
       SMIB/model/solver tests (one diagnostic skip), and 22 offline checks,
       zero failures/errors. Thirty-two raw runs support sixteen cold pairs;
@@ -1755,7 +1755,7 @@ and state definitions agree.
       strict feasibility checks and group reseeding. Add 24 two-step state/command
       replay and bounded imported SMIB profiles with 48 raw runs, byte-identical
       within each cold pair.
-      See [equations, evidence and counterexamples](benchmarks/hplntd-proportional-equilibrium-2026-10-18.md).
+      See equations, evidence and counterexamples (Core `docs/benchmarks/hplntd-proportional-equilibrium-2026-10-18.md`).
       Final gates on `bdd6d02ba`: 47 focused, 393 core-unit (six optional skips),
       1,514 selected SMIB/model/solver tests (one diagnostic skip), and 26 offline
       checks, zero failures/errors. Four raw diagnostic runs remain excluded
@@ -1767,7 +1767,7 @@ and state definitions agree.
       limit expansion. Preserve the published clamp with a failing mutation
       control. Add four Q-upper/PF-lower state-replay and bounded coupled
       trajectory profiles; preserve the runner's earlier default hashes.
-      See [direct-reference evidence](benchmarks/hplntd-reference-limits-2026-10-18.md).
+      See direct-reference evidence (Core `docs/benchmarks/hplntd-reference-limits-2026-10-18.md`).
       Final gates: 41 focused, 393 core-unit (six optional skips), 1,519 selected
       SMIB/model/solver tests (one diagnostic skip), and 32 offline checks,
       zero failures/errors. Four fresh default runs preserve earlier CSV hashes;
@@ -1780,7 +1780,7 @@ and state definitions agree.
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve
     the source-list REPCCU mapping without inventing a standard-name alias.
-    See [REPCC foundation](benchmarks/repcc-foundation-2026-10-18.md).
+    See REPCC foundation (Core `docs/benchmarks/repcc-foundation-2026-10-18.md`).
   - [x] Validate the bounded foundation: 50 focused checks, 325 plugin-core
     tests (six optional skips), 1,377 SMIB/model/solver checks (one existing
     diagnostic skip), zero failures/errors. Audit 22 owned files, 2,074 baseline
@@ -1798,7 +1798,7 @@ and state definitions agree.
       and compare every raw sample of all thirteen states and three observable
       outputs. Ten pairs are byte-identical; four differ only in a bounded
       inactive-timer residue, with both raw files retained.
-      See [REPCC kernel evidence](benchmarks/repcc-kernel-2026-10-18.md).
+      See REPCC kernel evidence (Core `docs/benchmarks/repcc-kernel-2026-10-18.md`).
     - [x] Validate on plugin `8342c05fe` with an isolated archived core jar:
       56 focused checks, 334 plugin-core tests (six optional skips), 1,379
       SMIB/model/solver checks (one existing diagnostic skip), zero failures or
@@ -1810,7 +1810,7 @@ and state definitions agree.
       event/timer datasets; preserve two additional discharge-discrepancy
       datasets without accepting premature native reclosure. Twenty cold runs
       retained. PowerWorld remains non-activating, not lockout acceptance.
-      See [REPCC shunt evidence](benchmarks/repcc-shunts-2026-10-18.md).
+      See REPCC shunt evidence (Core `docs/benchmarks/repcc-shunts-2026-10-18.md`).
     - [x] Validate the shunt slice on `b5c27de3f`: 84 focused, 344 plugin-core
       checks (six optional skips), 1,386 SMIB/model/solver checks (one existing
       diagnostic skip), zero failures/errors with the isolated accepted engine.
@@ -1821,7 +1821,7 @@ and state definitions agree.
       Fix the discovered cached-admittance rebuild bug in core `38e269ecf`;
       all 2,973 engine tests pass. Six direct-query datasets have twelve cold
       runs (six byte-identical pairs), separate from deferred controller plot VARs.
-      See [REPCC physical boundary](benchmarks/repcc-network-boundary-2026-10-18.md).
+      See REPCC physical boundary (Core `docs/benchmarks/repcc-network-boundary-2026-10-18.md`).
       This typed API does not yet supply automatic runtime attachment/import.
     - [x] Validate the physical boundary with 42 focused checks, 344 plugin-core
       tests (six optional skips) and 1,394 registered SMIB/model/solver checks
@@ -1838,7 +1838,7 @@ and state definitions agree.
       eight native runs, all raw history/event-side rows and all thirteen plant
       states compared with separate tightened channel bounds. Preserve the
       load-flow tolerance discriminator and remaining numerical floors.
-      See [REPCC native runtime](benchmarks/repcc-native-runtime-2026-10-18.md).
+      See REPCC native runtime (Core `docs/benchmarks/repcc-native-runtime-2026-10-18.md`).
     - [x] Validate on committed plugin baseline `c8f866351`: 102 focused checks,
       344 plugin-core tests (six optional skips) and 1,404 registered
       SMIB/model/solver checks (one existing diagnostic skip), zero failures or
@@ -1848,7 +1848,7 @@ and state definitions agree.
       setup. Compare all thirteen initial states/references against ten frozen
       native profiles; activate typed coupled switching at both steps and
       check endpoint clocks, persistent Y changes and idempotence.
-      See [enabled initialization](benchmarks/repcc-enabled-initialization-2026-10-18.md).
+      See enabled initialization (Core `docs/benchmarks/repcc-enabled-initialization-2026-10-18.md`).
       This is not enabled-MSS import or independent coupled transient acceptance.
     - [x] Validate enabled initialization on `a6b69e592`: 29 focused,
       344 plugin-core (six optional skips), and 1,406 SMIB/model/solver tests
@@ -1859,7 +1859,7 @@ and state definitions agree.
       Reject missing/changed provenance and ambiguous identities before taking
       the plant port. Activate both opening and insertion with nonzero G at
       two steps and verify persistent matrix increments.
-      See [enabled-switching import](benchmarks/repcc-switching-import-2026-10-18.md).
+      See enabled-switching import (Core `docs/benchmarks/repcc-switching-import-2026-10-18.md`).
       Transient device metadata is not a persistent core serialization feature.
     - [x] Validate enabled import on `41922fc74`: 77 focused, 347 plugin-core
       (six optional skips), and 1,412 SMIB/model/solver tests (one diagnostic
@@ -1870,7 +1870,7 @@ and state definitions agree.
       compensation absorption, hybrid-current identity and inactive owners.
       Compare all raw rows of four fast-band coupled profiles at two steps;
       retain four unaccepted slow-band profiles with a clock-only discriminator.
-      See [origin and coupled switching](benchmarks/repcc-switching-origin-2026-10-18.md).
+      See origin and coupled switching (Core `docs/benchmarks/repcc-switching-origin-2026-10-18.md`).
     - [x] Validate origin/coupled switching on `674583ce0`: 54 focused,
       347 plugin-core (six optional skips), and 1,417 SMIB/model/solver tests
       (one diagnostic skip), zero failures/errors. Preserve failing-before
@@ -1950,12 +1950,12 @@ evidence to infer their current native/USRMDL allocations or aliases.
   tested scoped commit, preserving all unrelated GENSAL work.
 - [x] Separate typed PSS1A from native IEEEST at the reader/catalog boundary;
   preserve typed benchmarks and verify rejection/attachment with cold pairs.
-  See the [PSS1A dialect report](benchmarks/pss1a-native-typed-boundary-2026-10-19.md).
+  See the PSS1A dialect report (Core `docs/benchmarks/pss1a-native-typed-boundary-2026-10-19.md`).
 - [ ] Close remaining typed input-selector/lifecycle profiles and complete
   coupled SMIB acceptance before complete model acceptance.
 
-See [exact typed PSS1A playback evidence](benchmarks/pss1a-exact-powerworld-playback-2026-10-17.md).
-The [active-limit/cutout follow-up](benchmarks/pss1a-active-limits-2026-10-17.md)
+See exact typed PSS1A playback evidence (Core `docs/benchmarks/pss1a-exact-powerworld-playback-2026-10-17.md`).
+The active-limit/cutout follow-up (Core `docs/benchmarks/pss1a-active-limits-2026-10-17.md`)
 retains the rejected lower-only validation probe and the shared-checkout
 GENSAL failures separately from the accepted PSS1A profiles.
 
@@ -2099,7 +2099,7 @@ records the newer failures and open full-window comparison.
   events at 500 iterations. The h/4 matrix rejects Case 5 at 0.0958333 s;
   voltage-only probes complete identically at 800/1,600 iterations (up to 614
   recorded corrector iterations), but h/4 machine/state acceptance remains open.
-  Case 6 still ends at 1.684953 pu at h/4. See the [Iolim timestep investigation](benchmarks/regca-iolim-direction-2026-10-17.md)
+  Case 6 still ends at 1.684953 pu at h/4. See the Iolim timestep investigation (Core `docs/benchmarks/regca-iolim-direction-2026-10-17.md`)
   and [convergence follow-up](benchmarks/network-convergence-propagation-2026-10-17.md).
 - [ ] Obtain matched native reference simulator or PowerWorld trajectories for complete
   stacks. Add ANDES comparisons where its topology and parameterization match.
@@ -2157,7 +2157,7 @@ as diagnostic history, not accepted transient evidence. A fresh unchanged-model
 baseline with a 200-iteration network budget is twice-repeatable, has no
 recognized failures and is byte-identical at a 400-iteration budget. The public
 final-recovery test now uses those clean values at unchanged bounds. The
-[network-quality report](benchmarks/regca-network-run-quality-2026-10-17.md)
+network-quality report (Core `docs/benchmarks/regca-network-run-quality-2026-10-17.md`)
 records the permanent log/CSV quality gate and remaining full-transient errors.
 
 - [x] Reject recognized native convergence/initialization failures independently
@@ -2215,7 +2215,7 @@ records the permanent log/CSV quality gate and remaining full-transient errors.
   The generated-current ceiling is now -Iolim, applied at the algebraic output
   without clamping the lag state. Two clean cold runs at each of two steps and
   the opposite-direction capacitive discriminator support the correction.
-  See the [Iolim model-fix report](benchmarks/regca-iolim-direction-2026-10-17.md)
+  See the Iolim model-fix report (Core `docs/benchmarks/regca-iolim-direction-2026-10-17.md`)
   for the failing-before evidence, 44 focused checks and full system regression.
 
 Network-quality slice validation: 15 focused tests pass without skips. Full
@@ -2339,7 +2339,7 @@ The exciter audit found that the approved PSLF `EXDC2A` row was wrongly
 represented as a distinct native DYR model. The provided May 2026 table
 maps that row to EXDC2. Native EXDC2 uses Switch where PowerWorld EXDC2A uses
 Tf2; a same-width input record cannot safely substitute one for the other.
-See the [source-contract report](benchmarks/exdc2-native-dialect-2026-10-17.md).
+See the source-contract report (Core `docs/benchmarks/exdc2-native-dialect-2026-10-17.md`).
 
 - [x] Verify the table columns visually and check native reference simulator schemas.
 - [x] Correct the source-list mapping to native EXDC2 and remove the
@@ -2422,7 +2422,7 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   four cold allocation checks distinguish unsupported native PSSSB from native
   PSS2A; reject the former in the DYR reader and preserve the explicit typed
   builder and unchanged PowerWorld SMIB comparison. See the
-  [PSSSB dialect boundary report](benchmarks/psssb-native-typed-boundary-2026-10-19.md).
+  PSSSB dialect boundary report (Core `docs/benchmarks/psssb-native-typed-boundary-2026-10-19.md`).
 - [x] Complete the PSS1A native input-dialect audit independently of the source
   mapping: literal PSS1A is unsupported, native IEEEST remains accepted, and
   the typed builder retains separate exact and equivalent playback evidence.
@@ -2434,37 +2434,37 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   separate 21-value PowerWorld builder and benchmark. Internal ICON allocation
   is not an input selector. Validate exact parsing, published equations,
   independent frequency response and two-step flat/fault solver integration.
-  See the [PSS5C native foundation report](benchmarks/pss5c-native-foundation-2026-10-19.md).
+  See the PSS5C native foundation report (Core `docs/benchmarks/pss5c-native-foundation-2026-10-19.md`).
 - [x] Add a permanent read-only PSS5C state-matrix/eigenvalue diagnostic and
   coordinate-invariant native band-pole experiments. Nine cold pairs (306
   independent small-state response cases) distinguish published frequency
   scaling from the reciprocal-field behavior of the installed reference engine.
   Production equations and trajectory tolerances are unchanged. See the
-  [pole-contract report](benchmarks/pss5c-pole-contract-2026-10-19.md).
+  pole-contract report (Core `docs/benchmarks/pss5c-pole-contract-2026-10-19.md`).
 - [x] Support the exact PSS5C first-order low transducer for `AL=0, BL>0`,
   preserving numerator feedthrough, atomic integration stages, named-state
   keys and analytical A/B matrices. Isolate the installed reference engine's
   timestep-dependent low-transducer order reduction with eight cold pairs;
   do not silently apply that numerical policy to positive `AL`. See the
-  [low-transducer report](benchmarks/pss5c-low-transducer-2026-10-19.md).
+  low-transducer report (Core `docs/benchmarks/pss5c-low-transducer-2026-10-19.md`).
 - [x] Implement the proper published-equation second-order high transducer
   for zero TH or zero AH, including input feedthrough, combined low/high
   reductions and read-only A/B diagnostics. Add four cold reference pairs
   and distinguish the TH-zero modal agreement from the AH-zero installed-
   engine order discrepancy. Do not label either complete trajectory parity.
-  See the [high-transducer report](benchmarks/pss5c-high-transducer-2026-10-19.md).
+  See the high-transducer report (Core `docs/benchmarks/pss5c-high-transducer-2026-10-19.md`).
 - [x] Add the permanent full-order companion/cascade coordinate observation
   API and derivative-identity tests. Preserve exact-time replay history and
   duplicate-boundary feedthrough. Cold-repeat six fine-step observation
   profiles and their twelve all-row replays; separate the tested nonzero-
   gain three-band output identity from the contradictory zero-gain case.
   No production equation or trajectory limit changes. See the
-  [coordinate-observation report](benchmarks/pss5c-coordinate-observation-2026-10-19.md).
+  coordinate-observation report (Core `docs/benchmarks/pss5c-coordinate-observation-2026-10-19.md`).
 - [x] Implement the exact proper static low transducer for DLI=AL=BL=0,
   with input feedthrough, frozen-coordinate diagnostics and mixed high orders.
   Preserve the repeated nonfinite native cases and paired healthy control;
   do not turn rejected output into a trajectory oracle. See the
-  [static-low report](benchmarks/pss5c-static-low-2026-10-19.md).
+  static-low report (Core `docs/benchmarks/pss5c-static-low-2026-10-19.md`).
 - [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
   discrepancies, remaining degenerate transducers, zero-gain/lifecycle behavior and native
   thirteen-state observation coordinates before native trajectory acceptance.
@@ -2503,7 +2503,7 @@ See the [source discrepancy, evidence scope and validation report](benchmarks/st
 - [x] Complete full registered reactor validation and record the results.
 - [x] Prepare the scoped commit after available gates pass.
 
-See the [run identities and reproducibility report](benchmarks/powerworld-exciter-repeatability-2026-10-17.md).
+See the run identities and reproducibility report (Core `docs/benchmarks/powerworld-exciter-repeatability-2026-10-17.md`).
 This establishes current repeatability for six additional SMIB profiles, not
 recovery of their old specification bytes or exhaustive model acceptance.
 Eleven other PowerWorld datasets still lack declared DYR inputs, and the
@@ -2580,7 +2580,7 @@ are not complete. No gain, physical parameter or comparison bound was fitted.
   voltage/Q boundary differences and unmatched event-post observations remain.
 - [ ] Resolve severe fault responses and full-system independent execution.
 
-See the [source contracts, failures-before-fix and benchmark evidence](benchmarks/regfma1-boundaries-2026-10-17.md).
+See the source contracts, failures-before-fix and benchmark evidence (Core `docs/benchmarks/regfma1-boundaries-2026-10-17.md`).
 The two boundary fixes do not directly explain the severe source-case faults:
 its GFM ratings equal the network base and no plant offset is attached.
 
@@ -2649,8 +2649,8 @@ Supplied-case no-event drift under the newer native wind semantics is deferred
 to separate full-system work under the user's revised scope. Old passing
 stationary-flat claims apply to their recorded snapshots, not the latest one.
 
-See [native REGFMA1 source, base bug and trajectory evidence](benchmarks/regfma1-native-schema-2026-10-17.md).
-The [native limiter follow-up](benchmarks/regfma1-native-limiters-2026-10-17.md)
+See native REGFMA1 source, base bug and trajectory evidence (Core `docs/benchmarks/regfma1-native-schema-2026-10-17.md`).
+The native limiter follow-up (Core `docs/benchmarks/regfma1-native-limiters-2026-10-17.md`)
 records the new source-backed PI correction and remaining SMIB profile gaps.
 
 ## Synchronous fault-observation slice
@@ -2705,4 +2705,4 @@ The instrumentation slice changes no production model or integration equation.
   reported explicitly, not accepted by widening bounds or fitting Khv.
 - [ ] Close complete-profile, instantaneous event-side and Texas2k acceptance.
 
-See the [selector proof, new PowerWorld artifact and remaining boundary gap](benchmarks/regca-zero-q-selector-2026-10-17.md).
+See the selector proof, new PowerWorld artifact and remaining boundary gap (Core `docs/benchmarks/regca-zero-q-selector-2026-10-17.md`).

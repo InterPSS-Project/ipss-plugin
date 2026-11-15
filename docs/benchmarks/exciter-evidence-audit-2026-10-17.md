@@ -1,6 +1,6 @@
 # Native exciter evidence audit, 2026-10-17
 
-Historical snapshot: the [exact-input recovery follow-up](exciter-input-recovery-2026-10-19.md)
+Historical snapshot: the exact-input recovery follow-up (Core `docs/benchmarks/exciter-input-recovery-2026-10-19.md`)
 recovers the eleven missing DYR contracts, adds fresh cold-pair evidence and
 retains the six original-specification gaps and one AC11C historical discrepancy.
 The original observations and reference hashes below are not rewritten.

@@ -3,7 +3,7 @@
 The latest matched control has a **20.796-second whole-run median** on one
 logical CPU. Neither new affine-network batch establishes a speedup. The
 20-second objective remains open, and these runtime variants remain experimental.
-The separately committed [default frequency selection](bus-frequency-selection-2026-10-25.md)
+The separately committed default frequency selection (Core `docs/benchmarks/bus-frequency-selection-2026-10-25.md`)
 retains 704 required measurements out of 6,717 buses.
 
 ## Complete warmed measurements

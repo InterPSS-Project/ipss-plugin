@@ -106,7 +106,7 @@ override it on the configured solver. Non-convergence still stops the run.
 Original RAW/DYR, GNET and MODREMOVE preparation, 60-Hz three-cycle events and
 the 1/240-s production step are preserved. The probes and complete raw outputs
 are retained privately under `2026-10-17-network-convergence`. The earlier
-[Iolim report](regca-iolim-direction-2026-10-17.md) remains historical evidence
+Iolim report (Core `docs/benchmarks/regca-iolim-direction-2026-10-17.md`) remains historical evidence
 of the model-coordinate fix, not proof of converged system solves.
 
 ## Convergence-enforced timestep follow-up

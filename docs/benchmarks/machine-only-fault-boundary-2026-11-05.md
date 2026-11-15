@@ -5,7 +5,7 @@ machine. Neither machine has an exciter, stabilizer, or governor. A three-phase
 fault is applied at 0.05 s and cleared at 0.10 s. Complete reference captures
 include both sides of each event and all machine states. Cold repetitions at
 each integration interval produced identical CSV files. The capture script is
-`tools/genrou_boundary_reference_probe.py`; exact source provenance and full
+Core `tools/genrou_boundary_reference_probe.py`; exact source provenance and full
 outputs remain in the ignored private evidence archive.
 
 | Network interval | Integration path | First fault-on voltage error (pu) | Reactive-power error (pu) | GENROU damper-flux error (pu) |

@@ -4455,7 +4455,7 @@ limits are unchanged, and all six cases and all 36 disturbances remain in scope.
 
 ### Grid-forming integration and controller-refresh follow-up
 
-The [shared integration report](regfma1-shared-integration-2026-10-19.md)
+The shared integration report (Core `docs/benchmarks/regfma1-shared-integration-2026-10-19.md`)
 records the REGFMA1 solver connection, access to all 45 Case 6 grid-forming
 states and rates, and 82 passing focused tests. Fifteen independent model
 profiles were compared at every regular endpoint; two terminal-current bounds

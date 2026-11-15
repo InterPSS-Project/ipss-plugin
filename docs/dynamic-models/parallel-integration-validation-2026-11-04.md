@@ -22,7 +22,7 @@ Existing accuracy thresholds are unchanged.
 The registered suite now includes the breaker/transfer reference test and the
 partly collapsed composite full-removal test. REECC1's optional two-step path
 and its remaining qualification boundaries are documented in
-[the controller report](reecc1-two-step-integration.md).
+the controller report (Core `docs/dynamic-models/reecc1-two-step-integration.md`).
 
 This focused result does not qualify the entire branch for merging. The full
 registered suite at `771b92e33` reports 4,809 tests with 215 failures, two errors
@@ -127,7 +127,7 @@ selector to local sensing.
 
 The integrated replay and shared renewable-controller selection passes 58 tests
 without failures, errors or skips. Full attached-plant network feedback remains
-a separate gate. See [the qualification report](reecc1-plant-and-remote-sensing.md).
+a separate gate. See the qualification report (Core `docs/dynamic-models/reecc1-plant-and-remote-sensing.md`).
 Private validation is retained at
 `verification-artifacts/reecc-plant-integration-20261104`.
 
@@ -161,7 +161,7 @@ using the existing event-input callback. Publication is atomic after finite
 checks; converter and controller states, timers and numerical history do not
 advance. Both solvers exercise the actual imported-device callback, and failed
 event solves do not publish inputs. See the
-[event-power report](regca-accepted-event-power.md).
+event-power report (Core `docs/dynamic-models/regca-accepted-event-power.md`).
 
 The broad renewable/plant-controller and motor audit selection reports 323 tests:
 322 pass and one opt-in positive-Q diagnostic is skipped. No failures or errors
@@ -237,7 +237,7 @@ Private integrated evidence is retained at
 
 ## Optional accepted-boundary converter memory
 
-The [accepted-boundary policy](regca-accepted-voltage-memory.md) is integrated
+The accepted-boundary policy (Core `docs/dynamic-models/regca-accepted-voltage-memory.md`) is integrated
 with shared event/step history under both methods. Trial network solves do not
 commit memory, and repeated solves cannot introduce extra history updates.
 The existing instantaneous and legacy per-solve policies remain unchanged;
@@ -287,7 +287,7 @@ Private integrated evidence is retained at
 `verification-artifacts/active-memory-boundaries-integrated-20261104`, SHA-256
 `f10a784d0a802ebf1053404de32d43d419eff2db85bcab344060876f1b2ca4b0`.
 
-The independently repeated [URGS3T reactivation captures](../benchmarks/urgs3t-reactivation-lifecycle-2026-11-04.md)
+The independently repeated URGS3T reactivation captures (Core `docs/benchmarks/urgs3t-reactivation-lifecycle-2026-11-04.md`)
 also pass their complete source-contract checker after integration. They prove
 inactive coordinate advancement and retained-state reactivation in the reference,
 not implementation parity. Engine lifecycle implementation and both-method
@@ -348,7 +348,7 @@ with the candidate; the baseline core does not satisfy these new gates.
 
 The standard-converter correction does not implement capacitor commutation or
 close the original full-sample failures. Those expected values remain unchanged.
-See the [qualification report](../benchmarks/lcc-gamma-limit-control-2026-11-04.md).
+See the qualification report (Core `docs/benchmarks/lcc-gamma-limit-control-2026-11-04.md`).
 Integrated evidence with the actual loaded artifact hash is retained at
 `verification-artifacts/lcc-gamma-candidate-integrated-20261104`, SHA-256
 `01c9f1a9c8e6b51e69f0d1f18ea528fd089e911161bd531ef15063f2b979907d`.

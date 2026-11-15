@@ -62,7 +62,7 @@ accurately; executable behavior is unchanged.
 The installed native model contract uses two flags and eighteen constants,
 with source impedance from the generator power-flow record. This is distinct
 from the supplied nineteen-value records. The original run's handling of those
-records remains unconfirmed. The [earlier schema report](regfma1-native-schema-2026-10-17.md)
+records remains unconfirmed. The earlier schema report (Core `docs/benchmarks/regfma1-native-schema-2026-10-17.md`)
 already distinguishes these formats. An improved trajectory alone does not
 establish the missing format contract.
 

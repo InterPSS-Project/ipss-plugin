@@ -118,7 +118,7 @@ public final class DynamicModelCatalog {
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
             new DynamicModelDescriptor("CDC6T", Set.of(), DynamicModelCategory.HVDC_LINK,
                     DynamicModelRecordSchema.exact(32), LOADABLE,"com.interpss.dstab.hvdc.model.Cdc6tDyrModel",
-                    URI.create("https://github.com/InterPSS-Project/ipss-plugin/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md")),
+                    URI.create("https://github.com/interpss/core/blob/master/docs/dynamic-models/cdc6t-runtime-plan.md")),
 
             descriptor("SVSMO3T2", Set.of(), DynamicModelCategory.FACTS_DEVICE, 64,
                     DynamicModelSupportStatus.PARTIAL, "com.interpss.dstab.svc.Svsmo3t2Model",

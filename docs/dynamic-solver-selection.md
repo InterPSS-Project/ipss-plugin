@@ -119,14 +119,14 @@ integration. Use a fixed step and check model support at initialization.
 PSS2B directly supplies the same CML block states to the shared participant
 interface while retaining compiled modified-Euler execution. Its sampled-voltage
 histories commit at accepted network endpoints under both methods. The
-[PSS2B runtime contract](dynamic-models/pss2b-compiled-runtime.md) describes the
+PSS2B runtime contract (Core `docs/dynamic-models/pss2b-compiled-runtime.md`) describes the
 audited graph restrictions, reinitialization requirements and fine-step coupled
 voltage/angle acceptance; complete controller-state parity remains open.
 
 HYG3 directly supplies its existing Java equations and nine state coordinates
 to the same participant interface. Both methods reuse prepared numerical
 buffers and commit gate-backlash and deadband histories only at accepted steps.
-The [HYG3 runtime contract](dynamic-models/hyg3-prepared-curves.md) describes
+The HYG3 runtime contract (Core `docs/dynamic-models/hyg3-prepared-curves.md`) describes
 the state order, diagnostic snapshots and both-method fine-step SMIB boundary
 gates. Full transient-state and production-step qualification remain open.
 
@@ -145,7 +145,7 @@ completion callbacks with binary32 addition; it does not change integration
 weights or the algorithm's nominal time. Existing participants that implement
 the one-argument completion method retain their duration-based behavior.
 Configure this option before initialization and record it when comparing
-trajectories. The [SVSMO3T2 qualification](dynamic-models/svsmo3t2-current-runtime.md)
+trajectories. The SVSMO3T2 qualification (Core `docs/dynamic-models/svsmo3t2-current-runtime.md`)
 reports both methods and clocks separately. Its initially inactive/reactivated
 bus devices require coherent network initialization; invalidate the prepared
 network initialization state before activating new model membership.
@@ -176,8 +176,8 @@ provided only by the imported-case wrapper. Their qualification and explicit
 profile settings still apply. Selecting this class alone does not enable the
 complete optimized benchmark profile or establish reference accuracy.
 
-See [controller preparation and runtime settings](benchmarks/modified-euler-controller-preparation-2026-10-25.md)
-and [bus-frequency selection](benchmarks/bus-frequency-selection-2026-10-25.md)
+See controller preparation and runtime settings (Core `docs/benchmarks/modified-euler-controller-preparation-2026-10-25.md`)
+and bus-frequency selection (Core `docs/benchmarks/bus-frequency-selection-2026-10-25.md`)
 for those specific policies.
 
 The [current-handoff comparison](benchmarks/texas2k-current-handoff-2026-10-25.md)
