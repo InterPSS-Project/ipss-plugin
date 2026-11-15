@@ -7,6 +7,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import org.interpss.core.dstab.reference.GensalNativeReference;
 import com.interpss.dstab.mach.model.GensaeMachine;
 import com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine;

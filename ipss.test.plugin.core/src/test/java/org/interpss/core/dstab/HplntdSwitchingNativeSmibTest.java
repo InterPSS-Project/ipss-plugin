@@ -11,6 +11,7 @@ import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.builder.*;
 import com.interpss.dstab.svc.*;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import com.interpss.dstab.*;
 import com.interpss.dstab.algo.*;
 import com.interpss.dstab.cache.StateMonitor;

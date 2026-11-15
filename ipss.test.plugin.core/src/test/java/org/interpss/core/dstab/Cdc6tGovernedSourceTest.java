@@ -141,7 +141,7 @@ public class Cdc6tGovernedSourceTest extends CorePluginTestSetup {
         // Inspect private commit markers only to distinguish a discarded trial
         // from incorrectly retained input history after a failed solve.
         for(String name:List.of("trialMechanicalBoundary","acceptedMechanicalBoundary")){
-            var field=org.interpss.dstab.algo.PsseStaggeredEulerSolver.class.getDeclaredField(name);field.setAccessible(true);
+            var field=com.interpss.dstab.algo.dynamic.StaggeredEulerSolverBase.class.getDeclaredField(name);field.setAccessible(true);
             assertFalse(field.getBoolean(solver),name);
         }
     }

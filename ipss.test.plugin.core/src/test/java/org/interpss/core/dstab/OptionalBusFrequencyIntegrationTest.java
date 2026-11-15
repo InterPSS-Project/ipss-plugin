@@ -7,6 +7,7 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.DStabObjectFactory;
@@ -27,7 +28,7 @@ class OptionalBusFrequencyIntegrationTest {
         network.setStaticLoadIncludedInYMatrix(false);network.setStaticLoadZPartInYMatrix(true);
         algorithm.setSimuStepSec(1./240);algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization());
-        var report=((DefaultDynamicSimulationSolver)algorithm.getSolver()).getBusFrequencyReport();
+        var report=((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)algorithm.getSolver()).getBusFrequencyReport();
         assertEquals(6717,report.activeBuses());assertEquals(704,report.measuredBuses(),report.reason());
     }
     private List<double[]> run(DefaultDynamicSimulationSolver.BusFrequencyMode mode) throws Exception {

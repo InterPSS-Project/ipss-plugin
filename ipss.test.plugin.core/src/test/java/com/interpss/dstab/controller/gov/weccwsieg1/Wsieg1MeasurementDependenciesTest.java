@@ -19,7 +19,7 @@ public class Wsieg1MeasurementDependenciesTest {
                 .stream().filter(line->line.contains("'ESST1A'")).findFirst().orElseThrow();
         Path dynamic=folder.resolve("dynamic.dyr");Files.writeString(dynamic,Files.readString(Wsieg1SharedSmibTest.CASE.resolve("wsieg1.dyr"))+"\n"+record+"\n");
         var actual=Wsieg1SharedSmibTest.simulate(Wsieg1SharedSmibTest.CASE.resolve("network.raw"),dynamic,false,"fault",.0005,.5,List.of());
-        var report=((DefaultDynamicSimulationSolver)actual.algorithm.getSolver()).getControllerPreparationReport();
+        var report=((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)actual.algorithm.getSolver()).getControllerPreparationReport();
         assertEquals(1,report.st1Controllers(),"The co-located exciter must actually use its audited numerical preparation");
         assertEquals(1,report.compiledControllers());
     }
@@ -32,12 +32,12 @@ public class Wsieg1MeasurementDependenciesTest {
         raw=raw.replace("0 / END OF BRANCH DATA",slack+","+passive+",'1',.01,.1,0,0,0,0,0,0,0,0,1,1,0,1,1.0\n0 / END OF BRANCH DATA");
         Path network=folder.resolve("network.raw");Files.writeString(network,raw);Path dynamic=Wsieg1SharedSmibTest.CASE.resolve(dual?"wsieg1-dual.dyr":"wsieg1.dyr");
         var all=Wsieg1SharedSmibTest.simulate(network,dynamic,staggered,"fault",.0005,.5,List.of(),
-                a->((DefaultDynamicSimulationSolver)a.getSolver()).setBusFrequencyMode(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL));
+                a->((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)a.getSolver()).setBusFrequencyMode(DefaultDynamicSimulationSolver.BusFrequencyMode.ALL));
         var required=Wsieg1SharedSmibTest.simulate(network,dynamic,staggered,"fault",.0005,.5,List.of());
-        var report=((DefaultDynamicSimulationSolver)required.algorithm.getSolver()).getBusFrequencyReport();
+        var report=((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)required.algorithm.getSolver()).getBusFrequencyReport();
         assertEquals(passive,report.activeBuses());assertEquals(passive-1,report.measuredBuses(),report.reason());
         assertNull(required.algorithm.getNetwork().getDStabBus("Bus"+passive).getBusFreqMeasureBlock());
-        assertEquals(passive,((DefaultDynamicSimulationSolver)all.algorithm.getSolver()).getBusFrequencyReport().measuredBuses());
+        assertEquals(passive,((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)all.algorithm.getSolver()).getBusFrequencyReport().measuredBuses());
         assertEquals(all.frames.size(),required.frames.size());
         for(int i=0;i<all.frames.size();i++) {
             assertEquals(all.frames.get(i).time(),required.frames.get(i).time(),0.);assertEquals(all.frames.get(i).kind(),required.frames.get(i).kind());
@@ -45,11 +45,11 @@ public class Wsieg1MeasurementDependenciesTest {
         }
         var observed=Wsieg1SharedSmibTest.simulate(network,dynamic,staggered,"flat",.0005,.01,List.of(),
                 a->a.getNetwork().getMachine("Bus1-mach1").getGovernor().eAdapters().add(new org.eclipse.emf.common.notify.impl.AdapterImpl()));
-        assertEquals(passive,((DefaultDynamicSimulationSolver)observed.algorithm.getSolver()).getBusFrequencyReport().measuredBuses(),"Controller observer retains all buses");
+        assertEquals(passive,((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)observed.algorithm.getSolver()).getBusFrequencyReport().measuredBuses(),"Controller observer retains all buses");
         var requested=Wsieg1SharedSmibTest.simulate(network,dynamic,staggered,"flat",.0005,.01,List.of(),a->{
             var monitor=new com.interpss.dstab.cache.StateMonitor();monitor.addBusStdMonitor(new String[]{"Bus"+passive});a.setSimuOutputHandler(monitor);
         });
-        assertEquals(passive,((DefaultDynamicSimulationSolver)requested.algorithm.getSolver()).getBusFrequencyReport().measuredBuses(),"Requested passive-bus frequency is measured");
+        assertEquals(passive,((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)requested.algorithm.getSolver()).getBusFrequencyReport().measuredBuses(),"Requested passive-bus frequency is measured");
         assertNotNull(requested.algorithm.getNetwork().getDStabBus("Bus"+passive).getBusFreqMeasureBlock());
     }
 }

@@ -6,6 +6,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.renewable.*;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.DStabGen;

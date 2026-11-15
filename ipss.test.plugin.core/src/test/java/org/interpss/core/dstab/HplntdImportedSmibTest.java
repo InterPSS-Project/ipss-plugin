@@ -7,6 +7,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.HplntdAggregationNativeReference;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import org.interpss.fadapter.psse.dyr.*;
 import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.renewable.*;

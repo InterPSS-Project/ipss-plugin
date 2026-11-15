@@ -288,7 +288,7 @@ public class RegcaNetworkIterationTest {
                 assertEquals(expected.getImaginary(),((Number)device.getStates(null).get("REGCA1_Q")).doubleValue(),1.e-13);
                 callbacks.incrementAndGet();
             };
-            org.interpss.dstab.algo.DefaultDynamicSimulationSolver solver=history?
+            var solver=history?
                 new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm){
                     @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
                         boolean ok=super.networkSolutionStep();if(ok&&eventBoundaryThisStep&&"INITIAL".equals(networkSolutionStage))check.run();return ok;

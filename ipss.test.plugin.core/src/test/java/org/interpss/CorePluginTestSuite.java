@@ -925,7 +925,6 @@ import org.junit.platform.suite.api.Suite;
 	Svsmo1t2PsseConformanceTest.class,
     Svsmo3t2CoupledSmibTest.class,
     Svsmo3t2StaggeredSmibTest.class,
-    org.interpss.dstab.algo.AcceptedProjectionHistoryContractTest.class,
     Svsmo3t2LimiterSmibTest.class,
     org.interpss.core.dstab.Svsmo3t2ReleaseStageDiscriminatorTest.class,
     org.interpss.core.dstab.Svsmo3t2DeadbandRelockTest.class,

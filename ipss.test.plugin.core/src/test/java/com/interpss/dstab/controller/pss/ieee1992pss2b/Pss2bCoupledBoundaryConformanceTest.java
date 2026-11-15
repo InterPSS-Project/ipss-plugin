@@ -101,7 +101,7 @@ public class Pss2bCoupledBoundaryConformanceTest {
         recorder.enabled = true;
         while (algorithm.getSimuTime() < end - step / 2.) assertTrue(algorithm.solveDEqnStep(true));
         recorder.frames.add(recorder.capture(algorithm.getSimuTime(), "FINAL"));
-        assertEquals(NETWORK_TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
+        assertEquals(NETWORK_TOLERANCE, ((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)algorithm.getSolver())
                 .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
         if (staggered) assertTrue(pss.getStaggeredEvaluationCount() > 1000, "Shared participant coverage");
         else assertTrue(pss.getCompiledStageEvaluationCount() > 1000);

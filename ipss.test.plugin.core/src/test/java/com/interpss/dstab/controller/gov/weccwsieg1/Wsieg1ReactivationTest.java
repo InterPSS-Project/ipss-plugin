@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.algo.MachineReactivationLifecycle;
+import com.interpss.dstab.algo.dynamic.MachineReactivationLifecycle;
 import org.interpss.fadapter.psse.PsseDStabSolver;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -85,7 +85,7 @@ public class Wsieg1ReactivationTest {
             }
         }
     }
-    interface Boundary {void run(Wsieg1SharedSmibTest.Recording r,PsseDStabSolver s,MachineReactivationLifecycle life,double t)throws DStabSimuException;}
+    interface Boundary {void run(Wsieg1SharedSmibTest.Recording r,com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase s,MachineReactivationLifecycle life,double t)throws DStabSimuException;}
     static Wsieg1SharedSmibTest.Recording simulate(Path input,boolean shared,String event,double h,Boundary boundary)throws Exception {
         return simulate(input,shared,event,h,boundary,new boolean[1]);
     }

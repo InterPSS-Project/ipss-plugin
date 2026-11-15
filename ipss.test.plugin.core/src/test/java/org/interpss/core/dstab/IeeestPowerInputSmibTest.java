@@ -13,6 +13,7 @@ import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import com.interpss.dstab.controller.pss.ieeest.SecondOrderLagBlock;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.StaticLoadModel;

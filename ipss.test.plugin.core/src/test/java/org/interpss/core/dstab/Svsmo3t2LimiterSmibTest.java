@@ -220,7 +220,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
             }
             assertTrue(algorithm.solveDEqnStep(true));
         }
-        assertEquals(TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
+        assertEquals(TOLERANCE, ((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)algorithm.getSolver())
                 .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
         var header = Arrays.asList(lines.getFirst().split(","));
         int[] columns = Arrays.stream(NAMES).mapToInt(header::indexOf).toArray();

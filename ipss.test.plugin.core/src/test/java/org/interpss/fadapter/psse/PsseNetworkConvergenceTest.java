@@ -72,7 +72,7 @@ public class PsseNetworkConvergenceTest {
         assertEquals(50,new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm).getMaxIterationTimes());
         solver.setMaxIterationTimes(37);
         assertEquals(37,solver.getMaxIterationTimes());
-        for(var bounded:new PsseDStabSolver[]{solver,new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm)}) {
+        for(var bounded:new com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase[]{solver,new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm)}) {
             for(int invalid:new int[]{0,-1,51,100,500})
                 assertThrows(IllegalArgumentException.class,()->bounded.setMaxIterationTimes(invalid));
             bounded.setMaxIterationTimes(50);

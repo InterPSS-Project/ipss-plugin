@@ -5,7 +5,7 @@ import java.util.Map;
 import com.google.gson.JsonObject;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl.VoltageConvergenceNorm;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.algo.PsseStaggeredEulerSolver.MachineMeasurementStage;
+import com.interpss.dstab.algo.dynamic.StaggeredEulerSolverBase.MachineMeasurementStage;
 
 /** Explicit numerical boundaries shared by accuracy and timing producers. */
 record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm norm,

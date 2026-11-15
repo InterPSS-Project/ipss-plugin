@@ -1,4 +1,4 @@
-package org.interpss.fadapter.psse;
+package com.interpss.dstab.algo.dynamic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dstab.DStabObjectFactory;
+import org.interpss.fadapter.psse.PsseDStabSolver;
 
 class PsseDStabSolverTest {
     @Test
@@ -33,11 +34,11 @@ class PsseDStabSolverTest {
         motor.setTv(.004); motor.setTf(.004); motor.setTth(.004);
         bus.addDynamicLoadModel(motor);
         if (!bus.getDynamicBusDeviceList().contains(motor)) bus.getDynamicBusDeviceList().add(motor);
-        PsseDStabSolver.configureIntegrationStepAwareModels(network, 1.0 / 240);
+        DynamicSimulationSolverBase.configureIntegrationStepAwareModels(network, 1.0 / 240);
         assertEquals(1, motor.preparations);
         assertEquals(0, motor.getEffectiveTv()); assertEquals(0, motor.getEffectiveTf()); assertEquals(0, motor.getEffectiveTth());
         assertEquals(.004, motor.getTv()); assertEquals(.004, motor.getTf()); assertEquals(.004, motor.getTth());
-        PsseDStabSolver.configureIntegrationStepAwareModels(network, .0005);
+        DynamicSimulationSolverBase.configureIntegrationStepAwareModels(network, .0005);
         assertEquals(2, motor.preparations);
         assertEquals(.004, motor.getEffectiveTv()); assertEquals(.004, motor.getEffectiveTf()); assertEquals(.004, motor.getEffectiveTth());
     }
@@ -45,9 +46,9 @@ class PsseDStabSolverTest {
     @Test
     void retainsSubThresholdInitialConditionCompensation() {
         Hashtable<String, Complex> compensation = new Hashtable<>();
-        PsseDStabSolver.retainNonzeroCompensation(compensation, "Bus1",
+        DynamicSimulationSolverBase.retainNonzeroCompensation(compensation, "Bus1",
                 new Complex(5.0e-11, -4.0e-11));
-        PsseDStabSolver.retainNonzeroCompensation(compensation, "Bus2", Complex.ZERO);
+        DynamicSimulationSolverBase.retainNonzeroCompensation(compensation, "Bus2", Complex.ZERO);
 
         assertEquals(new Complex(5.0e-11, -4.0e-11), compensation.get("Bus1"));
         assertTrue(!compensation.containsKey("Bus2"));
@@ -75,7 +76,7 @@ class PsseDStabSolverTest {
         data.setTpelec(0.004);
         var governor = builder.addGovGgov1("Bus1", "1", data);
 
-        PsseDStabSolver.configureIntegrationStepAwareModels(network, 0.01);
+        DynamicSimulationSolverBase.configureIntegrationStepAwareModels(network, 0.01);
         assertTrue(governor.initStates(network.getDStabBus("Bus1"), machine));
         assertEquals(0.0, governor.getEffectiveTpelec(), 1.0e-12);
         assertEquals(0.004, governor.getData().getTpelec(), 1.0e-12);
@@ -104,7 +105,7 @@ class PsseDStabSolverTest {
 				1.0, 1.0, 0.0, 0.0, 1.0,
 				0.0, 0.0, 0.0, 0.0, 0.1, -0.1);
 
-		PsseDStabSolver.configureIntegrationStepAwareModels(network, 0.01);
+		DynamicSimulationSolverBase.configureIntegrationStepAwareModels(network, 0.01);
 		assertTrue(stabilizer.initStates(network.getDStabBus("Bus1"), machine));
 		assertEquals(0.01, stabilizer.tw1, 1.0e-12);
 		assertEquals(0.004, stabilizer.getData().getTw1(), 1.0e-12);

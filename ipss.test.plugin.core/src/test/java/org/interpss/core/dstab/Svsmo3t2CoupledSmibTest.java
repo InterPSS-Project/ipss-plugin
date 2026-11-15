@@ -67,7 +67,7 @@ public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
         double[] initial = recorder.frame(0);
         while (algorithm.getSimuTime() < .8 - STEP / 2) assertTrue(algorithm.solveDEqnStep(true));
         recorder.frames.add(recorder.frame(algorithm.getSimuTime()));
-        assertEquals(NETWORK_TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
+        assertEquals(NETWORK_TOLERANCE, ((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)algorithm.getSolver())
                 .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
         var rows = reference();
         assertEquals(rows.stream().filter(r -> r[0] >= 0).count(), recorder.frames.size());

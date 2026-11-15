@@ -143,7 +143,7 @@ public class Wsieg1TimePreparationTest {
             var root=Wsieg1SharedSmibTest.CASE;var context=new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(),root.resolve("wsieg1.dyr").toString());
             var m=context.getDStabilityNet().getMachine("Bus1-mach1");var old=(Wsieg1Governor)m.getGovernor();double[] c=old.getConstants();for(int i:new int[]{9,12,15,18})c[i]=0.;
             m.getControllerList().remove(old);new Wsieg1Governor("invalid-allocation",c).setMachine(m);var algorithm=context.getDynSimuAlgorithm();algorithm.setSimuStepSec(H);
-            org.interpss.fadapter.psse.PsseDStabSolver solver=shared?new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm):new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm);
+            var solver=shared?new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm):new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm);
             assertThrows(IllegalArgumentException.class,solver::initialization);
             assertTrue(solver.getParameterValidationReport().issues().stream().anyMatch(i->i.parameter().equals("primary turbine fraction sum")&&i.severity()==Severity.ERROR));
         }

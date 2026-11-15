@@ -1,4 +1,4 @@
-package org.interpss.fadapter.psse;
+package com.interpss.dstab.algo.dynamic;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
@@ -8,6 +8,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.controller.pss.ieeest.*;
+import org.interpss.fadapter.psse.PsseDStabSolver;
 
 class BusFrequencySelectionTest {
     private com.interpss.dstab.algo.DynamicSimuAlgorithm fixture() throws Exception {

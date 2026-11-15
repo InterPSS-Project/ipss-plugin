@@ -8,6 +8,7 @@ import org.interpss.CorePluginTestSetup;
 import com.interpss.dstab.hvdc.model.*;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
+import com.interpss.dstab.algo.dynamic.*;
 import org.interpss.fadapter.psse.dyr.*;
 import org.interpss.dstab.algo.StaggeredEulerSolver;
 import org.junit.jupiter.api.Test;

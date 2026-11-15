@@ -95,7 +95,7 @@ public class Hyg3ParameterValidationTest {
             var context=new PSSEMultiFileLoader().loadDStab(root.resolve("network.raw").toString(),root.resolve("hyg3u1-1.dyr").toString());
             var d=governor(context.getDStabilityNet()).getData();d.setTd(0.);d.setK1(0.);d.setK2(-20.);d.setRgate(.05);
             var algorithm=context.getDynSimuAlgorithm();algorithm.setSimuStepSec(H);
-            org.interpss.fadapter.psse.PsseDStabSolver solver=staggered
+            var solver=staggered
                     ?new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm)
                     :new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm);
             assertThrows(IllegalArgumentException.class,solver::initialization);

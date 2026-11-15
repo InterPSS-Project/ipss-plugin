@@ -9,14 +9,14 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import com.interpss.dstab.common.DStabSimuException;
-import org.interpss.dstab.algo.MachineReactivationLifecycle;
+import com.interpss.dstab.algo.dynamic.MachineReactivationLifecycle;
 import org.interpss.fadapter.psse.PsseDStabSolver;
 import com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tGovernor;
 
 /** Atomic accepted-state controls, separate from strict independent trajectory gates. */
 public class Urgs3tReactivationLifecycleTest {
     @BeforeAll static void setup()throws Exception{Urgs3tReactivationReferenceTest.setup();}
-    private static void exercise(Urgs3tReferenceTest.Recording recording,PsseDStabSolver solver,
+    private static void exercise(Urgs3tReferenceTest.Recording recording,com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase solver,
             MachineReactivationLifecycle lifecycle,boolean[] reject,double time)throws Exception {
         var machine=recording.algorithm.getNetwork().getMachine("Bus1-mach1");
         var governor=(Urgs3tGovernor)machine.getGovernor();

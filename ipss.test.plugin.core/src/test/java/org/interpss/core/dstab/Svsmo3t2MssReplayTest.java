@@ -244,7 +244,7 @@ public class Svsmo3t2MssReplayTest extends CorePluginTestSetup {
                 assertTrue(max[4] < maximum[2], profile + " physical current maximum");
                 assertTrue(Math.sqrt(squares[4] / (lines.size() - 1)) < rms[2], profile + " physical current RMSE");
             }
-            double networkTolerance = ((org.interpss.dstab.algo.DefaultDynamicSimulationSolver) algo.getSolver())
+            double networkTolerance = ((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)algo.getSolver())
                     .getLastNetworkSolutionDiagnostics().voltageTolerance();
             assertEquals(NETWORK_TOLERANCE, networkTolerance, 0.);
             results.put(profile, Map.of("status", singlePrecisionTime && staggered ? "coupled-staggered-single-accepted"

@@ -6,6 +6,7 @@ import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.algo.*;
+import com.interpss.dstab.algo.dynamic.*;
 import com.interpss.dstab.svc.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;

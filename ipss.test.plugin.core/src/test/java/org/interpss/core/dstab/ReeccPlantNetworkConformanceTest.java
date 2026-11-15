@@ -6,6 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.renewable.*;
 import com.interpss.dstab.renewable.*;
 import org.interpss.dstab.algo.*;
+import com.interpss.dstab.algo.dynamic.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.*;
 import com.interpss.dstab.*;
@@ -30,7 +31,7 @@ public class ReeccPlantNetworkConformanceTest {
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         var edge=new HashMap<Integer,double[]>();var accepted=new ArrayList<double[]>();
         final Runnable[] capture={null};final long[] counts={0,0};
-        DefaultDynamicSimulationSolver solver=history?new StaggeredEulerSolver(algorithm){
+        var solver=history?new StaggeredEulerSolver(algorithm){
             @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
                 boolean ok=super.networkSolutionStep();counts[0]++;counts[1]+=getLastNetworkSolutionDiagnostics().iterations();assertTrue(ok);assertEquals(50,getLastNetworkSolutionDiagnostics().iterationLimit());assertTrue(getLastNetworkSolutionDiagnostics().iterations()<=50);assertTrue(getLastNetworkSolutionDiagnostics().maximumVoltageChange()<=1.e-4);
                 if(capture[0]!=null&&eventBoundaryThisStep&&"INITIAL".equals(networkSolutionStage))capture[0].run();return ok;

@@ -169,7 +169,7 @@ public class Hyg3SharedSmibTest {
         var governor = (PsseHyg3Governor) net.getMachine("Bus1-mach1").getGovernor();
         if (staggered) assertTrue(governor.getStaggeredEvaluationCount() > duration/step, "Actual shared-state dispatch");
         else assertEquals(0, governor.getStaggeredEvaluationCount());
-        assertEquals(TOLERANCE, ((DefaultDynamicSimulationSolver) algorithm.getSolver())
+        assertEquals(TOLERANCE, ((com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase)algorithm.getSolver())
                 .getLastNetworkSolutionDiagnostics().voltageTolerance(), 0.);
         return recording;
     }

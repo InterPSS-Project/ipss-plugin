@@ -146,7 +146,7 @@ class PsseStaggeredEulerSolverTest {
     }
 
     private static Object solverField(StaggeredEulerSolver solver,String name) throws Exception {
-        var field=PsseStaggeredEulerSolver.class.getDeclaredField(name);field.setAccessible(true);return field.get(solver);
+        var field=com.interpss.dstab.algo.dynamic.StaggeredEulerSolverBase.class.getDeclaredField(name);field.setAccessible(true);return field.get(solver);
     }
 
     @Test void roundRotorRetainsLastInjectionMeasurementsWhenSelected() throws Exception {
