@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.esac3a;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -49,7 +51,7 @@ public final class Esac3aExciter extends AnnotateExciter implements IntegrationS
         double va0=vfe0/supply;
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
         double regulatorInput0=va0/ka;
-        state[VE]=ve0;state[VSENSE]=machine.getDStabBus().getVoltageMag();state[VA]=va0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[VA]=va0;
         state[LEAD_LAG]=regulatorInput0;state[VN_LAG]=nonlinearFeedback(efd0);
         System.arraycopy(state,0,trial,0,state.length);active=state;
         reference=state[VSENSE]+regulatorInput0-stabilizerSignal(machine)-oelSignal();
@@ -98,7 +100,7 @@ public final class Esac3aExciter extends AnnotateExciter implements IntegrationS
 
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[LEAD_LAG]=lagDerivative(a.error,x[LEAD_LAG],tb);
         double vaRate=ta>EPS?(ka*a.regulatorInput-x[VA])/ta:0;
         if((x[VA]>=vamax-EPS&&vaRate>0)||(x[VA]<=vamin+EPS&&vaRate<0))vaRate=0;
@@ -109,7 +111,7 @@ public final class Esac3aExciter extends AnnotateExciter implements IntegrationS
     }
 
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double error=reference-sensed+stabilizerSignal(machine)+oelSignal();
         double leadLag=tb>EPS?(tc/tb)*error+(1-tc/tb)*x[LEAD_LAG]:error;
         double ifd=exciterIfd(machine),field=x[VE],efd=rectifierOutput(field,ifd);

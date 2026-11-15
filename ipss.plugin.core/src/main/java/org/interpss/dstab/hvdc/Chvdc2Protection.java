@@ -60,10 +60,10 @@ public final class Chvdc2Protection implements StaggeredEulerParticipant, Integr
         frame.ramPhase=IDLE;frame.failed=false;frame.hadFailureTransition=false;frame.acceptance=-1;frame.revision=0;
         initialized=true;pending=false;monitor.reset();
     }
-    /** Rectifier input is the measured/filtered AC voltage; inverter recovery uses terminal AC voltage. */
-    public void setInput(double measuredRectifierPu,double terminalInverterPu,double extinctionDegrees) {
-        ready();voltage(measuredRectifierPu);voltage(terminalInverterPu);finite(extinctionDegrees);
-        frame.rectifierVoltage=measuredRectifierPu;frame.inverterVoltage=terminalInverterPu;frame.gamma=extinctionDegrees;
+    /** Rectifier RAML and inverter commutation recovery use their filtered AC measurements. */
+    public void setInput(double measuredRectifierPu,double measuredInverterPu,double extinctionDegrees) {
+        ready();voltage(measuredRectifierPu);voltage(measuredInverterPu);finite(extinctionDegrees);
+        frame.rectifierVoltage=measuredRectifierPu;frame.inverterVoltage=measuredInverterPu;frame.gamma=extinctionDegrees;
     }
     /** Accept a converged boundary using a caller-owned monotonic sequence number.
      * Distinct events may share a timestamp, but a repeated sequence must have identical time/inputs.

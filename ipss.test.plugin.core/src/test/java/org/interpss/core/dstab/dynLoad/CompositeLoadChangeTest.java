@@ -47,6 +47,15 @@ public class CompositeLoadChangeTest {
         assertEquals(originalZ,feeder.getZ());model.setDStabBus(parent);
         assertTrue(model.canPrepareLoadChange("1",-.25));
         assertTrue(model.canPrepareLoadChange("1",-1));
+        var foreign=com.interpss.dstab.DStabObjectFactory.createDStabBranch(
+                model.getLoadBus().getId(),"Bus1",a.getNetwork());
+        foreign.setZ(new org.apache.commons.math3.complex.Complex(.01,.1));foreign.setStatus(true);
+        assertFalse(model.canPrepareLoadChange("1",-1),"Live foreign adjacency prevents disconnecting an internal bus");
+        foreign.setStatus(false);
+        assertTrue(model.canPrepareLoadChange("1",-1),"An inactive foreign branch does not block removal");
+        foreign.setStatus(true);
+        assertFalse(model.canPrepareLoadChange("1",-1),"Eligibility observes reactivation without a cached result");
+        foreign.setStatus(false);
         var preparedMatrix=a.getNetwork().getYMatrix();
         a.getNetwork().setYMatrix(null);
         try {

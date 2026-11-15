@@ -6,6 +6,33 @@ import org.junit.jupiter.api.Test;
 
 /** Prepared point arrays retain live writes, conventions and custom-provider dispatch. */
 public class Hyg3PreparedCurveTest {
+    @Test void nativeFullOpeningUsesUnityInsteadOfTheEnteredLastOrdinate() {
+        var model = governor();
+        var data = model.getData();
+        data.setGv(new double[]{.1, .3, .5, .7, .9, 1.});
+        data.setPgv(new double[]{.15, .32, .5, .64, .73, .8});
+        data.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR);
+        data.setPmax(1.);
+        assertEquals(.8, model.gateCurve(Math.nextDown(1.)), 1e-12);
+        assertEquals(1., model.gateCurve(1.), 0.);
+        data.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.HZ_HYSTERESIS);
+        assertEquals(.8, model.gateCurve(1.), 1e-12, "Typed curve retains the entered endpoint");
+    }
+
+    @Test void nativeFullOpeningUsesTheNormalizedScaleAndKeepsSubUnityInterpolation() {
+        var model = governor();
+        var data = model.getData();
+        data.setGv(new double[]{.1, .3, .5, .7, .9, 1.});
+        data.setPgv(new double[]{.15, .32, .5, .64, .73, .8});
+        data.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR);
+        data.setPmax(.95);
+        assertEquals(.765, model.gateCurve(.95), 1e-12, "A lower gate limit does not select full opening");
+        data.setPmax(1.25);
+        assertEquals(.85625, model.gateCurve(1.), 1e-12, "Physical gate one is interior on the scaled curve");
+        assertEquals(1., model.gateCurve(Math.nextDown(1.25)), 1e-12);
+        assertEquals(1.25, model.gateCurve(1.25), 0.);
+    }
+
     private static volatile double sink;
     private static PsseHyg3Governor governor() { return new PsseHyg3Governor("test", "HYG3", "governor"); }
 

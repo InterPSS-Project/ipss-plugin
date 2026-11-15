@@ -84,8 +84,8 @@ public class Plntbu1ModelTest {
 
         assertEquals(0.0, model.getReactiveIntegral(), 0.0,
                 "reactive integrator must freeze below Vfrz");
-        assertEquals(.0882475, model.getActiveOutput(), 1e-12,
-                "Fflag=0 must disable droop but retain active-power control");
+        assertEquals(0.0, model.getActiveOutput(), 0,
+                "Native command-step discriminators show Fflag=0 disables the whole active-power path");
         assertThrows(IllegalArgumentException.class, () -> data(0, 3, 1, .2, .1, .2, .1));
     }
 

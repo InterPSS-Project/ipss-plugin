@@ -139,4 +139,13 @@ public class DStabNetworkBuilderAc4cTest extends CorePluginTestSetup {
     private static void step(Ac4cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Ac4cExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcAc4c("Bus1", "1", data);
+        });
+    }
 }

@@ -19,13 +19,18 @@ public record Svsmo1t2Data(int remoteBusNumber,
         double mssBreakerTime, double largeDelay, double smallDelay,
         double capacitorDischargeTime, double vrefMin, double vrefMax) {
 
-    public record MssDevice(int enabled, String id) { }
+    public record MssDevice(int enabled, String id) {
+        public MssDevice {
+            id = id == null ? "" : id.strip();
+        }
+
+        /** The existing component name is retained for callers. A zero bus means an unused slot. */
+        public int busNumber() { return enabled; }
+    }
 
     public Svsmo1t2Data {
         mssDevices = List.copyOf(mssDevices);
-        if (remoteBusNumber == 0) {
-            throw new IllegalArgumentException("SVSMO1T2 remote bus must be nonzero");
-        }
+        // The native schema explicitly defines zero as local voltage control.
         if (mssDevices.size() != 8) {
             throw new IllegalArgumentException("SVSMO1T2 requires exactly eight MSS slots");
         }

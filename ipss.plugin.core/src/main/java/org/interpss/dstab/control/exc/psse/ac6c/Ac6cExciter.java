@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac6c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -56,12 +58,12 @@ public final class Ac6cExciter extends AnnotateExciter implements IntegrationSte
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
         efemax=Math.max(efemax,vfe0/vt0);efemin=Math.min(efemin,vfe0/vt0);
         double error0=va0/ka;
-        state[VE]=ve0;state[VSENSE]=vt0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);
         state[TA_BLOCK]=transferState(error0,va0,ka,tk,ta);
         state[VLL]=transferState(va0,va0,1,tc,tb);
         state[VF]=transferState(vh0,vf0,1,tj,th);
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=error0+vt0-stabilizerSignal(machine)-summationLimiterInput();
+        reference=error0+state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
         outputSignal=rectifierOutput(ve0,ifd0,machine);initialized=true;return true;
     }
 
@@ -89,7 +91,7 @@ public final class Ac6cExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[TA_BLOCK]=transferDerivative(a.error,x[TA_BLOCK],ka,tk,ta);
         dx[VLL]=transferDerivative(a.taOutput,x[VLL],1,tc,tb);
         dx[VF]=transferDerivative(a.vh,x[VF],1,tj,th);
@@ -98,7 +100,7 @@ public final class Ac6cExciter extends AnnotateExciter implements IntegrationSte
         dx[VE]=veRate;
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double error=reference+stabilizerSignal(machine)-sensed+summationLimiterInput();
         double taOutput=transferOutput(error,x[TA_BLOCK],ka,tk,ta);
         double va=clamp(transferOutput(taOutput,x[VLL],1,tc,tb),vamin,vamax);

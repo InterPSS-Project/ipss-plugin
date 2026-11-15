@@ -199,7 +199,7 @@ public final class MachineReactivationLifecycle {
     }
     public void finishReactivation(Object machine,boolean accepted) {
         for(var e:entries)if(e.machine==machine) {
-            if(accepted) {e.governor.publishHostReactivation();e.machine.setPm(e.machine.getGovernor().getOutput(e.machine));e.connected=true;e.reactivationTime=lastSampleTime;}
+            if(accepted) {e.governor.publishHostReactivation();e.machine.publishGovernorMechanicalPower(e.machine.getGovernor().getOutput(e.machine));e.connected=true;e.reactivationTime=lastSampleTime;}
             else {e.gen.setStatus(false);e.machine.setStatus(false);e.bus.restoreSequenceEquivalentState(e.savedSequenceCache);}
             return;
         }

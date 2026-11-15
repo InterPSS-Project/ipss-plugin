@@ -98,6 +98,26 @@ public class PsseEsst1aExciterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void absentInputUelDoesNotClampNegativeError() throws Exception {
+        ExciterFixture fixture = createLimiterFixture(2, 2, 0.0);
+        IEEE1981ST1Exciter exciter = fixture.exciter();
+        exciter.setRefPoint(exciter.getRefPoint() - fixture.machine().getEfd() - 0.25);
+        step(fixture, 0.005);
+        assertEquals(-0.25, exciter.getUelGate1Output(), TOL);
+        assertEquals(-0.25, exciter.getOutput(fixture.machine()), TOL);
+
+        exciter.setVuel(0.0);
+        step(fixture, 0.005);
+        assertEquals(0.0, exciter.getUelGate1Output(), TOL);
+        assertEquals(0.0, exciter.getOutput(fixture.machine()), TOL);
+
+        exciter.clearVuel();
+        step(fixture, 0.005);
+        assertEquals(-0.25, exciter.getUelGate1Output(), TOL);
+        assertEquals(-0.25, exciter.getOutput(fixture.machine()), TOL);
+    }
+
+    @Test
     void overExcitationLimiterIsTheFinalLowValueGate() throws Exception {
         ExciterFixture fixture = createLimiterFixture(1, 1, 0.0);
         double ceiling = fixture.machine().getEfd() - 0.15;

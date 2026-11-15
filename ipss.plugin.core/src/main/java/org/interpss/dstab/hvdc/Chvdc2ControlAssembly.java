@@ -67,7 +67,10 @@ public final class Chvdc2ControlAssembly implements StaggeredEulerParticipant, I
     }
     private void bindProtection() {
         order.readPublishedStates(orderValues,0);
-        protection.setInput(orderValues[6],inputs[5],inputs[8]);
+        // Native commutation recovery observes the inverter AC measurement
+        // after T_MEAS filtering. A fast terminal-voltage rebound can cross
+        // V_AC_UCF before the measured voltage permits release.
+        protection.setInput(orderValues[6], orderValues[7], inputs[8]);
     }
     /** Commit a converged boundary. Distinct event sides require distinct sequence numbers. */
     public void acceptBoundary(double time,long sequence){ready();exclusive();accept(time,sequence,true);}

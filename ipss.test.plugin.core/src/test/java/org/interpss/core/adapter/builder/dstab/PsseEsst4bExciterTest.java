@@ -8,9 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -260,6 +262,95 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
         assertEquals(low.getEffectiveVrmin(), low.getVoltageRegulatorOutput(), TOL);
         assertEquals(highState, high.getVoltageRegulatorIntegrator(), TOL);
         assertEquals(lowState, low.getVoltageRegulatorIntegrator(), TOL);
+    }
+
+    @Test
+    void observesBypassedRegulatorAtNewVoltageWithFrozenState() throws Exception {
+        IEEE2005ST4BExciterData data = texasData();
+        data.setTa(0.0);
+        data.setKc(0.0);
+        IEEE2005ST4BExciter exciter = initializedExciter(data, 0.0);
+        Machine machine = exciter.getMachine();
+        Complex terminal = machine.getDStabBus().getVoltage();
+        double initialField = exciter.getOutput(machine);
+        double initialOuterIntegral = exciter.getVoltageRegulatorIntegrator();
+        double initialInnerIntegral = exciter.getFieldVoltageRegulatorIntegrator();
+        double initialVoltage = terminal.abs() / machine.getVMultiFactor();
+        Complex eventTerminal = terminal.multiply(0.99);
+        double eventVoltage = eventTerminal.abs() / machine.getVMultiFactor();
+        double heldStabilizer = 0.002;
+        double expected = data.getKp() * eventTerminal.abs()
+                * (initialField / exciter.getBridgeVoltage()
+                        + data.getKpr() * (initialVoltage - eventVoltage + heldStabilizer));
+
+        assertEquals(expected, exciter.observeFieldVoltage(
+                eventTerminal, machine.getIxy(), eventVoltage, 0.0, heldStabilizer), TOL);
+        assertEquals(initialOuterIntegral, exciter.getVoltageRegulatorIntegrator(), 0.0);
+        assertEquals(initialInnerIntegral, exciter.getFieldVoltageRegulatorIntegrator(), 0.0);
+        assertEquals(initialField, machine.getEfd(), TOL);
+        assertEquals(initialField, exciter.getOutput(machine), TOL);
+    }
+
+    @Test
+    void switchingObservationHoldsFieldFeedbackWithDynamicAmplifier() throws Exception {
+        IEEE2005ST4BExciterData data = texasData();
+        data.setKg(1.0);
+        data.setKpm(0.185);
+        data.setKc(0.0);
+        IEEE2005ST4BExciter exciter = initializedExciter(data, 0.0);
+        Machine machine = exciter.getMachine();
+        Complex terminal = machine.getDStabBus().getVoltage();
+        Complex eventTerminal = terminal.multiply(0.75);
+        Complex current = machine.getIxy();
+        double leftField = exciter.getOutput(machine);
+        double machineField = machine.getEfd();
+        double innerState = exciter.getFieldVoltageRegulatorIntegrator();
+        double outerState = exciter.getVoltageRegulatorIntegrator();
+        double voltage = eventTerminal.abs() / machine.getVMultiFactor();
+
+        // With frozen amplifier and feedback, only the potential-fed bridge changes.
+        double observed = exciter.observeEventFieldVoltage(eventTerminal, current, voltage, 0.0, 0.0, leftField);
+        assertEquals(0.75 * leftField, observed, TOL);
+        double implicit = exciter.observeFieldVoltage(eventTerminal, current, voltage, 0.0, 0.0);
+        assertTrue(Math.abs(observed - implicit) > 1e-3);
+        assertEquals(innerState, exciter.getFieldVoltageRegulatorIntegrator(), 0.0);
+        assertEquals(outerState, exciter.getVoltageRegulatorIntegrator(), 0.0);
+        assertEquals(machineField, machine.getEfd(), 0.0);
+        assertEquals(leftField, exciter.getOutput(machine), TOL);
+    }
+
+    @Test
+    void bridgeUsesMachineBaseCurrentAtInitializationAndSolvedBoundary() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        var network = builder.getDStabNetwork();
+        Machine machine = network.getMachine("Bus1-mach1");
+        new AclfNetworkBuilder(network).addContributeLoad("Bus1", "L", true,
+                new Complex(0.6, 0.2), null, null, null, false);
+        assertTrue(com.interpss.core.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network).loadflow());
+        machine.getParentGen().setMvaBase(240.0);
+        machine.setRating(240.0, org.interpss.numeric.datatype.Unit.UnitType.mVA, network.getBaseKva());
+        assertTrue(machine.initStates(machine.getDStabBus()));
+
+        IEEE2005ST4BExciterData data = texasData();
+        data.setKc(0.0);
+        data.setKi(4.0);
+        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", data);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+        Complex voltage = machine.getDStabBus().getVoltage();
+        Complex systemCurrent = machine.getIxy();
+        assertTrue(systemCurrent.abs() > 0.1);
+        assertEquals(2.4, machine.getIMultiFactor(), TOL);
+        Complex potentialSupply = voltage.multiply(data.getKp());
+        Complex currentSupply = Complex.I.multiply(systemCurrent).multiply(data.getKi() / 2.4);
+        double initialBridge = potentialSupply.add(currentSupply).abs();
+        assertEquals(initialBridge, exciter.getBridgeVoltage(), TOL);
+        assertEquals(machine.getEfd(), exciter.getOutput(machine), TOL);
+
+        double eventBridge = potentialSupply.add(currentSupply.multiply(1.5)).abs();
+        double expectedField = machine.getEfd() * eventBridge / initialBridge;
+        assertEquals(expectedField, exciter.observeFieldVoltage(
+                voltage, systemCurrent.multiply(1.5), voltage.abs(), 0.0, 0.0), TOL);
     }
 
     private static IEEE2005ST4BExciter initializedExciter(double vuel) throws Exception {

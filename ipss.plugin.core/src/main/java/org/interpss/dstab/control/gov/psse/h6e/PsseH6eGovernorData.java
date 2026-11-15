@@ -5,6 +5,7 @@ import org.interpss.dstab.control.base.BaseControllerData;
 /** Data for the WECC H6E / PSS/E H6EU1 Kaplan hydro governor. */
 public class PsseH6eGovernorData extends BaseControllerData {
     private int fd = 1;
+    private boolean nativeH6e1Derivative;
     private double re = 0.05;
     private double rg = 0.05;
     private double tpe = 0.5;
@@ -48,6 +49,10 @@ public class PsseH6eGovernorData extends BaseControllerData {
             bgv[i] = 1.0;
         }
     }
+
+    /** Native PSS/E H6E1 adds the filtered speed derivative to the gate command. */
+    public boolean isNativeH6e1Derivative() { return nativeH6e1Derivative; }
+    public void setNativeH6e1Derivative(boolean value) { nativeH6e1Derivative = value; }
 
     public int getFd() { return fd; }
     public void setFd(int value) { fd = value; }

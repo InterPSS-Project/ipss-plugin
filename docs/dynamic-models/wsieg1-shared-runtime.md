@@ -65,6 +65,30 @@ The reference's allocated `VAR2` remains unused in these captures; its complete
 raw values are retained separately from the semantic speed-deadband mode. The
 test does not invent a physical history to populate that slot.
 
+## Intentional speed deadband
+
+The accepted speed deviation activates the deadband outside `±DB1`.
+A positive or negative branch stays active until the signed deviation
+returns to its release threshold. Its output is the signed deviation
+minus the corresponding signed offset.
+
+| Entered parameters | Release magnitude | Output offset magnitude |
+| --- | ---: | ---: |
+| DB1 = 0 | 0 | 0 |
+| DB1 > 0, ERR = 0 | DB1 | DB1 |
+| 0 < ERR < DB1 | ERR | ERR |
+| ERR = DB1 > 0 | 0 | 0 |
+| ERR > DB1 > 0 | DB1 | ERR |
+
+The zero-width setting passes speed deviation directly. With a nonzero
+width and zero ERR, the output is continuous at the activation threshold.
+With ERR equal to the width, the output passes the full deviation on the
+active branch and releases when speed crosses nominal. An ERR above the
+width can reverse the signed output just above activation. Independent
+reference-simulator deadband-output recordings exercise all five profiles.
+Both integration methods use the same prepared thresholds and commit
+branch history only at accepted steps.
+
 ## Independent shaft-trip behavior
 
 Fresh synthetic runs include a reference increase before either shaft trips.
@@ -278,6 +302,16 @@ check alone does not establish machine/network equilibrium. The immutable
 `getInitialValveLimitMismatch()` diagnostic reports initial valve reference
 minus projected position, refreshes on reinitialization and is unavailable after
 failed initialization. Existing numerical state names remain unchanged.
+
+A successful initialization emits a WARN when the valve projection residual
+exceeds 1e-9 pu or the effective lower bound exceeds the upper bound. The warning
+identifies the governor and machine and reports required/projected valve
+positions, entered/effective bounds and the signed residual in the governor
+coordinate. It preserves the entered limits and startup dynamics, and is emitted
+once per initialization rather than during integration. Exact-boundary starts,
+valid Iblock-derived bounds and roundoff-only residuals are quiet. The focused
+warning, initial-limit, shared-state and shaft-initialization regression run
+passes all 30 tests.
 
 Independent cold pairs exercise nonlinear upper/lower clipping, each `Iblock`
 selection, conflicting effective limits and full turbine bypass at fine and

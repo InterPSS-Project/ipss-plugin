@@ -3,6 +3,8 @@ package org.interpss.dstab.control.gov.wecc.wsieg1;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
 import org.interpss.dstab.control.util.IntegrationStateMonitor;
 import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
@@ -16,6 +18,8 @@ import com.interpss.dstab.mach.Machine;
 /** Extended WECC steam governor: two deadbands, valve curve and four turbine stages. */
 public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess,
         org.interpss.dstab.control.util.IntegrationStepAware, org.interpss.dstab.control.util.DisconnectedStateParticipant {
+    private static final Logger log=LoggerFactory.getLogger(Wsieg1Governor.class);
+    private static final double INITIAL_LIMIT_WARNING_TOLERANCE=1e-9;
     private static final String[] STATE_NAMES={"Speed lag","Valve","Turbine 1","Turbine 2","Turbine 3","Turbine 4"};
     /** Constant order after the secondary bus and machine identifier. */
     public static final java.util.List<String> CONSTANT_NAMES=java.util.List.of(
@@ -23,6 +27,7 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
             "T6","K5","K6","T7","K7","K8","Db1","Err","Db2","Gv1","Pgv1","Gv2","Pgv2",
             "Gv3","Pgv3","Gv4","Pgv4","Gv5","Pgv5","Iblock");
     private final double[] c;
+    private final double speedDeadbandRelease, speedDeadbandOffset;
     private final double[] x = new double[6], old = new double[6], d0 = new double[6], d1 = new double[6], trial = new double[6];
     private final double[] referenceLeftRates = new double[6];
     private final double[] curveX = new double[5], curveY = new double[5];
@@ -103,20 +108,37 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
         c = constants.clone();
         for (double v : c) if (!Double.isFinite(v)) throw new IllegalArgumentException("WSIEG1 constants must be finite");
         if (c[1]<0 || c[2]<0 || (c[1]==0 && c[2]!=0) || c[3]<=0 || c[4]<0 || c[5]>0
-                || (c[6]<c[7] && !((c[33]==2||c[33]==3)&&c[6]==0)) || c[20]<0 || c[21]<0 || c[21]>c[20] || c[22]<0
+                || (c[6]<c[7] && !((c[33]==2||c[33]==3)&&c[6]==0)) || c[20]<0 || c[21]<0 || c[22]<0
                 || c[33]!=(int)c[33] || c[33]<0 || c[33]>3)
             throw new IllegalArgumentException("Invalid WSIEG1 time, rate, deadband or limit settings");
+
+        // DB1 sets activation. The reference simulator uses a continuous
+        // dead zone when ERR is zero and a zero-release bowtie when ERR
+        // equals DB1. Intermediate ERR values set both release and offset.
+        // Above DB1, ERR still offsets output but release occurs at DB1.
+        double width = c[20];
+        double hysteresis = c[21];
+        if (width == 0.0 || hysteresis == width) {
+            speedDeadbandRelease = 0.0;
+            speedDeadbandOffset = 0.0;
+        } else if (hysteresis == 0.0) {
+            speedDeadbandRelease = width;
+            speedDeadbandOffset = width;
+        } else {
+            speedDeadbandRelease = Math.min(width, hysteresis);
+            speedDeadbandOffset = hysteresis;
+        }
         for (int i : new int[]{8,11,14,17}) if(c[i]<0) throw new IllegalArgumentException("Negative turbine time constant");
-        boolean unusedCurveSlot=false;
         for (int i=0;i<5;i++) {
             double a=c[23+2*i], b=c[24+2*i];
-            if (points>0 && (a==0 && b==0 || a==curveX[points-1] && b==curveY[points-1])) {
-                unusedCurveSlot=true; // Unused capacity may only follow the final entered point.
-                continue;
-            }
-            if(unusedCurveSlot)throw new IllegalArgumentException("WSIEG1 unused valve-curve slots must be trailing");
-            if (points>0 && (a<=curveX[points-1] || b<curveY[points-1]))
-                throw new IllegalArgumentException("WSIEG1 valve curve must be increasing");
+            // Source tables have unused zero slots between entered points and
+            // repeated coordinates. Preserve vertical segments, remove only
+            // empty capacity and identical consecutive pairs.
+            if (points>0 && (a==0 && b==0 || a==curveX[points-1] && b==curveY[points-1])) continue;
+            // Lookup follows the entered segment order, including descending
+            // segments. Neither a turbine characteristic nor its inverse is a
+            // pair of ordered control limits. Never sort or fit the source.
+
             curveX[points]=a;curveY[points++]=b;
         }
         if (points<2) { points=2;curveX[0]=curveY[0]=0;curveX[1]=curveY[1]=1; }
@@ -173,6 +195,17 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
                 if(!finishSecondaryInitialization()){initialized=false;return false;}
             }
         }
+        // Initialization can succeed with a clipped valve and moving turbine
+        // states. Make that non-equilibrium start visible once per successful
+        // initialization, without expanding entered bounds or altering rates.
+        // Check effective Iblock bounds as well: they can conflict even when
+        // projection leaves the required valve unchanged. Ignore roundoff only.
+        if(Math.abs(initialValveLimitMismatch)>INITIAL_LIMIT_WARNING_TOLERANCE || lower>upper)
+            log.warn("WSIEG1 initialization limit violation: governor={}, machine={}, "
+                    + "requiredValve={} pu, enteredLimits=[{}, {}] pu, effectiveLimits=[{}, {}] pu, "
+                    + "initializedValve={} pu, valveResidual={} pu; "
+                    + "valve values use the governor coordinate; preserving limits and startup dynamics",
+                    getId(),machine.getId(),gate,c[7],c[6],lower,upper,x[1],initialValveLimitMismatch);
         return true;
     }
     private boolean finishSecondaryInitialization() {
@@ -308,13 +341,13 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     }
     private int deadbandMode(double u) {
         if(mode==0) return u>c[20]?1:u< -c[20]?-1:0;
-        if(mode>0 && u<=c[21]) return u< -c[20]?-1:0;
-        if(mode<0 && u>= -c[21]) return u>c[20]?1:0;
+        if(mode>0 && u<=speedDeadbandRelease) return u< -c[20]?-1:0;
+        if(mode<0 && u>= -speedDeadbandRelease) return u>c[20]?1:0;
         return mode;
     }
     private double speedInput(double u) {
         int m=deadbandMode(u);
-        return m>0?u-c[21]:m<0?u+c[21]:0;
+        return m>0?u-speedDeadbandOffset:m<0?u+speedDeadbandOffset:0;
     }
     private double backlash(double u) { return clamp(gateMemory,u-c[22],u+c[22]); }
     private void derivatives(double[] s,double[] d,double speed) {
@@ -391,6 +424,15 @@ public final class Wsieg1Governor extends AbstractGovernor implements ICMLStateP
     public double getBacklashInputHistory() { return backlashInputMemory; }
     public double getValvePosition() { return x[1]; }
     public double valvePower(double gate) { return interpolate(gate,curveX,curveY); }
+    /** Apply an explicit initial travel cap after numerical initialization. Only the
+     * effective upper bound changes: entered constants, states, reference, output,
+     * predictor/corrector memory and any delay history remain untouched. The caller
+     * owns the pre-integration lifecycle and source-located policy report. */
+    public void applyInitialUpperTravelLimit(double value) {
+        if (!(initialized && !predicted)) throw new IllegalStateException("Apply travel policy after initialization at an idle boundary");
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Travel cap must be finite");
+        upper = value;
+    }
     public double getEffectiveMinimum() { return lower; }
     public double getEffectiveMaximum() { return upper; }
     public double[] getConstants() { return c.clone(); }

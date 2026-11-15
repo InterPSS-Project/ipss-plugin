@@ -23,8 +23,11 @@ public record Wt1g1Data(
         if (!(x > xp && xp > xl && xl >= 0.0)) {
             throw new IllegalArgumentException("WT1G1 reactances must satisfy X > X' > Xl >= 0");
         }
-        if (tpp > EPS && xpp > EPS && !(xp > xpp && xpp > xl)) {
-            throw new IllegalArgumentException("two-cage WT1G1 must satisfy X' > X'' > Xl");
+        // X'' == X' is the zero-admittance second-cage boundary. The runtime's
+        // twoCage() already selects the finite single-cage circuit there; keep
+        // entered T'' and X'' as the reference simulator does at startup.
+        if (tpp > EPS && xpp > EPS && !(xp >= xpp && xpp > xl)) {
+            throw new IllegalArgumentException("WT1G1 must satisfy X' >= X'' > Xl when T'' > 0");
         }
         if (e1 < 0.0 || se1 < 0.0 || se2 < 0.0 || (se1 > 0.0 && e2 <= e1)) {
             throw new IllegalArgumentException("invalid WT1G1 saturation points");

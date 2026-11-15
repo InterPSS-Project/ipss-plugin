@@ -52,6 +52,28 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void sourceResistanceAndInitialLossAreIndependentOfSystemMvaBase() throws Exception {
+		for (double systemMva : new double[] {100, 250}) {
+			for (double ratedKv : new double[] {16.5, 15}) {
+				var builder = DStabBuilderTestFixture.createBuilder();
+				var net = builder.getDStabNetwork(); net.setBaseKva(systemMva * 1000);
+				var bus = net.getDStabBus("Bus1");
+				bus.setVoltage(new org.apache.commons.math3.complex.Complex(1.07, 0));
+				var gen = bus.getContributeGen("1");gen.setMvaBase(700);
+				gen.setGen(new org.apache.commons.math3.complex.Complex(440 / systemMva, 130 / systemMva));
+				gen.setSourceZ(new org.apache.commons.math3.complex.Complex(.0047, .21));
+				var machine = builder.addGenrou("Bus1", "1", 700, ratedKv,
+						8, .03, .4, .05, 5, 0, 1.8, 1.7, .3, .55, .25, .15, 0, 0);
+				assertEquals(.0047 * Math.pow(16.5 / ratedKv, 2), machine.getRa(), 1e-12);
+				assertTrue(machine.initStates(bus));
+				double p = 440.0 / 700, q = 130.0 / 700;
+				double expectedMechanicalPower = p + .0047 * (p*p + q*q) / (1.07*1.07);
+				assertEquals(expectedMechanicalPower, machine.getPm(), 1e-8);
+			}
+		}
+	}
+
+	@Test
 	public void addGenrou_setsRoundRotorFields() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
 		RoundRotorMachine mach = builder.addGenrou("Bus1", "1",
@@ -220,8 +242,9 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(0.23, mach.getXq11(), TOL);
 		assertEquals(0.16, mach.getXl(), TOL);
 		assertEquals(0.22, mach.getGentpj1Data().kis(), TOL);
-		assertEquals(2, mach.getGenqecData().satFunc());
-		assertEquals(0.0078125, mach.getRa(), TOL);
+		// Type-J native data uses scaled quadratic saturation.
+		assertEquals(1, mach.getGenqecData().satFunc());
+        assertEquals(0.00625, mach.getRa(), TOL);
 		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
 		assertTrue(parser.getLastImportReport().isStrictlyComplete());
 	}
@@ -254,7 +277,7 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(1.56, mach.getXq(), TOL);
 		assertEquals(0.34, mach.getXd1(), TOL);
 		assertEquals(0.34, mach.getXl(), TOL);
-		assertEquals(0.00576, mach.getRa(), TOL);
+        assertEquals(0.0048, mach.getRa(), TOL);
 		assertEquals(0.07, mach.getSe100(), TOL);
 		assertEquals(0.29, mach.getSe120(), TOL);
 		assertEquals(0.18, mach.getGentraData().accelerationFactor(), TOL);
@@ -295,7 +318,7 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
 				.getContributeGen("1");
 		gen.setMvaBase(125.0);
-		// RAW ZSORCE is on system base here: 0.012 machine-pu Ra * 100/125.
+		// RAW ZSORCE remains on generator MBASE, independently of system base.
 		gen.setSourceZ(new org.apache.commons.math3.complex.Complex(0.0096, 0.20));
 		Path dyr = tempDir.resolve("genrou.dyr");
 		Files.writeString(dyr, "1 'GENROE' '1' 8.0 0.03 0.4 0.05 5.0 3.0 "
@@ -321,7 +344,7 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(0.25, mach.getXd11(), TOL);
 		assertEquals(0.25, mach.getXq11(), TOL);
 		assertEquals(0.15, mach.getXl(), TOL);
-		assertEquals(0.012, mach.getRa(), TOL);
+        assertEquals(0.0096, mach.getRa(), TOL);
 		assertEquals(125.0, mach.getRating(UnitType.mVA,
 				builder.getDStabNetwork().getBaseKva()), TOL);
 		assertEquals(10.0, mach.getSe100(), TOL);

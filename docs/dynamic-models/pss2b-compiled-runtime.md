@@ -94,6 +94,23 @@ transactional invalid trials and reinitialization guards. Its warmed shared
 read/evaluate/apply/output loop measures zero allocated bytes across 100,000
 groups. This is a component allocation result, not a full-simulation speedup.
 
+## Local integration in the modified-Euler network solver
+
+The optional dynamic run setting `genrouPss2bLocalStaggeredEnabled` selects
+local rate-history integration for initialized standard GENROU PSS2B
+controllers with sampled speed on input 1 and terminal active power on input
+2. The speed transducer must be bypassed and the power transducer must have
+a positive time constant. The default run setting keeps ordinary modified
+Euler integration. This option applies by model and signal configuration.
+
+The network solver owns each physical interval. Its left endpoint supplies the
+stabilizer's derivative, and the predictor publishes the advanced state for
+the coupled solve. The corrector refreshes feedthrough and arms accepted
+input-path publication. After an event, the next derivative blends the held
+pre-event history with the new input. A large step-size increase starts
+without extrapolating from a short fragment. A failed physical interval
+restores the controller's differential and accepted input-path state.
+
 ## Evidence and remaining work
 
 `Pss2bCompiledStageTest` checks bitwise generic/typed block states, derivatives,

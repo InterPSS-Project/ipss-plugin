@@ -49,9 +49,14 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     private double acceptedCurrent;
     private double publishedCurrent, trialPhysicalCurrent;
     private boolean physicalTrialOpen, physicalTrialPublished, automaticPhysicalTrial;
-    private final double[] physicalTrialCoordinates, physicalTrialHistory;
+    private double[] physicalTrialCoordinates, physicalTrialHistory;
     private int physicalTrialFlags;
-    private final IntegrationStateMonitor physicalTrialMonitor;
+    private IntegrationStateMonitor physicalTrialMonitor;
+    private boolean sampledAlgebraicFiring;
+    private boolean localSampledFiring, localSampledAdvanced, localEventRatesPending;
+    private boolean localRateHistoryValid;
+    private double localNominalInterval;
+    private double[] localPreviousRates, localEventLeftRates;
 
     private double preparedVrefMin, preparedVrefMax;
     private double shortTimer, unblockTimer, overvoltageTimer, deadbandTimer;
@@ -82,8 +87,43 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         outputStates.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
     }
 
+    /**
+     * Select the sampled firing path for the staggered solver. At its nominal
+     * interval a firing lag of at most two steps is represented by an algebraic
+     * command and one-interval current publication. Keep the entered lag in the
+     * model data so a finer step or a different integration path can restore it.
+     */
+    public void configureFiringIntegration(double nominalStepSec, boolean staggered) {
+        configureFiringIntegration(nominalStepSec, staggered, false);
+    }
+
+    /** Prepare the sampled firing boundary before initializing the device states. */
+    public void configureFiringIntegration(double nominalStepSec, boolean staggered, boolean localSampling) {
+        if (!Double.isFinite(nominalStepSec) || nominalStepSec <= 0)
+            throw new IllegalArgumentException("A finite positive STATCOM integration step is required");
+        localNominalInterval = nominalStepSec;
+        // A positive short lag is sampled by the native controller. In the ordinary
+        // solver only this profile uses the local recurrence. Zero lag already has
+        // its own algebraic publication path and longer lags are differential.
+        localSampledFiring = localSampling && !staggered
+                && data.firingTime() > 0 && data.firingTime() <= 2 * nominalStepSec;
+        sampledAlgebraicFiring = localSampledFiring || (staggered && data.firingTime() <= 2 * nominalStepSec);
+        if (localSampledFiring && localPreviousRates == null) {
+            localPreviousRates = new double[x.length];
+            localEventLeftRates = new double[x.length];
+        }
+        if (requiresPhysicalStepTrial() && physicalTrialCoordinates == null) {
+            physicalTrialCoordinates = new double[30];
+            physicalTrialHistory = new double[9];
+            physicalTrialMonitor = new IntegrationStateMonitor(NAMES);
+        }
+    }
+
     @Override public boolean initStates(BaseDStabBus<?, ?> bus) {
         initialized = false;
+        localSampledAdvanced = localEventRatesPending = false;
+        localRateHistoryValid = false;
+        if (localPreviousRates != null) Arrays.fill(localPreviousRates, 0);
         if (bus != getDStabBus() || remoteBus == null || !svc.isActive()
                 || !(bus.getVoltageMag() > 0) || !(bus.getNetwork().getBaseMva() > 0)) return false;
         Arrays.fill(x, 0);
@@ -161,7 +201,9 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         integrationTime = endpointTimeSec;
     }
 
-    @Override public boolean requiresPhysicalStepTrial(){return data.firingTime()==0;}
+    @Override public boolean requiresPhysicalStepTrial() {
+        return data.firingTime() == 0 || sampledAlgebraicFiring;
+    }
     @Override public void beginPhysicalStepTrial(double time,double dt) {
         if(!requiresPhysicalStepTrial())return;
         if(!initialized||predictorPending||physicalTrialOpen||!Double.isFinite(time)||!Double.isFinite(dt)||dt<=0)
@@ -179,6 +221,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         physicalTrialFlags=(predictorPending?1:0)|(blocked?2:0)|(tripped?4:0)|(thermalLimited?8:0)
                 |(deadbandLocked?16:0)|(shortRatingExhausted?32:0)
                 |(networkDetached?128:0)|(overvoltageRecovery?256:0);
+        localSampledAdvanced = false;
         monitor.copyObservationTo(physicalTrialMonitor);
         trialPhysicalCurrent=x[2];physicalTrialOpen=true;physicalTrialPublished=false;
     }
@@ -193,6 +236,11 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     @Override public void acceptPhysicalStepTrial(){
         validatePhysicalStepAcceptance();
         if(!physicalTrialOpen)return;
+        if (localSampledAdvanced) {
+            System.arraycopy(firstRate, 0, localPreviousRates, 0, x.length);
+            localRateHistoryValid = true;
+            localEventRatesPending = false;
+        }
         publishedCurrent=trialPhysicalCurrent;acceptedCurrent=getCurrent();
         physicalTrialOpen=physicalTrialPublished=automaticPhysicalTrial=false;
     }
@@ -210,6 +258,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         predictorPending=(physicalTrialFlags&1)!=0;blocked=(physicalTrialFlags&2)!=0;tripped=(physicalTrialFlags&4)!=0;
         thermalLimited=(physicalTrialFlags&8)!=0;deadbandLocked=(physicalTrialFlags&16)!=0;shortRatingExhausted=(physicalTrialFlags&32)!=0;
         networkDetached=(physicalTrialFlags&128)!=0;overvoltageRecovery=(physicalTrialFlags&256)!=0;
+        localSampledAdvanced = false;
         physicalTrialMonitor.copyObservationTo(monitor);physicalTrialOpen=physicalTrialPublished=automaticPhysicalTrial=false;
     }
 
@@ -235,6 +284,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         // Event-side limiter projection is algebraic. No derivative integration,
         // timer advance or accepted-history commit occurs at zero duration.
         if (dt == 0) { projectAlgebraicStates(); return acceptFiniteTrial(); }
+        if (localSampledFiring) return advanceLocalSampledFiring(dt, flag);
         if (flag == 0) {
             if (predictorPending) return false;
             evaluateRates();
@@ -262,6 +312,51 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         return finiteState();
     }
 
+    private void captureLocalEventRates() {
+        if (!localSampledFiring || !initialized || networkDetached) return;
+        evaluateRates();
+        System.arraycopy(rate, 0, localEventLeftRates, 0, x.length);
+        localEventRatesPending = true;
+    }
+
+    private boolean advanceLocalSampledFiring(double interval, int flag) {
+        if (flag == 0) {
+            evaluateRates();
+            // Retain the nominal sampling period across an off-grid event
+            // fragment. Scaling by a 10-microsecond fragment would amplify
+            // the change between the observed left and right event rates.
+            double historyWeight = localRateHistoryValid
+                    ? .5 * interval / localNominalInterval : 0;
+            for (int i = 0; i < x.length; i++) {
+                double slope = localEventRatesPending ? .5 * (rate[i] + localEventLeftRates[i]) : rate[i];
+                firstRate[i] = slope;
+                x[i] += interval * (slope + historyWeight * (slope - localPreviousRates[i]));
+                start[i] = x[i];
+            }
+            projectAlgebraicStates();
+            if (!acceptFiniteTrial()) {
+                if (automaticPhysicalTrial) discardPhysicalStepTrial();
+                return false;
+            }
+            // A projection on an integrated coordinate invalidates its
+            // previous slope. Leave the algebraic firing command separate.
+            for (int i = 0; i < x.length; i++)
+                if (x[i] != start[i]) firstRate[i] = 0;
+            updateHistory(interval, integrationTime + interval);
+            integrationTime += interval;
+            predictorStep = interval;
+            predictorPending = localSampledAdvanced = true;
+            if (automaticPhysicalTrial) publishPhysicalStepTrial();
+            observe(Stage.PREDICTOR);
+        } else {
+            if (!predictorPending) return false;
+            predictorPending = false;
+            if (automaticPhysicalTrial) acceptPhysicalStepTrial();
+            observe(Stage.CORRECTOR);
+        }
+        return finiteState();
+    }
+
     /** Reject a numerical trial without publishing invalid coordinates or advancing history. */
     private boolean acceptFiniteTrial() {
         if (finiteState()) return true;
@@ -281,7 +376,7 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         rate[0] = data.tb1() > 0 ? (sensed - x[0]) / data.tb1() : 0;
         rate[1] = nonWindupRate(x[1], integralRate, low - proportional, high - proportional);
         double command = clamp(proportional + x[1], low, high);
-        rate[2] = data.firingTime() > 0 ? (command - x[2]) / data.firingTime() : 0;
+        rate[2] = requiresPhysicalStepTrial() ? 0 : (command - x[2]) / data.firingTime();
         double resetError = resetError();
         double resetProportional = clamp(data.kpr() * resetError, data.vrMin(), data.vrMax());
         rate[3] = data.slowResetFlag() == 0 ? 0 : nonWindupRate(x[3], data.kir() * resetError,
@@ -300,7 +395,8 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         double low = minimumCurrent(terminal), high = maximumCurrent(terminal);
         double proportional = clamp(data.kp() * gainOutput(error), low, high);
         x[1] = clamp(x[1], low - proportional, high - proportional);
-        if (data.firingTime() == 0 && !insideVoltageDeadband(measured)) x[2] = clamp(x[1] + proportional, low, high);
+        if (requiresPhysicalStepTrial() && !insideVoltageDeadband(measured))
+            x[2] = clamp(x[1] + proportional, low, high);
         double resetP = clamp(data.kpr() * resetError(), data.vrMin(), data.vrMax());
         if (data.slowResetFlag() != 0) x[3] = clamp(x[3], data.vrMin() - resetP, data.vrMax() - resetP);
         x[4] = Math.max(0, x[4]);
@@ -410,6 +506,23 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         return data.slowResetFlag() == 0 ? 0 : clamp(x[3]
                 + clamp(data.kpr() * resetError(), data.vrMin(), data.vrMax()), data.vrMin(), data.vrMax());
     }
+    /**
+     * Project the next sampled current command at a converged network endpoint.
+     * The network just solved with the held physical current. Use that current,
+     * the solved voltage and the integrated PI state to form the command for
+     * the next interval. This projection changes neither the current used by
+     * the completed network solve nor the timers and derivative histories.
+     */
+    public void refreshSolvedEndpointFiringCommand() {
+        if (!sampledAlgebraicFiring || !initialized || networkDetached) return;
+        double measured = measurement(remoteBus.getVoltageMag());
+        if (insideVoltageDeadband(measured)) return;
+        double terminal = getDStabBus().getVoltageMag();
+        double low = minimumCurrent(terminal), high = maximumCurrent(terminal);
+        double proportional = clamp(data.kp() * gainOutput(voltageError(measured)), low, high);
+        x[2] = clamp(x[1] + proportional, low, high);
+    }
+
     private boolean insideVoltageDeadband(double measured) {
         return data.deadband() > 0 && Math.abs(voltageReference() - measured) < data.deadband();
     }
@@ -418,9 +531,10 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
         // Input changes can reopen regulation without committing any history.
         if (insideVoltageDeadband(measured)) return 0;
 
-        // The diagram feeds back the output-lag coordinate. External current
-        // blocking must not erase that internal regulator feedback.
-        return clamp(voltageReference() + auxiliarySignal - measured - droop(measured) * x[2],
+        // The sampled firing path uses the published current before external
+        // blocking. The dynamic lag uses its continuous output coordinate.
+        double feedbackCurrent = sampledAlgebraicFiring ? heldFiringCurrent() : x[2];
+        return clamp(voltageReference() + auxiliarySignal - measured - droop(measured) * feedbackCurrent,
                 data.veMin(), data.veMax());
     }
     private static double nonWindupRate(double state, double rate, double low, double high) {
@@ -443,9 +557,13 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     public BaseDStabBus<?, ?> getRemoteBus() { return remoteBus; }
     /** Blocking is accepted history, not a new discrete action inside a network iteration. */
     public double getCurrent() {
-        return networkDetached || blocked ? 0 : data.firingTime()==0
-                ? (physicalTrialPublished?trialPhysicalCurrent:publishedCurrent) : x[2];
+        return networkDetached || blocked ? 0 : requiresPhysicalStepTrial() ? heldFiringCurrent() : x[2];
     }
+
+    private double heldFiringCurrent() {
+        return physicalTrialPublished ? trialPhysicalCurrent : publishedCurrent;
+    }
+
     public double getMvarOutput() { return getCurrent() * getDStabBus().getVoltageMag() * data.statcomBaseMva(); }
     public double getVoltageReference() { return voltageReference(); }
     public double getScheduledVoltage() { return scheduledVoltage; }
@@ -465,6 +583,9 @@ public final class Svsmo3t2Model extends DynamicBusDeviceImpl
     /** Accept a scheduled electrical-network event, independently of state integration. */
     public void acceptNetworkEvent() {
         checkNetworkEventReady();
+        // Observe the still-solved left boundary before the network applies the event.
+        // Its rate is consumed only when the first post-event physical step succeeds.
+        captureLocalEventRates();
         acceptPreparedNetworkEvent();
     }
     final void acceptPreparedNetworkEvent() {

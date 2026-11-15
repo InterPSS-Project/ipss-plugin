@@ -11,7 +11,9 @@ public final class Gewt2mu1Model implements ICMLStateProvider {
 
     public Gewt2mu1Model(Gewt2mu1Data data) {
         this.data = data;
-        this.kernel = new Wt12t1Model(data.asTwoMassData());
+        // Native GEWT2MU1 uses the shaft torque directly in the generator
+        // equation. The turbine/generator speed ratio applies to WT12T1.
+        this.kernel = new Wt12t1Model(data.asTwoMassData(), false);
     }
 
     public void initialize(double electricalPower, double speed, double frequencyHz) {

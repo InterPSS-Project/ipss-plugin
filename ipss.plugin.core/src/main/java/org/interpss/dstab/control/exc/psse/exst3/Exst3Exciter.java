@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.exst3;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -54,9 +56,9 @@ public final class Exst3Exciter extends AnnotateExciter implements IntegrationSt
         double vi0=(vr0/ka+vg0)/kj;
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
         vimax=Math.max(vimax,vi0);vimin=Math.min(vimin,vi0);
-        state[VR]=vr0;state[VSENSE]=vt0;state[LEAD_LAG]=vi0;
+        state[VR]=vr0;state[VSENSE]=sensedVoltage(machine);state[LEAD_LAG]=vi0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=vi0+vt0-stabilizerSignal(machine)
+        reference=vi0+state[VSENSE]-stabilizerSignal(machine)
                 -(hasVuel?vuel:0.0)-(hasVoel?voel:0.0);
         outputSignal=efd0;initialized=true;return true;
     }
@@ -88,13 +90,13 @@ public final class Exst3Exciter extends AnnotateExciter implements IntegrationSt
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lag(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lag(sensedVoltage(machine),x[VSENSE],tr);
         dx[LEAD_LAG]=lag(a.vi,x[LEAD_LAG],tb);
         double rate=ta>EPS?(ka*(a.va-a.vg)-x[VR])/ta:0;
         if((x[VR]>=vrmax-EPS&&rate>0)||(x[VR]<=vrmin+EPS&&rate<0))rate=0;dx[VR]=rate;
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double sensed=tr>EPS?x[VSENSE]:machine.getDStabBus().getVoltageMag();
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double error=reference-sensed+stabilizerSignal(machine)+(hasVuel?vuel:0)+(hasVoel?voel:0);
         double vi=clamp(error,vimin,vimax);
         double va=tb>EPS?kj*((tc/tb)*vi+(1-tc/tb)*x[LEAD_LAG]):kj*vi;

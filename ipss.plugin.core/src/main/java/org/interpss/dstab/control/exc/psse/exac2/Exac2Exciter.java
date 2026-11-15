@@ -78,7 +78,7 @@ public class Exac2Exciter extends AnnotateExciter implements IntegrationStepAwar
     @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction saturation=new CMLFunctionAdapter() {
         @Override public double eval(double[] value) {
-            return Exac1Exciter.saturation(value[0],e1,se1,e2,se2);
+            return saturationAt(value[0]);
         }
     };
 
@@ -137,7 +137,7 @@ public class Exac2Exciter extends AnnotateExciter implements IntegrationStepAwar
         washoutGain=kf/tf;
         double ifd=exciterIfd();
         double ve0=Exac1Exciter.solveInternalVoltage(machine.getEfd(),kc*ifd);
-        double vfe0=ve0*(ke+Exac1Exciter.saturation(ve0,e1,se1,e2,se2))+kd*ifd;
+        double vfe0=ve0*(ke+saturationAt(ve0))+kd*ifd;
         vlrEffective=effectiveVlr(data.getVlr(),vfe0,kl,kb);
         va0=kh*vfe0+vfe0/kb;
         vamax=Math.max(Math.max(data.getVamax(),data.getVamin()),va0);
@@ -163,6 +163,13 @@ public class Exac2Exciter extends AnnotateExciter implements IntegrationStepAwar
                 data.getVlr(),e1,se1,e2,se2};
         for(double value:values)if(!Double.isFinite(value))return false;
         return true;
+    }
+
+    private double saturationAt(double ve) {
+        // PSS/E EXAC2 starts saturation above |A|, even when the fitted
+        // intercept A is negative. The quadratic still uses the signed A.
+        // Initialization and the regulator feedback must share this curve.
+        return Exac1Exciter.saturation(ve,e1,se1,e2,se2,true);
     }
 
     private double exciterIfd(){

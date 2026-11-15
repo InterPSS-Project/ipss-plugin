@@ -180,4 +180,13 @@ public class DStabNetworkBuilderEsac3aTest extends CorePluginTestSetup {
         assertTrue(exciter.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,machine,1));
     }
     private record Fixture(Machine machine,Esac3aExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcEsac3a("Bus1", "1", data);
+        });
+    }
 }

@@ -30,6 +30,9 @@ public final class Gewtptu1Model implements ICMLStateProvider {
         // power compensator starts at its documented zero boundary.
         speedIntegral = pitch;
         powerIntegral = 0.0;
+        // A new operating point invalidates the pending modified Euler stage.
+        oldState = null;
+        predictor = null;
         initialized = true;
     }
 

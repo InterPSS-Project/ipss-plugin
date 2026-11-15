@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac9c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -72,11 +74,11 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
         vpidmax=Math.max(vpidmax,vf0);vpidmin=Math.min(vpidmin,vf0);
         vamax=Math.max(vamax,vavr0);vamin=Math.min(vamin,vavr0);
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
-        state[VE]=ve0;state[VSENSE]=vt0;state[PID_DERIVATIVE_LAG]=0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[PID_DERIVATIVE_LAG]=0;
         state[PID_INTEGRAL]=vf0;state[CURRENT_INTEGRAL]=vavr0;
         state[VR]=vr0;state[VF]=vf0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=vt0-summationLimiterInput()-stabilizerSignal(machine);
+        reference=state[VSENSE]-summationLimiterInput()-stabilizerSignal(machine);
         outputSignal=speedAdjusted(rectifierOutput(ve0,ifd0),machine);initialized=true;return true;
     }
 
@@ -112,7 +114,7 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[PID_DERIVATIVE_LAG]=lagDerivative(a.voltageError,x[PID_DERIVATIVE_LAG],tdr);
         double pidRate=kir*a.voltageError;
         if((a.ifdRefUnlimited>=vpidmax-EPS&&pidRate>0)||(a.ifdRefUnlimited<=vpidmin+EPS&&pidRate<0))pidRate=0;
@@ -134,7 +136,7 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
         return algebraicsAtField(x,machine,field,ifd);
     }
     private Algebraic algebraicsAtField(double[] x,Machine machine,double field,double ifd){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double voltageError=reference-sensed+summationLimiterInput()+stabilizerSignal(machine);
         double derivative=tdr>EPS?kdr*(voltageError-x[PID_DERIVATIVE_LAG])/tdr:0;
         double ifdRefUnlimited=kpr*voltageError+x[PID_INTEGRAL]+derivative;

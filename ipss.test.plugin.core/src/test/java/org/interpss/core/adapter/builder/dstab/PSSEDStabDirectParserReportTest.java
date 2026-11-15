@@ -33,7 +33,7 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     Path tempDir;
 
     @Test
-    void namedChvdcRecordsDistinguishInvalidDataFromMissingRuntime() throws Exception {
+    void namedChvdcRecordsDistinguishInvalidDataFromMissingOwner() throws Exception {
         for(boolean legacy:new boolean[]{false,true}) {
             var builder=DStabBuilderTestFixture.createBuilder();
             Path dyr=tempDir.resolve("named-chvdc.dyr");
@@ -43,10 +43,10 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
             assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
             var report=parser.getLastImportReport();
             assertEquals(2,report.totalRecordCount());
-            assertEquals(1,report.count(DynamicModelImportStatus.UNSUPPORTED));
+            assertEquals(1,report.count(DynamicModelImportStatus.REJECTED));
             assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
             assertEquals(legacy?"CHVDC2U1":"CHVDC2",report.failures().getFirst().sourceModelName());
-            assertTrue(report.failures().getFirst().message().contains("runtime attachment is not implemented"));
+            assertTrue(report.failures().getFirst().message().contains("No static DC-link owner named"));
             Files.writeString(dyr,valid.replace("3500.0","NaN"));
             assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
             assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
@@ -156,7 +156,7 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         Files.writeString(dyr, "1 'GENROU' '1' 8.0 /\n"
                 + "2 'GENROU' '1' 8.0 0.03 0.4 0.05 5.0 3.0 "
                 + "1.8 1.7 0.3 0.55 0.25 0.15 0.10 0.20 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true).setIgnoreMissingHosts(false);
 
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
 

@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.esac4a;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -33,16 +35,17 @@ public final class Esac4aExciter extends AnnotateExciter implements IntegrationS
     @Override public void configureIntegrationStep(double stepSeconds){configureIntegrationStep(stepSeconds,1);}
     public void configureIntegrationStep(double stepSeconds,double multiplier){integrationStep=stepSeconds;minimumTimeConstantMultiplier=multiplier;}
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrect();
         if(tr<0||tb<0||ta<0||ka<=EPS||kc<0)return false;
-        double vt0=bus.getVoltageMag(),ifd0=exciterIfd(machine),efd0=machine.getEfd();
-        if(!Double.isFinite(vt0)||!Double.isFinite(efd0))return false;
+        double ec0=sensedVoltage(machine),ifd0=exciterIfd(machine),efd0=machine.getEfd();
+        if(!Double.isFinite(ec0)||!Double.isFinite(efd0))return false;
         vrmax=Math.max(vrmax,efd0+kc*ifd0);vrmin=Math.min(vrmin,efd0);
         double vi0=efd0/ka;vimax=Math.max(vimax,vi0);vimin=Math.min(vimin,vi0);
-        state[EFIELD]=efd0;state[VSENSE]=vt0;state[VLL]=transferState(vi0,vi0,tc,tb);
+        state[EFIELD]=efd0;state[VSENSE]=ec0;state[VLL]=transferState(vi0,vi0,tc,tb);
         System.arraycopy(state,0,trial,0,3);active=state;
-        reference=vi0+vt0-stabilizerSignal(machine)-voel;
+        reference=vi0+ec0-stabilizerSignal(machine)-voel;
         outputSignal=efd0;initialized=true;return true;
     }
 
@@ -67,7 +70,7 @@ public final class Esac4aExciter extends AnnotateExciter implements IntegrationS
 
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=tr>EPS?(machine.getDStabBus().getVoltageMag()-x[VSENSE])/tr:0;
+        dx[VSENSE]=tr>EPS?(sensedVoltage(machine)-x[VSENSE])/tr:0;
         dx[VLL]=transferDerivative(a.vi,x[VLL],tc,tb);
         if(ta>EPS){double rate=(ka*a.gate-x[EFIELD])/ta;
             if((x[EFIELD]>=a.upper-EPS&&rate>0)||(x[EFIELD]<=vrmin+EPS&&rate<0))rate=0;
@@ -75,7 +78,7 @@ public final class Esac4aExciter extends AnnotateExciter implements IntegrationS
         }
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double error=reference+stabilizerSignal(machine)+voel-sensed;
         double vi=clamp(error,vimin,vimax),vll=transferOutput(vi,x[VLL],tc,tb);
         double gate=Math.max(vll,vuel),upper=Math.max(vrmin,vrmax-kc*exciterIfd(machine));

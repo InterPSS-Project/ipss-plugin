@@ -17,8 +17,8 @@ public record Gewtgdu1Data(double gustStart, double gustDuration,
         if (gustMaximum != 0.0 && gustDuration == 0.0) {
             throw new IllegalArgumentException("GEWTGDU1 nonzero gust requires positive duration");
         }
-        if (rampMaximum != 0.0 && rampEnd == rampStart) {
-            throw new IllegalArgumentException("GEWTGDU1 nonzero ramp requires a time interval");
-        }
+        // Equal endpoints disable the ramp even with a nonzero stored height.
+        // Native zero/positive-duration discriminators confirm this is not an
+        // instantaneous step; retain the entered dormant-event parameters.
     }
 }

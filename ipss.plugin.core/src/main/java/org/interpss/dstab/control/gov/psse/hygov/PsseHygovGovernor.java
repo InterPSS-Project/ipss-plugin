@@ -67,6 +67,7 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
+        initialized = false;
         stateMonitor.reset();
         if (!validateParameters()) return false;
         PsseHygovGovernorData d = getData();
@@ -163,6 +164,16 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
                 / getData().getAt() + getData().getQnl());
     }
 
+    /** Apply an explicit initial travel cap after numerical initialization. Only the
+     * effective upper bound changes: entered constants, states, reference, output,
+     * predictor/corrector memory and any delay history remain untouched. The caller
+     * owns the pre-integration lifecycle and source-located policy report. */
+    public void applyInitialUpperTravelLimit(double value) {
+        if (!(initialized)) throw new IllegalStateException("Apply travel policy after initialization at an idle boundary");
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Travel cap must be finite");
+        effectiveGmax = value;
+    }
+    public double getEffectiveGmax() { return effectiveGmax; }
     public double getGatePosition() { return state.gate; }
 
     /** Stored coordinates, including the dormant filter coordinate when Tf is zero. */

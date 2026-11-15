@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac3c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -55,7 +57,7 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
         vamax=Math.max(vamax,va0);vamin=Math.min(vamin,va0);
         double ampInput0=va0/ka;
         vpidmax=Math.max(vpidmax,ampInput0);vpidmin=Math.min(vpidmin,ampInput0);
-        state[VE]=ve0;state[VSENSE]=machine.getDStabBus().getVoltageMag();state[VA]=va0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[VA]=va0;
         state[LEAD_LAG]=ampInput0;state[VN_LAG]=nonlinearFeedback(efd0);state[PI]=ampInput0;state[DERIV_LAG]=0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         reference=state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
@@ -89,7 +91,7 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
 
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         double piRate=kir*a.error;if((a.pid>=vpidmax-EPS&&piRate>0)||(a.pid<=vpidmin+EPS&&piRate<0))piRate=0;dx[PI]=piRate;
         dx[DERIV_LAG]=lagDerivative(a.error,x[DERIV_LAG],tdr);dx[LEAD_LAG]=lagDerivative(a.pid,x[LEAD_LAG],tb);
         double vaRate=ta>EPS?(ka*a.amplifierInput-x[VA])/ta:0;if((x[VA]>=vamax-EPS&&vaRate>0)||(x[VA]<=vamin+EPS&&vaRate<0))vaRate=0;dx[VA]=vaRate;
@@ -99,7 +101,7 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
     }
 
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         if(te>EPS)return algebraicsForField(x,machine,sensed,x[VE]);
         double field=solveAlgebraicField(x,machine,sensed);return algebraicsForField(x,machine,sensed,field);
     }

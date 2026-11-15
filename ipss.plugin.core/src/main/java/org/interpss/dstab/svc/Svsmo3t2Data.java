@@ -62,7 +62,10 @@ public record Svsmo3t2Data(int remoteBusNumber, int mssSwitchingFlag,
                 || shortCurrentMultiplier < 1 || statcomBaseMva <= 0) {
             throw new IllegalArgumentException("SVSMO3T2 invalid limits or current/MVA ratings");
         }
-        if (deadband < 0 || deadbandRatio < 0 || (deadband > 0 && deadbandRatio < 1)
+        // Kdbd=0 disables the inner-band ratio even when the main voltage
+        // deadband is active. Native startup retains that independent zero;
+        // only a nonzero ratio must describe an outer/inner ratio >= 1.
+        if (deadband < 0 || deadbandRatio < 0 || (deadband > 0 && deadbandRatio > 0 && deadbandRatio < 1)
                 || currentDeadband < 0 || thermalLimit < 0 || thermalResetRate < 0
                 || thermalHysteresis < 0 || thermalHysteresis > thermalLimit) {
             throw new IllegalArgumentException("SVSMO3T2 invalid deadband or thermal parameters");

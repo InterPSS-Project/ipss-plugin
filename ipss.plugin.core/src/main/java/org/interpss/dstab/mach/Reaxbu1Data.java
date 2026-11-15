@@ -5,9 +5,12 @@ public record Reaxbu1Data(int plantBus, double measurementTime,
         double reactiveGain, double activeGain, double reactiveMaximum,
         double reactiveMinimum, double activeMaximum, double activeMinimum) {
     public Reaxbu1Data {
+        // A zero participation weight disconnects that incremental plant
+        // command. The runtime retains the initialized host output instead of
+        // dividing by zero or replacing the entered weight with an epsilon.
         if (!finite(measurementTime, reactiveGain, activeGain, reactiveMaximum,
                 reactiveMinimum, activeMaximum, activeMinimum)
-                || measurementTime < 0.0 || reactiveGain == 0.0 || activeGain == 0.0
+                || measurementTime < 0.0
                 || reactiveMaximum < reactiveMinimum || activeMaximum < activeMinimum) {
             throw new IllegalArgumentException("invalid REAXB constants");
         }

@@ -1,5 +1,10 @@
 # GENQEC field-compensation input and product-limit evidence
 
+> Later contract extension: the negative-input/current-direction probes in
+> [Signed field-compensation input and runtime magnitude](../dynamic-models/genqec-kw-magnitude.md)
+> supersede this historical report's nonnegative-only input guard and unchanged-runtime
+> statements. The earlier positive-Kw evidence remains valid.
+
 Status: validation defect corrected and scoped verification accepted, not
 complete machine parity. Private source/run/report hashes are retained under
 `2026-10-19-genqec-field-compensation`; the scoped implementation commit is

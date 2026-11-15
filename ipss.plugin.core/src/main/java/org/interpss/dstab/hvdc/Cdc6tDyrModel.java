@@ -74,6 +74,8 @@ public final class Cdc6tDyrModel extends DynamicBusDeviceImpl implements Stagger
                 throw new IllegalArgumentException("CDC6T requires finite non-capacitor-commutated converter impedance");
         for(var model:models(network))if(model.parameters.linkName().equals(parameters.linkName()))
             throw new IllegalArgumentException("Duplicate CDC6T owner: "+parameters.linkName());
+        for(var model:Chvdc2DyrModel.models(network))if(model.getParameters().linkName().equals(parameters.linkName()))
+            throw new IllegalArgumentException("Static link already has a CHVDC2 owner");
         for(var bus:List.of(rectifier,inverter))for(var device:bus.getDynamicBusDeviceList())
             if(("CDC6T:"+parameters.linkName()).equals(device.getId())
                     ||(parameters.linkName()+":rectifier").equals(device.getId())

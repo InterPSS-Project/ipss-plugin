@@ -42,6 +42,39 @@ coverage. Existing stored-state access and the distinct source/typed deadband
 conventions remain part of that work. This change does not classify the complete
 model as `VERIFIED`.
 
+## Native normalized full-opening boundary
+
+For the native source convention, let `s = max(1, PMAX)` and `f` be the
+prepared normalized gate-to-flow characteristic. The forward map uses the
+entered interpolation and existing output clipping below `s`. At normalized
+full opening (`gate >= s`) it returns `s` directly. This includes equality even
+when the final entered ordinate at normalized gate one is less than one.
+A physical gate limit below one stays on the interpolated curve. A scaled
+opening above physical one does not use the full-opening branch early.
+
+The distinction matters because the turbine head is `(waterFlow / flowInput)^2`.
+The differential water-flow coordinate remains continuous when the algebraic
+flow input changes at full opening, so head and mechanical power can change at
+the limit. Previously the entered last ordinate remained active at that point,
+masking the mechanical-power transient and biasing the saturated output.
+
+Independent original, sub-unity, and scaled-limit captures recover the flow
+input from the measured water-flow and head states. They distinguish the exact
+endpoint from its adjacent interior value and validate the mechanical-power
+formula on the governor and machine bases. Original source parameters remain
+unchanged in the source case; synthetic scale probes are separately identified.
+The corrected recorded-input replay restores the saturated mechanical-power
+level and its limit transitions. Individual transition timing errors remain in
+the primary metrics; the improvement is not achieved by shifting either clock.
+
+Only the native forward boundary changes. Typed endpoint/extrapolation,
+prepared arrays, inverse initialization, physical gate and rate limits,
+controller states, and integration histories are unchanged. The existing
+registered curve test class now covers the exact boundary, its immediate
+interior, scale selection and typed behavior. All 37 selected curve, import
+and integration tests pass; the two new tests fail with the old implementation.
+Full-network verification and complete model qualification remain separate.
+
 ## Shared numerical storage
 
 `PsseHyg3Governor` directly implements `StaggeredEulerParticipant` and

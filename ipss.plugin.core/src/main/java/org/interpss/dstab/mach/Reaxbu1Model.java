@@ -11,6 +11,7 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
     private final Reaxbu1Data data;
     private final String modelName;
     private double reactiveState, activeState, reactiveReference, activeReference;
+    private double initialReactiveOutput, initialActiveOutput;
     private double reactiveExternal, activeExternal;
     private double externalScale=1;
     private Plntbu1Model plantController;
@@ -51,8 +52,14 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
             activeExternal = plantController.getActiveOutput();
         }
         setExternalSignals(reactiveExternal, activeExternal);
-        reactiveReference = reactiveOutput/data.reactiveGain()-externalScale*reactiveExternal;
-        activeReference = activeOutput/data.activeGain()-externalScale*activeExternal;
+        initialReactiveOutput=reactiveOutput;initialActiveOutput=activeOutput;
+        // Nonzero-weight references keep their existing input-side units.
+        // For an unconnected axis there is no inverse reference: expose zero
+        // and retain the host operating point independently of plant signals.
+        reactiveReference = data.reactiveGain()==0 ? 0
+                : reactiveOutput/data.reactiveGain()-externalScale*reactiveExternal;
+        activeReference = data.activeGain()==0 ? 0
+                : activeOutput/data.activeGain()-externalScale*activeExternal;
         reactiveState=reactiveOutput;activeState=activeOutput;
         oldState=null;predictor=null;
         initialized = true;
@@ -97,19 +104,27 @@ public final class Reaxbu1Model implements ICMLStateProvider,org.interpss.dstab.
         apply(new State(values[offset],values[offset+1]));
     }
     private Derivative derivatives(State state) {
-        double reactiveTarget = data.reactiveGain()*(reactiveReference+externalScale*reactiveExternal);
-        double activeTarget = data.activeGain()*(activeReference+externalScale*activeExternal);
+        double reactiveTarget = reactiveTarget();
+        double activeTarget = activeTarget();
         Derivative d=data.measurementTime()<=EPS?new Derivative(0,0):new Derivative((reactiveTarget-state.reactive)/data.measurementTime(),
                 (activeTarget-state.active)/data.measurementTime());
         monitor.begin(stage);monitor.record(0,state.reactive,d.reactive);monitor.record(1,state.active,d.active);return d;
     }
     private void apply(State state) {
         reactiveState = clamp(data.measurementTime()<=EPS
-                        ? data.reactiveGain()*(reactiveReference+externalScale*reactiveExternal):state.reactive,
+                        ? reactiveTarget():state.reactive,
                 data.reactiveMinimum(),data.reactiveMaximum());
         activeState = clamp(data.measurementTime()<=EPS
-                        ? data.activeGain()*(activeReference+externalScale*activeExternal):state.active,
+                        ? activeTarget():state.active,
                 data.activeMinimum(),data.activeMaximum());
+    }
+    private double reactiveTarget() {
+        return data.reactiveGain()==0 ? initialReactiveOutput
+                : data.reactiveGain()*(reactiveReference+externalScale*reactiveExternal);
+    }
+    private double activeTarget() {
+        return data.activeGain()==0 ? initialActiveOutput
+                : data.activeGain()*(activeReference+externalScale*activeExternal);
     }
     public void setExternalSignals(double reactive, double active) {
         if (!Double.isFinite(reactive)||!Double.isFinite(active))

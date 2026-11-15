@@ -18,6 +18,10 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private final double resistance,conductingResistance,shortedResistance;
     private final int count;
     private final boolean laggedCurrentMeasurement;
+    // Native current-zero evidence qualifies the entered C=0 dynamic RL mode
+    // with all source controls enabled, not an algebraic or suppressed-capacitor
+    // approximation. Keep the bare line's signed ODE and other guards unchanged.
+    private final boolean nonnegativeRlCurrent;
     private final double[] inputs=new double[6],boundary=new double[BOUNDARY_SIZE],accepted=new double[BOUNDARY_SIZE],
             rectifierValues=new double[4],inverterValues=new double[3],injections=new double[4],
             state,rate,firstRate,candidate,leftRate,networkEventLeftRate,acceptedState,acceptedInputs=new double[6];
@@ -53,6 +57,11 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
             throw new IllegalArgumentException("Oriented converters and the selected line-dynamics mode required");
         resistance=line.resistanceOhms();shortedResistance=resistance+rectifier.commutatingResistanceOhms();
         conductingResistance=shortedResistance+inverter.commutatingResistanceOhms();finite(conductingResistance);
+        nonnegativeRlCurrent=parameters.dialect()==Chvdc2Parameters.Dialect.CHVDC2U1
+                &&parameters.acVoltageCurrentLimitEnabled()&&parameters.rectifierMinimumAngleLogicEnabled()
+                &&parameters.lineDynamicsEnabled()
+                &&parameters.value(Chvdc2Parameters.Constant.C_LINE_MICRO_F)==0
+                &&line.staggeredStateCount()==1&&line.capacitanceFarads()==0;
         count=15+line.staggeredStateCount();state=new double[count];rate=new double[count];firstRate=new double[count];candidate=new double[count];leftRate=new double[count];networkEventLeftRate=new double[count];acceptedState=new double[count];
         prediction=new Checkpoint(count);transaction=new Checkpoint(count);write=new Checkpoint(count);
         localStart=new Checkpoint(count);localEnd=new Checkpoint(count);
@@ -92,7 +101,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double ar=Math.toRadians(controls.rectifierDegrees()),ai=Math.toRadians(controls.inverterDegrees());
         double ir,ii;
         if(count==15){ir=ii=algebraicCurrent;}else{ir=line.rectifierAmperes();ii=line.inverterAmperes();}
-        if(ir<0||ii<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary");
+        if(ir<0||ii<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary: Ir="+ir+" A, Ii="+ii+" A, Vr="+vr+" pu, Vi="+vi+" pu, rectifierAngle="+Math.toDegrees(ar)+" deg, inverterControlAngle="+Math.toDegrees(ai)+" deg");
         double electricalAi=inverter.electricalAngleForController(vi,ii,ai);
         double dcR=rectifier.dcVoltageAtFiringAngle(vr,ir,ar),dcI=controls.inverterShorted()?0:inverter.dcVoltageAtFiringAngle(vi,ii,electricalAi);
         double gamma=inverter.extinctionAtFiringAngle(vi,ii,electricalAi);
@@ -125,7 +134,7 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         double source=rectifier.dcVoltageAtFiringAngle(vr,0,Math.toRadians(controls.rectifierDegrees()));
         if(!controls.inverterShorted())source-=inverter.dcVoltageAtFiringAngle(vi,0,Math.toRadians(controls.inverterDegrees()));
         double current=source/(controls.inverterShorted()?shortedResistance:conductingResistance);
-        finite(current);if(current<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary");
+        finite(current);if(current<0)throw new IllegalArgumentException("Reverse DC current is not a qualified conducting boundary: algebraicCurrent="+current+" A, sourceVoltage="+source+" V, rectifierVoltage="+vr+" pu, inverterVoltage="+vi+" pu");
         algebraicCurrent=current;
     }
     /** Start an outer electrical interval before local state integration. Local
@@ -271,6 +280,14 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
                 double value=integrationRate(i);firstRate[i]=value;candidate[i]=state[i]+seconds*value;
             }
         }else for(int i=0;i<count;i++)candidate[i]=prediction.states[i]+.5*seconds*(firstRate[i]+integrationRate(i));
+        // Keep both FREE RL rates in the Heun quadrature, but project each
+        // physical proposal before refresh reaches the converter equations.
+        // Substituting zero for the outward right rate at a projected predictor
+        // loses its impulse while retaining the old origin and causes rebound.
+        // Re-project the corrected state instead; do not store negative debt or
+        // reset controller/protection histories. Shared external proposals keep
+        // their fail guard until that integration path is separately qualified.
+        if(nonnegativeRlCurrent)candidate[15]=Math.max(0,candidate[15]);
         boolean advanceLine=count==15&&stage==1&&!intervalActive;
         apply(candidate,0,seconds,advanceLine,advanceLine?Math.hypot(prediction.inputs[0],prediction.inputs[1]):0,advanceLine?Math.hypot(prediction.inputs[2],prediction.inputs[3]):0);
         record(stage==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
@@ -280,8 +297,10 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     }
     /** Local modified-Euler integration inside an already opened outer interval.
      * The outer predictor holds the accepted inputs. The outer corrector replays
-     * from the left numerical state with linearly interpolated trial-endpoint
-     * inputs. Protection history remains owned by the outer network transaction.
+     * from the left numerical state. For the native-qualified CHVDC2U1 RL
+     * profile, both stages hold the left AC phasors over the local integration
+     * interval. Other inputs may interpolate to the trial endpoint. Protection
+     * history remains owned by the outer network transaction.
      * Coefficients and interval samples are never prepared at the local step. */
     public void step(double seconds,int stage,int localSteps) {
         if(localSteps<1||localSteps>128)throw new IllegalArgumentException("Local integration count must be in [1,128]");
@@ -313,6 +332,12 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     private void localInputs(int stage,double fraction) {
         for(int k=0;k<inputs.length;k++)inputs[k]=stage==0?localStart.inputs[k]:
                 localStart.inputs[k]+fraction*(localRightInputs[k]-localStart.inputs[k]);
+        if (nonnegativeRlCurrent && laggedCurrentMeasurement) {
+            // Native voltage-playback traces show that measured AC voltage and
+            // line current react to the last solved phasors during these substeps.
+            // The corrector restores the right phasors before electrical output.
+            System.arraycopy(localStart.inputs, 0, inputs, 0, 4);
+        }
     }
     public void cancelPrediction(){ready();if(pending){restore(pendingLocalSteps==1?prediction:localStart);pending=false;pendingLocalSteps=1;}}
     public void beginTransaction(){ready();exclusive();if(inTransaction)throw new IllegalStateException("Coupled transaction already open");save(transaction);inTransaction=true;}
@@ -343,7 +368,13 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
     }
     @Override public int staggeredStateCount(){return count;}
     @Override public void readStaggeredState(double[] values,int offset){ready();buffer(values,offset);read(state);System.arraycopy(state,0,values,offset,count);}
-    @Override public void evaluateStaggered(double seconds,double[] values,int offset){ready();exclusive();interval(seconds);buffer(values,offset);read(state);rates();record(IntegrationStateMonitor.Stage.STAGGERED);System.arraycopy(rate,0,values,offset,count);}
+    @Override public void evaluateStaggered(double seconds,double[] values,int offset){
+        ready();exclusive();interval(seconds);buffer(values,offset);read(state);rates();
+        record(IntegrationStateMonitor.Stage.STAGGERED);System.arraycopy(rate,0,values,offset,count);
+        // Publish the viable RHS at zero without overwriting the free internal
+        // rate needed by projected-Heun integration or accepting any history.
+        if(nonnegativeRlCurrent&&state[15]==0)values[offset+15]=Math.max(0,rate[15]);
+    }
     @Override public void applyStaggeredState(double[] values,int offset,double seconds){
         ready();exclusive();interval(seconds);buffer(values,offset);verifyAdvance(seconds);
         apply(values,offset,seconds,false,0,0);
@@ -372,7 +403,11 @@ public final class Chvdc2CoupledRuntime implements StaggeredEulerParticipant,Int
         var histories=new LinkedHashMap<String,Double>(controls.getIntegrationHistories());histories.put("Algebraic line current (A)",algebraicCurrent);return java.util.Collections.unmodifiableMap(histories);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot(){ready();return monitor.snapshot();}
-    private void record(IntegrationStateMonitor.Stage stage){monitor.begin(stage);for(int i=0;i<count;i++)monitor.record(i,state[i],rate[i]);}
+    private void record(IntegrationStateMonitor.Stage stage){
+        monitor.begin(stage);
+        for(int i=0;i<count;i++)monitor.record(i,state[i],
+                nonnegativeRlCurrent&&i==15&&state[i]==0?Math.max(0,rate[i]):rate[i]);
+    }
     private void ready(){if(!initialized)throw new IllegalStateException("Initialize coupled converter runtime first");}
     private void exclusive(){if(pending)throw new IllegalStateException("Finish or cancel the coupled predictor first");}
     private void noSharedProposal(){if(sharedPending)throw new IllegalStateException("Complete or restore the shared state proposal first");}

@@ -12,6 +12,15 @@ final class Pss2bAcceptedPathHistory {
         time = 0.; stepPending = false;
     }
 
+    void copyFrom(Pss2bAcceptedPathHistory source) {
+        first = source.first;
+        second = source.second;
+        previousFirst = source.previousFirst;
+        previousSecond = source.previousSecond;
+        time = source.time;
+        stepPending = source.stepPending;
+    }
+
     void beginStep(double step) {
         requireFinite(step);
         if (step < 0.) throw new IllegalArgumentException("Nonnegative input-path interval required");

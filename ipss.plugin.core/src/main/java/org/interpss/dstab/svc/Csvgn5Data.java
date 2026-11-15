@@ -7,9 +7,8 @@ public record Csvgn5Data(int remoteBusNumber, double ts1, double vemax,
         double bmin, double ts6, double dv) {
 
     public Csvgn5Data {
-        if (remoteBusNumber == 0) {
-            throw new IllegalArgumentException("CSVGN5 remote bus number must be nonzero");
-        }
+        // Zero denotes local sensing. Retain it as source data; the builder
+        // resolves the host bus rather than looking up a nonexistent Bus0.
         if (ts1 < 0.0 || ts2 < 0.0 || ts3 <= 0.0 || ts4 < 0.0
                 || ts5 < 0.0 || ts6 <= 0.0) {
             throw new IllegalArgumentException(

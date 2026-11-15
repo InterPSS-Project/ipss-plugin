@@ -26,7 +26,14 @@ class PsseStaggeredEulerSolverTest {
             older=machine.captureMechanicalIntegrationState().speedDerivative();
             assertTrue(algo.solveDEqnStep(true));
         }
-        double left=machine.captureMechanicalIntegrationState().speedDerivative(),speed=machine.getSpeed(),power=machine.getPm(),h=algo.getSimuStepSec();
+        var history = machine.captureMechanicalIntegrationState();
+        // The boundary refresh uses the accepted terminal voltage, which can
+        // differ from the final injection evaluation's voltage by the solve tolerance.
+        machine.getIgen();
+        assertTrue(machine.nextStepMechanical(0., DynamicSimuMethod.MODIFIED_EULER, algo.getNetwork(), 0));
+        double left = machine.captureMechanicalIntegrationState().speedDerivative();
+        machine.restoreMechanicalIntegrationState(history);
+        double speed = machine.getSpeed(), power = machine.getPm(), h = algo.getSimuStepSec();
         solver.notifyAcceptedEndpointDiscontinuity();
         machine.setPm(power+.04);assertTrue(machine.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0));
         solver.notifyAcceptedEndpointDiscontinuity();machine.setPm(power+.1);

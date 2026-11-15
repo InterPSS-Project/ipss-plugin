@@ -95,6 +95,30 @@ public class St5bExciterTest extends CorePluginTestSetup {
         assertTrue(algorithm.initialization());assertTrue(algorithm.performSimulation());
     }
 
+    @Test void nativeSt5bUsesAlgebraicFieldOutputForLagShorterThanTwoSteps() throws Exception {
+        for (double step : new double[] {0.00166665, 0.002, 0.0033333}) {
+            St5bData data = baseData();
+            data.setT1(0.004);
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+            St5bExciter exciter = builder.addExcSt5b("Bus1", "1", "ST5B", data);
+            Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+            machine.setEfd(1.2);
+            exciter.configureIntegrationStep(step);
+            assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+            assertEquals(0.004, data.getT1(), TOL);
+            assertEquals(1.2, exciter.getOutput(machine), TOL);
+
+            exciter.setRefPoint(exciter.getRefPoint() + 0.1);
+            if (step > 0.002) {
+                assertEquals(0.0, exciter.t1, TOL);
+                assertEquals(exciter.getFinalLagInput(), exciter.getOutput(machine), TOL);
+            } else {
+                assertEquals(0.004, exciter.t1, TOL);
+                assertEquals(1.2, exciter.getOutput(machine), TOL);
+            }
+        }
+    }
+
     private static Fixture fixture(St5bData data)throws Exception{
         DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();St5bExciter e=b.addExcSt5b("Bus1","1","ST5B",data);
         Machine m=b.getDStabNetwork().getMachine("Bus1-mach1");m.setEfd(1.2);assertTrue(e.initStates(m.getDStabBus(),m));return new Fixture(m,e);

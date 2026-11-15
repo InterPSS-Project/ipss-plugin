@@ -17,10 +17,11 @@ public final class Reecb1Model implements RenewableElectricalController {
     private final Reecb1Data data;
     private final RenewableConverterHost converter;
     private Repca1Model plantController;
+    private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
     private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
-    private double q0;
+    private double qReference;
     private double powerFactorRatio;
     private double dipReference;
     private double vMeasured;
@@ -94,14 +95,20 @@ public final class Reecb1Model implements RenewableElectricalController {
         loadEffectiveParameters();
         double sensedV = sensedVoltage(v);
         p0 = p;
-        q0 = q;
+        // The direct VFLAG=0 path carries an absolute voltage reference,
+        // whereas the coordinated VFLAG=1 path carries a reactive-power target.
+        // Physical port Q is still passed unchanged to plant measurement initialization.
+        qReference = data.qFlag() == 1 && data.vFlag() == 0 ? sensedV : q;
         powerFactorRatio = Math.abs(p) > EPS ? q / p : 0.0;
         dipReference = data.vref0() == 0.0 ? sensedV : data.vref0();
         vMeasured = sensedV;
         pMeasured = p;
         pOrder = p;
         qCurrent = q / nonzero(sensedV);
-        qOuterIntegral = 0.0;
+        // The outer Q PI outputs an absolute voltage, not a zero-based bias.
+        // Its initialized output must equal the measured voltage so the inner
+        // voltage PI sees zero error while retaining the solved reactive current.
+        qOuterIntegral = data.qFlag() == 1 && data.vFlag() == 1 ? sensedV : 0.0;
         vIntegral = qCurrent;
 
         effectivePmax = Math.max(effectivePmax, pOrder);
@@ -110,18 +117,37 @@ public final class Reecb1Model implements RenewableElectricalController {
         effectivePmin = responseLimits.lower(effectivePmin, pOrder);
         effectiveQmax = Math.max(effectiveQmax, q);
         effectiveQmin = Math.min(effectiveQmin, q);
-        effectiveVmax = Math.max(effectiveVmax, 0.0);
-        effectiveVmin = Math.min(effectiveVmin, 0.0);
+        // VMAX/VMIN constrain the absolute voltage-reference coordinate. Zero
+        // is not an equilibrium voltage and must not widen a positive VMIN.
+        // Accommodate only the actual initialized reference, as for REEC_A;
+        // entered parameter values remain unchanged.
+        effectiveVmax = Math.max(effectiveVmax, sensedV);
+        effectiveVmin = Math.min(effectiveVmin, sensedV);
 
         voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         ipcmd = p / nonzero(sensedV);
         iqcmd = -qCurrent;
         if (plantController != null) plantController.setActivePowerResponseLimits(responseLimits);
         responseLimitsInitialized = true;
-        if (plantController != null) plantController.initialize(p, q, sensedV);
+        if (plantController != null) {
+            plantController.initialize(p, q, sensedV);
+            if (data.qFlag() == 1 && data.vFlag() == 0)
+                plantController.setReactiveStateOffset(qReference);
+        }
+        if(auxiliaryController!=null) {
+            double system=converter==null?100:converter.getDStabBus().getNetwork().getBaseMva();
+            double machine=converter==null?system:converter.getParentGen().getMvaBase();
+            auxiliaryController.initializeOutputs(qReference,p,system/(machine>0?machine:system));
+        }
         if (weakGridController != null) weakGridController.initialize(v, p);
     }
 
+    @Override public org.interpss.dstab.mach.Reaxbu1Model getAuxiliaryController(){return auxiliaryController;}
+    @Override public void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model value){
+        if(value!=null&&(auxiliaryController!=null||plantController!=null||weakGridController!=null))
+            throw new IllegalStateException("Electrical reference port is occupied");
+        auxiliaryController=value;
+    }
     private void loadEffectiveParameters() {
         effectiveTrv = correctedBypass(data.trv());
         effectiveTp = correctedBypass(data.tp());
@@ -149,6 +175,20 @@ public final class Reecb1Model implements RenewableElectricalController {
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
         if (dt <= 0.0) return;
+        if(auxiliaryController!=null){auxiliaryController.step(dt,0);auxiliaryController.step(dt,1);}
+        advanceControls(dt,p,q,v,frequency);
+    }
+
+    @Override public void step(double dt,double p,double q,double v,double frequency,int flag) {
+        if(flag!=0&&flag!=1)throw new IllegalArgumentException("Electrical integration stage must be 0 or 1");
+        if(dt<=0)return;
+        if(auxiliaryController!=null)auxiliaryController.step(dt,flag);
+        // Preserve the existing bounded electrical integration at the predictor;
+        // the auxiliary itself receives both network endpoint stages exactly once.
+        if(flag==0)advanceControls(dt,p,q,v,frequency);
+    }
+
+    private void advanceControls(double dt,double p,double q,double v,double frequency) {
         double sensedV = sensedVoltage(v);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0));
@@ -169,7 +209,7 @@ public final class Reecb1Model implements RenewableElectricalController {
 
         double plantQref = plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
-                ? pMeasured * powerFactorRatio : q0 + plantQref;
+                ? pMeasured * powerFactorRatio : auxiliaryController!=null?auxiliaryController.getReactiveOutput():qReference + plantQref;
         double qTarget = limit(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(vMeasured);
         double rawIp = pOrder / voltage;
@@ -181,16 +221,26 @@ public final class Reecb1Model implements RenewableElectricalController {
                 qCurrent = lag(qCurrent, qTarget / voltage, effectiveTiq, dt);
             }
         } else {
-            double qError = data.vFlag() == 1 ? qTarget - q : 0.0;
-            qOuterIntegral = integrateWithAntiWindup(qOuterIntegral, data.kqi(), qError,
-                    dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
-            double voltageCommand = data.vFlag() == 1
-                    ? limit(data.kqp() * qError + qOuterIntegral,
-                            effectiveVmin, effectiveVmax)
-                    : 0.0;
-            vIntegral = integrateWithAntiWindup(vIntegral, data.kvi(), voltageCommand,
+            double voltageCommand;
+            if (data.vFlag() == 1) {
+                double qError = qTarget - q;
+                qOuterIntegral = integrateWithAntiWindup(qOuterIntegral, data.kqi(), qError,
+                        dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
+                voltageCommand = limit(data.kqp() * qError + qOuterIntegral,
+                        effectiveVmin, effectiveVmax);
+            } else {
+                // The direct voltage-reference branch bypasses the Q limiter
+                // and outer Q PI, but still passes through VMAX/VMIN.
+                voltageCommand = limit(selectedQ, effectiveVmin, effectiveVmax);
+            }
+            // The summing junction after VFLAG subtracts measured voltage in
+            // both modes. Omitting it makes the inner PI integrate an absolute
+            // voltage (or only a clipped positive bias), preventing normal
+            // bidirectional reactive recovery after a network disturbance.
+            double voltageError = voltageCommand - vMeasured;
+            vIntegral = integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
-            qCurrent = limit(data.kvp() * voltageCommand + vIntegral,
+            qCurrent = limit(data.kvp() * voltageError + vIntegral,
                     -preliminaryIqMax, preliminaryIqMax);
         }
 
@@ -269,7 +319,10 @@ public final class Reecb1Model implements RenewableElectricalController {
 
     public Reecb1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
-    @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    @Override public void setPlantController(Repca1Model controller) {
+        if(controller!=null&&auxiliaryController!=null)throw new IllegalStateException("Auxiliary reference port is occupied");
+        plantController = controller;
+    }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
     @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public double getMeasuredVoltage() { return vMeasured; }

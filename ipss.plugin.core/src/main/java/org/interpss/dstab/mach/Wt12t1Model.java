@@ -5,15 +5,17 @@ import java.util.Map;
 
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
-/** PSS/E WT12T1 one- or two-mass mechanical model for WT1G1. */
+/** PSS/E WT12T1 one- or two-mass mechanical model for WT1G1 and WT2G1. */
 public final class Wt12t1Model implements ICMLStateProvider {
     private static final double EPS = 1.0e-10;
     private static final double MIN_SPEED = 0.01;
 
     private final Wt12t1Data data;
+    private final boolean normalizeGeneratorShaftTorque;
     private double frequencyHz;
     private double initialGeneratorSpeed;
     private double aerodynamicPower;
+    private boolean holdInitialAerodynamicTorque;
     private double shaftAngle;
     private double turbineSpeed;
     private double generatorSpeed;
@@ -23,7 +25,14 @@ public final class Wt12t1Model implements ICMLStateProvider {
     private boolean initialized;
     private Wt12AerodynamicController aerodynamicController;
 
-    public Wt12t1Model(Wt12t1Data data) { this.data = data; }
+    public Wt12t1Model(Wt12t1Data data) {
+        this(data, true);
+    }
+
+    Wt12t1Model(Wt12t1Data data, boolean normalizeGeneratorShaftTorque) {
+        this.data = data;
+        this.normalizeGeneratorShaftTorque = normalizeGeneratorShaftTorque;
+    }
 
     public void initialize(double electricalPower, double speed, double frequencyHz) {
         if (!Double.isFinite(electricalPower) || !Double.isFinite(speed)
@@ -33,6 +42,7 @@ public final class Wt12t1Model implements ICMLStateProvider {
         this.frequencyHz = frequencyHz;
         initialGeneratorSpeed = turbineSpeed = generatorSpeed = speed;
         generatorAngleDeviation = 0.0;
+        holdInitialAerodynamicTorque = false;
         if (isSingleMass()) {
             shaftAngle = 0.0;
             aerodynamicPower = electricalPower
@@ -43,6 +53,9 @@ public final class Wt12t1Model implements ICMLStateProvider {
             shaftAngle = torque / shaftStiffness();
             aerodynamicPower = torque * speed;
         }
+        // A new operating point invalidates the pending modified Euler stage.
+        oldState = null;
+        oldDerivative = null;
         initialized = true;
     }
 
@@ -88,6 +101,10 @@ public final class Wt12t1Model implements ICMLStateProvider {
     }
 
     public void initializeAerodynamicController(double electricalPower, double terminalVoltage) {
+        // For WT1G1/WT2G1 without an aerodynamic model, native WT12T1 holds
+        // initial turbine torque. Its power varies with the stage turbine speed.
+        // Direct callers and attached aerodynamic models supply power explicitly.
+        holdInitialAerodynamicTorque = aerodynamicController == null;
         if (aerodynamicController != null) {
             aerodynamicController.initialize(electricalPower, turbineSpeed - 1.0,
                     aerodynamicPower, terminalVoltage);
@@ -97,18 +114,31 @@ public final class Wt12t1Model implements ICMLStateProvider {
     private Derivative derivatives(State state, double electricalPower) {
         double omegaBase = 2.0 * Math.PI * frequencyHz;
         if (isSingleMass()) {
-            double dw = (aerodynamicPower / nonzero(state.generatorSpeed)
+            // Native one-mass WT12T1 converts aerodynamic power using the
+            // initialized rotor speed. Electrical torque uses stage speed.
+            double dw = (aerodynamicTorque(initialGeneratorSpeed)
                     - electricalPower / nonzero(state.generatorSpeed)
                     - data.damp() * (state.generatorSpeed - 1.0)) / (2.0 * data.h());
             return new Derivative(0.0, dw, dw,
                     omegaBase * (state.generatorSpeed - initialGeneratorSpeed));
         }
         double speedDifference = state.turbineSpeed - state.generatorSpeed;
-        double shaftTorque = shaftStiffness() * state.shaftAngle;
-        double dampingTorque = data.dshaft() * speedDifference;
-        double dTurbine = (aerodynamicPower / nonzero(state.turbineSpeed)
-                - shaftTorque - dampingTorque) / (2.0 * turbineInertia());
-        double dGenerator = (shaftTorque + dampingTorque
+        double shaftTorque = shaftTorque(state.shaftAngle, speedDifference);
+        double dTurbine = (aerodynamicTorque(state.turbineSpeed) - shaftTorque)
+                / (2.0 * turbineInertia());
+        // The reference two-mass implementation transfers the combined shaft
+        // term to the generator equation with omega_g / omega_t. That ratio
+        // is one at equilibrium, so flat initialization and the block diagram
+        // alone do not reveal an omission. Independent positive/negative state
+        // perturbations, zero/doubled shaft damping, zero machine damping and
+        // a second fixture distinguish it from changing a damping coefficient.
+        // Keep the turbine equation and electrical torque normalization intact;
+        // applying the ratio there as well would change a separately verified
+        // derivative. Use the existing low-speed denominator guard only.
+        double generatorShaftTorque = normalizeGeneratorShaftTorque
+                ? shaftTorque * state.generatorSpeed / nonzero(state.turbineSpeed)
+                : shaftTorque;
+        double dGenerator = (generatorShaftTorque
                 - electricalPower / nonzero(state.generatorSpeed)
                 - data.damp() * (state.generatorSpeed - 1.0))
                 / (2.0 * generatorInertia());
@@ -128,10 +158,34 @@ public final class Wt12t1Model implements ICMLStateProvider {
     }
 
     public Wt12t1Data getData() { return data; }
-    public double getAerodynamicPower() { return aerodynamicPower; }
+    public double getAerodynamicPower() {
+        return holdInitialAerodynamicTorque
+                ? aerodynamicTorque(turbineSpeed) * turbineSpeed : aerodynamicPower;
+    }
+
     public void setAerodynamicPower(double value) {
         if (!Double.isFinite(value)) throw new IllegalArgumentException("Paero must be finite");
         aerodynamicPower = value;
+        holdInitialAerodynamicTorque = false;
+    }
+
+    private double aerodynamicTorque(double speed) {
+        return aerodynamicPower / nonzero(holdInitialAerodynamicTorque ? initialGeneratorSpeed : speed);
+    }
+
+    private double shaftTorque(double angle, double speedDifference) {
+        return shaftStiffness() * angle + data.dshaft() * speedDifference;
+    }
+
+    /**
+     * Mechanical power reported at the generator shaft. The native PMEC
+     * channel uses the spring-plus-damping shaft torque times generator speed
+     * for two masses and the aerodynamic input power for one mass. The
+     * speed ratio in the two-mass acceleration equation is separate.
+     */
+    public double getGeneratorMechanicalPower() {
+        return isSingleMass() ? getAerodynamicPower()
+                : shaftTorque(shaftAngle, turbineSpeed - generatorSpeed) * generatorSpeed;
     }
     public double getShaftAngle() { return shaftAngle; }
     public double getTurbineSpeed() { return turbineSpeed; }

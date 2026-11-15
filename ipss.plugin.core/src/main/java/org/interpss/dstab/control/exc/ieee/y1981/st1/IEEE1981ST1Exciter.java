@@ -5,6 +5,9 @@
 
 package org.interpss.dstab.control.exc.ieee.y1981.st1;
 
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
+import org.interpss.dstab.control.exc.OverExcitationLimiterTarget;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -37,7 +40,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   //debug = true
 )
 
-public class IEEE1981ST1Exciter extends AnnotateExciter {
+public class IEEE1981ST1Exciter extends AnnotateExciter implements UnderExcitationLimiterTarget, OverExcitationLimiterTarget {
     @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
             throws com.interpss.common.exp.InterpssException {
         return getClass() == IEEE1981ST1Exciter.class
@@ -144,6 +147,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	public double klr = 0.0, ilr = 0.0;
 	/** External UEL signal; zero is the absent value for error summation. */
 	public double vuel = 0.0;
+	private boolean hasVuel;
 	/** Nonbinding input for gate 1 unless UEL=2. */
 	public double vuelGate1 = Double.NEGATIVE_INFINITY;
 	/** External OEL ceiling; positive infinity denotes no connected OEL. */
@@ -258,11 +262,15 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
      */
     @Override
     public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+        // A new initialization owns fresh graph/history; keep only the explicit numerical configuration.
+        if(modifiedEulerLocalIntegrationSteps>1) { directEvaluation=null; modifiedEulerEvaluation=false; modifiedEulerStages=0; }
         // pass the plugin data object values to the controller
 		this.uel = getData().getUel();
 		this.vos = getData().getVos();
 		this.uelError = this.uel < 2 ? 1.0 : 0.0;
-		this.vuelGate1 = this.uel == 2 ? this.vuel : Double.NEGATIVE_INFINITY;
+		// UEL selects the connection point. An absent signal leaves the
+		// high-value gate transparent, including for negative voltage error.
+		this.vuelGate1 = this.uel == 2 && hasVuel ? this.vuel : Double.NEGATIVE_INFINITY;
 		this.vosError = this.vos == 1 ? 1.0 : 0.0;
 		this.vosOutput = this.vos == 2 ? 1.0 : 0.0;
 		this.tr = getData().getTr();
@@ -315,14 +323,26 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         // The regulator is solved backwards from EFD. During this pass use
         // the declared y0, not an as-yet uninitialized upstream state.
         initializingFeedbackTap=true;
-        try { return super.initStates(bus, mach); }
+        try {
+            boolean initialized=super.initStates(bus,mach);
+            if(initialized&&modifiedEulerLocalIntegrationSteps>1)wholeModifiedEulerEvaluator();
+            return initialized;
+        }
         finally { initializingFeedbackTap=false; }
     }
 
 	/** Set the external under-excitation limiter signal. */
 	public void setVuel(double value) {
 		this.vuel = value;
+		this.hasVuel = true;
 		this.vuelGate1 = this.uel == 2 ? value : Double.NEGATIVE_INFINITY;
+	}
+
+	@Override
+	public void clearVuel() {
+		this.hasVuel = false;
+		this.vuel = 0.0;
+		this.vuelGate1 = Double.NEGATIVE_INFINITY;
 	}
 
 	/** Set the external over-excitation limiter ceiling. */
@@ -348,8 +368,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	}
 
 	public double getPostRegulatorSignal() {
-		double pss = getMachine().getStabilizer() == null
-				? 0.0 : getMachine().getStabilizer().getOutput(getMachine());
+		double pss = stabilizerSignal();
 		return getRegulatorOutput() + pss * this.vosOutput;
 	}
 
@@ -442,18 +461,19 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	/** PTI/PowerWorld EFD upper bound, including terminal voltage and field current. */
 	public double getFieldVoltageUpperLimit() {
 		Machine mach = getMachine();
-		return mach.getDStabBus().getVoltageMag() * vrmax
+		return observedTerminalMagnitude() * vrmax
 				- kc * observedFieldCurrent();
 	}
 
 	/** Source-model lower bound: EXST1 also subtracts Kc*Ifd here. */
 	public double getFieldVoltageLowerLimit() {
 		Machine mach = getMachine();
-		return mach.getDStabBus().getVoltageMag() * vrmin
+		return observedTerminalMagnitude() * vrmin
 				- (exst1FieldVoltageLimits ? kc * observedFieldCurrent() : 0.0);
 	}
 
-	private double stabilizerSignal() {
+	double stabilizerSignal() {
+        if(prescribedLocalBoundary)return prescribedPss;
 		return getMachine().getStabilizer() == null
 				? 0.0 : getMachine().getStabilizer().getOutput(getMachine());
 	}
@@ -473,14 +493,110 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         if(machineObservationDepth<=0)throw new IllegalStateException("Unbalanced machine observation");
         if(--machineObservationDepth==0)fieldCurrentObserved=false;
     }
+    private boolean prescribedLocalBoundary;
+    private double prescribedFieldCurrent, prescribedTerminalMagnitude, prescribedPss;
+    private int modifiedEulerLocalIntegrationSteps=1;
+
+    /** External input sampling during whole-graph modified-Euler substeps. */
+    public enum LocalInputSampling {
+        INTERPOLATED_ENDPOINTS,
+        HELD_AT_INTERVAL_START
+    }
+
+    private LocalInputSampling modifiedEulerLocalInputSampling = LocalInputSampling.INTERPOLATED_ENDPOINTS;
+
+    /** Select the physical inputs used by all substeps of the ESST1A corrector.
+     * The held mode uses the voltage, field current, stabilizer, reference and
+     * limiter inputs sampled at the beginning of the physical interval. A
+     * zero-time event observation continues to use the live event-side inputs.
+     * This setting applies when whole-graph local substeps are enabled.
+     */
+    public void setModifiedEulerLocalInputSampling(LocalInputSampling sampling) {
+        java.util.Objects.requireNonNull(sampling, "sampling");
+        requireIdleLocalIntegration();
+        if (sampling == LocalInputSampling.HELD_AT_INTERVAL_START
+                && (getClass() != IEEE1981ST1Exciter.class || !"ESST1A".equals(getName())))
+            throw new IllegalArgumentException("Held local inputs require exact ESST1A");
+        modifiedEulerLocalInputSampling = sampling;
+    }
+
+    public LocalInputSampling getModifiedEulerLocalInputSampling() {
+        return modifiedEulerLocalInputSampling;
+    }
+
+    private void requireIdleLocalIntegration() {
+        if (getRuntimePhase() != RuntimePhase.IDLE
+                || directEvaluation != null && directEvaluation.isWholeModifiedEulerBusy())
+            throw new IllegalStateException("Configure whole-graph integration before staging");
+    }
+
+    /** Explicit whole-graph ESST1A Heun subdivision. Configuration changes are
+     * accepted only before physical staging, never in a pending predictor. This
+     * changes numerical resolution, not source constants or protection clocks.
+     * Exact standard ESST1A graphs only; nested block-local integration is rejected.
+     */
+    public void setModifiedEulerLocalIntegrationSteps(int steps) {
+        if(steps<1||steps>128)throw new IllegalArgumentException("ESST1A local integration steps must be in [1,128]");
+        requireIdleLocalIntegration();
+        if(steps>1) {
+            if(getClass()!=IEEE1981ST1Exciter.class||!"ESST1A".equals(getName()))
+                throw new IllegalArgumentException("Whole-graph local integration requires exact ESST1A");
+            if(hasInitializedBlocks())wholeModifiedEulerEvaluator().requireWholeModifiedEulerGraph();
+        }
+        modifiedEulerLocalIntegrationSteps=steps;
+    }
+    public int getModifiedEulerLocalIntegrationSteps(){return modifiedEulerLocalIntegrationSteps;}
+
+    /** Detached value-only diagnostic/checkpoint evidence. It exposes pending
+     * origin and block histories without evaluating equations or advancing time.
+     * This is not a cross-controller state-rebinding/restore API.
+     */
+    public Map<String,Object> getModifiedEulerLocalIntegrationSnapshot() {
+        var snapshot=new LinkedHashMap<String,Object>();
+        snapshot.put("configuredSteps",modifiedEulerLocalIntegrationSteps);
+        snapshot.put("inputSampling", modifiedEulerLocalInputSampling.name());
+        if(directEvaluation==null)snapshot.put("pending",false);
+        else snapshot.putAll(directEvaluation.wholeModifiedEulerSnapshot());
+        return Collections.unmodifiableMap(snapshot);
+    }
+    private St1DirectEvaluation wholeModifiedEulerEvaluator() {
+        if(getClass()!=IEEE1981ST1Exciter.class||!"ESST1A".equals(getName())||!hasInitializedBlocks())
+            throw new IllegalStateException("Initialize the exact ESST1A graph before local integration");
+        if(directEvaluation==null)directEvaluation=new St1DirectEvaluation(this);
+        directEvaluation.requireWholeModifiedEulerGraph();return directEvaluation;
+    }
+    double sampleLocalFieldCurrent(){return observedFieldCurrent();}
+    void prescribeLocalBoundary(double fieldCurrent,double terminalMagnitude,double pss) {
+        prescribedFieldCurrent=fieldCurrent;prescribedTerminalMagnitude=terminalMagnitude;prescribedPss=pss;prescribedLocalBoundary=true;
+    }
+    boolean hasPrescribedLocalBoundary() { return prescribedLocalBoundary; }
+    void releaseLocalBoundary(){prescribedLocalBoundary=false;}
+    double observedTerminalMagnitude() {
+        return prescribedLocalBoundary?prescribedTerminalMagnitude:getMachine().getDStabBus().getVoltageMag();
+    }
     private double observedFieldCurrent() {
+        if(prescribedLocalBoundary)return prescribedFieldCurrent;
         if(machineObservationDepth==0)return getMachine().calculateIfd(MachineIfdBase.EXCITER);
         if(!fieldCurrentObserved) {
             observedCurrent=getMachine().calculateIfd(MachineIfdBase.EXCITER);fieldCurrentObserved=true;
         }
         return observedCurrent;
     }
+    @Override public boolean nextStep(double dt,com.interpss.dstab.algo.DynamicSimuMethod method,Machine machine,int flag) {
+        if(modifiedEulerLocalIntegrationSteps>1 && (method!=com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER || flag<0||flag>1))
+            throw new IllegalArgumentException("Whole ESST1A local integration requires modified-Euler stages 0/1");
+        return super.nextStep(dt,method,machine,flag);
+    }
     @Override public boolean eulerStep(boolean predictor,double dt,Machine machine) {
+        if(modifiedEulerLocalIntegrationSteps>1) {
+            if(machine!=getMachine())throw new IllegalArgumentException("ESST1A machine owner mismatch");
+            beginFixedMachineObservation();
+            try {
+                wholeModifiedEulerEvaluator().wholeModifiedEulerStep(predictor,dt,modifiedEulerLocalIntegrationSteps);
+                if(dt>0.)modifiedEulerStages++;
+                return true;
+            } finally {endFixedMachineObservation();}
+        }
         if(directEvaluation==null)return super.eulerStep(predictor,dt,machine);
         beginFixedMachineObservation();
         try {
@@ -501,16 +617,18 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
     }
     public long getModifiedEulerStageCount(){return modifiedEulerStages;}
     /** Release bindings before reinitializing or changing the graph. */
-    public void clearDirectEvaluation(){directEvaluation=null;modifiedEulerEvaluation=false;modifiedEulerStages=0;}
+    public void clearDirectEvaluation(){if(directEvaluation!=null&&directEvaluation.isWholeModifiedEulerBusy())throw new IllegalStateException("Pending whole ESST1A predictor");directEvaluation=null;modifiedEulerEvaluation=false;modifiedEulerStages=0;}
     @Override public void invalidateRuntimePlan(){clearDirectEvaluation();super.invalidateRuntimePlan();}
     public void enableDirectEvaluationExperiment() {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        if(directEvaluation!=null&&directEvaluation.isWholeModifiedEulerBusy())throw new IllegalStateException("Pending whole ESST1A predictor");
         modifiedEulerEvaluation=false;
         directEvaluation=new St1DirectEvaluation(this);
     }
     /** Select local evaluation optimizations explicitly for this controller instance. */
     public void enableDirectEvaluationExperiment(boolean boundaryReuse,boolean fixedSchedule) {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
+        if(directEvaluation!=null&&directEvaluation.isWholeModifiedEulerBusy())throw new IllegalStateException("Pending whole ESST1A predictor");
         modifiedEulerEvaluation=false;
         directEvaluation=new St1DirectEvaluation(this,true,boundaryReuse,fixedSchedule);
     }

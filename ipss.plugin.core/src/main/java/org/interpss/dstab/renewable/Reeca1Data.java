@@ -18,8 +18,14 @@ public record Reeca1Data(
         if (trv < 0 || tp < 0 || tiq < 0 || tpord < 0 || thld2 < 0) {
             throw new IllegalArgumentException("REECA1 time constants must be non-negative");
         }
+        // Import normalizes inverted bounds with a source-located audit. Keep
+        // this typed model contract ordered so direct callers cannot bypass it.
+        if (pmax < pmin) {
+            throw new IllegalArgumentException("REECA1 Pmax=" + pmax + " is below Pmin=" + pmin
+                    + "; correct the source limits explicitly");
+        }
         if (vup < vdip || iqh1 < iql1 || qmax < qmin || vmax < vmin
-                || pmax < pmin || dpmax < dpmin) {
+                || dpmax < dpmin) {
             throw new IllegalArgumentException("REECA1 upper limits must be >= lower limits");
         }
         checkFlag(pfFlag, "PFFLAG"); checkFlag(vFlag, "VFLAG");

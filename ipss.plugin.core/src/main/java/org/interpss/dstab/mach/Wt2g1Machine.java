@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.net.DataCheckConfiguration;
 import com.interpss.core.net.Network;
@@ -17,11 +19,13 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
 
 /** PSS/E WT2G1 Type-2 induction generator with controlled rotor resistance. */
 public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateProvider {
+    private static final Logger log=LoggerFactory.getLogger(Wt2g1Machine.class);
     private static final double EPS = 1.0e-10;
 
     private final Wt2g1Data data;
     private final Wt2g1Solver solver = new Wt2g1Solver();
     private Wt2e1Model rotorResistanceController;
+    private Wt12t1Model driveTrain;
     private Complex compensationY = Complex.ZERO;
 
     public Wt2g1Machine(Wt2g1Data data) {
@@ -39,6 +43,9 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
     public void setRotorResistanceController(Wt2e1Model model) {
         rotorResistanceController = model;
     }
+
+    public Wt12t1Model getDriveTrain() { return driveTrain; }
+    public void setDriveTrain(Wt12t1Model model) { driveTrain = model; }
 
     @Override
     public boolean checkData(DataCheckConfiguration config) {
@@ -72,11 +79,23 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
         return result;
     }
 
-    /** WT2G1 obtains speed from its static power/slip characteristic. */
+    /** The static slip sets the initial speed; an attached WT12T1 owns subsequent shaft motion. */
     @Override
     public boolean nextStepMechanical(double dt, DynamicSimuMethod method,
             Network network, int flag) {
+        // The stage network solve has published a new terminal voltage.
+        // Refresh Pe from that voltage and the current rotor flux before the
+        // shaft and rotor-resistance controller consume it. The cached Pe can
+        // still describe the previous voltage, especially at the corrector.
+        // The stator calculation does not depend on the subsequent speed update.
         solver.updateOutputs();
+        if (driveTrain != null) {
+            driveTrain.stepCoupled(dt, getPe(), getDStabBus().getVoltageMag(), flag);
+            setPm(driveTrain.getGeneratorMechanicalPower());
+            double speed = driveTrain.getGeneratorSpeed();
+            if (!Double.isFinite(speed) || speed <= 0) throw new IllegalStateException("Invalid WT2G1 shaft speed");
+            setSpeed(speed);
+        }
         if (rotorResistanceController != null) {
             rotorResistanceController.step(dt, getSpeed() - 1.0,
                     solver.electricalTorque, flag);
@@ -126,7 +145,7 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             SteadyCircuit steady = steadyCircuit(getSlip(), voltage, rotorResistance);
             rotorFlux = steady.airGapFlux.subtract(steady.rotorCurrent.multiply(data.x1()));
             rotorControlVoltage = (rotorResistance - data.rotorResistance())
-                    / Math.max(EPS, data.maximumRotorResistance() - data.rotorResistance());
+                    / data.maximumRotorResistance();
             Complex actualGeneratorCurrent = getParentGen().getGen().divide(bus.getVoltage())
                     .conjugate().divide(getIMultiFactor());
             Complex rawCompensation = steady.machineCurrent.negate()
@@ -136,9 +155,18 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             setPm(requestedP);
             setEfd(0.0);
             updateOutputs();
+            if (driveTrain != null) {
+                driveTrain.initialize(electricalTorque, getSpeed(), bus.getNetwork().getFrequency());
+                driveTrain.initializeAerodynamicController(electricalTorque, bus.getVoltageMag());
+                setPm(driveTrain.getGeneratorMechanicalPower());
+            }
             if (rotorResistanceController != null) {
                 rotorResistanceController.initialize(getSpeed() - 1.0,
                         electricalTorque, rotorControlVoltage);
+                if(rotorResistanceController.isInitializationLimitCorrected())
+                    log.warn("WT2E1 {} effective output limits corrected from [{}, {}] to [{}, {}] for initial command {}; source data retained",
+                            getId(),rotorResistanceController.getData().outputMin(),rotorResistanceController.getData().outputMax(),
+                            rotorResistanceController.getEffectiveOutputMin(),rotorResistanceController.getEffectiveOutputMax(),rotorControlVoltage);
             }
             return true;
         }
@@ -170,10 +198,10 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
 
         private void setRotorControlVoltage(double value) {
             rotorControlVoltage = value;
-            double resistance = data.rotorResistance() + Math.max(0.0, value)
-                    * (data.maximumRotorResistance() - data.rotorResistance());
-            rotorResistance = Math.max(data.rotorResistance(),
-                    Math.min(data.maximumRotorResistance(), resistance));
+            // PSS/E scales the external contribution by the entered R_ROT_MAX.
+            // WT2E1 owns the command limits. The total can exceed R_ROT_MAX
+            // or fall below the machine resistance with a negative command.
+            rotorResistance = resistanceAtCommand(value);
         }
 
         private CircuitPoint circuit(Complex voltage, Complex flux) {
@@ -215,9 +243,13 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             return coefficient * Math.pow(flux - threshold, 2.0) / flux;
         }
 
+        private double resistanceAtCommand(double command) {
+            return Math.max(EPS, data.rotorResistance() + data.maximumRotorResistance() * command);
+        }
+
         private double solveRotorResistance(double requestedP, double voltage, double slip) {
-            double lower = data.rotorResistance();
-            double upper = data.maximumRotorResistance();
+            double lower = resistanceAtCommand(0.0);
+            double upper = resistanceAtCommand(1.0);
             double lowerError = generatorPower(lower, slip, voltage) - requestedP;
             double upperError = generatorPower(upper, slip, voltage) - requestedP;
             if (lowerError * upperError > 0.0) {
@@ -238,7 +270,10 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
         }
 
         private double generatorPower(double resistance, double slip, double voltage) {
-            return -voltage * voltage * steadyAdmittance(slip, resistance).getReal();
+            // Saturation depends on actual air-gap flux. Scaling the admittance
+            // evaluated at 1 pu by V^2 is valid only for an unsaturated circuit
+            // and leaves a nonzero initial power/flux residual otherwise.
+            return -voltage*steadyCircuit(slip,new Complex(voltage,0),resistance).machineCurrent.getReal();
         }
 
         private SteadyCircuit steadyCircuit(double slip, Complex voltage, double resistance) {
@@ -263,10 +298,6 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             Complex machineCurrent = parallelY.multiply(airGapVoltage);
             Complex airGapFlux = airGapVoltage.divide(Complex.I);
             return new SteadyCircuit(machineCurrent, yr.multiply(airGapVoltage), airGapFlux);
-        }
-
-        private Complex steadyAdmittance(double slip, double resistance) {
-            return steadyCircuit(slip, Complex.ONE, resistance).machineCurrent;
         }
 
         private void updateOutputs() {

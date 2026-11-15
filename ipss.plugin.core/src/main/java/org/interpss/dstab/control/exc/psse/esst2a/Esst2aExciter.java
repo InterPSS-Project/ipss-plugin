@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.esst2a;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
@@ -69,15 +71,16 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
         minimumTimeConstantMultiplier = multiplier;
     }
 
+    // AVR sensing is compensated EC; physical supply and ceiling paths retain terminal Vt.
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         loadAndCorrectParameters();
         if (tr < 0.0 || ta < 0.0 || te < 0.0 || tf < 0.0 || tb < 0.0) return false;
         if (Math.abs(ka) <= EPS) return false;
 
         double efd0 = machine.getEfd();
-        double vt0 = machine.getDStabBus().getVoltageMag();
+        double ec0 = sensedVoltage(machine);
         double vb0 = bridgeVoltage(machine);
-        if (!Double.isFinite(efd0) || !Double.isFinite(vt0)
+        if (!Double.isFinite(efd0) || !Double.isFinite(ec0)
                 || (!additiveBridge && vb0 <= EPS)) return false;
         if (efd0 < -EPS || (te <= EPS && Math.abs(ke) <= EPS)) return false;
 
@@ -88,7 +91,7 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
         efdmax = Math.max(efdmax, efd0);
 
         state[EFD] = Math.max(0.0, efd0);
-        state[VSENSE] = vt0;
+        state[VSENSE] = ec0;
         state[VR] = vr0;
         state[VF_FILTER] = efd0;
         state[LEAD_LAG] = error0;
@@ -98,7 +101,7 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
         double limiterAdd = bothLimitersAtError
                 ? (hasVuel ? vuel : 0.0) + (hasVoel ? voel : 0.0)
                 : (uel < 2 && hasVuel ? vuel : 0.0);
-        reference = error0 + vt0 - stabilizerSignal(machine) - limiterAdd;
+        reference = error0 + ec0 - stabilizerSignal(machine) - limiterAdd;
         outputSignal = efd0;
         initialized = true;
         return true;
@@ -164,7 +167,7 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
     private void derivatives(double[] x, double[] derivative, Machine machine) {
         Arrays.fill(derivative, 0.0);
         Algebraic a = algebraics(x, machine);
-        derivative[VSENSE] = lagDerivative(machine.getDStabBus().getVoltageMag(), x[VSENSE], tr);
+        derivative[VSENSE] = lagDerivative(sensedVoltage(machine), x[VSENSE], tr);
         derivative[LEAD_LAG] = lagDerivative(a.leadLagInput, x[LEAD_LAG], tb);
         derivative[VF_FILTER] = lagDerivative(a.efd, x[VF_FILTER], tf);
 
@@ -181,8 +184,7 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
     }
 
     private Algebraic algebraics(double[] x, Machine machine) {
-        double vt = machine.getDStabBus().getVoltageMag();
-        double sensed = tr > EPS ? x[VSENSE] : vt;
+        double sensed = tr > EPS ? x[VSENSE] : sensedVoltage(machine);
         double efd = te > EPS ? x[EFD] : algebraicEfd(x[VR], machine);
         double vf = tf > EPS ? kf * (efd - x[VF_FILTER]) / tf : 0.0;
         double leadLagInput = reference - sensed + stabilizerSignal(machine) - vf;

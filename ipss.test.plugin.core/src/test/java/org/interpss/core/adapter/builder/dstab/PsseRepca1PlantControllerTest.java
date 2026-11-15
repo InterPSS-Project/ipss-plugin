@@ -229,7 +229,11 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
     void rejectsInvalidControlFlags() {
         Repca1Data valid = expectedData();
         assertThrows(IllegalArgumentException.class, () -> copyWithFlags(valid, 2, 0, 1));
-        assertThrows(IllegalArgumentException.class, () -> copyWithFlags(valid, 1, -1, 1));
+        // The existing native-record contract preserves -1 as the voltage
+        // selector. Reject an unsupported selector instead of contradicting
+        // that independently introduced behavior with a stale strict-binary test.
+        assertEquals(-1, copyWithFlags(valid, 1, -1, 1).refFlag());
+        assertThrows(IllegalArgumentException.class, () -> copyWithFlags(valid, 1, -2, 1));
         assertThrows(IllegalArgumentException.class, () -> copyWithFlags(valid, 1, 0, 3));
     }
 

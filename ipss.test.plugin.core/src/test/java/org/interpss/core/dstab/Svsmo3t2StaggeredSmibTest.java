@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
@@ -79,6 +80,104 @@ public class Svsmo3t2StaggeredSmibTest extends CorePluginTestSetup {
         assertThrows(IllegalStateException.class, () -> solver.setEndpointTimePrecision(StaggeredEulerSolver.EndpointTimePrecision.SINGLE));
         model.setDStabBus(null);
         assertThrows(IllegalStateException.class, () -> solver.nextStep(algo.getSimuTime(), .0005, DynamicSimuMethod.MODIFIED_EULER));
+    }
+
+    @Test void localSampledFiringRetainsEventRatesAcrossDiscardAndShortInterval(@TempDir Path folder) throws Exception {
+        var retried = load(folder.resolve("retried"));
+        var clean = load(folder.resolve("clean"));
+        double nominalStep = .005;
+        double fragment = .00001;
+        double[] expected = new double[2];
+        int trial = 0;
+        for (var context : List.of(retried, clean)) {
+            var algo = context.getDynSimuAlgorithm();
+            algo.setSimuStepSec(nominalStep);
+            assertTrue(algo.initialization());
+            var device = model(context);
+            assertEquals(nominalStep * 2, device.getData().firingTime(), 0);
+            assertTrue(device.requiresPhysicalStepTrial(), "Positive short lag uses sampled firing in the ordinary solver");
+
+            double[] left = new double[device.staggeredStateCount()];
+            double[] right = left.clone();
+            double[] initial = left.clone();
+            device.evaluateStaggered(nominalStep, left, 0);
+            double previousSensorRate = left[0];
+            assertTrue(algo.solveDEqnStep(true));
+            device.acceptNetworkEvent();
+            device.evaluateStaggered(nominalStep, left, 0);
+            var remote = device.getRemoteBus();
+            remote.setVoltage(remote.getVoltage().multiply(.97));
+            device.evaluateStaggered(nominalStep, right, 0);
+            device.readStaggeredState(initial, 0);
+            double eventSensorRate = .5 * (left[0] + right[0]);
+            double expectedSensor = initial[0] + fragment * (eventSensorRate
+                    + .5 * fragment / nominalStep * (eventSensorRate - previousSensorRate));
+
+            if (trial == 0) {
+                var before = device.getIntegrationHistories();
+                double time = device.getIntegrationTime();
+                device.beginPhysicalStepTrial(nominalStep, fragment);
+                assertTrue(device.nextStep(fragment, DynamicSimuMethod.MODIFIED_EULER, 0));
+                device.publishPhysicalStepTrial();
+                device.discardPhysicalStepTrial();
+                double[] restored = new double[initial.length];
+                device.readStaggeredState(restored, 0);
+                assertArrayEquals(initial, restored, 0);
+                assertEquals(before, device.getIntegrationHistories());
+                assertEquals(time, device.getIntegrationTime(), 0);
+            }
+            assertTrue(device.nextStep(fragment, DynamicSimuMethod.MODIFIED_EULER, 0));
+            assertTrue(device.nextStep(fragment, DynamicSimuMethod.MODIFIED_EULER, 1));
+            double[] after = new double[initial.length];
+            device.readStaggeredState(after, 0);
+            assertEquals(expectedSensor, after[0], 1e-12);
+            expected[trial++] = after[0];
+        }
+        assertEquals(expected[0], expected[1], 0);
+    }
+
+    @Test void shortStaggeredLagProjectsTheNextCommandAtTheSolvedEndpoint(@TempDir Path folder) throws Exception {
+        var context = load(folder.resolve("staggered"));
+        var algo = context.getDynSimuAlgorithm();
+        var device = model(context);
+        double step = device.getData().firingTime() / 2;
+        var solver = new StaggeredEulerSolver(algo);
+        algo.setSolver(solver);
+        algo.setSimuStepSec(step);
+        assertTrue(algo.initialization());
+        assertTrue(device.requiresPhysicalStepTrial());
+        assertEquals(.01, device.getData().firingTime(), 0);
+
+        double heldCurrent = device.getCurrent();
+        device.setScheduledVoltage(device.getScheduledVoltage() + .005);
+        assertTrue(solver.networkSolutionStep());
+        double[] state = new double[device.staggeredStateCount()];
+        device.readStaggeredState(state, 0);
+        // The fixture's sensor has zero direct feedthrough and its gain block
+        // has unit feedthrough. The small reference change leaves limits clear.
+        var data = device.getData();
+        assertEquals(0, data.tc1(), 0);
+        assertEquals(data.tb2(), data.tc2(), 0);
+        double error = device.getVoltageReference() - state[0] - data.xc0() * heldCurrent;
+        assertEquals(state[1] + data.kp() * error, state[2], 1e-12);
+        assertNotEquals(heldCurrent, state[2], 1e-5);
+        assertEquals(heldCurrent, device.getCurrent(), 0);
+        assertTrue(algo.solveDEqnStep(true));
+        assertEquals(state[2], device.getCurrent(), 1e-10);
+
+        context.getDStabilityNet().setDStabNetInitialized(false);
+        algo.setSimuStepSec(step / 2);
+        assertTrue(algo.initialization());
+        assertFalse(device.requiresPhysicalStepTrial());
+
+        var modified = load(folder.resolve("modified"));
+        modified.getDynSimuAlgorithm().setSimuStepSec(step);
+        assertTrue(modified.getDynSimuAlgorithm().initialization());
+        assertTrue(model(modified).requiresPhysicalStepTrial());
+        modified.getDStabilityNet().setDStabNetInitialized(false);
+        modified.getDynSimuAlgorithm().setSimuStepSec(step / 2);
+        assertTrue(modified.getDynSimuAlgorithm().initialization());
+        assertFalse(model(modified).requiresPhysicalStepTrial());
     }
 
     @Test void trialsAndDerivativeReadsDoNotCommitDiscreteHistories(@TempDir Path folder) throws Exception {

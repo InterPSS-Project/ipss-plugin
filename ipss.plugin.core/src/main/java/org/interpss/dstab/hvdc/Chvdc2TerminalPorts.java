@@ -129,6 +129,7 @@ public final class Chvdc2TerminalPorts {
         try{inverterPort.setDStabBus(inverter);}catch(RuntimeException failure){rectifierPort.setDStabBus(null);throw failure;}
     }
     public Port rectifierPort(){return rectifierPort;}
+    Chvdc2NetworkPreparation.Binding bindingForImport(){return binding;}
     public Port inverterPort(){return inverterPort;}
     private boolean ownerIntact(){
         return network!=null&&rectifier.getNetwork()==network&&inverter.getNetwork()==network
@@ -275,7 +276,14 @@ public final class Chvdc2TerminalPorts {
                 runtime.step(h,stage,staggeredLocalSteps);
                 if(stage==1)runtime.completeIntegrationInterval();
                 return true;
-            }catch(RuntimeException failure){rollback();throw failure;}
+            }catch(RuntimeException failure){
+                // Retain the original domain failure and its rolled-back state;
+                // a multi-link case also needs the failed owner and local stage.
+                try{rollback();}catch(RuntimeException cleanup){failure.addSuppressed(cleanup);}
+                failure.addSuppressed(new IllegalStateException("CHVDC2 link="+linkName+", stage="+stage
+                    +", outerStep="+h+" s, localSteps="+staggeredLocalSteps));
+                throw failure;
+            }
         }
         @Override public boolean afterStep(double h){return true;}
         @Override public boolean updateAttributes(boolean changed){return attachmentIntact();}

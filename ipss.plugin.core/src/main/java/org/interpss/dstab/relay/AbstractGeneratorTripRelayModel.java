@@ -47,9 +47,13 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
 
     private double timerMemory;
     private double elapsedTime;
+    private double breakerElapsedTime;
+    private double lastAcceptedStep;
     private double actionTime = Double.NaN;
+    private boolean intervalBeganInBand;
     private boolean pickedUp;
     private boolean tripped;
+    private boolean physicalTripPerformed;
 
     protected AbstractGeneratorTripRelayModel(String modelName, int sourceBusNumber,
             BaseDStabBus<?, ?> monitoredBus, BaseDStabBus<?, ?> targetBus,
@@ -93,6 +97,10 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
         return pickedUp;
     }
 
+    /** An operation can be a no-op when another relay or event already removed
+     * the target. Retain that distinction for causal equipment-loss diagnostics. */
+    public final boolean didDisconnectTarget() { return physicalTripPerformed; }
+
     public final boolean isTripped() {
         return tripped;
     }
@@ -115,52 +123,124 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
             return false;
         }
         reset();
-        return Double.isFinite(getMonitoredValue());
+        double value=getMonitoredValue();
+        if(!Double.isFinite(value))return false;
+        // A source case can start outside an entered protection band. Retain its
+        // thresholds and timer behavior, but expose that even an undisturbed run
+        // can operate this relay; do not silently enlarge a supplied limit.
+        if(targetGenerator.isActive()&&(value<data.lowerThreshold()||value>data.upperThreshold()))
+            log.warn("{} {} initializes outside its protection band: monitoredBus={}, target={}/{}, value={}, band=[{}, {}], pickup={} s, breaker={} s",
+                modelName,getId(),monitoredBus.getId(),targetBus.getId(),targetGenerator.getId(),value,
+                data.lowerThreshold(),data.upperThreshold(),data.pickupTime(),data.breakerTime());
+        return true;
     }
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-        return Double.isFinite(dt) && dt >= 0.0;
+        if (!Double.isFinite(dt) || dt < 0.0) return false;
+        if (flag == 0 && dt > 0.0 && !pickedUp && !tripped) {
+            // The predictor starts from the accepted or post-event sample. If
+            // the next outside sample occurs at the corrector endpoint, pickup
+            // starts there and the preceding interval contributes no time.
+            intervalBeganInBand = !isOutsideBand(getMonitoredValue());
+        }
+        return true;
+    }
+
+    private boolean isOutsideBand(double value) {
+        return value < data.lowerThreshold() || value > data.upperThreshold();
     }
 
     @Override
     public boolean afterStep(double dt) {
         if (!Double.isFinite(dt) || dt < 0.0) return false;
-        elapsedTime += dt;
-        if (tripped) return true;
-
+        // Algebraic event-side solves do not integrate a relay or consume its
+        // next positive time interval. Predictor/corrector calls likewise leave
+        // the timer untouched; only an accepted physical step reaches here.
+        if (dt == 0.0 || tripped) return true;
         double value = getMonitoredValue();
         if (!Double.isFinite(value)) return false;
-        boolean outsideBand = value < data.lowerThreshold() || value > data.upperThreshold();
+        elapsedTime += dt;
+        lastAcceptedStep = dt;
+        boolean outsideBand = isOutsideBand(value);
+        boolean beganInBand = intervalBeganInBand;
+        intervalBeganInBand = false;
 
         if (!pickedUp) {
-            if (!outsideBand) {
+            if (!outsideBand || beganInBand) {
                 timerMemory = 0.0;
-                return true;
+                breakerElapsedTime = 0.0;
+                if (!outsideBand || data.pickupTime() > 0.0) return true;
             }
-            timerMemory += dt;
-            if (timerMemory + TIME_EPS >= data.pickupTime()) pickedUp = true;
+            double outsideInterval = beganInBand ? 0.0 : dt;
+            timerMemory += outsideInterval;
+            if (!delayReached(timerMemory, data.pickupTime(), dt)) return true;
+            pickedUp = true;
+            // A positive pickup stage ends at this accepted endpoint. Its
+            // rounding remainder is not elapsed breaker time. With zero
+            // pickup, credit only the time since the first outside sample.
+            breakerElapsedTime = data.pickupTime() == 0.0 ? outsideInterval : 0.0;
         } else {
             timerMemory += dt;
+            breakerElapsedTime += dt;
         }
 
-        if (pickedUp && timerMemory + TIME_EPS >= data.pickupTime() + data.breakerTime()) {
+        if (data.breakerTime() == 0.0
+                || breakerElapsedTime > 0.0
+                    && delayReached(breakerElapsedTime, data.breakerTime(), dt)) {
             return action(elapsedTime);
         }
         return true;
     }
 
+    /**
+     * The sampled relay selects the nearest accepted tick independently for
+     * pickup and breaker delay. Strictly waiting until elapsed >= delay adds a
+     * whole tick for 6 * 0.0033333 < 0.02, and summing both entered delays also
+     * changes two independently rounded stages (20.4+20.4 ms at 1 ms is 40 ms;
+     * 20.6+20.6 ms is 42 ms). The half-current-step comparison implements that
+     * sampled contract without modifying either source parameter or advancing
+     * time during an algebraic solve. TIME_EPS only covers double arithmetic;
+     * it is not a tunable timer tolerance. A positive stage still needs one
+     * accepted interval even when its entered delay is less than half a step.
+     */
+    private static boolean delayReached(double elapsed, double delay, double dt) {
+        return elapsed + 0.5 * dt + TIME_EPS >= delay;
+    }
+
     @Override
     public boolean action(double time) {
         if (tripped) return true;
+        // Independent threshold rows keep independent operation histories, but
+        // a second relay must not repeat an already completed physical trip or
+        // rebuild the matrix (which would introduce another angle discontinuity).
+        if(!targetGenerator.isActive()) {
+            tripped=true;actionTime=time;
+            log.info("{} {} operated for already-disconnected generator {}/{} at t={} s",
+                modelName,getId(),targetBus.getId(),targetGenerator.getId(),time);
+            return true;
+        }
+        var previous=targetBus.captureGeneratorStatusChange();
         DynamicDevice dynamicDevice = targetGenerator.getDynamicGenDevice();
         targetGenerator.setStatus(false);
         if (dynamicDevice != null) dynamicDevice.setStatus(false);
-        targetBus.resetSeqEquivLoad();
+        // Use the same sequence-cache transition as a scheduled generator trip.
+        // Reinitializing all equivalents here reconverts unrelated colocated load
+        // at its disturbed voltage, changing more than the tripped Norton source.
+        targetBus.refreshGeneratorStatusChange(previous);
         @SuppressWarnings("unchecked")
         BaseDStabNetwork<?, ?> network = (BaseDStabNetwork<?, ?>) targetBus.getNetwork();
-        network.formYMatrix4DStab();
-        network.setYMatrixDirty(true);
+        try {
+            // Rebuilding a bare no-fault matrix would clear an ongoing bus/branch
+            // fault before its scheduled clearing time. Restore every active fault
+            // through the established topology rebuild, without replaying actions.
+            new com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor().rebuildCurrentTopology(network);
+        } catch(org.interpss.numeric.exp.IpssNumericException failure) {
+            log.error("Could not restore active faults after relay {} disconnected {}/{}",getId(),
+                targetBus.getId(),targetGenerator.getId(),failure);
+            return false; // The physical step must fail; no partially advanced retry.
+        }
+        physicalTripPerformed=true;
         tripped = true;
         actionTime = time;
         log.info("{} tripped generator {}/{} at t={} s", modelName,
@@ -171,16 +251,21 @@ public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceIm
     @Override
     public boolean isActionTime(double time) {
         return !tripped && pickedUp
-                && timerMemory + TIME_EPS >= data.pickupTime() + data.breakerTime();
+                && (data.breakerTime() == 0.0 || breakerElapsedTime > 0.0
+                    && delayReached(breakerElapsedTime, data.breakerTime(), lastAcceptedStep));
     }
 
     @Override
     public boolean reset() {
         timerMemory = 0.0;
         elapsedTime = 0.0;
+        breakerElapsedTime = 0.0;
+        lastAcceptedStep = 0.0;
         actionTime = Double.NaN;
+        intervalBeganInBand = false;
         pickedUp = false;
         tripped = false;
+        physicalTripPerformed=false;
         return true;
     }
 

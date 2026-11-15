@@ -30,7 +30,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 /** IEEE/PSS/E Type AC2A rotating exciter. */
 @AnController(input="mach.vt", output="this.rectifier.y",
         refPoint="this.leadLag.u0+this.transducer.y+this.washout.y-pss.vs", display={})
-public class Esac2aExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Esac2aExciter extends AnnotateExciter implements IntegrationStepAware, org.interpss.dstab.control.exc.UnderExcitationLimiterTarget, org.interpss.dstab.control.exc.OverExcitationLimiterTarget {
     private static final double EPS=1.0e-12;
     private final Esac2aData data;
     public double one=1.0, zero=0.0, tr, tb, tc, ka, ta, vamax, vamin, kb, vrmax, vrmin;
@@ -93,10 +93,14 @@ public class Esac2aExciter extends AnnotateExciter implements IntegrationStepAwa
         }
     };
 
-    @AnFunctionField(input={"this.fieldIntegrator.y", "mach.ifd"})
+    @AnFunctionField(input={"this.fieldIntegrator.y"})
     public ICMLFunction vfe = new CMLFunctionAdapter() {
         @Override public double eval(double[] values) {
-            double ifd = Double.isFinite(values[1]) ? values[1] : 0.0;
+            // The generic mach.ifd symbol is on machine field-current base.
+            // ESAC2A Kd and rectifier loading use exciter base, as initialization
+            // and the field-voltage ceiling already do. Mixing the two bases
+            // makes VFE jump at the first step with otherwise frozen inputs.
+            double ifd = exciterIfd();
             return values[0]*(ke+saturation.eval(new double[] {values[0]}))+kd*ifd;
         }
     };

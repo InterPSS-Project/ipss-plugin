@@ -1,5 +1,16 @@
 # CHVDC2 named-link preparation and shared components
 
+## Automatic Source Attachment
+
+The [native import compatibility update](native-import-compatibility.md) now
+retains direct and wrapped source records through `Chvdc2DyrModel`. Both dynamic
+solvers prepare the existing runtime after load flow and attach its terminal
+ports using the configured outer interval. Source/owner validation, copying,
+reinitialization, and imported-versus-explicit flat/fault parity are covered.
+Historical references below to missing automatic import describe the earlier
+checkpoint. General trajectory acceptance remains open; this change does not
+relax the documented reference gates or claim additional qualification.
+
 ## Fault-on and nonfault reference-range error gates
 
 The full-network fault comparison now evaluates each channel's RMSE separately
@@ -2160,3 +2171,59 @@ reveal every intra-interval voltage observed by the reference controller.
 The remaining issue is the filter's input and publication stage around
 release and re-short transitions. Do not change the DC line equation or
 filter time constants solely to fit the published STATE3 trace.
+
+
+## Qualified dynamic RL current-zero owner boundary
+
+CHVDC2U1 source flags111 with entered C=0 now projects its own modified-Euler
+line-current predictor/corrector before converter evaluation. Both free RL
+rates remain in the Heun quadrature; zeroing the outward right rate while
+retaining the origin can create rebound. The accepted-zero published derivative
+is viable, while internal free rates remain available for quadrature.
+Controller states and protection histories continue without a blocking timer,
+angle reset, or parameter change.
+
+This boundary belongs to Chvdc2CoupledRuntime. The signed Chvdc2DcLine ODE is
+unchanged. Algebraic/capacitor paths, other flags/dialects, and negative shared
+external proposals retain their guards. Chvdc2RlBoundaryTest covers crossing,
+hold/release, raw quadrature, cancellation, rollback and observation purity.
+
+Two complete fixed-angle cold pairs qualify boundary entry/release clocks at
+1 ms and 0.5 ms with unchanged ordinary current criteria applied to that
+component. Old/new positive-current prefixes are bit-identical. Complete
+controller-active state trajectories remain unqualified: their one-sample
+release difference and full-state gate failures are retained. Private raw
+captures, goldens, corrected-checkpoint replay and detailed results live in
+the large-case QA repository.
+
+Ten existing local updates keep the isolated equilibrium flat at outer
+0.0033333 s; one local update is unstable. This does not qualify a complete
+system or alter the default local count.
+
+## Filtered inverter voltage for commutation recovery
+
+The short release compares the entered recovery threshold with the
+existing inverter AC measurement after the configured measurement lag.
+Independent native voltage profiles distinguish the two signals. A raw
+terminal rebound above threshold can occur several samples before the
+short releases. The release coincides with the filtered state crossing
+the threshold once the hold time is satisfied. A zero measurement time
+naturally supplies the algebraic terminal voltage through the same
+measurement output. The electrical converter continues to use the live
+terminal phasors when evaluating AC current.
+
+
+## Accepted AC samples in CHVDC2U1 local integration
+
+For the CHVDC2U1 configuration with all three source controls enabled,
+entered zero line capacitance, and a finite measurement lag, the
+modified-Euler local corrector holds the same accepted AC terminal
+phasors as its predictor. Native terminal voltage playback at the
+entered interval and at half that interval shows that the filtered AC
+voltage and DC current advance from the preceding solved phasors.
+Interpolating to the next trial voltage advances their response and
+can shift commutation-short transitions. The end of the corrector
+restores the right phasors for the electrical solve. Non-AC inputs
+retain their existing interpolation and protection remains owned by
+the outer network transaction. The first interval after a scheduled
+network event still uses both event-side rates.

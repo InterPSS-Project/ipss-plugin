@@ -48,11 +48,28 @@ public final class Oel2cOverExcitationLimiter extends DynLoadModelImpl
         setCurrInj2Net(Complex.ZERO); setDStabBus(bus);
     }
 
+    /** Bus auxiliaries are visited independently of generator initialization.
+     * An out-of-service host may have no electrical state owner yet. Gate
+     * every physical-input entry before reading current, field quantities or
+     * exciter feedback; preserve histories and do not publish to that host.
+     * This is a status guard, not an exception fallback: active-host errors
+     * still propagate through the original physical-input path.
+     */
+    private boolean sameOwner(){
+        return machine.getDStabBus()==getDStabBus() && machine.getExciter()==exciter;
+    }
+    private boolean enabled(){
+        if(!sameOwner())throw new IllegalStateException("Limiter host exciter or bus was replaced/detached");
+        return isActive() && getDStabBus().isActive() && machine.isActive()
+                && machine.getParentGen().isActive() && machine.getExciter().isActive();
+    }
+
     @Override public boolean initStates(){return initStates(getDStabBus());}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine ignored){return initStates(bus);}
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Network<?,?> ignored){return initStates(bus);}
     @Override public boolean initStates(BaseDStabBus<?,?> bus){
         if(bus==null||bus!=getDStabBus()||machine.getExciter()!=exciter)return false;
+        if(!enabled())return true;
         double sensed=inputSignal();
         inputInitializationPending=Math.abs(sensed)<=EPS;
         initializeState(sensed);
@@ -79,10 +96,15 @@ public final class Oel2cOverExcitationLimiter extends DynLoadModelImpl
     }
     /** Advance using a prescribed selected input without changing model equations. */
     public boolean nextStepWithInputSignal(double dt,DynamicSimuMethod method,int flag,double selectedInput){
-        if(!Double.isFinite(selectedInput))return false;validationInput=selectedInput;return nextStep(dt,method,flag);
+        if(!Double.isFinite(selectedInput))return false;validationInput=selectedInput;return advance(dt,method,flag);
     }
 
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag){
+        if(!sameOwner())return false;
+        if(!enabled())return true;
+        return advance(dt,method,flag);
+    }
+    private boolean advance(double dt,DynamicSimuMethod method,int flag){
         if(method!=DynamicSimuMethod.MODIFIED_EULER)
             throw new InterpssRuntimeException("OEL2C supports MODIFIED_EULER only");
         if(!initialized||dt<0||!Double.isFinite(dt))return false;
@@ -96,6 +118,8 @@ public final class Oel2cOverExcitationLimiter extends DynLoadModelImpl
     }
 
     @Override public boolean afterStep(double dt){
+        if(!sameOwner())return false;
+        if(!enabled())return true;
         if(!initialized||dt<0||!Double.isFinite(dt))return false;
         Algebraic a=calculate(state);
         boolean requestSet=a.timerError()<=0||data.activationDelay()==0;
@@ -153,7 +177,9 @@ public final class Oel2cOverExcitationLimiter extends DynLoadModelImpl
     private double scaledInput(){
         double raw=switch(data.inputMode()){
             case 1->machine.getEfd();
-            case 2->machine.calculateIfd(MachineIfdBase.EXCITER);
+            // Convert the exciter-base field current to rated-field per unit
+            // before applying the entered input gain.
+            case 2 -> machine.calculateIfd(MachineIfdBase.EXCITER) / data.ratedFieldCurrent();
             default->machine.getEfd();
         };
         return data.inputScale()*raw;
@@ -175,16 +201,16 @@ public final class Oel2cOverExcitationLimiter extends DynLoadModelImpl
     private static void add(double[] x,double[] d,double dt,double[] y){for(int i=0;i<x.length;i++)y[i]=x[i]+dt*d[i];}
     private static boolean finite(double[] x){for(double v:x)if(!Double.isFinite(v))return false;return true;}
 
-    @Override public double getOutput(){ensureInputInitialized();return output;}
+    @Override public double getOutput(){if(enabled())ensureInputInitialized();return output;}
     @Override public Object getOutputObject(){return Complex.ZERO;}
-    @Override public boolean updateAttributes(boolean netChange){return true;}
-    @Override public Hashtable<String,Object> getStates(Object ref){states.put("OEL2C_OUTPUT",output);return states;}
-    @Override public Map<String,Double> getNamedStates(){ensureInputInitialized();Map<String,Double> result=new LinkedHashMap<>();
+    @Override public boolean updateAttributes(boolean netChange){return sameOwner();}
+    @Override public Hashtable<String,Object> getStates(Object ref){enabled();states.put("OEL2C_OUTPUT",output);return states;}
+    @Override public Map<String,Double> getNamedStates(){if(enabled())ensureInputInitialized();Map<String,Double> result=new LinkedHashMap<>();
         result.put("PID integrator",active[PI]);result.put("PID derivative",active[DERIVATIVE]);
         result.put("First lead-lag",active[LEAD_LAG_1]);result.put("Second lead-lag",active[LEAD_LAG_2]);
         result.put("Reference filter",active[REFERENCE_FILTER]);result.put("Current reference",active[CURRENT_REFERENCE]);
         result.put("Sensed input",active[SENSED_INPUT]);result.put("Timer signal",active[TIMER]);return Map.copyOf(result);}
-    public Oel2cData getData(){return data;} public double[] getStateSnapshot(){ensureInputInitialized();return active.clone();}
+    public Oel2cData getData(){return data;} public double[] getStateSnapshot(){if(enabled())ensureInputInitialized();return active.clone();}
     public double getBias(){return bias;} public boolean isSet(){return set;}
     private record Algebraic(double actual,double error,double inverse1,double inverse2,double timerLogic,
             double timerRate,double timerError,double ramp,double pidUnlimited,double pid,double first,double output){}

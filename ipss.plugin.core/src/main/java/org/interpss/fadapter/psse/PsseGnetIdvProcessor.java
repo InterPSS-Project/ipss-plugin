@@ -45,7 +45,17 @@ public final class PsseGnetIdvProcessor {
                     + idvFile + ": " + ex.getMessage());
         }
 
-        AclfNetworkBuilder builder = new AclfNetworkBuilder(network);
+        return applyBusIds(network, busIds, idvFile);
+    }
+
+    /** Reuse the same conversion for ordered blocks inside a local setup file. */
+    static Result applyBusIds(BaseDStabNetwork<?, ?> network, Set<String> busIds,
+            String source) throws InterpssException {
+        return applyBusIds(network,busIds,source,null);
+    }
+    static Result applyBusIds(BaseDStabNetwork<?, ?> network, Set<String> busIds,
+            String source, org.interpss.fadapter.builder.AclfNetworkObjectFactory objectFactory) throws InterpssException {
+        AclfNetworkBuilder builder = new AclfNetworkBuilder(network,objectFactory);
         int convertedBuses = 0;
         int convertedGenerators = 0;
         Set<GeneratorKey> convertedGeneratorKeys = new LinkedHashSet<>();
@@ -53,7 +63,7 @@ public final class PsseGnetIdvProcessor {
             BaseAclfBus<?, ?> bus = (BaseAclfBus<?, ?>) network.getBus(busId);
             if (bus == null) {
                 throw new InterpssException("GNET references missing bus " + busId
-                        + " in " + idvFile);
+                        + " in " + source);
             }
 
             int convertedAtBus = 0;

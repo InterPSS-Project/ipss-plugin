@@ -10,9 +10,12 @@ import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** WECC H6E / PSS/E H6EU1 Kaplan hydro turbine-governor. */
 public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStepAware {
+    private static final Logger log=LoggerFactory.getLogger(PsseH6eGovernor.class);
     private static final double SMALL = 1.0e-9;
     private static final double MIN_FLOW = 1.0e-4;
 
@@ -38,6 +41,7 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     private double currentOutput;
     private DeadbandMode deadbandMode = DeadbandMode.NEUTRAL;
     private boolean initialized;
+    private String initializationBypassReason;
 
     public PsseH6eGovernor(String id, String name, String category) {
         super(id, name, category);
@@ -60,6 +64,11 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     }
 
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
+        initialized=false;initializationBypassReason=null;
+        state=State.zero();oldState=state;oldDerivatives=Derivatives.zero();
+        committedGateCommand=committedGate=committedBlade=committedBladeDemand=0;
+        currentGateCommand=currentGate=currentBlade=currentHead=currentOutput=0;
+        targetPref=movingPref=0;deadbandMode=DeadbandMode.NEUTRAL;
         if (!validateParameters()) return false;
         effective = correctedParameters();
         double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
@@ -71,6 +80,22 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
 
         double head0 = effective.hdam;
         double powerAtUnitHead = pm0 / head0;
+        Curve initialCurve=powerCurve();
+        double maximumPower=initialCurve.y[initialCurve.y.length-1];
+        if(powerAtUnitHead>maximumPower+SMALL) {
+            // The native overload boundary ignores this governor and retains
+            // the machine's initial mechanical input. Clamping the inverse
+            // lookup to its last point instead creates an artificial startup
+            // power drop. Keep the source curve/rating unchanged and expose
+            // the bypass explicitly; a later valid initialization restores
+            // normal control. This is not a general failure-swallowing path.
+            initializationBypassReason="Operating power "+(pm0*governorBaseMva)
+                    +" MW exceeds turbine curve maximum "+(maximumPower*head0*governorBaseMva)+" MW";
+            state=new State(pe0,1,0,0,0,0,0,0,0);oldState=state;
+            currentHead=head0;currentOutput=pm0;initialized=true;
+            log.warn("H6E governor {} bypassed at initialization: {}; holding initial mechanical power",mach.getId(),initializationBypassReason);
+            return true;
+        }
         double q0 = inversePowerCurve(powerAtUnitHead);
         if (!Double.isFinite(q0) || q0 < MIN_FLOW) return false;
         double flowArea0 = q0 / Math.sqrt(head0);
@@ -110,6 +135,10 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
             throw new InterpssRuntimeException("H6E supports MODIFIED_EULER only");
         }
         if (!initialized) return false;
+        if(initializationBypassReason!=null) {
+            if(flag!=0&&flag!=1)throw new InterpssRuntimeException("H6E invalid integration flag: "+flag);
+            return true;
+        }
         if (flag == 0) {
             updateMovingReference(dt);
             oldState = state;
@@ -139,9 +168,13 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     }
 
     @Override public double getOutput(Machine mach) {
-        return (initialized && effective.tw <= SMALL ? currentAlgebraic().pmech : currentOutput)
+        return (initialized && initializationBypassReason==null && effective.tw <= SMALL ? currentAlgebraic().pmech : currentOutput)
                 * governorToMachineBase;
     }
+
+    public boolean isInitializationBypassed(){return initializationBypassReason!=null;}
+    /** Null for normal control; otherwise a reported, constant-power overload bypass. */
+    public String getInitializationBypassReason(){return initializationBypassReason;}
 
     private Algebraic currentAlgebraic() {
         return algebraic(state, committedGateCommand, committedGate,
@@ -170,8 +203,8 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     /** PowerWorld H6E state 8, blade servomotor position. */
     public double getBladeServoState() { return state.bladeServo; }
     public double getBladePosition() { return currentBlade; }
-    public double getWaterFlow() { return initialized && effective.tw <= SMALL ? currentAlgebraic().flow : state.flow; }
-    public double getHead() { return initialized && effective.tw <= SMALL ? currentAlgebraic().head : currentHead; }
+    public double getWaterFlow() { return initialized && initializationBypassReason==null && effective.tw <= SMALL ? currentAlgebraic().flow : state.flow; }
+    public double getHead() { return initialized && initializationBypassReason==null && effective.tw <= SMALL ? currentAlgebraic().head : currentHead; }
     public double getEffectiveGmax() { return effective.gmax; }
     public double getEffectiveGmin() { return effective.gmin; }
     public double getEffectiveKi() { return effective.ki; }
@@ -194,7 +227,7 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
         if (d.getTpe() < 0.0 || d.getTd() < 0.0 || d.getTg() < 0.0
                 || d.getTbd() < 0.0 || d.getTbs() < 0.0 || d.getTw() < 0.0
                 || d.getHdam() <= 0.0 || d.getTrate() < 0.0
-                || d.getBgvmin() < 0.0 || d.getBgvmin() >= 0.99999) return false;
+                || d.getBgvmin() < 0.0 || d.getBgvmin() > 1.0) return false;
         return validCurves();
     }
 
@@ -211,7 +244,7 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
                 Math.abs(d.getBlb()), Math.abs(d.getDbbs()),
                 correctedOptionalTime(d.getTbs(), minimum), Math.abs(d.getBlv()),
                 Math.max(0.0, d.getDturb()), Math.max(0.0, d.getDeff()),
-                clamp(d.getBgvmin(), 1.0e-5, 0.99999), d.getHdam(),
+                clamp(d.getBgvmin(), 1.0e-5, 1.0), d.getHdam(),
                 d.getTw() > 0.0 && d.getTw() < minimum ? minimum : d.getTw());
     }
 
@@ -231,7 +264,11 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
                 ? propInput : speedError - d.getRe() * measuredPe;
         double derivative = effective.td > SMALL
                 ? (measuredSpeed - 1.0 - s.derivativeLag) / effective.td : 0.0;
-        double command = clamp(d.getKp() * propInput + s.integrator - d.getKd() * derivative,
+        // H6E1's native gate-command channel adds Kd times the derivative of
+        // filtered speed for both feedback selectors. The typed H6E and legacy
+        // H6EU1 implementations use the opposite polarity.
+        double derivativeGain = d.isNativeH6e1Derivative() ? d.getKd() : -d.getKd();
+        double command = clamp(d.getKp() * propInput + s.integrator + derivativeGain * derivative,
                 effective.gmin, effective.gmax);
         double gate = backlash(s.gate, priorGate, effective.blg);
         double bladeCommand = bladeCurve(command);
@@ -345,7 +382,7 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     public double flowArea(double gate) {
         double b = bladeCurve(gate);
         double minimum = effective == null
-                ? clamp(getData().getBgvmin(), 1.0e-5, 0.99999) : effective.bgvmin;
+                ? clamp(getData().getBgvmin(), 1.0e-5, 1.0) : effective.bgvmin;
         return gate * (minimum + (1.0 - minimum) * b);
     }
 
@@ -363,7 +400,7 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
         for (int i = 0; i < 10; i++) {
             if (i == 0 || gv[i] > 0.0) {
                 double minimum = effective == null
-                        ? clamp(getData().getBgvmin(), 1.0e-5, 0.99999) : effective.bgvmin;
+                        ? clamp(getData().getBgvmin(), 1.0e-5, 1.0) : effective.bgvmin;
                 q.add(gv[i] * (minimum + (1.0 - minimum) * bgv[i]));
                 p.add(pgv[i]);
             }
@@ -389,8 +426,22 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     private boolean validCurves() {
         Curve blade = curve(getData().getGv(), getData().getBgv());
         Curve power = powerCurve();
-        return strictlyIncreasing(blade.x) && nondecreasing(blade.y)
-                && strictlyIncreasing(power.x) && nondecreasing(power.y);
+        // Blade stroke need not be monotone (the native example has a dip).
+        // It is the resulting flow-area curve that must remain invertible.
+        return strictlyIncreasing(blade.x) && java.util.Arrays.stream(blade.y).allMatch(Double::isFinite)
+                && strictlyIncreasing(power.x) && nondecreasing(power.y) && invertibleFlowArea(blade);
+    }
+
+    private boolean invertibleFlowArea(Curve blade) {
+        double minimum = effective == null ? clamp(getData().getBgvmin(), 1.0e-5, 1.0) : effective.bgvmin;
+        for (int i = 1; i < blade.x.length; i++) {
+            double slope = (blade.y[i] - blade.y[i-1]) / (blade.x[i] - blade.x[i-1]);
+            // Flow is gate*(minimum+(1-minimum)*blade(gate)); its derivative
+            // is affine on each segment, so positive endpoints qualify the whole segment.
+            if (minimum + (1-minimum)*(blade.y[i-1] + blade.x[i-1]*slope) <= 0
+                    || minimum + (1-minimum)*(blade.y[i] + blade.x[i]*slope) <= 0) return false;
+        }
+        return true;
     }
 
     private static Curve curve(double[] xValues, double[] yValues) {

@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ac4c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -48,10 +50,10 @@ public final class Ac4cExciter extends AnnotateExciter implements IntegrationSte
         if(!Double.isFinite(vt0)||!Double.isFinite(efd0))return false;
         vrmax=Math.max(vrmax,efd0+kc*ifd0);vrmin=Math.min(vrmin,efd0);
         double vi0=efd0/ka;vimax=Math.max(vimax,vi0);vimin=Math.min(vimin,vi0);
-        state[EFIELD_BEFORE_LIMIT]=efd0;state[VSENSE]=vt0;
+        state[EFIELD_BEFORE_LIMIT]=efd0;state[VSENSE]=sensedVoltage(machine);
         state[VLL]=transferState(vi0,vi0,tc,tb);
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=vi0+vt0-stabilizerSignal(machine)-summationLimiterInput();
+        reference=vi0+state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
         outputSignal=efd0;initialized=true;return true;
     }
 
@@ -76,12 +78,12 @@ public final class Ac4cExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] dx,Machine machine) {
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[VLL]=transferDerivative(a.vi,x[VLL],tc,tb);
         dx[EFIELD_BEFORE_LIMIT]=lagDerivative(ka*a.gated,x[EFIELD_BEFORE_LIMIT],ta);
     }
     private Algebraic algebraics(double[] x,Machine machine) {
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double error=reference-sensed+stabilizerSignal(machine)+summationLimiterInput();
         double vi=clamp(error,vimin,vimax),vll=transferOutput(vi,x[VLL],tc,tb);
         double gated=takeoverLimiterOutput(vll),upper=Math.max(vrmin,vrmax-kc*exciterIfd(machine));

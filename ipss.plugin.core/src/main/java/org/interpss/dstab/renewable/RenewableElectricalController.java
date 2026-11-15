@@ -44,6 +44,10 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     default void setAuxiliaryController(org.interpss.dstab.mach.Reaxbu1Model controller){
         throw new UnsupportedOperationException("This electrical controller has no auxiliary reference port");
     }
+    /** The owning solver advances shared plant/auxiliary states exactly once. */
+    default void setTwoStepAuxiliaryManaged(boolean managed) {
+        if(managed)throw new UnsupportedOperationException("This electrical controller has no managed auxiliary port");
+    }
     default void setRepccController(RepccModel plantController) {
         throw new UnsupportedOperationException("This electrical controller has no REPCC input port");
     }

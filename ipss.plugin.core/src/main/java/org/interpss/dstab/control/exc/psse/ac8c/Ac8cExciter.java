@@ -1,5 +1,10 @@
 package org.interpss.dstab.control.exc.psse.ac8c;
 
+import static org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.sensedVoltage;
+
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
+import org.interpss.dstab.control.exc.OverExcitationLimiterTarget;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -18,7 +23,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2016 / PSS/E AC8C controlled-rectifier brushless exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class Ac8cExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class Ac8cExciter extends AnnotateExciter implements IntegrationStepAware, UnderExcitationLimiterTarget, OverExcitationLimiterTarget, org.interpss.dstab.control.exc.Oel3cExciterPort {
     public static final int INPUT_UNUSED=0,INPUT_SUMMATION=1;
     public static final int GATE_1=2,GATE_2=3;
     public static final int PSS_AT_ERROR=1,PSS_AFTER_HV_GATE=2;
@@ -30,6 +35,7 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
     private final double[] state=new double[5],trial=new double[5],oldDerivative=new double[5];
     private double[] active=state;
     private boolean initialized,hasVuel,hasVoel,hasVsclSum,hasVsclUel,hasVsclOel;
+    private Limiter auxiliaryOel3c;
     private double integrationStep,minimumTimeConstantMultiplier=1;
     private double vuel,voel,vsclSum,vsclUel,vsclOel;
 
@@ -42,7 +48,25 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
         super(id,"AC8C","PSS/E");this.data=data;this._data=data;setMachine(machine);
     }
     public Ac8cData getData(){return data;}
-    public void setVuel(double v){vuel=v;hasVuel=true;} public void setVoel(double v){voel=v;hasVoel=true;}
+    public void setVuel(double v){vuel=v;hasVuel=true;} public void setVoel(double v){
+        if(auxiliaryOel3c!=null)throw new IllegalStateException("OEL input already occupied");
+        voel=v;hasVoel=true;
+    }
+    // Disconnecting a limiter must remove its selector gate, not install a zero ceiling.
+    @Override public void clearVuel(){vuel=0;hasVuel=false;}
+    @Override public void clearVoel(){voel=0;hasVoel=false;}
+    @Override public Connection oel3cConnection(){
+        return data.getOelLocation()==INPUT_SUMMATION?Connection.SUMMATION
+            :data.getOelLocation()>=GATE_1?Connection.TAKEOVER:Connection.DISABLED;
+    }
+    @Override public boolean bindOel3c(Limiter limiter){
+        if(limiter==null||auxiliaryOel3c!=null||hasVoel||oel3cConnection()!=Connection.SUMMATION)return false;
+        auxiliaryOel3c=limiter;return true;
+    }
+    @Override public double oel3cExciterFieldCurrent(){
+        if(!initialized)throw new IllegalStateException("Exciter has not initialized");
+        return getFieldFeedback();
+    }
     public void setVsclSum(double v){vsclSum=v;hasVsclSum=true;}
     public void setVsclUel(double v){vsclUel=v;hasVsclUel=true;}
     public void setVsclOel(double v){vsclOel=v;hasVsclOel=true;}
@@ -65,11 +89,14 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
         // PowerWorld's AC8C initialization treatment expands only the regulator
         // output limits. The rotating-exciter field limits remain model data.
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
-        state[VE]=ve0;state[VSENSE]=vt0;state[PID_DERIVATIVE_LAG]=0;
+        state[VE]=ve0;state[VSENSE]=sensedVoltage(machine);state[PID_DERIVATIVE_LAG]=0;
         state[PID_INTEGRAL]=pid0;state[VR]=vr0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         double pss=stabilizerSignal(machine);
-        reference=vt0-summationLimiterInput()-(vosLocation==PSS_AT_ERROR?pss:0);
+        // Initialize the limiter only after the physical field state is available.
+        reference=state[VSENSE]-(vosLocation==PSS_AT_ERROR?pss:0);
+        if(auxiliaryOel3c!=null&&!auxiliaryOel3c.initializeAfterExciter(vfe0))return false;
+        reference-=summationLimiterInput();
         outputSignal=speedAdjusted(rectifierOutput(ve0,ifd0),machine);initialized=true;return true;
     }
 
@@ -100,7 +127,7 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensedVoltage(machine),x[VSENSE],tr);
         dx[PID_DERIVATIVE_LAG]=lagDerivative(a.pidError,x[PID_DERIVATIVE_LAG],tdr);
         dx[PID_INTEGRAL]=kir*(a.pidError-PID_TRACKING_GAIN*(a.pidUnlimited-a.pidLimited));
         double vrRate=ta>EPS?(ka*a.pidOutput-x[VR])/ta:0;
@@ -116,7 +143,7 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
         return algebraicsAtField(x,machine,field,ifd);
     }
     private Algebraic algebraicsAtField(double[] x,Machine machine,double field,double ifd){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
+        double sensed=tr>EPS?x[VSENSE]:sensedVoltage(machine);
         double pss=stabilizerSignal(machine),pidError=reference-sensed+summationLimiterInput()
                 +(vosLocation==PSS_AT_ERROR?pss:0);
         pidError=hvGate(pidError,GATE_1);if(vosLocation==PSS_AFTER_HV_GATE)pidError+=pss;
@@ -142,7 +169,7 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
     }
     private double fieldResidual(double field,double[] x,Machine machine,double ifd){Algebraic a=algebraicsAtField(x,machine,field,ifd);return a.efe-a.vfe;}
 
-    private double summationLimiterInput(){double v=0;if(uelLocation<2&&hasVuel)v+=vuel;if(oelLocation<2&&hasVoel)v+=voel;if(sclLocation<2&&hasVsclSum)v+=vsclSum;return v;}
+    private double summationLimiterInput(){double v=0;if(uelLocation<2&&hasVuel)v+=vuel;if(oelLocation<2&&hasVoel)v+=voel;if(oelLocation==INPUT_SUMMATION&&auxiliaryOel3c!=null)v+=auxiliaryOel3c.output();if(sclLocation<2&&hasVsclSum)v+=vsclSum;return v;}
     private double hvGate(double v,int gate){if(uelLocation==gate&&hasVuel)v=Math.max(v,vuel);if(sclLocation==gate&&hasVsclUel)v=Math.max(v,vsclUel);return v;}
     private double lvGate(double v,int gate){if(oelLocation==gate&&hasVoel)v=Math.min(v,voel);if(sclLocation==gate&&hasVsclOel)v=Math.min(v,vsclOel);return v;}
     private double potentialSource(Machine machine){

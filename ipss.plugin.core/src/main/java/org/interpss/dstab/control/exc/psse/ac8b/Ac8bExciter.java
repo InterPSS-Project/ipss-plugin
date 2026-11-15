@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
 import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 
 import com.interpss.dstab.BaseDStabBus;
@@ -18,9 +19,10 @@ import com.interpss.dstab.mach.MachineIfdBase;
  * IEEE 421.5-2005 / PSS/E AC8B rotating exciter.
  *
  * <p>The five states and signal ordering follow the published PowerWorld
- * diagram.  The PID tracking anti-windup equations match the open-source
- * ANDES {@code PIDTrackAW} realization; the field integrator additionally
- * enforces the diagram's {@code VFEMAX}/{@code VEMIN} dynamic limits.</p>
+ * diagram. The 21-CON AC8B PID uses independently qualified directional
+ * nonwindup at its own output limits. The shared 15-CON ESAC8B dialect retains
+ * its previous tracking realization pending separate boundary qualification.
+ * The field integrator enforces the diagram's dynamic field limits.</p>
  */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
@@ -86,16 +88,30 @@ public class Ac8bExciter extends AnnotateExciter
 
         double ifd = exciterIfd(machine);
         double ve0 = Exac1Exciter.solveInternalVoltage(machine.getEfd(), kc * ifd);
-        if (!Double.isFinite(ve0)) return false;
+        if (!Double.isFinite(ve0)) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).error(
+                    "AC8B initialization cannot invert the rectifier: machine={}, Efd={}, Ifd={}, KC={}",
+                    machine.getId(),machine.getEfd(),ifd,kc);
+            return false;
+        }
         double vfe0 = fieldFeedback(ve0, ifd);
         double pid0 = vfe0 / ka;
-        if (pid0 > vpidmax + EPS || pid0 < vpidmin - EPS) return false;
+        if (pid0 > vpidmax + EPS || pid0 < vpidmin - EPS) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).error(
+                    "AC8B initial PID output exceeds its limits: machine={}, PID={}, min={}, max={}",
+                    machine.getId(),pid0,vpidmin,vpidmax);
+            return false;
+        }
 
         // PowerWorld expands only the amplifier limits during initialization.
         vrmax = Math.max(vrmax, vfe0);
         vrmin = Math.min(vrmin, vfe0);
         state[VE] = ve0;
-        state[VSENSE] = machine.getDStabBus().getVoltageMag();
+        // The transducer senses VCOMP, supplied by IEEEVC or the machine's
+        // own compensation boundary. Use it consistently at initialization,
+        // positive-TR stages and the algebraic bypass; raw terminal voltage
+        // would silently ignore an attached compensator.
+        state[VSENSE] = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         state[PID_INTEGRAL] = pid0;
         state[PID_DERIVATIVE_LAG] = 0.0;
         state[VR] = vfe0;
@@ -181,11 +197,29 @@ public class Ac8bExciter extends AnnotateExciter
     private void derivatives(double[] x, double[] dx, Machine machine) {
         Arrays.fill(dx, 0.0);
         Algebraic a = algebraics(x, machine);
-        double vt = machine.getDStabBus().getVoltageMag();
+        double vt = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         dx[VSENSE] = lagDerivative(vt, x[VSENSE], tr);
         dx[PID_DERIVATIVE_LAG] = lagDerivative(a.error, x[PID_DERIVATIVE_LAG], tdr);
-        dx[PID_INTEGRAL] = kir * (a.error
-                - PID_TRACKING_GAIN * (a.pidUnlimited - a.pidOutput));
+        double integralRate = kir * a.error;
+        if (data.isEsac8bPti()) {
+            // Keep the separately represented 15-CON dialect unchanged: the
+            // exact-record boundary evidence below qualifies AC8B only.
+            integralRate = kir * (a.error
+                    - PID_TRACKING_GAIN * (a.pidUnlimited - a.pidOutput));
+        } else if ((a.pidUnlimited >= vpidmax && integralRate > 0.0)
+                || (a.pidUnlimited <= vpidmin && integralRate < 0.0)) {
+            // Exact-record reference traces hold the integral only when it
+            // would drive the PID farther beyond its own bound. Inward motion
+            // remains necessary for recovery. Back-calculation from a large
+            // derivative kick instead drives I against the voltage error and
+            // can leave the field suppressed after the disturbance has ended.
+            // Do not clamp I itself or track the separate amplifier limits:
+            // the reference keeps integrating when only VR is constrained.
+            // Apply this to each RHS evaluation so predictor/corrector stages
+            // retain their existing state and derivative-history ownership.
+            integralRate = 0.0;
+        }
+        dx[PID_INTEGRAL] = integralRate;
 
         double vrRate = ta > EPS ? (ka * a.pidOutput - x[VR]) / ta : 0.0;
         if ((x[VR] >= vrmax && vrRate > 0.0) || (x[VR] <= vrmin && vrRate < 0.0)) {
@@ -203,7 +237,7 @@ public class Ac8bExciter extends AnnotateExciter
     }
 
     private Algebraic algebraics(double[] x, Machine machine) {
-        double vt = machine.getDStabBus().getVoltageMag();
+        double vt = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         double sensed = tr > EPS ? x[VSENSE] : vt;
         double error = reference - sensed + vuel + voel + stabilizerSignal(machine);
         double derivative = tdr > EPS ? kdr * (error - x[PID_DERIVATIVE_LAG]) / tdr : 0.0;
@@ -247,13 +281,35 @@ public class Ac8bExciter extends AnnotateExciter
     }
 
     private double fieldUpperLimit(double field, double ifd) {
-        double denominator = ke + Exac1Exciter.saturation(Math.max(field, 0.0), e1, se1, e2, se2);
+        double saturation = fieldSaturation(Math.max(field, 0.0));
+        double denominator = ke + saturation;
         if (denominator <= EPS) return Double.POSITIVE_INFINITY;
-        return (vfemax - kd * ifd) / denominator;
+        double upper = (vfemax - kd * ifd) / denominator;
+        if (data.isEsac8bPti() || ke < 0.0 || saturation <= 0.0
+                || field <= Math.max(0.0, vemin) || field <= upper) return upper;
+
+        // At a step overshoot, the trial saturation makes the quotient too
+        // small. Project to the highest admissible field, where the saturation
+        // used in the ceiling comes from the projected state itself.
+        return Exac1Exciter.projectFieldFeedbackCeiling(field, vemin, vfemax,
+                candidate -> fieldFeedback(candidate, ifd));
+    }
+
+    /**
+     * The qualified 21-CON convention suppresses saturation through |A| when
+     * its fitted intercept is negative. The signed intercept still belongs in
+     * the quadratic above that cutoff. Selecting this only here preserves the
+     * historical shared helper and the separately represented ESAC8B dialect.
+     * Use the same curve for initialization, feedback and the field upper
+     * limit; mixing conventions would destroy the initialized equilibrium.
+     */
+    private double fieldSaturation(double field) {
+        return Exac1Exciter.saturation(field, e1, se1, e2, se2,
+                !data.isEsac8bPti());
     }
 
     private double fieldFeedback(double field, double ifd) {
-        return field * (ke + Exac1Exciter.saturation(field, e1, se1, e2, se2)) + kd * ifd;
+        return field * (ke + fieldSaturation(field)) + kd * ifd;
     }
 
     private double rectifierOutput(double field, double ifd) {

@@ -24,6 +24,23 @@ import com.interpss.dstab.cache.StateMonitor;
 public class Gewtgcu1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
+    @Test void sourceImpedanceInterfacePreservesPhysicalInjectionAcrossCurveSegments() throws Exception {
+        var fixture=load();var model=fixture.model;var bus=model.getDStabBus();var gen=model.getParentGen();
+        var original=gen.getPosGenZ();double scale=model.getDeviceBaseMva()/bus.getNetwork().getBaseMva();
+        var rawY=org.apache.commons.math3.complex.Complex.ONE.divide(original.multiply(gen.getZMultiFactor()));
+        for(double voltage:new double[]{.8,1,1.05,1.2,1.4}) {
+            var v=new org.apache.commons.math3.complex.Complex(voltage*Math.cos(.3),voltage*Math.sin(.3));bus.setVoltage(v);
+            var physical=((org.apache.commons.math3.complex.Complex)model.getOutputObject())
+                    .subtract(rawY.multiply(v));
+            double ip=model.getActiveCurrentState()*model.lowVoltageActiveGain(voltage);
+            double iq=(model.getReactiveState()-voltage)/model.getData().equivalentReactance()-model.highVoltageReactiveCurrent(voltage);
+            var expected=new org.apache.commons.math3.complex.Complex(ip,-iq).multiply(scale)
+                    .multiply(new org.apache.commons.math3.complex.Complex(Math.cos(.3),Math.sin(.3)));
+            assertEquals(0,physical.subtract(expected).abs(),1e-12);
+        }
+        assertEquals(original,gen.getPosGenZ());
+    }
+
     @Test
     void exactNativeWrapperAttachesAndInitializes() throws Exception {
         Fixture fixture = load();
@@ -45,7 +62,8 @@ public class Gewtgcu1ModelTest {
         assertEquals(0.65 / 0.90, model.lowVoltageActiveGain(0.65), 1.0e-12);
         assertEquals(1.0, model.lowVoltageActiveGain(0.95), 0.0);
         assertEquals(0.0, model.highVoltageReactiveCurrent(1.0), 0.0);
-        assertEquals(0.5, model.highVoltageReactiveCurrent(1.1), 1.0e-12);
+        assertEquals(0.0, model.highVoltageReactiveCurrent(1.1), 0.0);
+        assertEquals(0.0, model.highVoltageReactiveCurrent(1.2), 0.0);
         assertEquals(1.0, model.highVoltageReactiveCurrent(1.3), 0.0);
 
         double initial = model.getActiveCurrentState();

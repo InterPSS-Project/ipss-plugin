@@ -196,7 +196,8 @@ public class PssePidgovdGovernor extends AbstractGovernor
                 && d.getTa() >= 0.0 && d.getTb() >= 0.0 && d.getAtw() >= 0.0
                 && d.getTw() >= 0.0 && d.getG0() < d.getG1()
                 && d.getG1() < d.getG2() && d.getG2() < 1.0
-                && d.getP1() > 0.0 && d.getP2() > d.getP1()
+                // Zero first power defines a no-load gate interval, not an invalid gain.
+                && d.getP1() >= 0.0 && d.getP2() > d.getP1()
                 && d.getP3() > d.getP2() && d.getDbH() >= 0.0
                 && d.getDbL() <= 0.0 && d.getDbL() <= d.getDbH()
                 && d.getTrate() >= 0.0;
@@ -325,6 +326,8 @@ public class PssePidgovdGovernor extends AbstractGovernor
     }
 
     private static double interpolate(double x, double x0, double y0, double x1, double y1) {
+        // Inverting a no-load plateau selects its upper gate without dividing by zero.
+        if(x1==x0)return y1;
         return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
     }
 

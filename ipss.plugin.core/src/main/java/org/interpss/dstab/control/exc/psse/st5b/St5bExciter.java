@@ -17,7 +17,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2005 ST5B static potential-source excitation system. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public class St5bExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider {
+public class St5bExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider,
+        org.interpss.dstab.control.exc.UnderExcitationLimiterTarget,org.interpss.dstab.control.exc.OverExcitationLimiterTarget {
     private static final double EPS=1e-12;
     private static final int EFD=0,VSENSE=1,N1=2,N2=3,U1=4,U2=5,O1=6,O2=7;
     private final St5bData data;
@@ -72,6 +73,14 @@ public class St5bExciter extends AnnotateExciter implements IntegrationStepAware
         return value;
     }
     private double correctedInverseTime(double value){
+        // PSS/E ST5B evaluates the final lag algebraically when T1 is strictly
+        // below two nominal integration steps. The native CON retains the
+        // entered T1, including after initialization. Keeping the lag active
+        // in this range delays field response to a fast stabilizer transient.
+        // Use the configured step so an event-clipped step cannot switch modes.
+        if ("ST5B".equalsIgnoreCase(modelName) && value > 0.0 && value < 2.0 * integrationStep) {
+            return 0.0;
+        }
         double minimum=minimumTimeConstantMultiplier*integrationStep;
         // PowerWorld's published inverse-timing rule: raise T1 to min/4 when
         // it is below min/4, otherwise raise a sub-minimum T1 to min.

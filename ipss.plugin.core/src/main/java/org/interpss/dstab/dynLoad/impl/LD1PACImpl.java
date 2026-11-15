@@ -1488,28 +1488,52 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		
 		
 		
-		double pst = 0.0, pac_calc = 0.0;
-		for (double v = 0.4; v<vbrk; v+=0.0001){
-			pst = this.Gstall*v*v;
-			// Below Vbrk the running-motor characteristic is the Kp2/Np2
-			// branch. Using Kp1 with a negative base makes non-integer Np1
-			// produce NaN and leaves the impedance-transition voltage at zero.
-            // The running low-voltage branch carries the same loading factor,
-            // so it cancels when finding its intersection with the polynomial.
-            pac_calc = runningActiveCharacteristic(v);
-			
-			if(pac_calc<pst){
-				this.vstallbrk = v;
-				break;
-			}
-			
-		}
-		
-		if(this.vstallbrk>this.vstall){
-			this.vstallbrk = this.vstall;
-		}
-		
-		
+        if(characteristicPolicy==CharacteristicPolicy.ZONE_COMPOSITE) {
+            // The running-to-impedance electrical crossing is independent of
+            // Vstall/Tstall, which govern the delayed mechanical stall state.
+            // Capping this crossing at Vstall switches two different P/Q curves
+            // at an unrelated voltage and can trap the algebraic network in a
+            // limit cycle before the stall timer expires. Compute the nominal
+            // motor-base P-curve intersection; keep the original thresholds,
+            // timers, frequency factors and intrinsic Q-branch jump unchanged.
+            // Other compressor families retain their separately qualified policy.
+            prepareZoneElectricalTransition();
+        } else {
+            double pst = 0.0, pac_calc = 0.0;
+            for (double v = 0.4; v<vbrk; v+=0.0001){
+                pst = this.Gstall*v*v;
+                // Below Vbrk the running-motor characteristic is the Kp2/Np2
+                // branch. Using Kp1 with a negative base makes non-integer Np1
+                // produce NaN and leaves the impedance-transition voltage at zero.
+                // The running low-voltage branch carries the same loading factor,
+                // so it cancels when finding its intersection with the polynomial.
+                pac_calc = runningActiveCharacteristic(v);
+
+                if(pac_calc<pst){
+                    // The zone-scoped composite uses the electrical P/impedance
+                    // intersection independently of its delayed stall pickup. Refine
+                    // the existing first-crossing bracket only for that dialect;
+                    // a coarse threshold can otherwise move the retained Q jump.
+                    this.vstallbrk = v;
+                    break;
+                }
+
+            }
+
+            // Electrical current selection and timed-stall protection are separate
+            // for the zone composite. Capping its intersection at Vstall introduces
+            // an artificial current jump while both motor groups are still running.
+            // Independent reduced-fixture evaluations distinguish this behavior from
+            // the standalone and legacy-composite dialects, which retain the cap.
+            // Do not change Vstall/Tstall or smooth Q: the zone model retains its
+            // common P/Q branch transition and the associated reactive-power jump.
+            if (vstallbrk > vstall) {
+                vstallbrk = vstall;
+            }
+
+
+        }
+
 		if(this.th1t >0 && this.th2t>this.th1t){
 			this.thermalEqnCoeff1 = -1/(this.th2t - this.th1t);
 			this.thermalEqnCoeff2 = this.th2t /(this.th2t - this.th1t);
@@ -1825,6 +1849,26 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			}
 		}
 		
+    }
+
+    /** Locate Gstall*V^2=P_running(V) at initialized nominal frequency.
+     * Bisection avoids grid quantization of a constitutive branch boundary; it
+     * neither smooths the two branches nor changes the configured stall limit.
+     * No positive crossing means no added low-voltage impedance interval. */
+    private void prepareZoneElectricalTransition() {
+        double lower=0.,upper=vbrk;
+        double lowResidual=-runningActiveCharacteristic(lower);
+        double highResidual=Gstall*upper*upper-runningActiveCharacteristic(upper);
+        if(!(upper>0.)||!Double.isFinite(lowResidual)||!Double.isFinite(highResidual)
+                ||lowResidual>0.||highResidual<0.)return;
+        for(int i=0;i<64;i++) {
+            double middle=lower+(upper-lower)*.5;
+            if(middle==lower||middle==upper)break;
+            double residual=Gstall*middle*middle-runningActiveCharacteristic(middle);
+            if(!Double.isFinite(residual))throw new IllegalStateException("Nonfinite compressor electrical characteristic");
+            if(residual>0.)upper=middle;else lower=middle;
+        }
+        vstallbrk=lower+(upper-lower)*.5;
     }
 
     private double runningActiveCharacteristic(double voltage) {

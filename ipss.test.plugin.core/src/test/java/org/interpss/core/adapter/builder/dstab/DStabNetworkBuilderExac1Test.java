@@ -26,6 +26,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.MachineIfdBase;
 
 public class DStabNetworkBuilderExac1Test extends CorePluginTestSetup {
     private static final double TOL=1e-8;
@@ -111,6 +112,34 @@ public class DStabNetworkBuilderExac1Test extends CorePluginTestSetup {
         assertEquals(.02,exciter.ta,TOL);assertEquals(50,exciter.integratorGain,TOL);
         assertEquals(.02,exciter.tf,TOL);assertTrue(exciter.vrmax>=exciter.getRegulatorOutput());
         assertTrue(exciter.vrmin<=exciter.getRegulatorOutput());
+    }
+
+    @Test
+    void initializesFeedbackOnExciterBaseAndUsesAbsoluteSaturationCutoff() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        var network = builder.getDStabNetwork();
+        Machine machine = network.getMachine("Bus1-mach1");
+        assertTrue(com.interpss.core.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network).loadflow());
+        assertTrue(machine.initStates(machine.getDStabBus()));
+
+        Exac1Data data = baseData();
+        data.setKc(0.2);
+        data.setKd(0.38);
+        data.setE1(2.355);
+        data.setSe1(0.513);
+        data.setE2(3.14);
+        data.setSe2(0.518);
+        Exac1Exciter exciter = builder.addExcExac1("Bus1", "1", data);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+        double fieldCurrent = machine.calculateIfd(MachineIfdBase.EXCITER);
+        assertTrue(Math.abs(fieldCurrent - machine.calculateIfd(MachineIfdBase.MACHINE)) > 0.01);
+        double ve = exciter.getInternalFieldVoltage();
+        assertTrue(ve < 2.54);
+        assertEquals(ve + data.getKd() * fieldCurrent, exciter.getRegulatorOutput(), TOL);
+        assertEquals(machine.getEfd(), exciter.getOutput(machine), TOL);
+        assertEquals(0.0, exciter.saturation.eval(new double[] {2.54}), TOL);
+        assertEquals(0.513, exciter.saturation.eval(new double[] {2.55}), 0.002);
     }
 
     @Test

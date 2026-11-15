@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
 import org.interpss.fadapter.builder.AclfNetworkBuilder.ShuntBlock;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.datatype.XfrZCorrection;
@@ -37,6 +38,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
@@ -83,14 +85,30 @@ public class PSSEJsonDirectParser {
         this.builder = new AclfNetworkBuilder();
     }
 
+    public PSSEJsonDirectParser(BaseAclfNetwork<?, ?> network) {
+        this(network, null);
+    }
+
+    /** Populate the caller's network with its concrete device types, as RAW import does. */
+    public PSSEJsonDirectParser(BaseAclfNetwork<?, ?> network,
+            AclfNetworkObjectFactory objectFactory) {
+        this.builder = new AclfNetworkBuilder(network, objectFactory);
+    }
+
     public AclfNetwork parse(String filepath) throws InterpssException {
+        parseInto(filepath);
+        return builder.getNetwork();
+    }
+
+    /** Import into the supplied ACLF, short-circuit, or dynamic network without an ACLF cast. */
+    public void parseInto(String filepath) throws InterpssException {
         try {
+            PsseLoadScopeMetadata.clear(builder.getBaseNetwork());
             JsonObject root = JsonParser.parseString(readRawxJson(filepath)).getAsJsonObject();
             parseJsonObject(root);
         } catch (IOException e) {
             throw new InterpssException("Error reading PSS/E JSON file: " + filepath + ": " + e.getMessage());
         }
-        return builder.getNetwork();
     }
 
     private String readRawxJson(String filepath) throws IOException {
@@ -188,18 +206,18 @@ public class PSSEJsonDirectParser {
 		if (settings.rawLines().isEmpty()) {
 			return;
 		}
-		builder.getNetwork().getExtraInfo().put(
+		builder.getBaseNetwork().getExtraInfo().put(
 				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY, settings);
 		if (settings.general().thrshz() != null
 				&& Double.isFinite(settings.general().thrshz())
 				&& settings.general().thrshz() >= 0.0) {
-			builder.getNetwork().setZeroZBranchThreshold(
+			builder.getBaseNetwork().setZeroZBranchThreshold(
 					settings.general().thrshz());
 		}
 		if (settings.general().pqbrak() != null
 				&& Double.isFinite(settings.general().pqbrak())
 				&& settings.general().pqbrak() >= 0.0) {
-			builder.getNetwork().getBusLoadLowVoltConfig().setVConstPMin(
+			builder.getBaseNetwork().getBusLoadLowVoltConfig().setVConstPMin(
 					settings.general().pqbrak());
 		}
 	}
@@ -440,7 +458,18 @@ public class PSSEJsonDirectParser {
             dgenStatus = (dgenm == 1);
         }
 
-        builder.addContributeLoad(busId, loadId, status == 1, constP, constI, constZ, dgenPower, dgenStatus);
+        var load=builder.addContributeLoad(busId, loadId, status == 1, constP, constI, constZ, dgenPower, dgenStatus);
+        if(load!=null) {
+            // Load scope belongs to each source load, not necessarily its bus.
+            // IDV zone changes and subsystem DYR selectors must start from the
+            // same explicit assignments as positional RAW import.
+            var bus=builder.getBaseNetwork().getBus(busId);
+            int area=getInt(row,"area",0),zone=getInt(row,"zone",0),owner=getInt(row,"owner",0);
+            if(area<=0)area=bus.getArea()!=null?(int)bus.getArea().getNumber():0;
+            if(zone<=0)zone=bus.getZone()!=null?(int)bus.getZone().getNumber():0;
+            if(owner<=0)owner=bus.getOwner()!=null?(int)bus.getOwner().getNumber():0;
+            PsseLoadScopeMetadata.put(builder.getBaseNetwork(),busId,loadId,area,zone,owner);
+        }
     }
 
     // ==================== Fixed Shunt ====================
@@ -526,12 +555,13 @@ public class PSSEJsonDirectParser {
         double rmpct = getDouble(row, "rmpct", 100.0);
         double pt = getDouble(row, "pt", 0.0);
         double pb = getDouble(row, "pb", 0.0);
+        int baseLoadFlag = getInt(row, "baslod", 0);
         int wmod = getInt(row, "wmod", 0);
         double wpf = getDouble(row, "wpf", 1.0);
 
         if (mbase == 0.0) mbase = baseMva;
 
-        BaseAclfBus bus = (BaseAclfBus) builder.getNetwork().getBus(busId);
+        BaseAclfBus bus = (BaseAclfBus) builder.getBaseNetwork().getBus(busId);
         if (bus == null) return;
 
         if (bus.getGenCode() != AclfGenCode.SWING) {
@@ -542,6 +572,11 @@ public class PSSEJsonDirectParser {
             qb = reactiveData.qMin();
         }
 
+        // RMPCT is repeated plant data. The last source record sets the common
+        // plant weight, even when that particular machine is out of service.
+        // Retain individual record factors too; never divide by active unit count.
+        bus.setPlantMvarControlPFactor(rmpct * 0.01);
+
 		boolean genStatus = (stat == 1);
         if (!bus.isActive()) genStatus = false;
 
@@ -549,10 +584,11 @@ public class PSSEJsonDirectParser {
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
         Complex xfrZ = (rt != 0.0 || xt != 0.0) ? new Complex(rt, xt) : null;
 
-        builder.addContributeGen(busId, genId, genStatus,
+        var generator = builder.addContributeGen(busId, genId, genStatus,
                 pg / baseMva, qg / baseMva, mbase, vs,
                 qt / baseMva, qb / baseMva, pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap, remoteBusId, rmpct * 0.01, 1.0);
+        generator.setBaseLoadFlag(baseLoadFlag);
 
         if (bus.getGenCode() == AclfGenCode.SWING) {
             builder.setSwingBus(busId, vs, bus.getVoltageAng());
@@ -624,8 +660,8 @@ public class PSSEJsonDirectParser {
         String fromBusId = BUS_ID_PREFIX + fromNum;
         String toBusId = BUS_ID_PREFIX + toNum;
 
-        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(fromBusId);
-        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(toBusId);
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getBaseNetwork().getBus(fromBusId);
+        BaseAclfBus toBus = (BaseAclfBus) builder.getBaseNetwork().getBus(toBusId);
         if (fromBus == null || toBus == null) return;
 
         if (tertNum != 0) {
@@ -673,6 +709,9 @@ public class PSSEJsonDirectParser {
         if (branch == null) {
             return;
         }
+        // MAG1/MAG2 are converted to winding one's bus voltage base.
+        // Keep the admittance ahead of the ideal tap for all tap positions.
+        if (magY != null) branch.setFromShuntOnBusSide(true);
         String branchId = branch.getId();
         if (Math.abs(cod1) == 1 && cont1 != 0) {
             String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
@@ -698,7 +737,7 @@ public class PSSEJsonDirectParser {
             String fromBusId, String toBusId, String tertBusId, String ckt,
             int stat, int cw, int cz, int cm, double sbase12,
             double mag1, double mag2) throws InterpssException {
-        BaseAclfBus tertBus = (BaseAclfBus) builder.getNetwork().getBus(tertBusId);
+        BaseAclfBus tertBus = (BaseAclfBus) builder.getBaseNetwork().getBus(tertBusId);
         if (tertBus == null) {
             return;
         }
@@ -728,8 +767,8 @@ public class PSSEJsonDirectParser {
         int tab2 = getInt(row, "tab2", 0);
         int tab3 = getInt(row, "tab3", 0);
 
-        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(fromBusId);
-        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(toBusId);
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getBaseNetwork().getBus(fromBusId);
+        BaseAclfBus toBus = (BaseAclfBus) builder.getBaseNetwork().getBus(toBusId);
         double fromBaseV = fromBus != null ? fromBus.getBaseVoltage() : 1000.0;
         double toBaseV = toBus != null ? toBus.getBaseVoltage() : 1000.0;
         double tertBaseV = tertBus.getBaseVoltage();
@@ -764,6 +803,7 @@ public class PSSEJsonDirectParser {
                 inService);
 
         if (branch3W != null) {
+            if (magY != null) branch3W.getFromAclfBranch().setFromShuntOnBusSide(true);
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
             if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);

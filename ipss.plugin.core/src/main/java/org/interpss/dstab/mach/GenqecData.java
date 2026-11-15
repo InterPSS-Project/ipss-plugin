@@ -74,9 +74,12 @@ public record GenqecData(
         if (s1 < 0.0 || s12 < 0.0) {
             throw new IllegalArgumentException("GENQEC saturation factors cannot be negative");
         }
-        // The bounded runtime quantity is Kw*Id, not the input multiplier Kw.
-        if (!Double.isFinite(kw) || kw < 0.0) {
-            throw new IllegalArgumentException("GENQEC Kw must be finite and non-negative");
+        // Preserve every finite signed input for source fidelity and round-trip
+        // export. The native electrical equation uses abs(Kw), then bounds its
+        // signed product with Id; input sign is not a compensation direction.
+        // Normalizing the stored value here would lose the entered record.
+        if (!Double.isFinite(kw)) {
+            throw new IllegalArgumentException("GENQEC Kw must be finite");
         }
         // -1 is the PSLF convention for disabled saturation. Other unsupported
         // values follow the published rule and use exponential saturation.

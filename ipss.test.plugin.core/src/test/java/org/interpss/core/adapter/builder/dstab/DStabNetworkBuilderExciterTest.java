@@ -274,7 +274,30 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void parseAc8b_mapsSuppliedPsseRecordWithoutUsingExtendedOrdering() throws Exception {
+	public void parseIeeet4_zeroKeDerivesGainFromInitialField() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("ieeet4-automatic-gain.dyr");
+		Files.writeString(dyr, "1 'IEEET4' '1' .02 20 .05 5 -2 1 0 1 .1 2 .2 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		Ieeet4Exciter exciter = (Ieeet4Exciter) machine.getExciter();
+		assertNotNull(exciter);
+		assertEquals(0.0, exciter.getData().getKe(), 0.0);
+
+		machine.setEfd(1.25);
+		assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+		// The initial rheostat is 10% of the 5 pu ceiling. With SE(1.25) = 0.125,
+		// field equilibrium requires KE = 0.5 / 1.25 - 0.125 = 0.275.
+		assertEquals(0.275, exciter.ke, 1.0e-12);
+		assertEquals(0.5, exciter.getRheostatOutput(), 1.0e-12);
+		assertEquals(1.25, exciter.getOutput(machine), 1.0e-12);
+		assertEquals(0.0, exciter.getData().getKe(), 0.0);
+	}
+
+	@Test
+	public void parseAc8b_mapsNativeRecordWithoutUsingAlternateExportOrdering() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
 		Path dyr = tempDir.resolve("ac8b.dyr");
 		Files.writeString(dyr, "1 'AC8B' '1' .02 15 .8 10 .03 99 -99 1 .02 "
@@ -288,12 +311,16 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(15.0, exc.getData().getKpr(), TOL);
 		assertEquals(0.8, exc.getData().getKir(), TOL);
 		assertEquals(99.0, exc.getData().getVpidmax(), TOL);
-		assertEquals(1.0, exc.getData().getVrmax(), TOL);
-		assertEquals(7.43, exc.getData().getVfemax(), TOL);
-		assertEquals(0.6, exc.getData().getKa(), TOL);
-		assertEquals(0.4, exc.getData().getTe(), TOL);
-		assertEquals(0.2, exc.getData().getKc(), TOL);
-		assertEquals(6.0, exc.getData().getKd(), TOL);
+		assertEquals(7.43, exc.getData().getVrmax(), TOL);
+		assertEquals(-0.25, exc.getData().getVrmin(), TOL);
+		assertEquals(6.0, exc.getData().getVfemax(), TOL);
+		assertEquals(0.0, exc.getData().getVemin(), TOL);
+		assertEquals(1.0, exc.getData().getKa(), TOL);
+		assertEquals(0.02, exc.getData().getTa(), TOL);
+		assertEquals(0.2, exc.getData().getTe(), TOL);
+		assertEquals(0.0, exc.getData().getKc(), TOL);
+		assertEquals(0.6, exc.getData().getKd(), TOL);
+		assertEquals(0.4, exc.getData().getKe(), TOL);
 		assertEquals(5.7, exc.getData().getE1(), TOL);
 		assertEquals(0.4, exc.getData().getSe2(), TOL);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());

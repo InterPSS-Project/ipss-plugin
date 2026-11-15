@@ -198,10 +198,25 @@ public class St2cutStabilizer extends AnnotateStabilizer
         nativeStates.put("Washout", Math.abs(t3) <= 1.0e-12
                 ? states.get("Washout")
                 : t4 * states.get("Washout") + t3 * (firstOffset + secondOffset));
-        nativeStates.put("First lead-lag", t6 * states.get("First lead-lag"));
-        nativeStates.put("Second lead-lag", t8 * states.get("Second lead-lag"));
-        nativeStates.put("Third lead-lag", t10 * states.get("Third lead-lag"));
+        var blocks = getNamedStateBlocks();
+        nativeStates.put("First lead-lag", nativeLeadLagCoordinate(
+                (FilterControlBlock) blocks.get("leadLag1"), states.get("First lead-lag")));
+        nativeStates.put("Second lead-lag", nativeLeadLagCoordinate(
+                (FilterControlBlock) blocks.get("leadLag2"), states.get("Second lead-lag")));
+        nativeStates.put("Third lead-lag", nativeLeadLagCoordinate(
+                (FilterControlBlock) blocks.get("leadLag3"), states.get("Third lead-lag")));
         return Map.copyOf(nativeStates);
+    }
+
+    private static double nativeLeadLagCoordinate(FilterControlBlock block, double canonicalState) {
+        // A positive denominator has the documented time-scaled integrator
+        // coordinate. For a zero-time bypass, the allocated reference state
+        // slot follows the algebraic output instead: multiplying dormant CML
+        // storage by zero erased a moving signal and created a false state
+        // discrepancy. Independent probes of all three bypass positions verify
+        // this convention. Read the accepted block output without refreshing
+        // its input or changing canonical memories, derivatives or histories.
+        return block.getT2() > 0.0 ? block.getT2() * canonicalState : block.getY();
     }
 
     private static double nativeInputOffset(int code, double gain, double reference) {

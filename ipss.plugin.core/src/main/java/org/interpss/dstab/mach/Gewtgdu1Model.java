@@ -50,6 +50,9 @@ public final class Gewtgdu1Model implements ICMLStateProvider {
     }
 
     public double rampAt(double sampleTime) {
+        // A zero-duration ramp is disabled in the source model. Check before
+        // the endpoint branches, otherwise it becomes a permanent wind step.
+        if (data.rampEnd() == data.rampStart()) return 0.0;
         if (sampleTime <= data.rampStart()) return 0.0;
         if (sampleTime >= data.rampEnd()) return data.rampMaximum();
         return data.rampMaximum() * (sampleTime - data.rampStart())

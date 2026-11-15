@@ -32,7 +32,7 @@ public final class Reeca1Model implements TwoStepElectricalController, ICMLState
     private org.interpss.dstab.mach.Reaxbu1Model auxiliaryController;
     private boolean twoStepAuxiliaryManaged;
     /** The enclosing solver must evaluate and integrate the shared upstream group once. */
-    public void setTwoStepAuxiliaryManaged(boolean managed){
+    @Override public void setTwoStepAuxiliaryManaged(boolean managed){
         if(managed&&auxiliaryController==null)throw new IllegalStateException("No auxiliary control to manage");
         twoStepAuxiliaryManaged=managed;
     }

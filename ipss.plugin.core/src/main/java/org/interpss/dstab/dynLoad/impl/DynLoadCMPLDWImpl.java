@@ -125,6 +125,9 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	}
 	
   
+    /** Subclasses with multiple source loads can provide collision-free internal bus IDs. */
+    protected String distributionBusId(String suffix) { return getDStabBus().getId().concat(suffix); }
+
     public boolean initStates(){
     	boolean initflag = true;
     	
@@ -165,7 +168,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   
     	
     		//add the bus connected to the low voltage side of the distribution transformer
-			lowBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(lowBusId), 
+			lowBus  = DStabObjectFactory.createDStabBus(distributionBusId(lowBusId),
 					                                        (DStabilityNetwork) this.getDStabBus().getNetwork()).get();
 			
 			lowBus.setBaseVoltage(1.0); // affacts dynamic model u/i/z multiplier calculation
@@ -181,7 +184,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			
 			
 			//add the load bus
-			loadBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(loadBusId), 
+			loadBus  = DStabObjectFactory.createDStabBus(distributionBusId(loadBusId),
                     (BaseDStabNetwork)this.getDStabBus().getNetwork()).get();
 			
 			loadBus.setBaseVoltage(1.0);
