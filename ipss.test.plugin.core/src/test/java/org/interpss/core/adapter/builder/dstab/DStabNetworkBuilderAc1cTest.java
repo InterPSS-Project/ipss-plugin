@@ -121,4 +121,13 @@ public class DStabNetworkBuilderAc1cTest extends CorePluginTestSetup {
             assertTrue(exc.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,machine,1));
         }
     }
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = simpleData();
+            data.setTr(time);
+            return builder.addExcAc1c("Bus1", "1", data);
+        });
+    }
 }

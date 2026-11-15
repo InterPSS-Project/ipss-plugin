@@ -20,12 +20,54 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Zone-scoped composite load assembled from the native distribution and motor components. */
-public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider, IntegrationStepAware {
+public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider, IntegrationStepAware,
+        com.interpss.dstab.relay.model.CompositeLoadSheddingTarget {
     private static final double EPS = 1.0e-10;
 
     private final Cmldznu2Data data;
     private final Set<String> targetLoadIds;
     private final Complex targetPower;
+    private final java.util.List<Cmldznu2Model> sourceModels=new java.util.ArrayList<>();
+    private boolean sharedSourceBus;
+
+    /** Existing models remain separate owners; the first supplies the engine's preparation entry point. */
+    public void addSourceModel(Cmldznu2Model model) {
+        if(model==this || model.getDStabBus()!=getDStabBus() || capacityLeaves!=null)
+            throw new IllegalArgumentException("Composite sources must share an uninitialized parent bus");
+        for(var existing:sourceModels)if(!java.util.Collections.disjoint(existing.targetLoadIds,model.targetLoadIds))
+            throw new IllegalArgumentException("Duplicate composite source load IDs: "+model.targetLoadIds);
+        sourceModels.add(model);sharedSourceBus=true;model.sharedSourceBus=true;
+    }
+    public java.util.List<Cmldznu2Model> getSourceModels() { return java.util.Collections.unmodifiableList(sourceModels); }
+    @Override public java.util.List<Cmldznu2Model> getSourceTargets() { return getSourceModels(); }
+    @Override public boolean isInitializationBypassed() { return initializationScreen != null && initializationScreen.bypassed(); }
+
+    @Override public boolean initStates(BaseDStabBus<?,?> bus) {
+        boolean accepted=super.initStates(bus);
+        // Prepare every owned source before the engine traverses devices and
+        // relays. These are the same model instances, not equivalent injections.
+        for(var source:sourceModels)if(source!=this)accepted=source.initStates(bus)&&accepted;
+        return accepted;
+    }
+    @Override protected String distributionBusId(String suffix) {
+        return sharedSourceBus ? getDStabBus().getId()+"_"+getId()+suffix : super.distributionBusId(suffix);
+    }
+
+    private org.interpss.plugin.dstab.config.LoadModelThresholds initializationThresholds;
+    public record InitializationScreen(String bus, Set<String> loadIds, double pMw,
+            double qMvar, double voltagePu, boolean thresholdsConsulted, java.util.List<String> violations) {
+        public InitializationScreen { loadIds=Set.copyOf(loadIds);violations=java.util.List.copyOf(violations); }
+        public boolean bypassed() { return !violations.isEmpty(); }
+    }
+    private InitializationScreen initializationScreen;
+    public void setInitializationThresholds(org.interpss.plugin.dstab.config.LoadModelThresholds thresholds) {
+        if(capacityLeaves!=null)throw new IllegalStateException("Composite already initialized");
+        initializationThresholds=thresholds;
+    }
+    public InitializationScreen getInitializationScreen() { return initializationScreen; }
+    /** Subsystem assignments screen each source load; an explicit legacy bus assignment does not. */
+    protected boolean consumesInitializationThresholds() { return true; }
+
     private double staticFraction;
     private Cmldznu2AlgebraicLoadModel staticLoadComponent;
     private Cmldznu2AlgebraicLoadModel electronicLoadComponent;
@@ -50,6 +92,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         this.data = data;
         this.targetLoadIds = Set.copyOf(new LinkedHashSet<>(targetLoadIds));
         this.targetPower = targetPower;
+        sourceModels.add(this);
         setId(id);
         setGroupId("zone:" + (bus.getZone() == null ? "" : bus.getZone().getNumber()));
         configure();
@@ -58,6 +101,7 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
     @Override public void configureIntegrationStep(double timeStepSec) {
         if (get1PhaseACMotor() instanceof IntegrationStepAware motor)
             motor.configureIntegrationStep(timeStepSec);
+        for(var source:sourceModels)if(source!=this)source.configureIntegrationStep(timeStepSec);
     }
 
     private void configure() {
@@ -170,9 +214,22 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
 
     private BaseDStabBus<?, ?> internalBus(String suffix) {
         var parent = getDStabBus(); var network = (DStabilityNetwork) parent.getNetwork();
-        var bus = DStabObjectFactory.createDStabBus(parent.getId() + suffix, network).orElseThrow();
+        var bus = DStabObjectFactory.createDStabBus(distributionBusId(suffix), network).orElseThrow();
         bus.setBaseVoltage(1); bus.setSortNumber(network.getNoBus() - 1); bus.setArea(parent.getArea()); bus.setZone(parent.getZone());
         return bus;
+    }
+
+    @Override protected boolean initializeInductionMotor(InductionMotor motor) {
+        // The composite card supplies performance reactances without a leakage
+        // reactance. The two-cage equivalent uses 80% of Xpp. The generic
+        // performance-data initializer can instead select 80% of Xp when
+        // Xp and Xpp are close, changing both rotor resistances and initial slip.
+        // Keep explicit leakage and single-cage preparation with the base motor.
+        if (motor.getXl() == 0.0 && motor.getTpp0() > 0.0
+                && motor.getXpp() > 0.0 && motor.getXpp() < motor.getXp()) {
+            motor.setXl(0.8 * motor.getXpp());
+        }
+        return super.initializeInductionMotor(motor);
     }
 
     @Override protected boolean initializeSinglePhaseMotor(LD1PAC motor) {
@@ -224,16 +281,32 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         else getLowVoltBus().setShuntY(componentLowShunt);
         Complex feederCurrent = incomingCurrent.divide(tap).subtract(lowVoltage.multiply(componentLowShunt));
         Complex loadVoltage = distFdr == null ? lowVoltage : lowVoltage.subtract(distFdr.getZ().multiply(feederCurrent));
-        if (loadVoltage.abs() < .95) {
-            if (lowVoltage.abs() < .95) throw new IllegalArgumentException("Composite low-side voltage cannot support its minimum load voltage");
-            if (distFdr == null) throw new IllegalArgumentException("An omitted feeder cannot be adjusted to raise voltage");
-            Complex drop = distFdr.getZ().multiply(feederCurrent);
-            double a = drop.abs() * drop.abs(), projection = lowVoltage.multiply(drop.conjugate()).getReal();
-            double c = lowVoltage.abs() * lowVoltage.abs() - .95 * .95;
-            double scale = (projection - Math.sqrt(Math.max(0, projection * projection - a * c))) / a;
-            distFdr.setZ(distFdr.getZ().multiply(Math.max(0, Math.min(1, scale))));
+        if (loadVoltage.abs() < .95 && distFdr != null) {
+            if (lowVoltage.abs() <= .95) {
+                // The nominal initialization target is unattainable even with
+                // zero feeder drop. Keep a finite branch instead of rejecting
+                // the solved source voltage or inserting a singular zero Z.
+                // This published distribution-equivalent compatibility rule is
+                // on system base, after the model-base conversion above:
+                // https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Transient_Stability_Load_Model_Group_Distribution_Feeder_Equivalent.htm
+                // Native captures independently permit this low-voltage start;
+                // exact native feeder-preparation parity remains unqualified.
+                distFdr.setZ(new Complex(1e-7,1e-5));
+                org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                        "Composite {} at {}: low-side voltage {} cannot reach the 0.95 pu initialization target; using finite feeder floor on system base and retaining source constants",
+                        getId(),getDStabBus().getId(),lowVoltage.abs());
+            } else {
+                Complex drop = distFdr.getZ().multiply(feederCurrent);
+                double a = drop.abs() * drop.abs(), projection = lowVoltage.multiply(drop.conjugate()).getReal();
+                double c = lowVoltage.abs() * lowVoltage.abs() - .95 * .95;
+                double scale = (projection - Math.sqrt(Math.max(0, projection * projection - a * c))) / a;
+                distFdr.setZ(distFdr.getZ().multiply(Math.max(0, Math.min(1, scale))));
+            }
             loadVoltage = lowVoltage.subtract(distFdr.getZ().multiply(feederCurrent));
         }
+        // With an omitted feeder there is no impedance to adjust. Initialize
+        // components at the actual low-side voltage, including a value below
+        // the nominal distribution target; component limits remain authoritative.
         Complex loadPower = loadVoltage.multiply(feederCurrent.conjugate());
         double grossReactiveDemand = legacyAllocation ? loadPower.getReal() * initialReactiveDemandRatio : loadPower.getImaginary();
         getLoadBus().setVoltage(loadVoltage); getLoadBus().setLoadP(loadPower.getReal()); getLoadBus().setLoadQ(grossReactiveDemand);
@@ -269,6 +342,29 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
 
     @Override
     public boolean initStates() {
+        // Evaluate after the caller's power flow, but before detaching the source
+        // ZIP load or creating any feeder/motor. A screened assignment leaves
+        // that source record and its status untouched. The remaining static P/Q
+        // is converted by the network's declared static-load policy (I/Z for
+        // newly imported networks), rather than retaining RAW ZIP dynamics.
+        // Do not apply these subsystem thresholds to explicit bus assignments.
+        Complex screenPower=Complex.ZERO;
+        for(String id:targetLoadIds) {
+            var source=getDStabBus().getContributeLoad(id);
+            if(source!=null&&source.isActive())screenPower=screenPower.add(source.getLoad(getDStabBus().getVoltageMag()));
+        }
+        double base=getDStabBus().getNetwork().getBaseMva();
+        boolean consult=initializationThresholds!=null&&consumesInitializationThresholds();
+        var reasons=consult?initializationThresholds.violations(screenPower.getReal()*base,
+                screenPower.getImaginary()*base,getDStabBus().getVoltageMag()):java.util.List.<String>of();
+        initializationScreen=new InitializationScreen(getDStabBus().getId(),targetLoadIds,
+                screenPower.getReal()*base,screenPower.getImaginary()*base,getDStabBus().getVoltageMag(),consult,reasons);
+        if(!reasons.isEmpty()) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                    "Composite assignment {} at {} bypassed: {}; retaining source static load {}",
+                    getId(),getDStabBus().getId(),reasons,targetLoadIds);
+            return true;
+        }
         if (!super.initStates()) return false;
         double assignedActive = getLoadBus() == getDStabBus() ? getLoadBus().getInitLoad().getReal() : Double.NaN;
         if (staticFraction > EPS) {
@@ -306,6 +402,28 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         return true;
     }
 
+    // Both source dialects use the same owned-subtree capacity equations.
+    // Exposing this contract on the common implementation lets relays follow
+    // source load IDs after distribution expansion without duplicating P/Q.
+    /** Source-ID action is unambiguous only for a singleton owner or a whole-owner wildcard. */
+    public boolean canChangeLoad(String sourceLoadId, double factor) {
+        return matchesCapacitySource(sourceLoadId) && canChangeCompositeCapacity(factor);
+    }
+
+    /** Validate prepared ownership before the engine has constructed its dynamic matrix. */
+    public boolean canPrepareLoadChange(String sourceLoadId, double factor) {
+        return matchesCapacitySource(sourceLoadId) && canPrepareCompositeCapacity(factor);
+    }
+
+    private boolean matchesCapacitySource(String sourceLoadId) {
+        return "*".equals(sourceLoadId) || "#".equals(sourceLoadId)
+                || getTargetLoadIds().size() == 1 && getTargetLoadIds().contains(sourceLoadId);
+    }
+
+    public boolean canChangeLoad(double factor) { return canChangeCompositeCapacity(factor); }
+
+    @Override public boolean changeLoad(double factor) { return changeCompositeCapacity(factor); }
+
     /** Prepared whole-owner capacity action, including verified owned-subtree disconnection. */
     protected final boolean canChangeCompositeCapacity(double factor) {
         return canPrepareCompositeCapacity(factor) && capacityNetwork.getYMatrix()!=null;
@@ -333,7 +451,12 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
             if (bus==capacityParent) continue;
             if (!bus.getContributeGenList().isEmpty()) return false;
             for (var device:bus.getDynamicBusDeviceList()) if(!isOwnedCapacityDevice(device)) return false;
-            for (var branch:capacityNetwork.getBranchList())
+            // Eligibility is rechecked for live topology on every relay stage.
+            // Only incident branches can prevent removal of this internal bus;
+            // scanning the complete network here makes a flat relay audit
+            // quadratic in case size. The live adjacency view retains foreign
+            // connections and status changes without a cached ownership result.
+            for (var branch:bus.getBranchList())
                 if (branch.isActive() && (branch.getFromBus()==bus || branch.getToBus()==bus)
                         && branch!=distFdr && branch!=distXfr) return false;
             if(bus.getDynLoadModelList()!=null) for (var leaf:bus.getDynLoadModelList()) {

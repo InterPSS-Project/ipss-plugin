@@ -158,6 +158,9 @@ public class Pss2cPsseSmibConformanceTest {
         double[] initial = samples.get(0);
         machine.setSpeed(1.0 + value(initial, reference, "MACH_SPEED"));
         machine.setPe(value(initial, reference, "P_PU"));
+        // The playback drives recorded terminal power through setPe instead of solving a network.
+        // The coupled tests above exercise the DYR model with the native terminal-power source.
+        pss.setUseTerminalElectricalPowerInput(false);
         pss.configureIntegrationStep(STEP / 2.0);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
 

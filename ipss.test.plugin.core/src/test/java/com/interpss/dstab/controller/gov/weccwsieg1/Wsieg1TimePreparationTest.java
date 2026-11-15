@@ -70,6 +70,32 @@ public class Wsieg1TimePreparationTest {
         }
     }
 
+    @Test void speedDeadbandUsesTheEnteredWidthAndHysteresis() throws Exception {
+        double[] speed = {.0005, .001, .0005, .0001, -.001, -.0005, -.0001};
+        checkSpeedDeadband(.0007, 0.0, speed, new double[]{0, .0003, 0, 0, -.0003, 0, 0});
+        checkSpeedDeadband(.0007, .0003, speed, new double[]{0, .0007, .0002, 0, -.0007, -.0002, 0});
+        checkSpeedDeadband(.0007, .0007, speed, new double[]{0, .001, .0005, .0001, -.001, -.0005, -.0001});
+        checkSpeedDeadband(.0007, .0014, speed, new double[]{0, -.0004, 0, 0, .0004, 0, 0});
+        checkSpeedDeadband(0.0, .0003, speed, speed);
+    }
+
+    private static void checkSpeedDeadband(double width, double hysteresis, double[] speed, double[] expected)
+            throws Exception {
+        var governor = model(c -> {
+            c[20] = width;
+            c[21] = hysteresis;
+        });
+        initialize(governor, H);
+        var machine = governor.getMachine();
+        for (int i = 0; i < speed.length; i++) {
+            machine.setSpeed(1.0 + speed[i]);
+            assertEquals(expected[i], governor.getSpeedDeadbandOutput(), 1e-14);
+            assertTrue(governor.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(governor.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            assertEquals(expected[i], governor.getSpeedDeadbandOutput(), 1e-14);
+        }
+    }
+
     @Test void changingConfiguredStepRequiresReinitializationAndLocalStepsCannotReprepare()throws Exception {
         var g=model(c->{c[1]=H;c[2]=H/4;c[8]=H;});initialize(g,H);double[] rates=new double[6];
         g.configureIntegrationStep(H/8);

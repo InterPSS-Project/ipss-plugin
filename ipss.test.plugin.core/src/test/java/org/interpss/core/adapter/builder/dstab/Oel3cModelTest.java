@@ -27,7 +27,7 @@ public class Oel3cModelTest extends CorePluginTestSetup {
     private DStabNetworkBuilder parse(String text,boolean strict) throws Exception {
         var builder=DStabBuilderTestFixture.createWithMachine();
         Path file=directory.resolve("model-"+System.nanoTime()+".dyr");Files.writeString(file,text);
-        new PSSEDStabDirectParser(builder).setStrictImport(strict).parseDynFile(file.toString());return builder;
+        new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(strict).parseDynFile(file.toString());return builder;
     }
     private static Machine machine(DStabNetworkBuilder builder){return builder.getDStabNetwork().getMachine("Bus1-mach1");}
     private static Oel3cModel limiter(Machine machine){
@@ -38,6 +38,17 @@ public class Oel3cModelTest extends CorePluginTestSetup {
         machine.setEfd(1.2);machine.setSpeed(1);
         assertTrue(limiter.initStates());assertFalse(limiter.isInitialized());
         assertTrue(machine.getExciter().initStates(machine.getDStabBus(),machine));assertTrue(limiter.isInitialized());
+    }
+    @Test void inactiveGeneratorRetainsAnUninitializedDormantAuxiliaryUntilItsExciterStarts() throws Exception {
+        var b=parse(AC+record(1,.02),true);var m=machine(b);var oel=limiter(m);
+        m.getParentGen().setStatus(false);assertTrue(oel.initStates());assertFalse(oel.isInitialized());
+        assertTrue(oel.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(oel.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertTrue(oel.afterStep(.001));assertTrue(oel.updateAttributes(false));assertEquals(0,oel.getOutput(),0);
+        m.getParentGen().setStatus(true);
+        assertFalse(oel.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,0));
+        initialize(m,oel);assertTrue(oel.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(oel.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,1));
     }
     @ParameterizedTest @ValueSource(ints={1,3,17})
     void deferredImportAndPhysicalInitializationUseTheSelectedInput(int selector)throws Exception {
@@ -56,6 +67,21 @@ public class Oel3cModelTest extends CorePluginTestSetup {
     @Test void importerAlsoAcceptsExciterFirstAndRejectsDuplicateOwnership()throws Exception {
         var b=parse(AC+record(1,0),true);assertNotNull(limiter(machine(b)));
         assertThrows(Exception.class,()->parse(AC+record(1,0)+record(1,0),true));
+    }
+    @Test void exactLegacyWrapperUsesTheExistingKernelWithoutChangingConstants() throws Exception {
+        String allocation = "10 0 2 10 2 4";
+        String parameters = "1 1 .4 .3333 .02 .1 .1 1 0 -1 0 -1";
+        var wrapped = parse(AC + "1 'USRMDL' '1' 'OEL3CU' " + allocation + " " + parameters + " /\n", true);
+        var standard = parse(AC + "1 'OEL3C' '1' " + parameters + " /\n", true);
+        assertEquals(limiter(machine(standard)).getData(), limiter(machine(wrapped)).getData());
+        initialize(machine(wrapped), limiter(machine(wrapped)));
+        assertTrue(limiter(machine(wrapped)).isInitialized());
+        for (int i = 0; i < 6; i++) {
+            String[] bad = allocation.split(" "); bad[i] = "99";
+            assertThrows(Exception.class, () -> parse(AC + "1 'USRMDL' '1' 'OEL3CU' "
+                    + String.join(" ", bad) + " " + parameters + " /\n", true));
+        }
+        assertThrows(Exception.class, () -> parse(AC + "1 'OEL3CU' '1' " + parameters + " /\n", true));
     }
     @ParameterizedTest @ValueSource(strings={"1 1 .4 .3333 .02 .1 .1 1 0 -1 0", "1.5 1 .4 .3333 .02 .1 .1 1 0 -1 0 -1", "1 0 .4 .3333 .02 .1 .1 1 0 -1 0 -1", "1 1 .4 .3333 .02 .1 0 1 0 -1 0 -1", "1 1 .4 .3333 .02 .1 .1 1 0 -1 0 -1 9"})
     void malformedRecordsCannotBecomeLoadable(String parameters){

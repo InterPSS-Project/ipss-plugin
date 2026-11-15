@@ -67,6 +67,48 @@ public class Chvdc2CoupledRuntimeTest {
             m.readStaggeredState(actual,0);assertArrayEquals(initial,actual,1e-9,"Cancellation preserves flat equilibrium");
         }
     }
+    @Test
+    void legacyRlLocalCorrectorHoldsAcPhasorsUntilTheElectricalEndpoint() {
+        var constants = Chvdc2ParametersTest.constants();
+        constants[47] = 0.;
+        var parameters = new Chvdc2Parameters("link", Chvdc2Parameters.Dialect.CHVDC2U1,
+                new int[]{1, 1, 1}, constants);
+        var rectifier = new LccConverterBoundary(true, 2, 230000, 1, 1, 5, 1e8);
+        var inverter = new LccConverterBoundary(false, 2, 230000, 1, 1, 5, 1e8);
+        double vr = rectifier.dcVoltageAtFiringAngle(1.03, 1050, Math.toRadians(32));
+        double step = .0005;
+        var changed = new Chvdc2CoupledRuntime(parameters, rectifier, inverter,
+                new Chvdc2DcLine(5, 2.5, 0, true), 1, 1);
+        var held = new Chvdc2CoupledRuntime(parameters, rectifier, inverter,
+                new Chvdc2DcLine(5, 2.5, 0, true), 1, 1);
+        for (var model : new Chvdc2CoupledRuntime[]{changed, held}) {
+            model.setBoundary(1.03, 0, 1.03, 0, 1050, 0);
+            model.initialize(vr, vr - 5 * 1050, 0.);
+            model.acceptBoundary(0., 0);
+            model.beginTransaction();
+            model.beginIntegrationInterval(step);
+            model.step(step, 0, 10);
+        }
+        changed.setBoundary(1.02, .01, 1.01, -.02, 1050, 0);
+        for (var model : new Chvdc2CoupledRuntime[]{changed, held}) {
+            model.step(step, 1, 10);
+            model.completeIntegrationInterval();
+        }
+        assertEquals(held.getIntegrationStates(), changed.getIntegrationStates());
+        double[] fromChanged = new double[Chvdc2CoupledRuntime.BOUNDARY_SIZE];
+        double[] fromHeld = fromChanged.clone();
+        changed.readBoundary(fromChanged, 0);
+        held.readBoundary(fromHeld, 0);
+        assertNotEquals(fromHeld[0], fromChanged[0], "Rectifier power uses the live electrical endpoint");
+        assertNotEquals(fromHeld[6], fromChanged[6], "Inverter power uses the live electrical endpoint");
+        changed.rollbackTransaction();
+        held.rollbackTransaction();
+        assertEquals(held.getIntegrationStates(), changed.getIntegrationStates());
+        changed.readBoundary(fromChanged, 0);
+        held.readBoundary(fromHeld, 0);
+        assertArrayEquals(fromHeld, fromChanged);
+    }
+
     @ParameterizedTest @ValueSource(booleans={false,true})
     void solvedInitialElectricalBoundaryIsConsistentAndFlat(boolean dynamic) {
         var r=rig(dynamic,0);var m=r.model();double[] b=new double[10],f=new double[m.staggeredStateCount()],inj=new double[4];m.readBoundary(b,0);

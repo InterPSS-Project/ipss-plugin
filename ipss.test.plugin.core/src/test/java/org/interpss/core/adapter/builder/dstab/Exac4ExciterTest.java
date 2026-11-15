@@ -97,4 +97,13 @@ public class Exac4ExciterTest extends CorePluginTestSetup {
     private static void step(Exac4Exciter e,Machine m,double dt){e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0);e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1);}
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Exac4Exciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcExac4("Bus1", "1", data);
+        });
+    }
 }

@@ -234,4 +234,13 @@ public class DStabNetworkBuilderBbsex1Test extends CorePluginTestSetup {
         }
         @Override public double getOutput(Machine machine) { return output; }
     }
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = dynamicData();
+            data.setTf(time);
+            return builder.addExcBbsex1("Bus1", "1", data);
+        });
+    }
 }

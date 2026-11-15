@@ -14,6 +14,8 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
@@ -84,7 +86,7 @@ public class RexsysExciterTest extends CorePluginTestSetup {
         assertEquals(0,exciter.tb1,1e-12);assertEquals(0,exciter.tf,1e-12);
         assertEquals(0,exciter.tf2,1e-12);assertEquals(.02,exciter.tp,1e-12);
         assertEquals(.02,exciter.te,1e-12);
-        assertTrue(exciter.vimax>=Math.abs(exciter.getRegulatorOutput()));
+        assertTrue(exciter.vimax>=Math.abs(exciter.getVoltageErrorInput()));
         assertTrue(exciter.vrmax>=exciter.getRegulatorOutput());
         assertTrue(exciter.vfmax>=exciter.getBridgeOutput());
     }
@@ -110,6 +112,82 @@ public class RexsysExciterTest extends CorePluginTestSetup {
         assertEquals(1.2,exciter.getInternalFieldVoltage(),0.);
         assertEquals(.1/1.4,exciter.getRegulatorOutput(),1e-11);
     }
+    @ParameterizedTest
+    @CsvSource({"0, 1", "0, -1", "0.02, 1", "0.02, -1"})
+    void currentPiContinuesIntegratingBehindBridgeLimits(double bridgeTime, int direction) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var data = baseData();
+        data.setTa(0);
+        data.setKvp(20);
+        data.setKvi(0);
+        data.setKip(2);
+        data.setTp(bridgeTime);
+        data.setVfmax(2);
+        data.setVfmin(-2);
+        var exciter = builder.addExcRexsys("Bus1", "1", data);
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setEfd(1.2);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        double initialIntegral = exciter.getCurrentPiIntegralState();
+        double initialBridge = exciter.getBridgeOutput();
+        exciter.setRefPoint(exciter.getRefPoint() + direction * .5);
+
+        double dt = .0005;
+        double limit = direction * 2;
+        assertTrue(exciter.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(initialIntegral + direction * 30 * dt, exciter.getCurrentPiIntegralState(), 1e-12);
+        // The first bridge predictor receives the full 20 pu PI step.
+        double predictedBridge = bridgeTime == 0 ? limit : initialBridge + direction * 20 * dt / bridgeTime;
+        assertEquals(predictedBridge, exciter.getBridgeOutput(), 1e-12);
+        assertTrue(exciter.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+
+        for (int step = 0; step < 30; step++) {
+            assertTrue(exciter.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(exciter.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertEquals(limit, exciter.getBridgeOutput(), 1e-12);
+        assertEquals(initialIntegral + direction * 30 * 31 * dt, exciter.getCurrentPiIntegralState(), 1e-12);
+        assertTrue(direction * exciter.getCurrentPiOutput() > 2);
+    }
+
+
+    @Test void internalFieldStopsAtZeroWhileTheSignedBridgeRecovers() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var data = baseData();
+        data.setTa(0.0);
+        data.setKvp(4.0);
+        data.setKvi(0.0);
+        data.setKii(0.0);
+        data.setTp(0.0);
+        var exciter = builder.addExcRexsys("Bus1", "1", data);
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setEfd(1.2);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+        double reference = exciter.getRefPoint();
+        double dt = 0.01;
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        exciter.setRefPoint(reference - 1.0);
+        assertEquals(-2.8, exciter.getBridgeOutput(), 1.0e-12);
+        for (int step = 0; step < 60; step++) {
+            for (int stage = 0; stage < 2; stage++) {
+                assertTrue(exciter.nextStep(dt, method, machine, stage));
+                assertTrue(exciter.getInternalFieldVoltage() >= 0.0);
+                assertTrue(exciter.getOutput(machine) >= 0.0);
+            }
+        }
+        assertEquals(0.0, exciter.getInternalFieldVoltage(), 0.0);
+        assertEquals(0.0, exciter.getOutput(machine), 0.0);
+        assertEquals(-2.8, exciter.getBridgeOutput(), 1.0e-12);
+
+        exciter.setRefPoint(reference);
+        assertTrue(exciter.nextStep(dt, method, machine, 0));
+        assertEquals(0.04, exciter.getInternalFieldVoltage(), 1.0e-12);
+        assertTrue(exciter.nextStep(dt, method, machine, 1));
+        assertEquals(0.04 - dt * 0.04 / (2.0 * data.getTe()),
+                exciter.getOutput(machine), 1.0e-12);
+    }
+
     private static double[] derivatives(double[] x){
         double voltagePi=.1+x[0];double vr=x[1];double currentPi=vr+x[2];
         return new double[]{.2,(voltagePi-vr)/.1,3*vr,(currentPi-x[3])/.2,(x[3]-x[4])/.3};

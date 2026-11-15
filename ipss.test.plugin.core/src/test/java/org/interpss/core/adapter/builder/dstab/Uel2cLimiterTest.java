@@ -14,6 +14,8 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.common.exp.InterpssException;
@@ -21,6 +23,20 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 
 /** Schema, equation, limiter, and named-state tests for UEL2C. */
 public class Uel2cLimiterTest extends CorePluginTestSetup {
+    @Test void initialPowerFiltersUseGeneratorMvaBase() throws Exception {
+        var b=fixtureBuilder();var bus=b.getDStabNetwork().getDStabBus("Bus1");
+        var gen=(com.interpss.dstab.DStabGen)bus.getContributeGen("1");
+        gen.setMvaBase(200);gen.setGen(new org.apache.commons.math3.complex.Complex(.8,.2));
+        gen.getMach().setRating(200,org.interpss.numeric.datatype.Unit.UnitType.mVA,bus.getNetwork().getBaseKva());
+        bus.setVoltage(org.apache.commons.math3.complex.Complex.ONE);
+        var u=b.addUel2c("Bus1","1",data());assertTrue(u.initStates(bus));
+        assertEquals(.4,u.getNamedStates().get("Real power filter"),1e-12);
+        assertEquals(.1,u.getNamedStates().get("Reactive power filter"),1e-12);
+        assertTrue(u.nextStepWithSignals(.001,DynamicSimuMethod.MODIFIED_EULER,0,1,.4,.1,0,0));
+        assertTrue(u.nextStepWithSignals(.001,DynamicSimuMethod.MODIFIED_EULER,1,1,.4,.1,0,0));
+        assertEquals(.4,u.getNamedStates().get("Real power filter"),1e-12);
+        assertEquals(.1,u.getNamedStates().get("Reactive power filter"),1e-12);
+    }
     @Test void parsesFlatAndExactWrapperAllocations(@TempDir Path dir)throws Exception{
         String payload=" 2 2 1 2 .02 .03 .025 .4 .8 .5 -.2 0 0 .08 .02 .07 .015 .06"
                 +" -.2 .0125 .2 .0125 .6 .0125 1 .0125 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
@@ -66,12 +82,136 @@ public class Uel2cLimiterTest extends CorePluginTestSetup {
         assertTrue(Double.isFinite(u.getNormalizedReactiveReference()));
     }
 
-    private static DStabNetworkBuilder fixtureBuilder()throws Exception{
-        DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();St1cData d=new St1cData();
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void zeroIntegralGainKeepsTheProportionalPathUnbiased(boolean bypassLags) throws Exception {
+        var limiter = fixtureBuilder().addUel2c("Bus1", "1", data(0.0, bypassLags));
+        limiter.initializeWithSignals(1.0, 0.0, -.10, 0.0, 0.0);
+        var initial = limiter.getNamedStates();
+        assertEquals(0.0, initial.get("Integrator"), 0.0);
+        double proportionalOutput = .8 * (.0125 + .10);
+        double initialLag = bypassLags ? proportionalOutput : 0.0;
+        assertEquals(initialLag, initial.get("First lead-lag"), 1.0e-12);
+        assertEquals(initialLag, initial.get("Second lead-lag"), 1.0e-12);
+        for (int tick = 0; tick < 1_500; tick++) {
+            for (int stage = 0; stage < 2; stage++) {
+                assertTrue(limiter.nextStepWithSignals(.001, DynamicSimuMethod.MODIFIED_EULER,
+                        stage, 1.0, 0.0, -.10, 0.0, 0.0));
+            }
+        }
+        assertEquals(proportionalOutput, limiter.getOutput(), 1.0e-7);
+        assertEquals(0.0, limiter.getNamedStates().get("Integrator"), 0.0);
+    }
+
+    @Test void capabilityReferenceReturnsToZeroBeyondMaximumPower(@TempDir Path dir) throws Exception {
+        Path dyr = dir.resolve("capability.dyr");
+        Files.writeString(dyr, "1 'UEL2C' '1' 2 2 1 1 0 0 0 0 .1 1 -3 0 0 0 0 0 0 0"
+                + " -.2 -.6 .2 -.5 .6 -.4 1 -.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+                + " 99 0 1 1 3 0 1 -3 1 -3 .76 /\n");
+        var builder = fixtureBuilder();
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var limiter = builder.getDStabNetwork().getBus("Bus1").getDynamicBusDeviceList().stream()
+                .filter(Uel2cUnderExcitationLimiter.class::isInstance)
+                .map(Uel2cUnderExcitationLimiter.class::cast).findFirst().orElseThrow();
+        limiter.initializeWithSignals(1.0, -.25, -.8, 0.0, 0.0);
+        assertEquals(-.6125, limiter.getNormalizedReactiveReference(), 1.0e-12);
+        double[] power = {.4, 1.0, 1.01, 5.0, .4};
+        double[] expected = {-.45, -.3, 0.0, 0.0, -.45};
+        for (int i = 0; i < power.length; i++) {
+            assertTrue(limiter.nextStepWithSignals(.0033333, DynamicSimuMethod.MODIFIED_EULER,
+                    0, 1.0, power[i], -.8, 0.0, 0.0));
+            assertTrue(limiter.nextStepWithSignals(.0033333, DynamicSimuMethod.MODIFIED_EULER,
+                    1, 1.0, power[i], -.8, 0.0, 0.0));
+            assertEquals(expected[i], limiter.getNormalizedReactiveReference(), 1.0e-12);
+            assertEquals(expected[i], limiter.getNamedStates().get("Reactive power reference"), 1.0e-12);
+        }
+    }
+
+    private static DStabNetworkBuilder fixtureBuilder()throws Exception{return fixtureBuilder(false);}
+    private static DStabNetworkBuilder fixtureBuilder(boolean typeJ)throws Exception{
+        DStabNetworkBuilder b=typeJ?DStabBuilderTestFixture.createBuilder():DStabBuilderTestFixture.createWithMachine();
+        if(typeJ)b.addGentpj1("Bus1","1",100,16.5,new com.interpss.dstab.mach.model.Gentpj1Data(
+                6.8,.042,.65,.083,4.7,.18,2.12,1.38,.34,.52,.21,.19,.13,.085,.34,0));
+        St1cData d=new St1cData();
         d.setUel(1);d.setVos(1);d.setOel(0);d.setTr(0);d.setVimax(9);d.setVimin(-9);d.setTc(0);d.setTb(0);
         d.setTc1(0);d.setTb1(0);d.setKa(1);d.setTa(0);d.setVamax(9);d.setVamin(-9);d.setVrmax(9);d.setVrmin(-9);
         d.setKc(0);d.setKf(0);d.setTf(0);d.setKlr(0);d.setIlr(99);assertNotNull(b.addExcSt1c("Bus1","1",d));return b;
     }
-    private static Uel2cData data(){return new Uel2cData(2,2,1,2,.02,.03,.025,.4,.8,.5,-.2,0,0,.08,.02,.07,.015,.06,
+    private static Uel2cData data(){return data(.4, false);}
+    private static Uel2cData data(double integralGain, boolean bypassLags){
+        return new Uel2cData(2,2,1,2,.02,.03,.025,integralGain,.8,.5,-.2,0,0,.08,
+                .02,bypassLags?0:.07,.015,bypassLags?0:.06,
             -.2,.0125,.2,.0125,.6,.0125,1,.0125,0,0,0,0,0,0,0,0,0,0,0,0,0,0,.6,-.3,.95,.9,.1,.04,.55,-.25,.5,-.2,.6);}
+    @Test void zeroGainSelectorUsesFixedGainAndDoesNotAdvanceTheAdjustableGainState() throws Exception {
+        var original=data();var components=Uel2cData.class.getRecordComponents();
+        Object[] values=new Object[components.length];Class<?>[] types=new Class<?>[components.length];
+        for(int i=0;i<components.length;i++){values[i]=components[i].getAccessor().invoke(original);types[i]=components[i].getType();}
+        values[3]=0;var zero=Uel2cData.class.getConstructor(types).newInstance(values);
+        values[3]=1;var one=Uel2cData.class.getConstructor(types).newInstance(values);
+        var a=fixtureBuilder().addUel2c("Bus1","1",zero);
+        var b=fixtureBuilder().addUel2c("Bus1","1",one);
+        a.initializeWithSignals(.9,.5,-.1,0,0);b.initializeWithSignals(.9,.5,-.1,0,0);
+        for(int step=0;step<100;step++)for(int stage=0;stage<2;stage++) {
+            assertTrue(a.nextStepWithSignals(.001,DynamicSimuMethod.MODIFIED_EULER,stage,.9,.5,-.2,0,0));
+            assertTrue(b.nextStepWithSignals(.001,DynamicSimuMethod.MODIFIED_EULER,stage,.9,.5,-.2,0,0));
+            assertArrayEquals(a.getStateSnapshot(),b.getStateSnapshot(),1e-12);
+            assertEquals(0,a.getStateSnapshot()[8],0);
+            assertEquals(a.getOutput(),b.getOutput(),1e-12);
+        }
+        assertEquals(0,a.getData().gainMode());
+    }
+
+
+    @ParameterizedTest @ValueSource(strings={"bus","generator","machine","exciter","limiter"})
+    void inactiveHostNeverReadsUninitializedMachineOrAdvancesLimiter(String disabled)throws Exception{
+        var b=fixtureBuilder(true);var bus=b.getDStabNetwork().getDStabBus("Bus1");
+        var machine=b.getDStabNetwork().getMachine("Bus1-mach1");
+        // This machine deliberately has no initialized electrical owner. A
+        // current read is an error; an inactive auxiliary must not attempt it.
+        assertThrows(IllegalStateException.class,machine::getIxy);
+        var limiter=b.addUel2c("Bus1","1",data());
+        limiter.initializeWithSignals(1,.5,.0125,0,0);
+        double[] before=limiter.getStateSnapshot();double output=limiter.getOutput();
+        switch(disabled){
+            case "bus"->bus.setStatus(false);
+            case "generator"->machine.getParentGen().setStatus(false);
+            case "machine"->machine.setStatus(false);
+            case "exciter"->machine.getExciter().setStatus(false);
+            case "limiter"->limiter.setStatus(false);
+            default->throw new AssertionError(disabled);
+        }
+        assertTrue(limiter.initStates(bus));
+        assertTrue(limiter.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(limiter.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertTrue(limiter.afterStep(.01));
+        assertDoesNotThrow(()->limiter.getStates(null));
+        assertArrayEquals(before,limiter.getStateSnapshot(),0);
+        assertEquals(output,limiter.getOutput(),0);
+    }
+
+
+    @ParameterizedTest @ValueSource(strings={"bus","generator","machine","exciter","limiter"})
+    void inactiveUel1HostDoesNotReadUninitializedElectricalState(String disabled)throws Exception{
+        var b=fixtureBuilder(true);var bus=b.getDStabNetwork().getDStabBus("Bus1");
+        var machine=b.getDStabNetwork().getMachine("Bus1-mach1");
+        assertThrows(IllegalStateException.class,machine::getIxy);
+        var limiter=b.addUel1("Bus1","1",new com.interpss.dstab.controller.uel.uel1.Uel1Data(
+                1,.8,.1,2,2,.5,.4,1,-1,.02,.1,.03,.12,1,-1));
+        limiter.initializeWithError(.2);var before=limiter.getNamedStates();double output=limiter.getOutput();
+        switch(disabled){
+            case "bus"->bus.setStatus(false);
+            case "generator"->machine.getParentGen().setStatus(false);
+            case "machine"->machine.setStatus(false);
+            case "exciter"->machine.getExciter().setStatus(false);
+            case "limiter"->limiter.setStatus(false);
+            default->throw new AssertionError(disabled);
+        }
+        assertTrue(limiter.initStates(bus));
+        assertTrue(limiter.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(limiter.nextStep(.01,DynamicSimuMethod.MODIFIED_EULER,1));
+        assertTrue(limiter.afterStep(.01));assertDoesNotThrow(()->limiter.getStates(null));
+        assertEquals(before,limiter.getNamedStates());assertEquals(output,limiter.getOutput(),0);
+        assertEquals(0,limiter.getError(),0);
+    }
+
 }

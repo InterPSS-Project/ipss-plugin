@@ -36,6 +36,50 @@ public class GenqecuPsseSmibConformanceTest {
             "testData", "reference", "psse", "smib-genqecu", "psse.csv");
 
     @Test
+    void electricalAndRotorDerivativesUseTheSameSolvedEndpointAtNonzeroSlip() throws Exception {
+        IpssCorePlugin.init();
+        GenqecMachine actual = initializeStageMachine();
+        GenqecMachine expected = initializeStageMachine();
+        actual.setSpeed(0.997);
+        expected.setSpeed(0.997);
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        double dt = 0.0033333;
+        double initialAngle = actual.getAngle();
+
+        for (int flag = 0; flag <= 1; flag++) {
+            for (GenqecMachine machine : List.of(actual, expected)) {
+                var bus = machine.getDStabBus();
+                bus.setVoltage(bus.getVoltage().multiply(new Complex(0.99999, -0.002)));
+                machine.getIgen();
+            }
+            var net = expected.getDStabBus().getNetwork();
+            double stageAirGapPower = expected.getPe();
+            assertTrue(expected.nextStepElectrical(dt, method, net, flag));
+            expected.setPe(stageAirGapPower);
+            assertTrue(expected.nextStepMechanical(dt, method, net, flag));
+            assertTrue(actual.nextStep(dt, method, flag));
+            for (var state : expected.getNamedStates().entrySet()) {
+                assertEquals(state.getValue(), actual.getNamedStates().get(state.getKey()), 1e-12,
+                        "stage " + flag + " state " + state.getKey());
+            }
+        }
+        assertTrue(Math.abs(actual.getAngle() - initialAngle) > 1e-4);
+    }
+
+    private static GenqecMachine initializeStageMachine() throws Exception {
+        var context = new PSSEMultiFileLoader().loadDStab(
+                CASE.resolve("SMIB_v33.raw").toString(),
+                CASE.resolve("SMIB_v33_genqecu.dyr").toString());
+        var algorithm = context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(0.0033333);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.initialization());
+        return (GenqecMachine) context.getDStabilityNet().getMachine("Bus1-mach1");
+    }
+
+    @Test
     void threeCycleFaultMatchesBoundaryAndAllSixPublishedStates() throws Exception {
         IpssCorePlugin.init();
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")

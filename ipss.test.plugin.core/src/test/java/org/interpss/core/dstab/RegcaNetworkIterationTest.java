@@ -281,44 +281,90 @@ public class RegcaNetworkIterationTest {
             assertTrue(network.getBus("Bus1").getDynamicBusDeviceList().contains(device),"Actual imported-device event registry");
             var cold=new java.util.HashMap<>(device.getStates(null));device.acceptNetworkEventInput(0.);
             assertEquals(cold,device.getStates(null),"Before initialization the event input is ignored");
-            AtomicInteger callbacks=new AtomicInteger();
-            Runnable check=()->{
-                Complex expected=network.getBus("Bus1").getVoltage().multiply(device.uncompensatedNetworkCurrent().conjugate());
-                assertEquals(expected.getReal(),((Number)device.getStates(null).get("REGCA1_P")).doubleValue(),1.e-13);
-                assertEquals(expected.getImaginary(),((Number)device.getStates(null).get("REGCA1_Q")).doubleValue(),1.e-13);
-                callbacks.incrementAndGet();
+            double step = 0.001;
+            double faultTime = 2 * step;
+            double clearTime = 4 * step;
+            var callbackTimes = new java.util.ArrayList<Double>();
+            var failedEvent = new java.util.concurrent.atomic.AtomicReference<Runnable>();
+            java.util.function.Consumer<DStabSolverImpl> prepareFailure = solver -> {
+                if (fail && algorithm.getSimuTime() == faultTime) {
+                    var before = new java.util.HashMap<>(device.getStates(null));
+                    var states = device.getIntegrationStates();
+                    var memory = device.getNetworkHighVoltageState();
+                    before.remove("Time"); // Recorder metadata can change on the arriving step.
+                    assertTrue(failedEvent.compareAndSet(null, () -> {
+                        var after = new java.util.HashMap<>(device.getStates(null));
+                        after.remove("Time");
+                        assertEquals(before, after, "Failed event leaves published P/Q intact");
+                        assertEquals(states, device.getIntegrationStates());
+                        assertEquals(memory, device.getNetworkHighVoltageState());
+                    }));
+                    // Limit only the first faulted solve. The arriving physical
+                    // step and the pre-event network solve still converge normally.
+                    solver.setMinimumNetworkIterations(2);
+                    solver.setMaxIterationTimes(1);
+                }
             };
-            var solver=history?
-                new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm){
-                    @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
-                        boolean ok=super.networkSolutionStep();if(ok&&eventBoundaryThisStep&&"INITIAL".equals(networkSolutionStage))check.run();return ok;
-                    }
-                }:new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm){
-                    @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
-                        boolean ok=super.networkSolutionStep();if(ok&&eventBoundaryThisStep&&"INITIAL".equals(networkSolutionStage))check.run();return ok;
-                    }
-                };
-            algorithm.setSolver(solver);network.setBypassDataCheck(true);network.setAllowGenWithoutMach(true);
+            Runnable check = () -> {
+                Complex expected = network.getBus("Bus1").getVoltage()
+                        .multiply(device.uncompensatedNetworkCurrent().conjugate());
+                assertEquals(expected.getReal(), ((Number)device.getStates(null).get("REGCA1_P")).doubleValue(), 1e-13);
+                assertEquals(expected.getImaginary(), ((Number)device.getStates(null).get("REGCA1_Q")).doubleValue(), 1e-13);
+                callbackTimes.add(algorithm.getSimuTime());
+            };
+            com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase solver = history
+                    ? new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm) {
+                        @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                            boolean event = eventBoundaryThisStep && "INITIAL".equals(networkSolutionStage);
+                            if (event) prepareFailure.accept(this);
+                            boolean ok = super.networkSolutionStep();
+                            if (ok && event) check.run();
+                            return ok;
+                        }
+                    } : new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(algorithm) {
+                        @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                            boolean event = eventBoundaryThisStep && "INITIAL".equals(networkSolutionStage);
+                            if (event) prepareFailure.accept(this);
+                            boolean ok = super.networkSolutionStep();
+                            if (ok && event) check.run();
+                            return ok;
+                        }
+                    };
+            algorithm.setSolver(solver);
+            network.setBypassDataCheck(true);
+            network.setAllowGenWithoutMach(true);
             assertTrue(algorithm.getAclfAlgorithm().loadflow());
             algorithm.setSimuMethod(com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER);
-            algorithm.setSimuStepSec(.001);algorithm.setTotalSimuTimeSec(.006);
+            algorithm.setSimuStepSec(step);
+            algorithm.setTotalSimuTimeSec(6 * step);
             algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
-            network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",network,
-                    com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,new Complex(0.,.2),null,.002,.002),"AcceptedPower");
-            assertTrue(algorithm.initialization());device.setNetworkIterationHighVoltageEnabled(true);
-            for(int i=0;i<2;i++)assertTrue(algorithm.solveDEqnStep(true));
-            assertEquals(0,callbacks.get(),"Ordinary steps never dispatch an event input");
-            if(fail) {
-                var before=new java.util.HashMap<>(device.getStates(null));
-                var states=device.getIntegrationStates();var memory=device.getNetworkHighVoltageState();
-                solver.setMaxIterationTimes(1);boolean accepted=algorithm.solveDEqnStep(true);
-                assertFalse(accepted,"Deliberately under-iterated fault must fail");assertEquals(0,callbacks.get());
-                var after=new java.util.HashMap<>(device.getStates(null));before.remove("Time");after.remove("Time");
-                assertEquals(before,after,"Failed event does not publish inputs; recorder time is metadata");
-                assertEquals(states,device.getIntegrationStates());assertEquals(memory,device.getNetworkHighVoltageState());
+            network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2", network,
+                    com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,
+                    new Complex(0., .2), null, faultTime, clearTime - faultTime), "AcceptedPower");
+            assertTrue(algorithm.initialization());
+            device.setNetworkIterationHighVoltageEnabled(true);
+
+            // The exact solver handles a boundary on arrival. Fixed-grid staggered
+            // handles it at the start of the following call, at the same clock time.
+            int eventCall = history ? 3 : 2;
+            for (int call = 1; call < eventCall; call++) {
+                assertTrue(algorithm.solveDEqnStep(true));
+                assertTrue(callbackTimes.isEmpty(), "Ordinary steps do not dispatch an event input");
+            }
+            assertEquals(!fail, algorithm.solveDEqnStep(true));
+            if (fail) {
+                assertNotNull(failedEvent.get(), "The faulted initial network solve was attempted");
+                assertFalse(solver.getLastNetworkSolutionDiagnostics().converged());
+                assertEquals("INITIAL", solver.getLastNetworkSolutionDiagnostics().stage());
+                assertTrue(callbackTimes.isEmpty(), "Failed solves do not dispatch an event input");
+                failedEvent.get().run();
             } else {
-                for(int i=0;i<4;i++)assertTrue(algorithm.solveDEqnStep(true));
-                assertEquals(2,callbacks.get(),"Application and clearing use real solver dispatch");
+                assertEquals(java.util.List.of(faultTime), callbackTimes);
+                for (int call = eventCall + 1; call <= 6; call++) {
+                    assertTrue(algorithm.solveDEqnStep(true));
+                    assertEquals(call < eventCall + 2 ? java.util.List.of(faultTime)
+                            : java.util.List.of(faultTime, clearTime), callbackTimes);
+                }
             }
         }
     }

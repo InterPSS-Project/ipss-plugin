@@ -576,14 +576,22 @@ public class DStabNetworkBuilder {
         if(gen!=null&&gen.getDynamicGenDevice() instanceof Gewtgcu1Model host) {
             host.setAuxiliaryController(model);
         } else if(gen!=null&&gen.getDynamicGenDevice() instanceof Regca1Model host
-                &&host.getActiveElectricalController() instanceof Reeca1Model electrical) {
-            electrical.setAuxiliaryController(model);
+                &&supportsAuxiliaryReference(host.getActiveElectricalController())) {
+            host.getActiveElectricalController().setAuxiliaryController(model);
+        } else if(gen!=null&&gen.getDynamicGenDevice() instanceof Regcb1Model host
+                &&supportsAuxiliaryReference(host.getActiveElectricalController())) {
+            host.getActiveElectricalController().setAuxiliaryController(model);
         } else {
             log.warn("Supported converter/electrical host not found for {}: bus={}, gen={}",name,busId,genId);
             return null;
         }
         model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
         return model;
+    }
+
+    private static boolean supportsAuxiliaryReference(RenewableElectricalController controller) {
+        return controller instanceof Reeca1Model||controller instanceof Reecb1Model
+                ||controller instanceof Reecc1Model||controller instanceof Reecd1Model;
     }
 
     /** Attach one PLNTBU1 plant controller to every REAXB assigned to its plant bus. */
@@ -631,6 +639,11 @@ public class DStabNetworkBuilder {
                         && Math.abs(host.getAuxiliaryController().getData().plantBus()) == plantBus) {
                     host.getAuxiliaryController().setPlantController(controller);
                 } else if(gen.getDynamicGenDevice() instanceof Regca1Model converter
+                        &&converter.getActiveElectricalController()!=null) {
+                    var auxiliary=converter.getActiveElectricalController().getAuxiliaryController();
+                    if(auxiliary!=null&&Math.abs(auxiliary.getData().plantBus())==plantBus)
+                        auxiliary.setPlantController(controller);
+                } else if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
                         &&converter.getActiveElectricalController()!=null) {
                     var auxiliary=converter.getActiveElectricalController().getAuxiliaryController();
                     if(auxiliary!=null&&Math.abs(auxiliary.getData().plantBus())==plantBus)
@@ -719,23 +732,29 @@ public class DStabNetworkBuilder {
     /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */
     public Wt12t1Model addWt12t1(String busId, String genId, Wt12t1Data data) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
-        if (!(machine instanceof Wt1g1Machine wt1g1)) {
-            log.warn("WT1G1 not found for WT12T1: bus={}, gen={}", busId, genId);
+        if (!(machine instanceof Wt1g1Machine) && !(machine instanceof Wt2g1Machine)) {
+            log.warn("WT1G1/WT2G1 not found for WT12T1: bus={}, gen={}", busId, genId);
             return null;
         }
         Wt12t1Model model = new Wt12t1Model(data);
-        wt1g1.setDriveTrain(model);
+        if (machine instanceof Wt1g1Machine host) host.setDriveTrain(model);
+        else ((Wt2g1Machine) machine).setDriveTrain(model);
         return model;
+    }
+
+    private Wt12t1Model inductionDriveTrain(Machine machine) {
+        return machine instanceof Wt1g1Machine host ? host.getDriveTrain()
+                : machine instanceof Wt2g1Machine host ? host.getDriveTrain() : null;
     }
 
     public Wt12a1Model addWt12a1(String busId, String genId, Wt12a1Data data) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
-        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+        if (inductionDriveTrain(machine) == null) {
             log.warn("WT12T1 not found for WT12A1: bus={}, gen={}", busId, genId);
             return null;
         }
         Wt12a1Model model = new Wt12a1Model(data);
-        wt1g1.getDriveTrain().setAerodynamicController(model);
+        inductionDriveTrain(machine).setAerodynamicController(model);
         return model;
     }
 
@@ -745,12 +764,12 @@ public class DStabNetworkBuilder {
 
     public Wt12a1bModel addWt12a1b(String busId,String genId,Wt12a1bData data,Wt12a1bModel.Specification specification) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
-        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+        if (inductionDriveTrain(machine) == null) {
             log.warn("WT12T1 not found for WT12A1B: bus={}, gen={}", busId, genId);
             return null;
         }
         Wt12a1bModel model = new Wt12a1bModel(data,specification);
-        wt1g1.getDriveTrain().setAerodynamicController(model);
+        inductionDriveTrain(machine).setAerodynamicController(model);
         return model;
     }
 
@@ -846,30 +865,35 @@ public class DStabNetworkBuilder {
         }
 
         Gentpj1Machine mach = new Gentpj1Machine(inputData);
-        configureGenqeMachine(mach, "GENTPJ1", busId, genId, ratingMva, ratedKv,
-                mach.getGenqecData());
+        // Share attachment/base conversion only. A compatibility compound data
+        // view may normalize reactances for its own equations; it must never
+        // supply the native Type-J machine's physical parameters.
+        configureGenqeMachineBase(mach, "GENTPJ1", busId, genId, ratingMva, ratedKv);
+        mach.setH(inputData.h());
+        mach.setD(toCoreDamping(inputData.d()));
+        mach.setXl(inputData.xl());
+        mach.setXd(inputData.xd());
+        mach.setXq(inputData.xq());
+        mach.setXd1(inputData.xdp());
+        mach.setXq1(inputData.xqp());
+        mach.setXd11(inputData.xdpp());
+        mach.setXq11(inputData.xqpp());
+        mach.setTd01(inputData.tdop());
+        mach.setTq01(inputData.tqop());
+        mach.setTd011(inputData.tdopp());
+        mach.setTq011(inputData.tqopp());
+        mach.setSe100(0.0);
+        mach.setSe120(0.0);
         return mach;
     }
 
-    private void configureGenqeMachine(GenqecMachine mach, String modelName,
+    // Share parameter/base wiring, while each concrete machine owns its equations.
+    private void configureGenqeMachine(RoundRotorMachine mach, String modelName,
             String busId, String genId, double ratingMva, double ratedKv,
             GenqecData inputData) throws InterpssException {
-        mach.setId(busId + "-mach" + genId);
-        mach.setName(modelName);
-        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
-        mach.setMachData(DStabObjectFactory.createMachineData());
-        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
-        network.addMachine(mach, busId, genId);
-
-        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
-        mach.setRatedVoltage(ratedKv, UnitType.kV);
-        mach.calMultiFactors();
-        mach.setPoles(2);
+        configureGenqeMachineBase(mach,modelName,busId,genId,ratingMva,ratedKv);
         mach.setH(inputData.h());
         mach.setD(toCoreDamping(inputData.d()));
-        // Native PSS/E GENQEC/GENQEJ records do not carry Ra; it is the RAW
-        // generator source resistance, converted from system to machine base.
-        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(inputData.xl());
         mach.setXd(inputData.xd());
         mach.setXq(inputData.xq());
@@ -885,6 +909,25 @@ public class DStabNetworkBuilder {
         // fields zero so core initialization uses this model's adjusted Xq path.
         mach.setSe100(0.0);
         mach.setSe120(0.0);
+    }
+
+    /** Common identity/base/source-resistance wiring, with no model-data conversion. */
+    private void configureGenqeMachineBase(RoundRotorMachine mach,String modelName,
+            String busId,String genId,double ratingMva,double ratedKv) throws InterpssException {
+        mach.setId(busId + "-mach" + genId);
+        mach.setName(modelName);
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        // Native PSS/E GENQEC/GENQEJ records do not carry Ra; it is the RAW
+        // generator source resistance, converted from system to machine base.
+        mach.setRa(sourceResistanceOnMachineBase(mach));
     }
 
     /**
@@ -1145,7 +1188,7 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2A: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+        if (ics1 < 0 || ics1 > 6 || ics2 < 0 || ics2 > 6) {
             log.warn("PSS2A selector combination is not implemented at {} {}: "
                     + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
                     busId, genId, ics1, remoteBus1, ics2, remoteBus2);
@@ -1388,7 +1431,7 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS3B: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+        if (ics1 < 0 || ics1 > 6 || ics2 < 0 || ics2 > 6) {
             log.warn("Invalid PSS3B input selectors at {} {}: ICS1={}, ICS2={}",
                     busId, genId, ics1, ics2);
             return null;
@@ -2688,6 +2731,7 @@ public class DStabNetworkBuilder {
     }
 
     private static void copyH6eData(PsseH6eGovernorData s, PsseH6eGovernorData t) {
+        t.setNativeH6e1Derivative(s.isNativeH6e1Derivative());
         t.setFd(s.getFd()); t.setRe(s.getRe()); t.setRg(s.getRg());
         t.setTpe(s.getTpe()); t.setTsp(s.getTsp()); t.setKp(s.getKp());
         t.setKi(s.getKi()); t.setKd(s.getKd()); t.setTd(s.getTd());
@@ -3289,13 +3333,13 @@ public class DStabNetworkBuilder {
             return null;
         }
         WshygpGovernor gov = new WshygpGovernor(mach.getId() + "_Gov", "WSHYGP", "WECC");
-        gov.setMachine(mach);
         WshygpGovernorData data = gov.getData();
         for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
         if (!gov.validateParameters()) {
             log.warn("Invalid WSHYGP parameters at {} {}", busId, genId);
             return null;
         }
+        gov.setMachine(mach);
         return gov;
     }
 
@@ -3307,13 +3351,13 @@ public class DStabNetworkBuilder {
             return null;
         }
         WshyddGovernor gov = new WshyddGovernor(mach.getId() + "_Gov", "WSHYDD", "WECC");
-        gov.setMachine(mach);
         WshyddGovernorData data = gov.getData();
         for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
         if (!gov.validateParameters()) {
             log.warn("Invalid WSHYDD parameters at {} {}", busId, genId);
             return null;
         }
+        gov.setMachine(mach);
         return gov;
     }
 
@@ -3667,7 +3711,8 @@ public class DStabNetworkBuilder {
     public Csvgn5Model addCsvgn5(String busId, String genId, Csvgn5Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        String remoteBusId = data.remoteBusNumber() == 0 ? busId
+                : "Bus" + Math.abs(data.remoteBusNumber());
         BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
         if (gen == null || remoteBus == null) {
             log.warn("Generator or remote bus not found for CSVGN5: bus={}, gen={}, remote={}",
@@ -3681,7 +3726,8 @@ public class DStabNetworkBuilder {
     public Svsmo1t2Model addSvsmo1t2(String busId, String shuntId,
             Svsmo1t2Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
-        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        String remoteBusId = data.remoteBusNumber() == 0 ? busId
+                : "Bus" + Math.abs(data.remoteBusNumber());
         BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
         com.interpss.core.aclf.adj.SwitchedShunt shunt = null;
         if (bus != null) {
@@ -3761,7 +3807,8 @@ public class DStabNetworkBuilder {
             log.warn("Renewable converter not found for REECD1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Reecd1Model controller = new Reecd1Model(data);
+        Reecd1Model controller = new Reecd1Model(data,
+                gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RenewableConverterHost host?host:null);
         if (gen.getDynamicGenDevice() instanceof Regca1Model converter) {
             converter.setActiveElectricalController(controller);
             return controller;
@@ -3796,6 +3843,12 @@ public class DStabNetworkBuilder {
     }
 
     public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
+        var voltageSource=findRegcb1(busId,genId);
+        if(voltageSource!=null) {
+            if(voltageSource.getActiveElectricalController()!=null)return null;
+            var controller=Reeca1Model.forConverterHost(data,voltageSource);
+            voltageSource.setActiveElectricalController(controller);return controller;
+        }
         var pll=findRegcc(busId,genId);
         if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
             var controller=Reeca1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
@@ -4064,8 +4117,9 @@ public class DStabNetworkBuilder {
 
     private RenewableElectricalController findWindController(String busId, String genId) {
         Regca1Model converter = findRegca1(busId, genId);
-        var controller = converter == null ? null : converter.getActiveElectricalController();
-        return controller instanceof Reeca1Model
+        var controller = converter == null ? (findRegcb1(busId, genId) == null ? null
+                : findRegcb1(busId, genId).getActiveElectricalController()) : converter.getActiveElectricalController();
+        return controller instanceof Reeca1Model || controller instanceof Reecd1Model
                 || controller instanceof com.interpss.dstab.renewable.ConverterCurrentCommands ? controller : null;
     }
 
@@ -4093,15 +4147,21 @@ public class DStabNetworkBuilder {
     }
 
     /**
-     * PSS/E stores armature resistance with the static generator source
-     * impedance. InterPSS machines store resistance on machine base.
+     * The static source impedance is stored on the contributing generator's
+     * own MVA base. Convert it to system base before applying the machine's
+     * inverse impedance factor. Dividing the RAW value directly by that factor
+     * converts its MVA base twice: a large generator then acquires exaggerated
+     * stator losses and an artificial initial turbine overload.
      */
     private double sourceResistanceOnMachineBase(Machine machine) {
         if (machine.getParentGen().getSourceZ() == null
                 || machine.getZMultiFactor() == 0.0) {
             return 0.0;
         }
-        return machine.getParentGen().getSourceZ().getReal() / machine.getZMultiFactor();
+        double generatorToSystem = machine.getDStabBus().getNetwork().getBaseMva()
+                / machine.getParentGen().getMvaBase();
+        return machine.getParentGen().getSourceZ().getReal()
+                * generatorToSystem / machine.getZMultiFactor();
     }
 
     @SuppressWarnings("unchecked")

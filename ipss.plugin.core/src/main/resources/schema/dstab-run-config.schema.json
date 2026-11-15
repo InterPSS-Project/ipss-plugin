@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dynamic run configuration, schema version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "default": 1
+    },
+    "stepSec": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "frequencyHz": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "networkTolerance": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "sourceNetworkAccelerationFactor": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "totalTimeSec": {
+      "type": "number",
+      "minimum": 0
+    },
+    "networkRelaxationFactor": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "maxNetworkIterations": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sourceImpedanceReconciliationEnabled": {
+      "type": "boolean"
+    },
+    "allowGeneratorsWithoutMachine": {
+      "type": "boolean"
+    },
+    "regca1HighVoltageNetworkIterationEnabled": {
+      "type": "boolean",
+      "description": "Enable accumulated high-voltage correction and accepted voltage memory for imported REGCA1 converters."
+    },
+    "networkFrequencyDependenceEnabled": {
+      "type": "boolean",
+      "description": "Enable frequency corrections for passive branches, shunts, missing-machine equivalents, and GENQEC/GENQECU stators."
+    },
+    "fluxMachineNetworkFrequencyDependenceEnabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Use local bus frequency for GENROU, GENROE, and GENSAL stators. Independent of networkFrequencyDependenceEnabled."
+    },
+    "relativeAnglesEnabled": {
+      "type": "boolean"
+    },
+    "angleReferenceBus": {
+      "type": "integer",
+      "minimum": -1
+    },
+    "angleReferenceMachineId": {
+      "type": "string"
+    },
+    "integrationMethod": {
+      "type": "string",
+      "enum": [
+        "MODIFIED_EULER",
+        "RUNGE_KUTTA"
+      ]
+    },
+    "loadModelThresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimumMw",
+        "minimumAbsPOverQ",
+        "minimumVoltagePu"
+      ],
+      "properties": {
+        "minimumMw": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minimumAbsPOverQ": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minimumVoltagePu": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "activeStaticLoadModel": {
+      "type": "string",
+      "enum": [
+        "CONST_P",
+        "CONST_I",
+        "CONST_Z"
+      ],
+      "default": "CONST_I"
+    },
+    "reactiveStaticLoadModel": {
+      "type": "string",
+      "enum": [
+        "CONST_P",
+        "CONST_I",
+        "CONST_Z"
+      ],
+      "default": "CONST_Z"
+    }
+  }
+}

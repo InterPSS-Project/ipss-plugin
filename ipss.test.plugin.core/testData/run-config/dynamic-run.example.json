@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "stepSec": 0.005,
+  "totalTimeSec": 10.0,
+  "maxNetworkIterations": 50,
+  "networkTolerance": 0.0001,
+  "sourceImpedanceReconciliationEnabled": true,
+  "loadModelThresholds": {
+    "minimumMw": 5.0,
+    "minimumAbsPOverQ": 1.61,
+    "minimumVoltagePu": 0.97
+  },
+  "activeStaticLoadModel": "CONST_I",
+  "reactiveStaticLoadModel": "CONST_Z"
+}

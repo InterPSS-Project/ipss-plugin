@@ -11,6 +11,7 @@ import org.interpss.core.dstab.reference.EventSideTrajectory;
 import org.interpss.core.dstab.reference.EventSideTrajectory.Side;
 import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import com.interpss.dstab.controller.pss.ieeest.SecondOrderLagBlock;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.*;
 import com.interpss.dstab.algo.dynamic.*;
@@ -40,18 +41,64 @@ public class IeeestPowerInputSmibTest extends CorePluginTestSetup {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(step);algorithm.setTotalSimuTimeSec(.5);algorithm.setSimuOutputHandler(new StateMonitor());
         if(fault)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"input-three-cycle");
         assertTrue(algorithm.initialization());var machine=net.getMachine("Bus1-mach1");
-        assertInstanceOf(com.interpss.dstab.mach.RoundRotorMachine.class,machine,"Reuse the core round-rotor model");
         return new Fixture(algorithm,machine,assertInstanceOf(IeeestStabilizer.class,machine.getStabilizer()));
     }
-    private static Fixture load(int mode,Path directory)throws Exception {
+    private static Fixture load(int mode, Path directory, boolean playback) throws Exception {
         var p=GenrouNativeReference.profiles().stream().filter(x->x.name().equals("flat-coarse")).findFirst().orElseThrow();
         String input=p.input()+"1 'ESST1A' '1' 1 1 .02 .8 -.8 .2 .8 .1 .4 80 .04 99 -99 7.3 -7.3 0 .1 1 0 1 /\n"
                 +"1 'IEEEST' '1' "+mode+" 0 .061 .0017 .02 0 0 0 .3 .03 .3 .03 5 5 5 .05 -.05 0 0 /\n";
-        return load(p.network(),input,p.step(),directory);
+        return playback ? loadForPowerPlayback(p.network(), input, p.step(), directory)
+                : load(p.network(), input, p.step(), directory);
     }
+    private static Fixture loadForPowerPlayback(String raw, String dynamic, double step,
+            Path directory) throws Exception {
+        // The playback supplies electrical and mechanical power directly. A
+        // classical host lets it inject those signals without solving a stator.
+        String entered = dynamic.replaceFirst("(?m)^\\s*1\\s+'GENROU'\\s+'?1'?\\s+[^/]+/",
+                "1 'GENCLS' '1' 5 0 /");
+        assertNotEquals(dynamic, entered, "Expected the Bus1 round-rotor source in the fixture");
+        return load(raw, entered, step, directory);
+    }
+
+    @Test
+    void roundRotorElectricalModeReadsTerminalPowerAtBothStages(@TempDir Path directory) throws Exception {
+        for (boolean direct : List.of(false, true)) {
+            var fixture = load(3, directory.resolve("stator-" + direct), false);
+            var machine = assertInstanceOf(IeeeVcRoundRotorMachine.class, fixture.machine());
+            var stabilizer = fixture.stabilizer();
+            var bus = machine.getDStabBus();
+            machine.setRa(.025);
+            assertTrue(machine.initStates(bus));
+            machine.getIgen();
+            double initialTerminalPower = machine.getParentGen().getGen().getReal() / machine.getRating();
+            assertTrue(machine.getPe() - initialTerminalPower > .001);
+            assertTrue(stabilizer.initStates(bus, machine));
+            assertEquals(initialTerminalPower, stabilizer.peRef, 1e-12);
+            if (direct) {
+                stabilizer.setPreparedDirectStage(true);
+                stabilizer.compileRuntimePlan();
+                assertTrue(stabilizer.hasCompiledStageEvaluator());
+            }
+            var input = assertInstanceOf(SecondOrderLagBlock.class,
+                    stabilizer.getNamedStateBlocks().get("secondOrderLag"));
+            for (int stage = 0; stage < 2; stage++) {
+                bus.setVoltage(bus.getVoltageMag(), bus.getVoltageAng() + .015);
+                var voltage = bus.getVoltage();
+                var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+                double terminalPower = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+                double swingPower = machine.getPe();
+                assertTrue(Math.abs(terminalPower - initialTerminalPower) > .01);
+                assertTrue(stabilizer.nextStep(.0005, DynamicSimuMethod.MODIFIED_EULER, machine, stage));
+                assertEquals(terminalPower - initialTerminalPower, input.getU0(), 1e-12);
+                assertEquals(swingPower, machine.getPe(), 0.0);
+            }
+        }
+    }
+
     @Test void electricalAndAcceleratingPowerUseTheirDocumentedSignsInBothStages(@TempDir Path directory)throws Exception {
         for(int mode:List.of(3,4)) {
-            var f=load(mode,directory.resolve("mode-"+mode));var m=f.machine();var pss=f.stabilizer();
+            var f=load(mode, directory.resolve("mode-" + mode), true);var m=f.machine();var pss=f.stabilizer();
+            assertTrue(pss.initStates(m.getDStabBus(), m));
             double pe=m.getPe(),pm=m.getPm();m.setPe(pe+.2);m.setPm(pm+.05);
             double expected=mode==3?.2:-.15;
             var first=assertInstanceOf(SecondOrderLagBlock.class,pss.getNamedStateBlocks().get("secondOrderLag"));
@@ -63,7 +110,8 @@ public class IeeestPowerInputSmibTest extends CorePluginTestSetup {
     }
     @Test void equalElectricalAndMechanicalChangesCancelOnlyForAcceleratingPower(@TempDir Path directory)throws Exception {
         for(int mode:List.of(3,4)) {
-            var f=load(mode,directory.resolve("mode-"+mode));var m=f.machine();var pss=f.stabilizer();
+            var f=load(mode, directory.resolve("mode-" + mode), true);var m=f.machine();var pss=f.stabilizer();
+            assertTrue(pss.initStates(m.getDStabBus(), m));
             m.setPe(m.getPe()+.2);m.setPm(m.getPm()+.2);
             assertTrue(pss.nextStep(.0005,DynamicSimuMethod.MODIFIED_EULER,m,0));
             var first=assertInstanceOf(SecondOrderLagBlock.class,pss.getNamedStateBlocks().get("secondOrderLag"));
@@ -92,7 +140,7 @@ public class IeeestPowerInputSmibTest extends CorePluginTestSetup {
     @Test void everyRecordedPowerSampleReplaysTheExactInputCombination(@TempDir Path directory)throws Exception {
         var faultErrors=new LinkedHashMap<String,Double>();
         for(var p:IeeestInputReference.profiles()) {
-            var rows=HplntdSwitchingNativeSmibTest.rows(p.body());var f=load(p.network(),p.input(),p.step(),directory.resolve(p.name()));
+            var rows=HplntdSwitchingNativeSmibTest.rows(p.body());var f=loadForPowerPlayback(p.network(),p.input(),p.step(),directory.resolve(p.name()));
             var m=f.machine();var pss=f.stabilizer();var initial=rows.getFirst();
             double pe0=initial.get("P_PU"),pm0=initial.get("PMECH");m.setPe(pe0);m.setPm(pm0);assertTrue(pss.initStates(m.getDStabBus(),m));
             var first=assertInstanceOf(SecondOrderLagBlock.class,pss.getNamedStateBlocks().get("secondOrderLag"));
@@ -123,6 +171,7 @@ public class IeeestPowerInputSmibTest extends CorePluginTestSetup {
     @Test void coupledCoreMachineProfilesRetainCompleteDiagnosticTraces(@TempDir Path directory)throws Exception {
         for(var p:IeeestInputReference.profiles()) {
             var rows=HplntdSwitchingNativeSmibTest.rows(p.body());var f=load(p.network(),p.input(),p.step(),p.fault(),directory.resolve(p.name()));
+            assertInstanceOf(IeeeVcRoundRotorMachine.class, f.machine());
             int ticks=(int)Math.ceil(Math.max(p.end(),rows.getLast().get("time_s"))/p.step());f.algorithm().setTotalSimuTimeSec(ticks*p.step());
             var points=new ArrayList<Map<String,Double>>();var text=new StringBuilder("time_s,V_BUS1,V_BUS2,SPEED_DEV,ANGLE,EFD,PMECH,VOTHSG\n");
             for(int tick=0;tick<=ticks;tick++) {

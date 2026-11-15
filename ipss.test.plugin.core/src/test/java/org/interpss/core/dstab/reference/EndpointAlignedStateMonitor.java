@@ -11,12 +11,13 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 
 /**
  * Captures custom states synchronously with a reference bus's output callback.
- * The current core emits an integrated endpoint with the step-start time label.
- * Preserve that raw label separately; never join custom states by nearest time.
- * Requires one output per step and the ordinary core solver callback contract.
+ * Retains the solver's raw callback time alongside the physical sample time.
+ * A legacy fixed-grid callback labels the integrated endpoint with the step
+ * start. The exact solver labels the physical endpoint directly and emits
+ * both sides of an event at the same time. Requires output on every step.
  */
 public final class EndpointAlignedStateMonitor extends StateMonitor {
-    public enum SampleKind { INITIAL, EVENT_PRE, STEP_END }
+    public enum SampleKind { INITIAL, EVENT_PRE, STEP_END, EVENT_POST }
 
     public record Frame(double time, double solverTime, SampleKind kind, double[] states) {
         public Frame { states = states.clone(); }
@@ -27,6 +28,7 @@ public final class EndpointAlignedStateMonitor extends StateMonitor {
     private final String referenceBus;
     private final List<Frame> frames = new ArrayList<>();
     private final List<Pending> pending = new ArrayList<>();
+    private Boolean exactLabels;
     private Supplier<double[]> capture;
     private int width;
     private double start;
@@ -82,7 +84,9 @@ public final class EndpointAlignedStateMonitor extends StateMonitor {
             if (!accepted || !stepping)
                 throw new IllegalStateException("Unexpected reference-bus callback outside an active step");
             double time = ((Number)event.getHashtableData().get(DStabOutSymbol.OUT_SYMBOL_TIME)).doubleValue();
-            if (!sameTime(time, start) || pending.size() >= 2)
+            if (!Double.isFinite(time) || time < start - 1e-9 || time > start + step + 1e-9
+                    || pending.size() >= 4
+                    || (!pending.isEmpty() && time < pending.getLast().solverTime() - 1e-9))
                 throw new IllegalStateException("Unsupported solver output timestamp or callback count");
             double[] values = capture.get().clone();
             if (values.length != width) throw new IllegalStateException("State channel count changed");
@@ -94,18 +98,50 @@ public final class EndpointAlignedStateMonitor extends StateMonitor {
 
     /** Complete only after solveDEqnStep(true) returns successfully. */
     public void endStep(double time) {
-        if (!stepping || !sameTime(time, start + step) || pending.isEmpty())
+        if (!stepping || !Double.isFinite(time) || time <= start
+                || time > start + step + 1e-9 || pending.isEmpty())
             throw new IllegalStateException("Missing endpoint output or unexpected final simulation clock");
-        if (pending.size() == 2) {
-            Pending before = pending.get(0);
-            frames.add(new Frame(start, before.solverTime(), SampleKind.EVENT_PRE, before.states()));
+        Pending last = pending.getLast();
+        // The final callback always belongs to the integrated endpoint. Its
+        // raw label distinguishes exact and legacy solvers on the first call.
+        boolean exact = sameTime(last.solverTime(), time)
+                && (!sameTime(last.solverTime(), start) || last.solverTime() == time);
+        if (exactLabels != null && exact != exactLabels)
+            throw new IllegalStateException("Solver callback clock changed during the run");
+        if (exact) {
+            int atStart = 0;
+            while (atStart < pending.size() && sameTime(pending.get(atStart).solverTime(), start)
+                    && pending.get(atStart).solverTime() != time) atStart++;
+            int atEnd = pending.size() - atStart;
+            if ((atStart != 0 && atStart != 2) || (atEnd != 1 && atEnd != 2)
+                    || pending.subList(atStart, pending.size()).stream()
+                            .anyMatch(sample -> !sameTime(sample.solverTime(), time)))
+                throw new IllegalStateException("Expected an endpoint or a paired exact event boundary");
+            if (atStart == 2) appendEventPair(start, 0);
+            if (atEnd == 2) appendEventPair(time, atStart);
+            else frames.add(new Frame(time, last.solverTime(), SampleKind.STEP_END, last.states()));
+        } else {
+            if (!sameTime(time, start + step) || pending.size() > 2
+                    || pending.stream().anyMatch(sample -> !sameTime(sample.solverTime(), start)))
+                throw new IllegalStateException("Expected a fixed-grid endpoint with legacy step-start labels");
+            if (pending.size() == 2) {
+                Pending before = pending.getFirst();
+                frames.add(new Frame(start, before.solverTime(), SampleKind.EVENT_PRE, before.states()));
+            }
+            frames.add(new Frame(time, last.solverTime(), SampleKind.STEP_END, last.states()));
         }
-        Pending endpoint = pending.get(pending.size()-1);
-        frames.add(new Frame(time, endpoint.solverTime(), SampleKind.STEP_END, endpoint.states()));
+        exactLabels = exact;
         if (getBusVoltTable().get(referenceBus).size() != frames.size())
             throw new IllegalStateException("Reference-bus and custom-state samples are not one-to-one");
         stepping = false;
         pending.clear();
+    }
+
+    private void appendEventPair(double time, int first) {
+        Pending pre = pending.get(first);
+        Pending post = pending.get(first + 1);
+        frames.add(new Frame(time, pre.solverTime(), SampleKind.EVENT_PRE, pre.states()));
+        frames.add(new Frame(time, post.solverTime(), SampleKind.EVENT_POST, post.states()));
     }
 
     public List<Frame> frames() {

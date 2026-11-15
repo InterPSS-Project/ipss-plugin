@@ -83,11 +83,46 @@ public class St1BoundaryReuseTest {
         m.advanceDirectLocalStore(.001,4,false,false,true,new double[n],new double[n],new double[n]);
         assertEquals(0,p.boundaryReuseCount);
     }
+    @Test
+    void wholeSubstepsRestoreTheCallersPrescribedBoundary() throws Exception {
+        var model = initializedModel(.08, 0., "SMIB_v33_genrou_esst1a.dyr");
+        var machine = model.getMachine();
+        var method = com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER;
+        model.setModifiedEulerLocalIntegrationSteps(4);
+        model.vrmax = 6.5;
+        model.kc = .22;
+        double dt = .0033333;
+        try {
+            model.prescribeLocalBoundary(2.2, .93, .014);
+            assertTrue(model.nextStep(dt, method, machine, 0));
+            var start = (double[]) model.getModifiedEulerLocalIntegrationSnapshot().get("acceptedBoundary");
+            assertEquals(.93, start[1], 0.);
+            assertEquals(2.2, start[2], 0.);
+            assertEquals(.014, start[3], 0.);
+            assertEquals(.93 * 6.5 - .22 * 2.2, model.getFieldVoltageUpperLimit(), 1e-12);
+
+            model.prescribeLocalBoundary(2.8, .97, -.011);
+            assertTrue(model.nextStep(0., method, machine, 0));
+            assertEquals(.97 * 6.5 - .22 * 2.8, model.getFieldVoltageUpperLimit(), 1e-12);
+            assertEquals(-.011, plan(model).pss(), 0.);
+            assertTrue(model.nextStep(dt, method, machine, 1));
+            assertEquals(.97 * 6.5 - .22 * 2.8, model.getFieldVoltageUpperLimit(), 1e-12);
+            assertEquals(-.011, plan(model).pss(), 0.);
+        } finally {
+            model.releaseLocalBoundary();
+        }
+        assertFalse(model.hasPrescribedLocalBoundary());
+    }
+
     private static IEEE1981ST1Exciter initializedModel(double ta,double kf) throws Exception {
+        return initializedModel(ta, kf, "SMIB_v33_genrou_exst1.dyr");
+    }
+
+    private static IEEE1981ST1Exciter initializedModel(double ta, double kf, String dyr) throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/SMIB/";
         var context=new PSSEMultiFileLoader().loadDStab(base+"SMIB_v33.raw",
-            base+"SMIB_v33_genrou_exst1.dyr");
+            base+dyr);
         var exciter=(IEEE1981ST1Exciter)context.getDStabilityNet().getMachine("Bus1-mach1").getExciter();
         exciter.getData().setTa(ta);exciter.getData().setKf(kf);exciter.getData().setTf(.7);
         var algorithm=context.getDynSimuAlgorithm();

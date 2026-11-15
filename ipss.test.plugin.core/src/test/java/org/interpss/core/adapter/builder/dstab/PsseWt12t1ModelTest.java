@@ -48,6 +48,32 @@ public class PsseWt12t1ModelTest {
     }
 
     @Test
+    void twoMassGeneratorNormalizesShaftTransferAtUnequalSpeeds() {
+        // The equilibrium test cannot distinguish the generator/turbine speed
+        // ratio: it is exactly one there. Excite the turbine, then check the
+        // next mechanical predictor at unequal speeds. Independent reference
+        // state perturbations and the existing coupled fault regression bind
+        // this equation; no reference gain or model constant is fitted.
+        Wt12t1Model model = new Wt12t1Model(new Wt12t1Data(5.4, .05, .82, 4.7, .9));
+        model.initialize(.5, 1.00356, 60);
+        model.setAerodynamicPower(model.getAerodynamicPower() + .2);
+        model.step(.02, .5, 0);
+        model.step(.02, .5, 1);
+        double wt = model.getTurbineSpeed(), wg = model.getGeneratorSpeed();
+        assertTrue(Math.abs(wt - wg) > 1e-5);
+        double phi = model.getShaftAngle(), dt = .001;
+        double shaft = model.shaftStiffness() * phi + .9 * (wt - wg);
+        double generatorRhs = (shaft * wg / wt - .52 / wg - .05 * (wg - 1))
+                / (2 * model.generatorInertia());
+        double turbineRhs = (model.getAerodynamicPower() / wt - shaft)
+                / (2 * model.turbineInertia());
+        model.step(dt, .52, 0);
+        assertEquals(wg + dt * generatorRhs, model.getGeneratorSpeed(), 1e-12);
+        assertEquals(wt + dt * turbineRhs, model.getTurbineSpeed(), 1e-12);
+        assertEquals(phi + dt * 2 * Math.PI * 60 * (wt - wg), model.getShaftAngle(), 1e-12);
+    }
+
+    @Test
     void oneMassModeInitializesAtExactDampedEquilibrium() {
         Wt12t1Model model = new Wt12t1Model(new Wt12t1Data(4.8, .12, 0, 0, 0));
         model.initialize(.6, 1.01, 60.0);
@@ -57,4 +83,66 @@ public class PsseWt12t1ModelTest {
         assertEquals(initializedSpeed, model.getGeneratorSpeed(), 1.0e-12);
         assertEquals(initializedSpeed, model.getTurbineSpeed(), 1.0e-12);
     }
+
+    @Test
+    void absentAerodynamicControllerHoldsTorqueAndReportsGeneratorShaftPower() {
+        Wt12t1Model model = new Wt12t1Model(new Wt12t1Data(5.4, .05, .82, 4.7, .9));
+        model.initialize(.5, 1.00356, 60.0);
+        model.initializeAerodynamicController(.5, 1.0);
+        double initialTorque = model.getAerodynamicPower() / model.getTurbineSpeed();
+        for (int i = 0; i < 25; i++) {
+            model.stepCoupled(.002, .3, 0);
+            model.stepCoupled(.002, .3, 1);
+        }
+        double wt = model.getTurbineSpeed(), wg = model.getGeneratorSpeed();
+        assertTrue(Math.abs(wt - 1.00356) > 1.0e-5);
+        assertTrue(Math.abs(wt - wg) > 1.0e-5);
+        assertEquals(initialTorque, model.getAerodynamicPower() / wt, 1.0e-12);
+        double shaftTorque = model.shaftStiffness() * model.getShaftAngle() + .9 * (wt - wg);
+        assertEquals(shaftTorque * wg, model.getGeneratorMechanicalPower(), 1.0e-12);
+
+        double dt = .001;
+        model.stepCoupled(dt, .3, 0);
+        assertEquals(wt + dt * (initialTorque - shaftTorque) / (2 * model.turbineInertia()),
+                model.getTurbineSpeed(), 1.0e-12);
+    }
+
+    @Test
+    void oneMassReportsInputPowerAndPreservesAnExplicitPowerCommand() {
+        Wt12t1Model model = new Wt12t1Model(new Wt12t1Data(4.8, .12, 0, 0, 0));
+        model.initialize(.6, 1.01, 60.0);
+        model.initializeAerodynamicController(.6, 1.0);
+        double initialTorque = model.getAerodynamicPower() / model.getTurbineSpeed();
+        model.stepCoupled(.01, .4, 0);
+        model.stepCoupled(.01, .4, 1);
+        assertEquals(initialTorque * model.getTurbineSpeed(), model.getGeneratorMechanicalPower(), 1.0e-12);
+        model.setAerodynamicPower(.65);
+        model.step(.01, .4, 0);
+        model.step(.01, .4, 1);
+        assertEquals(.65, model.getGeneratorMechanicalPower(), 1.0e-12);
+    }
+
+    @Test
+    void oneMassUsesInitializedSpeedForAerodynamicTorqueAtCorrector() {
+        double inertia = 3.46, damping = .12, initialSpeed = 1.05, dt = .02;
+        var model = new Wt12t1Model(new Wt12t1Data(inertia, damping, 0, 0, 0));
+        model.initialize(.8, initialSpeed, 60);
+
+        double predictorPower = .9, predictorElectricalPower = .7;
+        model.setAerodynamicPower(predictorPower);
+        double predictor = (predictorPower / initialSpeed - predictorElectricalPower / initialSpeed
+                - damping * (initialSpeed - 1)) / (2 * inertia);
+        model.step(dt, predictorElectricalPower, 0);
+        double stageSpeed = initialSpeed + dt * predictor;
+        assertEquals(stageSpeed, model.getGeneratorSpeed(), 1e-12);
+
+        double correctorPower = .85, correctorElectricalPower = .75;
+        model.setAerodynamicPower(correctorPower);
+        double corrector = (correctorPower / initialSpeed - correctorElectricalPower / stageSpeed
+                - damping * (stageSpeed - 1)) / (2 * inertia);
+        model.step(dt, correctorElectricalPower, 1);
+        assertEquals(initialSpeed + .5 * dt * (predictor + corrector), model.getGeneratorSpeed(), 1e-12);
+        assertEquals(correctorPower, model.getGeneratorMechanicalPower(), 1e-12);
+    }
+
 }

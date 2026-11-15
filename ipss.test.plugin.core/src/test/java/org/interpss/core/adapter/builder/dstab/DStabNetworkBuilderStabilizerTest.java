@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -30,6 +31,7 @@ import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
 import com.interpss.dstab.controller.pss.psssb.PsssbStabilizer;
 import org.interpss.core.dstab.reference.PsssbTypedTestData;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -216,6 +218,39 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
 		assertEquals(0.2, pss.getData().getVstmin(), TOL);
 	}
 
+    @Test
+    void pss2aReadsTerminalPowerSeparatelyFromAcceleratingPower() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        machine.setRa(.04);
+        Path dyr = tempDir.resolve("pss2a-power-inputs.dyr");
+        Files.writeString(dyr, "1 'PSS2A' '1' 3 0 4 0 1 1 "
+                + ".2 .1 .05 .2 .1 .05 1 1 .1 .05 1 .1 .05 .1 .05 .2 -.2 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var pss = (Ieee1992PSS2AStabilizer) machine.getStabilizer();
+        assertTrue(machine.initStates(bus));
+        machine.getIgen();
+        assertTrue(pss.initStates(bus, machine));
+        double initialTerminalPower = machine.getParentGen().getGen().getReal() / machine.getRating();
+        assertTrue(machine.getPe() - initialTerminalPower > .005);
+        assertEquals(initialTerminalPower, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+
+        bus.setVoltage(.98, .025);
+        var voltage = bus.getVoltage();
+        var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        double terminalPower = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+        double airGapPower = machine.getPe();
+        assertTrue(Math.abs(terminalPower - initialTerminalPower) > .001);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(terminalPower, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - airGapPower, pss.input2Signal, TOL);
+        assertEquals(airGapPower, machine.getPe(), 0);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+    }
+
+
 	@Test
 	void pss2a_rejectsInvalidIntegrationStepConfiguration() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
@@ -346,6 +381,41 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
+    @ParameterizedTest
+    @CsvSource({"true", "false"})
+    void nativePss2bSeparatesTerminalAndAcceleratingPower(boolean explicitBusFields) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        machine.setRa(.04);
+        Path dyr = tempDir.resolve("pss2b-power-inputs.dyr");
+        String selectors = explicitBusFields ? "3 0 4 0 " : "3 4 ";
+        Files.writeString(dyr, "1 'PSS2B' '1' " + selectors + "1 1 "
+                + ".2 .1 .05 .2 .1 .05 1 1 .1 .05 1 .1 .05 .1 .05 0 0 "
+                + "2 -2 2 -2 .2 -.2 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
+        assertTrue(machine.initStates(bus));
+        machine.getIgen();
+        assertTrue(pss.initStates(bus, machine));
+        double initialTerminal = machine.getParentGen().getGen().getReal() / machine.getRating();
+        assertTrue(machine.getPe() - initialTerminal > .005);
+        assertEquals(initialTerminal, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+
+        bus.setVoltage(.98, .025);
+        var voltage = bus.getVoltage();
+        var terminalCurrent = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        double terminal = voltage.multiply(terminalCurrent.conjugate()).getReal() / machine.getRating();
+        double airGap = machine.getPe();
+        assertTrue(Math.abs(terminal - initialTerminal) > .001);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(terminal, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - airGap, pss.input2Signal, TOL);
+        assertEquals(airGap, machine.getPe(), 0);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+    }
+
     @Test
     void pss2b_appliesPowerWorldCorrectionsWithoutChangingImportedData()
             throws Exception {
@@ -440,13 +510,12 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(0.0, data.getTpgfilt(), TOL);
         assertEquals(0.0, data.getXcomp(), TOL);
         assertEquals(0.0, data.getTcomp(), TOL);
-        machine.setPe(0.20);
+        assertTrue(machine.initStates(machine.getDStabBus()));
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
         assertTrue(pss.isPssActive(), "pe=" + machine.getPe()
                 + ", filtered=" + pss.getFilteredPgen()
                 + ", on=" + data.getPssActivation()
                 + ", off=" + data.getPssDeactivation());
-        machine.setPe(0.20);
         machine.setSpeed(1.01);
         double maximumOutput = 0.0;
         for (int i = 0; i < 100; i++) {
@@ -517,43 +586,59 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(0.2, pss.getData().getVstmin(), TOL);
     }
 
-    @Test
-    void pss2c_appliesPowerActivationHysteresis() throws Exception {
-        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+    @ParameterizedTest
+    @CsvSource({"false", "true"})
+    void nativePss2cUsesTerminalPowerForInputAndActivation(boolean userModel) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        machine.setRa(.04);
         Path dyr = tempDir.resolve("pss2c-logic.dyr");
-        Files.writeString(dyr, "1 'PSS2C' '1' 1 0 3 0 0 0 "
-                + "0.2 0 0 0.2 0 0 0 0 0 0 1 "
-                + "0 0 0 0 0 0 10 -10 10 -10 1 -1 0 0 0.15 0.10 0 0 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-        parser.parseDynFile(dyr.toString());
-        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
-        Ieee2016PSS2CStabilizer pss =
-                (Ieee2016PSS2CStabilizer) machine.getStabilizer();
-        machine.setPe(0.20);
-        assertTrue(pss.initStates(machine.getDStabBus(), machine));
-        assertTrue(pss.isPssActive(), "pe=" + machine.getPe()
-                + ", filtered=" + pss.getFilteredPgen()
-                + ", on=" + pss.getData().getPssActivation()
-                + ", off=" + pss.getData().getPssDeactivation());
-
-        machine.setPe(0.12);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
-        machine.setPe(0.12);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
-        assertTrue(pss.isPssActive(), "PSS must retain its state inside the hysteresis band");
-
-        machine.setPe(0.05);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
-        machine.setPe(0.05);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
-        assertTrue(!pss.isPssActive());
+        String model = userModel ? "1 'USRMDL' '1' 'PSS2CU1' 3 0 6 29 19 14 " : "1 'PSS2C' '1' ";
+        Files.writeString(dyr, model + "3 0 4 0 0 0 "
+                + ".2 0 0 .2 0 0 0 0 0 0 1 "
+                + "0 0 0 0 0 0 10 -10 10 -10 1 -1 0 0 .725 .705 0 0 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var pss = (Ieee2016PSS2CStabilizer) machine.getStabilizer();
+        assertTrue(machine.initStates(bus));
+        machine.getIgen();
+        assertTrue(pss.initStates(bus, machine));
+        double initialTerminal = machine.getParentGen().getGen().getReal() / machine.getRating();
+        assertTrue(initialTerminal < .725 && machine.getPe() > .725);
+        assertEquals(initialTerminal, pss.getFilteredPgen(), TOL);
+        assertEquals(initialTerminal, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+        assertFalse(pss.isPssActive());
         assertEquals(0.0, pss.getOutput(machine), TOL);
 
-        machine.setPe(0.20);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
-        machine.setPe(0.20);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
-        assertTrue(pss.isPssActive());
+        var initialVoltage = bus.getVoltage();
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        // A trial network solve can cross a threshold before the physical
+        // endpoint does. Only the terminal power at the start of the step
+        // may change the native activation state.
+        double[] acceptedAngleShifts = {0.0, -.06, 0.0, .06};
+        double[] trialAngleShifts = {-.06, 0.0, .06, 0.0};
+        boolean[] expectedActive = {false, true, true, false};
+        for (int step = 0; step < acceptedAngleShifts.length; step++) {
+            bus.setVoltage(initialVoltage.abs(), initialVoltage.getArgument() + acceptedAngleShifts[step]);
+            var voltage = bus.getVoltage();
+            var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+            double terminal = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+            assertTrue(pss.nextStep(.001, method, machine, 0));
+            assertEquals(terminal, pss.input1Signal, TOL);
+            assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+
+            bus.setVoltage(initialVoltage.abs(), initialVoltage.getArgument() + trialAngleShifts[step]);
+            var trialVoltage = bus.getVoltage();
+            var trialCurrent = machine.getIgen().subtract(trialVoltage.multiply(machine.getYgen()));
+            double trialTerminal = trialVoltage.multiply(trialCurrent.conjugate()).getReal() / machine.getRating();
+            double trialAirGap = machine.getPe();
+            assertTrue(pss.nextStep(.001, method, machine, 1));
+            assertEquals(trialTerminal, pss.input1Signal, TOL);
+            assertEquals(terminal, pss.getFilteredPgen(), TOL);
+            assertEquals(expectedActive[step], pss.isPssActive());
+            assertEquals(trialAirGap, machine.getPe(), 0);
+        }
     }
 
     @Test

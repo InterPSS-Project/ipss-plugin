@@ -37,6 +37,31 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     private long staggeredEvaluationCount;
     private boolean initialReactiveDemandMatching;
     private boolean legacyCompositeProtectionScheduling;
+    // Local integration is explicit numerical policy. A dormant subStepN attribute
+    // historically did not subdivide nextStep(); do not silently reinterpret it.
+    private double localIntegrationMaximumStepSec;
+    private boolean localPredictorPending;
+    private double localOuterStep, localStartVoltageReal, localStartVoltageImag;
+    private int lastLocalIntegrationSteps=1;
+    private final double[] localStart=new double[5], localWork=new double[5], localTrial=new double[5],
+            localLeftRate=new double[5], localRightRate=new double[5];
+
+    /** Zero retains the original staged integrator; positive values bound each local Heun interval. */
+    public void setLocalIntegrationMaximumStepSec(double seconds) {
+        if(!Double.isFinite(seconds)||seconds<0||localPredictorPending)
+            throw new IllegalArgumentException("Configure a finite nonnegative local interval at an accepted boundary");
+        localIntegrationMaximumStepSec=seconds;
+    }
+    public double getLocalIntegrationMaximumStepSec(){return localIntegrationMaximumStepSec;}
+    public int getLastLocalIntegrationSteps(){return lastLocalIntegrationSteps;}
+
+    private int localIntegrationSteps(double interval) {
+        if(localIntegrationMaximumStepSec==0)return 1;
+        double count=Math.ceil(interval/localIntegrationMaximumStepSec);
+        if(count>128)throw new IllegalArgumentException("Motor local integration requires more than 128 intervals");
+        return Math.max(1,(int)count);
+    }
+
 
     /** Select the composite accepted-history and subsequent electrical-application stages. */
     public void setLegacyCompositeProtectionScheduling(boolean enabled) {
@@ -147,6 +172,11 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     /** Explicit value-only companion for configured and in-flight motor state. */
     public static final class ModelState extends com.interpss.state.net.NameTagState {
         public long staggeredEvaluationCount;
+        public double localIntegrationMaximumStepSec,localOuterStep,localStartVoltageReal,localStartVoltageImag;
+        public boolean localPredictorPending;
+        public int lastLocalIntegrationSteps=1;
+        public double[] localStart;
+
         public boolean initialReactiveDemandMatching;
         public boolean legacyCompositeProtectionScheduling;
         public String scriptsValue, extendedId, deviceKind;
@@ -298,6 +328,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             vMultiFactor=source.vMultiFactor;
             acc=source.acc;
             subStepN=source.subStepN;
+            localIntegrationMaximumStepSec=source.localIntegrationMaximumStepSec;
+            localOuterStep=source.localOuterStep;localStartVoltageReal=source.localStartVoltageReal;
+            localStartVoltageImag=source.localStartVoltageImag;localPredictorPending=source.localPredictorPending;
+            lastLocalIntegrationSteps=source.lastLocalIntegrationSteps;localStart=source.localStart.clone();
             wdelt=source.wdelt;
             twoAxisModel=source.twoAxisModel;
             loadFactor=source.loadFactor;
@@ -394,6 +428,14 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.vMultiFactor=vMultiFactor;
             target.acc=acc;
             target.subStepN=subStepN;
+            target.localIntegrationMaximumStepSec=localIntegrationMaximumStepSec;
+            target.localOuterStep=localOuterStep;target.localStartVoltageReal=localStartVoltageReal;
+            target.localStartVoltageImag=localStartVoltageImag;target.localPredictorPending=localPredictorPending;
+            target.lastLocalIntegrationSteps=lastLocalIntegrationSteps;
+            if(localStart!=null) {
+                if(localStart.length!=5)throw new IllegalArgumentException("Incomplete motor local history");
+                System.arraycopy(localStart,0,target.localStart,0,5);
+            } else if(localPredictorPending)throw new IllegalArgumentException("Missing motor predictor origin");
             target.wdelt=wdelt;
             target.twoAxisModel=twoAxisModel;
             target.loadFactor=loadFactor;
@@ -2339,6 +2381,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    extendedDeviceId = "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,  extendedDeviceId);
 	    
+        localPredictorPending=false;lastLocalIntegrationSteps=1;
         resetIntegrationObservation();
 	    return initSucceed;
 		
@@ -2346,6 +2389,11 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	@Override
 	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
 
+        if(!Double.isFinite(dt)||dt<0)throw new IllegalArgumentException("Invalid motor integration interval");
+        if(dt>0 && method==DynamicSimuMethod.MODIFIED_EULER
+                && (localPredictorPending || localIntegrationSteps(dt)>1))
+            return localModifiedEulerStep(dt,flag);
+        if(dt>0)lastLocalIntegrationSteps=1;
         if (dt == 0) {
             evaluateRates(observedRates, 0, flag == 0
                     ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
@@ -2395,6 +2443,77 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		return true;
 	}
 	
+    /**
+     * Subdivide only this motor's differential equations, not the network or its
+     * protection clock. Predictor: integrate with the accepted terminal voltage
+     * held fixed. Corrector: replay the SAME accepted state over the whole outer
+     * interval with a linear complex-voltage path to the predicted network end.
+     * Continuing from the full predictor would advance time twice. Internal
+     * source voltage and current are recomputed at every local stage; freezing
+     * the original current would leave the stiff Norton feedback unresolved.
+     */
+    private boolean localModifiedEulerStep(double dt,int flag) {
+        if(flag!=0&&flag!=1)throw new IllegalArgumentException("Invalid motor integration stage");
+        Complex voltage=getDStabBus().getVoltage();
+        if(!Double.isFinite(voltage.getReal())||!Double.isFinite(voltage.getImaginary()))
+            throw new IllegalArgumentException("Local motor voltage must be finite");
+        if(flag==0) {
+            if(localPredictorPending)throw new IllegalStateException("Unfinished motor predictor");
+            int steps=localIntegrationSteps(dt);
+            readStaggeredState(localStart,0);localOuterStep=dt;
+            localStartVoltageReal=voltage.getReal();localStartVoltageImag=voltage.getImaginary();
+            lastLocalIntegrationSteps=steps;
+        } else if(!localPredictorPending||dt!=localOuterStep)
+            throw new IllegalStateException("Motor corrector needs the matching accepted origin");
+        double endReal=flag==0?localStartVoltageReal:voltage.getReal();
+        double endImag=flag==0?localStartVoltageImag:voltage.getImaginary();
+        int count=staggeredStateCount();double step=dt/lastLocalIntegrationSteps;
+        System.arraycopy(localStart,0,localWork,0,count);
+        double w0=2*Math.PI*getDStabBus().getNetwork().getFrequency();
+        for(int part=0;part<lastLocalIntegrationSteps;part++) {
+            double left=(double)part/lastLocalIntegrationSteps,right=(double)(part+1)/lastLocalIntegrationSteps;
+            localRates(localWork,localStartVoltageReal+left*(endReal-localStartVoltageReal),
+                    localStartVoltageImag+left*(endImag-localStartVoltageImag),w0,localLeftRate);
+            for(int i=0;i<count;i++)localTrial[i]=localWork[i]+step*localLeftRate[i];
+            localTrial[count-1]=Math.max(0,Math.min(1,localTrial[count-1]));
+            localRates(localTrial,localStartVoltageReal+right*(endReal-localStartVoltageReal),
+                    localStartVoltageImag+right*(endImag-localStartVoltageImag),w0,localRightRate);
+            for(int i=0;i<count;i++) {
+                localWork[i]+=.5*step*(localLeftRate[i]+localRightRate[i]);
+                if(!Double.isFinite(localWork[i]))throw new IllegalStateException("Nonfinite local motor state");
+            }
+            localWork[count-1]=Math.max(0,Math.min(1,localWork[count-1]));
+        }
+        applyStaggeredState(localWork,0,dt);
+        // Publish the physical endpoint derivative/torque once. Timer histories
+        // remain owned by afterStep(), called once for the outer interval.
+        evaluateRates(observedRates,0,flag==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
+        localPredictorPending=flag==0;
+        return true;
+    }
+
+    private void localRates(double[] state,double vr,double vi,double w0,double[] rates) {
+        int count=staggeredStateCount();
+        boolean connected=legacyCompositeProtectionScheduling?Fonline!=0:Fonline>0&&Fuv>0;
+        double er=state[0],ei=state[1],sr=er,si=ei;
+        if(twoAxisModel) {
+            double epWeight=(xpp-xl)/(xp-xl),ekWeight=(xp-xpp)/(xp-xl);
+            sr=er*epWeight+state[2]*ekWeight;si=ei*epWeight+state[3]*ekWeight;
+        }
+        Complex impedance=twoAxisModel?zppMotorBase:zpMotorBase;
+        if(connected)MotorElectricalKernel.divide(vr-sr,vi-si,impedance.getReal(),impedance.getImaginary(),evaluatedCurrent);
+        else {evaluatedCurrent[0]=0;evaluatedCurrent[1]=0;}
+        double ir=evaluatedCurrent[0],ii=evaluatedCurrent[1],currentSlip=state[count-1];
+        if(!connected)java.util.Arrays.fill(rates,0);
+        else if(twoAxisModel)calculateTwoCageDerivatives(er,ei,state[2],state[3],ir,ii,w0,currentSlip,rates);
+        else {
+            rates[0]=w0*currentSlip*ei-(er+(xs-xp)*ii)/tp0;
+            rates[1]=-w0*currentSlip*er-(ei-(xs-xp)*ir)/tp0;
+        }
+        double torque=connected?sr*ir+si*ii:0;
+        rates[count-1]=(mechanicalTorqueFactor(1-currentSlip)*tm0-torque)/(2*h);
+    }
+
 	private void integrationSubStep(double dt, double w0, double Ir, double Im, int flag) {
         calculateElectricalRates(w0, Ir, Im, electricalRates);
         System.arraycopy(electricalRates, 0, observedRates, 0, staggeredStateCount() - 1);
@@ -2475,21 +2594,26 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 
     private void calculateTwoCageDerivatives(Complex epState, Complex ekState,
             double ir, double ii, double w0, double currentSlip, double[] rates) {
+        calculateTwoCageDerivatives(epState.getReal(),epState.getImaginary(),ekState.getReal(),ekState.getImaginary(),
+                ir,ii,w0,currentSlip,rates);
+    }
+    private void calculateTwoCageDerivatives(double epr,double epi,double ekr,double eki,
+            double ir,double ii,double w0,double currentSlip,double[] rates) {
 	    double lpMinusLl = xp-xl;
 	    double coupling = (xp-xpp)/(lpMinusLl*lpMinusLl);
 	    double slipSpeed = w0*currentSlip;
 
-	    double eq5 = epState.getReal()-ekState.getReal()-ii*lpMinusLl;
+	    double eq5 = epr-ekr-ii*lpMinusLl;
 	    double adjustedIi = eq5*coupling+ii;
-	    double dEpr = (epState.getImaginary()*tp0*slipSpeed-epState.getReal()
+	    double dEpr = (epi*tp0*slipSpeed-epr
 	            -(xs-xp)*adjustedIi)/tp0;
-	    double dEkr = (tpp0*slipSpeed*ekState.getImaginary()+eq5)/tpp0;
+	    double dEkr = (tpp0*slipSpeed*eki+eq5)/tpp0;
 
-	    double eq18 = ir*lpMinusLl+epState.getImaginary()-ekState.getImaginary();
+	    double eq18 = ir*lpMinusLl+epi-eki;
 	    double adjustedIr = ir-eq18*coupling;
-	    double dEpi = ((xs-xp)*adjustedIr-epState.getReal()*tp0*slipSpeed
-	            -epState.getImaginary())/tp0;
-	    double dEki = (eq18-ekState.getReal()*tpp0*slipSpeed)/tpp0;
+	    double dEpi = ((xs-xp)*adjustedIr-epr*tp0*slipSpeed
+	            -epi)/tp0;
+	    double dEki = (eq18-ekr*tpp0*slipSpeed)/tpp0;
         rates[0] = dEpr; rates[1] = dEpi; rates[2] = dEkr; rates[3] = dEki;
 	}
 

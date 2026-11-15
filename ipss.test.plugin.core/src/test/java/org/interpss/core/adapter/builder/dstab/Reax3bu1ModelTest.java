@@ -40,7 +40,9 @@ public class Reax3bu1ModelTest {
         model.step(.01,0);model.step(.01,1);
         assertEquals(.7,model.getReactiveOutput(),0);
         assertEquals(-.6,model.getActiveOutput(),0);
-        assertThrows(IllegalArgumentException.class,()->new Reaxbu1Data(0,.1,0,1,1,-1,1,-1));
+        // Zero is a disconnected participation channel; nonfinite gains still
+        // cannot form a meaningful reference or a finite derivative.
+        assertThrows(IllegalArgumentException.class,()->new Reaxbu1Data(0,.1,Double.NaN,1,1,-1,1,-1));
     }
 
     @Test

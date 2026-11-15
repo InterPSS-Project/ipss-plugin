@@ -39,7 +39,14 @@ public class PsseNetworkConvergenceTest {
         assertIterationExhaustionStops(true);
     }
 
+    @Test void anExplicitHigherBudgetStillFailsAtItsLimitWithoutAdvancingTime() {
+        assertIterationExhaustionStops(true,200);
+    }
+
     private void assertIterationExhaustionStops(boolean importedSolver) {
+        assertIterationExhaustionStops(importedSolver,importedSolver?50:3);
+    }
+    private void assertIterationExhaustionStops(boolean importedSolver,int budget) {
         var physical=DStabObjectFactory.createDStabilityNetwork();
         var bus=DStabObjectFactory.createDStabBus("UnsettledBus",physical).orElseThrow();
         AtomicInteger calls=new AtomicInteger();
@@ -56,10 +63,10 @@ public class PsseNetworkConvergenceTest {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(.01);
         var solver=importedSolver?new PsseDStabSolver(algorithm):new DStabSolverImpl(algorithm);
-        if(!importedSolver)solver.setMaxIterationTimes(3);
+        solver.setMaxIterationTimes(budget);
         algorithm.setSolver(solver);
         assertFalse(algorithm.solveDEqnStep(true));
-        assertEquals(importedSolver?50:3,calls.get(),"Exhaustion must stop at the first network stage");
+        assertEquals(budget,calls.get(),"Exhaustion must stop at the first network stage");
         assertEquals(0,algorithm.getSimuTime(),0);
         assertFalse(network.isDStabNetInitialized());
     }
@@ -73,10 +80,12 @@ public class PsseNetworkConvergenceTest {
         solver.setMaxIterationTimes(37);
         assertEquals(37,solver.getMaxIterationTimes());
         for(var bounded:new com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase[]{solver,new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm)}) {
-            for(int invalid:new int[]{0,-1,51,100,500})
+            for(int invalid:new int[]{0,-1})
                 assertThrows(IllegalArgumentException.class,()->bounded.setMaxIterationTimes(invalid));
-            bounded.setMaxIterationTimes(50);
-            assertEquals(50,bounded.getMaxIterationTimes());
+            for(int requested:new int[]{37,50,100,200,500}) {
+                bounded.setMaxIterationTimes(requested);
+                assertEquals(requested,bounded.getMaxIterationTimes());
+            }
         }
     }
 }

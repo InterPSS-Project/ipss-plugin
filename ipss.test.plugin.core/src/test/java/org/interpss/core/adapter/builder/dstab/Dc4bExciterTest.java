@@ -86,14 +86,53 @@ public class Dc4bExciterTest extends CorePluginTestSetup {
         assertEquals(1,scaled.exciter.getRegulatorOutput(),TOL);
     }
 
-    @Test void limitsCanonicalProportionalIntegralPathBeforeDerivativeSummation()throws Exception{
-        Dc4bData d=baseData();d.setKp(60);d.setKi(6);d.setKd(16);d.setTd(.017);
-        d.setKa(1);d.setVrmax(4);d.setVrmin(-3.6);
-        Fixture f=fixture(d);f.exciter.setRefPoint(f.exciter.getRefPoint()+1);
-        assertEquals(4,f.exciter.getProportionalIntegralOutput(),TOL);
-        assertEquals(4,f.exciter.getNamedState("PI"),TOL);
-        assertEquals(Set.of("EField","Sensed Vt","PI","Derivative","Vr","Feedback"),
-                f.exciter.getNamedStates().keySet());
+    @Test void limitsCombinedPidAndAllowsDerivativeCancellation() throws Exception {
+        for (double sign : new double[]{-1, 1}) {
+            Fixture f = pidBoundaryFixture();
+            Dc4bExciter e = f.exciter;
+            double initialPi = e.getProportionalIntegralOutput();
+            double error = sign * .1;
+            e.setRefPoint(e.getRefPoint() + error);
+            setDerivativeLag(e, error + sign * 6 * e.td / e.kd);
+
+            double rawPi = initialPi + e.kp * error;
+            assertEquals(rawPi, e.getNamedState("PI"), TOL);
+            assertEquals(initialPi, e.getPidOutput(), TOL);
+            assertTrue(e.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, f.machine, 0));
+            assertEquals(rawPi + .001 * e.ki * error, e.getProportionalIntegralOutput(), TOL);
+            assertEquals(Set.of("EField","Sensed Vt","PI","Derivative","Vr","Feedback"),
+                    e.getNamedStates().keySet());
+        }
+    }
+
+    @Test void holdsOutwardIntegrationWhenDerivativeDrivesCombinedPidToLimit() throws Exception {
+        for (double sign : new double[]{-1, 1}) {
+            Fixture f = pidBoundaryFixture();
+            Dc4bExciter e = f.exciter;
+            double error = sign * .02;
+            e.setRefPoint(e.getRefPoint() + error);
+            setDerivativeLag(e, error - sign * 6 * e.td / e.kd);
+            double rawPi = e.getProportionalIntegralOutput();
+            assertEquals(sign > 0 ? e.vrmax : e.vrmin, e.getPidOutput(), TOL);
+            assertTrue(e.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, f.machine, 0));
+            assertEquals(rawPi, e.getProportionalIntegralOutput(), TOL);
+        }
+    }
+
+    private static Fixture pidBoundaryFixture() throws Exception {
+        Dc4bData data = baseData();
+        data.setKp(60); data.setKi(6); data.setKd(16); data.setTd(.017);
+        data.setKa(1); data.setVrmax(4); data.setVrmin(-3.6); data.setKf(0);
+        return fixture(data);
+    }
+
+    private static void setDerivativeLag(Dc4bExciter exciter, double value)
+            throws ReflectiveOperationException {
+        var states = Dc4bExciter.class.getDeclaredField("state");
+        var index = Dc4bExciter.class.getDeclaredField("PID_D_LAG");
+        states.setAccessible(true);
+        index.setAccessible(true);
+        ((double[]) states.get(exciter))[index.getInt(null)] = value;
     }
 
     @Test void appliesPowerWorldCorrectionsAutomaticParametersAndLimitExpansion()throws Exception{

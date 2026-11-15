@@ -100,7 +100,7 @@ public class St4EndpointReuseTest {
         }
         assertTrue(b.exciter.getEndpointOutputReuseCount()>0);
     }
-    @Test void unsettledFeedbackKeepsTheIterativeOutputPath(@TempDir Path temp) throws Exception {
+    @Test void changedFeedbackIsSolvedBeforeReusingTheEndpoint(@TempDir Path temp) throws Exception {
         var a=load(false,false,temp.resolve("a.dyr"));var b=load(false,false,temp.resolve("b.dyr"));
         var gainField=GainBlock.class.getDeclaredField("k");gainField.setAccessible(true);
         for(var f:List.of(a,b)) {
@@ -110,7 +110,10 @@ public class St4EndpointReuseTest {
         assertTrue(a.exciter.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,a.machine,0));
         double expected=a.exciter.getOutput(a.machine),actual=b.exciter.evaluateFixedInputEndpoint(b.machine,false);
         assertTrue(Double.isFinite(expected));assertEquals(Double.doubleToRawLongBits(expected),Double.doubleToRawLongBits(actual));
-        assertEquals(snapshot(a),snapshot(b));assertEquals(0,b.exciter.getEndpointOutputReuseCount());
+        assertEquals(snapshot(a),snapshot(b));
+        // The algebraic solver now settles the modified live gain before the
+        // reuse check. Output and every stored coordinate remain bit-identical.
+        assertTrue(b.exciter.getEndpointOutputReuseCount()>0);
     }
     @Test void liveNumericLimitsRemainVisibleWithTheBoundGraph(@TempDir Path temp) throws Exception {
         var a=load(false,false,temp.resolve("a.dyr"));var b=load(false,false,temp.resolve("b.dyr"));

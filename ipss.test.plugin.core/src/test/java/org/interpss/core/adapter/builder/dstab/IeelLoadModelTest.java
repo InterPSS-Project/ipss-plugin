@@ -73,6 +73,52 @@ public class IeelLoadModelTest extends CorePluginTestSetup {
     }
 
     @Test
+    void followsMeasuredLowVoltagePowerWithTwoIndependentLoadRecords() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        var topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.addContributeLoad("Bus1", "A", true,
+                new Complex(0.7, 0.32), null, null, null, false);
+        topology.addContributeLoad("Bus1", "B", true,
+                new Complex(0.3, 0.18), null, null, null, false);
+        double initialVoltage = 0.9588847160339355;
+        // Recorded voltage, frequency deviation and load A P/Q on the system base.
+        double[][] checkpoints = {
+            {0.0, 0.39457109570503235, 0.024999840185046196, 0.6404011249542236, 0.05282893404364586},
+            {0.0, 0.18308784067630768, 0.02499990165233612, 0.25322845578193665, 0.0113747026771307},
+            {0.5, 0.1835470199584961, 0.024999873712658882, 0.1566893458366394, 0.01143183745443821},
+            {1.0, 0.3963426947593689, 0.024999873712658882, 0.28693118691444397, 0.053304433822631836},
+            {1.0, 0.12351011484861374, 0.02499987930059433, 0.047712452709674835, 0.005176386330276728},
+        };
+        for (double[] row : checkpoints) {
+            bus.getDynLoadModelList().clear();
+            bus.setVoltage(new Complex(initialVoltage));
+            bus.setFreq(1.0);
+            var data = new org.interpss.dstab.dynLoad.IeelLoadData(
+                    1, 0, 0, 1, 0, 0, 1, -1, row[0], 1, 0, 2, 1, 0);
+            var first = new IeelLoadModel("IEELAR", bus, bus.getContributeLoad("A"), data);
+            var second = new IeelLoadModel("IEELAR", bus, bus.getContributeLoad("B"), data);
+            assertTrue(first.initStates());
+            assertTrue(second.initStates());
+            assertEquals(0.7, first.getInitLoadPQ().getReal(), 1.0e-12);
+            assertEquals(0.3, second.getInitLoadPQ().getReal(), 1.0e-12);
+            bus.setVoltage(new Complex(row[1]));
+            bus.setFreq(1.0 + row[2]);
+            assertEquals(row[3], first.effectivePower().getReal(), 2.0e-6);
+            assertEquals(row[4], first.effectivePower().getImaginary(), 2.0e-6);
+            assertEquals(row[3] * 0.3 / 0.7, second.effectivePower().getReal(), 2.0e-6);
+            assertEquals(row[4] * 0.18 / 0.32, second.effectivePower().getImaginary(), 2.0e-6);
+            Complex measured = bus.getVoltage().multiply(first.getEquivY().multiply(bus.getVoltage())
+                    .subtract(first.getNortonCurInj()).conjugate());
+            assertEquals(row[3], measured.getReal(), 2.0e-6);
+            assertEquals(row[4], measured.getImaginary(), 2.0e-6);
+            bus.setVoltage(Complex.ZERO);
+            assertEquals(Complex.ZERO, first.effectivePower());
+            assertEquals(Complex.ZERO, first.getNortonCurInj());
+        }
+    }
+
+    @Test
     void ieelarWildcardAttachesOnlyToActiveLoadsInTheSelectedArea(
             @TempDir Path directory) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();

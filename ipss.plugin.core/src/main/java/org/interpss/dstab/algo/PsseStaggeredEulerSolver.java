@@ -23,6 +23,41 @@ import com.interpss.dstab.algo.dynamic.StaggeredEulerSolverBase;
 public class PsseStaggeredEulerSolver extends StaggeredEulerSolverBase implements ParameterValidatingSolver {
     private DynamicParameterValidator.Report parameterValidationReport;
 
+    private final org.interpss.fadapter.psse.GovernorPolicyReplay governorPolicy=new org.interpss.fadapter.psse.GovernorPolicyReplay();
+    /** Registration is inert; numerical replay occurs only after final startup preparation. */
+    public void setGovernorBlockingPolicy(java.util.List<org.interpss.fadapter.psse.PsseGovernorBsgProcessor.Entry> policy) {
+        governorPolicy.register(dstabAlgo.getNetwork(),policy);
+    }
+    public java.util.List<org.interpss.fadapter.psse.PsseGovernorBsgProcessor.Entry> getGovernorBlockingReport(){return governorPolicy.report();}
+
+    @Override
+    protected void prepareInitialGovernorPolicy() { governorPolicy.reset(); }
+
+    @Override
+    protected boolean applyInitialGovernorPolicy(com.interpss.dstab.BaseDStabNetwork<?,?> network) {
+        return governorPolicy.apply(network,getClass());
+    }
+    private org.interpss.plugin.dstab.config.LoadModelThresholds loadModelThresholds;
+    public void setLoadModelThresholds(org.interpss.plugin.dstab.config.LoadModelThresholds thresholds) {loadModelThresholds=thresholds;}
+    public org.interpss.plugin.dstab.config.LoadModelThresholds getLoadModelThresholds(){return loadModelThresholds;}
+    public java.util.List<org.interpss.dstab.dynLoad.impl.Cmldznu2Model.InitializationScreen> getLoadModelScreeningReport(){
+        return org.interpss.dstab.algo.ImportedLoadModelSupport.screeningReport(dstabAlgo.getNetwork());
+    }
+    public java.util.List<org.interpss.fadapter.psse.PsseDStabSolver.LoadModelAssignment> getLoadModelAssignmentReport() {
+        return org.interpss.dstab.algo.ImportedLoadModelSupport.assignmentReport(dstabAlgo.getNetwork(),getSourceLoadIdentities());
+    }
+
+    @Override
+    protected void prepareImportedLoadModels(com.interpss.dstab.BaseDStabNetwork<?,?> network) {
+        org.interpss.dstab.algo.ImportedLoadModelSupport.applyThresholds(network,loadModelThresholds);
+    }
+
+    @Override
+    protected void prepareDeviceLocalSubsteps(com.interpss.dstab.device.DynamicBusDevice device, String busId,
+            double outerStep, java.util.List<LocalSubstepPreparation> report) {
+        org.interpss.dstab.algo.ImportedLoadModelSupport.prepareMotorSubsteps(device,busId,outerStep,report);
+    }
+
     public PsseStaggeredEulerSolver(DynamicSimuAlgorithm algo) {
         super(algo);
     }

@@ -203,6 +203,76 @@ public class PSSEDStabDirectParser {
         return this;
     }
 
+    private java.util.function.Function<PsseDyrRecord, java.util.Map<Integer,String>> parameterOverrides =
+            record -> java.util.Map.of();
+    private boolean ignoreMissingHosts=true;
+
+    /** Retain a skip diagnostic for absent hosts; false restores coverage-failure reporting. */
+    public PSSEDStabDirectParser setIgnoreMissingHosts(boolean ignore) {ignoreMissingHosts=ignore;return this;}
+
+    /**
+     * Explicit source-data corrections, indexed in {@link PsseDyrRecord#parameters()}.
+     * The default preserves all entered data. Corrections cannot change identity,
+     * allocation, or cardinality; normal validation still runs on effective data.
+     * Every changed value is retained in the source-located import diagnostic.
+     */
+    public PSSEDStabDirectParser setDynamicModelParameterOverrides(
+            java.util.function.Function<PsseDyrRecord, java.util.Map<Integer,String>> overrides) {
+        parameterOverrides=java.util.Objects.requireNonNull(overrides,"overrides");return this;
+    }
+
+    private PsseDyrRecord applyParameterOverrides(PsseDyrRecord record,
+            DynamicModelImportReport.Builder report) {
+        var overrides=java.util.Objects.requireNonNull(parameterOverrides.apply(record),"parameter overrides");
+        if(overrides.isEmpty())return record;
+        String wrapper=record.fields().get(1).toUpperCase(Locale.ROOT);
+        if(wrapper.startsWith("USR")&&!wrapper.equals("USRMDL")&&!wrapper.equals("USRBUS"))
+            throw new IllegalArgumentException("Parameter overrides are not supported for wrapper "+wrapper);
+        var fields=new ArrayList<>(record.fields());
+        for(var entry:overrides.entrySet()) {
+            int index=entry.getKey();
+            if(index<0||index>=record.parameterCount())throw new IllegalArgumentException("Override parameter index out of range: "+index);
+            // Wrapped records include allocation fields in parameters(); do
+            // not allow an override to reinterpret the wrapper or its sizes.
+            int firstData=record.fields().get(1).equalsIgnoreCase("USRMDL")?10:
+                    record.fields().get(1).equalsIgnoreCase("USRBUS")?9:record.parameterOffset();
+            if(record.parameterOffset()+index<firstData)throw new IllegalArgumentException("Cannot override wrapper allocation");
+            String value=java.util.Objects.requireNonNull(entry.getValue(),"override value").trim();
+            if(value.isEmpty()||!Double.isFinite(Double.parseDouble(value)))
+                throw new IllegalArgumentException("Override must be a finite numeric parameter");
+            fields.set(record.parameterOffset()+index,value);
+        }
+        var effective=new PsseDyrRecord(record.source(),record.startLine(),record.endLine(),record.rawText(),
+                record.busNumber(),record.sourceModelName(),record.canonicalModelName(),record.deviceId(),fields,record.parameterOffset());
+        report.recordParameterOverrides(record,effective);
+        log.warn("Explicit dynamic parameter overrides at {}:{}",record.source(),record.startLine());
+        return effective;
+    }
+
+    /** Normalize the documented active-power range before constructing REECA1.
+     * This exchanges the entered bounds, without changing their magnitudes or
+     * expanding them to the operating point. Runtime initialization owns that
+     * separate accommodation. Preserve source text and report both values.
+     */
+    private PsseDyrRecord autoCorrectReeca1Limits(PsseDyrRecord record,
+            DynamicModelImportReport.Builder report) {
+        if(!record.canonicalModelName().equals("REECA1")
+                ||record.parameterOffset()!=3||record.parameterCount()!=51)return record;
+        double maximum=record.doubleParameter(31),minimum=record.doubleParameter(32);
+        if(!Double.isFinite(maximum)||!Double.isFinite(minimum))
+            throw new IllegalArgumentException("REECA1 Pmax/Pmin must be finite");
+        if(maximum>=minimum)return record;
+        var fields=new ArrayList<>(record.fields());
+        fields.set(record.parameterOffset()+31,record.parameter(32));
+        fields.set(record.parameterOffset()+32,record.parameter(31));
+        var effective=new PsseDyrRecord(record.source(),record.startLine(),record.endLine(),record.rawText(),
+                record.busNumber(),record.sourceModelName(),record.canonicalModelName(),record.deviceId(),fields,record.parameterOffset());
+        report.recordAutomaticParameterCorrections(record,effective);
+        log.warn("REECA1 at {}:{}: automatically swapped Pmax={} and Pmin={}",
+                record.source(),record.startLine(),maximum,minimum);
+        return effective;
+    }
+
     /** AUTO retains existing Texas2k imports but identifies their distinct layout in the report. */
     public PSSEDStabDirectParser setRegfma1RecordFormat(Regfma1RecordFormat format) {
         regfma1RecordFormat = java.util.Objects.requireNonNull(format,"format");
@@ -281,15 +351,21 @@ public class PSSEDStabDirectParser {
         pendingOel2c.clear();
         pendingOel3c.clear();
         pendingBasoel2.clear();
+        shadowedLoadDefaults.clear();inactiveLoadRelays.clear();loadScopeDiagnostics.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
+        if(ignoreMissingHosts)report.ignoreMissingHosts(this::missingRequiredHost);
         var hybridRecords=new ArrayList<PsseDyrRecord>();
         var removedHybrid=new java.util.LinkedHashMap<PsseDyrRecord,DynamicModelImportStatus>();
         // Establish converter/electrical hosts before mechanical and auxiliary
-        // controllers. Stable sorting preserves all remaining source ordering.
+        // controllers. Resolve specific load characteristics before zone defaults,
+        // then area defaults. DYR order must never let a broad assignment claim
+        // an explicitly modeled source or create two injections for one load.
+        // Stable sorting preserves order within each remaining family.
         var orderedRecords=new ArrayList<>(records);
-        orderedRecords.sort(java.util.Comparator.comparingInt(r->(r.canonicalModelName().equals("REGCA1")
+        orderedRecords.sort(java.util.Comparator.comparingInt(r->(r.canonicalModelName().equals("REGCA1")||r.canonicalModelName().equals("REGCB1")
                 || r.canonicalModelName().equals("REGCAU2") || r.canonicalModelName().equals("REGCC"))?0:
-                r.canonicalModelName().equals("REECA1")?1:2));
+                r.canonicalModelName().equals("REECA1")?1:r.canonicalModelName().equals("CMLDZNU2")?3:
+                r.canonicalModelName().equals("IEELAR")?4:2));
         for (PsseDyrRecord record : orderedRecords) {
             try {
                 String type = record.canonicalModelName();
@@ -323,9 +399,10 @@ public class PSSEDStabDirectParser {
                 }
                 if (type.equals("CHVDC2") || type.equals("CHVDC2U1")) {
                     try {
-                        org.interpss.fadapter.psse.dyr.Chvdc2RecordMapper.prepare(record);
-                        report.add(record, DynamicModelImportStatus.UNSUPPORTED,
-                                "Named-link schema decoded; CHVDC2 controller/network runtime attachment is not implemented");
+                        var parameters = org.interpss.fadapter.psse.dyr.Chvdc2RecordMapper.prepare(record);
+                        com.interpss.dstab.hvdc.model.Chvdc2DyrModel.attach(builder.getBaseDStabNetwork(), parameters);
+                        report.add(record, DynamicModelImportStatus.ATTACHED,
+                                "Named-link runtime retained; solved-network preparation occurs at dynamic initialization; general trajectory qualification remains open");
                     } catch (IllegalArgumentException invalid) {
                         report.add(record, DynamicModelImportStatus.REJECTED, invalid.getMessage());
                     }
@@ -346,6 +423,8 @@ public class PSSEDStabDirectParser {
                     report.add(record, DynamicModelImportStatus.MISSING_TARGET, missingTarget);
                     continue;
                 }
+                record=applyParameterOverrides(record,report);
+                record=autoCorrectReeca1Limits(record,report);
                 boolean deferred = type.equals("WSIEG1") || type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
@@ -355,7 +434,7 @@ public class PSSEDStabDirectParser {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
                 } else {
-                    report.add(record, rejectedStatus(type), rejectionMessage(type, record));
+                    report.addAttachment(record, rejectedStatus(type), rejectionMessage(type, record));
                 }
             } catch (Exception e) {
                 log.warn("Error processing dynamic record at {}:{}: {}",
@@ -366,7 +445,7 @@ public class PSSEDStabDirectParser {
         for(PsseDyrRecord record:pendingWsieg1) {
             try {
                 boolean attached=procGovWsieg1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
-                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
                         attached?"Exact extended steam governor with resolved shaft ownership":"WSIEG1 requires valid curves and available shaft machines");
             } catch(RuntimeException invalid) {report.add(record,DynamicModelImportStatus.REJECTED,invalid.getMessage());}
         }
@@ -376,7 +455,7 @@ public class PSSEDStabDirectParser {
         for(PsseDyrRecord record:pendingReece) {
             try {
                 boolean attached=procReece(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
-                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
                         attached?"PSS/E 36.7 standard REECE: eight ICONs/79 CONs; no inferred legacy aliases"
                                 :"REECE requires standard native schema and active REGCA1/REGCB1 with an unused electrical-controller port");
             } catch(IllegalArgumentException failure) {
@@ -392,7 +471,7 @@ public class PSSEDStabDirectParser {
             try {
                 boolean attached = procWtdtb1(BUS_ID_PREFIX + record.busNumber(),
                         record.deviceId(), record);
-                report.add(record, attached ? DynamicModelImportStatus.ATTACHED
+                report.addAttachment(record, attached ? DynamicModelImportStatus.ATTACHED
                         : DynamicModelImportStatus.REJECTED, attached
                         ? "PSS/E 36.7 WTDTB1 convention; native six-CON or exact legacy allocation"
                         : "WTDTB1 requires an exact schema, REGCA1/REECA1 host and no existing drive train");
@@ -404,7 +483,7 @@ public class PSSEDStabDirectParser {
         for(PsseDyrRecord record:pendingWtptb1) {
             try {
                 boolean attached=procWtptb1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
-                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
                         attached?"PSS/E 36.7 WTPTB1 fourteen-CON or exact legacy allocation"
                                 :"WTPTB1 requires an exact schema and complete compatible wind stack with no existing pitch controller");
             } catch(RuntimeException failure) {
@@ -414,29 +493,37 @@ public class PSSEDStabDirectParser {
         pendingWtptb1.clear();
         for (PendingSt2cut pending : pendingSt2cut) {
             boolean attached = procPssSt2cut(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "ST2CUT prerequisites or signal mode are unsupported");
         }
         pendingSt2cut.clear();
         for (PendingIeeest pending : pendingIeeest) {
             boolean attached = procPssIeeest(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "IEEEST prerequisites, remote bus, or signal mode are unsupported");
         }
         pendingIeeest.clear();
         for (PendingRepca1 pending : pendingRepca1) {
-            boolean attached = procRepca1(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
-                    : DynamicModelImportStatus.REJECTED,
-                    attached ? "" : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
+            // Deferred validation must preserve the source-located report just
+            // as immediate records do. Strict import still rejects this report.
+            try {
+                boolean attached = procRepca1(pending.busId(), pending.genId(), pending.fields());
+                report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                        : DynamicModelImportStatus.REJECTED,
+                        attached ? attachedMessage(pending.record()) : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
+            } catch (IllegalArgumentException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.REJECTED, failure.getMessage());
+            } catch (RuntimeException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.ERROR, failure.toString());
+            }
         }
         pendingRepca1.clear();
         for(PsseDyrRecord record:pendingRepcgfmc1){
             try {
                 boolean attached=procRepcgfmc1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
-                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
                         attached?"Exact hybrid-plant wrapper; four references on REGFMC1U":"REPCGFMC1U requires exact allocation and an unused REGFMC1U plant port");
             } catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
         }
@@ -444,7 +531,7 @@ public class PSSEDStabDirectParser {
         for(PsseDyrRecord record:pendingRepcc){
             try{
                 boolean attached=procRepcc(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
-                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
                         attached?"Exact standard REPCC schema and dedicated plant reference port"
                                 :"REPCC requires REGCA1/REECA1, an unused plant port, positive integral gains, enabled control loops and disabled automatic shunt switching");
             }catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
@@ -453,7 +540,7 @@ public class PSSEDStabDirectParser {
         for (PsseDyrRecord record : pendingWtgwgoa) {
             try {
                 boolean attached = procWtgwgoa(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
-                report.add(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
                         attached ? "PSS/E 36.7 WTGWGOA eight-CON or exact legacy allocation; native recovery convention"
                                 : "WTGWGOA requires an exact schema and REGCA1/REGCB1 plus REEC host without an existing weak-grid option");
             } catch (RuntimeException failure) {
@@ -464,7 +551,7 @@ public class PSSEDStabDirectParser {
         for (PsseDyrRecord record : pendingWtgibffra) {
             try {
                 boolean attached = procWtgibffra(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
-                report.add(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
+                report.addAttachment(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
                         attached ? "WTGIBFFRA native one-ICON/45-CON schema; published WECC recovery equation"
                                 : "WTGIBFFRA requires standard native schema and REGCA1/REGCB1 with an unused REECD Paux host");
             } catch (RuntimeException failure) {
@@ -474,35 +561,41 @@ public class PSSEDStabDirectParser {
         pendingWtgibffra.clear();
         for (PendingLcfb1 pending : pendingLcfb1) {
             boolean attached = procLcfb1(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "LCFB1 requires a loaded machine and turbine governor");
         }
         pendingLcfb1.clear();
         for (PendingIeeeVc pending : pendingIeeeVc) {
             boolean attached = procIeeeVc(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "IEEEVC requires a compatible loaded machine");
         }
         pendingIeeeVc.clear();
         for (PendingUel1 pending : pendingUel1) {
             boolean attached = procUel1(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "UEL1 requires a compatible loaded exciter");
         }
         pendingUel1.clear();
         for (PendingUel2c pending : pendingUel2c) {
-            boolean attached = procUel2c(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
-                    : DynamicModelImportStatus.REJECTED,
-                    attached ? "" : "UEL2C requires a compatible loaded exciter");
+            try {
+                boolean attached = procUel2c(pending.busId(), pending.genId(), pending.fields());
+                report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                        : DynamicModelImportStatus.REJECTED,
+                        attached ? "" : "UEL2C requires a compatible loaded exciter");
+            } catch (IllegalArgumentException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.REJECTED, failure.getMessage());
+            } catch (RuntimeException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.ERROR, failure.toString());
+            }
         }
         pendingUel2c.clear();
         for (PendingOel2c pending : pendingOel2c) {
             boolean attached = procOel2c(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "OEL2C requires a compatible loaded exciter");
         }
@@ -537,6 +630,9 @@ public class PSSEDStabDirectParser {
     }
 
     private boolean hasExpectedParameterCount(PsseDyrRecord record) {
+        if (record.sourceModelName().equals("H6E1")) return record.parameterCount() == 63;
+        if (record.sourceModelName().equals("OEL3CU")) return record.parameterCount() == 18;
+        if (record.sourceModelName().equals("OEL3C")) return record.parameterCount() == 12;
         if (record.canonicalModelName().equals("REGFMA1")) {
             if (regfma1RecordFormat == Regfma1RecordFormat.NATIVE_PSSE_36_7)
                 return record.parameterCount() == 20;
@@ -549,6 +645,61 @@ public class PSSEDStabDirectParser {
     }
 
     @SuppressWarnings("unchecked")
+    /** Identify genuinely absent parents after all deferred attachment passes.
+     * A present but unsupported controller/port remains a rejection to fix,
+     * rather than being mislabeled as an absent host.
+     */
+    private String missingRequiredHost(PsseDyrRecord record) {
+        try {
+            if(!hasExpectedParameterCount(record))return null;
+            String missing=missingCatalogTarget(record);if(missing!=null)return missing;
+            if(record.hasNamedTarget())return null;
+            var net=builder.getBaseDStabNetwork();String type=record.canonicalModelName();
+            if(type.equals("PLNTBU1")) {
+                int remote=record.intParameter(6);
+                if(remote!=0&&net.getDStabBus(BUS_ID_PREFIX+Math.abs(remote))==null)
+                    return "regulated bus "+Math.abs(remote)+" is absent";
+                int from=record.intParameter(7),to=record.intParameter(8);
+                if((from!=0||to!=0)&&relayBranch(net,from,to,record.parameter(9))==null)
+                    return "monitored branch "+from+"/"+to+"/"+record.parameter(9).trim()+" is absent";
+                return null;
+            }
+            var descriptor=DynamicModelCatalog.find(type);if(descriptor.isEmpty())return null;
+            var bus=net.getDStabBus(BUS_ID_PREFIX+record.busNumber());
+            DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(record.deviceId());
+            if(gen==null)return null; // Physical absence was handled by the target mapper above.
+            var machine=gen.getMach();var category=descriptor.get().category();
+            switch(category) {
+                case EXCITER,GOVERNOR,STABILIZER,COMPENSATOR,UNDER_EXCITATION_LIMITER,OVER_EXCITATION_LIMITER -> {
+                    if(machine==null)return "loaded synchronous-machine host is absent at "+bus.getId()+"/"+gen.getId();
+                    if((category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER
+                            ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.OVER_EXCITATION_LIMITER)
+                            &&machine.getExciter()==null)return "loaded exciter host is absent at "+bus.getId()+"/"+gen.getId();
+                }
+                default -> { }
+            }
+            if(type.equals("LCFB1")&&(machine==null||machine.getGovernor()==null))
+                return "loaded machine/turbine-governor host is absent at "+bus.getId()+"/"+gen.getId();
+            if(category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.AERODYNAMIC_CONTROLLER) {
+                var device=gen.getDynamicGenDevice();
+                if(device==null)return "loaded converter/machine host is absent at "+bus.getId()+"/"+gen.getId();
+                com.interpss.dstab.renewable.RenewableElectricalController electrical=
+                        device instanceof com.interpss.dstab.renewable.Regca1Model r?r.getActiveElectricalController():
+                        device instanceof com.interpss.dstab.renewable.Regcb1Model r?r.getActiveElectricalController():
+                        device instanceof com.interpss.dstab.renewable.RegccModel r?r.getActiveElectricalController():null;
+                if(device instanceof com.interpss.dstab.renewable.RenewableConverterHost&&!type.startsWith("REEC")
+                        &&(electrical==null||electrical instanceof com.interpss.dstab.renewable.ConverterCurrentCommands))
+                    return "loaded electrical-controller host is absent at "+bus.getId()+"/"+gen.getId();
+            }
+            return null;
+        }catch(IllegalArgumentException invalid) {return null;}
+    }
+
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
@@ -592,7 +743,9 @@ public class PSSEDStabDirectParser {
             String targetBusId = BUS_ID_PREFIX + Math.abs(record.intParameter(0));
             BaseDStabBus<?, ?> targetBus = builder.getBaseDStabNetwork().getDStabBus(targetBusId);
             if (targetBus == null) return "target bus " + targetBusId + " does not exist";
-            String targetId = record.parameter(1);
+            // Embedded quoted IDs use the same padding-free identity as the
+            // generator's main record ID. Keep the source spelling in metadata.
+            String targetId = record.parameter(1).trim();
             return targetBus.getContributeGen(targetId) == null
                     ? "target generator " + targetBusId + "/" + targetId + " does not exist" : null;
         }
@@ -1090,7 +1243,7 @@ public class PSSEDStabDirectParser {
         for (var target : targets) {
             Complex power = target.load().getLoad(bus.getVoltageMag());
             if (power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary()) || power.getReal() <= 0) return false;
-            if (bus.getInfoOnlyDynModel() instanceof Cmldznu2Model composite && composite.getTargetLoadIds().contains(target.load().getId())) return false;
+            if (bus.getInfoOnlyDynModel() instanceof Cmldznu2Model composite && composite.getSourceModels().stream().anyMatch(m->m.getTargetLoadIds().contains(target.load().getId()))) return false;
             for (var existing : target.bus().getDynLoadModelList())
                 if (existing.isActive() && existing.getId().equals(target.load().getId())) return false;
         }
@@ -1296,10 +1449,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 18, 0)) != null;
     }
 
-    // IEEE 421.5-2005/PSS/E AC8B (21 values). This is the schema used by
-    // ANDES and the supplied cases, not PowerWorld's newer extended data form.
-    // IBUS 'AC8B' ID TR KPR KIR KDR TDR VPIDMAX VPIDMIN VRMAX VRMIN
-    //                 VFEMAX VEMIN TA KA TE KC KD KE E1 SE1 E2 SE2
+    // AC8B's native 21-CON layout is selected by the source model identity.
+    // It is not the alternate export layout with VR/VFE limits before KA/TA.
+    // IBUS 'AC8B' ID TR KPR KIR KDR TDR VPIDMAX VPIDMIN KA TA VRMAX VRMIN
+    //                 KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
     private boolean procExcAc8b(String busId, String genId, String[] f) {
         if (f.length < 24) return false;
         com.interpss.dstab.controller.exc.ac8b.Ac8bData d =
@@ -1307,12 +1460,12 @@ public class PSSEDStabDirectParser {
         d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
         d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
         d.setTdr(getDouble(f,7,0)); d.setVpidmax(getDouble(f,8,0));
-        d.setVpidmin(getDouble(f,9,0)); d.setVrmax(getDouble(f,10,0));
-        d.setVrmin(getDouble(f,11,0)); d.setVfemax(getDouble(f,12,0));
-        d.setVemin(getDouble(f,13,0)); d.setTa(getDouble(f,14,0));
-        d.setKa(getDouble(f,15,0)); d.setTe(getDouble(f,16,0));
-        d.setKc(getDouble(f,17,0)); d.setKd(getDouble(f,18,0));
-        d.setKe(getDouble(f,19,0)); d.setE1(getDouble(f,20,0));
+        d.setVpidmin(getDouble(f,9,0)); d.setKa(getDouble(f,10,0));
+        d.setTa(getDouble(f,11,0)); d.setVrmax(getDouble(f,12,0));
+        d.setVrmin(getDouble(f,13,0)); d.setKc(getDouble(f,14,0));
+        d.setKd(getDouble(f,15,0)); d.setKe(getDouble(f,16,0));
+        d.setTe(getDouble(f,17,0)); d.setVfemax(getDouble(f,18,0));
+        d.setVemin(getDouble(f,19,0)); d.setE1(getDouble(f,20,0));
         d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
         d.setSe2(getDouble(f,23,0));
         return builder.addExcAc8b(busId,genId,d) != null;
@@ -1338,6 +1491,15 @@ public class PSSEDStabDirectParser {
     // KA TA VRMAX VRMIN KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
     // KP KI XL THETAP KC1 VBMAX
     private boolean procExcAc8c(String busId,String genId,String[] f){
+        if(f.length==35&&!"USRMDL".equalsIgnoreCase(f[1])) {
+            // Current flat records carry five ICONs (including SCL), then
+            // 27 CONs. Reuse the exact wrapper mapper rather than shifting
+            // these fields into the legacy four-ICON interpretation.
+            String[] wrapped=new String[42];
+            System.arraycopy(new String[]{f[0],"USRMDL",f[2],"AC8CU1","2","0","5","27","5","3"},0,wrapped,0,10);
+            System.arraycopy(f,3,wrapped,10,32);
+            return procExcAc8c(busId,genId,wrapped);
+        }
         if("USRMDL".equalsIgnoreCase(f[1])){
             if(f.length!=42||getInt(f,4,-1)!=2||getInt(f,5,-1)!=0
                     ||getInt(f,6,-1)!=5||getInt(f,7,-1)!=27
@@ -1638,7 +1800,10 @@ public class PSSEDStabDirectParser {
         d.setVamax(getDouble(f,15,0)); d.setVamin(getDouble(f,16,0)); d.setVrmax(getDouble(f,17,0));
         d.setVrmin(getDouble(f,18,0)); d.setKc(getDouble(f,19,0)); d.setKf(getDouble(f,20,0));
         d.setTf(getDouble(f,21,0)); d.setKlr(getDouble(f,22,0)); d.setIlr(getDouble(f,23,0));
-        return builder.addExcSt1c(busId,genId,d) != null;
+        var exciter = builder.addExcSt1c(busId, genId, d);
+        if (exciter == null) return false;
+        exciter.useNativeAlgebraicSampling();
+        return true;
     }
 
     // ST4C flat interchange form, or the ST4CU1 USRMDL wrapper with five ICONs,
@@ -1915,12 +2080,12 @@ public class PSSEDStabDirectParser {
         d.setTc1(getDouble(f,9,0));d.setTb2(getDouble(f,10,0));d.setTc2(getDouble(f,11,0));
         d.setVrmax(getDouble(f,12,0));d.setVrmin(getDouble(f,13,0));d.setKf(getDouble(f,14,0));
         d.setTf(getDouble(f,15,0));d.setTf1(getDouble(f,16,0));d.setTf2(getDouble(f,17,0));
-        d.setFbf(getInt(f,18,0));d.setKip(getDouble(f,19,0));d.setKii(getDouble(f,20,0));
+        d.setFbf(getIntegralConstant(f,18,0));d.setKip(getDouble(f,19,0));d.setKii(getDouble(f,20,0));
         d.setTp(getDouble(f,21,0));d.setVfmax(getDouble(f,22,0));d.setVfmin(getDouble(f,23,0));
         d.setKh(getDouble(f,24,0));d.setKe(getDouble(f,25,0));d.setTe(getDouble(f,26,0));
         d.setKc(getDouble(f,27,0));d.setKd(getDouble(f,28,0));d.setE1(getDouble(f,29,0));
         d.setSe1(getDouble(f,30,0));d.setE2(getDouble(f,31,0));d.setSe2(getDouble(f,32,0));
-        d.setFlimf(getInt(f,33,0));
+        d.setFlimf(getIntegralConstant(f,33,0));
         return builder.addExcRexsys(busId,genId,d)!=null;
     }
 
@@ -2386,7 +2551,7 @@ public class PSSEDStabDirectParser {
         data.setTe(getDouble(f, 6, 0));
         data.setEfdmin(getDouble(f, 7, 0));
         data.setEfdmax(getDouble(f, 8, 0));
-        data.setCswitch(getInt(f, 9, 0));
+        data.setCswitch(getIntegralConstant(f, 9, 0));
         data.setRcOverRfd(getDouble(f, 10, 0));
         return builder.addExcScrx(busId, genId, data) != null;
     }
@@ -2544,11 +2709,20 @@ public class PSSEDStabDirectParser {
             PsseDyrRecord record) {}
 
     private boolean procOel3c(PsseDyrRecord record) {
-        if(!record.sourceModelName().equals("OEL3C")||record.parameterCount()!=12)return false;
-        var d=new com.interpss.dstab.controller.oel.oel3c.Oel3cData(record.intParameter(0),record.intParameter(1),
-            record.doubleParameter(2),record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),
-            record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),
-            record.doubleParameter(10),record.doubleParameter(11));
+        int offset = 0;
+        if (record.sourceModelName().equals("OEL3CU")) {
+            if (!record.fields().get(1).equalsIgnoreCase("USRMDL") || record.parameterCount() != 18)
+                throw new IllegalArgumentException("OEL3CU requires its exact user-model wrapper");
+            int[] allocation = {10, 0, 2, 10, 2, 4};
+            for (int i = 0; i < allocation.length; i++)
+                if (record.intParameter(i) != allocation[i])
+                    throw new IllegalArgumentException("Incorrect OEL3CU allocation field " + (i + 1));
+            offset = allocation.length;
+        } else if (!record.sourceModelName().equals("OEL3C") || record.parameterCount() != 12) return false;
+        var d=new com.interpss.dstab.controller.oel.oel3c.Oel3cData(record.intParameter(offset),record.intParameter(offset+1),
+            record.doubleParameter(offset+2),record.doubleParameter(offset+3),record.doubleParameter(offset+4),record.doubleParameter(offset+5),
+            record.doubleParameter(offset+6),record.doubleParameter(offset+7),record.doubleParameter(offset+8),record.doubleParameter(offset+9),
+            record.doubleParameter(offset+10),record.doubleParameter(offset+11));
         return builder.addOel3c(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),d)!=null;
     }
 
@@ -2583,7 +2757,7 @@ public class PSSEDStabDirectParser {
     // PSS2A: IBUS 'PSS2A' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
     //         Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3 T8 T9 Ks1 T1 T2 T3 T4 VSTMAX VSTMIN
     private boolean procPss2a(String busId, String genId, String[] f) {
-        return builder.addPss2a(busId, genId,
+        var stabilizer = builder.addPss2a(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0),
                 getInt(f, 5, 0), getInt(f, 6, 0),
                 getInt(f, 7, 0), getInt(f, 8, 0),
@@ -2593,7 +2767,12 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
                 getDouble(f, 20, 0), getDouble(f, 21, 0),
                 getDouble(f, 22, 0), getDouble(f, 23, 0),
-                getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
+                getDouble(f, 24, 0), getDouble(f, 25, 0));
+        if (stabilizer == null) {
+            return false;
+        }
+        stabilizer.useTerminalElectricalPowerInput();
+        return true;
     }
 
     // PSS2B: IBUS 'PSS2B' ID ICS1 ICS2 M N Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3
@@ -2605,8 +2784,10 @@ public class PSSEDStabDirectParser {
         if (f.length == 32) {
             int first = Integer.parseInt(f[3]), remote1 = Integer.parseInt(f[4]);
             int second = Integer.parseInt(f[5]), remote2 = Integer.parseInt(f[6]);
-            if ((remote1 != 0 && (first == 1 || first == 3 || first == 4))
-                    || (remote2 != 0 && (second == 1 || second == 3 || second == 4))) return false;
+            // An explicit reference to the owning bus is still a local machine signal.
+            int ownBus=Integer.parseInt(busId.substring(BUS_ID_PREFIX.length()));
+            if ((remote1 != 0 && remote1 != ownBus && (first == 1 || first == 3 || first == 4))
+                    || (remote2 != 0 && remote2 != ownBus && (second == 1 || second == 3 || second == 4))) return false;
             var network = builder.getBaseDStabNetwork();
             BaseDStabBus<?, ?> b1 = network.getDStabBus(remote1 == 0 ? busId : BUS_ID_PREFIX + remote1);
             BaseDStabBus<?, ?> b2 = network.getDStabBus(remote2 == 0 ? busId : BUS_ID_PREFIX + remote2);
@@ -2626,9 +2807,10 @@ public class PSSEDStabDirectParser {
             pss.getData().setStandardInputLagPreparation(true);
             pss.getData().setSampledInputPathOutputs(true);
             pss.setInputSignalBuses(b1, b2);
+            pss.useTerminalElectricalPowerInput();
             return true;
         }
-        return builder.addPss2b(busId, genId,
+        var pss = builder.addPss2b(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0),
                 getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
                 getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
@@ -2639,7 +2821,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 24, 0), getDouble(f, 25, 0), getDouble(f, 26, 0),
                 getDouble(f, 27, 0), getDouble(f, 28, 0), getDouble(f, 29, 0),
                 getDouble(f, 30, 1), getDouble(f, 31, 0), getDouble(f, 32, 0),
-                getDouble(f, 33, 1)) != null;
+                getDouble(f, 33, 1));
+        if (pss == null) return false;
+        if (f.length == 30) pss.useTerminalElectricalPowerInput();
+        return true;
     }
 
     // PSS2C: IBUS 'PSS2C' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
@@ -2656,7 +2841,7 @@ public class PSSEDStabDirectParser {
             }
             offset=10;
         } else if(f.length<38)return false;
-        return builder.addPss2c(busId, genId,
+        var pss = builder.addPss2c(busId, genId,
                 getInt(f,offset,0),getInt(f,offset+1,0),getInt(f,offset+2,0),getInt(f,offset+3,0),
                 getInt(f,offset+4,0),getInt(f,offset+5,0),
                 getDouble(f,offset+6,0),getDouble(f,offset+7,0),getDouble(f,offset+8,0),
@@ -2668,7 +2853,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f,offset+24,0),getDouble(f,offset+25,0),getDouble(f,offset+26,0),
                 getDouble(f,offset+27,0),getDouble(f,offset+28,0),getDouble(f,offset+29,0),
                 getDouble(f,offset+30,0),getDouble(f,offset+31,0),getDouble(f,offset+32,0),
-                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0)) != null;
+                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0));
+        if (pss == null) return false;
+        pss.setUseTerminalElectricalPowerInput(true);
+        return true;
     }
 
     // PSS3B: IBUS 'PSS3B' ID ICS1 REMBUS1 ICS2 REMBUS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
@@ -3172,7 +3360,10 @@ public class PSSEDStabDirectParser {
     private boolean procGovH6e(String busId, String genId, String[] f, PsseDyrRecord record) {
         PsseH6eGovernorData d = new PsseH6eGovernorData();
         boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
-        if (wrapped || "H6EU1".equalsIgnoreCase(record.sourceModelName())) {
+        boolean nativeH6e1 = record.sourceModelName().equals("H6E1");
+        d.setNativeH6e1Derivative(nativeH6e1);
+        if (nativeH6e1 && wrapped) throw new IllegalArgumentException("H6E1 requires the standard native header");
+        if (wrapped || nativeH6e1 || "H6EU1".equalsIgnoreCase(record.sourceModelName())) {
             int icon = wrapped ? 10 : 3;
             int c = icon + 1;
             if (f.length < c + 62) return false;
@@ -3190,10 +3381,18 @@ public class PSSEDStabDirectParser {
             d.setTbs(getDouble(f, c + 20, 0)); d.setBgvmin(getDouble(f, c + 21, 0));
             d.setBlv(getDouble(f, c + 22, 0)); d.setDturb(getDouble(f, c + 23, 0));
             d.setPgc(getDouble(f, c + 24, 0)); d.setDeff(getDouble(f, c + 25, 0));
-            d.setHdam(getDouble(f, c + 26, 1)); d.setTw(getDouble(f, c + 27, 0));
-            for (int i = 0; i < 10; i++) d.setGv(i, getDouble(f, c + 28 + i, 0));
-            for (int i = 0; i < 10; i++) d.setPgv(i, getDouble(f, c + 38 + i, 0));
-            for (int i = 0; i < 10; i++) d.setBgv(i, getDouble(f, c + 48 + i, 0));
+            d.setHdam(getDouble(f, c + 26, 1));
+            // Native H6E1 puts Tw after all three curves. H6EU1 puts it before
+            // them. The source model identity, not the RAW revision or plausible
+            // curve values, determines the layout even though both have 63 fields.
+            boolean currentNativeOrder = nativeH6e1;
+            if (currentNativeOrder && (getDouble(f, c + 59, 0) != 0 || getDouble(f, c + 60, 0) != 0))
+                throw new IllegalArgumentException("Native H6E1 asymmetric speed deadband is not qualified by the H6E runtime; zero bounds required");
+            int curve = currentNativeOrder ? 27 : 28;
+            d.setTw(getDouble(f, c + (currentNativeOrder ? 57 : 27), 0));
+            for (int i = 0; i < 10; i++) d.setGv(i, getDouble(f, c + curve + i, 0));
+            for (int i = 0; i < 10; i++) d.setPgv(i, getDouble(f, c + curve + 10 + i, 0));
+            for (int i = 0; i < 10; i++) d.setBgv(i, getDouble(f, c + curve + 20 + i, 0));
             d.setSprate(getDouble(f, c + 58, 0)); d.setDb1(getDouble(f, c + 59, 0));
             d.setEps(getDouble(f, c + 60, 0)); d.setTrate(getDouble(f, c + 61, 0));
         } else {
@@ -4311,11 +4510,36 @@ public class PSSEDStabDirectParser {
                 record.doubleParameter(6), record.doubleParameter(7),
                 record.doubleParameter(8), record.doubleParameter(9), record.doubleParameter(10),
                 record.doubleParameter(11), record.doubleParameter(12), record.doubleParameter(13));
-        List<LoadTarget> targets = ieelTargets(record);
+        List<LoadTarget> matched = ieelTargets(record);
+        List<LoadTarget> targets = matched;
+        if(type.equals("IEELAR")) {
+            // A subsystem default fills only unassigned loads. Explicit load
+            // characteristics retain ownership regardless of DYR record order.
+            targets=matched.stream().filter(t->!hasSpecificLoadCharacteristic(t)).toList();
+            int skipped=matched.size()-targets.size();
+            loadScopeDiagnostics.put(record,"Area default attached to "+targets.size()+" loads; "+skipped
+                    +" targets retained their more-specific characteristic models");
+            if(!matched.isEmpty()&&targets.isEmpty())shadowedLoadDefaults.add(record);
+        }
+        // Validate the whole target set before installing any characteristic.
+        // Two explicit characteristics are conflicting input, not two parallel loads.
+        if(type.equals("IEELBL"))for(var target:targets)if(hasSpecificLoadCharacteristic(target))
+            throw new IllegalArgumentException("Duplicate explicit characteristic at "+target.bus().getId()+"/"+target.load().getId());
         for (LoadTarget target : targets) {
+            if(target.bus().getDynLoadModelList().stream().anyMatch(d->d instanceof IeelLoadModel existing
+                    &&existing.getSourceModelName().equals(type)&&existing.getParentLoad()==target.load()))
+                throw new IllegalArgumentException("Duplicate overlapping "+type+" load assignment at "+target.bus().getId()+"/"+target.load().getId());
             new IeelLoadModel(type, target.bus(), target.load(), data);
         }
-        return !targets.isEmpty();
+        return !matched.isEmpty();
+    }
+
+    private boolean hasSpecificLoadCharacteristic(LoadTarget target) {
+        var bus=target.bus();var id=target.load().getId();
+        if(bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldznu2Model composite
+                &&composite.getSourceModels().stream().anyMatch(m->m.getTargetLoadIds().contains(id)))return true;
+        return bus.getDynLoadModelList().stream().anyMatch(d->d.isActive()&&d.getId().equals(id)
+                &&(!(d instanceof IeelLoadModel existing)||!existing.getSourceModelName().equals("IEELAR")));
     }
 
     private boolean procCmldblu1(PsseDyrRecord record) {
@@ -4323,7 +4547,8 @@ public class PSSEDStabDirectParser {
         int[] allocation={12,1,0,132,27,146,48};
         for(int i=0;i<allocation.length;i++)if(record.intParameter(i)!=allocation[i])return false;
         var bus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+record.busNumber());
-        if(bus==null || bus.getInfoOnlyDynModel()!=null)return false;
+        if(bus==null || (bus.getInfoOnlyDynModel()!=null
+                && !(bus.getInfoOnlyDynModel() instanceof Cmldznu2Model)))return false;
         var targets=new ArrayList<LoadTarget>();
         addMatchingLoads(targets,bus,record.deviceId(),record.deviceId().equals("*")||record.deviceId().equals("#"));
         if(targets.isEmpty())return false;
@@ -4333,7 +4558,14 @@ public class PSSEDStabDirectParser {
         for(var target:targets){ids.add(target.load().getId());power=power.add(target.load().getLoad(bus.getVoltageMag()));}
         double[] constants=new double[132];
         for(int i=0;i<132;i++)constants[i]=record.doubleParameter(i+7);
-        new org.interpss.dstab.dynLoad.impl.Cmldblu1Model("CMLDBLU1_"+record.deviceId(),bus,ids,power,constants);
+        var previous=bus.getInfoOnlyDynModel();
+        // Distinct explicit load IDs may share a bus. Validate overlap before
+        // constructing a model: construction installs its preparation owner.
+        if(previous instanceof Cmldznu2Model first)
+            for(var owner:first.getSourceModels())if(!java.util.Collections.disjoint(owner.getTargetLoadIds(),ids))
+                throw new IllegalArgumentException("Duplicate explicit composite source at "+bus.getId()+"/"+ids);
+        var model=new org.interpss.dstab.dynLoad.impl.Cmldblu1Model("CMLDBLU1_"+record.deviceId(),bus,ids,power,constants);
+        if(previous instanceof Cmldznu2Model first){first.addSourceModel(model);bus.setInfoOnlyDynModel(first);}
         return true;
     }
 
@@ -4349,13 +4581,35 @@ public class PSSEDStabDirectParser {
         double[] constants = new double[Cmldznu2Data.PARAMETER_COUNT];
         for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 9);
         Cmldznu2Data data = new Cmldznu2Data(constants);
-        List<CompositeLoadTarget> targets = cmldznu2Targets(record);
+        List<CompositeLoadTarget> matched = cmldznu2Targets(record);
+        List<CompositeLoadTarget> targets = new ArrayList<>();
+        for(var target:matched) {
+            String loadId=target.loadIds().iterator().next();
+            var bus=target.bus();
+            if(bus.getInfoOnlyDynModel() instanceof Cmldznu2Model first)
+                for(var owner:first.getSourceModels())if(owner.getTargetLoadIds().contains(loadId)
+                        && !(owner instanceof org.interpss.dstab.dynLoad.impl.Cmldblu1Model))
+                    throw new IllegalArgumentException("Duplicate overlapping zone composite at "+bus.getId()+"/"+loadId);
+            var load=new LoadTarget(bus,bus.getContributeLoad(loadId));
+            if(!hasSpecificLoadCharacteristic(load))targets.add(target);
+        }
+        loadScopeDiagnostics.put(record,"Zone default attached to "+targets.size()+" loads; "+(matched.size()-targets.size())
+                +" targets retained their more-specific characteristic models");
+        if(!matched.isEmpty()&&targets.isEmpty())shadowedLoadDefaults.add(record);
         int sequence = 0;
         for (CompositeLoadTarget target : targets) {
             String id = "CMLDZNU2_" + record.busNumber() + "_" + (++sequence);
-            new Cmldznu2Model(id, target.bus(), target.loadIds(), target.power(), data);
+            // A subsystem record shares constants, not differential states or
+            // source identity. Keep each load's own feeder/motors so its relay
+            // never has to shed an unrelated load from an aggregate.
+            var previous=target.bus().getInfoOnlyDynModel();
+            var model=new Cmldznu2Model(id, target.bus(), target.loadIds(), target.power(), data);
+            if(previous instanceof Cmldznu2Model first) {
+                first.addSourceModel(model);
+                target.bus().setInfoOnlyDynModel(first);
+            }
         }
-        return !targets.isEmpty();
+        return !matched.isEmpty();
     }
 
     @SuppressWarnings("unchecked")
@@ -4365,18 +4619,15 @@ public class PSSEDStabDirectParser {
         for (Object object : builder.getBaseDStabNetwork().getBusList()) {
             BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) object;
             if (!bus.isActive()) continue;
-            Set<String> ids = new java.util.LinkedHashSet<>();
-            Complex power = Complex.ZERO;
             for (Object loadObject : bus.getContributeLoadList()) {
                 AclfLoad load = (AclfLoad) loadObject;
-                if (!load.isActive() || (!wildcard && !record.deviceId().equals(load.getId()))) continue;
+                if (!load.isActive() || load.getCode()==com.interpss.core.aclf.AclfLoadCode.NON_LOAD
+                        || (!wildcard && !record.deviceId().equals(load.getId()))) continue;
                 if (loadZoneNumber(bus, load) != record.busNumber()) continue;
                 Complex loadPower = load.getLoad(bus.getVoltageMag());
                 if (loadPower == null) continue;
-                ids.add(load.getId());
-                power = power.add(loadPower);
+                targets.add(new CompositeLoadTarget(bus, Set.of(load.getId()), loadPower));
             }
-            if (!ids.isEmpty()) targets.add(new CompositeLoadTarget(bus, Set.copyOf(ids), power));
         }
         return targets;
     }
@@ -4410,7 +4661,12 @@ public class PSSEDStabDirectParser {
         if (bus == null) return;
         for (Object object : bus.getContributeLoadList()) {
             AclfLoad load = (AclfLoad) object;
-            if (load.isActive() && (wildcard || load.getId().equals(loadId))
+            // A subsystem characteristic may include active placeholder loads
+            // whose aggregate bus is NON_LOAD. They carry no ZIP power and the
+            // core deliberately has no dynamic-load list for them. Skip those
+            // records rather than partially attaching an area before an NPE.
+            if (load.isActive() && load.getCode() != com.interpss.core.aclf.AclfLoadCode.NON_LOAD
+                    && (wildcard || load.getId().equals(loadId))
                     && (areaNumber == null || loadAreaNumber(bus, load) == areaNumber)) {
                 targets.add(new LoadTarget(bus, load));
             }
@@ -4467,6 +4723,7 @@ public class PSSEDStabDirectParser {
         if (transferTime < 0.0) return false;
         var data = new StagedLoadSheddingRelayData(loadSheddingStages(record, 3),
                 record.intParameter(2) == 1);
+        if(skipInactiveLoadRelay(loadBus,loadId,record))return true;
         new Lds3blRelayModel(loadBus, loadId, data, transferBus,
                 record.parameter(1), transferTime);
         return true;
@@ -4486,6 +4743,7 @@ public class PSSEDStabDirectParser {
         if (firstTime < 0.0 || secondTime < 0.0) return false;
         var data = new StagedLoadSheddingRelayData(loadSheddingStages(record, 7),
                 record.intParameter(6) == 1);
+        if(skipInactiveLoadRelay(loadBus,loadId,record))return true;
         new Lvs3blRelayModel(loadBus, loadId, data, first, firstTime, second, secondTime);
         return true;
     }
@@ -4505,8 +4763,8 @@ public class PSSEDStabDirectParser {
         if (from == 0 && to == 0) return null;
         String fromId = BUS_ID_PREFIX + Math.abs(from);
         String toId = BUS_ID_PREFIX + Math.abs(to);
-        AclfBranch branch = (AclfBranch) network.getBranch(fromId, toId, id);
-        return branch != null ? branch : (AclfBranch) network.getBranch(toId, fromId, id);
+        AclfBranch branch = (AclfBranch) network.getBranch(fromId, toId, id.trim());
+        return branch != null ? branch : (AclfBranch) network.getBranch(toId, fromId, id.trim());
     }
 
     @SuppressWarnings("unchecked")
@@ -4517,7 +4775,7 @@ public class PSSEDStabDirectParser {
         BaseDStabBus<?, ?> monitoredBus = network.getDStabBus(monitoredBusId);
         BaseDStabBus<?, ?> targetBus = network.getDStabBus(targetBusId);
         if (monitoredBus == null || targetBus == null) return false;
-        DStabGen targetGenerator = (DStabGen) targetBus.getContributeGen(record.parameter(1));
+        DStabGen targetGenerator = (DStabGen) targetBus.getContributeGen(record.parameter(1).trim());
         if (targetGenerator == null) return false;
         GeneratorTripRelayData data = new GeneratorTripRelayData(
                 record.doubleParameter(2), record.doubleParameter(3),
@@ -4556,7 +4814,7 @@ public class PSSEDStabDirectParser {
                         == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION
                 && hasExpectedParameterCount(record)) {
             return new GeneratorKey(BUS_ID_PREFIX + Math.abs(record.intParameter(0)),
-                    record.parameter(1));
+                    record.parameter(1).trim());
         }
         return new GeneratorKey(BUS_ID_PREFIX + record.busNumber(), record.deviceId());
     }
@@ -4595,6 +4853,18 @@ public class PSSEDStabDirectParser {
         }
     }
 
+    /** A selector stored as a real CON may be written 1.0000 or 1E0.
+     * ICONs still use getInt; fractional values must never be truncated. */
+    private int getIntegralConstant(String[] fields, int idx, int defaultVal) {
+        if (idx >= fields.length) return defaultVal;
+        try {
+            return new java.math.BigDecimal(trimQuote(fields[idx])).intValueExact();
+        } catch (NumberFormatException | ArithmeticException e) {
+            throw new IllegalArgumentException("DYR constant field " + (idx + 1)
+                    + " must be an exact integer-valued real: '" + fields[idx] + "'", e);
+        }
+    }
+
     private int getInt(String[] fields, int idx, int defaultVal) {
         if (idx >= fields.length) return defaultVal;
         try {
@@ -4612,7 +4882,18 @@ public class PSSEDStabDirectParser {
                 .orElse(DynamicModelImportStatus.UNSUPPORTED);
     }
 
+    private final java.util.Set<PsseDyrRecord> inactiveLoadRelays=new java.util.HashSet<>();
+    private boolean skipInactiveLoadRelay(BaseDStabBus<?,?> bus,String id,PsseDyrRecord record) {
+        var load=bus==null?null:bus.getContributeLoad(id);
+        if(load==null || load.isActive())return false;
+        // Do this only after validating the relay constants. An inactive host
+        // makes this protection inapplicable, but never legitimizes bad data.
+        inactiveLoadRelays.add(record);return true;
+    }
+
     private DynamicModelImportStatus attachedStatus(PsseDyrRecord record) {
+        if(inactiveLoadRelays.contains(record))return DynamicModelImportStatus.SKIPPED_INACTIVE_TARGET;
+        if(shadowedLoadDefaults.contains(record))return DynamicModelImportStatus.SKIPPED_LOAD_PRIORITY;
         // Exact source attachment is separate from the FACTS runtime's remaining qualification.
         if(record.canonicalModelName().equals("SVSMO3T2"))return DynamicModelImportStatus.ATTACHED;
 
@@ -4622,7 +4903,26 @@ public class PSSEDStabDirectParser {
                 .orElse(DynamicModelImportStatus.FALLBACK);
     }
 
+    private final java.util.Set<PsseDyrRecord> shadowedLoadDefaults=new java.util.HashSet<>();
+    private final java.util.Map<PsseDyrRecord,String> loadScopeDiagnostics=new java.util.HashMap<>();
+
     private String attachedMessage(PsseDyrRecord record) {
+        if(inactiveLoadRelays.contains(record))return "Validated load protection intentionally skipped: physical load target is out of service";
+        if(loadScopeDiagnostics.containsKey(record))return loadScopeDiagnostics.get(record);
+        if(record.canonicalModelName().equals("REPCA1")) {
+            int ref=record.intParameter(5),frequency=record.intParameter(6);
+            return "REPCA1 RefFlag="+ref+": "+(ref==0?"reactive-power":"voltage")
+                +" control; FreqFlag="+frequency+(frequency==0?" (inactive frequency limits retained and not evaluated)":"");
+        }
+        if(record.canonicalModelName().equals("PLNTBU1")) {
+            int flag=record.intParameter(12);
+            if(flag!=0&&flag!=1)log.warn("PLNTBU1 at {}:{}: Fflag={} selects the inactive active-power path; entered selector and unused parameters retained",
+                    record.source(),record.startLine(),flag);
+            return "PLNTBU1 Fflag="+flag+": active-power control "+(flag==1?"enabled":"disabled (enabled only for Fflag=1); inactive frequency limits retained and not evaluated");
+        }
+        if((record.canonicalModelName().equals("REAX3BU1")||record.canonicalModelName().equals("REAX4BU1"))
+                && (record.doubleParameter(8)==0||record.doubleParameter(9)==0))
+            return "Zero-weight auxiliary axis retains initialized host output; incremental participation compatibility; not native zero-gain trajectory equivalence";
         if(record.canonicalModelName().equals("CDC6T"))return "Exact named 32-constant record; terminal runtime preparation follows solved load flow; trajectory acceptance is scoped separately";
         if(record.canonicalModelName().equals("SVSMO3T2"))return "Exact named FACTS 20-ICON/44-CON record attached; runtime qualification remains partial";
         if(record.canonicalModelName().equals("CSVGN5")||record.canonicalModelName().equals("SVSMO1T2"))return "Exact native reactive-device record and resolved runtime owner";

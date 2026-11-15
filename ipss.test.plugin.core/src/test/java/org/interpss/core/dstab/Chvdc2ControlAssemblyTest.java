@@ -17,6 +17,40 @@ public class Chvdc2ControlAssemblyTest {
     static void input(Chvdc2ControlAssembly m,double current,double voltage,double gamma) {
         m.setInput(current,1050,505,500,voltage,1.03,1050,0,gamma);
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void commutationReleaseUsesMeasuredInverterVoltage(boolean bypassFilter) {
+        var constants = Chvdc2ParametersTest.constants();
+        constants[17] = bypassFilter ? 0. : .01;
+        constants[30] = 10.;
+        constants[31] = .9;
+        constants[32] = .034;
+        var parameters = new Chvdc2Parameters("link", Chvdc2Parameters.Dialect.CHVDC2U1,
+                new int[]{0, 0, 1}, constants);
+        var model = parameters.prepareControls(.9, .95);
+        model.setInput(1050, 1050, 505, 500, 1.03, .85, 1050, 0, 5.);
+        model.initialize(32, 140, 0.);
+        model.acceptBoundary(0., 0);
+        assertTrue(model.inverterShorted());
+
+        model.setInput(1050, 1050, 505, 500, 1.03, .91, 1050, 0, 30.);
+        model.acceptBoundary(.04, 1);
+        assertEquals(!bypassFilter, model.inverterShorted());
+
+        // Once the filter state crosses the source threshold, the accepted
+        // boundary releases even if the raw voltage has briefly fallen again.
+        if (!bypassFilter) {
+            double[] state = new double[Chvdc2ControlAssembly.STATE_COUNT];
+            model.readStaggeredState(state, 0);
+            state[11] = .901;
+            model.applyStaggeredState(state, 0, 0.);
+            model.setInput(1050, 1050, 505, 500, 1.03, .895, 1050, 0, 30.);
+            model.acceptBoundary(.0433333, 2);
+            assertFalse(model.inverterShorted());
+        }
+    }
+
     @Test void simultaneousCorrectorSeesPredictedMeasurements() {
         var m=model(false);input(m,1400,1.03,30);double h=.0001;double[] x=new double[15];m.step(h,0);m.readStaggeredState(x,0);
         assertEquals(.301,x[0],1e-12);assertEquals(32,x[4]);assertEquals(32,x[6]);

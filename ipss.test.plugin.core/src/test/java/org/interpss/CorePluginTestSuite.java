@@ -37,6 +37,8 @@ import org.interpss.core.adapter.builder.dstab.Ac8bAndesEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ac7bDynawoEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ac7bImportTest;
 import org.interpss.core.adapter.builder.dstab.RexsysExciterTest;
+import org.interpss.core.adapter.builder.dstab.RexsysVoltageInputLimitTest;
+import org.interpss.core.adapter.psse.raw.DynamicRunConfigTest;
 import org.interpss.core.adapter.builder.dstab.Esac6aExciterTest;
 import org.interpss.core.adapter.builder.dstab.Expic1ExciterTest;
 import org.interpss.core.dstab.Expic1NativeVerificationTest;
@@ -195,6 +197,7 @@ import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1NativeSchemaTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
+import org.interpss.core.adapter.builder.dstab.Reecb1VoltageControlTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecc1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecd1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeceModelTest;
@@ -418,6 +421,7 @@ import org.interpss.core.dstab.Hygov2dIndependentSmibConformanceTest;
 import org.interpss.core.dstab.HygovdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.HygovdSmibIntegrationTest;
 import org.interpss.core.dstab.Hygovr1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ggov1BaseloadBsgTest;
 import org.interpss.core.dstab.Ggov1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg3dIndependentSmibConformanceTest;
 import org.interpss.core.dstab.IeesgodIndependentSmibConformanceTest;
@@ -671,6 +675,11 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
+    org.interpss.core.opf.ecp.EcpPowerFlowComparisonTest.class,
+    org.interpss.core.opf.ecp.EcpOpfPypowerComparisonTest.class,
+    org.interpss.core.opf.ecp.EcpOpfQualificationTest.class,
+    org.interpss.core.opf.ecp.EcpMatpowerInputContractTest.class,
+    org.interpss.core.opf.ecp.EcpOpfMatpowerComparisonTest.class,
     org.interpss.core.dstab.Cdc6tDyrImportTest.class,
     org.interpss.core.adapter.builder.dstab.ReactiveDeviceDyrImportTest.class,
 	// aclf
@@ -911,6 +920,7 @@ import org.junit.platform.suite.api.Suite;
 	HygovdIndependentSmibConformanceTest.class,
 	HygovdSmibIntegrationTest.class,
 	Hygovr1IndependentSmibConformanceTest.class,
+	Ggov1BaseloadBsgTest.class,
 	Ggov1IndependentSmibConformanceTest.class,
 	Ieeeg3dIndependentSmibConformanceTest.class,
 	IeesgodIndependentSmibConformanceTest.class,
@@ -1023,6 +1033,8 @@ import org.junit.platform.suite.api.Suite;
 	Ac7bDynawoEquationConformanceTest.class,
 	Ac7bImportTest.class,
 	RexsysExciterTest.class,
+	RexsysVoltageInputLimitTest.class,
+    DynamicRunConfigTest.class,
 	Esac6aExciterTest.class,
 	Expic1ExciterTest.class,
 	Expic1NativeVerificationTest.class,
@@ -1227,6 +1239,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseRegfma1NativeSchemaTest.class,
 	PsseReeca1ControllerTest.class,
 	PsseReecb1ControllerTest.class,
+	Reecb1VoltageControlTest.class,
 	PsseReecc1ControllerTest.class,
 	PsseReecd1ControllerTest.class,
 	PsseReeceModelTest.class,

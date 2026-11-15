@@ -153,8 +153,10 @@ public class PsseModelRemoveIdvProcessorTest {
         var solvedPower = generator.getGen();
         var solvedVoltage = bus.getVoltage();
         net.setStaticLoadIncludedInYMatrix(false);
-        net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_I);
-        net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_Z);
+        // With no CONL conversion, ordinary loads retain constant P and Q.
+        // A missing machine's implicit GNET equivalent still uses I and Z.
+        net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
+        net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
         long checks = ((com.interpss.dstab.impl.BaseDStabNetworkImpl<?, ?>)net)
                 .getDynamicModelInventoryBuildCount();

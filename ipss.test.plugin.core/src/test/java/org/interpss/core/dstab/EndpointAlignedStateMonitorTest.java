@@ -90,10 +90,37 @@ public class EndpointAlignedStateMonitorTest {
         monitor.initializeStateCapture(0, () -> new double[]{1});
         assertThrows(IllegalStateException.class, () -> emit(monitor,"Bus1",0,1));
         monitor.beginStep(0,.01);
-        assertThrows(IllegalStateException.class, () -> emit(monitor,"Bus1",.01,1));
+        assertThrows(IllegalStateException.class, () -> emit(monitor,"Bus1",.02,1));
         emit(monitor,"Bus1",0,1);
-        emit(monitor,"Bus1",0,1);
-        assertThrows(IllegalStateException.class, () -> emit(monitor,"Bus1",0,1));
+        emit(monitor,"Bus1",.005,1);
+        emit(monitor,"Bus1",.01,1);
+        assertThrows(IllegalStateException.class, () -> monitor.endStep(.01));
+    }
+
+    @Test void retainsBothSidesOfAnOffGridEventAtTheActualShortenedEndpoint() {
+        var monitor = monitor();
+        double[] live = {1};
+        monitor.initializeStateCapture(0, () -> live);
+        monitor.beginStep(0, .01);
+        emit(monitor, "Bus1", .004, 1);
+        live[0] = 2;
+        emit(monitor, "Bus1", .004, .3);
+        monitor.endStep(.004);
+        monitor.beginStep(.004, .01);
+        live[0] = 3;
+        emit(monitor, "Bus1", .01, .31);
+        monitor.endStep(.01);
+        var frames = monitor.frames();
+        assertEquals(4, frames.size());
+        assertEquals(SampleKind.EVENT_PRE, frames.get(1).kind());
+        assertEquals(SampleKind.EVENT_POST, frames.get(2).kind());
+        assertEquals(.004, frames.get(1).time());
+        assertEquals(.004, frames.get(2).time());
+        assertEquals(.004, frames.get(2).solverTime());
+        assertArrayEquals(new double[]{1}, frames.get(1).states());
+        assertArrayEquals(new double[]{2}, frames.get(2).states());
+        assertEquals(SampleKind.STEP_END, frames.get(3).kind());
+        assertEquals(.01, frames.get(3).time());
     }
 
     @Test void rejectsNonfiniteAndChangingStateVectors() {
@@ -151,7 +178,12 @@ public class EndpointAlignedStateMonitorTest {
                     frames.get(i).kind()==SampleKind.EVENT_PRE && Math.abs(frames.get(i).time()-boundary)<1.e-9)
                     .findFirst().orElseThrow();
             assertEquals(boundary,frames.get(before).solverTime(),1.e-12);
-            assertEquals(boundary+.01,frames.get(before+1).time(),1.e-12);
+            var after = frames.get(before + 1);
+            assertEquals(SampleKind.EVENT_POST, after.kind());
+            assertEquals(boundary, after.time(), 1.e-12);
+            assertEquals(boundary, after.solverTime(), 1.e-12);
+            assertEquals(frames.get(before).states()[1], after.states()[1], 0.,
+                    "Rotor speed is continuous across a zero-duration network event");
         }
     }
 }

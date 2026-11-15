@@ -129,6 +129,14 @@ public class St4cExciterTest extends CorePluginTestSetup {
         assertTrue(e.initStates(m.getDStabBus(),m));assertEquals(.01,e.tr,TOL);assertEquals(.01,e.tg,TOL);assertEquals(.01,e.ta,TOL);
     }
 
+    @Test void bypassedLagObservationUsesAlgebraicOutputWithoutChangingStorage()throws Exception {
+        St4cData d=baseData();d.setTr(0);d.setTg(0);d.setTa(0);Fixture f=fixture(d,0);
+        double[] before=f.exciter.getStateSnapshot();f.machine.getDStabBus().setVoltage(.98,0);
+        var observed=f.exciter.getNativeStateSnapshot();
+        assertEquals(f.exciter.getSensedVoltage(),observed[0],TOL);
+        assertEquals(f.exciter.getVgOutput(),observed[3],TOL);assertEquals(f.exciter.getVaOutput(),observed[4],TOL);
+        assertArrayEquals(before,f.exciter.getStateSnapshot(),0.);
+    }
     @Test void holdsEquilibriumAndParticipatesInFullSimulation()throws Exception{
         Fixture f=fixture(baseData(),0);double initial=f.exciter.getOutput(f.machine);for(int i=0;i<1000;i++)step(f.exciter,f.machine,.0001);
         assertEquals(initial,f.exciter.getOutput(f.machine),1e-9);

@@ -28,6 +28,7 @@ import com.interpss.dstab.mach.RoundRotorMachine;
  * ESAC8B_PTI common profile. AC8B-only nonlinear paths remain covered locally.
  */
 public class Ac8bIndependentSmibConformanceTest {
+    @org.junit.jupiter.api.io.TempDir Path nativeInputs;
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
@@ -43,11 +44,27 @@ public class Ac8bIndependentSmibConformanceTest {
         verify(reference,inputs,"fresh");
     }
 
+    /** Preserve immutable reference inputs; explicitly serialize their alternate
+     * export ordering into the native record expected by the production reader.
+     * All numeric tokens, typed parameters and comparison tolerances are retained. */
+    static Path stageNativeAc8b(Path source,Path target) throws Exception {
+        var lines=new ArrayList<>(java.nio.file.Files.readAllLines(source));
+        int[] order={0,1,2,3,4,5,6,12,11,7,8,14,15,16,13,9,10,17,18,19,20};
+        for(int i=0;i<lines.size();i++)if(lines.get(i).contains("'AC8B'")) {
+            String[] fields=lines.get(i).trim().split("\\s+");
+            if(fields.length!=25||!fields[24].equals("/"))throw new IllegalArgumentException("Unexpected archived AC8B fixture");
+            var record=new StringBuilder(fields[0]+" "+fields[1]+" "+fields[2]);
+            for(int position:order)record.append(' ').append(fields[3+position]);
+            lines.set(i,record.append(" /").toString());
+        }
+        java.nio.file.Files.write(target,lines);return target;
+    }
+
     private void verify(EmbeddedTrajectoryReference reference,Path inputs,String referenceId)throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 inputs.resolve("SMIB_v33.raw").toString(),
-                inputs.resolve("SMIB_v33_genrou_ac8b_independent.dyr").toString());
+                stageNativeAc8b(inputs.resolve("SMIB_v33_genrou_ac8b_independent.dyr"),nativeInputs.resolve("native.dyr")).toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + AC8B SMIB load flow");

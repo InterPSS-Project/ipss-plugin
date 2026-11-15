@@ -17,8 +17,11 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
-/** Trajectory comparison against ANDES 2.0.0 for GENROU plus AC8B. */
+/** Historical common-profile trajectory comparison. Agreement while the PID
+ * limit is inactive does not qualify tracking antiwindup; that branch is
+ * superseded by independent exact-record directional-nonwindup evidence. */
 public class Ac8bAndesSmibConformanceTest {
+    @org.junit.jupiter.api.io.TempDir Path nativeInputs;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
     private static final Path REFERENCE=Path.of("src","test","resources","reference","andes",
             "ac8b-smib-line-trip.csv");
@@ -28,7 +31,7 @@ public class Ac8bAndesSmibConformanceTest {
         IpssCorePlugin.init();
         var context=new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ac8b.dyr").toString());
+                Ac8bIndependentSmibConformanceTest.stageNativeAc8b(CASE.resolve("SMIB_v33_genrou_ac8b.dyr"),nativeInputs.resolve("native.dyr")).toString());
         var network=context.getDStabilityNet();
         var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),"SMIB load flow");

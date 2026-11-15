@@ -66,7 +66,7 @@ public class DStabNetworkBuilderAc8cTest extends CorePluginTestSetup {
         assertEquals(5,e.getNamedStates().size());assertTrue(e.getNamedStates().keySet().containsAll(
                 java.util.Set.of("Sensed Vt","PID Integrator","PID Derivator","VR","VE")));
         var descriptor=DynamicModelCatalog.find("AC8CU1").orElseThrow();
-        assertEquals(java.util.Set.of(31,38),descriptor.recordSchema().acceptedParameterCounts());
+        assertEquals(java.util.Set.of(31,32,38),descriptor.recordSchema().acceptedParameterCounts());
         assertTrue(p.getLastImportReport().isStrictlyComplete());
     }
 
@@ -169,4 +169,13 @@ public class DStabNetworkBuilderAc8cTest extends CorePluginTestSetup {
     private static double[] add(double[] x,double[] d,double dt){double[] y=new double[x.length];for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;return y;}
     private static void step(Ac8cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Ac8cExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = dynamicData();
+            data.setTr(time);
+            return builder.addExcAc8c("Bus1", "1", data);
+        });
+    }
 }

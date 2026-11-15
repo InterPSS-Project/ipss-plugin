@@ -171,7 +171,10 @@ public class Svsmo3t2DeadbandRelockTest extends CorePluginTestSetup {
     private static double[] numerical(Svsmo3t2Model m){double[] x=new double[6];m.readStaggeredState(x,0);return x;}
     static Svsmo3t2Model model(Path root)throws Exception {
         var c=new PSSEMultiFileLoader().loadDStab(root.resolve("smib.raw").toString(),root.resolve("smib.dyr").toString());
-        var a=c.getDynSimuAlgorithm();a.getAclfAlgorithm().getLfAdjAlgo().setLocalContinuousSvcAsPv(true);
+        var a=c.getDynSimuAlgorithm();
+        // The recorded fixture and the manual stages below use this same physical interval.
+        a.setSimuStepSec(H);
+        a.getAclfAlgorithm().getLfAdjAlgo().setLocalContinuousSvcAsPv(true);
         a.getAclfAlgorithm().setTolerance(1e-10);assertTrue(a.getAclfAlgorithm().loadflow());a.setSimuOutputHandler(new StateMonitor());assertTrue(a.initialization());
         var b=c.getDStabilityNet().getDStabBus("Bus3");b.setVoltage(Complex.ONE);
         return (Svsmo3t2Model)b.getDynamicBusDeviceList().stream().filter(Svsmo3t2Model.class::isInstance).findFirst().orElseThrow();
