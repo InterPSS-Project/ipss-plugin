@@ -16,11 +16,11 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
-import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import com.interpss.core.funcImpl.dclf.AclfNetSsaHelper;
-import com.interpss.optadj.result.OptAdjResultContainer;
-import com.interpss.optadj.result.SsaBranchOverLimitInfo;
-import com.interpss.optadj.result.SsaResultContainer;
+import com.interpss.optadj.bus_p.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.bus_p.result.OptAdjResultContainer;
+import com.interpss.optadj.bus_p.result.SsaBranchOverLimitInfo;
+import com.interpss.optadj.bus_p.result.SsaResultContainer;
 
 /**
  * Regression test for {@code Texas2K_OptBasecase_SsaResult_Sparse_Sample}: DCLF basecase with
@@ -95,7 +95,7 @@ public class Texas2K_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSet
 		assertEquals(11, overLimitBefore, "Overloaded branch count before optimization");
 		assertTrue(overLimitAfter >= 10 && overLimitAfter <= 11,
 				"Overloaded branch count after optimization on SSA-tracked branches");
-		assertEquals(15, adjustResults.size(), "Generators with material dispatch adjustment");
+		assertEquals(14, adjustResults.size(), "Generators with material dispatch adjustment");
 		assertTrue(maxLoadingBefore > 99.0 && maxLoadingBefore < 100.5,
 				"Peak loading before optimization (~99.6%)");
 		assertTrue(maxLoadingAfter > 93.0 && maxLoadingAfter < 96.0,

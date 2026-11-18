@@ -5,8 +5,8 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
-import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.bus_p.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.bus_p.result.OptAdjResultContainer;
 
 import java.util.Map;
 

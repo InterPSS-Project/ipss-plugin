@@ -22,10 +22,10 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.funcImpl.dclf.AclfNetSsaHelper;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
-import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
-import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import com.interpss.optadj.result.OptAdjResultContainer;
-import com.interpss.optadj.result.SsaResultContainer;
+import com.interpss.optadj.bus_p.algo.lf.AclfNetContigencyOptimizer;
+import com.interpss.optadj.bus_p.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.bus_p.result.OptAdjResultContainer;
+import com.interpss.optadj.bus_p.result.SsaResultContainer;
 
 public class EInterCon_OptN1Scan_SsaResult_Sample {
     public static void main(String args[]) throws Exception {

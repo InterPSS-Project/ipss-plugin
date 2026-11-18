@@ -10,8 +10,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.optadj.algo.bean.PowerSystemSection;
-import com.interpss.optadj.algo.sec.SectionOptimizer;
+import com.interpss.optadj.bus_p.algo.bean.PowerSystemSection;
+import com.interpss.optadj.bus_p.algo.sec.SectionOptimizer;
 
 import org.interpss.optadj.ieee39.IEEE39_Sample_Data;
 

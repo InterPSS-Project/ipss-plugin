@@ -11,10 +11,10 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
-import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import com.interpss.core.funcImpl.dclf.AclfNetSsaHelper;
-import com.interpss.optadj.result.OptAdjResultContainer;
-import com.interpss.optadj.result.SsaResultContainer;
+import com.interpss.optadj.bus_p.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.bus_p.result.OptAdjResultContainer;
+import com.interpss.optadj.bus_p.result.SsaResultContainer;
 
 public class Texas2K_OptBasecase_SsaResult_Sparse_Sample {
     public static void main(String args[]) throws Exception {

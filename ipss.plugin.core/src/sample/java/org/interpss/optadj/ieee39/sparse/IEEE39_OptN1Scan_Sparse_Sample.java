@@ -14,8 +14,8 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
-import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
-import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.bus_p.algo.lf.AclfNetContigencyOptimizer;
+import com.interpss.optadj.bus_p.result.OptAdjResultContainer;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
