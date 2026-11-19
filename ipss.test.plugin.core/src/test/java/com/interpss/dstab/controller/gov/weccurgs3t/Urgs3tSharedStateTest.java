@@ -262,7 +262,10 @@ public class Urgs3tSharedStateTest {
             var g=model(BASE);double[] x=new double[5],rates=new double[5];long id=Thread.currentThread().threadId();
             for(int i=0;i<20000;i++)cycle(g,x,rates,shared);
             long before=bean.getThreadAllocatedBytes(id);for(int i=0;i<10000;i++)cycle(g,x,rates,shared);
-            assertEquals(0,bean.getThreadAllocatedBytes(id)-before,"Numerical loop allocation shared="+shared);
+            // 10,000 cycles: any per-step array or boxed value would allocate at least
+            // 160 kB. A late JIT compilation can still allocate a few hundred bytes once.
+            long bytes=bean.getThreadAllocatedBytes(id)-before;
+            assertTrue(bytes<=16*1024,"Numerical loop allocation shared="+shared+": "+bytes+" bytes");
         }
     }
     private static void cycle(Urgs3tGovernor g,double[] x,double[] rates,boolean shared) {
