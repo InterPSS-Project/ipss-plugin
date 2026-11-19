@@ -70,7 +70,7 @@ public class PsseWtptb1ModelTest extends CorePluginTestSetup {
     @Test void intentionalWholeStackRemovalIsNotMissingModelSupport(@TempDir Path directory) throws Exception {
         for(boolean gnet:new boolean[]{false,true}) {
             var builder=DStabBuilderTestFixture.createBuilder();
-            var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+            var parser=new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);
             var keys=Set.of(new GeneratorKey("Bus1","1"));
             if(gnet)parser.setGnetRemovedGenerators(keys);else parser.setModelRemovedGenerators(keys);
             Path file=directory.resolve("removed.dyr");Files.writeString(file,host()+STANDARD);parser.parseDynFile(file.toString());
@@ -84,7 +84,7 @@ public class PsseWtptb1ModelTest extends CorePluginTestSetup {
     }
     private static PSSEDStabDirectParser parse(DStabNetworkBuilder builder,Path directory,String text) throws Exception {
         Path file=directory.resolve("model.dyr");Files.writeString(file,text);
-        var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);parser.parseDynFile(file.toString());return parser;
+        var parser=new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);parser.parseDynFile(file.toString());return parser;
     }
     private static Wtptb1Model model(DStabNetworkBuilder builder) {
         var gen=(DStabGen)builder.getDStabNetwork().getDStabBus("Bus1").getContributeGen("1");

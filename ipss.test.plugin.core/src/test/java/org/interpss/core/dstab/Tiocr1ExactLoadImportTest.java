@@ -19,7 +19,7 @@ public class Tiocr1ExactLoadImportTest {
         var context=base();var net=context.getDStabilityNet();
         if(literalExists)net.getDStabBus("Bus2").getContributeLoad("1").setId(id);
         int before=net.getBusList().stream().mapToInt(b->b.getDynamicBusDeviceList().size()).sum();
-        var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setStrictImport(true);
+        var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setIgnoreMissingHosts(false).setStrictImport(true);
         Path input=directory.resolve("relay.dyr");Files.writeString(input,record(2,id));
         if(literalExists) {
             parser.parseDynFile(input.toString());
@@ -35,7 +35,7 @@ public class Tiocr1ExactLoadImportTest {
     @ParameterizedTest @CsvSource({"2,1","0,*","0,#"})
     void exactAndNoLoadActionsRemainSupported(int bus,String id)throws Exception {
         var context=base();var net=context.getDStabilityNet();
-        var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setStrictImport(true);
+        var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setIgnoreMissingHosts(false).setStrictImport(true);
         Path input=directory.resolve("relay.dyr");Files.writeString(input,record(bus,id));parser.parseDynFile(input.toString());
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
         assertEquals(1,net.getBusList().stream().flatMap(b->b.getDynamicBusDeviceList().stream()).filter(com.interpss.dstab.relay.model.Tiocr1RelayModel.class::isInstance).count());

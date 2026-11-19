@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -10,7 +11,6 @@ import java.util.List;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
 import com.interpss.dstab.controller.exc.exac1a.Exac1aExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.DStabObjectFactory;
@@ -34,7 +34,7 @@ public class Exac1aAndesSmibConformanceTest {
 
     @Test void lineTripCommonProfileMatchesNativeAndes() throws Exception {
         IpssCorePlugin.init();
-        var context=new PSSEMultiFileLoader().loadDStab(
+        var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_exac1a.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();

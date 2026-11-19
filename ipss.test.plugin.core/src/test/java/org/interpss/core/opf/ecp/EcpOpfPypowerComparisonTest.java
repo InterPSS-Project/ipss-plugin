@@ -16,13 +16,16 @@ import com.interpss.core.algo.ecf.EcfNetworkModel;
 import com.interpss.opf.ecp.*;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.matpower.MatpowerOpfDirectParser;
+import org.interpss.test.TestConfig;
 
 /** Actual imported-network GB AC-OPF solves compared with a frozen external
  * engine, with independent physical checks on every bus and both terminals. */
 public class EcpOpfPypowerComparisonTest {
+    static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "EcpOpfPypowerComparisonTest");
     @TempDir Path temporary;
     @BeforeAll static void initialize() {
-        if(Boolean.getBoolean("ecp.exclude.jna"))assertThrows(ClassNotFoundException.class,()->Class.forName("com.sun.jna.Native"));
+        if(CONFIG.bool("ecp.exclude.jna"))assertThrows(ClassNotFoundException.class,()->Class.forName("com.sun.jna.Native"));
         IpssCorePlugin.init();
     }
     static Stream<Arguments> cases() {
@@ -43,25 +46,25 @@ public class EcpOpfPypowerComparisonTest {
         var before=network.getBusList().stream().map(b->b.getVoltage()).toList();
         var config=new EcpOpfConfig(mode.equals("I")?EcpOpfConfig.ThermalLimit.CURRENT:EcpOpfConfig.ThermalLimit.APPARENT_POWER,
                 EcpOpfConfig.BranchRatingUnit.PER_UNIT,5e-6,1e-4,1e-4,500,false).withStrategy(strategy)
-                .withFormulation(EcpOpfConfig.Formulation.valueOf(System.getProperty("ecp.formulation","GENERATOR_ADMITTANCE")));
-        if(strategy==EcpOpfConfig.Strategy.ECPACOPF || Boolean.getBoolean("ecp.initialize.all.strategies"))
-            config=config.withInitialization(EcpOpfConfig.Initialization.valueOf(System.getProperty("ecp.initialization","FLAT")));
-        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && System.getProperty("ecp.step.control", "").equals("NON_DIVERGENT"))
+                .withFormulation(EcpOpfConfig.Formulation.valueOf(CONFIG.string("ecp.formulation","GENERATOR_ADMITTANCE")));
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF || CONFIG.bool("ecp.initialize.all.strategies"))
+            config=config.withInitialization(EcpOpfConfig.Initialization.valueOf(CONFIG.string("ecp.initialization","FLAT")));
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && CONFIG.string("ecp.step.control","").equals("NON_DIVERGENT"))
             config=config.withNewtonStepControl(EcpOpfConfig.NewtonStepControl.nonDivergent());
-        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && System.getProperty("ecp.step.control", "").equals("POLYNOMIAL_LIMITING"))
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && CONFIG.string("ecp.step.control","").equals("POLYNOMIAL_LIMITING"))
             config=config.withNewtonStepControl(EcpOpfConfig.NewtonStepControl.polynomial());
         if(strategy==EcpOpfConfig.Strategy.ECPACOPF) {
             var limits=config.newtonStepControl();
-            double voltage=System.getProperty("ecp.step.voltage", "").isEmpty()?limits.voltageLimit():Double.parseDouble(System.getProperty("ecp.step.voltage"));
-            double adjoint=System.getProperty("ecp.step.adjoint", "").isEmpty()?limits.adjointLimit():Double.parseDouble(System.getProperty("ecp.step.adjoint"));
-            double admittance=System.getProperty("ecp.step.admittance", "").isEmpty()?limits.admittanceFraction():Double.parseDouble(System.getProperty("ecp.step.admittance"));
+            double voltage=CONFIG.string("ecp.step.voltage","").isEmpty()?limits.voltageLimit():Double.parseDouble(CONFIG.string("ecp.step.voltage"));
+            double adjoint=CONFIG.string("ecp.step.adjoint","").isEmpty()?limits.adjointLimit():Double.parseDouble(CONFIG.string("ecp.step.adjoint"));
+            double admittance=CONFIG.string("ecp.step.admittance","").isEmpty()?limits.admittanceFraction():Double.parseDouble(CONFIG.string("ecp.step.admittance"));
             config=config.withNewtonStepControl(limits.withLimits(voltage,adjoint,admittance)
-                    .withInitialComplementarity(Double.parseDouble(System.getProperty("ecp.initial.complementarity","1"))));
+                    .withInitialComplementarity(Double.parseDouble(CONFIG.string("ecp.initial.complementarity","1"))));
         }
-        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && !System.getProperty("ecp.bound.epsilon","").isEmpty())
+        if(strategy==EcpOpfConfig.Strategy.ECPACOPF && !CONFIG.string("ecp.bound.epsilon","").isEmpty())
             config=new EcpOpfConfig(config.thermalLimit(),config.branchRatingUnit(),config.feasibilityTolerance(),
                     config.optimalityTolerance(),config.variableTolerance(),config.maximumIterations(),config.freezeAutomaticControls(),
-                    config.strategy(),Double.parseDouble(System.getProperty("ecp.bound.epsilon")),config.boundaryMultiplier(),
+                    config.strategy(),Double.parseDouble(CONFIG.string("ecp.bound.epsilon")),config.boundaryMultiplier(),
                     config.txStepping(),config.newtonStepControl(),config.initialization(),config.formulation());
         System.out.printf("ECP_CONFIG %s %s %s feasibility=%.3e optimality=%.3e variable=%.3e maxIterations=%d epsilon=%.3e saturation=%.3e txEnabled=%s txScale=%.3e%n",
                 name,mode,strategy,config.feasibilityTolerance(),config.optimalityTolerance(),config.variableTolerance(),config.maximumIterations(),config.boundEpsilon(),config.boundaryMultiplier(),config.txStepping().enabled(),config.txStepping().seriesScale());
@@ -69,10 +72,10 @@ public class EcpOpfPypowerComparisonTest {
         System.out.printf("ECP_STEP_CONFIG %s %s %s mode=%s voltage=%.3e adjoint=%.3e admittanceFraction=%.3e boundaryFraction=%.3e minimumScale=%.3e backtracks=%d%n",
                 name,mode,strategy,stepControl.mode(),stepControl.voltageLimit(),stepControl.adjointLimit(),stepControl.admittanceFraction(),stepControl.boundaryFraction(),stepControl.minimumScale(),stepControl.maximumBacktracks());
         System.out.printf("ECP_FORMULATION %s %s %s formulation=%s initialization=%s%n",name,mode,strategy,config.formulation(),config.initialization());
-        String nativeFile=System.getProperty("ecp.native.library","");
-        var sparse=nativeFile.isEmpty()?switch(EcpSparseSolverConfig.Backend.valueOf(System.getProperty("ecp.java.sparse.backend","JAVA_KLU"))) {
+        String nativeFile=CONFIG.string("ecp.native.library","");
+        var sparse=nativeFile.isEmpty()?switch(EcpSparseSolverConfig.Backend.valueOf(CONFIG.string("ecp.java.sparse.backend","JAVA_KLU"))) {
             case JAVA_KLU -> EcpSparseSolverConfig.javaKlu();
-            case JAVA_CSPARSE -> Boolean.getBoolean("ecp.factor.reuse")?EcpSparseSolverConfig.javaCsparseReusing():EcpSparseSolverConfig.javaCsparse();
+            case JAVA_CSPARSE -> CONFIG.bool("ecp.factor.reuse")?EcpSparseSolverConfig.javaCsparseReusing():EcpSparseSolverConfig.javaCsparse();
             case NATIVE_UMFPACK -> throw new IllegalArgumentException("Native diagnostic requires an explicit library file");
         }:EcpSparseSolverConfig.nativeUmfpack(nativeFile);
         var solveReport=new EcpOpfAlgorithm().solveDetailed(network,config,sparse);var result=solveReport.result();
@@ -88,7 +91,7 @@ public class EcpOpfPypowerComparisonTest {
                 result.maximumStationarity(),result.maximumComplementarity(),result.maximumPowerMismatch(),result.maximumVariableChange(),result.detail());
         assertTrue(result.converged(),()->name+" "+mode+" "+strategy+" "+result.status()+": "+result.detail()+" eq="+result.maximumEqualityResidual()+" dual="+result.maximumStationarity()+" bound="+result.maximumBoundViolation());
         double referenceCost=reference.get("objective_per_hour").getAsDouble();
-        double costTolerance=Double.parseDouble(System.getProperty("ecp.objective.relative.tolerance","1e-6"));
+        double costTolerance=Double.parseDouble(CONFIG.string("ecp.objective.relative.tolerance","1e-6"));
         assertTrue(Double.isFinite(costTolerance) && costTolerance>=0 && costTolerance<=.001,"Approved reference cost tolerance");
         System.out.printf("ECP_COST_GATE %s %s %s relativeTolerance=%.9e%n",name,mode,strategy,costTolerance);
         assertEquals(referenceCost,result.objective(),Math.max(.01,costTolerance*Math.abs(referenceCost)));

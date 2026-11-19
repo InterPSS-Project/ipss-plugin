@@ -84,7 +84,7 @@ public class Acmtblu1SharedSmibTest {
     }
     private static Loaded load(String dyr,String raw) throws Exception {
         Path out=Files.createTempDirectory(Path.of("target"),"acmtblu1-import-");Files.writeString(out.resolve("network.raw"),raw);Files.writeString(out.resolve("dynamic.dyr"),dyr);
-        var loader=new PSSEMultiFileLoader();var context=loader.loadDStab(out.resolve("network.raw").toString(),out.resolve("dynamic.dyr").toString());return new Loaded(loader,context);
+        var loader=new PSSEMultiFileLoader().setIgnoreMissingHosts(false);var context=loader.loadDStab(out.resolve("network.raw").toString(),out.resolve("dynamic.dyr").toString());return new Loaded(loader,context);
     }
     private static LD1PACImpl motor(Loaded loaded) { return assertInstanceOf(LD1PACImpl.class,loaded.context.getDStabilityNet().getDStabBus("Bus2").getDynLoadModelList().getFirst()); }
     @Test void exactCatalogAndEveryConstantAreBoundWithoutUsingLoadingAsCoverage() throws Exception {

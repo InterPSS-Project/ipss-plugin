@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
@@ -42,7 +43,7 @@ public class Tgov1PowerWorldLimitSmibTest extends CorePluginTestSetup {
 
     @Test void recordedSpeedReplayKeepsAllStatesAndEventRows(@TempDir Path input)throws Exception {
         for(var p:Tgov1LimitPowerWorldReference.profiles()) {
-            var context=Tgov1LimitNativeConformanceTest.load(input.resolve(p.name()));
+            var context=Tgov1LimitNativeConformanceTest.load(input.resolve(p.name()),true,ReferenceLoadModel.constantImpedanceLoader());
             var machine=context.getDStabilityNet().getMachine("Bus1-mach1");var gov=(PsseTGov1SteamTurGovernor)machine.getGovernor();
             var rows=p.reference().samples();var old=rows.getFirst();machine.setPm(old.value(6));machine.setSpeed(old.value(4));
             assertTrue(gov.initStates(machine.getDStabBus(),machine));double initial=gov.getRefPoint(),increment=0,previous=old.time();
@@ -110,7 +111,7 @@ public class Tgov1PowerWorldLimitSmibTest extends CorePluginTestSetup {
 
     private static void coupled(Path input,boolean speedScaled)throws Exception {
         for(var p:Tgov1LimitPowerWorldReference.profiles()) {
-            var context=Tgov1LimitNativeConformanceTest.load(input.resolve(p.name()),!speedScaled);var network=context.getDStabilityNet();
+            var context=Tgov1LimitNativeConformanceTest.load(input.resolve(p.name()),!speedScaled,ReferenceLoadModel.constantImpedanceLoader());var network=context.getDStabilityNet();
             if(speedScaled) {
                 var original=network.getMachine("Bus1-mach1");var governor=(PsseTGov1SteamTurGovernor)original.getGovernor();var data=governor.getData();var parameters=new MachineDataState(original.getMachData());
                 var adapter=new SpeedScaledRoundRotor();adapter.setId(original.getId());adapter.setName(original.getName());adapter.setMachType(original.getMachType());adapter.setMachData(parameters.create());

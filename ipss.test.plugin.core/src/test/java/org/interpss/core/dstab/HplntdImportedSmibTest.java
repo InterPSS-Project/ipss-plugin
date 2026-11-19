@@ -28,7 +28,7 @@ public class HplntdImportedSmibTest extends CorePluginTestSetup {
             Set<PsseGnetIdvProcessor.GeneratorKey> stacks)throws Exception {
         Path raw=HplntdTypedRuntimeSmibTest.writeNetwork(dir),dyr=dir.resolve("input.dyr");Files.writeString(dyr,text);
         var ctx=new PSSEMultiFileLoader().loadDStab(raw.toString());
-        var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(ctx.getDStabilityNet())).setStrictImport(strict).setGnetRemovedGenerators(removed).setModelRemovedGenerators(stacks);
+        var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(ctx.getDStabilityNet())).setIgnoreMissingHosts(false).setStrictImport(strict).setGnetRemovedGenerators(removed).setModelRemovedGenerators(stacks);
         parser.parseDynFile(dyr.toString());return new Imported(ctx.getDynSimuAlgorithm(),parser);
     }
     private static String input(){return HplntdAggregationNativeReference.profiles().getFirst().input();}

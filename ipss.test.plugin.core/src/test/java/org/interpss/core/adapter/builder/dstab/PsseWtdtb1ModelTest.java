@@ -67,7 +67,7 @@ public class PsseWtdtb1ModelTest extends CorePluginTestSetup {
                 STANDARD.replace(".42 1.7", "1 1.7"));
         for (int index = 0; index < invalid.size(); index++) {
             var builder = DStabBuilderTestFixture.createBuilder();
-            var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+            var parser = new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);
             Path file = directory.resolve("invalid-" + index + ".dyr");
             Files.writeString(file, host() + invalid.get(index));
             assertThrows(InterpssException.class, () -> parser.parseDynFile(file.toString()), invalid.get(index));
@@ -78,7 +78,7 @@ public class PsseWtdtb1ModelTest extends CorePluginTestSetup {
 
     @Test void duplicateRecordIsRejectedWithoutReplacingTheFirstModel(@TempDir Path directory) throws Exception {
         var builder = DStabBuilderTestFixture.createBuilder();
-        var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        var parser = new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);
         Path file = directory.resolve("duplicate.dyr");
         Files.writeString(file, host() + STANDARD + STANDARD.replace("6.4 .7", "9.9 .7"));
         assertThrows(InterpssException.class, () -> parser.parseDynFile(file.toString()));
@@ -103,7 +103,7 @@ public class PsseWtdtb1ModelTest extends CorePluginTestSetup {
         for (String text : List.of(STANDARD, host() + STANDARD.replace("1 'WTDTB1'", "9 'WTDTB1'"),
                 host() + STANDARD.replace("'WTDTB1' '1'", "'WTDTB1' '9'"))) {
             var builder = DStabBuilderTestFixture.createBuilder();
-            var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+            var parser = new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);
             Path file = directory.resolve("missing.dyr");
             Files.writeString(file, text);
             assertThrows(InterpssException.class, () -> parser.parseDynFile(file.toString()));
@@ -118,7 +118,7 @@ public class PsseWtdtb1ModelTest extends CorePluginTestSetup {
     @Test void gnetAndModelRemovalSkipTheWholeTargetStack(@TempDir Path directory) throws Exception {
         for (boolean gnet : new boolean[] {true, false}) {
             var builder = DStabBuilderTestFixture.createBuilder();
-            var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+            var parser = new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);
             var keys = Set.of(new GeneratorKey("Bus1", "1"));
             if (gnet) parser.setGnetRemovedGenerators(keys);
             else parser.setModelRemovedGenerators(keys);
@@ -134,7 +134,7 @@ public class PsseWtdtb1ModelTest extends CorePluginTestSetup {
     private static PSSEDStabDirectParser parse(DStabNetworkBuilder builder, Path directory, String text) throws Exception {
         Path file = directory.resolve("model.dyr");
         Files.writeString(file, text);
-        var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        var parser = new PSSEDStabDirectParser(builder).setIgnoreMissingHosts(false).setStrictImport(true);
         parser.parseDynFile(file.toString());
         return parser;
     }

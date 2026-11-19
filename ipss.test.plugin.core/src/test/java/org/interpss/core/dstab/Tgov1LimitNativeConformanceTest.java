@@ -28,9 +28,13 @@ public class Tgov1LimitNativeConformanceTest extends CorePluginTestSetup {
     }
 
     static com.interpss.simu.SimuContext load(Path input,boolean initialize)throws Exception {
+        return load(input,initialize,new PSSEMultiFileLoader());
+    }
+
+    static com.interpss.simu.SimuContext load(Path input,boolean initialize,PSSEMultiFileLoader loader)throws Exception {
         Files.createDirectories(input);Files.writeString(input.resolve("network.raw"),Tgov1LimitNativeReference.network());
         Files.writeString(input.resolve("dynamic.dyr"),Tgov1LimitNativeReference.input());
-        var context=new PSSEMultiFileLoader().loadDStab(input.resolve("network.raw").toString());
+        var context=loader.loadDStab(input.resolve("network.raw").toString());
         var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(context.getDStabilityNet())).setStrictImport(true);
         parser.parseDynFile(input.resolve("dynamic.dyr").toString());assertTrue(parser.getLastImportReport().isStrictlyComplete());
         assertEquals(3,parser.getLastImportReport().totalRecordCount());

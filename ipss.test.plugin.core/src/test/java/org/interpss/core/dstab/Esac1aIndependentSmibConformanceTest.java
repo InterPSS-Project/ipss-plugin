@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,7 +14,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import com.interpss.dstab.controller.exc.esac1a.Esac1aExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -33,7 +33,7 @@ public class Esac1aIndependentSmibConformanceTest {
     void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates(boolean optimized) throws Exception {
         double step=StaggeredExciterFixture.referenceStep(optimized,STEP);
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esac1a_kf01.dyr").toString());
         var network = context.getDStabilityNet();

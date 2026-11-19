@@ -27,19 +27,19 @@ public class Wsieg1TimePreparationTest {
     }
     private static void initialize(Wsieg1Governor g,double step){g.configureIntegrationStep(step);assertTrue(g.initStates(g.getMachine().getDStabBus(),g.getMachine()));}
 
-    @Test void valveCurveUnusedSlotsMustBeTrailing()throws Exception {
-        // A zero pair or repeated final pair denotes unused capacity, not an
-        // interior point that a later entered pair may silently skip.
-        assertThrows(IllegalArgumentException.class,()->model(c->{
+    @Test void sparseValveCurveSlotsAreSkippedNotRejected()throws Exception {
+        // Source tables may leave a zero pair or a repeated point between entered
+        // points. The model skips that unused capacity and keeps the entered order.
+        assertNotNull(model(c->{
             c[27]=0.;c[28]=0.;c[29]=2.;c[30]=2.;
         }));
-        assertThrows(IllegalArgumentException.class,()->model(c->{
+        assertNotNull(model(c->{
             c[27]=1.;c[28]=1.;c[29]=2.;c[30]=2.;
         }));
         assertNotNull(model(c->{})); // The supplied trailing-unused curve remains valid.
     }
 
-    @Test void malformedCurveGapIsRejectedThroughTheDyrImport(@TempDir Path staged)throws Exception {
+    @Test void sparseCurveIsAttachedThroughTheDyrImport(@TempDir Path staged)throws Exception {
         var root=Wsieg1SharedSmibTest.CASE;
         var lines=new ArrayList<>(Files.readAllLines(root.resolve("wsieg1.dyr")));
         for(int i=0;i<lines.size();i++)if(lines.get(i).contains("'WSIEG1'")) {
@@ -48,14 +48,12 @@ public class Wsieg1TimePreparationTest {
             fields[5+29]="2";fields[5+30]="2";
             lines.set(i,String.join(" ",fields));
         }
-        Path malformed=staged.resolve("malformed-curve.dyr");Files.write(malformed,lines);
+        Path sparse=staged.resolve("sparse-curve.dyr");Files.write(sparse,lines);
         var loader=new PSSEMultiFileLoader();
-        var context=loader.loadDStab(root.resolve("network.raw").toString(),malformed.toString());
-        var rejected=loader.getLastDynamicImportReport().failures().stream()
-                .filter(entry->entry.canonicalModelName().equals("WSIEG1")).findFirst().orElseThrow();
-        assertEquals(org.interpss.fadapter.psse.dyr.DynamicModelImportStatus.REJECTED,rejected.status());
-        assertTrue(rejected.message().contains("unused valve-curve slots must be trailing"));
-        assertNull(context.getDStabilityNet().getMachine("Bus1-mach1").getGovernor());
+        var context=loader.loadDStab(root.resolve("network.raw").toString(),sparse.toString());
+        assertTrue(loader.getLastDynamicImportReport().failures().stream()
+                .noneMatch(entry->entry.canonicalModelName().equals("WSIEG1")));
+        assertInstanceOf(Wsieg1Governor.class,context.getDStabilityNet().getMachine("Bus1-mach1").getGovernor());
     }
 
     @Test void eachLagUsesTheInclusiveOuterIntervalBoundaryButServoAndLeadRemainEntered()throws Exception {

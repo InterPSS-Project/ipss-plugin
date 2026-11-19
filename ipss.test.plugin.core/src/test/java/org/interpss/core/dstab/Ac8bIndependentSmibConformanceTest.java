@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,7 +14,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import com.interpss.dstab.controller.exc.ac8b.Ac8bExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -62,7 +62,7 @@ public class Ac8bIndependentSmibConformanceTest {
 
     private void verify(EmbeddedTrajectoryReference reference,Path inputs,String referenceId)throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 inputs.resolve("SMIB_v33.raw").toString(),
                 stageNativeAc8b(inputs.resolve("SMIB_v33_genrou_ac8b_independent.dyr"),nativeInputs.resolve("native.dyr")).toString());
         var network = context.getDStabilityNet();

@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,7 +15,6 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
 import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -37,7 +37,7 @@ public class Pss2bIndependentSmibConformanceTest {
     void threeCycleFaultMatchesIndependentBoundaryMachineExciterAndPssStates(boolean staggered)
             throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esst1a_pss2b.dyr").toString());
         var network = context.getDStabilityNet();

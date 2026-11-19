@@ -31,7 +31,7 @@ public class PsseRepccModelTest extends CorePluginTestSetup {
     private static String plant(){return input().lines().filter(s->s.contains("'REPCC'")).findFirst().orElseThrow();}
     private static String withoutPlant(){return input().lines().filter(s->!s.contains("'REPCC'")).reduce("",(a,s)->a+s+"\n");}
     private static PSSEDStabDirectParser parse(DStabNetworkBuilder b,Path dir,String input) throws Exception {
-        Path file=dir.resolve("plant.dyr");Files.writeString(file,input);var parser=new PSSEDStabDirectParser(b).setStrictImport(true);parser.parseDynFile(file.toString());return parser;
+        Path file=dir.resolve("plant.dyr");Files.writeString(file,input);var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);parser.parseDynFile(file.toString());return parser;
     }
     private static String changed(int parameter,String value){
         var matcher=Pattern.compile("'(?:[^']|'')*'|[^\\s,]+").matcher(plant());var fields=new ArrayList<String>();while(matcher.find())fields.add(matcher.group());

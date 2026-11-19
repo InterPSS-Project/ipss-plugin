@@ -19,6 +19,8 @@ public class Wsieg1ReactivationTest {
     static final Path ARCHIVE=Path.of("testData/private/verification-artifacts/wsieg1-reactivation-contract-20261104/captures.zip");
     static final Set<String> PAIR=Set.of("Bus1-mach1","Bus2-mach1");
     @BeforeAll static void setup()throws Exception {
+        // The capture archive is private case data and is absent from public checkouts.
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(ARCHIVE),"Missing private WSIEG1 captures: "+ARCHIVE);
         Wsieg1SharedSmibTest.setup();
         assertEquals("147a27ef561e1557886dfb165353ade60e125778dd90cb43020a68dcf45b3e11",Wsieg1ReferenceFixture.sha(Files.readAllBytes(ARCHIVE)));
     }

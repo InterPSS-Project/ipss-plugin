@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,7 +17,6 @@ import org.interpss.core.dstab.reference.PsssbTypedTestData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
 import com.interpss.dstab.controller.pss.psssb.PsssbStabilizer;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -35,7 +35,7 @@ public class PsssbIndependentSmibConformanceTest {
     void localizedFaultMatchesIndependentBoundaryAndAllActivePsssbStates()
             throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esst1a.dyr").toString());
         var network = context.getDStabilityNet();

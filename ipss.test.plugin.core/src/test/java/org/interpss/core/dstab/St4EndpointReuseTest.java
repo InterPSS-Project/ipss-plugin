@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
@@ -7,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
 import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
 import com.interpss.dstab.algo.*;
@@ -30,7 +30,7 @@ public class St4EndpointReuseTest {
         if(pss)text+="\n"+Files.readAllLines(base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr")).stream()
             .filter(line->line.contains("'PSS2A'")).findFirst().orElseThrow()+"\n";
         Files.writeString(path,text);
-        var context=new PSSEMultiFileLoader().loadDStab(base.resolve("SMIB_v33.raw").toString(),path.toString());
+        var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(base.resolve("SMIB_v33.raw").toString(),path.toString());
         var algo=context.getDynSimuAlgorithm();assertTrue(algo.getAclfAlgorithm().loadflow());
         var solver=new PsseStaggeredEulerSolver(algo);
         assertTrue(solver.isSt4EndpointReuseEnabled());

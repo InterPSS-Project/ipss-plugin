@@ -34,7 +34,7 @@ public class Basoel2ImportTest extends CorePluginTestSetup {
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void preservesAllDistinctFieldsBeforeOrAfterExciter(boolean before)throws Exception {
-        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setStrictImport(true);
+        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);
         String bas=record(FIELDS).replace(".67 ",".67\n");
         parser.parseDynFile(file(before?bas+AC:AC+bas).toString());
         assertEquals(1,models(b).size());assertEquals(EXPECTED,models(b).getFirst().getData());
@@ -55,19 +55,19 @@ public class Basoel2ImportTest extends CorePluginTestSetup {
     }
     @ParameterizedTest @MethodSource("invalidFields")
     void rejectsWrongCardinalitySelectorTypeAndInvalidConstants(String fields)throws Exception {
-        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setStrictImport(true);
+        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);
         Path path=file(AC+record(fields));assertThrows(Exception.class,()->parser.parseDynFile(path.toString()));
         assertTrue(models(b).isEmpty());assertFalse(parser.getLastImportReport().isStrictlyComplete());
         assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
     }
     @ParameterizedTest @ValueSource(ints={0,2})
     void rejectsDisabledAndTakeoverHost(int location)throws Exception {
-        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setStrictImport(true);
+        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);
         Path path=file(AC.replace("'1' 1 0","'1' "+location+" 0")+record(FIELDS));
         assertThrows(Exception.class,()->parser.parseDynFile(path.toString()));assertTrue(models(b).isEmpty());
     }
     @Test void duplicateDoesNotAcquireASecondPortAndParserReuseDoesNotReplayPendingRecords()throws Exception {
-        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setStrictImport(true);
+        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);
         Path path=file(AC+record(FIELDS)+record(FIELDS));assertThrows(Exception.class,()->parser.parseDynFile(path.toString()));
         assertEquals(1,models(b).size());assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
         parser.setStrictImport(false).parseDynFile(file("").toString());
@@ -75,14 +75,14 @@ public class Basoel2ImportTest extends CorePluginTestSetup {
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void preprocessingSkipsRemovedStackBeforeCardinalityValidation(boolean gnet)throws Exception {
-        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setStrictImport(true);
+        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);
         var keys=List.of(new GeneratorKey("Bus1","1"));
         if(gnet)parser.setGnetRemovedGenerators(keys);else parser.setModelRemovedGenerators(keys);
         parser.parseDynFile(file(record("0")).toString());assertTrue(models(b).isEmpty());
         assertEquals(1,parser.getLastImportReport().count(gnet?DynamicModelImportStatus.SKIPPED_GNET:DynamicModelImportStatus.SKIPPED_MODEL_REMOVE));
     }
     @Test void missingTargetAndMissingHostCannotClaimAttachment()throws Exception {
-        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setStrictImport(true);
+        var b=DStabBuilderTestFixture.createWithMachine();var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);
         Path missing=file(record(FIELDS).replace("1 'BASOEL2'","9 'BASOEL2'"));
         assertThrows(Exception.class,()->parser.parseDynFile(missing.toString()));
         assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.MISSING_TARGET));

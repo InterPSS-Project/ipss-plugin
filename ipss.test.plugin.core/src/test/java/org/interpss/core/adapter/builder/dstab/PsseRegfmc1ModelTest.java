@@ -18,7 +18,7 @@ public class PsseRegfmc1ModelTest {
     private static String record() throws Exception{return Files.readAllLines(Path.of("testData/adpter/psse/v33/renewable/regfmc1u_native.dyr")).getFirst()+"\n";}
     private static DStabGen gen(DStabNetworkBuilder b){return (DStabGen)b.getDStabNetwork().getBus("Bus1").getContributeGen("1");}
     private static PSSEDStabDirectParser parse(DStabNetworkBuilder b,Path dir,String text) throws Exception {
-        Path file=dir.resolve("regfmc.dyr");Files.writeString(file,text);var parser=new PSSEDStabDirectParser(b).setStrictImport(true);parser.parseDynFile(file.toString());return parser;
+        Path file=dir.resolve("regfmc.dyr");Files.writeString(file,text);var parser=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);parser.parseDynFile(file.toString());return parser;
     }
     @Test void exactWrapperRetainsAllFieldsAndSemanticMonitoring(@TempDir Path dir) throws Exception {
         var b=DStabBuilderTestFixture.createBuilder();var parser=parse(b,dir,record());var m=assertInstanceOf(Regfmc1Model.class,gen(b).getDynamicGenDevice());
@@ -59,7 +59,7 @@ public class PsseRegfmc1ModelTest {
     @Test void transformersAndExplicitRemovalAreRejectedOrSkipped(@TempDir Path dir) throws Exception {
         var b=DStabBuilderTestFixture.createBuilder();gen(b).setXfrZ(new Complex(0,.01));assertThrows(InterpssException.class,()->parse(b,dir,record()));
         for(boolean gnet:new boolean[]{false,true}) {
-            var removed=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(removed).setStrictImport(true);
+            var removed=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(removed).setIgnoreMissingHosts(false).setStrictImport(true);
             var keys=Set.of(new org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey("Bus1","1"));
             if(gnet)p.setGnetRemovedGenerators(keys);else p.setModelRemovedGenerators(keys);
             Path file=dir.resolve("removed.dyr");Files.writeString(file,record());p.parseDynFile(file.toString());assertNull(gen(removed).getDynamicGenDevice());

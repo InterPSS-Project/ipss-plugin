@@ -13,10 +13,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.google.gson.*;
 import com.interpss.opf.ecp.*;
 import org.interpss.IpssCorePlugin;
+import org.interpss.test.TestConfig;
 
 /** Controlled binding congestion, loading, individual-unit and supplied-seed
  * variants. The engineering checks are shared with the small-system comparison. */
 public class EcpOpfQualificationTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "EcpOpfQualificationTest");
     @TempDir Path temporary;
     @BeforeAll static void initialize() {IpssCorePlugin.init();}
     static JsonObject reference() throws Exception {
@@ -26,9 +29,9 @@ public class EcpOpfQualificationTest {
     }
     static Stream<Arguments> cases() throws Exception {
         return reference().getAsJsonObject("case_inputs").keySet().stream()
-                .filter(name->System.getProperty("ecp.reference.case", "").isEmpty() || name.equals(System.getProperty("ecp.reference.case"))).flatMap(name->Stream.of("I","S")
+                .filter(name->CONFIG.string("ecp.reference.case","").isEmpty() || name.equals(CONFIG.string("ecp.reference.case"))).flatMap(name->Stream.of("I","S")
                 .flatMap(mode->Arrays.stream(EcpOpfConfig.Strategy.values())
-                        .filter(strategy->System.getProperty("ecp.reference.strategy", "").isEmpty() || strategy.name().equals(System.getProperty("ecp.reference.strategy")))
+                        .filter(strategy->CONFIG.string("ecp.reference.strategy","").isEmpty() || strategy.name().equals(CONFIG.string("ecp.reference.strategy")))
                         .map(strategy->Arguments.of(name,mode,strategy))));
     }
     @ParameterizedTest @MethodSource("cases")

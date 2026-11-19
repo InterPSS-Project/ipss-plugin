@@ -439,5 +439,25 @@
     "ipss.cgmes.p4.qTolMvar": null,
     "ipss.cgmes.p4.minFlowMatch": null,
     "ipss.cgmes.p4.maxMissingBus": null
+  },
+  "EcpOpfPypowerComparisonTest": {
+    "ecp.exclude.jna": false,
+    "ecp.formulation": "GENERATOR_ADMITTANCE",
+    "ecp.initialize.all.strategies": false,
+    "ecp.initialization": "FLAT",
+    "ecp.step.control": "",
+    "ecp.step.voltage": null,
+    "ecp.step.adjoint": null,
+    "ecp.step.admittance": null,
+    "ecp.initial.complementarity": "1",
+    "ecp.bound.epsilon": null,
+    "ecp.native.library": "",
+    "ecp.java.sparse.backend": "JAVA_KLU",
+    "ecp.factor.reuse": false,
+    "ecp.objective.relative.tolerance": "1e-6"
+  },
+  "EcpOpfQualificationTest": {
+    "ecp.reference.case": "",
+    "ecp.reference.strategy": ""
   }
 }

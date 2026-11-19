@@ -44,13 +44,17 @@ public class DynamicParameterValidationTest {
             assertThrows(IllegalArgumentException.class,()->solver.setParameterTimeStepMultiple(invalid));
     }
 
-    @Test void algebraicZeroIsAllowedButImproperLeadLagIsRejected() throws Exception {
+    @Test void algebraicZeroLagBypassesTheEnteredLead() throws Exception {
         var f=load();var d=f.exciter.getData();
         d.setTa(0);d.setTr(0);d.setTc(0);d.setTb(0);d.setTc1(0);d.setTb1(0);d.setKf(0);d.setTf(0);
         assertEquals(0,f.solver.validateModelParameters().count(Severity.ERROR));
-        d.setTc(.1);
-        assertTrue(f.solver.validateModelParameters().issues().stream().anyMatch(i->i.parameter().equals("Tc/Tb")&&i.severity()==Severity.ERROR));
-        assertEquals(.1,d.getTc());assertEquals(0,d.getTb());
+        // The ST1 lead-lag blocks treat a zero lag as an algebraic gain bypass, so
+        // a nonzero lead with a zero lag is accepted and the entered lead is kept.
+        d.setTc(.1);d.setTc1(.1);
+        var report=f.solver.validateModelParameters();
+        assertEquals(0,report.count(Severity.ERROR));
+        assertTrue(report.issues().stream().anyMatch(i->i.parameter().equals("Tc1/Tb1")&&i.severity()==Severity.INFO));
+        assertEquals(.1,d.getTc());assertEquals(0,d.getTb());assertEquals(.1,d.getTc1());assertEquals(0,d.getTb1());
     }
 
     @Test void feedbackRequiresItsDenominatorOnlyWhenEnabled() throws Exception {

@@ -27,7 +27,7 @@ public class PsseReeceModelTest {
     }
     private static String record(){return "1 'REECE' 1 "+parameters(data())+" /\n";}
     private static PSSEDStabDirectParser parse(DStabNetworkBuilder b,Path dir,String text,boolean strict) throws Exception {
-        var p=new PSSEDStabDirectParser(b).setStrictImport(strict);Path file=dir.resolve("reece.dyr");Files.writeString(file,text);p.parseDynFile(file.toString());return p;
+        var p=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(strict);Path file=dir.resolve("reece.dyr");Files.writeString(file,text);p.parseDynFile(file.toString());return p;
     }
     private static DStabGen gen(DStabNetworkBuilder b){return (DStabGen)b.getDStabNetwork().getBus("Bus1").getContributeGen("1");}
     private static RenewableElectricalController controller(DStabNetworkBuilder b) {
@@ -100,14 +100,14 @@ public class PsseReeceModelTest {
     }
     @Test void gnetAndModelRemoveSkipTheWholeStackWithoutPendingAttachments(@TempDir Path dir) throws Exception {
         for(boolean gnet:new boolean[]{false,true}) {
-            var b=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(b).setStrictImport(true);var keys=Set.of(new GeneratorKey("Bus1","1"));
+            var b=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);var keys=Set.of(new GeneratorKey("Bus1","1"));
             if(gnet)p.setGnetRemovedGenerators(keys);else p.setModelRemovedGenerators(keys);
             Path file=dir.resolve("removed.dyr");Files.writeString(file,record()+A);p.parseDynFile(file.toString());assertNull(gen(b).getDynamicGenDevice());
             assertEquals(2,p.getLastImportReport().count(gnet?DynamicModelImportStatus.SKIPPED_GNET:DynamicModelImportStatus.SKIPPED_MODEL_REMOVE));
         }
     }
     @Test void repeatedParserUseDoesNotRetainRejectedPendingRecords(@TempDir Path dir) throws Exception {
-        var b=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(b);Path file=dir.resolve("repeat.dyr");
+        var b=DStabBuilderTestFixture.createBuilder();var p=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false);Path file=dir.resolve("repeat.dyr");
         Files.writeString(file,record());p.parseDynFile(file.toString());Files.writeString(file,A);p.parseDynFile(file.toString());assertInstanceOf(ConverterCurrentCommands.class,controller(b));assertEquals(1,p.getLastImportReport().totalRecordCount());
     }
     @Test void converterInitializationConvertsSystemPowerToMachineBaseOnce(@TempDir Path dir) throws Exception {

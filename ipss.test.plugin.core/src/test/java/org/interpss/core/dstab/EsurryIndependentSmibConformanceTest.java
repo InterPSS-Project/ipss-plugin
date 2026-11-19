@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,7 +14,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import com.interpss.dstab.controller.exc.esurry.EsurryExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -29,7 +29,7 @@ public class EsurryIndependentSmibConformanceTest {
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
 
     @Test void threeCycleFaultMatchesIndependentBoundaryMachineAndEveryNamedExciterState()throws Exception{
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve("SMIB_v33_genrou_esurry.dyr").toString());var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
+        IpssCorePlugin.init();var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve("SMIB_v33_genrou_esurry.dyr").toString());var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);algorithm.setTotalSimuTimeSec(1);algorithm.setSimuOutputHandler(new StateMonitor());network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",network,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"SmibFault");assertTrue(algorithm.initialization());
         RoundRotorMachine machine=(RoundRotorMachine)network.getMachine("Bus1-mach1");Machine referenceMachine=network.getMachine("Bus2-mach1");EsurryExciter exciter=(EsurryExciter)machine.getExciter();double initialRelativeAngle=machine.getAngle()-referenceMachine.getAngle();List<double[]> actual=new ArrayList<>();record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialRelativeAngle);while(algorithm.getSimuTime()<1-STEP/2){assertTrue(algorithm.solveDEqnStep(true));record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialRelativeAngle);}
         EmbeddedTrajectoryReference reference=EmbeddedTrajectoryReference.embedded("smib-genrou-esurry");assertTrue(!reference.samples().isEmpty());assertTrue(!reference.postEventSamples().isEmpty());int[] field={reference.fieldIndex("Bus","1","TSVpu"),reference.fieldIndex("Bus","2","TSVpu"),reference.fieldIndex("Generator","1 1","TSMW"),reference.fieldIndex("Generator","1 1","TSMvar"),reference.fieldIndex("Generator","1 1","TSRotorAngle"),reference.fieldIndex("Generator","1 1","TSSpeed"),reference.fieldIndex("Generator","1 1","TSMachineState:3"),reference.fieldIndex("Generator","1 1","TSMachineState:4"),reference.fieldIndex("Generator","1 1","TSMachineState:5"),reference.fieldIndex("Generator","1 1","TSMachineState:6"),reference.fieldIndex("Generator","1 1","TSExciterState:1"),reference.fieldIndex("Generator","1 1","TSExciterState:2"),reference.fieldIndex("Generator","1 1","TSExciterState:3"),reference.fieldIndex("Generator","1 1","TSExciterState:4"),reference.fieldIndex("Generator","1 1","TSExciterState:5"),reference.fieldIndex("Generator","1 1","TSExciterState:6")};

@@ -20,7 +20,7 @@ public class PsseRepcgfmc1ModelTest {
     private static String input(){return Repcgfmc1NativeContractReference.profiles().getFirst().input().lines().limit(2).reduce("",(a,s)->a+s+"\n");}
     private static DStabGen gen(DStabNetworkBuilder b){return (DStabGen)b.getDStabNetwork().getBus("Bus1").getContributeGen("1");}
     private static PSSEDStabDirectParser parse(DStabNetworkBuilder b,Path dir,String input) throws Exception {
-        Path file=dir.resolve("plant.dyr");Files.writeString(file,input);var p=new PSSEDStabDirectParser(b).setStrictImport(true);p.parseDynFile(file.toString());return p;
+        Path file=dir.resolve("plant.dyr");Files.writeString(file,input);var p=new PSSEDStabDirectParser(b).setIgnoreMissingHosts(false).setStrictImport(true);p.parseDynFile(file.toString());return p;
     }
     @Test void exactAllocationCharacterCircuitAndSourceOrderArePreserved(@TempDir Path dir) throws Exception {
         String[] lines=input().lines().toArray(String[]::new);
@@ -55,7 +55,7 @@ public class PsseRepcgfmc1ModelTest {
         parse(left,dir,converterRow);parse(right,dir,converterRow);var l=(Regfmc1Model)gen(left).getDynamicGenDevice();var r=(Regfmc1Model)gen(right).getDynamicGenDevice();
         assertThrows(IllegalArgumentException.class,()->l.setPlantController(new Repcgfmc1Model(original.getData(),r)));assertNull(l.getPlantController());
         for(boolean gnet:new boolean[]{true,false}){
-            var removed=DStabBuilderTestFixture.createBuilder();var parser=new PSSEDStabDirectParser(removed).setStrictImport(true);
+            var removed=DStabBuilderTestFixture.createBuilder();var parser=new PSSEDStabDirectParser(removed).setIgnoreMissingHosts(false).setStrictImport(true);
             var keys=Set.of(new org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey("Bus1","1"));
             if(gnet)parser.setGnetRemovedGenerators(keys);else parser.setModelRemovedGenerators(keys);
             Path file=dir.resolve("removed.dyr");Files.writeString(file,input());parser.parseDynFile(file.toString());assertNull(gen(removed).getDynamicGenDevice());

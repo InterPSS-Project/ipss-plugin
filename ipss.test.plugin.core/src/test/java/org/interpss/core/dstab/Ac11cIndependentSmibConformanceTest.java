@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,7 +16,6 @@ import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.Ac11cFreshPowerWorldReference;
 import java.nio.file.Files;
 import com.interpss.dstab.controller.exc.ac11c.Ac11cExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -50,7 +50,7 @@ public class Ac11cIndependentSmibConformanceTest {
     }
 
     private void verify(EmbeddedTrajectoryReference reference,String referenceId,Path inputs)throws Exception {
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
+        IpssCorePlugin.init();var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
                 inputs.resolve("SMIB_v33_genrou_ac11c.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),"GENROU + AC11C SMIB load flow");

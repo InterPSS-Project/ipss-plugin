@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,7 +14,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import com.interpss.dstab.controller.exc.dc2c.Dc2cExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -41,7 +41,7 @@ public class Dc2cIndependentSmibConformanceTest {
     }
 
     private void verify(EmbeddedTrajectoryReference reference,Path inputs,String referenceId)throws Exception {
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
+        IpssCorePlugin.init();var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
                 inputs.resolve("SMIB_v33_genrou_dc2c.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),"GENROU + DC2C SMIB load flow");
