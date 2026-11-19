@@ -504,6 +504,7 @@ import org.interpss.core.dstab.ReecaNativeBoundaryConformanceTest;
 import org.interpss.core.dstab.ReecaNativeConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Dc4bPsseSmibConformanceTest;
 import org.interpss.core.dstab.St1cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esst2aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St2cIndependentSmibConformanceTest;
@@ -1013,6 +1014,7 @@ import org.junit.platform.suite.api.Suite;
 	ReecaNativeConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
+	Dc4bPsseSmibConformanceTest.class,
 	St1cIndependentSmibConformanceTest.class,
 	Esst2aIndependentSmibConformanceTest.class,
 	St2cIndependentSmibConformanceTest.class,
