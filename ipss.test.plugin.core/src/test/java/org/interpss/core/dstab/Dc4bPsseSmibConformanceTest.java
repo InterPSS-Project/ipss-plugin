@@ -17,6 +17,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.ReferenceLoadModel;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -37,6 +38,9 @@ import com.interpss.dstab.mach.RoundRotorMachine;
  * earlier limit on the PI subtotal the rotor angle differed by 0.022 degrees and the
  * field voltage by 0.006 pu. PSS/E stores the PI, derivative and feedback states in
  * other coordinates, so those three are not compared.
+ *
+ * <p>Generated trajectory references stay in the private verification archive
+ * (see .gitignore), so the test is skipped where the reference is absent, as in CI.
  */
 public class Dc4bPsseSmibConformanceTest {
     private static final double STEP = 0.0005;
@@ -47,6 +51,8 @@ public class Dc4bPsseSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesPsseBoundaryMachineAndExciterOutputs() throws Exception {
+        Assumptions.assumeTrue(Dc4bPsseSmibConformanceTest.class.getResource(REFERENCE) != null,
+                "PSS/E DC4B reference is only in the private verification archive");
         IpssCorePlugin.init();
         var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(), CASE.resolve("SMIB_v33_genrou_dc4b.dyr").toString());

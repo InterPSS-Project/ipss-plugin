@@ -466,7 +466,8 @@ public class Hyg3SharedStateTest {
             for (int i = 0; i < 100000; i++) update(governor, staggered, states, rates);
             long bytes = allocations.getThreadAllocatedBytes(thread)-start;
             System.out.println("HYG3 reusable updates mode="+mode+" staggered="+staggered+" profile="+profile+" allocated="+bytes);
-            assertTrue(bytes <= 1024, "Reusable numerical loop allocated "+bytes);
+            // JIT and runtime bookkeeping can add about 1.5 kB to a warmed thread; one object per call would add megabytes.
+            assertTrue(bytes <= 16 * 1024, "Reusable numerical loop allocated "+bytes);
             assertTrue(Double.isFinite(sink));
         }
     }

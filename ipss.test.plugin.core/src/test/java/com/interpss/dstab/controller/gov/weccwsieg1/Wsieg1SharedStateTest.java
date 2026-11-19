@@ -186,7 +186,9 @@ public class Wsieg1SharedStateTest {
             var g=model("curve",bypass);double[] x=new double[6],rates=new double[6],published=new double[6];
             run(g,staggered,x,rates,published,20000);long id=Thread.currentThread().threadId(),before=bean.getThreadAllocatedBytes(id);
             run(g,staggered,x,rates,published,20000);long allocated=bean.getThreadAllocatedBytes(id)-before;
-            System.out.println("WSIEG1 warmed numerical allocation staggered="+staggered+" bypass="+bypass+" bytes="+allocated);assertTrue(allocated<1024,"No per-step numerical allocation: "+allocated);
+            System.out.println("WSIEG1 warmed numerical allocation staggered="+staggered+" bypass="+bypass+" bytes="+allocated);
+            // JIT and runtime bookkeeping can add about 1.5 kB to a warmed thread; one object per call would add megabytes.
+            assertTrue(allocated<16*1024,"No per-step numerical allocation: "+allocated);
         }
     }
     private static void run(Wsieg1Governor g,boolean shared,double[] values,double[] rates,double[] published,int count) {
