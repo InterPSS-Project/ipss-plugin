@@ -116,7 +116,9 @@ public class MatpowerOpfDirectParser {
 			OpfBus bus = OpfObjectFactory.createOpfBus(BUS_PREFIX + number, network);
 			bus.setNumber(number);
 			bus.setName(stringValue(busNames, index, 0, BUS_PREFIX + number));
-			bus.setBaseVoltage(row[9] * 1000.0);
+			// Match the power-flow importer for an unspecified nominal kV.
+			double baseKv = row[9] == 0.0 ? 1.0 : row[9];
+			bus.setBaseVoltage(baseKv * 1000.0);
 			bus.setVoltageMag(row[7]);
 			bus.setVoltageAng(Math.toRadians(row[8]));
 			bus.setVLimit(new LimitType(row[11], row[12]));

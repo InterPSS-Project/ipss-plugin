@@ -42,6 +42,52 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	@TempDir Path temporaryDirectory;
 
 	@ParameterizedTest
+	@CsvSource({"0.0, 1000.0", "1.0, 1000.0", "230.0, 230000.0"})
+	void testNominalVoltagePreservesPerUnitPowerFlow(double baseKv, double expectedBaseVolts) throws Exception {
+		String fixture = """
+				function mpc = nominal_voltage
+				mpc.version = '2';
+				mpc.baseMVA = 100;
+				mpc.bus = [
+				1 3 0 0 0 0 1 1.04 0 %1$.16g 1 1.1 0.9;
+				2 2 0 0 0 0 1 1.01 0 %1$.16g 1 1.1 0.9;
+				3 1 40 15 0 0 1 1.0 0 %1$.16g 1 1.1 0.9;
+				];
+				mpc.gen = [
+				1 30 0 100 -100 1.04 100 1 200 0;
+				2 10 0 100 -100 1.01 100 1 200 0;
+				];
+				mpc.branch = [
+				1 2 0.02 0.15 0.04 100 100 100 0 0 1 -360 360;
+				2 3 0.01 0.10 0.02 100 100 100 0 0 1 -360 360;
+				];
+				""";
+		Path input = temporaryDirectory.resolve("nominal-voltage.m");
+		Files.writeString(input, String.format(Locale.ROOT, fixture, baseKv));
+		AclfNetwork net = loadMatpowerCase(input.toString());
+		var opf = new MatpowerOpfDirectParser().parse(input.toString());
+		for (int number = 1; number <= 3; number++) {
+			assertEquals(expectedBaseVolts, net.getBus("Bus" + number).getBaseVoltage(), 1e-12);
+			assertEquals(expectedBaseVolts, opf.getBus("Bus" + number).getBaseVoltage(), 1e-12);
+		}
+		Path reference = temporaryDirectory.resolve("declared-voltage.m");
+		Files.writeString(reference, String.format(Locale.ROOT, fixture, 230.0));
+		AclfNetwork referenceNet = loadMatpowerCase(reference.toString());
+		var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algorithm.setTolerance(1e-10);
+		assertTrue(algorithm.loadflow());
+		var referenceAlgorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(referenceNet);
+		referenceAlgorithm.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		referenceAlgorithm.setTolerance(1e-10);
+		assertTrue(referenceAlgorithm.loadflow());
+		for (int number = 1; number <= 3; number++) {
+			assertEquals(0.0, net.getBus("Bus" + number).getVoltage()
+					.subtract(referenceNet.getBus("Bus" + number).getVoltage()).abs(), 1e-10);
+		}
+	}
+
+	@ParameterizedTest
 	@CsvSource({
 		"0.0, 0.0, 0.08, 1",
 		"1.0, 0.0, 0.08, 1",

@@ -183,7 +183,9 @@ public class MatpowerDirectParser {
             int area = (int) d[6];
             double vm = d[7];
             double va = d[8];
-            double baseKv = d[9];
+            // Nominal kV is optional in the per-unit model. Supply a positive
+            // base before constructing voltage adapters when it is unspecified.
+            double baseKv = d[9] == 0.0 ? 1.0 : d[9];
             int zone = d.length > 10 ? (int) d[10] : 0;
             double vmax = d.length > 11 ? d[11] : 1.1;
             double vmin = d.length > 12 ? d[12] : 0.9;
