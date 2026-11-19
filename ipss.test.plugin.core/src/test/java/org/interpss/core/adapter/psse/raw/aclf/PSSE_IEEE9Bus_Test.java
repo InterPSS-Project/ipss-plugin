@@ -206,7 +206,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfBus bus10 = net.getBus("Bus10");
 		double voltageMagBus10 = bus10.getVoltageMag();
-		assertTrue(Math.abs(voltageMagBus10 - 1.03514) < 0.0001);
+		// PSS/E 36.7: winding 1 (COD -1, NTP 33, 61.713-75.798 kV) sits on its nearest
+		// tap position, 69.196 kV for WINDV1 = 69.0, so bus 10 solves to 1.03801 pu.
+		assertTrue(Math.abs(voltageMagBus10 - 1.03801) < 0.0001, ""+voltageMagBus10);
 	}
 
 	@Test

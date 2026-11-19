@@ -803,6 +803,9 @@ public class PSSEJsonDirectParser {
                 inService);
 
         if (branch3W != null) {
+            addWindingTapPositions(branch3W.getFromAclfBranch(), fromBusId, row, 1, cw, nomv1, fromBaseV);
+            addWindingTapPositions(branch3W.getToAclfBranch(), toBusId, row, 2, cw, nomv2, toBaseV);
+            addWindingTapPositions(branch3W.getTertAclfBranch(), tertBusId, row, 3, cw, nomv3, tertBaseV);
             if (magY != null) branch3W.getFromAclfBranch().setFromShuntOnBusSide(true);
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
@@ -821,6 +824,22 @@ public class PSSEJsonDirectParser {
             return new Complex(rpu, xpu);
         }
         return new Complex(r, x);
+    }
+
+    /** RAWX form of PSSEDirectParser#addWindingTapPositions: a locked tap control that
+     * gives a voltage-controlled 3-winding winding its tap positions for the data check. */
+    private void addWindingTapPositions(AclfBranch winding, String windingBusId, Map<String, JsonElement> row,
+            int k, int cw, double nomvKv, double baseV) {
+        int cod = getInt(row, "cod" + k, 0);
+        int ntp = getInt(row, "ntp" + k, 33);
+        if (winding == null || Math.abs(cod) != 1 || ntp < 2) return;
+        double tapMax = convertTap(cw, getDouble(row, "rma" + k, 1.1), nomvKv, baseV);
+        double tapMin = convertTap(cw, getDouble(row, "rmi" + k, 0.9), nomvKv, baseV);
+        if (!(tapMax > tapMin)) return;
+        boolean busOnFromSide = winding.getFromBus().getId().equals(windingBusId);
+        builder.addTapVoltageRangeControl(winding.getId(), windingBusId, false,
+                getDouble(row, "vma" + k, 1.1), getDouble(row, "vmi" + k, 0.9), tapMax, tapMin,
+                busOnFromSide, busOnFromSide, (tapMax - tapMin) / (ntp - 1), ntp);
     }
 
     private double convertTap(int cw, double windv, double nomvKv, double busBaseV) {

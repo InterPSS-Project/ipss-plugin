@@ -929,6 +929,29 @@ public class PSSEDirectParser {
         return windv;
     }
 
+    /**
+     * Give a voltage-controlled 3-winding transformer winding (|COD| = 1) its tap
+     * positions. PSS/E solves with the winding on the nearest of its NTP positions
+     * between RMI and RMA, even when the control is locked. The load-flow data check
+     * places a ratio on its tap position (DataCheckConfiguration autoSnapTransformerTap,
+     * on by default) through the winding's tap control. The control is created locked:
+     * automatic 3-winding tap adjustment is not part of this import.
+     */
+    private void addWindingTapPositions(AclfBranch winding, String windingBusId, PSSEDataRec record, int codIdx,
+            int rmaIdx, int ntpIdx, int cw, double nomvKv, double baseV) {
+        int cod = record.getInt(codIdx, 0);
+        int ntp = record.getInt(ntpIdx, 33);
+        if (winding == null || Math.abs(cod) != 1 || ntp < 2) return;
+        double tapMax = convertTap(cw, record.getDouble(rmaIdx, 1.1), nomvKv, baseV);
+        double tapMin = convertTap(cw, record.getDouble(rmaIdx + 1, 0.9), nomvKv, baseV);
+        if (!(tapMax > tapMin)) return;
+        // The winding ratio sits on the side of the winding's own bus, not the star point.
+        boolean busOnFromSide = winding.getFromBus().getId().equals(windingBusId);
+        builder.addTapVoltageRangeControl(winding.getId(), windingBusId, false,
+                record.getDouble(rmaIdx + 2, 1.1), record.getDouble(rmaIdx + 3, 0.9), tapMax, tapMin,
+                busOnFromSide, busOnFromSide, (tapMax - tapMin) / (ntp - 1), ntp);
+    }
+
     private Complex convertMagY(int cm, double mag1, double mag2,
                                 double nomv1Kv, double sbase12, double fromBaseV) {
         if (mag1 == 0.0 && mag2 == 0.0) return null;
@@ -1026,6 +1049,13 @@ public class PSSEDirectParser {
                 inService);
 
         if (branch3W != null) {
+            int codIdx = version >= 34 ? 15 : 6;
+            int rmaIdx = version >= 35 ? 18 : version == 34 ? 17 : 8;
+            int ntpIdx = version >= 35 ? 22 : version == 34 ? 21 : 12;
+            addWindingTapPositions(branch3W.getFromAclfBranch(), fromBusId, line3, codIdx, rmaIdx, ntpIdx, cw, nomv1_3w, fromBaseV);
+            addWindingTapPositions(branch3W.getToAclfBranch(), toBusId, line4, codIdx, rmaIdx, ntpIdx, cw, nomv2_3w, toBaseV);
+            if (line5 != null)
+                addWindingTapPositions(branch3W.getTertAclfBranch(), tertBusId, line5, codIdx, rmaIdx, ntpIdx, cw, nomv3_3w, tertBaseV);
             if (magY != null) branch3W.getFromAclfBranch().setFromShuntOnBusSide(true);
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
