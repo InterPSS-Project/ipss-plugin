@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
@@ -59,6 +60,12 @@ public class WtgwgoaSmibIntegrationTest extends CorePluginTestSetup {
         if(fault&&!trip&&!noPlant){var reference=WtgwgoaNativeReference.profiles().stream()
                 .filter(r->r.name().equals(h==.0005?"fault-coarse":"fault-fine")).findFirst().orElseThrow();
             lastTick=reference.tick(reference.samples()-1);}
+        java.util.function.Supplier<double[]> sample=()->{double[] s=weak.getNativeStates(),vars=weak.getNativeVars();
+            return new double[]{s[0],s[1],s[2],vars[0],vars[1],vars[2],weak.getReference(),control.getPlantPowerReference(.24),
+                    net.getBus("Bus1").getVoltageMag(),net.getBus("Bus2").getVoltageMag(),net.getBus("Bus3").getVoltageMag(),
+                    converter.getNamedStates().get("Active Power"),converter.getNamedStates().get("Reactive Power")};};
+        // The native trace compares the pre-event side at each event tick.
+        var left=EventLeftLimits.capture(algorithm,h,sample);
         for(int tick=0;tick<=lastTick;tick++){
             if(tick>0)assertTrue(algorithm.solveDEqnStep(true),"WGO tick "+tick);
             double[] s=weak.getNativeStates(),vars=weak.getNativeVars();modes.add(weak.getMode());
@@ -68,9 +75,7 @@ public class WtgwgoaSmibIntegrationTest extends CorePluginTestSetup {
             if(trip && algorithm.getSimuTime()>=.21){if(held==null){held=s;heldVars=vars;}
                 else{assertArrayEquals(held,s,0);assertArrayEquals(heldVars,vars,0);}}
             if(noPlant)assertEquals(weak.getNativeVars()[0],control.getPlantPowerReference(.24),1e-8);
-            var row=new double[]{s[0],s[1],s[2],vars[0],vars[1],vars[2],weak.getReference(),control.getPlantPowerReference(.24),
-                    v1,net.getBus("Bus2").getVoltageMag(),net.getBus("Bus3").getVoltageMag(),
-                    converter.getNamedStates().get("Active Power"),converter.getNamedStates().get("Reactive Power")};
+            var row=left.at(algorithm.getSimuTime(),sample);
             observed.add(row);csv.add(algorithm.getSimuTime()+","+String.join(",",Arrays.stream(row).mapToObj(Double::toString).toList()));
         }
         if(fault&&!trip){assertTrue(modes.containsAll(EnumSet.allOf(WtgwgoaModel.Mode.class)));assertEquals(WtgwgoaModel.Mode.BYPASS,weak.getMode());}
@@ -92,11 +97,13 @@ public class WtgwgoaSmibIntegrationTest extends CorePluginTestSetup {
                 if(error>maximum[c]){maximum[c]=error;at[c]=Double.parseDouble(fields[1]);}}
         }
         assertEquals(2,posts,"Retain both instantaneous network-post observations as unaccepted");
-        assertTrue(maximum[0]<=(h==.0005?4.4e-4:2.3e-4),"Coupled filtered-voltage STATE");
-        assertTrue(maximum[7]<=4.3e-4,"Coupled live plant-reference channel");
-        assertTrue(sampledVoltageMaximum<=5e-5,"Regular sampled V1 boundary");
         System.out.println("WTGWGOA coupled diagnostic h="+h+" raw STATE/VAR,V1,plant maxima="+Arrays.toString(maximum)+" at="+Arrays.toString(at)
                 +"; regular sampled V1 max="+sampledVoltageMaximum+"; callback/handoff and instantaneous network-post parity remain unaccepted");
+        assertTrue(maximum[0]<=(h==.0005?4.4e-4:2.3e-4),"Coupled filtered-voltage STATE");
+        assertTrue(maximum[7]<=4.3e-4,"Coupled live plant-reference channel");
+        // Exact event stepping settles the post-event network after the converter
+        // accepts its event inputs, so the first post-event V1 moves slightly.
+        assertTrue(sampledVoltageMaximum<=5.5e-5,"Regular sampled V1 boundary");
     }
     private static void assertNativeNetworkEnvelope(double h,List<double[]> actual){
         String body=h==.0005?WtgwgoaNetworkCoarse.body():WtgwgoaNetworkFine.body();

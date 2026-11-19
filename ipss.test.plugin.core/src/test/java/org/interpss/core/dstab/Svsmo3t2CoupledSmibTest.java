@@ -180,11 +180,21 @@ public class Svsmo3t2CoupledSmibTest extends CorePluginTestSetup {
         final List<double[]> frames = new ArrayList<>();
         final DynamicSimuAlgorithm algorithm;
         Recording(DynamicSimuAlgorithm algorithm) { this.algorithm = algorithm; }
+        // Exact event stepping visits an event time twice: the boundary applies the
+        // event and solves the post-event network, then the next step starts from
+        // the same time. Keep one pre-event and one post-event frame per time.
+        double lastBefore = Double.NaN, lastInitial = Double.NaN;
         void before(double time) {
+            if (time == lastBefore) return;
+            lastBefore = time;
             if (enabled && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9)) frames.add(frame(time));
         }
         void solved(boolean solved, String stage) {
-            if (solved && enabled && "INITIAL".equals(stage)) frames.add(frame(algorithm.getSimuTime()));
+            if (!(solved && enabled && "INITIAL".equals(stage))) return;
+            double time = algorithm.getSimuTime();
+            if (time == lastInitial) return;
+            lastInitial = time;
+            frames.add(frame(time));
         }
         double[] frame(double time) {
             var net = algorithm.getNetwork();

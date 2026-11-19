@@ -110,11 +110,14 @@ class Regcau2ReferenceTest extends CorePluginTestSetup {
                 actual.computeIfAbsent(Math.round(algorithm.getSimuTime()/step),ignored->new ArrayList<>())
                         .add(new double[]{v,model.getIp()*v,model.getIq()*v,model.getIpRegulatorState(),model.getIqRegulatorState()});
             };
-            algorithm.setSolver(new DefaultDynamicSimulationSolver(algorithm) {
+            var solver=new DefaultDynamicSimulationSolver(algorithm) {
                 @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method) throws DStabSimuException {
                     super.rebaseDynamicModelInputs(method);capture.run();
                 }
-            });
+            };
+            // Record the pre-event side before the event is applied; the rebase records the post-event side.
+            solver.setEventBoundaryObserver((time,left)->{if(left)capture.run();});
+            algorithm.setSolver(solver);
             double faultPu=100./(230.*230./100.);
             network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",network,
                     SimpleFaultCode.GROUND_3P,new Complex(0.,faultPu),null,.05,.05),"Fault");

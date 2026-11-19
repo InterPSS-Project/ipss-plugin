@@ -89,7 +89,9 @@ public class Ac8bAndesSmibConformanceTest {
     }
     private record Series(double[] time,double[] value){
         double at(double target){
-            int index=Arrays.binarySearch(time,target); if(index>=0)return value[index];
+            int index=Arrays.binarySearch(time,target);
+            // An event time is recorded twice, pre-event then post-event; the reference row holds the pre-event value.
+            if(index>=0){while(index>0&&time[index-1]==target)index--;return value[index];}
             int upper=-index-1; if(upper==0||upper==time.length)throw new IllegalArgumentException();
             int lower=upper-1; double f=(target-time[lower])/(time[upper]-time[lower]);
             return value[lower]+f*(value[upper]-value[lower]);

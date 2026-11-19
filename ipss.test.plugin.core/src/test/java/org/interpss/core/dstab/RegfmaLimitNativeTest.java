@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -132,15 +133,22 @@ public class RegfmaLimitNativeTest {
             new Complex(0,lower?-5:1),null,.05,.05),"LimiterDiscriminator");
         if(shared)alg.setSolver(new PsseStaggeredEulerSolver(alg));assertTrue(alg.initialization());
         List<double[]> actual=new ArrayList<>();
-        for(int tick=0;tick<=steps;tick++) {
-            assertEquals(tick*step,alg.getSimuTime(),1e-10);model.getOutputObject();var before=model.getNamedStates();
+        java.util.function.Supplier<double[]> sample=()->{
+            model.getOutputObject();var before=model.getNamedStates();
             var values=new ArrayList<Double>();values.addAll(model.getPsseStateSnapshot().values());
             values.addAll(model.getPsseVariableSnapshot().values());
             for(String bus:List.of("Bus1","Bus2","Bus3"))values.add(net.getBus(bus).getVoltageMag());
             values.add(model.getActivePower()*.5);values.add(model.getReactivePower()*.5);
             values.add(net.getBus("Bus1").getVoltageMag());values.add(model.getSpeed()-1);
-            double[] row=values.stream().mapToDouble(Double::doubleValue).toArray();assertEquals(24,row.length);
-            assertTrue(Arrays.stream(row).allMatch(Double::isFinite));assertEquals(before,model.getNamedStates());
+            assertEquals(before,model.getNamedStates());
+            return values.stream().mapToDouble(Double::doubleValue).toArray();
+        };
+        // The native trace records the pre-event side first at each event time.
+        var left=EventLeftLimits.capture(alg,step,sample);
+        for(int tick=0;tick<=steps;tick++) {
+            assertEquals(tick*step,alg.getSimuTime(),1e-10);
+            double[] row=left.at(alg.getSimuTime(),sample);assertEquals(24,row.length);
+            assertTrue(Arrays.stream(row).allMatch(Double::isFinite));
             assertTrue(row[8]>=p[5] && row[8]<=p[4]);actual.add(row);
             if(tick<steps)assertTrue(alg.solveDEqnStep(true));
         }

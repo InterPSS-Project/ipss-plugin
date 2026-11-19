@@ -88,7 +88,18 @@ final class Cmldblu1SharedRecording {
             }
         return new Frame(time, kind, Collections.unmodifiableMap(values));
     }
+    // Exact event stepping visits an event time twice: the boundary applies the
+    // event and solves the post-event network, then the next step starts from the
+    // same time. Keep one pre-event and one post-event frame per time.
+    private double lastBefore = Double.NaN, lastGrid = Double.NaN;
+    void grid(double time) {
+        if (!enabled || time == lastGrid) return;
+        lastGrid = time;
+        frames.add(capture(time, "GRID"));
+    }
     void before(double time) {
+        if (time == lastBefore) return;
+        lastBefore = time;
         if (enabled && !flat && (Math.abs(time - .05) < 1e-9 || Math.abs(time - .1) < 1e-9
                 || repeated && (Math.abs(time - .2) < 1e-9 || Math.abs(time - .25) < 1e-9)))
             frames.add(capture(time, "EVENT_PRE"));
@@ -175,8 +186,7 @@ final class Cmldblu1SharedRecording {
         }
         @Override public boolean networkSolutionStep() throws DStabSimuException {
             boolean solved = super.networkSolutionStep();
-            if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
-                recording.frames.add(recording.capture(dstabAlgo.getSimuTime(), "GRID"));
+            if (solved && "INITIAL".equals(networkSolutionStage)) recording.grid(dstabAlgo.getSimuTime());
             return solved;
         }
     }
@@ -192,8 +202,7 @@ final class Cmldblu1SharedRecording {
         @Override public void beforeStep(double t) throws DStabSimuException { recording.before(t); super.beforeStep(t); }
         @Override public boolean networkSolutionStep() throws DStabSimuException {
             boolean solved = super.networkSolutionStep();
-            if (solved && recording.enabled && "INITIAL".equals(networkSolutionStage))
-                recording.frames.add(recording.capture(dstabAlgo.getSimuTime(), "GRID"));
+            if (solved && "INITIAL".equals(networkSolutionStage)) recording.grid(dstabAlgo.getSimuTime());
             return solved;
         }
     }

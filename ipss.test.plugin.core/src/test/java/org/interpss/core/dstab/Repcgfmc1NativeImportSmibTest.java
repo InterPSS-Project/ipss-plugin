@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
@@ -43,10 +44,16 @@ public class Repcgfmc1NativeImportSmibTest extends CorePluginTestSetup {
             double initial=net.getBus("Bus1").getVoltageMag(),drift=0,minV=1;Map<String,Double> stopped=null;
             StringBuilder trace=new StringBuilder("time_s,V1,V2,V3,P_PU,Q_PU,SPEED_DEV");for(int i=0;i<26;i++)trace.append(",IPSS_STATE").append(i);trace.append('\n');
             List<double[]> actual=new ArrayList<>();
-            for(int tick=0;tick<=(int)Math.round(.3/h);tick++){
+            java.util.function.Supplier<double[]> sample=()->{
                 double[] row=new double[33];row[0]=algo.getSimuTime();row[1]=net.getBus("Bus1").getVoltageMag();row[2]=net.getBus("Bus2").getVoltageMag();row[3]=net.getBus("Bus3").getVoltageMag();
                 row[4]=owner.getActivePower()/2;row[5]=owner.getReactivePower()/2;row[6]=owner.getKernel().speedDeviation();
                 System.arraycopy(owner.getKernel().stateSnapshot(),0,row,7,11);System.arraycopy(owner.getPlantController().getKernel().states(),0,row,18,15);
+                return row;
+            };
+            // The native trace records the pre-event side first at each event time.
+            var left=EventLeftLimits.capture(algo,h,sample);
+            for(int tick=0;tick<=(int)Math.round(.3/h);tick++){
+                double[] row=left.at(algo.getSimuTime(),sample);
                 for(int i=0;i<row.length;i++)trace.append(i==0?"":",").append(row[i]);trace.append('\n');actual.add(row);
                 for(double value:owner.getNamedStates().values())assertTrue(Double.isFinite(value));assertTrue(algo.solveDEqnStep(true));
                 drift=Math.max(drift,Math.abs(net.getBus("Bus1").getVoltageMag()-initial));minV=Math.min(minV,net.getBus("Bus2").getVoltageMag());

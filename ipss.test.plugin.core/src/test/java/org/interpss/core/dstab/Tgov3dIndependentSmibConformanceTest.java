@@ -48,7 +48,7 @@ public class Tgov3dIndependentSmibConformanceTest {
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
         List<double[]> actual = new ArrayList<>();
-        algorithm.setSolver(new com.interpss.dstab.algo.defaultImpl.DStabSolverImpl(algorithm) {
+        var solver = new com.interpss.dstab.algo.defaultImpl.DStabSolverImpl(algorithm) {
             { converge_tol = 1.e-6; setMaxIterationTimes(100); }
             @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                     throws com.interpss.dstab.common.DStabSimuException {
@@ -58,7 +58,15 @@ public class Tgov3dIndependentSmibConformanceTest {
                 record(actual, algorithm.getSimuTime(), network, m, ref,
                         (PsseTgov3dGovernor) m.getGovernor(), 0.0);
             }
+        };
+        // Record the pre-event side before the event is applied; the rebase records the post-event side.
+        solver.setEventBoundaryObserver((time, left) -> {
+            if (!left) return;
+            var m = (RoundRotorMachine) network.getMachine("Bus1-mach1");
+            record(actual, time, network, m, network.getMachine("Bus2-mach1"),
+                    (PsseTgov3dGovernor) m.getGovernor(), 0.0);
         });
+        algorithm.setSolver(solver);
         assertTrue(algorithm.initialization(), "GENROU + TGOV3D SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");

@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
@@ -25,8 +26,11 @@ public class Regfmc1NativeImportSmibTest extends CorePluginTestSetup {
             if(profile.equals("trip"))net.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent("Bus1","1",net,.2),"trip");
             assertTrue(algo.initialization());double v0=net.getBus("Bus1").getVoltageMag(),drift=0,minV=1;Map<String,Double> stopped=null;
             List<String> trace=new ArrayList<>();trace.add("time_s,V1,V2,V3,P_PU,Q_PU,SPEED_DEV");
+            java.util.function.Supplier<String> sample=()->algo.getSimuTime()+","+net.getBus("Bus1").getVoltageMag()+","+net.getBus("Bus2").getVoltageMag()+","+net.getBus("Bus3").getVoltageMag()+","+model.getActivePower()/2+","+model.getReactivePower()/2+","+model.getKernel().speedDeviation();
+            // The native trace records the pre-event side first at each event time.
+            var left=EventLeftLimits.capture(algo,h,sample);
             for(int tick=0;tick<=(int)Math.round(.3/h);tick++) {
-                trace.add(algo.getSimuTime()+","+net.getBus("Bus1").getVoltageMag()+","+net.getBus("Bus2").getVoltageMag()+","+net.getBus("Bus3").getVoltageMag()+","+model.getActivePower()/2+","+model.getReactivePower()/2+","+model.getKernel().speedDeviation());
+                trace.add(left.at(algo.getSimuTime(),sample));
                 assertTrue(algo.solveDEqnStep(true));drift=Math.max(drift,Math.abs(net.getBus("Bus1").getVoltageMag()-v0));minV=Math.min(minV,net.getBus("Bus2").getVoltageMag());
                 for(double state:model.getNamedStates().values())assertTrue(Double.isFinite(state));
                 if(profile.equals("trip")&&tick*h>.21){if(stopped==null)stopped=model.getNamedStates();else assertEquals(stopped,model.getNamedStates());assertEquals(0,model.getActivePower(),0);assertEquals(0,model.getReactivePower(),0);}

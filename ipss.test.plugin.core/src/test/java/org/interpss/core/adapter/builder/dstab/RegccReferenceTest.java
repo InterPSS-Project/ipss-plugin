@@ -63,9 +63,12 @@ class RegccReferenceTest extends CorePluginTestSetup {
                 for(int bus=1;bus<=3;bus++){x[9+2*bus]=net.getBus("Bus"+bus).getVoltageMag();x[10+2*bus]=Math.toDegrees(net.getBus("Bus"+bus).getVoltageAng());}
                 actual.computeIfAbsent(Math.round(algo.getSimuTime()/step),ignored->new ArrayList<>()).add(x);
             };
-            algo.setSolver(new DefaultDynamicSimulationSolver(algo){
+            var solver=new DefaultDynamicSimulationSolver(algo){
                 @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)throws DStabSimuException{super.rebaseDynamicModelInputs(method);capture.run();}
-            });
+            };
+            // Record the pre-event side before the event is applied; the rebase records the post-event side.
+            solver.setEventBoundaryObserver((time,left)->{if(left)capture.run();});
+            algo.setSolver(solver);
             if(profile.get("fault").getAsBoolean())net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",net,
                     SimpleFaultCode.GROUND_3P,new Complex(0.,100./(230.*230./100.)),null,.05,.05),"Fault");
             assertTrue(algo.initialization());capture.run();double[] initial=model.getStateSnapshot();

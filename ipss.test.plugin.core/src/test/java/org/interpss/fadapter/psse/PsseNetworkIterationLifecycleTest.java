@@ -31,7 +31,9 @@ public class PsseNetworkIterationLifecycleTest {
             assertEquals(run(baseline),run(observed),
                     "A no-op lifecycle must preserve every captured endpoint value");
             var probe=observed.probe();
-            assertEquals(500*3,probe.begins);
+            // Three solves per step; each of the two fault events adds its boundary
+            // solves (pre-event, post-event initial and settled post-event).
+            assertEquals(500*3+(fault?2*3:0),probe.begins);
             assertEquals(probe.begins,probe.accepts);
             assertEquals(probe.accepts,probe.finalOutputs);
             assertEquals(0,probe.aborts);

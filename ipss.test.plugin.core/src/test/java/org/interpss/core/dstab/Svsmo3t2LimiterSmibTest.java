@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
@@ -200,6 +201,8 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         var staggeredSolver = staggered ? new StaggeredRecorder(algorithm, starts) : null;
         if (staggered) staggeredSolver.setEndpointTimePrecision(StaggeredEulerSolver.EndpointTimePrecision.SINGLE);
         algorithm.setSolver(staggered ? staggeredSolver : new Recorder(algorithm, starts));
+        // Samples after each step hold the pre-event side at an event tick.
+        var left = EventLeftLimits.capture(algorithm, step, () -> frame(algorithm));
         assertTrue(algorithm.initialization());
         var model = model(algorithm);
         double schedule = model.getScheduledVoltage();
@@ -211,7 +214,7 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
                 Double.parseDouble(line.substring(0, line.indexOf(','))) / step)).max().orElseThrow();
         assertTrue(Math.abs(ticks * step - manifest.get("stop_s").asDouble()) < 2 * step);
         for (int tick = 0; tick <= ticks; tick++) {
-            frames.add(frame(algorithm));
+            frames.add(left.at(algorithm.getSimuTime(), () -> frame(algorithm)));
             if (tick == ticks) break;
             if (tick == Math.round(.05 / step) && manifest.get("profile").asText().equals("reference-step")) {
                 model.setScheduledVoltage(schedule + manifest.get("reference_change").asDouble());
@@ -473,15 +476,20 @@ public class Svsmo3t2LimiterSmibTest extends CorePluginTestSetup {
         Recorder(DynamicSimuAlgorithm algorithm, Map<Integer, double[]> starts) {
             super(algorithm); this.starts = starts; converge_tol = TOLERANCE;
         }
+        // With exact event stepping the step that leaves an event solves INITIAL
+        // again after the boundary rebase; keep the rebased post-event start.
+        int rebasedTick = Integer.MIN_VALUE;
         @Override public boolean networkSolutionStep() throws DStabSimuException {
             boolean result = super.networkSolutionStep();
-            if (result && "INITIAL".equals(networkSolutionStage))
-                starts.put((int) Math.round(dstabAlgo.getSimuTime() / dstabAlgo.getSimuStepSec()), frame(dstabAlgo));
+            int tick = (int) Math.round(dstabAlgo.getSimuTime() / dstabAlgo.getSimuStepSec());
+            if (result && "INITIAL".equals(networkSolutionStage) && tick != rebasedTick)
+                starts.put(tick, frame(dstabAlgo));
             return result;
         }
         @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method) throws DStabSimuException {
             super.rebaseDynamicModelInputs(method);
-            starts.put((int) Math.round(dstabAlgo.getSimuTime() / dstabAlgo.getSimuStepSec()), frame(dstabAlgo));
+            rebasedTick = (int) Math.round(dstabAlgo.getSimuTime() / dstabAlgo.getSimuStepSec());
+            starts.put(rebasedTick, frame(dstabAlgo));
         }
     }
 

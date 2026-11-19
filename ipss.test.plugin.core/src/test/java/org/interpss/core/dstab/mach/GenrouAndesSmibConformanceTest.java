@@ -127,7 +127,12 @@ public class GenrouAndesSmibConformanceTest {
                 return value[value.length - 1];
             }
             int index = Arrays.binarySearch(time, target);
-            if (index >= 0) return value[index];
+            if (index >= 0) {
+                // An event time is recorded twice, pre-event then post-event.
+                // The reference row at that time holds the pre-event value.
+                while (index > 0 && time[index - 1] == target) index--;
+                return value[index];
+            }
             int upper = -index - 1;
             if (upper == 0 || upper == time.length) {
                 throw new IllegalArgumentException("Reference time outside actual trajectory: "

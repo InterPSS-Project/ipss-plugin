@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
@@ -153,8 +154,7 @@ public class Regfma1NativeTrajectoryTest {
         boolean narrowPowerLimits=reference.constants().get(6)<.9;
         boolean[] sawPowerLimit=new boolean[4];
         int[] powerIntegralIndices={1,2,6,7};
-        for(int tick=0;tick<=steps;tick++) {
-            assertEquals(tick*reference.step(),algorithm.getSimuTime(),1e-10);
+        java.util.function.Supplier<double[]> sample=()->{
             model.getOutputObject();
             var before=model.getNamedStates();
             var values=new ArrayList<Double>(24);
@@ -165,7 +165,13 @@ public class Regfma1NativeTrajectoryTest {
             double powerScale=generator.getMvaBase()/net.getBaseMva();
             values.add(model.getActivePower()*powerScale);values.add(model.getReactivePower()*powerScale);
             values.add(net.getBus("Bus1").getVoltageMag());values.add(model.getSpeed()-1.0);
-            double[] row=values.stream().mapToDouble(Double::doubleValue).toArray();
+            return values.stream().mapToDouble(Double::doubleValue).toArray();
+        };
+        // The native trace records the pre-event side at each event tick.
+        var left=EventLeftLimits.capture(algorithm,reference.step(),sample);
+        for(int tick=0;tick<=steps;tick++) {
+            assertEquals(tick*reference.step(),algorithm.getSimuTime(),1e-10);
+            double[] row=left.at(algorithm.getSimuTime(),sample);
             assertEquals(24,row.length);
             assertTrue(Arrays.stream(row).allMatch(Double::isFinite));
             sawCurrentLimit|=model.isCurrentLimited();

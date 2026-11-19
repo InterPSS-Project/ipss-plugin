@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -93,6 +94,9 @@ public class Oel3cSmibTest {
         alg.setSimuStepSec(h);alg.setTotalSimuTimeSec(.5);alg.setSimuOutputHandler(new StateMonitor());
         ObservedSolver observer=impedanceLoad?new ObservedSolver(alg,h):null;
         if(observer!=null)alg.setSolver(observer);
+        // Samples after each step hold the pre-event side at an event tick; the
+        // observer records the post-event side at the start of the next step.
+        var left=EventLeftLimits.capture(alg,h,()->snapshot(alg,alg.getSimuTime()));
         if(fault)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,
             SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"Oel3cFault");
         assertTrue(alg.initialization());var machine=net.getMachine("Bus1-mach1");var exc=(Ac1cExciter)machine.getExciter();
@@ -106,7 +110,7 @@ public class Oel3cSmibTest {
         List<double[]> measurements=new ArrayList<>();
         double largestDrift=0,lowestOutput=0;
         while(true){
-            double[] values=snapshot(alg,alg.getSimuTime());
+            double[] values=left.at(alg.getSimuTime(),()->snapshot(alg,alg.getSimuTime()));
             for(double value:values)assertTrue(Double.isFinite(value));
             assertTrue(oel.getOutput()>=-1&&oel.getOutput()<=0);assertTrue(values[6]>=-1&&values[6]<=0);
             lowestOutput=Math.min(lowestOutput,oel.getOutput());largestDrift=Math.max(largestDrift,Math.abs(values[1]-initialVoltage));

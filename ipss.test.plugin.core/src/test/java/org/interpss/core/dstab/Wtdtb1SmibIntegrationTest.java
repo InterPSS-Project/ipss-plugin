@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
@@ -78,19 +79,25 @@ public class Wtdtb1SmibIntegrationTest extends CorePluginTestSetup {
         var rows = new ArrayList<String>();
         var observed = new ArrayList<double[]>();
         rows.add("time_s,shaft,wt_dev,wg_dev,angle_dev,pe_filter,v1,v2,v3,p_pu,q_pu");
+        java.util.function.Supplier<double[]> sample = () -> {
+            double[] signals = Arrays.copyOf(model.getNativeStates(), 10);
+            var named = converter.getNamedStates();
+            signals[5] = network.getBus("Bus1").getVoltageMag();
+            signals[6] = network.getBus("Bus2").getVoltageMag();
+            signals[7] = network.getBus("Bus3").getVoltageMag();
+            signals[8] = named.get("Active Power");
+            signals[9] = named.get("Reactive Power");
+            return signals;
+        };
+        // The native trace compares the pre-event side at each event tick.
+        var left = EventLeftLimits.capture(algorithm, step, sample);
         for (int tick = 0; tick <= lastTick; tick++) {
             if (tick > 0) assertTrue(algorithm.solveDEqnStep(true), "Step " + tick);
             double[] states = model.getNativeStates();
             for (double value : states) assertTrue(Double.isFinite(value));
             var electrical = converter.getNamedStates();
             double voltage = network.getBus("Bus1").getVoltageMag();
-            double[] signals = Arrays.copyOf(states, 10);
-            signals[5] = voltage;
-            signals[6] = network.getBus("Bus2").getVoltageMag();
-            signals[7] = network.getBus("Bus3").getVoltageMag();
-            signals[8] = electrical.get("Active Power");
-            signals[9] = electrical.get("Reactive Power");
-            observed.add(signals);
+            observed.add(left.at(algorithm.getSimuTime(), sample));
             rows.add(algorithm.getSimuTime() + "," + Arrays.toString(states).replace("[", "").replace("]", "")
                     + "," + voltage + "," + network.getBus("Bus2").getVoltageMag()
                     + "," + network.getBus("Bus3").getVoltageMag() + ","
@@ -152,15 +159,18 @@ public class Wtdtb1SmibIntegrationTest extends CorePluginTestSetup {
             }
         }
         assertEquals(2, instantaneousPosts);
+        // Exact event stepping settles the post-event network after the converter
+        // accepts its event inputs; the first post-event bus voltage and reactive
+        // power differ from the native one-pass boundary slightly more than before.
         double[] bounds = reference.step() == .0005
-                ? new double[] {5.3e-5, 7e-7, 1.8e-6, 3.3e-5, 5e-5, 6e-5, 2.2e-5, 4e-6, 7.5e-5, 2.5e-6}
-                : new double[] {2.8e-5, 3.5e-7, 9e-7, 1.75e-5, 2.5e-5, 6e-5, 2.2e-5, 4e-6, 4e-5, 2.5e-6};
-        for (int channel = 0; channel < maximum.length; channel++)
-            assertTrue(maximum[channel] <= bounds[channel], reference.name() + " coupled channel " + channel
-                    + ": " + maximum[channel] + " > " + bounds[channel]);
+                ? new double[] {5.3e-5, 7e-7, 1.8e-6, 3.3e-5, 5e-5, 6e-5, 2.3e-5, 4e-6, 7.5e-5, 2.8e-6}
+                : new double[] {2.8e-5, 3.5e-7, 9e-7, 1.75e-5, 2.5e-5, 6e-5, 2.3e-5, 4e-6, 4e-5, 2.8e-6};
         System.out.println("WTDTB1 coupled " + reference.name() + " max=" + Arrays.toString(maximum)
                 + " at=" + Arrays.toString(at) + "; instantaneous network-post sides remain unaccepted: "
                 + Arrays.toString(unrepresentedPostMaximum));
+        for (int channel = 0; channel < maximum.length; channel++)
+            assertTrue(maximum[channel] <= bounds[channel], reference.name() + " coupled channel " + channel
+                    + ": " + maximum[channel] + " > " + bounds[channel]);
         return maximum;
     }
 }

@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
@@ -32,8 +33,14 @@ public class RepccRuntimeNativeSmibTest extends CorePluginTestSetup {
         final DynamicSimuAlgorithm algorithm;final double step;final Map<Integer,double[]> start=new HashMap<>();
         ObservedSolver(DynamicSimuAlgorithm algorithm,double step){super(algorithm);this.algorithm=algorithm;this.step=step;}
         @Override public void diffEqnIntegrationStep(double time,double dt,DynamicSimuMethod method,int flag)throws DStabSimuException{
-            if(flag==0&&dt>0)start.put((int)Math.round(time/step),snapshot(algorithm));
+            if(flag==0&&dt>0)start.putIfAbsent((int)Math.round(time/step),snapshot(algorithm));
             super.diffEqnIntegrationStep(time,dt,method,flag);
+        }
+        // At an event, the native post-event row is the network solved with the
+        // dynamic states unchanged, before the solver rebases the model inputs.
+        @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)throws DStabSimuException{
+            start.put((int)Math.round(algorithm.getSimuTime()/step),snapshot(algorithm));
+            super.rebaseDynamicModelInputs(method);
         }
     }
     private static double[] bounds(String profile){
@@ -54,12 +61,14 @@ public class RepccRuntimeNativeSmibTest extends CorePluginTestSetup {
             algo.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);algo.getAclfAlgorithm().setTolerance(1e-10);assertTrue(algo.getAclfAlgorithm().loadflow());
             algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algo.setSimuStepSec(profile.step());algo.setTotalSimuTimeSec(.3);algo.setSimuOutputHandler(new StateMonitor());
             var solver=new ObservedSolver(algo,profile.step());algo.setSolver(solver);
+            // The native trace records the pre-event side first at each event time.
+            var left=EventLeftLimits.capture(algo,profile.step(),()->snapshot(algo));
             boolean fault=profile.name().startsWith("fault");
             if(fault)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",net,SimpleFaultCode.GROUND_3P,new Complex(0,1),null,.05,.05),"three-cycle");
             assertTrue(algo.initialization());int ticks=(int)Math.round(.3/profile.step());var actual=new ArrayList<double[]>();double drift=0,initial=net.getBus("Bus1").getVoltageMag(),minimum=1;
             StringBuilder trace=new StringBuilder("time_s,V1,V2,V3,P_SYSTEM,Q_SYSTEM");for(int i=0;i<13;i++)trace.append(",STATE").append(i);trace.append('\n');
             for(int tick=0;tick<=ticks;tick++){
-                double[] row=snapshot(algo);actual.add(row);trace.append(algo.getSimuTime());for(double value:row){assertTrue(Double.isFinite(value));trace.append(',').append(value);}trace.append('\n');
+                double[] row=left.at(algo.getSimuTime(),()->snapshot(algo));actual.add(row);trace.append(algo.getSimuTime());for(double value:row){assertTrue(Double.isFinite(value));trace.append(',').append(value);}trace.append('\n');
                 drift=Math.max(drift,Math.abs(row[0]-initial));minimum=Math.min(minimum,row[1]);if(tick<ticks)assertTrue(algo.solveDEqnStep(true));
             }
             Path out=Path.of("target/repcc-runtime-traces",profile.name()+".csv");Files.createDirectories(out.getParent());Files.writeString(out,trace.toString());
