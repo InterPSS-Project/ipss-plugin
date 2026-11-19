@@ -32,6 +32,8 @@ public class PSSE_IEEE14_NB_Topo_Sample {
 
 		Substation sub2 = net.getSubstation("2");
 
+		AclfNetInfoHelper.outputSubstationAclfDebugInfo(net, sub2.getId(), false);
+
 		SubstationNBreakerHelper subHelper = new SubstationNBreakerHelper(sub2);
 		subHelper.printSubstationTree();
 
