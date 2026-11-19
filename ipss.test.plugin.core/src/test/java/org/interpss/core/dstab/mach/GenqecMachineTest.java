@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.GenqecMachine;
-import org.interpss.dstab.mach.GenqejData;
-import org.interpss.dstab.mach.GenqejMachine;
-import org.interpss.dstab.mach.Gentpj1Data;
-import org.interpss.dstab.mach.Gentpj1Machine;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqejData;
+import com.interpss.dstab.mach.model.GenqejMachine;
+import com.interpss.dstab.mach.model.Gentpj1Data;
+import com.interpss.dstab.mach.model.Gentpj1Machine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
@@ -38,6 +38,32 @@ class GenqecMachineTest extends TestSetupBase {
                 6.81, 0.85, 0.02, 0.02,
                 0.233, 0.797,
                 0.0, 0.0, 0.0, 0.1, saturationFunction);
+    }
+
+    @Test
+    void signedKwRetainsInputButUsesMagnitudeAcrossBothCurrentDirections() throws Exception {
+        GenqecMachine[] machines=new GenqecMachine[2];
+        for(int i=0;i<2;i++) {
+            double kw=i==0?1.5:-1.5;
+            var data=new GenqecData(3.17,0,.003,2.37,1.87,.32,.52,.28,.20,.19,
+                    6.81,.85,.02,.02,0,0,0,0,0,kw,1);
+            var network=SampleDStabCase.createDStabTestNet();
+            var machine=new DStabNetworkBuilder(network).addGenqec("Gen","G1",100,1,data);
+            var bus=network.getDStabBus("Gen");bus.initStates();assertTrue(machine.initStates(bus));
+            assertEquals(kw,machine.getGenqecData().kw(),0);
+            machines[i]=machine;
+        }
+        assertEquals(machines[0].getEfd(),machines[1].getEfd(),1e-12);
+        int positive=0,negative=0,interior=0;
+        for(double magnitude:new double[]{.1,.5,1,2,3})for(int degree=-180;degree<=180;degree+=5) {
+            var voltage=new Complex(Math.cos(Math.toRadians(degree)),Math.sin(Math.toRadians(degree))).multiply(magnitude);
+            for(var machine:machines){machine.getDStabBus().setVoltage(voltage);machine.getIgen();}
+            assertEquals(machines[0].calculateIfd(MachineIfdBase.EXCITER),
+                    machines[1].calculateIfd(MachineIfdBase.EXCITER),1e-12);
+            double product=1.5*machines[0].getIdq().d;
+            if(product>.4)positive++;else if(product<-.4)negative++;else interior++;
+        }
+        assertTrue(positive>0&&negative>0&&interior>0,"Exercise both signs and the interior of the bounded current product");
     }
 
     @Test
@@ -202,7 +228,8 @@ class GenqecMachineTest extends TestSetupBase {
         bus.initStates();
         assertTrue(machine.initStates(bus));
 
-        assertEquals(2, machine.getGenqecData().satFunc());
+        // Type-J native data uses scaled quadratic saturation.
+        assertEquals(1, machine.getGenqecData().satFunc());
         var idq = machine.getIdq();
         var vdq = machine.getVdq();
         double airGapFlux = Math.hypot(

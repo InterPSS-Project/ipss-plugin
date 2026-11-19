@@ -1,0 +1,291 @@
+{
+  "schema": "interpss-oel3c-measurement-reference-v1",
+  "profiles": [
+    {
+      "name": "efd-fault",
+      "step_s": 0.0005,
+      "channels": 22,
+      "raw_rows": 1003,
+      "resource": "efd-fault.csv.gz.b64",
+      "raw_sha256": "6d04eaebac0e14ecd84b17c504a147fb7e845c97589f3f0042b66491c8ad1f93",
+      "native_input": "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0.0 0.2 0.05 10.0 0.3 20.0 -20.0 0.4 0.2 0.5 0.2 0.1 1.1 0.75 0.0 1.0 0.0 20.0 -20.0 99.0 0.0 /\n1 'OEL3C' '1' 1 1 0.5 0.3333 0.0 0.1 0.1 1.0 0.0 -1.0 0.0 -1.0 /\n",
+      "translated_input": "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0.0 0.2 0.05 10.0 0.3 20.0 -20.0 0.4 0.2 0.5 0.2 0.1 1.1 0.75 0.0 1.0 0.0 20.0 -20.0 99.0 0.0 /\n1 'OEL3C' '1' 1 0.5 0.3333 0.0 1 0.1 0.1 1.0 0.0 -1.0 0.0 -1.0 /\n",
+      "cold_runs": [
+        "oel3c-powerworld-measurement-final-v1-efd-fault-a",
+        "oel3c-powerworld-measurement-final-v1-efd-fault-b"
+      ],
+      "initial_measurement": {
+        "intended": "Efd",
+        "matching_physical_inputs": [
+          "Vfe"
+        ],
+        "initial_scaled_input": 0.4890948832,
+        "initial_physical_inputs": {
+          "Efd": 1.105876207,
+          "Ifd": 1.105876207,
+          "Vfe": 1.4674313309000002
+        },
+        "absolute_scaled_residuals": {
+          "Efd": 0.12050634340689997,
+          "Ifd": 0.12050634340689997,
+          "Vfe": 2.0611029938333303e-08
+        },
+        "serialization_bound_pu": 1e-06,
+        "status": "mismatch",
+        "intended_initial_measurement_consistent": false,
+        "runtime_routing_verified": false,
+        "trajectory_acceptance": false,
+        "raw_rows": 1003,
+        "rows_dropped": 0
+      },
+      "evidence": [
+        {
+          "run": "oel3c-powerworld-measurement-final-v1-efd-fault-a",
+          "files": {
+            "audit_oel3c_measurement.py": "770a36fd77122fc3fc0c46f34e8257a705fe18053e8105965abe2f4ab232173c",
+            "genrou_native_probe.py": "dc240d65d327e1b7e599f6cdba875d5adc38bbdc8e250df8eb51e4ea7473424f",
+            "hplntd_fault_probe.py": "88df9e1af008304b1258f2f626c95b00c89634d32cf228a26be165dc4bd44127",
+            "initialized-models.aux": "36214224b2878941a238c1bead51241e5fc1e02960c24afd5e4f1db4b4cd5921",
+            "initialized.log": "1f131575cec1b32f8b51da1201507a7c92b7bbae0c9287a8ee93d79c7fb1dfcd",
+            "manifest.json": "1b135c3388436070a239c994cdd035751a0b38d2ce7360f1eedae74c2ff30926",
+            "measurement-audit.json": "dbd090280d9f308ea79f33dbe7f99dc105c691e55dd95b921b09f019e35eb24a",
+            "model-readback.json": "4efbec23870247c6d5d0337867662da7f7dd15ae80724c72a79ac9cd7b467789",
+            "oel3c_native_probe.py": "71badb6cf3ef0de43f99e73a528397a19c8168ba93641c00b91b249d87fc4d8d",
+            "oel3c_routing_probe.py": "2149e6beaa0e9e0f97753e342195cb5cc5b1c0678f120407fb1dc287aab2140d",
+            "powerworld.csv": "6d04eaebac0e14ecd84b17c504a147fb7e845c97589f3f0042b66491c8ad1f93",
+            "powerworld.log": "c6733da6642829779fc3e7d4d532d5f2ec3cba7940ec1ed2090992a59efcbeaf",
+            "power_flow_solved-models.aux": "854d59e4e67a42773fb7fbe24590ff89a582945342d795369b5673f0de74816c",
+            "power_flow_solved.log": "00e1f95a8850a9d6153f904d530ea1c0a453f318d3ddcf394608382a7f9f41f7",
+            "probe.py": "c9a9461662e1aa9be9894f045ccb40c8c355b8aef24b8264b78fb1dbf048301a",
+            "progress.txt": "6c7ee32727a559ad15b4967e18ceb849e3b5397c065330807c21b91045b04361",
+            "run.aux": "9a0f660f76e928ddca3871340a762da535b25dde580a8376ec99a99db0ceaccd",
+            "runner.py": "0d6abbe93113afcc7113957d30278dda69e4392973a5da3aab611f27b4c9f61e",
+            "source.dyr": "9993c73d5707c396a23ea803e9bd42ed46119edd6dd9a151d9cb61e54ce6bc32",
+            "spec.json": "4a7cccc3aa5f656da9571d7f53940330ce728475784419283643b7744cdff248",
+            "translated.dyr": "b0fd1451ae8b7618db8b238e2dc540aca827190af304eac69474a54e51d5bddb"
+          }
+        },
+        {
+          "run": "oel3c-powerworld-measurement-final-v1-efd-fault-b",
+          "files": {
+            "audit_oel3c_measurement.py": "770a36fd77122fc3fc0c46f34e8257a705fe18053e8105965abe2f4ab232173c",
+            "genrou_native_probe.py": "dc240d65d327e1b7e599f6cdba875d5adc38bbdc8e250df8eb51e4ea7473424f",
+            "hplntd_fault_probe.py": "88df9e1af008304b1258f2f626c95b00c89634d32cf228a26be165dc4bd44127",
+            "initialized-models.aux": "36214224b2878941a238c1bead51241e5fc1e02960c24afd5e4f1db4b4cd5921",
+            "initialized.log": "e09a9969da7807a073d49fc8053ed7a84877367e64229e3c25ce6a1a9dd28118",
+            "manifest.json": "32f499072f5a2dbdedca731160da5fd33027afcdd429c8011a4931eaf8579606",
+            "measurement-audit.json": "dbd090280d9f308ea79f33dbe7f99dc105c691e55dd95b921b09f019e35eb24a",
+            "model-readback.json": "4efbec23870247c6d5d0337867662da7f7dd15ae80724c72a79ac9cd7b467789",
+            "oel3c_native_probe.py": "71badb6cf3ef0de43f99e73a528397a19c8168ba93641c00b91b249d87fc4d8d",
+            "oel3c_routing_probe.py": "2149e6beaa0e9e0f97753e342195cb5cc5b1c0678f120407fb1dc287aab2140d",
+            "powerworld.csv": "6d04eaebac0e14ecd84b17c504a147fb7e845c97589f3f0042b66491c8ad1f93",
+            "powerworld.log": "8c68ae8b4d903aacde9fd53d0cf300a685788dfd088799a026cd7d88d94c7730",
+            "power_flow_solved-models.aux": "854d59e4e67a42773fb7fbe24590ff89a582945342d795369b5673f0de74816c",
+            "power_flow_solved.log": "307e908e451ec450a28af9f2c7685ee66004a68858775c5166faf08af5101482",
+            "probe.py": "c9a9461662e1aa9be9894f045ccb40c8c355b8aef24b8264b78fb1dbf048301a",
+            "progress.txt": "6c7ee32727a559ad15b4967e18ceb849e3b5397c065330807c21b91045b04361",
+            "run.aux": "9a0f660f76e928ddca3871340a762da535b25dde580a8376ec99a99db0ceaccd",
+            "runner.py": "0d6abbe93113afcc7113957d30278dda69e4392973a5da3aab611f27b4c9f61e",
+            "source.dyr": "9993c73d5707c396a23ea803e9bd42ed46119edd6dd9a151d9cb61e54ce6bc32",
+            "spec.json": "7fc5efa61e2d20ff8dc6a613391164777a56be56ded2bddd85013f04f10afd5a",
+            "translated.dyr": "b0fd1451ae8b7618db8b238e2dc540aca827190af304eac69474a54e51d5bddb"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ifd-fault",
+      "step_s": 0.0005,
+      "channels": 22,
+      "raw_rows": 1003,
+      "resource": "ifd-fault.csv.gz.b64",
+      "raw_sha256": "ba099f9403a8cb9be714ebddb09ffb64ddfd264b88768746b39b01329420b11a",
+      "native_input": "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0.0 0.2 0.05 10.0 0.3 20.0 -20.0 0.4 0.2 0.5 0.2 0.1 1.1 0.75 0.0 1.0 0.0 20.0 -20.0 99.0 0.0 /\n1 'OEL3C' '1' 2 1 0.5 0.3333 0.0 0.1 0.1 1.0 0.0 -1.0 0.0 -1.0 /\n",
+      "translated_input": "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0.0 0.2 0.05 10.0 0.3 20.0 -20.0 0.4 0.2 0.5 0.2 0.1 1.1 0.75 0.0 1.0 0.0 20.0 -20.0 99.0 0.0 /\n1 'OEL3C' '1' 0 0.5 0.3333 0.0 1 0.1 0.1 1.0 0.0 -1.0 0.0 -1.0 /\n",
+      "cold_runs": [
+        "oel3c-powerworld-measurement-final-v1-ifd-fault-a",
+        "oel3c-powerworld-measurement-final-v1-ifd-fault-b"
+      ],
+      "initial_measurement": {
+        "intended": "Ifd",
+        "matching_physical_inputs": [
+          "Efd",
+          "Ifd"
+        ],
+        "initial_scaled_input": 0.368588537,
+        "initial_physical_inputs": {
+          "Efd": 1.105876207,
+          "Ifd": 1.105876207,
+          "Vfe": 1.4674313309000002
+        },
+        "absolute_scaled_residuals": {
+          "Efd": 2.7931000290415398e-09,
+          "Ifd": 2.7931000290415398e-09,
+          "Vfe": 0.12050632558897006
+        },
+        "serialization_bound_pu": 1e-06,
+        "status": "ambiguous",
+        "intended_initial_measurement_consistent": true,
+        "runtime_routing_verified": false,
+        "trajectory_acceptance": false,
+        "raw_rows": 1003,
+        "rows_dropped": 0
+      },
+      "evidence": [
+        {
+          "run": "oel3c-powerworld-measurement-final-v1-ifd-fault-a",
+          "files": {
+            "audit_oel3c_measurement.py": "770a36fd77122fc3fc0c46f34e8257a705fe18053e8105965abe2f4ab232173c",
+            "genrou_native_probe.py": "dc240d65d327e1b7e599f6cdba875d5adc38bbdc8e250df8eb51e4ea7473424f",
+            "hplntd_fault_probe.py": "88df9e1af008304b1258f2f626c95b00c89634d32cf228a26be165dc4bd44127",
+            "initialized-models.aux": "ff91a5bfc53a10896781ec8d05089f0bb0ca96aeb2c1ff0d1e47e0b8ef2a9b59",
+            "initialized.log": "47bcef656f9941af113ecd2889c4c62225a5f1b5148592c629fcda3b0d330cd4",
+            "manifest.json": "cfe337646925cd8ea79dabf665fdf3372b11520f57fdc2578ef4edbfe9ac8206",
+            "measurement-audit.json": "fcda43a23fbb539de5b01cdfe4660ace04976fd8562d39a643b62f9ec832c102",
+            "model-readback.json": "b8e4648c6542f5b4ea5ff929d53ba722766a2f914e34fe4b49ff01f43fdf07e7",
+            "oel3c_native_probe.py": "71badb6cf3ef0de43f99e73a528397a19c8168ba93641c00b91b249d87fc4d8d",
+            "oel3c_routing_probe.py": "2149e6beaa0e9e0f97753e342195cb5cc5b1c0678f120407fb1dc287aab2140d",
+            "powerworld.csv": "ba099f9403a8cb9be714ebddb09ffb64ddfd264b88768746b39b01329420b11a",
+            "powerworld.log": "9f9d986452f67340f39f3060065067222620dade21a9737cad67571708fdbbdc",
+            "power_flow_solved-models.aux": "0fa062d1f05c66240bb6c7fc1b58ff0fffb566342b97da13389bb406fc7a5f25",
+            "power_flow_solved.log": "c837c9758aa731203c87334abe921a86938f7b2be173aeee7a25ea32178b6144",
+            "probe.py": "c9a9461662e1aa9be9894f045ccb40c8c355b8aef24b8264b78fb1dbf048301a",
+            "progress.txt": "6c7ee32727a559ad15b4967e18ceb849e3b5397c065330807c21b91045b04361",
+            "run.aux": "9a0f660f76e928ddca3871340a762da535b25dde580a8376ec99a99db0ceaccd",
+            "runner.py": "0d6abbe93113afcc7113957d30278dda69e4392973a5da3aab611f27b4c9f61e",
+            "source.dyr": "e88d761b2139af7a6a491dd28486509bceb5958db07952e575ad2350441b4b37",
+            "spec.json": "dd24944804786510360c9c4fede40c783a9f34817d453662639e68a718978356",
+            "translated.dyr": "37fb2d00bf594176c8fbf8543cd758a5a0ed4d3fc2c6c5dafc0f1bf4f31c5649"
+          }
+        },
+        {
+          "run": "oel3c-powerworld-measurement-final-v1-ifd-fault-b",
+          "files": {
+            "audit_oel3c_measurement.py": "770a36fd77122fc3fc0c46f34e8257a705fe18053e8105965abe2f4ab232173c",
+            "genrou_native_probe.py": "dc240d65d327e1b7e599f6cdba875d5adc38bbdc8e250df8eb51e4ea7473424f",
+            "hplntd_fault_probe.py": "88df9e1af008304b1258f2f626c95b00c89634d32cf228a26be165dc4bd44127",
+            "initialized-models.aux": "ff91a5bfc53a10896781ec8d05089f0bb0ca96aeb2c1ff0d1e47e0b8ef2a9b59",
+            "initialized.log": "90fc14197dc421d278eb1e4fb544aa23fb071c8b553b637de6db1c4d75f66d5f",
+            "manifest.json": "9c23e158deb48ec06851a1c84156bfd3999d4071f736c203018c88ea79b74163",
+            "measurement-audit.json": "fcda43a23fbb539de5b01cdfe4660ace04976fd8562d39a643b62f9ec832c102",
+            "model-readback.json": "b8e4648c6542f5b4ea5ff929d53ba722766a2f914e34fe4b49ff01f43fdf07e7",
+            "oel3c_native_probe.py": "71badb6cf3ef0de43f99e73a528397a19c8168ba93641c00b91b249d87fc4d8d",
+            "oel3c_routing_probe.py": "2149e6beaa0e9e0f97753e342195cb5cc5b1c0678f120407fb1dc287aab2140d",
+            "powerworld.csv": "ba099f9403a8cb9be714ebddb09ffb64ddfd264b88768746b39b01329420b11a",
+            "powerworld.log": "d30c75a1e99b763b0ea6f9676118c45e93cf21edf0887947501398a4ef194041",
+            "power_flow_solved-models.aux": "0fa062d1f05c66240bb6c7fc1b58ff0fffb566342b97da13389bb406fc7a5f25",
+            "power_flow_solved.log": "43a5b69d4c3d4390dbc43f54d1bad006f7eeaa99c0ed416ae190d609e4acd8bd",
+            "probe.py": "c9a9461662e1aa9be9894f045ccb40c8c355b8aef24b8264b78fb1dbf048301a",
+            "progress.txt": "6c7ee32727a559ad15b4967e18ceb849e3b5397c065330807c21b91045b04361",
+            "run.aux": "9a0f660f76e928ddca3871340a762da535b25dde580a8376ec99a99db0ceaccd",
+            "runner.py": "0d6abbe93113afcc7113957d30278dda69e4392973a5da3aab611f27b4c9f61e",
+            "source.dyr": "e88d761b2139af7a6a491dd28486509bceb5958db07952e575ad2350441b4b37",
+            "spec.json": "cddaaefe9b7c833215ac662f7d6f67bc298760e56c17e4d92ae252180a87c9d4",
+            "translated.dyr": "37fb2d00bf594176c8fbf8543cd758a5a0ed4d3fc2c6c5dafc0f1bf4f31c5649"
+          }
+        }
+      ]
+    },
+    {
+      "name": "vfe-fault",
+      "step_s": 0.0005,
+      "channels": 22,
+      "raw_rows": 1003,
+      "resource": "vfe-fault.csv.gz.b64",
+      "raw_sha256": "6d04eaebac0e14ecd84b17c504a147fb7e845c97589f3f0042b66491c8ad1f93",
+      "native_input": "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0.0 0.2 0.05 10.0 0.3 20.0 -20.0 0.4 0.2 0.5 0.2 0.1 1.1 0.75 0.0 1.0 0.0 20.0 -20.0 99.0 0.0 /\n1 'OEL3C' '1' 3 1 0.5 0.3333 0.0 0.1 0.1 1.0 0.0 -1.0 0.0 -1.0 /\n",
+      "translated_input": "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0.0 0.2 0.05 10.0 0.3 20.0 -20.0 0.4 0.2 0.5 0.2 0.1 1.1 0.75 0.0 1.0 0.0 20.0 -20.0 99.0 0.0 /\n1 'OEL3C' '1' 2 0.5 0.3333 0.0 1 0.1 0.1 1.0 0.0 -1.0 0.0 -1.0 /\n",
+      "cold_runs": [
+        "oel3c-powerworld-measurement-final-v1-vfe-fault-a",
+        "oel3c-powerworld-measurement-final-v1-vfe-fault-b"
+      ],
+      "initial_measurement": {
+        "intended": "Vfe",
+        "matching_physical_inputs": [
+          "Vfe"
+        ],
+        "initial_scaled_input": 0.4890948832,
+        "initial_physical_inputs": {
+          "Efd": 1.105876207,
+          "Ifd": 1.105876207,
+          "Vfe": 1.4674313309000002
+        },
+        "absolute_scaled_residuals": {
+          "Efd": 0.12050634340689997,
+          "Ifd": 0.12050634340689997,
+          "Vfe": 2.0611029938333303e-08
+        },
+        "serialization_bound_pu": 1e-06,
+        "status": "consistent",
+        "intended_initial_measurement_consistent": true,
+        "runtime_routing_verified": false,
+        "trajectory_acceptance": false,
+        "raw_rows": 1003,
+        "rows_dropped": 0
+      },
+      "evidence": [
+        {
+          "run": "oel3c-powerworld-measurement-final-v1-vfe-fault-a",
+          "files": {
+            "audit_oel3c_measurement.py": "770a36fd77122fc3fc0c46f34e8257a705fe18053e8105965abe2f4ab232173c",
+            "genrou_native_probe.py": "dc240d65d327e1b7e599f6cdba875d5adc38bbdc8e250df8eb51e4ea7473424f",
+            "hplntd_fault_probe.py": "88df9e1af008304b1258f2f626c95b00c89634d32cf228a26be165dc4bd44127",
+            "initialized-models.aux": "4222090638872ad3de842584b68ecde246b5915239bb746e1757f6643a0ca3c0",
+            "initialized.log": "52dbd0d363dc193efcd9c8b3c42d1ac7d72ac9c8032d6a19e7944ff894e57d0f",
+            "manifest.json": "66326779d5a70f3410508a03f94668b2457e1e1396d7c350bfd4534f7aaca7ab",
+            "measurement-audit.json": "29d1ac19f77913c13a9bc80ab07cb724d350ac58cf59be4ca456f7b9f6424863",
+            "model-readback.json": "cc1a0caa92970972c22856e23e812dd43177d4570296821a2a0b626b4e5be6a6",
+            "oel3c_native_probe.py": "71badb6cf3ef0de43f99e73a528397a19c8168ba93641c00b91b249d87fc4d8d",
+            "oel3c_routing_probe.py": "2149e6beaa0e9e0f97753e342195cb5cc5b1c0678f120407fb1dc287aab2140d",
+            "powerworld.csv": "6d04eaebac0e14ecd84b17c504a147fb7e845c97589f3f0042b66491c8ad1f93",
+            "powerworld.log": "440dd28b05622203b7061d53e872b65452f7a4a189148d6bd79c3ceba53d8170",
+            "power_flow_solved-models.aux": "0039b483b8955f897dabf6706107a61fa6b28f6ae6ffd7ff96afade686f265ba",
+            "power_flow_solved.log": "4102d435219ada52df1e515b8bdec4b8a70f0ae2f6e81ccd6af44decb16bb9d7",
+            "probe.py": "c9a9461662e1aa9be9894f045ccb40c8c355b8aef24b8264b78fb1dbf048301a",
+            "progress.txt": "6c7ee32727a559ad15b4967e18ceb849e3b5397c065330807c21b91045b04361",
+            "run.aux": "9a0f660f76e928ddca3871340a762da535b25dde580a8376ec99a99db0ceaccd",
+            "runner.py": "0d6abbe93113afcc7113957d30278dda69e4392973a5da3aab611f27b4c9f61e",
+            "source.dyr": "99785cf08ca8e4c125c6f721e447751f6e9214ee4971d2ac1bf10f9aa7d0ba52",
+            "spec.json": "6e83f06382af4bd86d40053fce660921e3ae9f1581c6ed00e329591fc2fe990e",
+            "translated.dyr": "6cd90005039acfd991504cb280b2bae2f2f22a372f4526aa90fd932d3459fe1f"
+          }
+        },
+        {
+          "run": "oel3c-powerworld-measurement-final-v1-vfe-fault-b",
+          "files": {
+            "audit_oel3c_measurement.py": "770a36fd77122fc3fc0c46f34e8257a705fe18053e8105965abe2f4ab232173c",
+            "genrou_native_probe.py": "dc240d65d327e1b7e599f6cdba875d5adc38bbdc8e250df8eb51e4ea7473424f",
+            "hplntd_fault_probe.py": "88df9e1af008304b1258f2f626c95b00c89634d32cf228a26be165dc4bd44127",
+            "initialized-models.aux": "4222090638872ad3de842584b68ecde246b5915239bb746e1757f6643a0ca3c0",
+            "initialized.log": "bcd236fd02e2e3182ab1d321c5f26051412ddfb083fdf4fac907def9f1a0397b",
+            "manifest.json": "3bbb1c945fdd613c55ff488fff964018c05984c72b65c9bdf2e55857fbfd7411",
+            "measurement-audit.json": "29d1ac19f77913c13a9bc80ab07cb724d350ac58cf59be4ca456f7b9f6424863",
+            "model-readback.json": "cc1a0caa92970972c22856e23e812dd43177d4570296821a2a0b626b4e5be6a6",
+            "oel3c_native_probe.py": "71badb6cf3ef0de43f99e73a528397a19c8168ba93641c00b91b249d87fc4d8d",
+            "oel3c_routing_probe.py": "2149e6beaa0e9e0f97753e342195cb5cc5b1c0678f120407fb1dc287aab2140d",
+            "powerworld.csv": "6d04eaebac0e14ecd84b17c504a147fb7e845c97589f3f0042b66491c8ad1f93",
+            "powerworld.log": "4b5e8a340438808739a761b34e68a3dea428fa17a08f085430421cf3af66fc61",
+            "power_flow_solved-models.aux": "0039b483b8955f897dabf6706107a61fa6b28f6ae6ffd7ff96afade686f265ba",
+            "power_flow_solved.log": "39ac9211b5b7c9e0f27e6998c148fc399d57808745d624ac908cb0483a846b51",
+            "probe.py": "c9a9461662e1aa9be9894f045ccb40c8c355b8aef24b8264b78fb1dbf048301a",
+            "progress.txt": "6c7ee32727a559ad15b4967e18ceb849e3b5397c065330807c21b91045b04361",
+            "run.aux": "9a0f660f76e928ddca3871340a762da535b25dde580a8376ec99a99db0ceaccd",
+            "runner.py": "0d6abbe93113afcc7113957d30278dda69e4392973a5da3aab611f27b4c9f61e",
+            "source.dyr": "99785cf08ca8e4c125c6f721e447751f6e9214ee4971d2ac1bf10f9aa7d0ba52",
+            "spec.json": "b6df733ee9cbbc7ca24d4f6fe30a1bc7a8af4441d9bb2ac47b65798e90843a14",
+            "translated.dyr": "6cd90005039acfd991504cb280b2bae2f2f22a372f4526aa90fd932d3459fe1f"
+          }
+        }
+      ]
+    }
+  ],
+  "cold_pairs": 3,
+  "raw_rows_all_cold_runs": 6018,
+  "channels": 22,
+  "normalization": "CRLF/CR to LF only; complete raw CSV retained",
+  "model_readback_verified": true,
+  "runtime_routing_verified": false,
+  "trajectory_acceptance": false,
+  "load_model": "Impedance",
+  "integration_method": "RK2"
+}

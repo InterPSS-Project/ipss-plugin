@@ -1,0 +1,265 @@
+{
+  "schema": 1,
+  "status": "diagnostic-crossover",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-controller-stack-crossover/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 666405,
+    "sha256": "f0bb4fe4b2cef4ce3ad661b7db0a31fef7d125506b406d1ee86f6c261f19cf52"
+  },
+  "archive": {
+    "bytes": 13403136,
+    "sha256": "63408dad079c656a026792d4bb896f15ccef393e52b2e9c346466e6734d57551"
+  },
+  "results": {
+    "current": {
+      "status": "completed",
+      "mode": "current",
+      "phase": "timing",
+      "warmup_runs": 32,
+      "measured_runs": 7,
+      "case_wall_s": [
+        12.1781114,
+        11.9669067,
+        12.2310727,
+        12.2079214,
+        12.166031,
+        12.0163594,
+        12.1853258
+      ],
+      "median_case_wall_s": 12.1781114,
+      "trace_sha256": "cea8567cfdee5912994d254a96df0d4ca757ae431bccc680bba46393f06f2cac",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "production_source_changed": false,
+      "reference_accuracy_qualified": false,
+      "overlay_classes": 587,
+      "electrical_endpoint_preparations": [
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376
+      ],
+      "compilation_ms": [
+        25,
+        3,
+        16,
+        88,
+        6,
+        17,
+        90
+      ]
+    },
+    "frozen": {
+      "status": "completed",
+      "mode": "frozen",
+      "phase": "timing",
+      "warmup_runs": 32,
+      "measured_runs": 7,
+      "case_wall_s": [
+        7.592151,
+        7.5524264,
+        7.5490919,
+        7.6301367,
+        7.6527871,
+        7.5753287,
+        7.6667807
+      ],
+      "median_case_wall_s": 7.592151,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "production_source_changed": false,
+      "reference_accuracy_qualified": false,
+      "overlay_classes": 0,
+      "electrical_endpoint_preparations": [
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376
+      ],
+      "compilation_ms": [
+        24,
+        1,
+        12,
+        80,
+        12,
+        17,
+        89
+      ]
+    }
+  },
+  "counts": {
+    "compiled_stages": 1247139,
+    "compiled_observations": 1802607,
+    "compiled_st1_advances": 86472,
+    "prepared_output_reuses": 4845626,
+    "frame_reuses": 20047840,
+    "electrical_endpoint_preparations": 211376
+  },
+  "trajectory_comparison": {
+    "rows": 2405,
+    "channels": 4810,
+    "event_sides_and_times_identical": true,
+    "all_finite": true,
+    "different_values": 10888336,
+    "first": {
+      "row": 0,
+      "time": -0.00833333333333334,
+      "kind": "HISTORY",
+      "channels": [
+        {
+          "channel": "generator_P_MW__bus_1050__id_1",
+          "control": 83.04399999999997,
+          "candidate": 83.04399999999994
+        },
+        {
+          "channel": "generator_Q_Mvar__bus_1050__id_1",
+          "control": -9.920000000000634,
+          "candidate": -9.920000000000455
+        },
+        {
+          "channel": "machine_EFD_pu__bus_1050__id_1",
+          "control": 1.7173894462605745,
+          "candidate": 1.7173894462605743
+        },
+        {
+          "channel": "generator_P_MW__bus_1073__id_1",
+          "control": 178.47100000000026,
+          "candidate": 178.47100000000023
+        },
+        {
+          "channel": "generator_Q_Mvar__bus_1073__id_1",
+          "control": 22.961737100555744,
+          "candidate": 22.961737100555915
+        },
+        {
+          "channel": "machine_EFD_pu__bus_1073__id_1",
+          "control": 2.308371326016417,
+          "candidate": 2.3083713260164167
+        },
+        {
+          "channel": "generator_P_MW__bus_1078__id_1",
+          "control": 88.71099999999973,
+          "candidate": 88.7109999999997
+        },
+        {
+          "channel": "generator_Q_Mvar__bus_1078__id_1",
+          "control": 9.881253958025813,
+          "candidate": 9.881253958025816
+        }
+      ]
+    },
+    "quantities": {
+      "voltage_magnitude [pu]": {
+        "maximum_absolute_error": 4.263256414560601e-14,
+        "channel": "bus_voltage_pu__bus_1050"
+      },
+      "voltage_angle [deg]": {
+        "maximum_absolute_error": 1.0061285138363019e-11,
+        "channel": "bus_angle_deg__bus_5303"
+      },
+      "terminal_active_power [MW]": {
+        "maximum_absolute_error": 3.2582647691015154e-10,
+        "channel": "generator_P_MW__bus_5263__id_1"
+      },
+      "terminal_reactive_power [Mvar]": {
+        "maximum_absolute_error": 1.7550405573274475e-10,
+        "channel": "generator_Q_Mvar__bus_5263__id_1"
+      },
+      "rotor_angle [deg]": {
+        "maximum_absolute_error": 1.546140993013978e-11,
+        "channel": "machine_ANGLE_deg__bus_1051__id_1"
+      },
+      "speed [pu_synchronous_speed]": {
+        "maximum_absolute_error": 4.3298697960381105e-15,
+        "channel": "machine_SPEED_pu__bus_1050__id_1"
+      },
+      "mechanical_power [MW]": {
+        "maximum_absolute_error": 5.9117155615240335e-12,
+        "channel": "machine_PMECH_MW__bus_6078__id_1"
+      },
+      "field_voltage [pu_excitation_base]": {
+        "maximum_absolute_error": 4.5486281408102514e-11,
+        "channel": "machine_EFD_pu__bus_5263__id_1"
+      }
+    },
+    "maximum_absolute_difference": 3.2582647691015154e-10,
+    "independent_reference_comparison": false
+  },
+  "report": "docs/benchmarks/case2-controller-stack-crossover-2026-10-21.md",
+  "production_source_changed": false,
+  "independent_accuracy_qualified": false,
+  "goal_achieved": false
+}

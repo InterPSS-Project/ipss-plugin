@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "status": "production-typed-pss-observation-checkpoint",
+  "goal_achieved": false,
+  "core_commit": "d81a45fef",
+  "plugin_commit": "a23b4c022",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-pss-observation-production/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 85778,
+    "sha256": "d99c8a38e5b280d0e7b96f26915b027375157d4fb81f18dbf3351812def14138"
+  },
+  "archive": {
+    "bytes": 2019700,
+    "sha256": "581bd447a2fd143f3601bb1cc9317eb05cecbcce430f409cad1faa48f68ca352"
+  },
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        11.2825599,
+        11.173649,
+        11.3503125,
+        11.1366242,
+        11.1599768,
+        11.2923333
+      ],
+      "median_case_wall_s": 11.22810445,
+      "compilation_time_ms": [
+        383,
+        158,
+        266,
+        59,
+        55,
+        339
+      ],
+      "gc_time_ms": [
+        133,
+        134,
+        145,
+        133,
+        147,
+        132
+      ],
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.9639794,
+        10.5436398,
+        10.9487163,
+        10.4793476,
+        10.5692784,
+        10.8750934
+      ],
+      "median_case_wall_s": 10.7221859,
+      "compilation_time_ms": [
+        408,
+        165,
+        278,
+        60,
+        56,
+        354
+      ],
+      "gc_time_ms": [
+        132,
+        130,
+        143,
+        132,
+        141,
+        131
+      ],
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "verification": {
+    "recordings": 36,
+    "samples_per_recording": 2405,
+    "channels": 4810,
+    "event_post_rows": 2,
+    "finite": true,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true,
+    "experimental_class_overlay": false
+  },
+  "registered_gate": {
+    "same_failure_methods_as_baseline": true,
+    "same_failure_messages_as_baseline": true,
+    "found": 2626,
+    "passed": 2608,
+    "failed": 5,
+    "skipped": 9,
+    "aborted": 4
+  },
+  "independent_accuracy_qualified": false,
+  "requirements": [
+    "Core and plugin source commits named above",
+    "Private benchmark runner and retained supplied input files",
+    "External dependencies matching the evidence manifest"
+  ]
+}

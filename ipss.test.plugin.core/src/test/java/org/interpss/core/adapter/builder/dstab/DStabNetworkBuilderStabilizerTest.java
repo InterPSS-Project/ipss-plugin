@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -11,24 +12,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
-import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss2c.Ieee2016PSS2CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss3c.Ieee2016PSS3CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss4c.Ieee2016PSS4CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss4c.Ieee2016PSS4CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss5c.Ieee2016PSS5CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss5c.Ieee2016PSS5CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2005pss3b.Ieee2005PSS3BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2005pss4b.Ieee2005PSS4BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2005pss4b.Ieee2005PSS4BStabilizerData;
+import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
+import com.interpss.dstab.controller.pss.psssb.PsssbStabilizer;
+import org.interpss.core.dstab.reference.PsssbTypedTestData;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -91,15 +94,31 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePsssb_mapsPublishedPowerWorldRecordAndRunsBoostStates() throws Exception {
-        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("psssb.dyr");
-        Files.writeString(dyr, "1 'PSSSB' '1' 1 0 3 0 5 1 "
-                + "10 9 8 7 0.6 0.5 1.47 1.1 0.9 0.4 0.1 2.4 "
-                + "0.16 0.02 0.12 0.03 0.1 -0.1 0 0.05 0.2 0.9 0.05 -0.02 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+    void nativeReaderRejectsPsssbWithoutReplacingAnAttachedTypedDevice() throws Exception {
+        for (boolean strict : new boolean[] {false, true}) {
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+            var existing = builder.addPsssb("Bus1", "1", PsssbTypedTestData.benchmark());
+            assertNotNull(existing);
+            Path dyr = tempDir.resolve("unsupported-psssb-" + strict + ".dyr");
+            Files.writeString(dyr, "1 'PSSSB' '1' 1 0 3 0 5 1 "
+                    + "10 10 10 0 0 10 1.47 1 1 .5 .1 2.4 .16 .02 .16 .02 .1 -.1 "
+                    + "1 .05 .2 .01 .005 .2 /\n");
+            var parser = new PSSEDStabDirectParser(builder).setStrictImport(strict);
+            if (strict) assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+            else parser.parseDynFile(dyr.toString());
+            var report = parser.getLastImportReport();
+            assertEquals(1, report.totalRecordCount());
+            assertEquals(1, report.count(DynamicModelImportStatus.UNSUPPORTED));
+            assertTrue(!report.isStrictlyComplete());
+            assertTrue(report.entries().get(0).toString().contains("addPsssb"));
+            assertSame(existing, builder.getDStabNetwork().getMachine("Bus1-mach1").getStabilizer());
+        }
+    }
 
-        parser.parseDynFile(dyr.toString());
+    @Test
+    void typedPsssb_mapsPublishedPowerWorldDataAndRunsBoostStates() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        assertNotNull(builder.addPsssb("Bus1", "1", PsssbTypedTestData.switchedBoost()));
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         PsssbStabilizer pss = (PsssbStabilizer) machine.getStabilizer();
@@ -142,18 +161,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(pss.getTransientBoostOutput() > 0.0);
         assertTrue(pss.getNamedStates().containsKey("Transient boost lag"));
         assertTrue(pss.getNamedStates().containsKey("Transient boost washout memory"));
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
     void psssb_voltageCutoutSuppressesOutputUntilTerminalDeviationExceedsThreshold()
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("psssb-cutout.dyr");
-        Files.writeString(dyr, "1 'PSSSB' '1' 1 0 3 0 0 0 "
-                + "1 0 1 0 0 0 1 1 1 0 0 1 0 0 0 0 1 -1 "
-                + "0 0.05 0.2 1 0.05 0.02 /\n");
-        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        assertNotNull(builder.addPsssb("Bus1", "1", PsssbTypedTestData.voltageCutout()));
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         PsssbStabilizer pss = (PsssbStabilizer) machine.getStabilizer();
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
@@ -203,6 +217,39 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
 		assertEquals(-0.1, pss.getData().getVstmax(), TOL);
 		assertEquals(0.2, pss.getData().getVstmin(), TOL);
 	}
+
+    @Test
+    void pss2aReadsTerminalPowerSeparatelyFromAcceleratingPower() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        machine.setRa(.04);
+        Path dyr = tempDir.resolve("pss2a-power-inputs.dyr");
+        Files.writeString(dyr, "1 'PSS2A' '1' 3 0 4 0 1 1 "
+                + ".2 .1 .05 .2 .1 .05 1 1 .1 .05 1 .1 .05 .1 .05 .2 -.2 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var pss = (Ieee1992PSS2AStabilizer) machine.getStabilizer();
+        assertTrue(machine.initStates(bus));
+        machine.getIgen();
+        assertTrue(pss.initStates(bus, machine));
+        double initialTerminalPower = machine.getParentGen().getGen().getReal() / machine.getRating();
+        assertTrue(machine.getPe() - initialTerminalPower > .005);
+        assertEquals(initialTerminalPower, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+
+        bus.setVoltage(.98, .025);
+        var voltage = bus.getVoltage();
+        var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        double terminalPower = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+        double airGapPower = machine.getPe();
+        assertTrue(Math.abs(terminalPower - initialTerminalPower) > .001);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(terminalPower, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - airGapPower, pss.input2Signal, TOL);
+        assertEquals(airGapPower, machine.getPe(), 0);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+    }
+
 
 	@Test
 	void pss2a_rejectsInvalidIntegrationStepConfiguration() throws Exception {
@@ -334,6 +381,41 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
+    @ParameterizedTest
+    @CsvSource({"true", "false"})
+    void nativePss2bSeparatesTerminalAndAcceleratingPower(boolean explicitBusFields) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        machine.setRa(.04);
+        Path dyr = tempDir.resolve("pss2b-power-inputs.dyr");
+        String selectors = explicitBusFields ? "3 0 4 0 " : "3 4 ";
+        Files.writeString(dyr, "1 'PSS2B' '1' " + selectors + "1 1 "
+                + ".2 .1 .05 .2 .1 .05 1 1 .1 .05 1 .1 .05 .1 .05 0 0 "
+                + "2 -2 2 -2 .2 -.2 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var pss = (Ieee1992PSS2BStabilizer) machine.getStabilizer();
+        assertTrue(machine.initStates(bus));
+        machine.getIgen();
+        assertTrue(pss.initStates(bus, machine));
+        double initialTerminal = machine.getParentGen().getGen().getReal() / machine.getRating();
+        assertTrue(machine.getPe() - initialTerminal > .005);
+        assertEquals(initialTerminal, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+
+        bus.setVoltage(.98, .025);
+        var voltage = bus.getVoltage();
+        var terminalCurrent = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        double terminal = voltage.multiply(terminalCurrent.conjugate()).getReal() / machine.getRating();
+        double airGap = machine.getPe();
+        assertTrue(Math.abs(terminal - initialTerminal) > .001);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        assertEquals(terminal, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - airGap, pss.input2Signal, TOL);
+        assertEquals(airGap, machine.getPe(), 0);
+        assertTrue(pss.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+    }
+
     @Test
     void pss2b_appliesPowerWorldCorrectionsWithoutChangingImportedData()
             throws Exception {
@@ -428,13 +510,12 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(0.0, data.getTpgfilt(), TOL);
         assertEquals(0.0, data.getXcomp(), TOL);
         assertEquals(0.0, data.getTcomp(), TOL);
-        machine.setPe(0.20);
+        assertTrue(machine.initStates(machine.getDStabBus()));
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
         assertTrue(pss.isPssActive(), "pe=" + machine.getPe()
                 + ", filtered=" + pss.getFilteredPgen()
                 + ", on=" + data.getPssActivation()
                 + ", off=" + data.getPssDeactivation());
-        machine.setPe(0.20);
         machine.setSpeed(1.01);
         double maximumOutput = 0.0;
         for (int i = 0; i < 100; i++) {
@@ -505,43 +586,59 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(0.2, pss.getData().getVstmin(), TOL);
     }
 
-    @Test
-    void pss2c_appliesPowerActivationHysteresis() throws Exception {
-        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+    @ParameterizedTest
+    @CsvSource({"false", "true"})
+    void nativePss2cUsesTerminalPowerForInputAndActivation(boolean userModel) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = (IeeeVcRoundRotorMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        machine.setRa(.04);
         Path dyr = tempDir.resolve("pss2c-logic.dyr");
-        Files.writeString(dyr, "1 'PSS2C' '1' 1 0 3 0 0 0 "
-                + "0.2 0 0 0.2 0 0 0 0 0 0 1 "
-                + "0 0 0 0 0 0 10 -10 10 -10 1 -1 0 0 0.15 0.10 0 0 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-        parser.parseDynFile(dyr.toString());
-        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
-        Ieee2016PSS2CStabilizer pss =
-                (Ieee2016PSS2CStabilizer) machine.getStabilizer();
-        machine.setPe(0.20);
-        assertTrue(pss.initStates(machine.getDStabBus(), machine));
-        assertTrue(pss.isPssActive(), "pe=" + machine.getPe()
-                + ", filtered=" + pss.getFilteredPgen()
-                + ", on=" + pss.getData().getPssActivation()
-                + ", off=" + pss.getData().getPssDeactivation());
-
-        machine.setPe(0.12);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
-        machine.setPe(0.12);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
-        assertTrue(pss.isPssActive(), "PSS must retain its state inside the hysteresis band");
-
-        machine.setPe(0.05);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
-        machine.setPe(0.05);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
-        assertTrue(!pss.isPssActive());
+        String model = userModel ? "1 'USRMDL' '1' 'PSS2CU1' 3 0 6 29 19 14 " : "1 'PSS2C' '1' ";
+        Files.writeString(dyr, model + "3 0 4 0 0 0 "
+                + ".2 0 0 .2 0 0 0 0 0 0 1 "
+                + "0 0 0 0 0 0 10 -10 10 -10 1 -1 0 0 .725 .705 0 0 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var pss = (Ieee2016PSS2CStabilizer) machine.getStabilizer();
+        assertTrue(machine.initStates(bus));
+        machine.getIgen();
+        assertTrue(pss.initStates(bus, machine));
+        double initialTerminal = machine.getParentGen().getGen().getReal() / machine.getRating();
+        assertTrue(initialTerminal < .725 && machine.getPe() > .725);
+        assertEquals(initialTerminal, pss.getFilteredPgen(), TOL);
+        assertEquals(initialTerminal, pss.input1Signal, TOL);
+        assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+        assertFalse(pss.isPssActive());
         assertEquals(0.0, pss.getOutput(machine), TOL);
 
-        machine.setPe(0.20);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
-        machine.setPe(0.20);
-        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
-        assertTrue(pss.isPssActive());
+        var initialVoltage = bus.getVoltage();
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        // A trial network solve can cross a threshold before the physical
+        // endpoint does. Only the terminal power at the start of the step
+        // may change the native activation state.
+        double[] acceptedAngleShifts = {0.0, -.06, 0.0, .06};
+        double[] trialAngleShifts = {-.06, 0.0, .06, 0.0};
+        boolean[] expectedActive = {false, true, true, false};
+        for (int step = 0; step < acceptedAngleShifts.length; step++) {
+            bus.setVoltage(initialVoltage.abs(), initialVoltage.getArgument() + acceptedAngleShifts[step]);
+            var voltage = bus.getVoltage();
+            var current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+            double terminal = voltage.multiply(current.conjugate()).getReal() / machine.getRating();
+            assertTrue(pss.nextStep(.001, method, machine, 0));
+            assertEquals(terminal, pss.input1Signal, TOL);
+            assertEquals(machine.getPm() - machine.getPe(), pss.input2Signal, TOL);
+
+            bus.setVoltage(initialVoltage.abs(), initialVoltage.getArgument() + trialAngleShifts[step]);
+            var trialVoltage = bus.getVoltage();
+            var trialCurrent = machine.getIgen().subtract(trialVoltage.multiply(machine.getYgen()));
+            double trialTerminal = trialVoltage.multiply(trialCurrent.conjugate()).getReal() / machine.getRating();
+            double trialAirGap = machine.getPe();
+            assertTrue(pss.nextStep(.001, method, machine, 1));
+            assertEquals(trialTerminal, pss.input1Signal, TOL);
+            assertEquals(terminal, pss.getFilteredPgen(), TOL);
+            assertEquals(expectedActive[step], pss.isPssActive());
+            assertEquals(trialAirGap, machine.getPe(), 0);
+        }
     }
 
     @Test
@@ -1127,17 +1224,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss5c_mapsPowerWorld21ParameterExtension() throws Exception {
+    void typedPss5c_mapsPowerWorld21ParameterData() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss5c.dyr");
-        StringBuilder record = new StringBuilder("1 'PSS5C' '1'");
+        double[] parameters = new double[Ieee2016PSS5CStabilizerData.PARAMETER_COUNT];
         for (int i = 1; i <= Ieee2016PSS5CStabilizerData.PARAMETER_COUNT; i++) {
-            record.append(' ').append(i);
+            parameters[i - 1] = i;
         }
-        Files.writeString(dyr, record.append(" /\n").toString());
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        assertNotNull(builder.addPss5c("Bus1", "1", parameters));
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee2016PSS5CStabilizer pss =
@@ -1148,7 +1241,6 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(13.0, pss.getData().highBand().gain(), TOL);
         assertEquals(17.0, pss.getData().k1(), TOL);
         assertEquals(21.0, pss.getData().vstmin(), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
@@ -1255,19 +1347,15 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss6c_mapsPowerWorld35ParameterRecord() throws Exception {
+    void buildPss6c_mapsPowerWorld35ParameterRecord() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss6c.dyr");
-        StringBuilder record = new StringBuilder("1 'PSS6C' '1'");
+        double[] parameters = new double[Ieee2016PSS6CStabilizerData.PARAMETER_COUNT];
         for (int i = 0; i < Ieee2016PSS6CStabilizerData.PARAMETER_COUNT; i++) {
             double value = i < 4 ? (i % 2 == 0 ? 1 : 0)
                     : i == 30 ? -1.0 : i == 31 ? -2.0 : i + 1;
-            record.append(' ').append(value);
+            parameters[i] = value;
         }
-        Files.writeString(dyr, record.append(" /\n").toString());
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        builder.addPss6c("Bus1", "1", parameters);
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee2016PSS6CStabilizer pss = (Ieee2016PSS6CStabilizer) machine.getStabilizer();
@@ -1275,8 +1363,9 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(1, pss.getData().ics1());
         assertEquals(0, pss.getData().remoteBus1());
         assertEquals(8.0, pss.getData().ks1(), TOL);
+        assertEquals(33.0, pss.getData().tpgfilt(), TOL);
+        assertEquals(34.0, pss.getData().xcomp(), TOL);
         assertEquals(35.0, pss.getData().tcomp(), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
@@ -1405,18 +1494,12 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss7c_mapsPowerWorld39ParameterRecord() throws Exception {
+    void buildPss7c_mapsPowerWorld39ParameterRecord() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss7c.dyr");
         double[] values = pss7cParameters();
         values[4] = 2; values[5] = 3; values[16] = 4.5;
-        values[38] = 0.125;
-        StringBuilder record = new StringBuilder("1 'PSS7C' '1'");
-        for (double value : values) record.append(' ').append(value);
-        Files.writeString(dyr, record.append(" /\n").toString());
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        values[36] = 0.017; values[37] = 0.219; values[38] = 0.125;
+        builder.addPss7c("Bus1", "1", values);
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee2016PSS7CStabilizer pss = (Ieee2016PSS7CStabilizer) machine.getStabilizer();
@@ -1424,8 +1507,9 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(2, pss.getData().m());
         assertEquals(3, pss.getData().n());
         assertEquals(4.5, pss.getData().ks1(), TOL);
+        assertEquals(0.017, pss.getData().tpgfilt(), TOL);
+        assertEquals(0.219, pss.getData().xcomp(), TOL);
         assertEquals(0.125, pss.getData().tcomp(), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
@@ -1847,14 +1931,10 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss1a_mapsAllParametersAndRunsTheRepairedCmlChain() throws Exception {
+    void typedPss1a_mapsAllParametersAndRunsTheRepairedCmlChain() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss1a.dyr");
-        Files.writeString(dyr, "1 'PSS1A' '1' 1 0.061 0.0017 "
-                + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        assertNotNull(builder.addPss1a("Bus1", "1", 1, .061, .0017,
+                .30, .03, .30, .03, 10, .05, 5, .05, -.05, 0, 0));
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee1992PSS1AStabilizer pss = (Ieee1992PSS1AStabilizer) machine.getStabilizer();
@@ -1891,18 +1971,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(output <= data.getVstmax());
         pss.vcu = 0.5;
         assertEquals(0.0, pss.getOutput(machine), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
-    void parsePss1a_supportsBusFrequencyInput() throws Exception {
+    void typedPss1a_supportsBusFrequencyInput() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss1a-frequency.dyr");
-        Files.writeString(dyr, "1 'PSS1A' '1' 2 0.061 0.0017 "
-                + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        assertNotNull(builder.addPss1a("Bus1", "1", 2, .061, .0017,
+                .30, .03, .30, .03, 10, .05, 5, .05, -.05, 0, 0));
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee1992PSS1AStabilizer pss = (Ieee1992PSS1AStabilizer) machine.getStabilizer();
@@ -1914,18 +1989,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
             assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
         }
         assertTrue(pss.getOutput(machine) > 0.0);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
-    void parsePss1a_supportsFilteredBusVoltageDerivativeInput() throws Exception {
+    void typedPss1a_supportsFilteredBusVoltageDerivativeInput() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss1a-voltage-derivative.dyr");
-        Files.writeString(dyr, "1 'PSS1A' '1' 6 0.061 0.0017 "
-                + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        assertNotNull(builder.addPss1a("Bus1", "1", 6, .061, .0017,
+                .30, .03, .30, .03, 10, .05, 5, .05, -.05, 0, 0));
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee1992PSS1AStabilizer pss = (Ieee1992PSS1AStabilizer) machine.getStabilizer();
@@ -1940,18 +2010,33 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
             maxAbsOutput = Math.max(maxAbsOutput, Math.abs(pss.getOutput(machine)));
         }
         assertTrue(maxAbsOutput > 1.0e-6);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
-    void strictPss1aImportRejectsInvalidInputCode() throws Exception {
+    void typedPss1aRejectsInvalidInputCode() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss1a-invalid.dyr");
-        Files.writeString(dyr, "1 'PSS1A' '1' 7 0.061 0.0017 "
-                + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        assertNull(builder.addPss1a("Bus1", "1", 7, .061, .0017,
+                .30, .03, .30, .03, 10, .05, 5, .05, -.05, 0, 0));
+    }
 
-        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+    @ParameterizedTest
+    @CsvSource({"false,false", "false,true", "true,false", "true,true"})
+    void nativeReaderRejectsPss1aWithoutAttachingOrReplacingADevice(boolean strict,
+            boolean alreadyAttached) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var existing = alreadyAttached ? builder.addPss1a("Bus1", "1", 1, .061, .0017,
+                .30, .03, .30, .03, 10, .05, 5, .05, -.05, 0, 0) : null;
+        if (alreadyAttached) assertNotNull(existing);
+        Path dyr = tempDir.resolve("unsupported-pss1a.dyr");
+        Files.writeString(dyr, "1 'PSS1A' '1' 1 .061 .0017 .30 .03 .30 .03 10 .05 5 .05 -.05 0 0 /\n");
+        var parser = new PSSEDStabDirectParser(builder).setStrictImport(strict);
+        if (strict) assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+        else parser.parseDynFile(dyr.toString());
+        var report = parser.getLastImportReport();
+        assertEquals(1, report.totalRecordCount());
+        assertEquals(1, report.count(DynamicModelImportStatus.UNSUPPORTED));
+        assertTrue(!report.isStrictlyComplete());
+        assertTrue(report.entries().get(0).toString().contains("addPss1a"));
+        assertSame(existing, builder.getDStabNetwork().getMachine("Bus1-mach1").getStabilizer());
     }
 }

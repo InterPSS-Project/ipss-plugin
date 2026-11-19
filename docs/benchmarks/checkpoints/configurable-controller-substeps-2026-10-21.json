@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "description": "Configurable local ST1 integration; default ten retained. Numerical compatibility only, not independent-reference acceptance.",
+  "baseline_commit": "c509fbdba2ae82363cc6d5b92c87edb05bf1b775",
+  "core_fix_commit": "e2ec1a5fd",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-configurable-substeps/evidence.zip",
+  "archive_bytes": 432402,
+  "archive_sha256": "6a6790dac46fa56b47517340065efae6e2247e03fcb7b7e6bf86c9a7fcdd48c4",
+  "focused_tests": {
+    "isolated_passed": 23,
+    "combined_worktree_passed": 23
+  },
+  "protocol": {
+    "network_step_s": 0.004166666666666667,
+    "network_voltage_tolerance_pu": 1e-05,
+    "logical_processors": 1,
+    "timing": "Cold correctness runs; no performance claim",
+    "excluded_from_full_runs": [
+      "Pending compact-state update prototype",
+      "Pending ST1 observation-cache prototype"
+    ]
+  },
+  "results": [
+    {
+      "case": 1,
+      "substeps": 10,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "expected": "target/st1-generated-input-qualified-20261021/case1-candidate/actual/case1_bus_fault_01/run-0"
+    },
+    {
+      "case": 2,
+      "substeps": 10,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      },
+      "expected": "target/st1-generated-input-qualified-20261021/case2-candidate/actual/case2_bus_fault_01/run-0"
+    },
+    {
+      "case": 1,
+      "substeps": 4,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "4343ca1f57c7a5618cb8ddeba789916e39d90972abb0c319827b6bf8ef131feb",
+        "interpss.csv": "1da9f8426f7c77041d32e4c461231de3f6490606f84f6e3a3535ab70af241c07",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "expected": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0"
+    },
+    {
+      "case": 2,
+      "substeps": 4,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "72215fb94324b25885b85f9819ba297b8f43231af2bb8fb41f319008e119eba7",
+        "interpss.csv": "6ea78a63dc9de2ae0aa320d8611fd3427f29907eebcf772446afdc592bac5e0a",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      },
+      "expected": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0"
+    }
+  ],
+  "retained_dependencies": [
+    {
+      "path": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+      "bytes": 119143713,
+      "identical_to": "target/st1-generated-input-qualified-20261021/case1-candidate/actual/case1_bus_fault_01/run-0/full-network.bin"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+      "bytes": 2404926,
+      "identical_to": "target/st1-generated-input-qualified-20261021/case1-candidate/actual/case1_bus_fault_01/run-0/interpss.csv"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528,
+      "identical_to": "target/st1-generated-input-qualified-20261021/case1-candidate/actual/case1_bus_fault_01/run-0/full-network-channels.json"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "bytes": 92592513,
+      "identical_to": "target/st1-generated-input-qualified-20261021/case2-candidate/actual/case2_bus_fault_01/run-0/full-network.bin"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+      "bytes": 10197164,
+      "identical_to": "target/st1-generated-input-qualified-20261021/case2-candidate/actual/case2_bus_fault_01/run-0/interpss.csv"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545,
+      "identical_to": "target/st1-generated-input-qualified-20261021/case2-candidate/actual/case2_bus_fault_01/run-0/full-network-channels.json"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "4343ca1f57c7a5618cb8ddeba789916e39d90972abb0c319827b6bf8ef131feb",
+      "bytes": 119143713,
+      "identical_to": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/full-network.bin"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "1da9f8426f7c77041d32e4c461231de3f6490606f84f6e3a3535ab70af241c07",
+      "bytes": 2405002,
+      "identical_to": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/interpss.csv"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528,
+      "identical_to": "target/st1-four-step-experiment-20261021/case1-substeps4/actual/case1_bus_fault_01/run-0/full-network-channels.json"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "72215fb94324b25885b85f9819ba297b8f43231af2bb8fb41f319008e119eba7",
+      "bytes": 92592513,
+      "identical_to": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/full-network.bin"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "6ea78a63dc9de2ae0aa320d8611fd3427f29907eebcf772446afdc592bac5e0a",
+      "bytes": 10197449,
+      "identical_to": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/interpss.csv"
+    },
+    {
+      "path": "target/configurable-substeps-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545,
+      "identical_to": "target/st1-four-step-experiment-20261021/case2-substeps4/actual/case2_bus_fault_01/run-0/full-network-channels.json"
+    }
+  ]
+}

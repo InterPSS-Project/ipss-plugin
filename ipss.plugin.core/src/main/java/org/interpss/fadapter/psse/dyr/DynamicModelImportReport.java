@@ -96,6 +96,9 @@ public final class DynamicModelImportReport {
                 && count(DynamicModelImportStatus.ATTACHED)
                         + count(DynamicModelImportStatus.SKIPPED_GNET)
                         + count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE)
+                        + count(DynamicModelImportStatus.SKIPPED_MISSING_HOST)
+                        + count(DynamicModelImportStatus.SKIPPED_LOAD_PRIORITY)
+                        + count(DynamicModelImportStatus.SKIPPED_INACTIVE_TARGET)
                         == totalRecordCount();
     }
 
@@ -105,6 +108,9 @@ public final class DynamicModelImportReport {
                         && entry.status() != DynamicModelImportStatus.SKIPPED_GNET)
                 .filter(entry -> entry.status()
                         != DynamicModelImportStatus.SKIPPED_MODEL_REMOVE)
+                .filter(entry -> entry.status() != DynamicModelImportStatus.SKIPPED_MISSING_HOST)
+                .filter(entry -> entry.status() != DynamicModelImportStatus.SKIPPED_LOAD_PRIORITY)
+                .filter(entry -> entry.status() != DynamicModelImportStatus.SKIPPED_INACTIVE_TARGET)
                 .toList();
     }
 
@@ -112,12 +118,15 @@ public final class DynamicModelImportReport {
         if (isStrictlyComplete()) {
             int skipped = count(DynamicModelImportStatus.SKIPPED_GNET);
             int removed = count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE);
-            if (skipped == 0 && removed == 0) {
+            int missing = count(DynamicModelImportStatus.SKIPPED_MISSING_HOST);
+            int defaults=count(DynamicModelImportStatus.SKIPPED_LOAD_PRIORITY);
+            int inactive=count(DynamicModelImportStatus.SKIPPED_INACTIVE_TARGET);
+            if (skipped == 0 && removed == 0 && missing == 0 && defaults == 0 && inactive == 0) {
                 return "all " + totalRecordCount() + " DYR records attached";
             }
             return count(DynamicModelImportStatus.ATTACHED) + " DYR records attached, "
                     + skipped + " intentionally skipped by GNET, " + removed
-                    + " intentionally skipped by BAT_PLMOD_REMOVE";
+                    + " intentionally skipped by BAT_PLMOD_REMOVE, "+missing+" skipped for absent required hosts, "+defaults+" shadowed load defaults, "+inactive+" inactive load targets";
         }
         String counts = java.util.Arrays.stream(DynamicModelImportStatus.values())
                 .filter(status -> count(status) > 0)
@@ -140,18 +149,70 @@ public final class DynamicModelImportReport {
     public static final class Builder {
         private final String source;
         private final List<DynamicModelImportEntry> entries = new ArrayList<>();
+        private final Map<PsseDyrRecord, String> parameterOverrides = new java.util.HashMap<>();
+        private final Map<DynamicModelImportEntry,PsseDyrRecord> sourceRecords = new java.util.HashMap<>();
+        private final java.util.Set<DynamicModelImportEntry> hostCandidates=new java.util.HashSet<>();
+        private java.util.function.Function<PsseDyrRecord,String> missingHost = record -> null;
 
         private Builder(String source) {
             this.source = source;
         }
 
         public Builder add(PsseDyrRecord record, DynamicModelImportStatus status, String message) {
-            entries.add(DynamicModelImportEntry.from(record, status, message));
+            message = (message==null?"":message)+parameterOverrides.getOrDefault(record, "");
+            var entry=DynamicModelImportEntry.from(record,status,message);
+            entries.add(entry);sourceRecords.put(entry,record);
             return this;
         }
 
+        /** A failed host lookup is eligible for the explicit missing-parent policy.
+         * Validation exceptions use add(), so a missing parent cannot hide bad data. */
+        public Builder addAttachment(PsseDyrRecord record,DynamicModelImportStatus status,String message) {
+            add(record,status,message);
+            if(status==DynamicModelImportStatus.REJECTED)hostCandidates.add(entries.get(entries.size()-1));
+            return this;
+        }
+
+        /** Retain entered/effective values even when attachment is deferred or fails. */
+        public void recordParameterOverrides(PsseDyrRecord original, PsseDyrRecord effective) {
+            recordParameterChanges(original,effective,"explicit parameter overrides");
+        }
+
+        public void recordAutomaticParameterCorrections(PsseDyrRecord original, PsseDyrRecord effective) {
+            recordParameterChanges(original,effective,"automatic parameter corrections");
+        }
+
+        private void recordParameterChanges(PsseDyrRecord original, PsseDyrRecord effective, String kind) {
+            List<String> changes = new ArrayList<>();
+            for (int i=0;i<original.parameterCount();i++) {
+                if (!original.parameter(i).equals(effective.parameter(i)))
+                    changes.add("parameter["+i+"]: "+original.parameter(i)+" -> "+effective.parameter(i));
+            }
+            // A later automatic normalization must carry the preceding explicit
+            // override audit forward to the final record, rather than hiding it.
+            String preceding=parameterOverrides.getOrDefault(original,"");
+            if (!changes.isEmpty()) parameterOverrides.put(effective,
+                    preceding+"; "+kind+" (zero-based): "+String.join(", ",changes));
+        }
+
         public DynamicModelImportReport build() {
-            return new DynamicModelImportReport(source, entries);
+            // Resolve only after deferred parents had a chance to attach. A
+            // missing host is not inferred from a generic builder rejection,
+            // nor from an implemented host lacking a supported port.
+            var resolved=new ArrayList<DynamicModelImportEntry>(entries.size());
+            for(var entry:entries) {
+                if(entry.status()==DynamicModelImportStatus.MISSING_TARGET||hostCandidates.contains(entry)) {
+                    var record=sourceRecords.get(entry);String reason=missingHost.apply(record);
+                    if(reason!=null)entry=DynamicModelImportEntry.from(record,DynamicModelImportStatus.SKIPPED_MISSING_HOST,
+                            "Ignored absent required host: "+reason+"; original disposition "+entry.status()+": "+entry.message());
+                }
+                resolved.add(entry);
+            }
+            return new DynamicModelImportReport(source, resolved);
+        }
+
+        public Builder ignoreMissingHosts(java.util.function.Function<PsseDyrRecord,String> resolver) {
+            missingHost=java.util.Objects.requireNonNull(resolver);return this;
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,9 +13,9 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aExciter;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -28,17 +29,19 @@ public class Esac6aIndependentSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
-    @Test
-    void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates() throws Exception {
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates(boolean optimized) throws Exception {
+        double step=StaggeredExciterFixture.referenceStep(optimized,STEP);
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esac6a_independent.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        StaggeredExciterFixture.configure(algorithm,optimized);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + ESAC6A SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuStepSec(step);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
@@ -53,7 +56,7 @@ public class Esac6aIndependentSmibConformanceTest {
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,
                 initialRelativeAngle);
-        while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
+        while (algorithm.getSimuTime() < 1.0 - step / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
                     "GENROU + ESAC6A solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,

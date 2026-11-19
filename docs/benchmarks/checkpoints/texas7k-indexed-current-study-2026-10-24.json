@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "status": "experimental-bitwise-equivalent-indexed-transfer",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-indexed-current-study/manifest.json",
+  "manifest_sha256": "c584c51f3d687364ba9c2cd24cc27b9eea416222fc4b04b70d0abe1987a289bc",
+  "production_promoted": false,
+  "whole_run_target_s": 20,
+  "goal_complete": false,
+  "measured_control_s": 106.4586645,
+  "measured_indexed_s": 77.3366558,
+  "matching_samples": 2403,
+  "matching_bus_voltage_channels": 6717,
+  "matching_selected_machine_channels": 15,
+  "maximum_recorded_difference": 0,
+  "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7",
+  "network_iterations": 130955,
+  "maximum_allowed_iterations": 50,
+  "observed_maximum_iterations": 27,
+  "paired_runs": 1,
+  "timing_order_balanced": false,
+  "complete_recording": true,
+  "two_step_quarter_cycle_accuracy_accepted": false
+}

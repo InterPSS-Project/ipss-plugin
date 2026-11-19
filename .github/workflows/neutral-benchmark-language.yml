@@ -1,0 +1,23 @@
+name: Neutral benchmark language
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  wording:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Test wording policy
+        run: python -m unittest discover -s tools -p 'test_neutral_benchmark_language.py'
+      - name: Check documentation and new Java files
+        run: python tools/check_neutral_benchmark_language.py

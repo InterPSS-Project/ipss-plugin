@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,8 +13,7 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.ac2c.Ac2cExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.ac2c.Ac2cExciter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -29,7 +29,7 @@ public class Ac2cIndependentSmibConformanceTest {
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
 
     @Test void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterSignals()throws Exception{
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve("SMIB_v33_genrou_ac2c.dyr").toString());
+        IpssCorePlugin.init();var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve("SMIB_v33_genrou_ac2c.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);algorithm.setTotalSimuTimeSec(1);algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",network,SimpleFaultCode.GROUND_3P,new Complex(0,.2),null,.05,.05),"SmibFault");

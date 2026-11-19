@@ -11,10 +11,10 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.GenqecMachine;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aData;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aExciter;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.GenqecMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -22,6 +22,8 @@ import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -104,6 +106,38 @@ public class Esac6aExciterTest extends CorePluginTestSetup {
         assertTrue(exciter.vamin<=exciter.getVaOutput());
         assertTrue(exciter.vrmax>=exciter.getRegulatorOutput()/machine.getDStabBus().getVoltageMag());
         assertTrue(exciter.vrmin<=exciter.getRegulatorOutput()/machine.getDStabBus().getVoltageMag());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void leadLagStateFollowsBothVaLimits(boolean staggered) throws Exception {
+        Esac6aData data = baseData();
+        data.setVamax(2);
+        data.setVamin(-2);
+        Fixture f = fixture(data);
+        double initialReference = f.exciter.getRefPoint();
+        double dt = .005;
+        double[] state = new double[f.exciter.staggeredStateCount()];
+        double[] rates = new double[state.length];
+
+        for (double bound : new double[] {data.getVamax(), data.getVamin()}) {
+            f.exciter.setRefPoint(initialReference + Math.copySign(100, bound));
+            for (int interval = 0; interval < 8; interval++) {
+                if (staggered) {
+                    f.exciter.readStaggeredState(state, 0);
+                    f.exciter.evaluateStaggered(dt, rates, 0);
+                    for (int i = 0; i < state.length; i++) state[i] += dt * rates[i];
+                    f.exciter.applyStaggeredState(state, 0, dt);
+                } else {
+                    step(f.exciter, f.machine, dt);
+                }
+                // Recover the raw transfer output from the state and direct term.
+                // Reading getVaOutput() alone also passes with a windup clamp.
+                double lagState = f.exciter.getIntegrationStates().get("Lead-Lag State");
+                double rawVa = data.getTc() / data.getTb() * f.exciter.getTaOutput() + lagState;
+                assertEquals(bound, rawVa, TOL);
+            }
+        }
     }
 
     @Test void scalesRegulatorLimitsWithTerminalVoltage() throws Exception {

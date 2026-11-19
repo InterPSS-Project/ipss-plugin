@@ -1,6 +1,7 @@
 package org.interpss.core.dstab.mach;
 
 import org.interpss.core.dstab.reference.EmbeddedNativeTrajectoryValues;
+import org.interpss.core.dstab.reference.NativeRecordedEventWindow;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Wt1g1Machine;
+import com.interpss.dstab.mach.model.Wt1g1Machine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,12 @@ public class Wt1g1PsseSmibConformanceTest {
     @Test
     void pseudoGovernorMatchesNativePsseFaultTrajectory() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        // The retained experiment leaves static P/Q as constant power. Its
+        // original voltage/angle channels reconstruct 1+j0.5 pu load even
+        // during the fault; Z/Z and I/Z would reduce that demand. Declare the
+        // experiment explicitly, independently of the production I/Z default.
+        var context = new PSSEMultiFileLoader().setDynamicRunConfigJson(
+                "{\"activeStaticLoadModel\":\"CONST_P\",\"reactiveStaticLoadModel\":\"CONST_P\"}").loadDStab(
                 CASE.resolve("SMIB_v33_wt1g1.raw").toString(),
                 CASE.resolve("SMIB_v33_wt12a1.dyr").toString());
         var network = context.getDStabilityNet();
@@ -67,7 +73,7 @@ public class Wt1g1PsseSmibConformanceTest {
         double[] maximum = new double[names.length];
         for (double[] expected : reference.rows()) {
             double time = expected[0];
-            if (time < -1e-9 || Math.abs(time-.05) < STEP || Math.abs(time-.10) < STEP) continue;
+            if (time < -1e-9 || (Math.abs(time - .05) < STEP || Math.abs(time - .10) < STEP)) continue;
             double[] row = interpolate(actual, time);
             for (int i=0;i<names.length;i++) maximum[i]=Math.max(maximum[i],
                     Math.abs(row[i+1]-value(expected, reference, names[i])));
@@ -82,7 +88,12 @@ public class Wt1g1PsseSmibConformanceTest {
     @Test
     void twoMassDriveTrainMatchesNativePsseFaultTrajectory() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        // The retained experiment leaves static P/Q as constant power. Its
+        // original voltage/angle channels reconstruct 1+j0.5 pu load even
+        // during the fault; Z/Z and I/Z would reduce that demand. Declare the
+        // experiment explicitly, independently of the production I/Z default.
+        var context = new PSSEMultiFileLoader().setDynamicRunConfigJson(
+                "{\"activeStaticLoadModel\":\"CONST_P\",\"reactiveStaticLoadModel\":\"CONST_P\"}").loadDStab(
                 CASE.resolve("SMIB_v33_wt1g1.raw").toString(),
                 CASE.resolve("SMIB_v33_wt12t1.dyr").toString());
         var network = context.getDStabilityNet();
@@ -110,8 +121,7 @@ public class Wt1g1PsseSmibConformanceTest {
         double[] maximum = new double[names.length];
         for (double[] expected : reference.rows()) {
             double time = expected[0];
-            if (time < -1.0e-9 || Math.abs(time - .05) < STEP
-                    || Math.abs(time - .10) < STEP) continue;
+            if (time < -1.0e-9 || (Math.abs(time - .05) < STEP || Math.abs(time - .10) < STEP)) continue;
             double[] row = interpolate(actual, time);
             for (int i = 0; i < names.length; i++) {
                 maximum[i] = Math.max(maximum[i],
@@ -130,7 +140,12 @@ public class Wt1g1PsseSmibConformanceTest {
     @Test
     void twoCageGeneratorMatchesNativePsseFaultTrajectory() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        // The retained experiment leaves static P/Q as constant power. Its
+        // original voltage/angle channels reconstruct 1+j0.5 pu load even
+        // during the fault; Z/Z and I/Z would reduce that demand. Declare the
+        // experiment explicitly, independently of the production I/Z default.
+        var context = new PSSEMultiFileLoader().setDynamicRunConfigJson(
+                "{\"activeStaticLoadModel\":\"CONST_P\",\"reactiveStaticLoadModel\":\"CONST_P\"}").loadDStab(
                 CASE.resolve("SMIB_v33_wt1g1.raw").toString(),
                 CASE.resolve("SMIB_v33_wt1g1.dyr").toString());
         var network = context.getDStabilityNet();
@@ -156,6 +171,7 @@ public class Wt1g1PsseSmibConformanceTest {
         }
 
         Csv reference = read(REFERENCE);
+        double[] eventTimes = NativeRecordedEventWindow.boundaries(reference.rows(), STEP, .05, .10);
         assertTrue(!reference.rows().isEmpty());
         System.out.println("WT1G1 initial InterPSS: " + Arrays.toString(actual.get(0)));
         System.out.println("WT1G1 initial PSS/E: " + Arrays.toString(reference.rows().stream()
@@ -165,8 +181,7 @@ public class Wt1g1PsseSmibConformanceTest {
         for (double[] expected : reference.rows()) {
             double time = expected[0];
             if (time < -1.0e-9 || time > 1.0 + 1.0e-8
-                    || Math.abs(time - 0.05) < STEP
-                    || Math.abs(time - 0.10) < STEP) continue;
+                    || NativeRecordedEventWindow.contains(time, eventTimes, STEP)) continue;
             double[] row = interpolate(actual, time);
             double[] psse = {
                     value(expected, reference, "V_BUS1"),
@@ -175,10 +190,10 @@ public class Wt1g1PsseSmibConformanceTest {
                     value(expected, reference, "Q_PU"),
                     value(expected, reference, "SPEED_DEV"),
                     value(expected, reference, "MACHINE_Q"),
-                    value(expected, reference, "EP_R"),
-                    value(expected, reference, "EP_I"),
-                    value(expected, reference, "EPP_R"),
-                    value(expected, reference, "EPP_I"),
+                    networkFrameFlux(expected, reference, "EP").getImaginary(),
+                    networkFrameFlux(expected, reference, "EP").getReal(),
+                    networkFrameFlux(expected, reference, "EPP").getImaginary(),
+                    networkFrameFlux(expected, reference, "EPP").getReal(),
                     value(expected, reference, "Q_COMP_ADMITTANCE"),
                     value(expected, reference, "TELEC")
             };
@@ -258,6 +273,16 @@ public class Wt1g1PsseSmibConformanceTest {
         List<double[]> rows = lines.stream().skip(1).map(line -> Arrays.stream(line.split(","))
                 .mapToDouble(Double::parseDouble).toArray()).toList();
         return new Csv(columns, rows);
+    }
+
+    // The reference's electrical fluxes rotate in its recorded INTERNAL frame.
+    // InterPSS stores the same physical fluxes in the fixed network frame. Use
+    // that recorded angle only; do not fit an angle offset or change raw data.
+    private static Complex networkFrameFlux(double[] row, Csv csv, String prefix) {
+        Complex stored = new Complex(row[csv.columns().get(prefix + "_I")],
+                row[csv.columns().get(prefix + "_R")]);
+        double angle = row[csv.columns().get("INTERNAL")];
+        return stored.multiply(new Complex(Math.cos(angle), Math.sin(angle)));
     }
 
     private static double value(double[] row, Csv csv, String name) {

@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "status": "selected-working-performance-baseline",
+  "production_source_replaced": false,
+  "goal_achieved": false,
+  "base_checkpoint": "docs/benchmarks/checkpoints/case2-recovered-fast-2026-10-21.json",
+  "frozen_directory_classes": 5288,
+  "replay_command": "python tools/run_bounded.py --log target/<new>.log -- python tools/replay_case2_fast_checkpoint.py --machine-frame-reuse --output target/<new>",
+  "warmup_runs": 24,
+  "measured_runs": 7,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-machine-frame/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 80024,
+    "sha256": "a569a3d64c517b602858598d5d0246df6c1047050cc0106005166a6bc011752a"
+  },
+  "archive": {
+    "bytes": 6382241,
+    "sha256": "c7dfe0e43a00862169f77382ac26818b0b9fc7d877479571e671d4dd3330801f"
+  },
+  "results": {
+    "frozen-machine-reuse-control-20261021": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 5,
+      "case_wall_s": [
+        8.6395304,
+        8.4892484,
+        8.3118911,
+        8.1913823,
+        8.3540582
+      ],
+      "median_case_wall_s": 8.3540582,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "frame_reuses": 1155
+    },
+    "frozen-machine-reuse-candidate-20261021": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 5,
+      "case_wall_s": [
+        8.4973095,
+        8.0865707,
+        8.2597109,
+        7.9125758,
+        7.9035134
+      ],
+      "median_case_wall_s": 8.0865707,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "frame_reuses": 10326660
+    },
+    "frozen-machine-reuse-extended-candidate-20261021": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 24,
+      "measured_runs": 7,
+      "case_wall_s": [
+        8.2342544,
+        8.7041363,
+        7.8688072,
+        7.8612348,
+        7.9150595,
+        7.8104435,
+        7.899725
+      ],
+      "median_case_wall_s": 7.899725,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "frame_reuses": 10326660
+    },
+    "participant-cache-control-warm-v2-20261021": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.816565,
+        9.4700248,
+        9.6782972,
+        9.3890917,
+        9.5402909,
+        9.6781511
+      ],
+      "median_case_wall_s": 9.609221,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "participant_cache_hits": 0,
+      "participant_plan_builds": 0
+    },
+    "participant-cache-candidate-warm-v2-20261021": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.6045175,
+        9.3608036,
+        9.6832773,
+        9.1864392,
+        9.2207576,
+        9.6587709
+      ],
+      "median_case_wall_s": 9.48266055,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "participant_cache_hits": 2405,
+      "participant_plan_builds": 1
+    }
+  },
+  "independent_archive_replay": {
+    "status": "completed",
+    "working_performance_baseline": false,
+    "warmup_runs": 24,
+    "measured_runs": 7,
+    "case_wall_s": [
+      8.101799,
+      8.5699651,
+      7.9954821,
+      7.8189051,
+      7.9112594,
+      7.8808672,
+      7.8166163
+    ],
+    "median_case_wall_s": 7.9112594,
+    "single_cpu_verified": true,
+    "full_recording_included": true,
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "frozen_directory_classes": 5288,
+    "mutable_build_directories_on_classpath": false,
+    "exact_historical_checkout": false,
+    "independent_accuracy_qualified": false,
+    "machine_frame_reuse": true
+  },
+  "replay_private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-machine-frame/replay-manifest.json",
+  "replay_private_manifest_digest": {
+    "bytes": 24989,
+    "sha256": "89b9247b3bc62c365f1425b69d1e0d80a9fe00591fdf10c50a6035b283bf0411"
+  },
+  "replay_archive": {
+    "bytes": 2680860,
+    "sha256": "64494b3e05048b2c5dd2fd16a05a9f90fea8d359adf4033189a92a5ebfd3ccb3"
+  },
+  "median_target_met": true,
+  "all_measured_runs_within_eight_seconds": false,
+  "measured_compilation_ms": [
+    246,
+    492,
+    38,
+    14,
+    20,
+    6,
+    20
+  ],
+  "report": "docs/benchmarks/case2-machine-frame-performance-2026-10-21.md"
+}

@@ -224,9 +224,17 @@ public class PSSEDirectParser {
         String line2 = reader.readLine();
         String line3 = reader.readLine();
 
+        // Some legacy headers separate IC/SBASE/REV by spaces before later commas.
+        int firstComma=line1.indexOf(',');
+        if(firstComma>0) {
+            String[] prefix=line1.substring(0,firstComma).trim().split("\\s+");
+            if(prefix.length==3)line1=String.join(",",prefix)+line1.substring(firstComma);
+        }
         PSSEDataRec rec = new PSSEDataRec(line1);
         // IC, SBASE, REV, XFRRAT, NXFRAT, BASFRQ
         baseMva = rec.getDouble(1, 100.0);
+        if(!Double.isFinite(baseMva) || baseMva<=0.)
+            throw new InterpssException("Case base MVA must be finite and positive");
         this.version = versionOverride != null
                 ? versionOverride
                 : PsseRev.fromHeaderLine(line1);
@@ -473,12 +481,12 @@ public class PSSEDirectParser {
         String genId = rec.getString(1, "1").trim();
 
         double pg, qg, qt, qb, vs;
-        int ireg, stat, wmod = 0;
+        int ireg, stat, wmod = 0, baseLoadFlag = 0;
         double mbase, zr, zx, rt, xt, gtap, rmpct, pt, pb;
         double wpf = 1.0;
 
         if (version >= 35) {
-            // V35+: I, ID, PG, QG, QT, QB, VS, IREG, NREG, MBASE, ZR, ZX, RT, XT, GTAP, STAT, RMPCT, PT, PB, BASELOAD...
+            // V35+: I, ID, PG, QG, QT, QB, VS, IREG, NREG, MBASE, ZR, ZX, RT, XT, GTAP, STAT, RMPCT, PT, PB, BASLOD...
             pg = rec.getDouble(2, 0.0);
             qg = rec.getDouble(3, 0.0);
             qt = rec.getDouble(4, 0.0);
@@ -496,6 +504,7 @@ public class PSSEDirectParser {
             rmpct = rec.getDouble(16, 100.0);
             pt = rec.getDouble(17, 0.0);
             pb = rec.getDouble(18, 0.0);
+            baseLoadFlag = rec.getInt(19, 0);
             wmod = rec.getInt(28, 0);
             wpf = rec.getDouble(29, 1.0);
         } else {
@@ -538,6 +547,11 @@ public class PSSEDirectParser {
             qb = reactiveData.qMin();
         }
 
+        // RMPCT is repeated plant data. The last source record sets the common
+        // plant weight, even when that particular machine is out of service.
+        // Retain individual record factors too; never divide by active unit count.
+        bus.setPlantMvarControlPFactor(rmpct * 0.01);
+
         boolean genStatus = (stat == 1);
         if (!bus.isActive()) genStatus = false;
 
@@ -554,14 +568,16 @@ public class PSSEDirectParser {
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
         Complex xfrZ = (rt != 0.0 || xt != 0.0) ? new Complex(rt, xt) : null;
 
-        applyNameTagMetadata(rec, builder.addContributeGen(busId, genId, genStatus,
+        var generator = builder.addContributeGen(busId, genId, genStatus,
                 pg / baseMva, qg / baseMva, mbase,
                 vs,
                 qt / baseMva, qb / baseMva,
                 pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap,
                 remoteBusId,
-                rmpct * 0.01, 1.0));
+                rmpct * 0.01, 1.0);
+        generator.setBaseLoadFlag(baseLoadFlag);
+        applyNameTagMetadata(rec, generator);
 
         // Refine bus gen code based on generator data
         if (bus.getGenCode() == AclfGenCode.SWING) {
@@ -854,6 +870,9 @@ public class PSSEDirectParser {
                         rata1, ratb1, ratc1,
                         tab1, stat == 1);
             }
+            // MAG1/MAG2 are converted to winding one's bus voltage base.
+            // Keep the admittance ahead of the ideal tap for all tap positions.
+            if (magY != null) branch.setFromShuntOnBusSide(true);
             applyNameTagMetadata(metadata, branch);
 
             String branchId = branch.getId();
@@ -910,6 +929,29 @@ public class PSSEDirectParser {
         return windv;
     }
 
+    /**
+     * Give a voltage-controlled 3-winding transformer winding (|COD| = 1) its tap
+     * positions. PSS/E solves with the winding on the nearest of its NTP positions
+     * between RMI and RMA, even when the control is locked. The load-flow data check
+     * places a ratio on its tap position (DataCheckConfiguration autoSnapTransformerTap,
+     * on by default) through the winding's tap control. The control is created locked:
+     * automatic 3-winding tap adjustment is not part of this import.
+     */
+    private void addWindingTapPositions(AclfBranch winding, String windingBusId, PSSEDataRec record, int codIdx,
+            int rmaIdx, int ntpIdx, int cw, double nomvKv, double baseV) {
+        int cod = record.getInt(codIdx, 0);
+        int ntp = record.getInt(ntpIdx, 33);
+        if (winding == null || Math.abs(cod) != 1 || ntp < 2) return;
+        double tapMax = convertTap(cw, record.getDouble(rmaIdx, 1.1), nomvKv, baseV);
+        double tapMin = convertTap(cw, record.getDouble(rmaIdx + 1, 0.9), nomvKv, baseV);
+        if (!(tapMax > tapMin)) return;
+        // The winding ratio sits on the side of the winding's own bus, not the star point.
+        boolean busOnFromSide = winding.getFromBus().getId().equals(windingBusId);
+        builder.addTapVoltageRangeControl(winding.getId(), windingBusId, false,
+                record.getDouble(rmaIdx + 2, 1.1), record.getDouble(rmaIdx + 3, 0.9), tapMax, tapMin,
+                busOnFromSide, busOnFromSide, (tapMax - tapMin) / (ntp - 1), ntp);
+    }
+
     private Complex convertMagY(int cm, double mag1, double mag2,
                                 double nomv1Kv, double sbase12, double fromBaseV) {
         if (mag1 == 0.0 && mag2 == 0.0) return null;
@@ -921,7 +963,12 @@ public class PSSEDirectParser {
             double g_rv = mag1 / (nomv1Kv * nomv1Kv) * 1.0E-6;
             double g_pu = g_rv / ybase;
             double ybase_w12 = sbase12 / (nomv1Kv * nomv1Kv);
-            double b_rv = -mag2 * ybase_w12;
+            // CM=2: MAG2 is the no-load exciting current, the magnitude of the
+            // magnetizing admittance in pu on SBASE1-2 and NOMV1. MAG1 (no-load loss)
+            // is its conductive part, so the susceptance is -sqrt(I0^2 - G^2).
+            double g_w12 = mag1 * 1.0E-6 / sbase12;
+            double b_w12 = -Math.sqrt(Math.max(mag2 * mag2 - g_w12 * g_w12, 0.0));
+            double b_rv = b_w12 * ybase_w12;
             double b_pu = b_rv / ybase;
             return new Complex(g_pu, b_pu);
         }
@@ -1002,6 +1049,14 @@ public class PSSEDirectParser {
                 inService);
 
         if (branch3W != null) {
+            int codIdx = version >= 34 ? 15 : 6;
+            int rmaIdx = version >= 35 ? 18 : version == 34 ? 17 : 8;
+            int ntpIdx = version >= 35 ? 22 : version == 34 ? 21 : 12;
+            addWindingTapPositions(branch3W.getFromAclfBranch(), fromBusId, line3, codIdx, rmaIdx, ntpIdx, cw, nomv1_3w, fromBaseV);
+            addWindingTapPositions(branch3W.getToAclfBranch(), toBusId, line4, codIdx, rmaIdx, ntpIdx, cw, nomv2_3w, toBaseV);
+            if (line5 != null)
+                addWindingTapPositions(branch3W.getTertAclfBranch(), tertBusId, line5, codIdx, rmaIdx, ntpIdx, cw, nomv3_3w, tertBaseV);
+            if (magY != null) branch3W.getFromAclfBranch().setFromShuntOnBusSide(true);
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
             if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);
@@ -1184,6 +1239,7 @@ public class PSSEDirectParser {
         double rdc = line1.getDouble(2, 0.0);
         double setvl = line1.getDouble(3, 0.0);
         double vschd = line1.getDouble(4, 0.0);
+        double vcmod = line1.getDouble(5, 0.0);
         double rcomp = line1.getDouble(6, 0.0);
         double delti = line1.getDouble(7, 0.0);
         String meter = line1.getString(8, "I");
@@ -1253,6 +1309,7 @@ public class PSSEDirectParser {
 
             builder.setLCCInverter(lcc, nbi, anmni, anmxi,
                     rci, xci, ebasi, tri, tapi, tmxi, tmni, stpi, xcapi, null);
+            lcc.setExtensionObject(new com.interpss.core.aclf.hvdc.LccSourceControls(vcmod, xcapr, xcapi));
         } catch (Exception e) {
             log.error("Error parsing HVDC 2T LCC record: " + e.getMessage());
         }

@@ -1,6 +1,6 @@
 # InterPSS Python API — Usage Guide
 
-This guide describes the small Python layer in `ipss.plugin.py` that exposes InterPSS **Java** APIs to Python via **[JPype](https://jpype.readthedocs.io/)**: configuration and JVM startup (`config.py`), curated Java imports (`interpss.py`), and file adapters that build [`AclfNetwork`](https://github.com/interpss/ipss-core) instances from IEEE CDF and PSS®E RAW (`adapter/input_adapter.py`).
+This guide describes the small Python layer in `ipss.plugin.py` that exposes InterPSS **Java** APIs to Python via **[JPype](https://jpype.readthedocs.io/)**: configuration and JVM startup (`config.py`), curated Java imports (`interpss.py`), and file adapters that build [`AclfNetwork`](https://github.com/interpss/ipss-core) instances from IEEE CDF and RAW (`adapter/input_adapter.py`).
 
 For **prerequisites** (JDK, JPype install, conda), see [`RuntimeSetup.md`](RuntimeSetup.md). For a short env overview, see [`InterPSSEnvSetup.md`](InterPSSEnvSetup.md).
 

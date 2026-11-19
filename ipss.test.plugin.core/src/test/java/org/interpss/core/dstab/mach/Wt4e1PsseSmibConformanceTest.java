@@ -3,7 +3,7 @@ package org.interpss.core.dstab.mach;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path; import java.util.*;
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.IpssCorePlugin; import org.interpss.dstab.mach.*;
+import org.interpss.IpssCorePlugin; import com.interpss.dstab.mach.model.*;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader; import org.junit.jupiter.api.Test;
 import com.interpss.core.acsc.fault.SimpleFaultCode; import com.interpss.dstab.*;
 import com.interpss.dstab.algo.DynamicSimuMethod; import com.interpss.dstab.cache.StateMonitor;

@@ -267,12 +267,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 	@Override 
 	public boolean networkSolutionStep() throws DStabSimuException {
 		
-		boolean netSolConverged = true;
+		// Success is returned only after a complete comparison of consecutive solutions.
         var previousSequences=new java.util.HashMap<String,Complex3x1>();
 		//NOTE: for testing only
 		//maxIterationTimes = 1;
 		for(int i=0;i<maxIterationTimes;i++){
-            netSolConverged=true;
 			
 			if(this.isTheveninEquiv){
 				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
@@ -436,14 +435,18 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			
 			// step-6 check if the transmission network solution results of the last two steps converge wrt the tolerance
 			// if so, exit the loop; otherwise, continue the iteration until the maximum iteration
+			int unconvergedBusCount = 0;
 			for ( BaseDStabBus busi : transmissionNet.getBusList() ) {
 				
 				if(busi.isActive()){
 					
 					if(i>=1){
 						var previous=previousSequences.get(busi.getId());
-                        double residual=previous==null?Double.POSITIVE_INFINITY:busi.getThreeSeqVoltage().subtract(previous).absMax();
-                        if(!Double.isFinite(residual)||residual>this.converge_tol)netSolConverged=false;
+                        var difference = previous == null ? null : busi.getThreeSeqVoltage().subtract(previous);
+                        // Math.max propagates NaN in every sequence component.
+                        double residual = difference == null ? Double.POSITIVE_INFINITY : Math.max(
+                                difference.a_0.abs(), Math.max(difference.b_1.abs(), difference.c_2.abs()));
+                        if(!Double.isFinite(residual)||residual>this.converge_tol)unconvergedBusCount++;
 					}
 					lastStepTransBoundaryVoltTable.put(busi.getId(), busi.getVoltage());
                     var voltage=busi.getThreeSeqVoltage();
@@ -453,16 +456,16 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			
 			
 			
-		     if(i>0 && netSolConverged) {
+		     if(i>0 && unconvergedBusCount == 0) {
 				  log.debug(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
-				  break;
+				  return true;
 			 }
 		    
 	
 		  } // for maxIterationTimes loop
 			
-        if(!netSolConverged)throw new DStabSimuException("Coupled sequence network solution did not converge");
-		return netSolConverged;
+        // Preserve the sequence solver's failure contract, including an insufficient budget.
+        throw new DStabSimuException("Coupled sequence network solution did not converge");
 	}
 	
 	public void diffEqnIntegrationStep(double t, double dt, DynamicSimuMethod method, int flag) throws DStabSimuException{

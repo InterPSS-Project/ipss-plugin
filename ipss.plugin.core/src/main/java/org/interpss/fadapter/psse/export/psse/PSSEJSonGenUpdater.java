@@ -25,7 +25,9 @@ public class PSSEJSonGenUpdater extends BasePSSEJSonUpdater{
 	 */
 	public PSSEJSonGenUpdater(PSSESchema.Generator gen, BaseAclfNetwork<?,?> aclfNet) {
 		super(gen.getFields(), aclfNet, (lst) -> {
-			// fields appended at the end of the list
+			// Sparse templates can omit the default field; append it before indexing.
+            if (!lst.contains("rmpct")) lst.add("rmpct");
+            if (!lst.contains("baslod")) lst.add("baslod");
 		});
 		this.gen = gen;
 	}
@@ -48,6 +50,28 @@ public class PSSEJSonGenUpdater extends BasePSSEJSonUpdater{
 	 * update the data list based on the AclfNetwork simulation results 
 	 */
 	public void update() {
+        Integer factorColumn = positionTable.get("rmpct");
+        int baseLoadColumn = positionTable.get("baslod");
+        Integer machineColumn = positionTable.get("machid");
+        for (Object record : gen.getData()) {
+            @SuppressWarnings("unchecked")
+            List<Object> values = (List<Object>) record;
+            var bus = aclfNet.getBus(getBusIdFromDataList(values, "ibus"));
+            if (bus == null) continue;
+            // A plant participation factor applies to every machine on the bus.
+            // BASLOD is a per-machine setting, including on offline machines.
+            if (factorColumn != null && bus.getPlantMvarControlPFactor() != null) {
+                while (values.size() <= factorColumn) values.add(null);
+                values.set(factorColumn, bus.getPlantMvarControlPFactor() * 100.0);
+            }
+            Object machineId = machineColumn != null && machineColumn < values.size()
+                    ? values.get(machineColumn) : null;
+            var machine = bus.getContributeGen(machineId == null ? "1" : machineId.toString().trim());
+            if (machine != null) {
+                while (values.size() <= baseLoadColumn) values.add(null);
+                values.set(baseLoadColumn, machine.getBaseLoadFlag());
+            }
+        }
 		/*
         "fields":["ibus", "machid", "pg", "qg", "qt", "qb", "vs", "ireg", "nreg", "mbase", 
         			"zr", "zx", "rt", "xt", "gtap", "stat", "rmpct", "pt", "pb", "baslod", 

@@ -9,8 +9,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cData;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -120,5 +120,14 @@ public class DStabNetworkBuilderAc1cTest extends CorePluginTestSetup {
             assertTrue(exc.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,machine,0));
             assertTrue(exc.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,machine,1));
         }
+    }
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = simpleData();
+            data.setTr(time);
+            return builder.addExcAc1c("Bus1", "1", data);
+        });
     }
 }

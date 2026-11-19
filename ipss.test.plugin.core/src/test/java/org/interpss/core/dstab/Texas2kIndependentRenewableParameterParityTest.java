@@ -15,11 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Repca1Data;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class Texas2kIndependentRenewableParameterParityTest {
             Path.of("testData", "private", "texas2k").toString()));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
-                    "Texas2k_series24_case1_2016summerPeak_v36.RAW",
+                    "Texas2k_series24_case1_2016summerPeak.RAW",
                     "dynamic_models_case1.dyr", "Texas2k_series24_case1_2016summerPeak.AUX", 107),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW",

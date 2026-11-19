@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.mach.Machine;
 
-class DStabNetworkBuilderGastdTest extends CorePluginTestSetup {
+public class DStabNetworkBuilderGastdTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @TempDir Path tempDir;

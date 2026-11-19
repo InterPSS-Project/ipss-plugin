@@ -69,6 +69,21 @@ class PsseDyrRecordReaderTest {
     }
 
     @Test
+    void readsPaddedNamedDeviceHeadersAndSameLineRecords() throws Exception {
+        var records = PsseDyrRecordReader.read(new StringReader(
+                "'LINK_A  ' 'CDC6T ' 0.0 17.0 / 'LINK_B' ' CHVDC2 ' 1.0 /\n"
+                + "'LINK_C ' ' USRDCL ' 'CDC6T ' 2.0 /\n"), "padded.dyr");
+        assertEquals(3, records.size());
+        assertEquals("LINK_A", records.get(0).deviceId());
+        assertEquals(0, records.get(0).busNumber());
+        assertEquals("CDC6T", records.get(0).sourceModelName());
+        assertEquals("CDC6T", records.get(0).canonicalModelName());
+        assertEquals("CHVDC2", records.get(1).canonicalModelName());
+        assertEquals("CDC6T", records.get(2).canonicalModelName());
+        assertEquals(1, records.get(2).parameterCount());
+    }
+
+    @Test
     void inventoryTracksCountsLengthsAndDistinctParameters() throws Exception {
         String dyr = "1 'GENROU' 1 1.0 2.0 /\n"
                 + "2 'GENROE' 1 1.0 2.0 /\n"

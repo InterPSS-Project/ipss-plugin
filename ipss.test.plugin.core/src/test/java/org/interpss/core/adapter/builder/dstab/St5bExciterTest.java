@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.st5b.St5bData;
-import org.interpss.dstab.control.exc.psse.st5b.St5bExciter;
+import com.interpss.dstab.controller.exc.st5b.St5bData;
+import com.interpss.dstab.controller.exc.st5b.St5bExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -93,6 +93,30 @@ public class St5bExciterTest extends CorePluginTestSetup {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(.005);algorithm.setTotalSimuTimeSec(.02);
         algorithm.setSimuOutputHandler(new StateMonitor());assertTrue(algorithm.getAclfAlgorithm().loadflow());
         assertTrue(algorithm.initialization());assertTrue(algorithm.performSimulation());
+    }
+
+    @Test void nativeSt5bUsesAlgebraicFieldOutputForLagShorterThanTwoSteps() throws Exception {
+        for (double step : new double[] {0.00166665, 0.002, 0.0033333}) {
+            St5bData data = baseData();
+            data.setT1(0.004);
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+            St5bExciter exciter = builder.addExcSt5b("Bus1", "1", "ST5B", data);
+            Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+            machine.setEfd(1.2);
+            exciter.configureIntegrationStep(step);
+            assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+            assertEquals(0.004, data.getT1(), TOL);
+            assertEquals(1.2, exciter.getOutput(machine), TOL);
+
+            exciter.setRefPoint(exciter.getRefPoint() + 0.1);
+            if (step > 0.002) {
+                assertEquals(0.0, exciter.t1, TOL);
+                assertEquals(exciter.getFinalLagInput(), exciter.getOutput(machine), TOL);
+            } else {
+                assertEquals(0.004, exciter.t1, TOL);
+                assertEquals(1.2, exciter.getOutput(machine), TOL);
+            }
+        }
     }
 
     private static Fixture fixture(St5bData data)throws Exception{

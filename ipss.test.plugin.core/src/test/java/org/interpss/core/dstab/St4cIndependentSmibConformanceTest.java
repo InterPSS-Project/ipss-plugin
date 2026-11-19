@@ -13,7 +13,7 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
+import com.interpss.dstab.controller.exc.st4c.St4cExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,10 @@ public class St4cIndependentSmibConformanceTest {
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
 
     @Test void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates()throws Exception{
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(
+        IpssCorePlugin.init();// This immutable reference was generated with impedance-only static
+        // conversion. Declare its experimental boundary; production imports use I/Z.
+        var context=new PSSEMultiFileLoader().setDynamicRunConfigJson(
+                "{\"activeStaticLoadModel\":\"CONST_Z\",\"reactiveStaticLoadModel\":\"CONST_Z\"}").loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve("SMIB_v33_genrou_st4c.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);algorithm.setTotalSimuTimeSec(1);

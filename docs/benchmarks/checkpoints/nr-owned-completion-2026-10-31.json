@@ -1,0 +1,467 @@
+{
+  "status": "correctness_passed_matched_reduction_verified_target_still_not_met",
+  "consolidation_complete": false,
+  "final_five_case_qualification": false,
+  "core_source_before": "a470831d1cc27c67cec86a83457c90d7d77d6dca",
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 7921,
+    "totals": {
+      "passed": 7814,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 508,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[4]:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_completion_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyCompletionCallsEndBeforeAllocationAndRejectsItsChangedInjection": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#legacyEndCanReplaceTheAllocationOwnerAndItsTolerance": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#ownedPublicationCallbackRunsOnceAndEveryExitClosesTheScope(String)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#publishedVoltagesAndGenerationMatchFreshEvaluationInBothFormsAndEveryMode(boolean, NrExecutionMode)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrCompletionTest#unknownOrObservedGeneratorKeepsConservativeCompletion(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[4]": "passed"
+    }
+  },
+  "profile_sample_evidence": {
+    "case118": {
+      "main_samples": 284,
+      "accepted_current_samples": 25,
+      "validation_samples": 50
+    },
+    "case9241pegase": {
+      "main_samples": 542,
+      "accepted_current_samples": 75,
+      "validation_samples": 123
+    },
+    "activsg25k": {
+      "main_samples": 823,
+      "accepted_current_samples": 77,
+      "validation_samples": 131
+    }
+  },
+  "matched_warmed": {
+    "case118": {
+      "before": {
+        "samples": 20000,
+        "mean_ms": 0.04376655,
+        "median_ms": 0.0409,
+        "min_ms": 0.0402,
+        "max_ms": 14.7118
+      },
+      "after": {
+        "samples": 20000,
+        "mean_ms": 0.039719925,
+        "median_ms": 0.0379,
+        "min_ms": 0.0374,
+        "max_ms": 1.1453
+      },
+      "mean_reduction_percent": 9.245930967828164,
+      "byte_identical_voltages_sha256": "081a09d4c0db179b842da519d326462f9ae45f015bb869eaf3817161dd472f16"
+    },
+    "case9241pegase": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 16.6305385,
+        "median_ms": 16.305999999999997,
+        "min_ms": 15.3833,
+        "max_ms": 26.2498
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 14.6481695,
+        "median_ms": 14.32935,
+        "min_ms": 13.3836,
+        "max_ms": 19.7768
+      },
+      "mean_reduction_percent": 11.920052979643447,
+      "byte_identical_voltages_sha256": "25c9574689f76b0c234580bda2b9138f419692d4e3f9a7ccb13965cb37d1e32d"
+    },
+    "activsg25k": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 55.4481765,
+        "median_ms": 54.638149999999996,
+        "min_ms": 51.3887,
+        "max_ms": 77.1551
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 50.4179885,
+        "median_ms": 49.5576,
+        "min_ms": 46.6883,
+        "max_ms": 69.9645
+      },
+      "mean_reduction_percent": 9.071872724254515,
+      "byte_identical_voltages_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+    }
+  },
+  "matched_warmed_protocol": {
+    "cpu": 2,
+    "affinity_mask": 4,
+    "order": [
+      "before",
+      "after",
+      "after",
+      "before"
+    ],
+    "small_warmups_total": 50000,
+    "small_measurements_per_jvm": 10000,
+    "large_warmups_total": 50,
+    "large_measurements_per_jvm": 100,
+    "initialization_included_in_warmups": true,
+    "timing_boundary": "Voltage reset, public load flow, publication and generation allocation."
+  },
+  "cold_25k": {
+    "before": [
+      141.2544,
+      139.5063
+    ],
+    "after": [
+      110.3744,
+      111.3014
+    ]
+  },
+  "cold_protocol": {
+    "warmups_total": 1,
+    "measurements_per_jvm": 1,
+    "order": [
+      "before",
+      "after",
+      "after",
+      "before"
+    ],
+    "fresh_jvm_each": true,
+    "cpu": 2,
+    "affinity_mask": 4
+  },
+  "targeted_rustpower_118": {
+    "verification": {
+      "required_ratio": 1.2,
+      "cases": {
+        "case118": {
+          "mean_ratio": 1.4180753865956786,
+          "per_fork_ratios": [
+            1.428547899010516,
+            1.4093941127324523,
+            1.4163994934610011
+          ]
+        }
+      },
+      "target_met": false,
+      "affinity_before_and_after": 4
+    },
+    "pooled_summary": [
+      {
+        "case": "case118",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.0285117,
+        "median_ms": 0.0276,
+        "min_ms": 0.027,
+        "p95_ms": 0.0294,
+        "max_ms": 1.3574,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.02817125,
+            "median_ms": 0.0274,
+            "min_ms": 0.027,
+            "p95_ms": 0.0288,
+            "max_ms": 0.7321
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.02839076,
+            "median_ms": 0.0275,
+            "min_ms": 0.0271,
+            "p95_ms": 0.0296,
+            "max_ms": 0.724
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.028973090000000003,
+            "median_ms": 0.0279,
+            "min_ms": 0.0274,
+            "p95_ms": 0.0301,
+            "max_ms": 1.3574
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.04043174000000001,
+        "median_ms": 0.0381,
+        "min_ms": 0.0375,
+        "p95_ms": 0.0494,
+        "max_ms": 2.3412,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.04024398,
+            "median_ms": 0.038,
+            "min_ms": 0.0375,
+            "p95_ms": 0.0501,
+            "max_ms": 0.5977
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.04001377,
+            "median_ms": 0.0381,
+            "min_ms": 0.0375,
+            "p95_ms": 0.0489,
+            "max_ms": 0.6465
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.04103747,
+            "median_ms": 0.038,
+            "min_ms": 0.0376,
+            "p95_ms": 0.04800499999999993,
+            "max_ms": 2.3412
+          }
+        ]
+      }
+    ],
+    "accuracy": {
+      "case118-interpss-prepared-0-voltage.csv": {
+        "independent_mismatch_pu": 3.1537862653484076e-09,
+        "max_complex_voltage_error_pu": 1.4543185522495588e-10
+      },
+      "case118-interpss-prepared-1-voltage.csv": {
+        "independent_mismatch_pu": 3.1537862653484076e-09,
+        "max_complex_voltage_error_pu": 1.4543185522495588e-10
+      },
+      "case118-interpss-prepared-2-voltage.csv": {
+        "independent_mismatch_pu": 3.1537862653484076e-09,
+        "max_complex_voltage_error_pu": 1.4543185522495588e-10
+      }
+    },
+    "completion_receipts": [
+      {
+        "preparations": 1,
+        "scalarEquations": 236,
+        "structuralEntries": 1106,
+        "factorizedEntries": 1646,
+        "preparedResidualEvaluations": 360000,
+        "preparedWorkspaceScopes": 60000,
+        "stableSolveScopes": 60000,
+        "ownedCompletionAllocations": 60000,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 60000,
+        "warmupLoadflowCalls": 50000,
+        "measuredLoadflowCalls": 10000,
+        "initialSolveCountedAsWarmup": 1
+      },
+      {
+        "preparations": 1,
+        "scalarEquations": 236,
+        "structuralEntries": 1106,
+        "factorizedEntries": 1646,
+        "preparedResidualEvaluations": 360000,
+        "preparedWorkspaceScopes": 60000,
+        "stableSolveScopes": 60000,
+        "ownedCompletionAllocations": 60000,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 60000,
+        "warmupLoadflowCalls": 50000,
+        "measuredLoadflowCalls": 10000,
+        "initialSolveCountedAsWarmup": 1
+      },
+      {
+        "preparations": 1,
+        "scalarEquations": 236,
+        "structuralEntries": 1106,
+        "factorizedEntries": 1646,
+        "preparedResidualEvaluations": 360000,
+        "preparedWorkspaceScopes": 60000,
+        "stableSolveScopes": 60000,
+        "ownedCompletionAllocations": 60000,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 60000,
+        "warmupLoadflowCalls": 50000,
+        "measuredLoadflowCalls": 10000,
+        "initialSolveCountedAsWarmup": 1
+      }
+    ],
+    "integrity": {
+      "runtime_changes": [],
+      "evidence_hash_changes": [],
+      "source_changes": []
+    },
+    "scope": "IEEE118 alone, three processes/runtime, 50000 warmups plus 10000 measurements/process; not all-five-case qualification."
+  },
+  "limitations": [
+    "Only existing audited retained-input/voltage scopes can use owned completion.",
+    "Unknown or observed generator callbacks retain conservative completion.",
+    "Standalone engine migration, specialized coefficient/capability contracts and release coverage remain open.",
+    "Current IEEE118 still misses <=1.2; final matched all-five qualification remains required."
+  ],
+  "evidence": [
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/full-final-audit.json",
+      "sha256": "f8242e9133125c0d85b57e5a5f9499badd0ac93fde21adcfa96122da3370ccdc"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/matched-final/runs.json",
+      "sha256": "f15b8ce0f16558ecf7c2f362093182f5f137ab38c71ee10f994da525464db9b8"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/matched-final-summary.json",
+      "sha256": "35ae00d0312a43f9de21f0cf40eb66d1eefee43ce59a2b73d9ead822821e9e5b"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/cold-final/runs.json",
+      "sha256": "76566123d3edbea9f586af023c2f4754098afb2b249bf8eddb3b70eb7e7ad077"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/full-final-versus-measured-runtime.json",
+      "sha256": "5e6daac8a8a1af83d5d00fa6936de90edca957d8b99feb5598bdfcac2471b9ff"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-owned-completion-final-full-source-manifest.json",
+      "sha256": "4ae03283c80e31999dbb3bf30641a9b04e4c79cec42adef2d5fa4454a80454d2"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-full-20261031.log.status.json",
+      "sha256": "9024da1c68adc5c76a73ca9b987e8195523f72b038a5ef623eb342820788fe37"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-dispatch-20261031.log.status.json",
+      "sha256": "e2f8a4b70b74e78d9fcd339180c9e3a41f13be547c5fc46e063e0d0946e6cab3"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-matched-20261031.log.status.json",
+      "sha256": "9d87bc06c124151ae721f49fffefb208a68c6c32c66d541259e5196760e95649"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-cold-20261031.log.status.json",
+      "sha256": "abb02a9fbc6a6165511c6341735df50d94559106b9904275d85da0e97d67e617"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-warmed-profile-20261031/runs.json",
+      "sha256": "ede6bce4ef2bc5c6ec35e0ecbeb841bd5aa141f233609b6892e8a99b854ced3c"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-warmed-profile-20261031/accuracy.json",
+      "sha256": "80ac769cee6424ad602da16a99712ebd7f780b3a9b3b8846a5c812914b608f4a"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-rustpower118-20261031/environment.json",
+      "sha256": "2cf1c6e146ba4c04f534c9e8457574d5a0e1740337f4c053ec74f22d2d706061"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-rustpower118-20261031/target-verification.json",
+      "sha256": "99dbcd2909f56e92ff61dc6d98f1c6417fbfb5d48ca6b92bac3389267e1015bf"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-rustpower118-20261031/summary.json",
+      "sha256": "9179f179d1e7a1d0b95e4afd076f45cb6fcfb7d0cd6f8afa2a46828046247b16"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-rustpower118-20261031/sha256.json",
+      "sha256": "c2bd101e694678a3c3d06e23be4c28e8a945752401cedd0142a58ed11966e1ee"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-rustpower118-20261031/interpss-validation.json",
+      "sha256": "6c048d67ec7401ab7c4849151d7573c0e92fc6f446d80b60aba1882fd8dd3f0a"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-final-rustpower118-20261031.log.status.json",
+      "sha256": "b40335f46e96773e34c1a1ffb48d5edee970097a6ece372182f620ec68c72abc"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-warmed-profile-20261031/case118/profile.jfr",
+      "sha256": "688262b5cb550136448871e999c9b7caa9f2de107134c8fb57467f2394b57242"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-warmed-profile-20261031/case9241pegase/profile.jfr",
+      "sha256": "bfc11db36f0c00a7ce2d9257212134e81e2574c142e8b7e2edbbac9dce06f2ae"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-warmed-profile-20261031/activsg25k/profile.jfr",
+      "sha256": "705f2bedbbb83ff313816d82b0b36dc17003ca0571ffb20d6280118dcf1654f6"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/example-compile-proof.json",
+      "sha256": "225a0ac9317ee315484a3c74bc0199719663990093af87774c5e2d555e002cbc"
+    },
+    {
+      "path": "ipss.test.plugin.core/target/nr-owned-completion-20261031/prototype-public-checkpoint.json",
+      "sha256": "7d9d96586655e219963ff056a3e7c95a4e38f01c5b17dcdded1858b103e10af7"
+    }
+  ],
+  "pinned_rustpower_files_sha256": {
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\METADATA": "7f5ed458e56c7a375e1d022d99877d1e2d6ae4af4a974abe28001e5e92e51561",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\RECORD": "340270ad0117741fb4fde6b83752bd245c4270dac38d41af4c3c7850a8d20711",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\WHEEL": "ec72fe4c6beae3839fa74ca164bfae4482051dc25322aaa4459550db06627733",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\__init__.py": "cffb3d7b997fb11ff6379156ee1ff9f8cdddd6c88375c48619a7b67a21c260b3",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\__init__.pyi": "81c59cfcc34a0cd608d60a57af529e40cda6a44e29bc83aed576a5ee16e89537",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\rustpower.pyd": "18123a2178a758fa7cc2e0386c91d581c887d5d9007669373077a98347187de1"
+  },
+  "examples": {
+    "closed_plan_item": "DELIVER-02",
+    "artifact": "docs/newton-raphson-execution-examples.md",
+    "compile_proof": {
+      "document_sha256": "32b613b52a393cada966cfc37307a8a24d2231aa72394790ec58c74c02ee373f",
+      "source_sha256": "b2c90ef727fd4f97574bbb7a7a430b708d0fd9115ae232c82fc6281ba4ed3aea",
+      "class_sha256": "66a2c7d373115b04e9ae63176300ea0354d505b210e84d0b4103777c23134a52",
+      "compiled_against": "nr-owned-completion-dispatch-20261031",
+      "full_and_measured_production_classpath_entries_identical": 108
+    }
+  },
+  "preceding_prototype_evidence": "ipss.test.plugin.core/target/nr-owned-completion-20261031/prototype-public-checkpoint.json",
+  "core_commit": "eb713f1ed"
+}

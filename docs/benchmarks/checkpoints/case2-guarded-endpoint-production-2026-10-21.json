@@ -1,0 +1,586 @@
+{
+  "schema": 1,
+  "status": "guarded-endpoint-production-evidence",
+  "goal_achieved": false,
+  "core_commit": "bdff8b2e9",
+  "plugin_commit": "287326d65",
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.168087,
+        9.9962789,
+        10.185305,
+        9.9452629,
+        9.8329369,
+        10.1326323
+      ],
+      "median_case_wall_s": 10.064455599999999,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.9385823,
+        9.6532401,
+        9.7500909,
+        9.530367,
+        9.5090482,
+        9.749151
+      ],
+      "median_case_wall_s": 9.70119555,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "endpoint_preparation_counts": {
+    "control": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "candidate": [
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376,
+      211376
+    ]
+  },
+  "focused_tests": {
+    "tests": 46,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "registered_gate": {
+    "found": 2645,
+    "passed": 2627,
+    "failed": 5,
+    "skipped": 9,
+    "aborted": 4,
+    "same_failure_methods_as_baseline": true,
+    "same_failure_messages_as_baseline": true
+  },
+  "accepted_state_audit": {
+    "status": "diagnostic",
+    "production_changed": false,
+    "numeric_slots": 164206,
+    "groups": 12919,
+    "comparisons": [
+      {
+        "run": 1,
+        "differing_groups": []
+      },
+      {
+        "run": 2,
+        "differing_groups": []
+      }
+    ]
+  },
+  "audit_scope": "Read-only graph traversal and current immutable-record/complex values; excludes network/bus/algorithm/synthetic objects and listed instrumentation counters. Full recordings separately cover all supplied channels.",
+  "independent_accuracy_qualified": false,
+  "verification": {
+    "recordings": 36,
+    "samples_per_recording": 2405,
+    "channels": 4810,
+    "event_post_rows": 2,
+    "finite": true,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true,
+    "experimental_class_overlay": false
+  },
+  "archive": {
+    "bytes": 6234779,
+    "sha256": "3dc1b597c5bd18ca29d67375570b29b0a14843a5c61e3eba756b32066b34d4a3"
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-guarded-endpoint-production/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1168574,
+    "sha256": "8b6c590e35bd69314a55c8d1a1f4709de199dbcdd31a757df879abe5aaa10505"
+  },
+  "requirements": [
+    "Paired source commits",
+    "Retained runner and inputs",
+    "Matching external dependency hashes"
+  ],
+  "followup_profile": {
+    "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-guarded-endpoint-profile/manifest.json",
+    "private_manifest_digest": {
+      "bytes": 118409,
+      "sha256": "253219df58ee62fdc2ec434cf9957b8f48410061625b62036832e34963f25c9d"
+    },
+    "archive": {
+      "bytes": 810524,
+      "sha256": "92f3b0208d7b859ee42ecc0c5505bf20fb22d011a0623315e76d8225094e3333"
+    },
+    "profile_times_excluded_from_qualifying_performance": true,
+    "unchanged_effective_directory_classes": true,
+    "profiles": [
+      {
+        "samples": 518,
+        "groups": {
+          "setup-and-other": 18,
+          "network": 328,
+          "integration-other": 169,
+          "recording": 3
+        },
+        "leaf": [
+          {
+            "method": "com.interpss.core.sparse.solver.klu.FactoredComplexRowSolve.solve",
+            "samples": 64,
+            "percent": 12.355212355212355
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabNetworkImpl.solveNetEqn_impl",
+            "samples": 52,
+            "percent": 10.038610038610038
+          },
+          {
+            "method": "com.interpss.dstab.mach.impl.SalientPoleMachineImpl.getOutputObject",
+            "samples": 49,
+            "percent": 9.45945945945946
+          },
+          {
+            "method": "com.interpss.dstab.algo.defaultImpl.IndexedVoltageRecordTable.scan",
+            "samples": 35,
+            "percent": 6.756756756756757
+          },
+          {
+            "method": "org.eclipse.emf.common.util.AbstractEList$EIterator.hasNext",
+            "samples": 29,
+            "percent": 5.598455598455598
+          },
+          {
+            "method": "org.apache.commons.math3.util.FastMath.atan",
+            "samples": 16,
+            "percent": 3.088803088803089
+          },
+          {
+            "method": "org.eclipse.emf.common.util.BasicEList.get",
+            "samples": 15,
+            "percent": 2.8957528957528957
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabBusImpl.injCurDynamic",
+            "samples": 15,
+            "percent": 2.8957528957528957
+          },
+          {
+            "method": "org.apache.commons.math3.util.FastMath.atan2",
+            "samples": 13,
+            "percent": 2.5096525096525095
+          },
+          {
+            "method": "org.interpss.dstab.algo.PsseStaggeredEulerSolver.nextStep",
+            "samples": 12,
+            "percent": 2.3166023166023164
+          },
+          {
+            "method": "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveEqn",
+            "samples": 11,
+            "percent": 2.1235521235521237
+          },
+          {
+            "method": "org.eclipse.emf.common.util.AbstractEList$EIterator.doNext",
+            "samples": 8,
+            "percent": 1.5444015444015444
+          },
+          {
+            "method": "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveInterleavedInPlace",
+            "samples": 8,
+            "percent": 1.5444015444015444
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabBusImpl.calcStaticLoadInjCur",
+            "samples": 7,
+            "percent": 1.3513513513513513
+          },
+          {
+            "method": "org.interpss.dstab.renewable.RenewableElectricalController.getSelectedPowerReference",
+            "samples": 7,
+            "percent": 1.3513513513513513
+          },
+          {
+            "method": "org.interpss.dstab.algo.PsseStaggeredEulerSolver.evaluate",
+            "samples": 6,
+            "percent": 1.1583011583011582
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.util.CMLSymbolMapper$FixedExpression.evaluate",
+            "samples": 6,
+            "percent": 1.1583011583011582
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.St1CompiledLocalPlan$Node.prepare",
+            "samples": 6,
+            "percent": 1.1583011583011582
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabNetworkImpl.addCustomBusCurrentInj",
+            "samples": 6,
+            "percent": 1.1583011583011582
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter$1.getY",
+            "samples": 5,
+            "percent": 0.9652509652509652
+          },
+          {
+            "method": "com.interpss.dstab.algo.defaultImpl.IndexedVoltageRecordTable.bind",
+            "samples": 5,
+            "percent": 0.9652509652509652
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController.evaluateRuntimeExpression",
+            "samples": 5,
+            "percent": 0.9652509652509652
+          },
+          {
+            "method": "com.interpss.dstab.mach.impl.RoundRotorMachineImpl$GENROUDEqnSolver.calculateIfd",
+            "samples": 5,
+            "percent": 0.9652509652509652
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.util.CMLSymbolMapper$CompiledExpression.resolve",
+            "samples": 4,
+            "percent": 0.7722007722007722
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter.observedFieldCurrent",
+            "samples": 4,
+            "percent": 0.7722007722007722
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y2005.st4b.St4bCompiledStage.input",
+            "samples": 4,
+            "percent": 0.7722007722007722
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.St1CompiledLocalPlan.localInput",
+            "samples": 4,
+            "percent": 0.7722007722007722
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.CmlRuntimeStagePlan$Node.prepare",
+            "samples": 4,
+            "percent": 0.7722007722007722
+          },
+          {
+            "method": "org.interpss.dstab.renewable.Reeca1Model.refreshTwoStep",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.St1CompiledLocalPlan.advancePrimitiveZero",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aCompiledStage$Node.prepare",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "java.lang.String.hashCode",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "com.interpss.dstab.algo.defaultImpl.AbstractDStabSolver.solveDEqnStep",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "com.interpss.dstab.mach.impl.MachineImpl.getController",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "java.lang.FdLibm$IEEEremainder.compute",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.util.CMLSymbolMapper.getValue",
+            "samples": 3,
+            "percent": 0.5791505791505791
+          },
+          {
+            "method": "org.interpss.fadapter.psse.PSSEDStabDirectParser.parseDynData",
+            "samples": 2,
+            "percent": 0.3861003861003861
+          },
+          {
+            "method": "java.lang.Double.isInfinite",
+            "samples": 2,
+            "percent": 0.3861003861003861
+          },
+          {
+            "method": "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aCompiledStage.signature",
+            "samples": 2,
+            "percent": 0.3861003861003861
+          },
+          {
+            "method": "org.apache.commons.math3.complex.Complex.divide",
+            "samples": 2,
+            "percent": 0.3861003861003861
+          }
+        ]
+      },
+      {
+        "samples": 499,
+        "groups": {
+          "setup-and-other": 16,
+          "integration-other": 188,
+          "network": 294,
+          "recording": 1
+        },
+        "leaf": [
+          {
+            "method": "com.interpss.core.sparse.solver.klu.FactoredComplexRowSolve.solve",
+            "samples": 57,
+            "percent": 11.422845691382765
+          },
+          {
+            "method": "com.interpss.dstab.mach.impl.SalientPoleMachineImpl.getOutputObject",
+            "samples": 57,
+            "percent": 11.422845691382765
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabNetworkImpl.solveNetEqn_impl",
+            "samples": 46,
+            "percent": 9.218436873747494
+          },
+          {
+            "method": "com.interpss.dstab.algo.defaultImpl.IndexedVoltageRecordTable.scan",
+            "samples": 30,
+            "percent": 6.012024048096192
+          },
+          {
+            "method": "org.apache.commons.math3.util.FastMath.atan2",
+            "samples": 18,
+            "percent": 3.6072144288577155
+          },
+          {
+            "method": "org.apache.commons.math3.util.FastMath.atan",
+            "samples": 18,
+            "percent": 3.6072144288577155
+          },
+          {
+            "method": "org.eclipse.emf.common.util.AbstractEList$EIterator.hasNext",
+            "samples": 17,
+            "percent": 3.406813627254509
+          },
+          {
+            "method": "org.interpss.dstab.renewable.RenewableElectricalController.getSelectedPowerReference",
+            "samples": 12,
+            "percent": 2.404809619238477
+          },
+          {
+            "method": "com.interpss.dstab.mach.impl.RoundRotorMachineImpl$GENROUDEqnSolver.calculateIfd",
+            "samples": 11,
+            "percent": 2.2044088176352705
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabBusImpl.injCurDynamic",
+            "samples": 10,
+            "percent": 2.004008016032064
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabNetworkImpl.addCustomBusCurrentInj",
+            "samples": 9,
+            "percent": 1.8036072144288577
+          },
+          {
+            "method": "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveEqn",
+            "samples": 9,
+            "percent": 1.8036072144288577
+          },
+          {
+            "method": "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveInterleavedInPlace",
+            "samples": 8,
+            "percent": 1.6032064128256514
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.util.CMLSymbolMapper$FixedExpression.evaluate",
+            "samples": 8,
+            "percent": 1.6032064128256514
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y2005.st4b.St4bCompiledStage.input",
+            "samples": 8,
+            "percent": 1.6032064128256514
+          },
+          {
+            "method": "org.eclipse.emf.common.util.BasicEList.get",
+            "samples": 8,
+            "percent": 1.6032064128256514
+          },
+          {
+            "method": "com.interpss.dstab.impl.BaseDStabBusImpl.calcStaticLoadInjCur",
+            "samples": 7,
+            "percent": 1.402805611222445
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.runtime.CmlBlockKernel.advance",
+            "samples": 6,
+            "percent": 1.2024048096192386
+          },
+          {
+            "method": "org.interpss.dstab.algo.PsseStaggeredEulerSolver.nextStep",
+            "samples": 6,
+            "percent": 1.2024048096192386
+          },
+          {
+            "method": "org.apache.commons.math3.complex.Complex.createComplex",
+            "samples": 6,
+            "percent": 1.2024048096192386
+          },
+          {
+            "method": "org.apache.commons.math3.complex.Complex.divide",
+            "samples": 5,
+            "percent": 1.002004008016032
+          },
+          {
+            "method": "org.eclipse.emf.common.util.AbstractEList$EIterator.doNext",
+            "samples": 5,
+            "percent": 1.002004008016032
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController.evaluateRuntimeExpression",
+            "samples": 5,
+            "percent": 1.002004008016032
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController.hasAlgebraicControlBlock",
+            "samples": 5,
+            "percent": 1.002004008016032
+          },
+          {
+            "method": "org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.getCmlMachineVoltage",
+            "samples": 4,
+            "percent": 0.8016032064128257
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter$1.getY",
+            "samples": 4,
+            "percent": 0.8016032064128257
+          },
+          {
+            "method": "com.interpss.dstab.impl.DStabBranchImpl.getDynamicBranchDeviceList",
+            "samples": 4,
+            "percent": 0.8016032064128257
+          },
+          {
+            "method": "org.eclipse.emf.common.notify.impl.BasicNotifierImpl.eBasicHasAdapters",
+            "samples": 4,
+            "percent": 0.8016032064128257
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.St1CompiledLocalPlan$Node.prepare",
+            "samples": 4,
+            "percent": 0.8016032064128257
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.St1CompiledLocalPlan.advancePrimitiveZero",
+            "samples": 4,
+            "percent": 0.8016032064128257
+          },
+          {
+            "method": "java.lang.String.hashCode",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor.evaluateStaggered",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aCompiledStage$Node.prepare",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "java.lang.invoke.Invokers.checkCustomized",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter.observedFieldCurrent",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController.setRuntimePhase",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "com.interpss.dstab.mach.impl.MachineImpl.getController",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "com.interpss.dstab.controller.cml.annotate.util.CMLSymbolMapper$CompiledExpression.resolve",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "com.interpss.dstab.algo.defaultImpl.DStabSolverImpl.prepareNetworkVoltageRecords",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          },
+          {
+            "method": "com.interpss.dstab.algo.defaultImpl.AbstractDStabSolver.solveDEqnStep",
+            "samples": 3,
+            "percent": 0.6012024048096193
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /** Compact numeric checkpoints; full external trajectories stay private. */
@@ -12,7 +13,27 @@ public final class EmbeddedNativeTrajectoryValues {
     private EmbeddedNativeTrajectoryValues() {}
     public static List<String> lines(Path path) { String value=path.toString().replace('\\','/'); int split=value.lastIndexOf('/',value.lastIndexOf('/')-1); return lines(split>=0?value.substring(split+1):value); }
     public static byte[] bytes(Path path) { return String.join("\n",lines(path)).getBytes(StandardCharsets.UTF_8); }
-    public static String manifest(Path path) { try { String dir=path.getParent().getFileName().toString(); Path csv=path.resolveSibling(dir.contains("uel2cu1")||dir.contains("oel2cu1")?"native.csv":"psse.csv"); return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes(csv))); } catch(Exception e) { throw new IllegalArgumentException(path.toString(),e); } }
+    /** Fixed checkpoint fingerprint retained for existing manifest-hash callers. */
+    public static String manifest(Path path) {
+        return NativeCheckpointFingerprints.expectedManifestSha256(path);
+    }
+
+    public static Set<String> checkpointPaths() {
+        return NativeCheckpointFingerprints.paths();
+    }
+
+    /** Checks supplied checkpoint bytes against a fixed, independently stored fingerprint. */
+    public static void verifyCheckpoint(Path path, byte[] checkpoint) {
+        try {
+            String actual = HexFormat.of().formatHex(
+                    MessageDigest.getInstance("SHA-256").digest(checkpoint));
+            if (!NativeCheckpointFingerprints.expectedSha256(path).equals(actual)) {
+                throw new IllegalArgumentException("Native checkpoint SHA-256 mismatch: " + path);
+            }
+        } catch (java.security.NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
+    }
     public static List<String> lines(String key) { return switch(key) {
         case "fivebus-svsmo1t2/psse.csv" -> case0();
         case "ieee9-generator-trip-relays/psse.csv" -> case1();

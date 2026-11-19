@@ -14,13 +14,20 @@ public final class DynamicModelSupportMatrix {
 
     public static String generateMarkdown() {
         StringBuilder markdown = new StringBuilder();
-        markdown.append("# InterPSS PSS/E dynamic-model support matrix\n\n")
+        markdown.append("# InterPSS dynamic-model support matrix\n\n")
                 .append("Generated from `DynamicModelCatalog`; do not edit model rows manually.\n\n")
                 .append("`LOADABLE` means that a catalog entry, parser path, and runtime class exist. It\n")
                 .append("does **not** mean that the model has passed equation conformance, a stationary\n")
                 .append("flat run, disturbance coverage, or independent trajectory comparison.\n")
                 .append("Verification status is deliberately kept separate from this generated\n")
                 .append("loadability inventory.\n\n")
+                .append("The [additional Texas7k exciter integration](benchmarks/texas7k-optimized-exciters-2026-10-24.md)\n")
+                .append("extends the opt-in staggered solver to eight more exciter families. Its complete\n")
+                .append("no-event gate passes, but full-network fault accuracy remains open; catalog\n")
+                .append("verification labels are unchanged.\n\n")
+                .append("This runtime catalog is not the complete approved-model list. The\n")
+                .append("[approved native renewable coverage](renewable-model-evidence.md) also lists\n")
+                .append("source-approved families that have no implementation or parser descriptor.\n\n")
                 .append("| Model | Category | Aliases | Parameters | Support | Runtime class | Reference |\n")
                 .append("|---|---|---|---:|---|---|---|\n");
         DynamicModelCatalog.allModels().stream()
@@ -34,7 +41,8 @@ public final class DynamicModelSupportMatrix {
                         .append(" | ").append(model.parameterCount())
                         .append(" | ").append(model.supportStatus())
                         .append(" | `").append(model.runtimeClassName()).append("` | ")
-                        .append("[PowerWorld](").append(model.reference()).append(") |\n"));
+                        .append("www.powerworld.com".equals(model.reference().getHost())?"[PowerWorld](":"[Reference](")
+                        .append(model.reference()).append(") |\n"));
         return markdown.toString();
     }
 

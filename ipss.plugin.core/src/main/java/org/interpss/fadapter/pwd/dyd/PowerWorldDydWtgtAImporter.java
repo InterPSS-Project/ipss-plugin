@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.interpss.dstab.renewable.Wtdta1Model;
-import org.interpss.dstab.renewable.WtgtAData;
+import com.interpss.dstab.renewable.Wtdta1Model;
+import com.interpss.dstab.renewable.WtgtAData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 

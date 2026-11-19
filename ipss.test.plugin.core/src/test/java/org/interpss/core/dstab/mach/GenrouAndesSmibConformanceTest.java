@@ -1,5 +1,6 @@
 package org.interpss.core.dstab.mach;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -9,7 +10,6 @@ import java.util.List;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.DStabObjectFactory;
@@ -27,7 +27,7 @@ public class GenrouAndesSmibConformanceTest {
     @Test
     void lineTripTrajectoryMatchesAndes() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou.dyr").toString());
         var network = context.getDStabilityNet();
@@ -127,7 +127,12 @@ public class GenrouAndesSmibConformanceTest {
                 return value[value.length - 1];
             }
             int index = Arrays.binarySearch(time, target);
-            if (index >= 0) return value[index];
+            if (index >= 0) {
+                // An event time is recorded twice, pre-event then post-event.
+                // The reference row at that time holds the pre-event value.
+                while (index > 0 && time[index - 1] == target) index--;
+                return value[index];
+            }
             int upper = -index - 1;
             if (upper == 0 || upper == time.length) {
                 throw new IllegalArgumentException("Reference time outside actual trajectory: "

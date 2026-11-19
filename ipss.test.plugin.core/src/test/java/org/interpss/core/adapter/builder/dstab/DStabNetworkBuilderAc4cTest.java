@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
-import org.interpss.dstab.control.exc.psse.ac4c.Ac4cExciter;
+import com.interpss.dstab.controller.exc.ac4c.Ac4cData;
+import com.interpss.dstab.controller.exc.ac4c.Ac4cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -139,4 +139,13 @@ public class DStabNetworkBuilderAc4cTest extends CorePluginTestSetup {
     private static void step(Ac4cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Ac4cExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcAc4c("Bus1", "1", data);
+        });
+    }
 }

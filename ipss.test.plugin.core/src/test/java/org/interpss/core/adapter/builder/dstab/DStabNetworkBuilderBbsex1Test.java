@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -233,5 +233,14 @@ public class DStabNetworkBuilderBbsex1Test extends CorePluginTestSetup {
             setMachine(machine);
         }
         @Override public double getOutput(Machine machine) { return output; }
+    }
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = dynamicData();
+            data.setTf(time);
+            return builder.addExcBbsex1("Bus1", "1", data);
+        });
     }
 }

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "status": "complete-case-preparation-flat-and-fault-gates-passed",
+  "independent_full_network_trajectory_parity": false,
+  "attached_records": 2705,
+  "remaining_import_failures": {},
+  "buses": 6717,
+  "bsg_entries": 120,
+  "gnet_buses": 13,
+  "gnet_converted_generators": 5,
+  "model_removal_directives": 55,
+  "flat_gate": {
+    "duration_s": 10,
+    "network_step_s": 0.004166666666666667,
+    "power_flow_tolerance_pu": 0.001,
+    "dynamic_network_tolerance_pu": 0.0001,
+    "controller_coordinates_checked": 9496,
+    "max_voltage_drift_pu": 2.7755575615628914e-14,
+    "max_speed_drift_pu": 1.3322676295501878e-15,
+    "max_angle_drift_deg": 2.182496622420265e-11
+  },
+  "fault_gate": {"bus": 111180, "fault_cycles": 5, "frequency_hz": 60, "applied_s": 0.1, "end_s": 0.5},
+  "validation": {
+    "java_tests": 4189, "java_passed": 4103, "java_skipped": 86,
+    "java_failures": 0, "java_errors": 0,
+    "offline_checks_passed": 408,
+    "additional_topology_fault_cases": 15
+  },
+  "evidence_directory": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-complete"
+}

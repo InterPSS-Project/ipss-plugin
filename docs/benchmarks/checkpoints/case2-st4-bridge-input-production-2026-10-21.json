@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "status": "production-st4-bridge-input-checkpoint",
+  "goal_achieved": false,
+  "core_commit": "d81a45fef",
+  "plugin_commit": "1cbb68db2",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st4-bridge-input-production/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 88253,
+    "sha256": "50b1a8ea508c6c00a95d5210d1b1405ff307f5f1371156884fd44ee54db7928b"
+  },
+  "archive": {
+    "bytes": 2046949,
+    "sha256": "0d20ec2f611dbfe7fada8eb2c2aa8c46c846c5152f0b02a8b3012d3c11c05e77"
+  },
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.9116314,
+        10.6431713,
+        11.044741,
+        10.5409658,
+        10.4899037,
+        10.8917427
+      ],
+      "median_case_wall_s": 10.767457,
+      "compilation_time_ms": [
+        385,
+        158,
+        270,
+        56,
+        55,
+        344
+      ],
+      "gc_time_ms": [
+        131,
+        129,
+        143,
+        132,
+        138,
+        129
+      ],
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.7908675,
+        10.3501288,
+        10.4497855,
+        10.3713303,
+        10.3749579,
+        10.798813
+      ],
+      "median_case_wall_s": 10.412371700000001,
+      "compilation_time_ms": [
+        382,
+        157,
+        266,
+        56,
+        54,
+        430
+      ],
+      "gc_time_ms": [
+        129,
+        130,
+        125,
+        127,
+        128,
+        158
+      ],
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "verification": {
+    "recordings": 36,
+    "samples_per_recording": 2405,
+    "channels": 4810,
+    "event_post_rows": 2,
+    "finite": true,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true,
+    "experimental_class_overlay": false
+  },
+  "phase_medians": {
+    "retained-fast-stack-replay-v2-20261021": {
+      "setup_initialization_wall_s": 0.3544432,
+      "simulation_output_wall_s": 8.0715168,
+      "loadflow_before_netting_iterations": 16,
+      "loadflow_after_netting_iterations": 0
+    },
+    "st4-bridge-input-control-production-warm-20261021": {
+      "setup_initialization_wall_s": 0.34832454999999996,
+      "simulation_output_wall_s": 10.28792125,
+      "loadflow_before_netting_iterations": 16.0,
+      "loadflow_after_netting_iterations": 0.0
+    },
+    "st4-bridge-input-candidate-production-warm-20261021": {
+      "setup_initialization_wall_s": 0.34633565,
+      "simulation_output_wall_s": 10.108633350000002,
+      "loadflow_before_netting_iterations": 16.0,
+      "loadflow_after_netting_iterations": 0.0
+    }
+  },
+  "phase_median_note": "Separately calculated medians need not sum to the complete-case median.",
+  "registered_gate": {
+    "same_failure_methods_as_baseline": true,
+    "same_failure_messages_as_baseline": true,
+    "found": 2631,
+    "passed": 2613,
+    "failed": 5,
+    "skipped": 9,
+    "aborted": 4
+  },
+  "independent_accuracy_qualified": false,
+  "requirements": [
+    "Paired core and plugin commits named above",
+    "Private runner and supplied input dependencies retained by the manifest",
+    "Matching external dependencies"
+  ]
+}

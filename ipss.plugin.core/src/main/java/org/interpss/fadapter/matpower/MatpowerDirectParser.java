@@ -183,7 +183,9 @@ public class MatpowerDirectParser {
             int area = (int) d[6];
             double vm = d[7];
             double va = d[8];
-            double baseKv = d[9];
+            // Nominal kV is optional in the per-unit model. Supply a positive
+            // base before constructing voltage adapters when it is unspecified.
+            double baseKv = d[9] == 0.0 ? 1.0 : d[9];
             int zone = d.length > 10 ? (int) d[10] : 0;
             double vmax = d.length > 11 ? d[11] : 1.1;
             double vmin = d.length > 12 ? d[12] : 0.9;
@@ -301,20 +303,23 @@ public class MatpowerDirectParser {
             String cirId = String.valueOf(cir);
 
             boolean isXfr = ratio != 0.0 || angle != 0.0;
+            // MATPOWER BR_B is split across both winding sides of the ideal tap.
+            // The branch model applies the from-side tap-squared scaling.
+            Complex halfChargingY = new Complex(0.0, b * 0.5);
 
             if (!isXfr) {
                 builder.addLine(fromBusId, toBusId, cirId,
-                        new Complex(r, x), new Complex(0.0, b * 0.5),
+                        new Complex(r, x), halfChargingY,
                         null, null, rateA, rateB, rateC, status == 1);
             } else if (angle != 0.0) {
                 if (ratio == 0.0) ratio = 1.0;
                 builder.addPsXformer(fromBusId, toBusId, cirId,
                         new Complex(r, x), ratio, 1.0, angle, 0.0,
-                        null, null, rateA, rateB, rateC, 0, status == 1);
+                        halfChargingY, halfChargingY, rateA, rateB, rateC, 0, status == 1);
             } else {
                 builder.addXformer2W(fromBusId, toBusId, cirId,
                         new Complex(r, x), ratio, 1.0,
-                        null, null, rateA, rateB, rateC, 0, status == 1);
+                        halfChargingY, halfChargingY, rateA, rateB, rateC, 0, status == 1);
             }
         }
     }

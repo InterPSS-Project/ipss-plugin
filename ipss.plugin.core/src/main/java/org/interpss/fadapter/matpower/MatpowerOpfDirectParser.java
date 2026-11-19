@@ -51,6 +51,16 @@ import com.interpss.opf.datatype.OpfDatatypeFactory;
 
 /** Direct MATPOWER case parser for the InterPSS OPF network model. */
 public class MatpowerOpfDirectParser {
+    /** Finite MVAr proxy for source Q limits explicitly marked as unbounded. */
+    public static final double DEFAULT_UNBOUNDED_Q_LIMIT_MVAR = 1_000_000;
+    private final double unboundedQlimitMvar;
+    public MatpowerOpfDirectParser() { this(DEFAULT_UNBOUNDED_Q_LIMIT_MVAR); }
+    public MatpowerOpfDirectParser(double unboundedQlimitMvar) {
+        if (!(unboundedQlimitMvar > 0) || !Double.isFinite(unboundedQlimitMvar))
+            throw new IllegalArgumentException("Positive finite unbounded-Q proxy required");
+        this.unboundedQlimitMvar=unboundedQlimitMvar;
+    }
+
 	private static final String BUS_PREFIX = "Bus";
 	private static final Pattern BASE_MVA = Pattern.compile(
 			"\\bmpc\\.baseMVA\\s*=\\s*([^;]+);", Pattern.CASE_INSENSITIVE);
@@ -61,7 +71,7 @@ public class MatpowerOpfDirectParser {
 	public OpfNetwork parse(String filepath) throws InterpssException {
 		try {
 			String source = stripComments(Files.readString(Path.of(filepath)));
-			return build(source, parseBaseMva(source));
+			return build(source, parseBaseMva(source), unboundedQlimitMvar);
 		} catch (IOException e) {
 			throw new InterpssException("Error reading MATPOWER OPF file " + filepath + ": " + e.getMessage());
 		} catch (RuntimeException e) {
@@ -69,7 +79,7 @@ public class MatpowerOpfDirectParser {
 		}
 	}
 
-	private static OpfNetwork build(String source, double baseMva) throws InterpssException {
+	private static OpfNetwork build(String source, double baseMva, double qProxy) throws InterpssException {
 		List<double[]> busData = matrix(source, "bus", true);
 		List<double[]> genData = matrix(source, "gen", true);
 		List<double[]> branchData = matrix(source, "branch", true);
@@ -88,7 +98,7 @@ public class MatpowerOpfDirectParser {
 
 		Map<Integer, OpfBus> buses = buildBuses(network, busData, busNames, baseMva);
 		List<OpfGen> generators = buildGenerators(genData, generatorNames, generatorTypes,
-				generatorFuels, buses, baseMva);
+				generatorFuels, buses, baseMva, qProxy);
 		applyCosts(generators, costData, baseMva);
 		buildBranches(network, branchData, branchNames, buses, baseMva);
 		buildDcLines(network, dcLineData, buses);
@@ -106,7 +116,9 @@ public class MatpowerOpfDirectParser {
 			OpfBus bus = OpfObjectFactory.createOpfBus(BUS_PREFIX + number, network);
 			bus.setNumber(number);
 			bus.setName(stringValue(busNames, index, 0, BUS_PREFIX + number));
-			bus.setBaseVoltage(row[9] * 1000.0);
+			// Match the power-flow importer for an unspecified nominal kV.
+			double baseKv = row[9] == 0.0 ? 1.0 : row[9];
+			bus.setBaseVoltage(baseKv * 1000.0);
 			bus.setVoltageMag(row[7]);
 			bus.setVoltageAng(Math.toRadians(row[8]));
 			bus.setVLimit(new LimitType(row[11], row[12]));
@@ -129,13 +141,23 @@ public class MatpowerOpfDirectParser {
 
 	private static List<OpfGen> buildGenerators(List<double[]> genData,
 			List<List<String>> generatorNames, List<List<String>> generatorTypes,
-			List<List<String>> generatorFuels, Map<Integer, OpfBus> buses, double baseMva)
+			List<List<String>> generatorFuels, Map<Integer, OpfBus> buses, double baseMva, double qProxy)
 			throws InterpssException {
 		Map<Integer, Integer> generatorCount = new HashMap<>();
 		List<OpfGen> generators = new ArrayList<>();
 		for (int index = 0; index < genData.size(); index++) {
 			double[] row = genData.get(index);
 			requireColumns(row, 10, "gen", index);
+            if (row[3] == Double.POSITIVE_INFINITY) row[3]=qProxy;
+            if (row[4] == Double.NEGATIVE_INFINITY) row[4]=-qProxy;
+            if (!Double.isFinite(row[3]) || !Double.isFinite(row[4]) || row[4]>row[3])
+                throw new IllegalArgumentException("Invalid reactive generator limits at row " + index);
+
+			for (int capability = 10; capability < Math.min(16, row.length); capability++) {
+				if (row[capability] != 0.0) {
+					throw new IllegalArgumentException("Generator capability curves are not represented by this OPF importer");
+				}
+			}
 			int busNumber = integer(row[0], "generator bus number");
 			OpfBus bus = requiredBus(buses, busNumber, "generator");
 			int ordinal = generatorCount.merge(busNumber, 1, Integer::sum);
@@ -205,6 +227,14 @@ public class MatpowerOpfDirectParser {
 			branch.setRatingMw1(row[5] / baseMva);
 			branch.setRatingMw2(row[6] / baseMva);
 			branch.setRatingMw3(row[7] / baseMva);
+			if (row.length >= 13 && ((row[11] != 0.0 && row[11] > -360.0)
+					|| (row[12] != 0.0 && row[12] < 360.0)
+					|| (row[11] != 0.0 && row[12] == 0.0)
+					|| (row[11] == 0.0 && row[12] != 0.0))) {
+				branch.setAngleDifferenceLimit(new LimitType(
+						row[12] > 360.0 ? Double.POSITIVE_INFINITY : Math.toRadians(row[12]),
+						row[11] < -360.0 ? Double.NEGATIVE_INFINITY : Math.toRadians(row[11])));
+			}
 			branch.setStatus(row[10] > 0.0);
 			double ratio = row[8];
 			double angle = row[9];
@@ -213,6 +243,9 @@ public class MatpowerOpfDirectParser {
 				branch.setFromTurnRatio(ratio == 0.0 ? 1.0 : ratio);
 				branch.setToTurnRatio(1.0);
 				branch.setFromPSXfrAngle(Math.toRadians(angle));
+				// Transformer terminal admittances use explicit shunts, not HShuntY.
+				branch.setFromShuntY(new Complex(0.0, row[4] * 0.5));
+				branch.setToShuntY(new Complex(0.0, row[4] * 0.5));
 			} else {
 				branch.setBranchCode(AclfBranchCode.LINE);
 			}
@@ -244,6 +277,9 @@ public class MatpowerOpfDirectParser {
 	}
 
 	private static void applyCosts(List<OpfGen> generators, List<double[]> costs, double baseMva) {
+		if (costs.size() > generators.size()) {
+			throw new IllegalArgumentException("Reactive generation costs are not represented by this OPF importer");
+		}
 		if (!costs.isEmpty() && costs.size() < generators.size()) {
 			throw new IllegalArgumentException("MATPOWER gencost has " + costs.size()
 					+ " rows for " + generators.size() + " generators");

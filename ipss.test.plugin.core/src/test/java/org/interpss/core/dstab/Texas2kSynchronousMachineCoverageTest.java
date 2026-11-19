@@ -30,7 +30,7 @@ public class Texas2kSynchronousMachineCoverageTest {
             Path.of("testData", "private", "texas2k").toString()));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
-                    "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
+                    "Texas2k_series24_case1_2016summerPeak.RAW", "dynamic_models_case1.dyr",
                     "dynamic_models_case1_gnet.idv"),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",

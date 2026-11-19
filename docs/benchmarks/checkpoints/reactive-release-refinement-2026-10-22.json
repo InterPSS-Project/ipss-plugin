@@ -1,0 +1,796 @@
+{
+  "schema": 1,
+  "description": "Physical reactive-release admission and nonlinear acceptance, with unchanged load-flow tolerance.",
+  "core_commit": "dd6a03d6e",
+  "core_parent": "8b1b0ed779b15c72de6fb0e026503ea8786bf299",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-reactive-release-refinement-v2/evidence.zip",
+  "archive_bytes": 879553,
+  "archive_sha256": "3b5833cfce176178d7ed1c3b0c26f3c4e0c2c997c44659c40635979b863747ab",
+  "focused_tests": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "parent_passed": 12,
+    "parent_failed": 5,
+    "margin_only_passed": 15,
+    "margin_only_failed": 2
+  },
+  "broader_tests": {
+    "total": 308,
+    "passed": 307,
+    "failed": 1,
+    "preexisting_failure": "VscCoupledInjectionModelTest.optInReducedVscLoadflowMatchesLegacySolvedState; same expected/actual values as the retained baseline"
+  },
+  "compilation": "Three changed production classes compiled. Full Maven test gate remains blocked by existing absent IndexedVoltageRecordTable API references; not rerun.",
+  "cold_case4": [
+    {
+      "case": 4,
+      "actual_first_time_s": -0.008333333333333333,
+      "comparison": "First cold physical row before integration; not a time-shifted trajectory comparison.",
+      "reference_file": "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case4_bus6307_fault_fullsystem_1ms_part01.parquet",
+      "reference_sha256": "db07a1445a8889100b1f55e0a5e200808f22e6101ec05fbbfca1b26818027453",
+      "worst": {
+        "rotor_angle": {
+          "count": 113,
+          "top": [
+            {
+              "channel": "sync_rotor_angle_deg__bus_7269__id_1",
+              "quantity": "rotor_angle",
+              "actual": 5.5765663327918995,
+              "reference": 5.576509952545166,
+              "error": 5.6380246733489514e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_7428__id_1",
+              "quantity": "rotor_angle",
+              "actual": -12.146703606410655,
+              "reference": -12.146652221679688,
+              "error": -5.1384730967996006e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_5364__id_1",
+              "quantity": "rotor_angle",
+              "actual": 13.356760308505468,
+              "reference": 13.3568115234375,
+              "error": -5.121493203219529e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_7325__id_1",
+              "quantity": "rotor_angle",
+              "actual": -6.048248851231721,
+              "reference": -6.048206329345703,
+              "error": -4.25218860176102e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_8079__id_1",
+              "quantity": "rotor_angle",
+              "actual": 12.027418112844096,
+              "reference": 12.027458190917969,
+              "error": -4.007807387296225e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_5368__id_1",
+              "quantity": "rotor_angle",
+              "actual": 9.25237001266232,
+              "reference": 9.252408027648926,
+              "error": -3.801498660571667e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_4052__id_1",
+              "quantity": "rotor_angle",
+              "actual": -17.019299930128103,
+              "reference": -17.019336700439453,
+              "error": 3.67703113504092e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_1079__id_1",
+              "quantity": "rotor_angle",
+              "actual": 12.98729680403905,
+              "reference": 12.987332344055176,
+              "error": -3.5540016126489604e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_8080__id_1",
+              "quantity": "rotor_angle",
+              "actual": 22.638806464060018,
+              "reference": 22.638839721679688,
+              "error": -3.32576196697687e-05
+            },
+            {
+              "channel": "sync_rotor_angle_deg__bus_6305__id_1",
+              "quantity": "rotor_angle",
+              "actual": 7.322239820987777,
+              "reference": 7.322272777557373,
+              "error": -3.29565695960099e-05
+            }
+          ]
+        },
+        "terminal_active_power": {
+          "count": 403,
+          "top": [
+            {
+              "channel": "generator_p_mw__bus_5360__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 333.9650000000004,
+              "reference": 333.9654846191406,
+              "error": -0.00048461914025210717
+            },
+            {
+              "channel": "generator_p_mw__bus_7389__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 542.5858795364138,
+              "reference": 542.5863037109375,
+              "error": -0.0004241745236868155
+            },
+            {
+              "channel": "generator_p_mw__bus_7400__id_6",
+              "quantity": "terminal_active_power",
+              "actual": 446.3930000000033,
+              "reference": 446.392578125,
+              "error": 0.0004218750033260221
+            },
+            {
+              "channel": "generator_p_mw__bus_4030__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 205.29200000000137,
+              "reference": 205.29234313964844,
+              "error": -0.00034313964707166633
+            },
+            {
+              "channel": "generator_p_mw__bus_5263__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 1214.9999999999973,
+              "reference": 1214.999755859375,
+              "error": 0.0002441406222715159
+            },
+            {
+              "channel": "generator_p_mw__bus_7354__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 684.1890000000026,
+              "reference": 684.189208984375,
+              "error": -0.00020898437242067303
+            },
+            {
+              "channel": "generator_p_mw__bus_6245__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 266.1759999999992,
+              "reference": 266.17620849609375,
+              "error": -0.00020849609455808604
+            },
+            {
+              "channel": "generator_p_mw__bus_5039__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 102.19799999999543,
+              "reference": 102.19779968261719,
+              "error": 0.0002003173782441081
+            },
+            {
+              "channel": "generator_p_mw__bus_7099__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 1354.3000000000002,
+              "reference": 1354.2998046875,
+              "error": 0.00019531250018189894
+            },
+            {
+              "channel": "generator_p_mw__bus_5069__id_1",
+              "quantity": "terminal_active_power",
+              "actual": 145.1999999999985,
+              "reference": 145.20016479492188,
+              "error": -0.00016479492336429757
+            }
+          ]
+        },
+        "terminal_reactive_power": {
+          "count": 403,
+          "top": [
+            {
+              "channel": "generator_q_mvar__bus_2065__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -122.83100000000024,
+              "reference": -24.572996139526367,
+              "error": -98.25800386047388
+            },
+            {
+              "channel": "generator_q_mvar__bus_2010__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -85.51240248747837,
+              "reference": 7.243824005126953,
+              "error": -92.75622649260532
+            },
+            {
+              "channel": "generator_q_mvar__bus_4128__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -84.6511497046818,
+              "reference": -14.651119232177734,
+              "error": -70.00003047250406
+            },
+            {
+              "channel": "generator_q_mvar__bus_5264__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -35.08900000000006,
+              "reference": 16.125041961669922,
+              "error": -51.214041961669984
+            },
+            {
+              "channel": "generator_q_mvar__bus_8091__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -66.33373427981437,
+              "reference": -31.333711624145508,
+              "error": -35.00002265566886
+            },
+            {
+              "channel": "generator_q_mvar__bus_4175__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -74.82037357346518,
+              "reference": -44.81964874267578,
+              "error": -30.000724830789395
+            },
+            {
+              "channel": "generator_q_mvar__bus_1083__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -73.55912607267669,
+              "reference": -47.405609130859375,
+              "error": -26.153516941817315
+            },
+            {
+              "channel": "generator_q_mvar__bus_1016__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -69.2048469527416,
+              "reference": -46.2545166015625,
+              "error": -22.950330351179105
+            },
+            {
+              "channel": "generator_q_mvar__bus_1029__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -3.663963653501131,
+              "reference": 18.168228149414062,
+              "error": -21.832191802915194
+            },
+            {
+              "channel": "generator_q_mvar__bus_4185__id_1",
+              "quantity": "terminal_reactive_power",
+              "actual": -24.63506546385259,
+              "reference": -4.005056381225586,
+              "error": -20.630009082627005
+            }
+          ]
+        },
+        "voltage_angle": {
+          "count": 2000,
+          "top": [
+            {
+              "channel": "bus_angle_deg__bus_1070",
+              "quantity": "voltage_angle",
+              "actual": 36.24334605867837,
+              "reference": 36.24345397949219,
+              "error": -0.00010792081381794105,
+              "prepared_error": -0.00010792081379662477
+            },
+            {
+              "channel": "bus_angle_deg__bus_1058",
+              "quantity": "voltage_angle",
+              "actual": 28.711629928992764,
+              "reference": 28.711734771728516,
+              "error": -0.0001048427357517312,
+              "prepared_error": -0.00010484273571265135
+            },
+            {
+              "channel": "bus_angle_deg__bus_1059",
+              "quantity": "voltage_angle",
+              "actual": 28.711629928992764,
+              "reference": 28.711734771728516,
+              "error": -0.0001048427357517312,
+              "prepared_error": -0.00010484273571265135
+            },
+            {
+              "channel": "bus_angle_deg__bus_1060",
+              "quantity": "voltage_angle",
+              "actual": 28.71162992899277,
+              "reference": 28.711734771728516,
+              "error": -0.00010484273574462577,
+              "prepared_error": -0.00010484273571265135
+            },
+            {
+              "channel": "bus_angle_deg__bus_1069",
+              "quantity": "voltage_angle",
+              "actual": 31.553388903893293,
+              "reference": 31.553489685058594,
+              "error": -0.00010078116530110037,
+              "prepared_error": -0.00010078116526202052
+            },
+            {
+              "channel": "bus_angle_deg__bus_1087",
+              "quantity": "voltage_angle",
+              "actual": 23.19211420085298,
+              "reference": 23.192214965820312,
+              "error": -0.0001007649673319122,
+              "prepared_error": -0.00010076496731414863
+            },
+            {
+              "channel": "bus_angle_deg__bus_1012",
+              "quantity": "voltage_angle",
+              "actual": 15.242527761050674,
+              "reference": 15.24262809753418,
+              "error": -0.00010033648350571411,
+              "prepared_error": -0.00010033648347196333
+            },
+            {
+              "channel": "bus_angle_deg__bus_1036",
+              "quantity": "voltage_angle",
+              "actual": 33.35961456811899,
+              "reference": 33.35971450805664,
+              "error": -9.993993764823017e-05,
+              "prepared_error": -9.993993758428132e-05
+            },
+            {
+              "channel": "bus_angle_deg__bus_1009",
+              "quantity": "voltage_angle",
+              "actual": 34.34780859351065,
+              "reference": 34.34790802001953,
+              "error": -9.942650888206117e-05,
+              "prepared_error": -9.942650883232318e-05
+            },
+            {
+              "channel": "bus_angle_deg__bus_1032",
+              "quantity": "voltage_angle",
+              "actual": 29.150732034981147,
+              "reference": 29.15083122253418,
+              "error": -9.918755303317539e-05,
+              "prepared_error": -9.91875529834374e-05
+            }
+          ]
+        },
+        "voltage_magnitude": {
+          "count": 2000,
+          "top": [
+            {
+              "channel": "bus_voltage_pu__bus_3051",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9215836638274563,
+              "reference": 0.9215787053108215,
+              "error": 4.9585166347343446e-06,
+              "prepared_error": 4.958516634956389e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_3050",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9265636409240113,
+              "reference": 0.9265589714050293,
+              "error": 4.669518982036713e-06,
+              "prepared_error": 4.669518982147736e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_1012",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9550555617508868,
+              "reference": 0.955052375793457,
+              "error": 3.185957429763242e-06,
+              "prepared_error": 3.1859574303183535e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_4015",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9470346012092523,
+              "reference": 0.9470324516296387,
+              "error": 2.1495796136417056e-06,
+              "prepared_error": 2.1495796125314826e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_4014",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9409495139335863,
+              "reference": 0.940947413444519,
+              "error": 2.1004890672360332e-06,
+              "prepared_error": 2.1004890662368325e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_1087",
+              "quantity": "voltage_magnitude",
+              "actual": 0.993221557776842,
+              "reference": 0.9932199716567993,
+              "error": 1.5861200426403599e-06,
+              "prepared_error": 1.586120043417516e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_4188",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9707321960933533,
+              "reference": 0.970730721950531,
+              "error": 1.474142822255331e-06,
+              "prepared_error": 1.4741428213671526e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_1033",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9731055546143385,
+              "reference": 0.9731044769287109,
+              "error": 1.0776856275152014e-06,
+              "prepared_error": 1.0776856267380452e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_3119",
+              "quantity": "voltage_magnitude",
+              "actual": 0.9861149104578111,
+              "reference": 0.9861138463020325,
+              "error": 1.0641557786073008e-06,
+              "prepared_error": 1.0641557784962785e-06
+            },
+            {
+              "channel": "bus_voltage_pu__bus_3120",
+              "quantity": "voltage_magnitude",
+              "actual": 0.986393477022567,
+              "reference": 0.9863924384117126,
+              "error": 1.038610854320332e-06,
+              "prepared_error": 1.0386108545423767e-06
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "fleet": [
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "preparation": {
+        "loadflow_max_iterations": 10000,
+        "loadflow_tolerance_pu": 0.001,
+        "loadflow_before_netting_solves": 1,
+        "loadflow_before_netting_iterations": 17,
+        "loadflow_before_netting_max_mismatch_pu": 9.485149575533728e-09,
+        "loadflow_before_netting_max_auxiliary_mismatch_pu": 0.0,
+        "loadflow_termination": "CONVERGED",
+        "loadflow_unsettled_controls": 0,
+        "loadflow_after_netting_solves": 1,
+        "loadflow_after_netting_iterations": 0,
+        "loadflow_after_netting_max_mismatch_pu": 8.519873932588684e-05,
+        "loadflow_after_netting_max_auxiliary_mismatch_pu": 0.0
+      },
+      "identical_previous_files": {
+        "full-network.bin": false,
+        "interpss.csv": false
+      },
+      "bus2100": [
+        {
+          "angle_deg": 17.72055727147642,
+          "bus": "Bus2100",
+          "v": 1.02
+        }
+      ],
+      "gen2100": [
+        {
+          "q_mvar": 31.850524643500627,
+          "p_mw": 112.5,
+          "bus": "Bus2100",
+          "id": "1"
+        }
+      ],
+      "identical_margin_only_recordings": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      }
+    },
+    {
+      "case": 3,
+      "status": "completed",
+      "reached_s": 0.09999999999999999,
+      "error": null,
+      "preparation": {
+        "loadflow_max_iterations": 10000,
+        "loadflow_tolerance_pu": 0.001,
+        "loadflow_before_netting_solves": 1,
+        "loadflow_before_netting_iterations": 14,
+        "loadflow_before_netting_max_mismatch_pu": 3.3538421241242253e-08,
+        "loadflow_before_netting_max_auxiliary_mismatch_pu": 0.0,
+        "loadflow_termination": "CONVERGED",
+        "loadflow_unsettled_controls": 0,
+        "loadflow_after_netting_solves": 1,
+        "loadflow_after_netting_iterations": 0,
+        "loadflow_after_netting_max_mismatch_pu": 0.00019257163546193556,
+        "loadflow_after_netting_max_auxiliary_mismatch_pu": 0.0
+      },
+      "identical_previous_files": {
+        "full-network.bin": false,
+        "interpss.csv": false
+      },
+      "bus2100": [
+        {
+          "v": 1.0073314393399517,
+          "angle_deg": 3.5293981963256127,
+          "bus": "Bus2100"
+        }
+      ],
+      "gen2100": [
+        {
+          "id": "1",
+          "q_mvar": 31.95,
+          "p_mw": 112.5,
+          "bus": "Bus2100"
+        }
+      ],
+      "identical_margin_only_recordings": {
+        "full-network.bin": false,
+        "interpss.csv": false
+      }
+    },
+    {
+      "case": 1,
+      "status": "completed",
+      "reached_s": 0.09999999999999999,
+      "error": null,
+      "preparation": {
+        "loadflow_max_iterations": 10000,
+        "loadflow_tolerance_pu": 0.001,
+        "loadflow_before_netting_solves": 1,
+        "loadflow_before_netting_iterations": 15,
+        "loadflow_before_netting_max_mismatch_pu": 8.971706488836162e-09,
+        "loadflow_before_netting_max_auxiliary_mismatch_pu": 5.100299364413072e-05,
+        "loadflow_termination": "CONVERGED",
+        "loadflow_unsettled_controls": 0,
+        "loadflow_after_netting_solves": 1,
+        "loadflow_after_netting_iterations": 0,
+        "loadflow_after_netting_max_mismatch_pu": 8.971706488836162e-09,
+        "loadflow_after_netting_max_auxiliary_mismatch_pu": 0.0
+      },
+      "identical_previous_files": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      },
+      "bus2100": [
+        {
+          "angle_deg": -37.48580650180102,
+          "bus": "Bus2100",
+          "v": 1.0208001393523858
+        }
+      ],
+      "gen2100": [
+        {
+          "id": "1",
+          "q_mvar": -21.6,
+          "p_mw": 112.5,
+          "bus": "Bus2100"
+        }
+      ],
+      "identical_margin_only_recordings": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      }
+    },
+    {
+      "case": 2,
+      "status": "completed",
+      "reached_s": 0.09999999999999999,
+      "error": null,
+      "preparation": {
+        "loadflow_max_iterations": 10000,
+        "loadflow_tolerance_pu": 0.001,
+        "loadflow_before_netting_solves": 1,
+        "loadflow_before_netting_iterations": 16,
+        "loadflow_before_netting_max_mismatch_pu": 2.3909090093054928e-05,
+        "loadflow_before_netting_max_auxiliary_mismatch_pu": 7.69913021928572e-10,
+        "loadflow_termination": "CONVERGED",
+        "loadflow_unsettled_controls": 0,
+        "loadflow_after_netting_solves": 1,
+        "loadflow_after_netting_iterations": 0,
+        "loadflow_after_netting_max_mismatch_pu": 2.3909090093054928e-05,
+        "loadflow_after_netting_max_auxiliary_mismatch_pu": 0.0
+      },
+      "identical_previous_files": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      },
+      "bus2100": [
+        {
+          "v": 1.0208001393523856,
+          "angle_deg": -24.155683046958316,
+          "bus": "Bus2100"
+        }
+      ],
+      "gen2100": [
+        {
+          "id": "1",
+          "q_mvar": -21.6,
+          "p_mw": 112.5,
+          "bus": "Bus2100"
+        }
+      ],
+      "identical_margin_only_recordings": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      }
+    },
+    {
+      "case": 5,
+      "status": "failed",
+      "reached_s": 0.0,
+      "error": "java.lang.IllegalStateException: Voltage-dependent group limits did not settle",
+      "preparation": {
+        "loadflow_max_iterations": 10000,
+        "loadflow_tolerance_pu": 0.001
+      },
+      "identical_previous_files": {
+        "full-network.bin": false,
+        "interpss.csv": false
+      },
+      "identical_margin_only_recordings": {
+        "full-network.bin": false,
+        "interpss.csv": false
+      }
+    },
+    {
+      "case": 6,
+      "status": "failed",
+      "reached_s": 0.049999999999999996,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.049999999999999996",
+      "preparation": {
+        "loadflow_max_iterations": 10000,
+        "loadflow_tolerance_pu": 0.001,
+        "loadflow_before_netting_solves": 1,
+        "loadflow_before_netting_iterations": 22,
+        "loadflow_before_netting_max_mismatch_pu": 2.324461760398948e-08,
+        "loadflow_before_netting_max_auxiliary_mismatch_pu": 0.0,
+        "loadflow_termination": "CONVERGED",
+        "loadflow_unsettled_controls": 0,
+        "loadflow_after_netting_solves": 1,
+        "loadflow_after_netting_iterations": 0,
+        "loadflow_after_netting_max_mismatch_pu": 9.058136744521939e-05,
+        "loadflow_after_netting_max_auxiliary_mismatch_pu": 0.0
+      },
+      "identical_previous_files": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      },
+      "bus2100": [
+        {
+          "bus": "Bus2100",
+          "angle_deg": 17.772030167172723,
+          "v": 1.0199895181275238
+        }
+      ],
+      "gen2100": [
+        {
+          "bus": "Bus2100",
+          "p_mw": 112.5,
+          "q_mvar": 31.95,
+          "id": "1"
+        }
+      ],
+      "identical_margin_only_recordings": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      }
+    }
+  ],
+  "case3_margin_only_differences": {
+    "buses": {
+      "v": [
+        {
+          "key": "Bus3095",
+          "delta": -2.220446049250313e-16
+        },
+        {
+          "key": "Bus3100",
+          "delta": -2.220446049250313e-16
+        },
+        {
+          "key": "Bus4140",
+          "delta": -2.220446049250313e-16
+        }
+      ],
+      "angle_deg": [
+        {
+          "key": "Bus5108",
+          "delta": -9.237055564881302e-14
+        },
+        {
+          "key": "Bus5266",
+          "delta": -8.526512829121202e-14
+        },
+        {
+          "key": "Bus5070",
+          "delta": -7.815970093361102e-14
+        }
+      ]
+    },
+    "generators": {
+      "p_mw": [
+        {
+          "key": [
+            "Bus7389",
+            "1"
+          ],
+          "delta": 1.5234036254696548e-11
+        },
+        {
+          "key": [
+            "Bus1004",
+            "1"
+          ],
+          "delta": 0.0
+        },
+        {
+          "key": [
+            "Bus1006",
+            "1"
+          ],
+          "delta": 0.0
+        }
+      ],
+      "q_mvar": [
+        {
+          "key": [
+            "Bus3127",
+            "2"
+          ],
+          "delta": 4.668265773943858e-12
+        },
+        {
+          "key": [
+            "Bus5444",
+            "4"
+          ],
+          "delta": 4.348521542851813e-12
+        },
+        {
+          "key": [
+            "Bus5444",
+            "5"
+          ],
+          "delta": 4.348521542851813e-12
+        }
+      ]
+    },
+    "recordings": {
+      "voltage_magnitude": {
+        "delta": 1.6431300764452317e-14,
+        "time": 0.008333333333333333,
+        "channel": "bus_voltage_pu__bus_7065"
+      },
+      "voltage_angle": {
+        "delta": -1.7763568394002505e-13,
+        "time": -0.008333333333333333,
+        "channel": "bus_angle_deg__bus_5140"
+      },
+      "terminal_active_power": {
+        "delta": 1.5688783605583012e-11,
+        "time": -0.008333333333333333,
+        "channel": "generator_P_MW__bus_7389__id_1"
+      },
+      "terminal_reactive_power": {
+        "delta": 7.823657287341426e-11,
+        "time": 0.008333333333333333,
+        "channel": "generator_Q_Mvar__bus_7065__id_2"
+      },
+      "rotor_angle": {
+        "delta": 8.784084570834239e-13,
+        "time": -0.008333333333333333,
+        "channel": "machine_ANGLE_deg__bus_7389__id_1"
+      },
+      "speed": {
+        "delta": 1.1102230246251565e-16,
+        "time": 0.0,
+        "channel": "machine_SPEED_pu__bus_4083__id_1"
+      },
+      "mechanical_power": {
+        "delta": 1.5234036254696548e-11,
+        "time": 0.06249999999999999,
+        "channel": "machine_PMECH_MW__bus_7389__id_1"
+      },
+      "field_voltage": {
+        "delta": 1.7967849430533533e-12,
+        "time": 0.05416666666666666,
+        "channel": "machine_EFD_pu__bus_1050__id_1"
+      }
+    }
+  },
+  "limitations": [
+    "Failed nonlinear trials retain conservative restoration of their original fixed-Q state, not an opposite-bound active-set search.",
+    "Case 3 still uses the isolated four-renewable-substep diagnostic. Other integration settings remain unchanged.",
+    "Case 5 preparation and Cases 4/6 early integration failures remain unresolved.",
+    "No warmed ten-second timing acceptance or full trajectory accuracy claim.",
+    "Large generator/shunt reactive allocation discrepancies remain at bus 2065.",
+    "Installed core dependency jar is unchanged; source and compiled local core classes contain the fix."
+  ]
+}

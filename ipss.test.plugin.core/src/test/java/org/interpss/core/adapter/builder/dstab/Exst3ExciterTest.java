@@ -10,8 +10,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Exciter;
+import com.interpss.dstab.controller.exc.exst3.Exst3Data;
+import com.interpss.dstab.controller.exc.exst3.Exst3Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -120,4 +120,13 @@ public class Exst3ExciterTest extends CorePluginTestSetup {
     private static void step(Exst3Exciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));
         assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private record Fixture(Machine machine,Exst3Exciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcExst3("Bus1", "1", data);
+        });
+    }
 }

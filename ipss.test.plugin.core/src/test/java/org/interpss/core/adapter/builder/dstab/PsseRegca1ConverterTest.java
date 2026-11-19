@@ -10,10 +10,10 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.RenewableElectricalController;
-import org.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -24,6 +24,57 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 
 public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-10;
+    @Test
+    void bufferedCurrentCapabilityExcludesAlgebraicControllerCallbacks() throws Exception {
+        for (double tg : new double[]{0., .02}) {
+            Fixture fixture = fixture(data(1, tg, 10., 0., 0.));
+            assertEquals(tg > 0., fixture.model.supportsDeferredCurrentPublication());
+        }
+        assertTrue(new com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine().supportsDeferredCurrentPublication());
+        assertTrue(new com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine().supportsDeferredCurrentPublication());
+    }
+
+    @Test
+    void zeroLagStoredCommandsHaveReadOnlyVoltageDependentCurrentOutputs() throws Exception {
+        for (boolean fixed : new boolean[]{false, true}) {
+            var builder = DStabBuilderTestFixture.createBuilder();
+            var model = builder.addRegca1("Bus1", "1", data(0, 0., 10., 0., 0.));
+            RenewableElectricalController controller;
+            if (fixed) {
+                controller = new com.interpss.dstab.renewable.ConverterCurrentCommands();
+                model.setActiveElectricalController(controller);
+            } else {
+                var parameters = new com.interpss.dstab.renewable.Reeca1Data(0, 0, 0, 0, 0, 0,
+                        .8, 1.2, .02, 0, 0, 0, 1, -1, 1, 0, 0, 0,
+                        .02, 2, -2, 2, -2, 2, 1, 1, 2, .8, .02,
+                        99, -99, 2, -2, 10, .02,
+                        0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0);
+                var electrical = new com.interpss.dstab.renewable.Reeca1Model(parameters, model);
+                model.setReeca1Controller(electrical);controller = electrical;
+            }
+            assertTrue(model.initStates(model.getDStabBus()));
+            assertTrue(model.supportsDeferredCurrentPublication());
+            assertTrue(model.supportsUncompensatedNetworkSolve());
+            for (double magnitude : new double[]{0., .02, .4, .8, 1., 1.3}) {
+                model.getDStabBus().setVoltage(new Complex(magnitude * Math.cos(.3), magnitude * Math.sin(.3)));
+                var states = model.getIntegrationStates();
+                var rates = model.getStateDerivativeSnapshot();
+                var commands = ((com.interpss.dstab.controller.cml.ICMLStateProvider)controller).getNamedStates();
+                Complex voltage = model.getDStabBus().getVoltage();
+                Complex original = (Complex)model.getOutputObject();
+                Complex injected = model.uncompensatedNetworkCurrent();
+                Complex reconstructed = injected.add(voltage.multiply(model.networkCompensationAdmittance()));
+                assertEquals(original.getReal(), reconstructed.getReal(), TOL);
+                assertEquals(original.getImaginary(), reconstructed.getImaginary(), TOL);
+                assertEquals(injected, model.uncompensatedNetworkCurrent(), "Repeated current reads are idempotent");
+                assertEquals(states, model.getIntegrationStates());
+                assertEquals(rates, model.getStateDerivativeSnapshot());
+                assertEquals(commands, ((com.interpss.dstab.controller.cml.ICMLStateProvider)controller).getNamedStates());
+            }
+        }
+    }
+
     @Test
     void directParserRetainsAllFifteenPsseParameters(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
@@ -111,6 +162,33 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void twoStepActiveCurrentCanRecoverWhenTheFilteredVoltageLiftsTheLvplCeiling() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var model = builder.addRegca1("Bus1", "1", data(1, .1, 10., .8, -.6));
+        model.setActiveElectricalController(new com.interpss.dstab.renewable.ConverterCurrentCommands());
+        model.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        var bus = model.getDStabBus();
+        assertTrue(model.initStates(bus));
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        double dt = .005;
+        bus.setVoltage(new Complex(.3, 0.));
+        for (int i = 0; i < 80; i++) assertTrue(model.nextStep(dt, method, 0));
+        assertEquals(0., model.getIpRegulatorState(), TOL);
+        double previousVoltage = model.getFilteredVoltage();
+        assertTrue(previousVoltage < .4);
+
+        bus.setVoltage(Complex.ONE);
+        assertTrue(model.nextStep(0., method, 1));
+        assertEquals(previousVoltage, model.getFilteredVoltage(), TOL);
+        assertEquals(0., model.getIpRegulatorState(), TOL);
+        assertTrue(model.nextStep(dt, method, 0));
+        double newLimit = (model.getFilteredVoltage() - .4) * 1.22 / (.9 - .4);
+        assertTrue(newLimit > 0.);
+        assertTrue(model.getIpRegulatorState() > 0.);
+        assertTrue(model.getIpRegulatorState() <= newLimit);
+    }
+
+    @Test
     void reactiveRecoveryRatePrecedesAlgebraicHighVoltageManagement() throws Exception {
         Fixture fixture = fixture(data(10.0, 0.1, -0.1));
         double initialState = fixture.model.getIqRegulatorState();
@@ -120,7 +198,7 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
         assertEquals(initialState + .001, fixture.model.getIqRegulatorState(), TOL);
 
         fixture.model.getDStabBus().setVoltage(new Complex(1.3, 0.0));
-        double expected = Math.max(-1.3,
+        double expected = Math.min(1.3,
                 fixture.model.getIqRegulatorState() - .7 * (1.3 - 1.2));
         assertEquals(expected, fixture.model.getIq(), TOL);
         assertEquals(initialState + .001, fixture.model.getIqRegulatorState(), TOL);
@@ -161,7 +239,7 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
-    void exactZeroReactivePowerUsesTheLowerRateAndBlocksDownwardReturn()
+    void exactZeroReactivePowerSelectsNeitherRateAndAllowsDownwardReturn()
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
@@ -177,12 +255,37 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
         step(model, .01);
         double raisedState = model.getIqRegulatorState();
         assertTrue(raisedState > initialState,
-                "exact-zero Q uses Iqrmin=0, which permits positive motion");
+                "exact-zero Q selects neither recovery-rate boundary");
 
         controller.iqcmd = -(initialState - 1.0);
         step(model, .01);
-        assertEquals(raisedState, model.getIqRegulatorState(), TOL,
-                "Iqrmin=0 blocks downward recovery after the state rises");
+        assertTrue(model.getIqRegulatorState() < raisedState,
+                "Iqrmin=0 must not block downward return when initial Q is exactly zero");
+    }
+
+    @Test
+    void signedZeroAndTinyNonzeroReactivePowerKeepStrictSelectorSemantics() throws Exception {
+        for (double initialQ : new double[] {0.0, -0.0, 1.e-15, -1.e-15}) {
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+            DStabGen gen = (DStabGen)builder.getDStabNetwork().getDStabBus("Bus1").getContributeGen("1");
+            gen.setGen(new Complex(gen.getGen().getReal(), initialQ));
+            Regca1Model model = builder.addRegca1("Bus1", "1", data(10.0, 0.0, 0.0));
+            CommandController controller = new CommandController();
+            model.setActiveElectricalController(controller);
+            assertTrue(model.initStates(model.getDStabBus()));
+            double start = model.getIqRegulatorState();
+            controller.iqcmd = -(start + 1);
+            step(model, .01);
+            double raised = model.getIqRegulatorState();
+            if (initialQ > 0) assertEquals(start, raised, 0, "Positive Q activates the upper zero rate");
+            else assertTrue(raised > start, "Zero and negative Q allow upward motion");
+            controller.iqcmd = -(start - 1);
+            step(model, .01);
+            if (initialQ < 0) assertEquals(raised, model.getIqRegulatorState(), 0,
+                    "Even tiny genuinely negative Q activates the lower zero rate");
+            else assertTrue(model.getIqRegulatorState() < raised,
+                    "Zero and positive Q allow downward motion");
+        }
     }
 
     @Test
@@ -246,6 +349,83 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     private static Fixture fixture(Regca1Data data) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Regca1Model model = builder.addRegca1("Bus1", "1", data);
+        CommandController controller = new CommandController();
+        model.setActiveElectricalController(controller);
+        assertTrue(model.initStates(model.getDStabBus()));
+        return new Fixture(model, controller);
+    }
+
+    @Test
+    void nativeNegativeIolimIsAPositiveGeneratedCurrentCeilingOnDeviceBase() throws Exception {
+        for (double mva : new double[] {50, 100, 200}) {
+            Fixture f = zeroQFixture(0, 0, mva);
+            double stored = f.model.getIqRegulatorState();
+            for (double magnitude : new double[] {.6, 1, 1.3}) {
+                f.model.getDStabBus().setVoltage(new Complex(
+                        magnitude * Math.cos(.3), magnitude * Math.sin(.3)));
+                for (double requested : new double[] {-.8, -.25, 0, .2, .25, .3, .8}) {
+                    f.controller.iqcmd = -requested;
+                    double expected = Math.min(.25, requested);
+                    assertEquals(expected, f.model.getIq(), TOL);
+                    Complex voltage = f.model.getDStabBus().getVoltage();
+                    DStabGen gen = f.model.getParentGen();
+                    Complex z = gen.getPosGenZ().multiply(gen.getZMultiFactor());
+                    Complex norton = (Complex) f.model.getOutputObject();
+                    Complex injection = norton.subtract(voltage.divide(z));
+                    double qSystem = voltage.multiply(injection.conjugate()).getImaginary();
+                    assertEquals(magnitude * expected * mva / 100, qSystem, TOL);
+                    assertEquals(norton, f.model.getOutputObject(), "Algebraic reads must be idempotent");
+                    assertEquals(stored, f.model.getIqRegulatorState(), 0,
+                            "The network limit must not rewrite the lag state");
+                }
+            }
+        }
+    }
+
+    @Test
+    void currentCeilingDoesNotClampModifiedEulerStorageOrNegativeGeneratedCurrent() throws Exception {
+        Fixture f = zeroQFixture(.1, 0, 100);
+        f.controller.iqcmd = -1;
+        assertTrue(f.model.nextStep(.1, DynamicSimuMethod.MODIFIED_EULER, 0));
+        assertEquals(1, f.model.getIqRegulatorState(), TOL);
+        assertEquals(.25, f.model.getIq(), TOL);
+        assertTrue(f.model.nextStep(.1, DynamicSimuMethod.MODIFIED_EULER, 1));
+        assertEquals(.5, f.model.getIqRegulatorState(), TOL);
+        assertEquals(.25, f.model.getIq(), TOL);
+        assertTrue(f.model.initStates(f.model.getDStabBus()));
+        f.controller.iqcmd = 1;
+        step(f.model, .1);
+        assertEquals(-.5, f.model.getIqRegulatorState(), TOL);
+        assertEquals(-.5, f.model.getIq(), TOL);
+    }
+
+    @Test
+    void inactiveCurrentCeilingLeavesCurrentAndVoltageDerivativesUnchanged() throws Exception {
+        Fixture f = zeroQFixture(0, .7, 100);
+        double epsilon = 1e-6;
+        for (double voltage : new double[] {.6, 1, 1.3}) {
+            f.model.getDStabBus().setVoltage(new Complex(voltage, 0));
+            f.controller.iqcmd = -(.2 + epsilon);
+            double upper = f.model.getIq();
+            f.controller.iqcmd = -(.2 - epsilon);
+            double lower = f.model.getIq();
+            assertEquals(1, (upper - lower) / (2 * epsilon), 1e-9);
+            f.controller.iqcmd = -.2;
+            f.model.getDStabBus().setVoltage(new Complex(voltage + epsilon, 0));
+            upper = f.model.getIq();
+            f.model.getDStabBus().setVoltage(new Complex(voltage - epsilon, 0));
+            lower = f.model.getIq();
+            assertEquals(voltage > 1.2 ? -.7 : 0, (upper - lower) / (2 * epsilon), 1e-9);
+        }
+    }
+
+    private static Fixture zeroQFixture(double tg, double khv, double mva) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        DStabGen gen = (DStabGen)builder.getDStabNetwork().getDStabBus("Bus1").getContributeGen("1");
+        gen.setGen(new Complex(gen.getGen().getReal(), 0));
+        gen.setMvaBase(mva);
+        Regca1Model model = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, tg, 10, .9, .4, 1.22, 1.2, .8, .4, -.25, .02, khv, 100, -100, .8));
         CommandController controller = new CommandController();
         model.setActiveElectricalController(controller);
         assertTrue(model.initStates(model.getDStabBus()));

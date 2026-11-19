@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock;
+import com.interpss.dstab.controller.pss.ieee2016pss3c.Ieee2016PSS3CStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.SecondOrderLeadLagBlock;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

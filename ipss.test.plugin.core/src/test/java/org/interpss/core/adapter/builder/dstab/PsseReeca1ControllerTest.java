@@ -13,15 +13,15 @@ import com.interpss.dstab.DStabGen;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Repca1Model;
-import org.interpss.dstab.renewable.WindControlStack;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -30,6 +30,62 @@ import org.junit.jupiter.api.io.TempDir;
 
 public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     private static final double CONTROL_STEP = 1.0 / 960.0;
+
+    @Test
+    void converterAndElectricalTwoStepRatesExposeHoldsAndInitialSelector() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 0, 0, .8));
+        converter.getParentGen().setGen(new Complex(.8, 1.e-6));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        var controller = new Reeca1Model(texasData(1, 1, 1), converter);
+        converter.setReeca1Controller(controller);
+        converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(1, converter.getReactiveRecoveryDirection());
+        assertTrue(converter.getStateDerivativeSnapshot().rates().isEmpty());
+        converter.getDStabBus().setVoltage(new Complex(.5, 0));
+        converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0);
+        var converterSnapshot = converter.getStateDerivativeSnapshot();
+        var controlSnapshot = controller.getStateDerivativeSnapshot();
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.TWO_STEP, controlSnapshot.stage());
+        assertEquals(-25.0, converterSnapshot.rates().get("Filtered Voltage"), 1.e-12);
+        assertEquals(0.0, controlSnapshot.rates().get("Active Power Order"), 0.0);
+        assertEquals(0.0, controlSnapshot.rates().get("Reactive Control Integral"), 0.0);
+        assertEquals(0.0, controlSnapshot.rates().get("Voltage Control Integral"), 0.0);
+        converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 1);
+        assertEquals(converterSnapshot, converter.getStateDerivativeSnapshot());
+        assertEquals(controlSnapshot, controller.getStateDerivativeSnapshot());
+        converter.getParentGen().setGen(new Complex(.8, 0));
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(0, converter.getReactiveRecoveryDirection());
+        assertTrue(converter.getStateDerivativeSnapshot().rates().isEmpty());
+    }
+
+    @Test
+    void electricalStateAccessIsDetachedAndReportsAppliedRateSemantics() {
+        var controller = new Reeca1Model(texasData(1, 1, 1), null);
+        controller.initialize(.8, .2, 1.0);
+        assertTrue(controller.getStateDerivativeSnapshot().rates().isEmpty());
+        double initial = controller.getMeasuredVoltage();
+        controller.step(.001, .8, .2, .95, 1.0, 0);
+        var snapshot = controller.getStateDerivativeSnapshot();
+        assertEquals(com.interpss.dstab.controller.runtime.IntegrationStateMonitor.Stage.APPLIED_STEP, snapshot.stage());
+        assertEquals(initial, snapshot.evaluationStates().get("Measured Voltage"), 0.0);
+        assertEquals((controller.getMeasuredVoltage()-initial)/.001,
+                snapshot.rates().get("Measured Voltage"), 0.0);
+        var states = controller.getNamedStates();
+        var memory = controller.getControlMemory();
+        for (int i=0;i<20;i++) {
+            assertEquals(snapshot, controller.getStateDerivativeSnapshot());
+            assertEquals(states, controller.getNamedStates());
+            assertEquals(memory, controller.getControlMemory());
+        }
+        controller.step(.001, .8, .2, .94, 1.0, 1);
+        assertEquals(snapshot, controller.getStateDerivativeSnapshot(), "Algebraic refresh retains the last actual rate evaluation");
+        controller.initialize(.8, .2, 1.0);
+        assertTrue(controller.getStateDerivativeSnapshot().rates().isEmpty());
+    }
 
     @Test
     void directParserMapsCompleteFiftyOneParameterRecord(@TempDir Path tempDir) throws Exception {
@@ -49,6 +105,8 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertNotNull(controller);
         assertSame(controller, converter.getActiveElectricalController());
         assertEquals(expectedData(), controller.getData());
+        assertEquals(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED,
+                controller.getWindSpeedConvention());
         assertEquals(Set.of("Filtered Voltage", "Active Current Regulator",
                 "Reactive Current Regulator", "Active Power", "Reactive Power"),
                 converter.getNamedStates().keySet());
@@ -195,6 +253,79 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertEquals(.8 + plantIncrement, stack.getPref(), 1.0e-12);
         assertEquals(.8 + .05 * CONTROL_STEP,
                 controller.getActivePowerFilter(), 1.0e-12);
+    }
+
+    @Test
+    void nativeWindPflagRetainsTheGeneratorSpeedMultiplierWithAndWithoutDriveTrain() {
+        // PSS/E 36.7 Model Library pp. 840-843 and native Bus-2089 discriminator:
+        // P0=.625, wg0=.8775, Tpord=.03 gives dPord/dt=-2.5520833333.
+        // The same native profile with PFLAG=0 has exactly zero initial rate.
+        for (boolean withDrive : new boolean[] {false, true}) {
+            for (int flag : new int[] {0, 1}) {
+                Reeca1Model controller = new Reeca1Model(nativeWindData(flag), null);
+                controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
+                WindControlStack stack = new WindControlStack();
+                stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                        1, 2.4, .5, .04, 60, 1.002, 0,
+                        .2, .58, .4, .72, .6, .86, .8, 1, 0)));
+                if (withDrive) stack.setDriveTrain(new com.interpss.dstab.renewable.Wtdta1Model(
+                        new com.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
+                controller.setWindControlStack(stack);
+                controller.initialize(.625, .11453417, 1.0);
+                assertEquals(.8775, controller.getActivePowerSpeedMultiplier(), 1.e-12);
+                assertEquals(.625, stack.getPref(), 0.0);
+                double target = flag == 1 ? .625 * .8775 : .625;
+                assertEquals(flag == 1 ? -2.552083333333333 : 0.0,
+                        (target - .625) / .03, 1.e-12);
+                controller.step(.0005, .625, .11453417, 1.0, .8, 0);
+                double expected = modifiedEulerLag(.625, target, .03, .0005);
+                assertEquals(expected, controller.getActivePowerOrder(), 1.e-12);
+                controller.step(.0005, .625, .11453417, 1.0, .8, 1);
+                assertEquals(expected, controller.getActivePowerOrder(), 1.e-12,
+                        "The corrector must not integrate the controller a second time");
+            }
+        }
+    }
+
+    @Test
+    void explicitPowerReferenceConventionRetainsTypedClientBehavior() {
+        Reeca1Model controller = new Reeca1Model(nativeWindData(1), null);
+        WindControlStack stack = new WindControlStack();
+        stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                1, 2.4, .5, .04, 60, 1.002, 0,
+                .2, .58, .4, .72, .6, .86, .8, 1, 0)));
+        controller.setWindControlStack(stack);
+        controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.WTTQA_POWER_REFERENCE);
+        controller.initialize(.625, .1, 1.0);
+        controller.step(.0005, .625, .1, 1.0, 1.0);
+        assertEquals(1.0, controller.getActivePowerSpeedMultiplier(), 0.0);
+        assertEquals(.625, controller.getActivePowerOrder(), 1.e-12);
+    }
+
+    @Test
+    void nativeUnmodeledShaftSpeedDoesNotFollowTheTorqueSpeedReference() {
+        for (boolean withDrive : new boolean[] {false, true}) {
+            Reeca1Model controller = new Reeca1Model(nativeWindData(1), null);
+            WindControlStack stack = new WindControlStack();
+            stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                    1, 2.4, .5, .04, 60, 1.002, 0,
+                    .2, .58, .4, .72, .6, .86, .8, 1, 0)));
+            if (withDrive) stack.setDriveTrain(new com.interpss.dstab.renewable.Wtdta1Model(
+                    new com.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
+            controller.setWindControlStack(stack);
+            controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
+            controller.initialize(.625, .1, 1.0);
+            double initialSpeed = stack.getGeneratorSpeed();
+            for (int index = 0; index < 100; index++) {
+                stack.step(.005, .4, .625, .625, false, 0);
+                stack.step(.005, .4, .625, .625, false, 1);
+            }
+            assertTrue(stack.getTorqueController().getSpeedReference() < initialSpeed);
+            if (withDrive) assertTrue(stack.getGeneratorSpeed() > initialSpeed,
+                    "An attached mechanical model must still supply changing shaft speed");
+            else assertEquals(initialSpeed, stack.getGeneratorSpeed(), 0.0,
+                    "PSS/E retains SPEED while the WTTQA1 reference state moves independently");
+        }
     }
 
     @Test
@@ -379,6 +510,161 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void networkEventPreservesAnExcursionBetweenIntegrationSamples() throws Exception {
+        for (double leftVoltage : new double[]{.5, 1.5}) {
+            var builder = DStabBuilderTestFixture.createBuilder();
+            var converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                    0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 100, -100, .8));
+            converter.getParentGen().setGen(new Complex(.8, 0));
+            converter.getDStabBus().setVoltage(Complex.ONE);
+            var controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), converter);
+            converter.setReeca1Controller(controller);
+            converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+            assertTrue(converter.initStates(converter.getDStabBus()));
+            var method = com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER;
+            assertTrue(converter.nextStep(.001, method, 0));
+            converter.getDStabBus().setVoltage(new Complex(leftVoltage, 0));
+            assertTrue(converter.nextStep(0, method, 1));
+            assertEquals(0., controller.getControlMemory().get("Previous Dip"));
+            var converterStates = converter.getIntegrationStates();
+            var controlStates = controller.getIntegrationStates();
+            var converterRates = converter.getStateDerivativeSnapshot();
+            var controlRates = controller.getStateDerivativeSnapshot();
+            double held = controller.getControlMemory().get("Held Active Current Limit");
+            for (int i = 0; i < 3; i++) converter.captureNetworkEventLeftBoundary();
+            assertEquals(converterStates, converter.getIntegrationStates());
+            assertEquals(controlStates, controller.getIntegrationStates());
+            assertEquals(converterRates, converter.getStateDerivativeSnapshot());
+            assertEquals(controlRates, controller.getStateDerivativeSnapshot());
+            assertEquals(1., controller.getControlMemory().get("Previous Dip"));
+            assertEquals(0., controller.getControlMemory().get("Post Dip Timer"));
+            assertEquals(held, controller.getControlMemory().get("Held Active Current Limit"));
+
+            // Both event sides have the same physical time. Recovery starts
+            // when the next positive integration step sees the right side.
+            converter.getDStabBus().setVoltage(Complex.ONE);
+            assertTrue(converter.nextStep(0, method, 1));
+            assertEquals(0., controller.getControlMemory().get("Post Dip Timer"));
+            assertTrue(converter.nextStep(.001, method, 0));
+            assertEquals(.5, controller.getControlMemory().get("Post Dip Timer"), 0.);
+            assertEquals(held, controller.getActiveCurrentLimit(), 1.e-12);
+            assertTrue(converter.nextStep(.001, method, 0));
+            assertEquals(.499, controller.getControlMemory().get("Post Dip Timer"), 1.e-12);
+            assertTrue(converter.initStates(converter.getDStabBus()));
+            assertEquals(0., controller.getControlMemory().get("Previous Dip"));
+            assertEquals(0., controller.getControlMemory().get("Post Dip Timer"));
+        }
+    }
+
+    @Test
+    void normalEventBoundaryDoesNotEraseAnUnconsumedRecoveryTransition() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 100, -100, .8));
+        converter.getParentGen().setGen(new Complex(.8, 0));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        var controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), converter);
+        converter.setReeca1Controller(controller);
+        converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        converter.captureNetworkEventLeftBoundary();
+        assertEquals(0., controller.getControlMemory().get("Previous Dip"));
+        converter.getDStabBus().setVoltage(new Complex(.5, 0));
+        assertTrue(converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        converter.captureNetworkEventLeftBoundary();
+        assertEquals(1., controller.getControlMemory().get("Previous Dip"));
+        assertTrue(converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        assertEquals(.5, controller.getControlMemory().get("Post Dip Timer"), 0.);
+    }
+
+    @Test
+    void repeatedVoltageExcursionDoesNotRestartActiveCurrentRecovery() {
+        Reeca1Model controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), null);
+        controller.initialize(1.0, 0.0, 1.0);
+        controller.step(.125, 1.0, 0.0, .55, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        double heldLimit = .4 + (.55 - .5) * (.6 - .4) / (.8 - .5);
+        assertEquals(heldLimit, controller.getIpcmd(), 1.0e-12);
+
+        controller.step(.125, 1.0, 0.0, .5, 1.0);
+        assertEquals(heldLimit, controller.getIpcmd(), 1.0e-12,
+                "a second excursion cannot overwrite the held fault limit");
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(heldLimit, controller.getIpcmd(), 1.0e-12);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.7, controller.getIpcmd(), 1.0e-12,
+                "the first recovery deadline includes the second excursion");
+
+        controller.step(.125, 1.0, 0.0, .5, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.4, controller.getIpcmd(), 1.0e-12,
+                "a later independent excursion starts a fresh recovery interval");
+        controller.initialize(1.0, 0.0, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.7, controller.getIpcmd(), 1.0e-12,
+                "initialization clears the previous recovery interval");
+    }
+
+    @Test
+    void activeCurrentRecoveryUsesSelectedStoragePrecisionAtBoundary() throws Exception {
+        for (boolean singlePrecision : new boolean[]{false, true}) {
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+            Regca1Model converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                    1, .02, 10, .9, .4, 1.22, 1.2, .9, .5, -1.3, .02, 0, 100, -100, .7));
+            Reeca1Model controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), null);
+            converter.setReeca1Controller(controller);
+            converter.setSinglePrecisionStates(singlePrecision);
+            controller.initialize(1.0, 0.0, 1.0);
+            controller.step(.001, 1.0, 0.0, .5, 1.0);
+            controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            for (int i = 0; i < 499; i++) controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            assertEquals(.4, controller.getIpcmd(), 1.0e-12);
+            controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            assertEquals(singlePrecision ? .4 : .7, controller.getIpcmd(), 1.0e-12,
+                    "the recorded binary32 recovery interval expires one step later");
+            controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            assertEquals(.7, controller.getIpcmd(), 1.0e-12);
+        }
+    }
+
+    @Test
+    void twoStepCurrentHeadroomUsesThePreviouslyPublishedReactiveCommand() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Regca1Model converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 100, -100, .8));
+        converter.getParentGen().setGen(new Complex(.8, 0.0));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        Reeca1Model controller = new Reeca1Model(new Reeca1Data(
+                0, 0, 0, 0, 0, 0, .85, 1.15, 0, 0, 0, 10, 1, -1,
+                1, 0, 0, 0, .02, 2, -2, 2, 0, 0, 0, 0, 0, 0, .02,
+                99, -99, 2, 0, 1, .02,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), converter);
+        converter.setReeca1Controller(controller);
+        converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(.8, converter.getIpRegulatorState(), 1.0e-12);
+
+        converter.getDStabBus().setVoltage(new Complex(1.2, 0.0));
+        for (int i = 0; i < 3; i++) {
+            assertTrue(converter.nextStep(0.0,
+                    com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 1));
+        }
+        assertEquals(1.0, controller.getIqcmd(), 1.0e-12);
+        assertEquals(0.0, controller.getActiveCurrentLimit(), 1.0e-12);
+        assertTrue(converter.nextStep(.001,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        assertEquals(.8, converter.getIpRegulatorState(), 1.0e-12);
+        assertTrue(converter.nextStep(.001,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        double previousCommand = .8 / 1.2;
+        double expectedCurrent = .8 + 1.5 * .001 * (previousCommand - .8) / .02;
+        assertEquals(expectedCurrent, converter.getIpRegulatorState(), 1.0e-12,
+                "refreshes cannot make the new reactive command restrict an earlier active-current stage");
+    }
+
+    @Test
     void pPriorityReactiveHeadroomPreventsVoltagePiWindup() {
         Reeca1Model controller = new Reeca1Model(currentLimitData(1, 1, 1, 0, false), null);
         controller.initialize(.8, .2, 1.0);
@@ -500,6 +786,14 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 2, -2, 1, 0, 1.2, .07,
                 .1, .2, .3, .4, .5, .6, .7, .8,
                 .11, .21, .31, .41, .51, .61, .71, .81);
+    }
+
+    private static Reeca1Data nativeWindData(int pFlag) {
+        return new Reeca1Data(0, 0, 1, 1, pFlag, 0,
+                .85, 1.15, .02, 0, 0, 5, 1.1, -1.1, 0, 0, 0, .5,
+                .02, .436, -.436, 1.1, .9, 0, .1, 0, 39.5, 0, .02,
+                99, -99, 1, 0, 1.3, .03,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     private static Reeca1Data texasData(int vFlag, int qFlag, int pFlag) {

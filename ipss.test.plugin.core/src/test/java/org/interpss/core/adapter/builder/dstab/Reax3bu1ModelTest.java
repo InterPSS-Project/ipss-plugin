@@ -9,9 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Gewtgcu1Model;
-import org.interpss.dstab.mach.Reaxbu1Data;
-import org.interpss.dstab.mach.Reaxbu1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Reaxbu1Data;
+import com.interpss.dstab.mach.model.Reaxbu1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,9 @@ public class Reax3bu1ModelTest {
         model.step(.01,0);model.step(.01,1);
         assertEquals(.7,model.getReactiveOutput(),0);
         assertEquals(-.6,model.getActiveOutput(),0);
-        assertThrows(IllegalArgumentException.class,()->new Reaxbu1Data(0,.1,0,1,1,-1,1,-1));
+        // Zero is a disconnected participation channel; nonfinite gains still
+        // cannot form a meaningful reference or a finite derivative.
+        assertThrows(IllegalArgumentException.class,()->new Reaxbu1Data(0,.1,Double.NaN,1,1,-1,1,-1));
     }
 
     @Test

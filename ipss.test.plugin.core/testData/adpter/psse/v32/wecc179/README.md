@@ -25,5 +25,5 @@ mvn -pl ipss.test.plugin.core \
   -Dtest=ContinuationPowerFlowPsseTest#tracesWecc179PsseCaseToTargetLoading test
 ```
 
-The ANDES gallery `wecc179.raw` is a PSS/E v33 conversion with renumbered buses
+The ANDES gallery `wecc179.raw` is a reference simulator v33 conversion with renumbered buses
 and is not used for this comparison.

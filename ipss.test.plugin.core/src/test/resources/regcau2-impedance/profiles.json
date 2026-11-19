@@ -1,0 +1,30 @@
+[
+  {
+    "name": "regcau2-z1-xe0.2-h0.0005-fixed",
+    "xe": 0.2,
+    "step_s": 0.0005,
+    "samples": 405,
+    "sha256": "cd209b7e0566ab50cf10ea4d1cfb34f9ae085460db7e5171b7c1e608b765cf38"
+  },
+  {
+    "name": "regcau2-z1-xe0.2-h0.00025-fixed",
+    "xe": 0.2,
+    "step_s": 0.00025,
+    "samples": 805,
+    "sha256": "8acc36f82444d55bc68ef6d8f5426033c97c595b1318330e1b977d067b0376b3"
+  },
+  {
+    "name": "regcau2-z1-xe0.8-h0.0005-fixed",
+    "xe": 0.8,
+    "step_s": 0.0005,
+    "samples": 405,
+    "sha256": "c4e849a6a895584bff8bffd19b347e21de98e6f3ca7d65e77743d8d6af967f10"
+  },
+  {
+    "name": "regcau2-z1-xe0.8-h0.00025-fixed",
+    "xe": 0.8,
+    "step_s": 0.00025,
+    "samples": 805,
+    "sha256": "ebf2167a252150f07a035320e8368167ba4e4fbe9e23d362eedec85e14c3e973"
+  }
+]

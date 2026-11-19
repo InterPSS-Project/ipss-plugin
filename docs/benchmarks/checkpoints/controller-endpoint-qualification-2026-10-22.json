@@ -1,0 +1,1973 @@
+{
+  "schema": 1,
+  "base_commit": "42ab37ae8e717694ef75bd0806d030763394b7df",
+  "description": "Completed warmed ST4B qualification and non-mutating PSS2A endpoint audit; PSS2A optimization remains an isolated prototype.",
+  "prior_evidence": [
+    "st4-endpoint-production-2026-10-22.json"
+  ],
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-endpoint-qualification-pss-audit/evidence.zip",
+  "archive_sha256": "7c2f56a7bf8ab9b4bf4789bb41c6d3ac73263a3b2e96d40293599669592a12f2",
+  "archive_bytes": 8861213,
+  "verified_complete_runs": 94,
+  "timing": [
+    {
+      "case": 1,
+      "arms": {
+        "control": {
+          "seconds": [
+            9.9985746,
+            9.7394988,
+            9.913283,
+            10.1923693,
+            9.9679106,
+            10.1252356,
+            10.0004026
+          ],
+          "median_s": 9.9985746,
+          "min_s": 9.7394988,
+          "max_s": 10.1923693,
+          "compilation_ms": [
+            46,
+            46,
+            34,
+            32,
+            14,
+            273,
+            2
+          ],
+          "reuse_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            9.2953836,
+            9.4791749,
+            9.7419742,
+            9.7485854,
+            9.8687026,
+            9.5772628,
+            9.6856294
+          ],
+          "median_s": 9.6856294,
+          "min_s": 9.2953836,
+          "max_s": 9.8687026,
+          "compilation_ms": [
+            1,
+            37,
+            6,
+            87,
+            209,
+            65,
+            4
+          ],
+          "reuse_counts": [
+            1508664,
+            1508664,
+            1508664,
+            1508664,
+            1508664,
+            1508664,
+            1508664
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.7031910000000003,
+        0.2603238999999995,
+        0.17130880000000026,
+        0.4437838999999997,
+        0.09920799999999907,
+        0.5479728000000001,
+        0.3147731999999994
+      ],
+      "median_paired_reduction_s": 0.3147731999999994,
+      "candidate_wins": 7,
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "arms": {
+        "control": {
+          "seconds": [
+            6.4956313,
+            6.501054,
+            6.4681493,
+            6.6117385,
+            6.3861896,
+            6.8414055,
+            6.6394818
+          ],
+          "median_s": 6.501054,
+          "min_s": 6.3861896,
+          "max_s": 6.8414055,
+          "compilation_ms": [
+            25,
+            52,
+            19,
+            171,
+            53,
+            268,
+            13
+          ],
+          "reuse_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            6.4118313,
+            6.6195206,
+            6.3513119,
+            6.4604211,
+            6.4029274,
+            6.4053612,
+            6.5185074
+          ],
+          "median_s": 6.4118313,
+          "min_s": 6.3513119,
+          "max_s": 6.6195206,
+          "compilation_ms": [
+            1,
+            17,
+            1,
+            84,
+            11,
+            48,
+            35
+          ],
+          "reuse_counts": [
+            468454,
+            468454,
+            468454,
+            468454,
+            468454,
+            468454,
+            468454
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.0838000000000001,
+        -0.11846660000000053,
+        0.11683740000000054,
+        0.15131740000000082,
+        -0.01673780000000047,
+        0.43604429999999983,
+        0.12097440000000059
+      ],
+      "median_paired_reduction_s": 0.11683740000000054,
+      "candidate_wins": 5,
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+        "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "pss_audit": [
+    {
+      "case": 1,
+      "audit": {
+        "top_level_derivative_changes": [
+          0,
+          0,
+          0
+        ],
+        "input_masks": [
+          {
+            "0": 2820
+          },
+          {
+            "0": 273828
+          },
+          {
+            "0": 2512825
+          }
+        ],
+        "observations": [
+          2820,
+          273828,
+          2512825
+        ],
+        "top_level_state_changes": [
+          0,
+          0,
+          0
+        ]
+      },
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "all_recordings_identical": true,
+      "context_order": [
+        "other",
+        "local_ST1_entry",
+        "global_exciter_entry"
+      ],
+      "note": "State counters cover top-level blocks only; compound internal states are not independently audited here."
+    },
+    {
+      "case": 2,
+      "audit": {
+        "top_level_derivative_changes": [
+          0,
+          0,
+          0
+        ],
+        "input_masks": [
+          {
+            "0": 876
+          },
+          {
+            "0": 86472
+          },
+          {
+            "0": 778351
+          }
+        ],
+        "observations": [
+          876,
+          86472,
+          778351
+        ],
+        "top_level_state_changes": [
+          0,
+          0,
+          0
+        ]
+      },
+      "hashes": {
+        "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+        "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      },
+      "all_recordings_identical": true,
+      "context_order": [
+        "other",
+        "local_ST1_entry",
+        "global_exciter_entry"
+      ],
+      "note": "State counters cover top-level blocks only; compound internal states are not independently audited here."
+    }
+  ],
+  "pss_prototype_tests": {
+    "passed": 53,
+    "failed": 0
+  },
+  "pss_timing": "pending; not included",
+  "retained_dependencies": [
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-10/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-10/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-10/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-11/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-11/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-11/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-12/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-12/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-12/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-13/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-13/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-13/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-14/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-14/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-14/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-15/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-15/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-15/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-16/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-16/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-16/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-17/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-17/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-17/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-18/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-18/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-18/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-19/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-19/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-19/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-20/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-20/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-20/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-21/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-21/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-21/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-22/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-22/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-22/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-23/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-23/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-23/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-24/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-24/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-24/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-25/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-25/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-25/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-26/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-26/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-26/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-27/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-27/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-27/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-28/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-28/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-28/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-29/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-29/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-29/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-30/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-30/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-30/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-31/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-31/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-31/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-32/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-32/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-32/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-33/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-33/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-33/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-34/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-34/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-34/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-35/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-35/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-35/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-36/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-36/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-36/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-37/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-37/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-37/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-38/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-38/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-38/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-39/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-39/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-39/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-40/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-40/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-40/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-41/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-41/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-41/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-42/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-42/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-42/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-43/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-43/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-43/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-44/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-44/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-44/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-45/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-45/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-45/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case1/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-1/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-1/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-1/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-10/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-10/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-10/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-11/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-11/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-11/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-12/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-12/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-12/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-13/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-13/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-13/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-14/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-14/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-14/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-15/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-15/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-15/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-16/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-16/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-16/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-17/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-17/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-17/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-18/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-18/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-18/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-19/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-19/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-19/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-2/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-2/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-2/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-20/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-20/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-20/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-21/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-21/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-21/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-22/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-22/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-22/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-23/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-23/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-23/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-24/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-24/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-24/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-25/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-25/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-25/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-26/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-26/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-26/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-27/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-27/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-27/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-28/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-28/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-28/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-29/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-29/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-29/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-3/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-3/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-3/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-30/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-30/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-30/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-31/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-31/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-31/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-32/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-32/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-32/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-33/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-33/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-33/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-34/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-34/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-34/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-35/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-35/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-35/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-36/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-36/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-36/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-37/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-37/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-37/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-38/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-38/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-38/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-39/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-39/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-39/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-4/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-4/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-4/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-40/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-40/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-40/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-41/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-41/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-41/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-42/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-42/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-42/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-43/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-43/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-43/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-44/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-44/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-44/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-45/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-45/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-45/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-5/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-5/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-5/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-6/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-6/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-6/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-7/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-7/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-7/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-8/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-8/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-8/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-9/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-9/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-endpoint-production-qualified-20261022/case2/actual/case2_bus_fault_01/run-9/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-endpoint-refresh-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "bytes": 992528,
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-endpoint-refresh-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-endpoint-refresh-audit-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-endpoint-refresh-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "bytes": 758545,
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-endpoint-refresh-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "pss-endpoint-refresh-audit-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    }
+  ]
+}

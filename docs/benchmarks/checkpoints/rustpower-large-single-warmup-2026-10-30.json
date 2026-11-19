@@ -1,0 +1,349 @@
+{
+  "schema": 1,
+  "date": "2026-10-30",
+  "status": "completed_accuracy_valid_target_not_met",
+  "protocol": {
+    "warmups": 1,
+    "measured_solves": 1,
+    "forks": 1,
+    "fresh_process_per_case_and_runtime": true,
+    "cpu": 2,
+    "affinity_mask": 4,
+    "java_initialization_solve_counted_as_the_only_warmup": true,
+    "tolerance_pu": 1e-06,
+    "max_iterations": 20
+  },
+  "evidence_root": "ipss.test.plugin.core/target/rustpower-large-single-warmup-20261030",
+  "production_source_matches": {
+    "ipss.core_EMF/src/main/java/com/interpss/core/aclf/IAclfBusFunc.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/INrSolver.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/LoadflowAlgorithm.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/BaseAclfBusImpl.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/LfAdjustAlgorithmImpl.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/LoadflowAlgorithmImpl.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcHvdcOuterController.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcIterOrchestrator.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcMismatchHelper.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcNrEngine.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/DefaultNrSolver.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/FixedPatternLu.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/PreparedPolarJacobian.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/sparse/impl/klu/KLUSparseEqnMatrix2x2Impl.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/sparse/solver/klu/BaseKLUEqnDoubleSolver.java": true,
+    "ipss.core_EMF/src/main/java/com/interpss/core/sparse/solver/klu/KLUSquareMatrixEqnDoubleSolver.java": true
+  },
+  "cases": [
+    {
+      "case": "activsg25k",
+      "summary": [
+        {
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "samples": 1,
+          "mean_ms": 43.2994,
+          "median_ms": 43.2994,
+          "min_ms": 43.2994,
+          "p95_ms": 43.2994,
+          "max_ms": 43.2994,
+          "iterations": [
+            5
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 1,
+              "mean_ms": 43.2994,
+              "median_ms": 43.2994,
+              "min_ms": 43.2994,
+              "p95_ms": 43.2994,
+              "max_ms": 43.2994
+            }
+          ]
+        },
+        {
+          "case": "activsg25k",
+          "backend": "prepared",
+          "samples": 1,
+          "mean_ms": 88.6434,
+          "median_ms": 88.6434,
+          "min_ms": 88.6434,
+          "p95_ms": 88.6434,
+          "max_ms": 88.6434,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 1,
+              "mean_ms": 88.6434,
+              "median_ms": 88.6434,
+              "min_ms": 88.6434,
+              "p95_ms": 88.6434,
+              "max_ms": 88.6434
+            }
+          ]
+        }
+      ],
+      "target": {
+        "required_ratio": 1.2,
+        "cases": {
+          "activsg25k": {
+            "mean_ratio": 2.047220053857559,
+            "per_fork_ratios": [
+              2.047220053857559
+            ]
+          }
+        },
+        "target_met": false,
+        "affinity_before_and_after": 4
+      },
+      "diagnostics": {
+        "preparations": 1,
+        "scalarEquations": 50000,
+        "structuralEntries": 335468,
+        "factorizedEntries": 773350,
+        "preparedResidualEvaluations": 16,
+        "preparedWorkspaceScopes": 2,
+        "stableSolveScopes": 2,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 2,
+        "warmupLoadflowCalls": 1,
+        "measuredLoadflowCalls": 1,
+        "initialSolveCountedAsWarmup": 1
+      },
+      "interpss_validation": {
+        "activsg25k-interpss-prepared-0-voltage.csv": {
+          "independent_mismatch_pu": 3.0279286633572156e-08,
+          "max_complex_voltage_error_pu": 5.495898477540642e-09
+        }
+      },
+      "rustpower_validation": {
+        "residual_pu": 1.0273152994955126e-08,
+        "max_complex_voltage_error_pu": 9.942297610007764e-10,
+        "iterations": [
+          5
+        ],
+        "warmup_solves": 1,
+        "measured_solves": 1
+      },
+      "input_qualification": {
+        "ybus_max_error": 7.290154618149881e-12,
+        "sbus_max_error": 8.881784197001252e-16,
+        "equation_masks_equal": true,
+        "desired_vm_max_error": 0.0,
+        "qualified_files_sha256": {
+          "activsg25k.m": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+          "activsg25k-ybus.npz": "5d4f277358b91c62905c2a2ab6d4db8c85fb5da8a1bba2cf79e46c11daf599e6",
+          "activsg25k-reference.npz": "21977e3ba790e45fb922f4bb2daa85862494820b7063ad991f8cec2a570d5518",
+          "activsg25k-model.json": "31ebf7e745249fea91404d1a1d686620972371613233a1cbcc6684400860bfc6",
+          "activsg25k-bus-mapping.csv": "73adebf06c6a9fb8c987541fd596848144e1b86eeb99cd92ba578b293d035d72"
+        }
+      },
+      "runtime_matches_previous": true
+    },
+    {
+      "case": "activsg70k",
+      "summary": [
+        {
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "samples": 1,
+          "mean_ms": 224.2313,
+          "median_ms": 224.2313,
+          "min_ms": 224.2313,
+          "p95_ms": 224.2313,
+          "max_ms": 224.2313,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 1,
+              "mean_ms": 224.2313,
+              "median_ms": 224.2313,
+              "min_ms": 224.2313,
+              "p95_ms": 224.2313,
+              "max_ms": 224.2313
+            }
+          ]
+        },
+        {
+          "case": "activsg70k",
+          "backend": "prepared",
+          "samples": 1,
+          "mean_ms": 373.9693,
+          "median_ms": 373.9693,
+          "min_ms": 373.9693,
+          "p95_ms": 373.9693,
+          "max_ms": 373.9693,
+          "iterations": [
+            6
+          ],
+          "forks": [
+            {
+              "fork": 0,
+              "samples": 1,
+              "mean_ms": 373.9693,
+              "median_ms": 373.9693,
+              "min_ms": 373.9693,
+              "p95_ms": 373.9693,
+              "max_ms": 373.9693
+            }
+          ]
+        }
+      ],
+      "target": {
+        "required_ratio": 1.2,
+        "cases": {
+          "activsg70k": {
+            "mean_ratio": 1.6677836680249367,
+            "per_fork_ratios": [
+              1.6677836680249367
+            ]
+          }
+        },
+        "target_met": false,
+        "affinity_before_and_after": 4
+      },
+      "diagnostics": {
+        "preparations": 1,
+        "scalarEquations": 140000,
+        "structuralEntries": 915154,
+        "factorizedEntries": 2458082,
+        "preparedResidualEvaluations": 16,
+        "preparedWorkspaceScopes": 2,
+        "stableSolveScopes": 2,
+        "retainedSymbolicAcrossSolves": 1,
+        "loadflowCalls": 2,
+        "warmupLoadflowCalls": 1,
+        "measuredLoadflowCalls": 1,
+        "initialSolveCountedAsWarmup": 1
+      },
+      "interpss_validation": {
+        "activsg70k-interpss-prepared-0-voltage.csv": {
+          "independent_mismatch_pu": 6.943662680749712e-10,
+          "max_complex_voltage_error_pu": 4.389535414791633e-11
+        }
+      },
+      "rustpower_validation": {
+        "residual_pu": 1.6909261205473463e-11,
+        "max_complex_voltage_error_pu": 1.5365403273531413e-12,
+        "iterations": [
+          6
+        ],
+        "warmup_solves": 1,
+        "measured_solves": 1
+      },
+      "input_qualification": {
+        "ybus_max_error": 1.4559018921847493e-11,
+        "sbus_max_error": 8.881784197001252e-16,
+        "equation_masks_equal": true,
+        "desired_vm_max_error": 0.0,
+        "qualified_files_sha256": {
+          "activsg70k.m": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+          "activsg70k-ybus.npz": "975387005151fbc7305c443abbac887d0966792dfc2379e93c58e7605e32ecb8",
+          "activsg70k-reference.npz": "24925b36e144b3ce9c6d72f7e6d085b19111d302f00e22d8ea78836f710beaf6",
+          "activsg70k-model.json": "38e19fea2dde62d351bd1dc52e931f5ffce48e69a54dafff52e9ab833d07a31b",
+          "activsg70k-bus-mapping.csv": "eee4538d85e9247e12a510c437ec6bee7ba4e45972863cf79e0a4f2b71632997",
+          "activsg70k-start.csv": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223"
+        }
+      },
+      "runtime_matches_previous": true
+    }
+  ],
+  "audit": {
+    "passed": true,
+    "measured_solves": 4,
+    "total_large_case_solves": 8
+  },
+  "runs": [
+    {
+      "case": "activsg25k",
+      "command": [
+        "target/rustpower-benchmark-20261030/venv/Scripts/python.exe",
+        "-u",
+        "tools/benchmark_prepared_newton.py",
+        "--output",
+        "ipss.test.plugin.core\\target\\rustpower-large-single-warmup-20261030\\activsg25k",
+        "--test-report",
+        ".verification-build/prepared-nr-rustpower-recheck-20261030/ipss.test.plugin.core/surefire-reports/TEST-org.interpss.core.aclf.PreparedNewtonLoadflowTest.xml",
+        "--cases",
+        "activsg25k",
+        "--case-directory",
+        "ipss.test.plugin.core/target/rustpower-large-cases-20261030/inputs",
+        "--cpu",
+        "2",
+        "--forks",
+        "1",
+        "--small-warmup",
+        "1",
+        "--small-repeats",
+        "1",
+        "--large-warmup",
+        "1",
+        "--large-repeats",
+        "1",
+        "--initial-solve-is-warmup"
+      ],
+      "child_exit_code": 2,
+      "target": {
+        "required_ratio": 1.2,
+        "cases": {
+          "activsg25k": {
+            "mean_ratio": 2.047220053857559,
+            "per_fork_ratios": [
+              2.047220053857559
+            ]
+          }
+        },
+        "target_met": false,
+        "affinity_before_and_after": 4
+      }
+    },
+    {
+      "case": "activsg70k",
+      "command": [
+        "target/rustpower-benchmark-20261030/venv/Scripts/python.exe",
+        "-u",
+        "tools/benchmark_prepared_newton.py",
+        "--output",
+        "ipss.test.plugin.core\\target\\rustpower-large-single-warmup-20261030\\activsg70k",
+        "--test-report",
+        ".verification-build/prepared-nr-rustpower-recheck-20261030/ipss.test.plugin.core/surefire-reports/TEST-org.interpss.core.aclf.PreparedNewtonLoadflowTest.xml",
+        "--cases",
+        "activsg70k",
+        "--case-directory",
+        "ipss.test.plugin.core/target/rustpower-large-cases-20261030/inputs",
+        "--cpu",
+        "2",
+        "--forks",
+        "1",
+        "--small-warmup",
+        "1",
+        "--small-repeats",
+        "1",
+        "--large-warmup",
+        "1",
+        "--large-repeats",
+        "1",
+        "--initial-solve-is-warmup"
+      ],
+      "child_exit_code": 2,
+      "target": {
+        "required_ratio": 1.2,
+        "cases": {
+          "activsg70k": {
+            "mean_ratio": 1.6677836680249367,
+            "per_fork_ratios": [
+              1.6677836680249367
+            ]
+          }
+        },
+        "target_met": false,
+        "affinity_before_and_after": 4
+      }
+    }
+  ]
+}

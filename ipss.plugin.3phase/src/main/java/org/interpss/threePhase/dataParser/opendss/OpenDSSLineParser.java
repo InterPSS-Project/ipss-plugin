@@ -1,5 +1,8 @@
 package org.interpss.threePhase.dataParser.opendss;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.LineConfiguration;
@@ -18,6 +21,8 @@ import com.interpss.core.threephase.Static3PBranch;
 public class OpenDSSLineParser {
 	private static final double MIN_CONFIG_SERIES_ZABC_ABS = 1.0E-6;
 	private static final double MIN_RAW_SERIES_ZABC_ABS = 1.0E-4;
+	private static final Pattern INLINE_MATRIX_PROPERTY = Pattern.compile("\\b[rxc]matrix=");
+	private static final Pattern SEQUENCE_PROPERTY = Pattern.compile("\\b[rxc][01]=");
 
     private OpenDSSDataParser dataParser = null;
 
@@ -63,7 +68,8 @@ public class OpenDSSLineParser {
 		boolean enabled = true;
 
 
-		String[] lineStrAry = normalizePropertyEquals(lineStr.toLowerCase()).split("\\s+");
+		String normalizedLine = normalizePropertyEquals(lineStr.toLowerCase());
+		String[] lineStrAry = normalizedLine.split("\\s+");
 
 		for(int i = 0;i<lineStrAry.length;i++){
 			if(lineStrAry[i].contains("line.")){
@@ -156,8 +162,25 @@ public class OpenDSSLineParser {
 		Complex3x3 zabc = null;
 		Complex3x3 yshuntabc = new Complex3x3();
 		LineConfiguration config = null;
+		boolean inlineMatrices = INLINE_MATRIX_PROPERTY.matcher(normalizedLine).find();
 
-		if(lineConfigIdx> 0){ // line parameters defined by line code or geometry
+		if(inlineMatrices) {
+			if(lineConfigIdx >= 0 || SEQUENCE_PROPERTY.matcher(normalizedLine).find()) {
+				throw new IllegalArgumentException("Inline line matrices cannot be combined with linecode, geometry or sequence parameters: " + lineName);
+			}
+			if(phaseNum < 1 || phaseNum > 3) {
+				throw new IllegalArgumentException("Inline line matrices require one to three phases: " + lineName);
+			}
+			Complex3x3 resistance = inlineMatrix(normalizedLine, "rmatrix", phaseNum, true);
+			Complex3x3 reactance = inlineMatrix(normalizedLine, "xmatrix", phaseNum, true);
+			Complex3x3 capacitance = inlineMatrix(normalizedLine, "cmatrix", phaseNum, false);
+			// Matrix values and length share the line's units; the product is ohms/nF.
+			// The feeder's normal conversion subsequently applies the voltage/power bases.
+			if(lineLength == 0.0) lineLength = 1.0;
+			zabc = resistance.add(reactance.multiply(Complex.I));
+			yshuntabc = capacitanceNfToSiemens(capacitance.multiply(Complex.I), lineLength);
+		}
+		else if(lineConfigIdx> 0){ // line parameters defined by line code or geometry
 
 			String configId = (lineCodeId.equals("") ? geometryId : lineCodeId).toLowerCase();
 			config = this.dataParser.getLineConfigTable().get(configId);
@@ -277,7 +300,8 @@ public class OpenDSSLineParser {
 			lineLength = 1.0;
 		}
 		Complex3x3 lineZabc = zabc.multiply(lineLength);
-		double minSeriesZabcAbs = lineConfigIdx < 0 ? MIN_RAW_SERIES_ZABC_ABS : MIN_CONFIG_SERIES_ZABC_ABS;
+		double minSeriesZabcAbs = lineConfigIdx < 0 && !inlineMatrices
+				? MIN_RAW_SERIES_ZABC_ABS : MIN_CONFIG_SERIES_ZABC_ABS;
 		if (!dataParser.isPreserveSpecifiedLineImpedance())
 			lineZabc = applyMinimumSeriesImpedance(lineZabc, fromBusPhases, minSeriesZabcAbs);
 		line3Phase.setZabc(lineZabc);
@@ -326,6 +350,52 @@ public class OpenDSSLineParser {
 
 	private static String normalizePropertyEquals(String value) {
 		return value.replaceAll("\\s*=\\s*", "=");
+	}
+
+	private static Complex3x3 inlineMatrix(String line, String key, int phases, boolean required) {
+		Matcher property = Pattern.compile("\\b" + key + "=").matcher(line);
+		if(!property.find()) {
+			if(required) throw new IllegalArgumentException("Inline line matrices require " + key);
+			return new Complex3x3();
+		}
+		int start = property.end();
+		if(property.find()) throw new IllegalArgumentException("Repeated inline " + key + " is unsupported");
+		if(start >= line.length() || (line.charAt(start) != '[' && line.charAt(start) != '(')) {
+			throw new IllegalArgumentException("Inline " + key + " must be enclosed in brackets or parentheses");
+		}
+		int end = line.indexOf(line.charAt(start) == '[' ? ']' : ')', start + 1);
+		if(end < 0) throw new IllegalArgumentException("Unterminated inline " + key);
+		String data = line.substring(start + 1, end).trim();
+		String[] values = data.isEmpty() ? new String[0] : data.split("[\\s,|]+");
+		boolean full = values.length == phases * phases;
+		if(!full && values.length != phases * (phases + 1) / 2) {
+			throw new IllegalArgumentException("Inline " + key + " has an invalid value count for " + phases + " phases");
+		}
+		if(data.contains("|")) {
+			String[] rows = data.split("\\|", -1);
+			if(rows.length != phases) throw new IllegalArgumentException("Inline " + key + " has an invalid row count");
+			for(int row = 0; row < phases; row++) {
+				if(rows[row].trim().split("[\\s,]+").length != (full ? phases : row + 1)) {
+					throw new IllegalArgumentException("Inline " + key + " has an invalid row size");
+				}
+			}
+		}
+		Complex3x3 matrix = new Complex3x3();
+		int index = 0;
+		for(int row = 0; row < phases; row++) {
+			for(int col = 0; col < (full ? phases : row + 1); col++) {
+				double value = Double.parseDouble(values[index++]);
+				if(!Double.isFinite(value)) throw new IllegalArgumentException("Non-finite inline " + key);
+				setMatrixValue(matrix, row, col, new Complex(value));
+				if(!full) setMatrixValue(matrix, col, row, new Complex(value));
+			}
+		}
+		for(int row = 0; row < phases; row++) for(int col = 0; col < row; col++) {
+			if(!matrixValue(matrix, row, col).equals(matrixValue(matrix, col, row))) {
+				throw new IllegalArgumentException("Inline " + key + " must be symmetric");
+			}
+		}
+		return matrix;
 	}
 
 	private static Complex3x3 capacitanceNfToSiemens(Complex3x3 capacitanceNf, double lineLength) {

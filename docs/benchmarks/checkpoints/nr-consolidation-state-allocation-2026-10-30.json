@@ -1,0 +1,287 @@
+{
+  "status": "shared_residual_state_allocation_verified_consolidation_incomplete",
+  "executed_tests": 368,
+  "totals": {
+    "passed": 368
+  },
+  "reports": [
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest.xml",
+      "sha256": "8a1a171d43146830435eccebcf8d4b9c07077f94472675e8158f916f86928211"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PqNrPredictorHandoffPolicyTest.xml",
+      "sha256": "8996a4180ee0daa2a1abab2d63f1dc5c201ba841ce82007500cd449086726acf"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest.xml",
+      "sha256": "6ca8167e511cfd4e9e1bc2b10b37ac17b38397227ee9fe5a1caf3df70da8e922"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest.xml",
+      "sha256": "8c7f7edb06b16502b813348640aa588808022e6f12bc7ee5c5ea61a73583c0fd"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.ContinuousShuntNrIntegrationTest.xml",
+      "sha256": "20285ddfbc9e9367ef368c9f18747314252378267ac7116382a1f5cb4596fdef"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.FixedGenerationShuntNrTest.xml",
+      "sha256": "4ef384593b624a091301b55e783faeb588be45b422ee7fb3334eef35eb64b1d5"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrExecutionModeTest.xml",
+      "sha256": "5c6b15278a988607e48e8c3bd35c0275dbd50ab82ae2e8fd320dbddad8303314"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrGenerationAllocationTest.xml",
+      "sha256": "b051c608ab036dcef34a8fa921ef992d62100aa0b9a94ef92dfe81324b82f171"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrPolarFormulationTest.xml",
+      "sha256": "811da562f5718dfbacb4ad3780dad1695c6eff0f088ce785a4f298e0886225eb"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrResidualEvaluationTest.xml",
+      "sha256": "57def116768438e94ed84a946da0a8d2981dd984ce7061a9758ea17a12204ebb"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrSparsePublicationTest.xml",
+      "sha256": "66e3454b06b51585ee4ce065f12903cc84766acb14afc138b6dfd67fd7658608"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrStatePublicationTest.xml",
+      "sha256": "ba940aeafe7c31bb53d5a4dd0f349ae9a6df82b8a9d6aa6c54d9e3458215d023"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.optStep.NrTrialStateTest.xml",
+      "sha256": "d83c649bf62b4a4737e6bf0efb0c162be9fbc43a2759dc6334de085c5b6a196e"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.reQBus.CoordinatedControlZbrNrSolverTest.xml",
+      "sha256": "e345962b1b45e764ad1dbbfb14ab31944568e2fd666df6fed1eb8ba945e24bf4"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.MultiSwitchedShuntDiscreteZbrTest.xml",
+      "sha256": "3266d3ae18d1a45e66780e0349bd8302a6bfedb2f66c65909e6dba2d4b842dad"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.MultiSwShuntDiscreteZbrLimitTest.xml",
+      "sha256": "24bb16e2104bcc5fd0948e6d614982939d9df4c04bf2462eb4f2254fc43c3c17"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.SwitchedShuntContiModeZbrTest.xml",
+      "sha256": "f6beaedac8aeefa239bdde15d64564fc16aee66d672a9fef7e909bd3a7b86804"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.aclfAdj.swShunt.zbr.SwitchedShuntDiscreteZbrTest.xml",
+      "sha256": "0fa900b024555fa8d753b7618f889bb0868436c8c6c43a98372a185d324b5093"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrBinarySearchOptimizeTest.xml",
+      "sha256": "ca9afdfd8e88cd746d09345f07277c3027236120517c3bf96d384067cfb0f134"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrCubicEqnOptimizeTest.xml",
+      "sha256": "ffe4abb4202fbb7e48db898f0ac03bf6274fb29dd48da9044594ff0de7e001cc"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrCubicEqnStepSizeTest.xml",
+      "sha256": "4320affe7910561f82afd8782c8dbfb83e13e046e8f2360c2638e98b9d841c65"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.algo.optStep.NrLinearSearchOptimizeTest.xml",
+      "sha256": "97f5e0e94a16d2c59740c9a04d0f0fd068fb221380373f63bd73662f2cfafd76"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.helper.LowVoltageLoadJacobianTest.xml",
+      "sha256": "d8b3f2c36fa9abdb38762e99fa7175db327aeafc3a5826aec1d0e5c766e81a6c"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.shunt.zbr.MultiFixedShuntZbrTest.xml",
+      "sha256": "bf147cd86f66ac3bcb82ed3a172af2f099bf1d5299c10286c22bdbad884cd630"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.shunt.zbr.ShuntCompensatorZbrTest.xml",
+      "sha256": "73ffe235562d6e4b47cf406c277200aaa006f11932ed895e146979c1ae581ceb"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrAclfLoopTest.xml",
+      "sha256": "e41e5398696ee9146ff9be0d8dba1ed16146a368d5a6534f707f05d0313fa4db"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrAclfTest.xml",
+      "sha256": "4ea53982ada21c0d560ffdab3af2121ab8f88729276cdbf68d08e5e314f1b5c8"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrBusShuntTest.xml",
+      "sha256": "8a96f7fb3703582d624ac2a4c391118cedf78537c0d64eea90a7a0ff32b3fb7f"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrFuncTest.xml",
+      "sha256": "98714a512d2efc2cdfa7c0a8df43e3262fae7825d3327a00d3042a9889c46989"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrLargeShuntTest.xml",
+      "sha256": "589cb899a63032aa835bfe41af22e94d63b87d2a333e58f9b881ff55e5d3a442"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.topo_algo.Aclf5BusZbrNoConsolidateTest.xml",
+      "sha256": "4237844d5c4587783bf4fda2d45fdb52c3b030ebb517edc4dc013982bc08785e"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.zbr_algo.AclfZeroZTopoVsZbrSolverTest.xml",
+      "sha256": "84a5af1eef37adbef83971a00965f561fe15aa5f026f78d61321ab95f8a0ccc6"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.ZbrLfResultUtilTest.xml",
+      "sha256": "3d0d584cd330d111cbee6c8c42923de62f4113ce766d6245677b99781a1fcdda"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.zeroz.ZbrMergeValidateUtilTest.xml",
+      "sha256": "6e4870ccae1b704ab1bd76749b8cb979feb019963d36743956ecf9670b114986"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYMultiSwitchedShuntDiscreteZbrTest.xml",
+      "sha256": "6db844a2ab6b924e2635e8b30c002d3dd230e7fa0aa5d5fadd583296933652cc"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYMultiSwShuntDiscreteZbrLimitTest.xml",
+      "sha256": "bbf006e205b3b79645d3c5204e2f1cc1dd3e83a31c1928e6ac878f6e579abc4c"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntContiModeZbrTest.xml",
+      "sha256": "64ab7b1a1a5318729aa3fb3262a4b1accf0f491faa532e00458c2ce3b35530c3"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.aclfAdj.swShunt.zbr.XYSwitchedShuntDiscreteZbrTest.xml",
+      "sha256": "7bf86bbdafff4e886c72343933a0d60216c7c649f1f9ddd97a1b88e33251c1bf"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.algo.optStep.NrBinarySearchOptXYCoordinateTest.xml",
+      "sha256": "1e8cb58fa34ed19894b67c73d21daaaf22b9294ed48b8c76b5679c623c48c912"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.algo.optStep.NrCubicEqnOptXYCoordinateTest.xml",
+      "sha256": "e65c505b05a581dc6d163d38a2b2341d182ccc82b279bb06945245f36f50875e"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.algo.optStep.NrLinearSearchOptCoordinateTest.xml",
+      "sha256": "880f79878000a52116a8e373aa579ba53873f425f4a3670d9696e96660769e0e"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.shunt.zbr.XYMultiFixedShuntZbrTest.xml",
+      "sha256": "81accb61b06793e0d225e211bcdeae19b8510c22cdcb62450edf03942325e4dc"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.shunt.zbr.XYShuntCompensatorZbrTest.xml",
+      "sha256": "67e006c3330c067b3c95adf12cc6f64dca3ac6f3c64819ec4990293b055ba705"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrAclfLoopTest.xml",
+      "sha256": "c98b8acd1ad353218971bae06ebf4bf80627db15f9e40d448f1e3875ebc9ad90"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrAclfTest.xml",
+      "sha256": "7fa136024fa844414d7fc2eef8f459bb81f1be30f0c2b85afe42a77fd0d277ec"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrBusShuntTest.xml",
+      "sha256": "5f0035a941fca1ce7585fd4a3b7723879e918b0d550636e4f523471abe428370"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrFuncTest.xml",
+      "sha256": "5c364d341f57544261e379726cadf37f91c62c00f36e8c6a92de84ffd6420530"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrLargeShuntTest.xml",
+      "sha256": "0d25a6068ed2b9a4efd16c419280803d43c99ed53e1a6376c30c78a858d46f86"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.topo_algo.AclfXY5BusZbrNoConsolidateTest.xml",
+      "sha256": "674e98bdc64aabc4b47f98e80ba6e36e16f210357f6f17c2af50487e1d6e9628"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_xy.zeroz.zbr_algo.AclfXYZeroZTopoVsZbrSolverTest.xml",
+      "sha256": "fcac4a7a9906ead68f1c27b68df86993fdc5e020daeb1c6547cf21c2a30f9f07"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TDoubleLayeredLCCZbrAclfTest.xml",
+      "sha256": "6c60c0dc9ffee44f7cc57bcc94e63ce279bc4a882b3fa720a9bdffd6fb54f150"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TDoubleLCCZbrAclfTest.xml",
+      "sha256": "1c136d45e581276412067c89f66f95ac0b49aea10499c370fbc682e1b2ec8532"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TSingleLCCZbrAclfTest.xml",
+      "sha256": "96d89a914bf462400444c5515bd6324358fc0d0def11975afd85d45a1fedbd4d"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.polar.zbr.Hvdc2TVSCZbrAclfTest.xml",
+      "sha256": "08501604dfd74768cfd678911b92ff1a395f10dfe31281998413b628ebb1931a"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TDoubleLayeredLCCZbrAclfTest.xml",
+      "sha256": "fd3e9f250634698989c05e598bdf8d0b26b9aa8990ab94a3eebbc68318383b6f"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TDoubleLCCZbrAclfTest.xml",
+      "sha256": "c7f0ce88fe12f4ceb9aeb0132aeb5a9292a0d74eb8f8b1025f8cb0827f464013"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TSingleLCCZbrAclfTest.xml",
+      "sha256": "d869995e971a78340218d97d8a1fb056fb8809a7586bd36598ebcdafcfdcccbc"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.hvdc.xy.zbr.XYHvdc2TVSCZbrAclfTest.xml",
+      "sha256": "35b13b0a134fbdb768fb4a3502aaaa3ca7aabefdac1307669381813dd496ac18"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.aclf.PreparedNewtonLoadflowTest.xml",
+      "sha256": "2ada7d9f055e4667fa57fab163e22d29d9cb0f96f2b05fff0d8b6e0195e95847"
+    },
+    {
+      "path": ".verification-build\\nr-consolidation-state-allocation-final-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.dstab.DynamicPowerFlowTransferTest.xml",
+      "sha256": "c289b8dbb8dc7aded389f9c82490f1138b2b0e53b62aaec3cf9f6470055c7af5"
+    }
+  ],
+  "fork_dumps": [],
+  "evidence_root": "ipss.test.plugin.core\\target\\nr-consolidation-20261030",
+  "verification_run": "nr-consolidation-state-allocation-final-20261030",
+  "new_tests": 63,
+  "full_post_change_regression": "pending",
+  "performance_qualification": "pending",
+  "source_sha256": {
+    "ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/func/bus/AclfBusMismatchHelper.java": "dc2f56a171994d5dab5cb7ebef058f4ea5d9b414ccaa386ab15fd9d7eb778aa6",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/INrSolver.java": "1c3740b065b9668f543814028cdfff2d69868580a196eaecf3d4a40d2e1d937d",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/LoadflowAlgorithmImpl.java": "ecba7786f6ba7d6d6c821bc2fc245730bb46fa2fb2f021bbfd3e4ce0072ad47c",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcMismatchHelper.java": "cb7eccc074d24cf635ddd1b1f18351be35a00a87aa8f722159af8063ee8ce755",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcNrEngine.java": "643ca9645437b2b7be7315840deb8151fafbf6e82f35457717be05e627c6ef8d",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/calc/LfCalcPqGsEngine.java": "7ec5e88531de714e722d11cde12fc0b54718cb97de93c69cecb9a6039ce962bf",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/DefaultNrSolver.java": "7d2020a6c6291c660a5d67b8af728235d311c8d2d3818ea68a472d75118a9683",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrAssemblyPlan.java": "6210e39c3c56a14f583a31a888a02970f2dc48c75340e141b596f0c191180537",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrNumericalWorkspace.java": "74c0105006d823ae6970434820507088c1715b9b58de2a7f2a7ff6f2c7aa0bbc",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/PolarNrFormulation.java": "d50df3e9314a1d106ac3fa6e39fc1e7606e22418980e1fe97b5f73a7f73d3b88",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/PreparedPolarJacobian.java": "f237dad256c9fbf93b27cb2d90f8531775c548fae53bf29442830db1af9709d3",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/ZbrNrSolver.java": "bc8bd7c50c8da967d83c7d2edc7ad93b585d81f3a5d847417d83ccbbd4e77ca0",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/optStep/BaseNrStepSizeOptimizer.java": "1af20580d46a536eb747cd4da559cbb30dd72ed4a603c5b2f0a58f93b67490fd",
+    "ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/func/bus/AclfBusGenerationHelper.java": "96b19d37e065903d0bf942004ea3e7bdfa3c9b67ce6e87582e46f11d489c1ef6",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/NrEvaluatedResidual.java": "a2f7789268bb4e2b612d39bd2b05e513b95ad685d48218ae99dcc2d8299c3ef1",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/LegacyNrResidualAdapter.java": "26a562ff91576095d5493f81881f36244183cb2a686140697a2a1eb60123566a",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrAcceptedState.java": "edfcb0e347608bdaa7af5dded7f67a4e3b5e3e60b986617ea30fca756e2ae77f",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrBusEquations.java": "94f00a99f9a3eee06feec33470bc38cc0abb3b62c55ad504acb7214bd22310aa",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrGenerationAllocation.java": "f9eca21fbac1de4fb2696c86e7fdf1b5368de6a5d0596581497e8c16626e806d",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrResidualStateStamp.java": "eb498e6c5f2e044592d8c851074c0d6a31b644c29b08a7ecaa51b5c5b1614d7c",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrVoltageCorrection.java": "5971301f9c066d1fde66ffab5d939cd4fcfaac5c3a895e0db250538b31a50c1b",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/NrVoltageStateSnapshot.java": "19aabc3a61f32abcd3ee8c6c76afb7f991eae203f9b6daba3851de08cc421182",
+    "ipss.core_EMF/src/main/java/com/interpss/core/algo/impl/solver/RectangularNrFormulation.java": "fe17666a8e6acea8cbc9ea1d80b569057d08a8e0b0580e9ad5eb6422d0fcb499",
+    "ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/NrGenerationAllocationTest.java": "7b34d4c263ad0bf1fd1dc7c6f9f81a02e16b4275ee8557a92150f8b703550f54",
+    "ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/NrResidualEvaluationTest.java": "244883ba838a6ca37ce86093f382d618f2f46bfcc7089b2265daa23363e6880e",
+    "ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/NrSparsePublicationTest.java": "4ce69dd95f5309a3eafa1fc2b554fc6f6b9c61238a1ec18296ec561fa042f0b3",
+    "ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/NrStatePublicationTest.java": "751ea7ad1b7bd8b10df7b19a5867761972d014c79e8f2cff09f2a72543ff88a8",
+    "ipss.test.core/src/test/java/com/interpss/core/algo/impl/solver/optStep/NrTrialStateTest.java": "6b22cda7fb1e4bca9c3a74b2d311da85c7cd24e7c2c65762c299505b951a343c",
+    "ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/BaseAclfBusImpl.java": "dbfceb18ebb9efb94f598c8bb4236beefa9e1a5937856c65942851ee9a0cfff3"
+  },
+  "audit_sha256": "01925e985a4ca8f9e93973e11725969c11f4edb9740125172892f36410726b3c"
+}

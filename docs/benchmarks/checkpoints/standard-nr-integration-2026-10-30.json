@@ -1,0 +1,389 @@
+{
+  "schema": 1,
+  "feature": "standard-polar-nr-numerical-integration",
+  "status": "integrated-accuracy-qualified-performance-target-not-met",
+  "benchmark_base_commits": {
+    "core": "1c0e8a4af9548193e6040de9f899c4209affc006",
+    "plugin": "234d335dbbe21064f833239df9935c50df846ee1"
+  },
+  "core_feature_commit": "0511b8afc37097c4febaabe5edcf226c987d7058",
+  "source_state": "Measured working tree includes existing unrelated core network-copy/reset changes; feature commit excludes those changes.",
+  "protocol": {
+    "forks_per_runtime": 3,
+    "cpu": 2,
+    "affinity_mask": 4,
+    "tolerance_pu": 1e-06,
+    "maximum_iterations": 20,
+    "start": "compensated-flat-before-every-timed-solve",
+    "small_warmups": 50000,
+    "small_samples_per_fork": 10000,
+    "large_warmups": 50,
+    "large_samples_per_fork": 100,
+    "total_timed_solves": 120600,
+    "outliers_removed": false
+  },
+  "timings": [
+    {
+      "case": "case39",
+      "backend": "rustpower-klu",
+      "samples": 30000,
+      "mean_ms": 0.01249662,
+      "median_ms": 0.012,
+      "min_ms": 0.0116,
+      "p95_ms": 0.0125,
+      "max_ms": 0.9357,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.01245969,
+          "median_ms": 0.012,
+          "min_ms": 0.0117,
+          "p95_ms": 0.0124,
+          "max_ms": 0.4849
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.012741120000000002,
+          "median_ms": 0.0123,
+          "min_ms": 0.012,
+          "p95_ms": 0.0126,
+          "max_ms": 0.5576
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.012289050000000001,
+          "median_ms": 0.0119,
+          "min_ms": 0.0116,
+          "p95_ms": 0.0122,
+          "max_ms": 0.9357
+        }
+      ]
+    },
+    {
+      "case": "case118",
+      "backend": "rustpower-klu",
+      "samples": 30000,
+      "mean_ms": 0.02951347,
+      "median_ms": 0.028,
+      "min_ms": 0.0272,
+      "p95_ms": 0.0306,
+      "max_ms": 2.0001,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.0287385,
+          "median_ms": 0.0277,
+          "min_ms": 0.0272,
+          "p95_ms": 0.0298,
+          "max_ms": 0.557
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.029665550000000002,
+          "median_ms": 0.0288,
+          "min_ms": 0.0282,
+          "p95_ms": 0.0299,
+          "max_ms": 1.4015
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.03013636,
+          "median_ms": 0.0279,
+          "min_ms": 0.0273,
+          "p95_ms": 0.0328,
+          "max_ms": 2.0001
+        }
+      ]
+    },
+    {
+      "case": "case9241pegase",
+      "backend": "rustpower-klu",
+      "samples": 300,
+      "mean_ms": 13.14464066666667,
+      "median_ms": 12.622050000000002,
+      "min_ms": 12.066,
+      "p95_ms": 15.82051,
+      "max_ms": 30.3976,
+      "iterations": [
+        6
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 100,
+          "mean_ms": 12.793379999999999,
+          "median_ms": 12.669699999999999,
+          "min_ms": 12.1036,
+          "p95_ms": 13.683935,
+          "max_ms": 15.9138
+        },
+        {
+          "fork": 1,
+          "samples": 100,
+          "mean_ms": 12.539758,
+          "median_ms": 12.406199999999998,
+          "min_ms": 12.066,
+          "p95_ms": 13.11192,
+          "max_ms": 15.1022
+        },
+        {
+          "fork": 2,
+          "samples": 100,
+          "mean_ms": 14.100784,
+          "median_ms": 13.15985,
+          "min_ms": 12.0881,
+          "p95_ms": 18.461295,
+          "max_ms": 30.3976
+        }
+      ]
+    },
+    {
+      "case": "case39",
+      "backend": "prepared",
+      "samples": 30000,
+      "mean_ms": 0.015625593833333333,
+      "median_ms": 0.0139,
+      "min_ms": 0.0136,
+      "p95_ms": 0.0169,
+      "max_ms": 6.8453,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.0157726964,
+          "median_ms": 0.014,
+          "min_ms": 0.013799,
+          "p95_ms": 0.016801,
+          "max_ms": 6.6674
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.015438588399999998,
+          "median_ms": 0.0139,
+          "min_ms": 0.013699,
+          "p95_ms": 0.0165,
+          "max_ms": 6.8453
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.0156654967,
+          "median_ms": 0.0139,
+          "min_ms": 0.0136,
+          "p95_ms": 0.017799049999999997,
+          "max_ms": 6.6678
+        }
+      ]
+    },
+    {
+      "case": "case118",
+      "backend": "prepared",
+      "samples": 30000,
+      "mean_ms": 0.03978232796666666,
+      "median_ms": 0.037401,
+      "min_ms": 0.036801,
+      "p95_ms": 0.0451,
+      "max_ms": 2.737301,
+      "iterations": [
+        4
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 10000,
+          "mean_ms": 0.03996585229999999,
+          "median_ms": 0.037499,
+          "min_ms": 0.036999,
+          "p95_ms": 0.0439,
+          "max_ms": 1.5022
+        },
+        {
+          "fork": 1,
+          "samples": 10000,
+          "mean_ms": 0.03897878450000001,
+          "median_ms": 0.0374,
+          "min_ms": 0.036801,
+          "p95_ms": 0.0413,
+          "max_ms": 0.6042
+        },
+        {
+          "fork": 2,
+          "samples": 10000,
+          "mean_ms": 0.0404023471,
+          "median_ms": 0.037401,
+          "min_ms": 0.036999,
+          "p95_ms": 0.0617,
+          "max_ms": 2.737301
+        }
+      ]
+    },
+    {
+      "case": "case9241pegase",
+      "backend": "prepared",
+      "samples": 300,
+      "mean_ms": 15.953858343333332,
+      "median_ms": 15.19885,
+      "min_ms": 13.5733,
+      "p95_ms": 18.608794950000004,
+      "max_ms": 47.4203,
+      "iterations": [
+        6
+      ],
+      "forks": [
+        {
+          "fork": 0,
+          "samples": 100,
+          "mean_ms": 15.43277407,
+          "median_ms": 15.3875505,
+          "min_ms": 13.5733,
+          "p95_ms": 16.7833259,
+          "max_ms": 18.526401
+        },
+        {
+          "fork": 1,
+          "samples": 100,
+          "mean_ms": 15.03081294,
+          "median_ms": 14.86285,
+          "min_ms": 13.6322,
+          "p95_ms": 17.143519050000002,
+          "max_ms": 18.4385
+        },
+        {
+          "fork": 2,
+          "samples": 100,
+          "mean_ms": 17.39798802,
+          "median_ms": 15.77205,
+          "min_ms": 14.5138,
+          "p95_ms": 27.60648005,
+          "max_ms": 47.4203
+        }
+      ]
+    }
+  ],
+  "target": {
+    "required_ratio": 1.2,
+    "cases": {
+      "case39": {
+        "mean_ratio": 1.2503856109358638,
+        "per_fork_ratios": [
+          1.265897979805276,
+          1.2117136013160534,
+          1.274752458489468
+        ]
+      },
+      "case118": {
+        "mean_ratio": 1.347938008193095,
+        "per_fork_ratios": [
+          1.3906728708874851,
+          1.3139410696919493,
+          1.3406511967603254
+        ]
+      },
+      "case9241pegase": {
+        "mean_ratio": 1.2137158213682115,
+        "per_fork_ratios": [
+          1.2063093623420864,
+          1.1986525529440042,
+          1.2338312550564563
+        ]
+      }
+    },
+    "target_met": false,
+    "affinity_before_and_after": 4
+  },
+  "audit": {
+    "run": "C:\\Users\\carol\\GitHub\\ipss-plugin\\ipss.test.plugin.core\\target\\standard-nr-integrated-comparison-20261030",
+    "all_retained_checksums_match": true,
+    "checksum_files": 56,
+    "runtime_fingerprints_still_match": true,
+    "runtime_entries": 108,
+    "source_snapshots_still_match": true,
+    "regression_totals": [
+      {
+        "tests": 332,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "tests": 89,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      }
+    ],
+    "focused_test_reports": {
+      "com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest": {
+        "tests": "55",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "org.interpss.core.aclf.PreparedNewtonLoadflowTest": {
+        "tests": "11",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    },
+    "test_source_sha256": {
+      "C:\\Users\\carol\\GitHub\\ipss-plugin\\ipss.test.plugin.core\\src\\test\\java\\org\\interpss\\core\\aclf\\PreparedNewtonLoadflowTest.java": "d52512b1aab1e03d772100122f95998c4e8f4a67cb4f168e542886b127fb0ff2",
+      "C:\\Users\\carol\\GitHub\\core\\ipss.test.core\\src\\test\\java\\com\\interpss\\core\\algo\\impl\\calc\\PreparedPolarJacobianTest.java": "1ce6adce8dba0914d786d669aa9202e11d05b88979f0e7a8c38cfb58ba2b4873"
+    },
+    "regression_log_sha256": "6c18d068e4d260d2bdf383385d5f9092e036b14bcc3dbeec04e4b9839dd5521f",
+    "target": {
+      "required_ratio": 1.2,
+      "cases": {
+        "case39": {
+          "mean_ratio": 1.2503856109358638,
+          "per_fork_ratios": [
+            1.265897979805276,
+            1.2117136013160534,
+            1.274752458489468
+          ]
+        },
+        "case118": {
+          "mean_ratio": 1.347938008193095,
+          "per_fork_ratios": [
+            1.3906728708874851,
+            1.3139410696919493,
+            1.3406511967603254
+          ]
+        },
+        "case9241pegase": {
+          "mean_ratio": 1.2137158213682115,
+          "per_fork_ratios": [
+            1.2063093623420864,
+            1.1986525529440042,
+            1.2338312550564563
+          ]
+        }
+      },
+      "target_met": false,
+      "affinity_before_and_after": 4
+    },
+    "complete_samples_both_implementations": true,
+    "maximum_independent_mismatch_pu": 5.320296951908283e-08,
+    "maximum_complex_voltage_error_pu": 4.525880256036854e-09
+  },
+  "evidence_directory": "ipss.test.plugin.core/target/standard-nr-integrated-comparison-20261030",
+  "frozen_runtime": ".verification-build/standard-nr-integrated-final-20261030",
+  "gate_log": "ipss.test.plugin.core/target/standard-nr-integrated-final-gate-20261030.log",
+  "evidence_manifest_sha256": "ef216cafb926491e772743c0d7fb7a4dfda207a3d9195bbcf95bfc160269ad0d"
+}

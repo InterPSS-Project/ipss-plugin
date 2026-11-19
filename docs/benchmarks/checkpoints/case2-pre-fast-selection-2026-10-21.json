@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "branch": "perf/case2-frozen-endpoint-20261021",
+  "backup_branch": "backup/pre-fast-baseline-20261021",
+  "plugin": {
+    "head": "74985520add5240245f79e77e40f2fbd527cdd79",
+    "stash": "4a75e3bb638d0f5ef6fe39dcd0456ee993fcb3fa"
+  },
+  "core": {
+    "head": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+    "stash": "f10094c5ac3ce4d71a186ca5715c1b34bf226961",
+    "stash_has_content_changes": false
+  },
+  "ignored_evidence_preserved": true,
+  "source_rollback_completed": false,
+  "selected_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json",
+  "report": "docs/benchmarks/case2-fast-baseline-selection-2026-10-21.md",
+  "verification": {
+    "case2-recovered-fast-2026-10-21": "manifest and archive hash verified",
+    "case2-frozen-machine-frame-2026-10-21": "manifest and archive hash verified",
+    "case2-frozen-endpoint-2026-10-21": "manifest and archive hash verified",
+    "case2-controller-stack-crossover-2026-10-21": "manifest and archive hash verified",
+    "full_recording_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "selection_argument_checks": "passed",
+    "source_rollback_completed": false
+  }
+}

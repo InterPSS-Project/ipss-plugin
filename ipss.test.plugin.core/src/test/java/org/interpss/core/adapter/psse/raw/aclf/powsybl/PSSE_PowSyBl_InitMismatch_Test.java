@@ -104,8 +104,8 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 		// POW-1: non-standard delimiter → Inf / non-finite
 		CaseResult delim = measure(new Fixture("ieee/IEEE_14_bus_delimiter.raw", false));
 		System.out.println(delim.logLine("POW-1"));
-		assertFalse(Double.isFinite(delim.absMis()),
-				() -> "delimiter fixture expected non-finite |maxMis|, got " + delim.absMis());
+		assertTrue(Double.isFinite(delim.absMis()),
+				() -> "delimiter fixture requires finite |maxMis|, got " + delim.absMis());
 
 		// POW-2: 2T WATL extend-load ~3 pu (MTDC fixture-invalid, does not inject).
 		// RAWX twin matches after twotermdc import (was allowlist when HVDC tables were skipped).
@@ -125,8 +125,8 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 
 		// POW-3: ZIP(V)−PL at Bus2 ≈ 0.105 (V-dependent ZIP in mismatch)
 		/*
-		The ~0.105 pu residual is expected: the fixture keeps const-PQ IEEE14 voltages while Bus2 is ZIP, 
-		and mismatch correctly uses ZIP(|V|) via calLoadPQ(). At |V|=1.045, ZIP−PL ≈ 0.105, 
+		The ~0.105 pu residual is expected: the fixture keeps const-PQ IEEE14 voltages while Bus2 is ZIP,
+		and mismatch correctly uses ZIP(|V|) via calLoadPQ(). At |V|=1.045, ZIP−PL ≈ 0.105,
 		which matches |maxMis|.
 		*/
 		CaseResult zip = measure(new Fixture("ieee/IEEE_14_buses_zip_load.raw", false));

@@ -8,9 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
+import com.interpss.dstab.controller.exc.ieee1968type1.Ieee1968Type1Exciter;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -155,7 +155,11 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
         double expectedUpper = .8 * .5
                 - .1 * machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.EXCITER);
         assertEquals(expectedUpper, exciter.getFieldVoltageUpperLimit(), TOL);
-        assertEquals(-.8 * .5, exciter.getFieldVoltageLowerLimit(), TOL);
+        // EXST1's committed PTI convention subtracts Kc*Ifd at both bounds,
+        // unlike the separate ESST1A lower-limit convention.
+        double expectedLower = -.8 * .5
+                - .1 * machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.EXCITER);
+        assertEquals(expectedLower, exciter.getFieldVoltageLowerLimit(), TOL);
         assertEquals(expectedUpper, exciter.getOutput(machine), TOL,
                 "EXST1 output must enforce the voltage/current-dependent upper limit");
 

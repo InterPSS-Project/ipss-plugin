@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "status": "experimental-full-trace-identity-numerical-network-workspace",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-packed-network-study/manifest.json",
+  "manifest_sha256": "8156083cb117fb7e721a4fe7cbf8e8e8975793e276d8ce39f3c65fe6805825f9",
+  "production_promoted": false,
+  "goal_complete": false,
+  "goal_seconds": 20,
+  "measurements": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-packed-iteration-full-20261024-1",
+      "whole_seconds": 71.161701,
+      "network_seconds": 39.4673687,
+      "dynamic_seconds": 58.2929912,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 0,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-frozen-norton-full-20261024-1",
+      "whole_seconds": 73.5605693,
+      "network_seconds": 41.6801969,
+      "dynamic_seconds": 60.6533936,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 60632165,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-packed-warmed-study-20261024-1/measured-control",
+      "whole_seconds": 103.7865331,
+      "network_seconds": 76.6331601,
+      "dynamic_seconds": 98.2952283,
+      "packed_calls": 0,
+      "packed_solves": 0,
+      "frozen_norton_reuses": 0,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-packed-warmed-study-20261024-1/measured-packed",
+      "whole_seconds": 57.134613,
+      "network_seconds": 38.3630162,
+      "dynamic_seconds": 54.9115547,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 0,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-packed-warmed-study-20261024-1/profiled-packed",
+      "whole_seconds": 85.589042,
+      "network_seconds": 46.1838215,
+      "dynamic_seconds": 69.1067906,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 0,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-packed-warmed-study-20261024-1/warmup-control",
+      "whole_seconds": 93.7825081,
+      "network_seconds": 61.6415809,
+      "dynamic_seconds": 80.8374798,
+      "packed_calls": 0,
+      "packed_solves": 0,
+      "frozen_norton_reuses": 0,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-packed-warmed-study-20261024-1/warmup-packed",
+      "whole_seconds": 65.0404844,
+      "network_seconds": 39.2461442,
+      "dynamic_seconds": 56.1081943,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 0,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-frozen-norton-warmed-20261024-1/measured-1",
+      "whole_seconds": 67.5320862,
+      "network_seconds": 40.4261623,
+      "dynamic_seconds": 57.6849307,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 60632165,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-frozen-norton-warmed-20261024-1/measured-2",
+      "whole_seconds": 68.9307546,
+      "network_seconds": 45.0695236,
+      "dynamic_seconds": 66.5543747,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 60632165,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-frozen-norton-warmed-20261024-1/measured-3",
+      "whole_seconds": 63.2906297,
+      "network_seconds": 40.4427312,
+      "dynamic_seconds": 57.0434696,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 60632165,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/texas7k-frozen-norton-warmed-20261024-1/warmup",
+      "whole_seconds": 73.2812787,
+      "network_seconds": 41.523632,
+      "dynamic_seconds": 60.353543,
+      "packed_calls": 7200,
+      "packed_solves": 130955,
+      "frozen_norton_reuses": 60632165,
+      "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+    }
+  ],
+  "comparison": {
+    "samples": 2403,
+    "bus_voltages": 6717,
+    "selected_machine_channels": 15,
+    "recorded_values": 16176996,
+    "maximum_recorded_difference": 0,
+    "trace_sha256": "f355a8311595b4cecf38cdbf603b17bd0a0a0eaa9c2e944b1cc7a9d0bc8782b7"
+  },
+  "network": {
+    "step_seconds": 0.004166666666666667,
+    "tolerance_pu": 0.0001,
+    "iteration_limit": 50,
+    "calls": 7200,
+    "iterations": 130955,
+    "observed_maximum_iterations": 27
+  },
+  "state_checks": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/packed-semantics-20261024-4",
+      "observer_fallback_steps": 60,
+      "raw_bit_equal": true,
+      "state_value_comparisons": 14880,
+      "packed_calls": 1260,
+      "norms": 2,
+      "steps_per_norm": 240
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/frozen-norton-semantics-20261024-1",
+      "norms": 2,
+      "packed_calls": 1260,
+      "state_value_comparisons": 14880,
+      "raw_bit_equal": true,
+      "observer_fallback_steps": 60,
+      "steps_per_norm": 240
+    }
+  ],
+  "frozen_norton_measured_median_seconds": 67.5320862,
+  "profile": {
+    "execution_samples": 3692,
+    "triangular_solve_leaf_samples": 943,
+    "network_inclusive_samples": 2580,
+    "differential_integration_inclusive_samples": 956,
+    "profiled_seconds_not_used_as_unprofiled_timing": true
+  }
+}

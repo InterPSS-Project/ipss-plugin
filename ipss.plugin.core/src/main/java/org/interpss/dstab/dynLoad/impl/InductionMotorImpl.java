@@ -12,6 +12,9 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.MotorProtectionControl;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,9 +27,158 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 /**
  * An implementation of the model object '<em><b>Induction Motor</b></em>'.
   */
-public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor {
+public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor,
+        StaggeredEulerParticipant, IntegrationStateAccess {
+    private final double[] electricalRates = new double[4];
+    private final double[] observedRates = new double[5];
+    private final double[] evaluatedCurrent = new double[2];
+    private IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
+            "EPrimeQ", "EPrimeD", "Slip");
+    private long staggeredEvaluationCount;
+    private boolean initialReactiveDemandMatching;
+    private boolean legacyCompositeProtectionScheduling;
+    // Local integration is explicit numerical policy. A dormant subStepN attribute
+    // historically did not subdivide nextStep(); do not silently reinterpret it.
+    private double localIntegrationMaximumStepSec;
+    private boolean localPredictorPending;
+    private double localOuterStep, localStartVoltageReal, localStartVoltageImag;
+    private int lastLocalIntegrationSteps=1;
+    private final double[] localStart=new double[5], localWork=new double[5], localTrial=new double[5],
+            localLeftRate=new double[5], localRightRate=new double[5];
+
+    /** Zero retains the original staged integrator; positive values bound each local Heun interval. */
+    public void setLocalIntegrationMaximumStepSec(double seconds) {
+        if(!Double.isFinite(seconds)||seconds<0||localPredictorPending)
+            throw new IllegalArgumentException("Configure a finite nonnegative local interval at an accepted boundary");
+        localIntegrationMaximumStepSec=seconds;
+    }
+    public double getLocalIntegrationMaximumStepSec(){return localIntegrationMaximumStepSec;}
+    public int getLastLocalIntegrationSteps(){return lastLocalIntegrationSteps;}
+
+    private int localIntegrationSteps(double interval) {
+        if(localIntegrationMaximumStepSec==0)return 1;
+        double count=Math.ceil(interval/localIntegrationMaximumStepSec);
+        if(count>128)throw new IllegalArgumentException("Motor local integration requires more than 128 intervals");
+        return Math.max(1,(int)count);
+    }
+
+
+    /** Select the composite accepted-history and subsequent electrical-application stages. */
+    public void setLegacyCompositeProtectionScheduling(boolean enabled) {
+        if (enabled && motorProtectionList!=null && !motorProtectionList.isEmpty())
+            throw new IllegalStateException("Legacy composite protection cannot combine external protection controls");
+        if (equivYSysBase != null && enabled != legacyCompositeProtectionScheduling)
+            throw new IllegalStateException("Protection scheduling must be selected before initialization");
+        legacyCompositeProtectionScheduling=enabled;
+    }
+
+    /** Retain a specified initial reactive demand through a physical parallel admittance. */
+    public void setInitialReactiveDemandMatching(boolean enabled) {
+        if (equivYSysBase != null && enabled != initialReactiveDemandMatching)
+            throw new IllegalStateException("Initial reactive matching must be selected before motor initialization");
+        initialReactiveDemandMatching = enabled;
+    }
+
+    @Override public int staggeredStateCount() { return twoAxisModel ? 5 : 3; }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        values[offset] = ep.getReal();
+        values[offset + 1] = ep.getImaginary();
+        if (twoAxisModel) {
+            values[offset + 2] = ek.getReal();
+            values[offset + 3] = ek.getImaginary();
+        }
+        values[offset + staggeredStateCount() - 1] = slip;
+    }
+
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), rates.length);
+        if (!Double.isFinite(stepSec) || stepSec <= 0)
+            throw new IllegalArgumentException("A motor integration interval must be finite and positive");
+        evaluateRates(rates, offset, IntegrationStateMonitor.Stage.STAGGERED);
+        staggeredEvaluationCount++;
+    }
+
+    private void evaluateRates(double[] rates, int offset, IntegrationStateMonitor.Stage stage) {
+        boolean connected = legacyCompositeProtectionScheduling ? Fonline != 0 : Fonline > 0 && Fuv > 0;
+        Complex source = twoAxisModel ? epp : ep;
+        if (connected) {
+            Complex voltage = getDStabBus().getVoltage();
+            Complex impedance = twoAxisModel ? zppMotorBase : zpMotorBase;
+            MotorElectricalKernel.divide(voltage.getReal() - source.getReal(),
+                    voltage.getImaginary() - source.getImaginary(), impedance.getReal(),
+                    impedance.getImaginary(), evaluatedCurrent);
+        } else { evaluatedCurrent[0] = 0; evaluatedCurrent[1] = 0; }
+        calculateElectricalRates(2 * Math.PI * getDStabBus().getNetwork().getFrequency(),
+                evaluatedCurrent[0], evaluatedCurrent[1], electricalRates);
+        int electricalCount = staggeredStateCount() - 1;
+        for (int i = 0; i < electricalCount; i++) rates[offset + i] = connected ? electricalRates[i] : 0;
+        double torque = connected ? source.getReal() * evaluatedCurrent[0]
+                + source.getImaginary() * evaluatedCurrent[1] : 0;
+        iMotor = connected ? new Complex(evaluatedCurrent[0], evaluatedCurrent[1]) : Complex.ZERO;
+        te = torque; tm = mechanicalTorqueFactor(1 - slip) * tm0;
+        rates[offset + electricalCount] = (tm - torque) / (2 * h);
+        observeRates(stage, rates, offset);
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
+        for (int i = 0; i < staggeredStateCount(); i++)
+            if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
+        boolean connected = legacyCompositeProtectionScheduling ? Fonline != 0 : Fonline > 0 && Fuv > 0;
+        ep = connected ? new Complex(values[offset], values[offset + 1]) : Complex.ZERO;
+        if (twoAxisModel) {
+            ek = new Complex(values[offset + 2], values[offset + 3]);
+            epp = connected ? calculateTwoCageSourceVoltage(ep, ek) : Complex.ZERO;
+        }
+        slip = Math.max(0, Math.min(1, values[offset + staggeredStateCount() - 1]));
+        w = 1 - slip;
+    }
+
+    private void observeRates(IntegrationStateMonitor.Stage stage, double[] rates, int offset) {
+        integrationMonitor.begin(stage);
+        integrationMonitor.record(0, ep.getReal(), rates[offset]);
+        integrationMonitor.record(1, ep.getImaginary(), rates[offset + 1]);
+        if (twoAxisModel) {
+            integrationMonitor.record(2, ek.getReal(), rates[offset + 2]);
+            integrationMonitor.record(3, ek.getImaginary(), rates[offset + 3]);
+        }
+        integrationMonitor.record(staggeredStateCount() - 1, slip, rates[offset + staggeredStateCount() - 1]);
+    }
+
+    @Override public Map<String, Double> getIntegrationStates() {
+        var result = new LinkedHashMap<String, Double>();
+        result.put("EPrimeQ", ep.getReal()); result.put("EPrimeD", ep.getImaginary());
+        if (twoAxisModel) { result.put("EkReal", ek.getReal()); result.put("EkImag", ek.getImaginary()); }
+        result.put("Slip", slip);
+        return Map.copyOf(result);
+    }
+
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return integrationMonitor.snapshot(); }
+    @Override public Map<String, Double> getIntegrationHistories() {
+        return Map.of("TripTimer1", lvProtectionTimer1, "TripTimer2", lvProtectionTimer2,
+                "ReconnectTimer1", lvReconnectTimer1, "ReconnectTimer2", lvReconnectTimer2,
+                "UvFraction", Fuv, "OnlineFraction", Fonline);
+    }
+    public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
+    private void resetIntegrationObservation() {
+        integrationMonitor = twoAxisModel
+                ? new IntegrationStateMonitor("EPrimeQ", "EPrimeD", "EkReal", "EkImag", "Slip")
+                : new IntegrationStateMonitor("EPrimeQ", "EPrimeD", "Slip");
+        staggeredEvaluationCount = 0;
+    }
     /** Explicit value-only companion for configured and in-flight motor state. */
     public static final class ModelState extends com.interpss.state.net.NameTagState {
+        public long staggeredEvaluationCount;
+        public double localIntegrationMaximumStepSec,localOuterStep,localStartVoltageReal,localStartVoltageImag;
+        public boolean localPredictorPending;
+        public int lastLocalIntegrationSteps=1;
+        public double[] localStart;
+
+        public boolean initialReactiveDemandMatching;
+        public boolean legacyCompositeProtectionScheduling;
         public String scriptsValue, extendedId, deviceKind;
         public boolean protectionListAllocated;
         public double inheritedLoadFactor;
@@ -121,6 +273,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         public double mvaBase;
         public ModelState(InductionMotorImpl source){
             super(source);
+            staggeredEvaluationCount = source.staggeredEvaluationCount;
+            initialReactiveDemandMatching = source.initialReactiveDemandMatching;
+            legacyCompositeProtectionScheduling = source.legacyCompositeProtectionScheduling;
             if(source.getClass()!=InductionMotorImpl.class)throw new IllegalArgumentException("Unsupported induction motor subclass");
             if(source.motorProtectionList!=null&&!source.motorProtectionList.isEmpty())throw new IllegalArgumentException("External motor protection controls require explicit companions");
             protectionListAllocated=source.motorProtectionList!=null;
@@ -173,6 +328,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             vMultiFactor=source.vMultiFactor;
             acc=source.acc;
             subStepN=source.subStepN;
+            localIntegrationMaximumStepSec=source.localIntegrationMaximumStepSec;
+            localOuterStep=source.localOuterStep;localStartVoltageReal=source.localStartVoltageReal;
+            localStartVoltageImag=source.localStartVoltageImag;localPredictorPending=source.localPredictorPending;
+            lastLocalIntegrationSteps=source.lastLocalIntegrationSteps;localStart=source.localStart.clone();
             wdelt=source.wdelt;
             twoAxisModel=source.twoAxisModel;
             loadFactor=source.loadFactor;
@@ -269,6 +428,14 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.vMultiFactor=vMultiFactor;
             target.acc=acc;
             target.subStepN=subStepN;
+            target.localIntegrationMaximumStepSec=localIntegrationMaximumStepSec;
+            target.localOuterStep=localOuterStep;target.localStartVoltageReal=localStartVoltageReal;
+            target.localStartVoltageImag=localStartVoltageImag;target.localPredictorPending=localPredictorPending;
+            target.lastLocalIntegrationSteps=lastLocalIntegrationSteps;
+            if(localStart!=null) {
+                if(localStart.length!=5)throw new IllegalArgumentException("Incomplete motor local history");
+                System.arraycopy(localStart,0,target.localStart,0,5);
+            } else if(localPredictorPending)throw new IllegalArgumentException("Missing motor predictor origin");
             target.wdelt=wdelt;
             target.twoAxisModel=twoAxisModel;
             target.loadFactor=loadFactor;
@@ -311,6 +478,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.currInj2Net=currInj2Net==null?null:currInj2Net.toComplex();
             target.nortonCurInj=nortonCurInj==null?null:nortonCurInj.toComplex();
             target.mvaBase=mvaBase;
+            target.resetIntegrationObservation();
+            target.staggeredEvaluationCount = staggeredEvaluationCount;
+            target.initialReactiveDemandMatching = initialReactiveDemandMatching;
+            target.legacyCompositeProtectionScheduling = legacyCompositeProtectionScheduling;
             return target;
         }
     }
@@ -1871,7 +2042,11 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	}
 	
 	public boolean initStates() {
+        if (legacyCompositeProtectionScheduling && motorProtectionList!=null && !motorProtectionList.isEmpty())
+            throw new IllegalStateException("Legacy composite protection cannot combine external protection controls");
 		boolean initSucceed = true;
+		staggeredEvaluationCount = 0;
+        integrationMonitor.reset();
 		
 		
 		// calculate the operation parameter Xp,Tp0 if physical parameters are provided
@@ -2056,7 +2231,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 			  
 			}
 			  
-			while(Math.abs(Pcalc-P)>1.0E-6){
+            double initialPowerTolerance = initialReactiveDemandMatching ? 1.0e-12 : 1.0e-6;
+			while(Math.abs(Pcalc-P)>initialPowerTolerance){
 				 
 				 
 				  if (P>Pcalc){   // slip too small
@@ -2187,6 +2363,13 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    
 	    
 	    
+        equivY = equivYSysBase;
+        if (initialReactiveDemandMatching) {
+            compensateShuntY = new Complex(0, compensateVar / (V * V));
+            equivY = equivYSysBase.add(compensateShuntY);
+            setInitLoadPQ(motorTotalLoad);
+            setLoadPQ(new Complex(motorLoadP, motorTotalLoad.getImaginary() * sysMVABase / getMvaBase()));
+        }
 	    // initialization stage, Tm = Te;
 	    tm = te; 
 	    w = 1- slip;
@@ -2198,14 +2381,29 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    extendedDeviceId = "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,  extendedDeviceId);
 	    
+        localPredictorPending=false;lastLocalIntegrationSteps=1;
+        resetIntegrationObservation();
 	    return initSucceed;
 		
 	}
 	@Override
 	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+
+        if(!Double.isFinite(dt)||dt<0)throw new IllegalArgumentException("Invalid motor integration interval");
+        if(dt>0 && method==DynamicSimuMethod.MODIFIED_EULER
+                && (localPredictorPending || localIntegrationSteps(dt)>1))
+            return localModifiedEulerStep(dt,flag);
+        if(dt>0)lastLocalIntegrationSteps=1;
+        if (dt == 0) {
+            evaluateRates(observedRates, 0, flag == 0
+                    ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
+            return true;
+        }
 		// if the motor is out-of-service or tripped
 		
-		if(this.Fuv<=0.0 || this.Fonline <=0.0){
+		if(this.Fonline == 0.0 || (!legacyCompositeProtectionScheduling && (this.Fonline < 0.0 || this.Fuv<=0.0))){
+            evaluateRates(observedRates, 0, flag == 0
+                    ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
 			this.ep = new Complex(0.0);
 			this.epp = new Complex(0.0);
 			this.te = 0.0;
@@ -2245,9 +2443,83 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		return true;
 	}
 	
+    /**
+     * Subdivide only this motor's differential equations, not the network or its
+     * protection clock. Predictor: integrate with the accepted terminal voltage
+     * held fixed. Corrector: replay the SAME accepted state over the whole outer
+     * interval with a linear complex-voltage path to the predicted network end.
+     * Continuing from the full predictor would advance time twice. Internal
+     * source voltage and current are recomputed at every local stage; freezing
+     * the original current would leave the stiff Norton feedback unresolved.
+     */
+    private boolean localModifiedEulerStep(double dt,int flag) {
+        if(flag!=0&&flag!=1)throw new IllegalArgumentException("Invalid motor integration stage");
+        Complex voltage=getDStabBus().getVoltage();
+        if(!Double.isFinite(voltage.getReal())||!Double.isFinite(voltage.getImaginary()))
+            throw new IllegalArgumentException("Local motor voltage must be finite");
+        if(flag==0) {
+            if(localPredictorPending)throw new IllegalStateException("Unfinished motor predictor");
+            int steps=localIntegrationSteps(dt);
+            readStaggeredState(localStart,0);localOuterStep=dt;
+            localStartVoltageReal=voltage.getReal();localStartVoltageImag=voltage.getImaginary();
+            lastLocalIntegrationSteps=steps;
+        } else if(!localPredictorPending||dt!=localOuterStep)
+            throw new IllegalStateException("Motor corrector needs the matching accepted origin");
+        double endReal=flag==0?localStartVoltageReal:voltage.getReal();
+        double endImag=flag==0?localStartVoltageImag:voltage.getImaginary();
+        int count=staggeredStateCount();double step=dt/lastLocalIntegrationSteps;
+        System.arraycopy(localStart,0,localWork,0,count);
+        double w0=2*Math.PI*getDStabBus().getNetwork().getFrequency();
+        for(int part=0;part<lastLocalIntegrationSteps;part++) {
+            double left=(double)part/lastLocalIntegrationSteps,right=(double)(part+1)/lastLocalIntegrationSteps;
+            localRates(localWork,localStartVoltageReal+left*(endReal-localStartVoltageReal),
+                    localStartVoltageImag+left*(endImag-localStartVoltageImag),w0,localLeftRate);
+            for(int i=0;i<count;i++)localTrial[i]=localWork[i]+step*localLeftRate[i];
+            localTrial[count-1]=Math.max(0,Math.min(1,localTrial[count-1]));
+            localRates(localTrial,localStartVoltageReal+right*(endReal-localStartVoltageReal),
+                    localStartVoltageImag+right*(endImag-localStartVoltageImag),w0,localRightRate);
+            for(int i=0;i<count;i++) {
+                localWork[i]+=.5*step*(localLeftRate[i]+localRightRate[i]);
+                if(!Double.isFinite(localWork[i]))throw new IllegalStateException("Nonfinite local motor state");
+            }
+            localWork[count-1]=Math.max(0,Math.min(1,localWork[count-1]));
+        }
+        applyStaggeredState(localWork,0,dt);
+        // Publish the physical endpoint derivative/torque once. Timer histories
+        // remain owned by afterStep(), called once for the outer interval.
+        evaluateRates(observedRates,0,flag==0?IntegrationStateMonitor.Stage.PREDICTOR:IntegrationStateMonitor.Stage.CORRECTOR);
+        localPredictorPending=flag==0;
+        return true;
+    }
+
+    private void localRates(double[] state,double vr,double vi,double w0,double[] rates) {
+        int count=staggeredStateCount();
+        boolean connected=legacyCompositeProtectionScheduling?Fonline!=0:Fonline>0&&Fuv>0;
+        double er=state[0],ei=state[1],sr=er,si=ei;
+        if(twoAxisModel) {
+            double epWeight=(xpp-xl)/(xp-xl),ekWeight=(xp-xpp)/(xp-xl);
+            sr=er*epWeight+state[2]*ekWeight;si=ei*epWeight+state[3]*ekWeight;
+        }
+        Complex impedance=twoAxisModel?zppMotorBase:zpMotorBase;
+        if(connected)MotorElectricalKernel.divide(vr-sr,vi-si,impedance.getReal(),impedance.getImaginary(),evaluatedCurrent);
+        else {evaluatedCurrent[0]=0;evaluatedCurrent[1]=0;}
+        double ir=evaluatedCurrent[0],ii=evaluatedCurrent[1],currentSlip=state[count-1];
+        if(!connected)java.util.Arrays.fill(rates,0);
+        else if(twoAxisModel)calculateTwoCageDerivatives(er,ei,state[2],state[3],ir,ii,w0,currentSlip,rates);
+        else {
+            rates[0]=w0*currentSlip*ei-(er+(xs-xp)*ii)/tp0;
+            rates[1]=-w0*currentSlip*er-(ei-(xs-xp)*ir)/tp0;
+        }
+        double torque=connected?sr*ir+si*ii:0;
+        rates[count-1]=(mechanicalTorqueFactor(1-currentSlip)*tm0-torque)/(2*h);
+    }
+
 	private void integrationSubStep(double dt, double w0, double Ir, double Im, int flag) {
-		double Epr = ep.getReal();
-	    double Epm = ep.getImaginary();
+        calculateElectricalRates(w0, Ir, Im, electricalRates);
+        System.arraycopy(electricalRates, 0, observedRates, 0, staggeredStateCount() - 1);
+        observedRates[staggeredStateCount() - 1] = 0;
+        observeRates(flag == 0 ? IntegrationStateMonitor.Stage.PREDICTOR
+                : IntegrationStateMonitor.Stage.CORRECTOR, observedRates, 0);
 	    
 	 
 	    
@@ -2256,29 +2528,27 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	        slip_old = slip;
 	        if (twoAxisModel) {
 	            ek_old = ek;
-	            Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
-	            dEp_dt1 = derivatives[0];
-	            dEk_dt1 = derivatives[1];
+	            dEp_dt1 = new Complex(electricalRates[0], electricalRates[1]);
+	            dEk_dt1 = new Complex(electricalRates[2], electricalRates[3]);
 	            ep = ep_old.add(dEp_dt1.multiply(dt));
 	            ek = ek_old.add(dEk_dt1.multiply(dt));
 	            epp = calculateTwoCageSourceVoltage(ep, ek);
 	        }
 	        else {
-	            dEp_dt1 =calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
+	            dEp_dt1 = new Complex(electricalRates[0], electricalRates[1]);
 	            ep = ep_old.add(dEp_dt1.multiply(dt));
 	        }
 	    }
 	    else if (flag ==1) {
 	        if (twoAxisModel) {
-	            Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
-	            dEp_dt2 = derivatives[0];
-	            Complex dEk_dt2 = derivatives[1];
+	            dEp_dt2 = new Complex(electricalRates[0], electricalRates[1]);
+	            Complex dEk_dt2 = new Complex(electricalRates[2], electricalRates[3]);
 	            ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
 	            ek = ek_old.add(dEk_dt1.add(dEk_dt2).multiply(dt/2.0));
 	            epp = calculateTwoCageSourceVoltage(ep, ek);
 	        }
 	        else {
-	            dEp_dt2 = calc_Ep_corrective_step( w0, Epr, Epm, Im, Ir);
+	            dEp_dt2 = new Complex(electricalRates[0], electricalRates[1]);
 	            ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
 	        }
 	    }
@@ -2291,6 +2561,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    w =1-slip;
 	    tm = mechanicalTorqueFactor(w)*tm0;
 	    double dSLIP_dt = (tm-te)/(2*this.h);
+        integrationMonitor.recordRate(staggeredStateCount() - 1, dSLIP_dt);
 	    if (flag == 0) {
 	        slipDerivative1 = dSLIP_dt;
 	        slip = slip_old + dSLIP_dt*dt;
@@ -2308,22 +2579,42 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 */
 	private Complex[] calculateTwoCageDerivatives(Complex epState, Complex ekState,
 	        double ir, double ii, double w0, double currentSlip) {
+        calculateTwoCageDerivatives(epState, ekState, ir, ii, w0, currentSlip, electricalRates);
+        return new Complex[] { new Complex(electricalRates[0], electricalRates[1]),
+                new Complex(electricalRates[2], electricalRates[3]) };
+    }
+
+    private void calculateElectricalRates(double w0, double ir, double ii, double[] rates) {
+        if (twoAxisModel) calculateTwoCageDerivatives(ep, ek, ir, ii, w0, slip, rates);
+        else {
+            rates[0] = w0 * slip * ep.getImaginary() - (ep.getReal() + (xs - xp) * ii) / tp0;
+            rates[1] = -w0 * slip * ep.getReal() - (ep.getImaginary() - (xs - xp) * ir) / tp0;
+        }
+    }
+
+    private void calculateTwoCageDerivatives(Complex epState, Complex ekState,
+            double ir, double ii, double w0, double currentSlip, double[] rates) {
+        calculateTwoCageDerivatives(epState.getReal(),epState.getImaginary(),ekState.getReal(),ekState.getImaginary(),
+                ir,ii,w0,currentSlip,rates);
+    }
+    private void calculateTwoCageDerivatives(double epr,double epi,double ekr,double eki,
+            double ir,double ii,double w0,double currentSlip,double[] rates) {
 	    double lpMinusLl = xp-xl;
 	    double coupling = (xp-xpp)/(lpMinusLl*lpMinusLl);
 	    double slipSpeed = w0*currentSlip;
 
-	    double eq5 = epState.getReal()-ekState.getReal()-ii*lpMinusLl;
+	    double eq5 = epr-ekr-ii*lpMinusLl;
 	    double adjustedIi = eq5*coupling+ii;
-	    double dEpr = (epState.getImaginary()*tp0*slipSpeed-epState.getReal()
+	    double dEpr = (epi*tp0*slipSpeed-epr
 	            -(xs-xp)*adjustedIi)/tp0;
-	    double dEkr = (tpp0*slipSpeed*ekState.getImaginary()+eq5)/tpp0;
+	    double dEkr = (tpp0*slipSpeed*eki+eq5)/tpp0;
 
-	    double eq18 = ir*lpMinusLl+epState.getImaginary()-ekState.getImaginary();
+	    double eq18 = ir*lpMinusLl+epi-eki;
 	    double adjustedIr = ir-eq18*coupling;
-	    double dEpi = ((xs-xp)*adjustedIr-epState.getReal()*tp0*slipSpeed
-	            -epState.getImaginary())/tp0;
-	    double dEki = (eq18-ekState.getReal()*tpp0*slipSpeed)/tpp0;
-	    return new Complex[] {new Complex(dEpr, dEpi), new Complex(dEkr, dEki)};
+	    double dEpi = ((xs-xp)*adjustedIr-epr*tp0*slipSpeed
+	            -epi)/tp0;
+	    double dEki = (eq18-ekr*tpp0*slipSpeed)/tpp0;
+        rates[0] = dEpr; rates[1] = dEpi; rates[2] = dEkr; rates[3] = dEki;
 	}
 
 	private Complex calculateTwoCageSourceVoltage(Complex epState, Complex ekState) {
@@ -2396,22 +2687,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		this.torqueExponent = exponent;
 	}
 	
-    private Complex calc_Ep_predict_step(double w0, double Epr, double Epm, double Im, double Ir){
-    	 double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
- 	     double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
- 	     
- 	     return new Complex(dEpr,dEpm);
-	}
-    
-    private Complex calc_Ep_corrective_step(double w0, double Epr, double Epm, double Im, double Ir){
-   	 double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
-	     double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
-	     
-	     return new Complex(dEpr,dEpm);
-	}
-	
+
 	@Override
 	public Complex getPosSeqEquivY() {
+        if (initialReactiveDemandMatching && equivY != null) return equivY;
 		if(equivYSysBase == null){
 			if(this.twoAxisModel){
 				 Complex Zpp = new Complex(ra,xpp).multiply(this.zMultiFactor);
@@ -2434,7 +2713,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		 Complex vt = this.getDStabBus().getVoltage();
 		 
-		 Complex iEquivYSysBase = vt.multiply(equivYSysBase);
+		 Complex iEquivYSysBase = vt.multiply(getPosSeqEquivY());
 	    // update the Norton current injection
  	    
  	   if(twoAxisModel){
@@ -2452,7 +2731,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
  	   // The norton Current injection needs to compensate for this.
 
  	 
- 	  if(this.Fonline>1.0E-8) {
+	  if((legacyCompositeProtectionScheduling && this.Fonline<0.0) || this.Fonline>1.0E-8) {
  			 this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1.0-this.Fonline));
  	
  	  }
@@ -2474,33 +2753,40 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 * Mainly for check the protection actions
 	 * @return
 	 */
-	private boolean postSolutionStepProcess(double dt){
-		boolean flag = true;
-		
-		double vt = this.getDStabBus().getVoltage().abs();
-		
-		if(this.lvProtectionTimer1>=this.Ttr1 && !this.lvProtection1Applied ){
+    private void applyUvActions(double vt) {
+		if(this.lvProtectionTimer1>=this.Ttr1 && !this.lvProtection1Applied && (!legacyCompositeProtectionScheduling || vt<this.Vtr1)){
 			this.Fuv = this.Fuv -this.Ftr1;
 			this.lvProtection1Applied = true;
+            this.lvReconnect1Applied = false;
 		}
-		
-		if(this.lvProtectionTimer2>=this.Ttr2 && !this.lvProtection2Applied ){
+
+		if(this.lvProtectionTimer2>=this.Ttr2 && !this.lvProtection2Applied && (!legacyCompositeProtectionScheduling || vt<this.Vtr2)){
 			this.Fuv = this.Fuv -this.Ftr2;
 			this.lvProtection2Applied = true;
+            this.lvReconnect2Applied = false;
 		}
-		if(this.lvReconnectTimer1>=this.Trc1 && this.lvProtection1Applied && !this.lvReconnect1Applied){
+		if(this.lvReconnectTimer1>=this.Trc1 && this.lvProtection1Applied && !this.lvReconnect1Applied && (!legacyCompositeProtectionScheduling || vt>this.Vrc1)){
 			this.Fuv = this.Fuv +this.Ftr1;
 			// update it for the next voltage dip, if any
 			this.lvProtection1Applied = false;
 			this.lvReconnect1Applied = true;
 		}
-		if(this.lvReconnectTimer2>=this.Trc2  && this.lvProtection2Applied && !this.lvReconnect2Applied){
+		if(this.lvReconnectTimer2>=this.Trc2  && this.lvProtection2Applied && !this.lvReconnect2Applied && (!legacyCompositeProtectionScheduling || vt>this.Vrc2)){
 			this.Fuv = this.Fuv +this.Ftr2;
 			// update it for the next voltage dip, if any
 			this.lvProtection2Applied = false;
 			this.lvReconnect2Applied = true;
 		}
+
+    }
+
+	private boolean postSolutionStepProcess(double dt){
+		boolean flag = true;
+
+		double vt = this.getDStabBus().getVoltage().abs();
 		
+        double priorUvFraction=Fuv;
+        if (!legacyCompositeProtectionScheduling) applyUvActions(vt);
 		if(vt<this.Vtr1 && !this.lvProtection1Applied ){
 			this.lvProtectionTimer1 += dt;
 		}
@@ -2536,6 +2822,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		
 		
+        // Evaluate thresholds after accumulating this accepted interval.
+        if (legacyCompositeProtectionScheduling) applyUvActions(vt);
 		boolean singleMotorTrip = false;
 		boolean singleMotorReconnect = false;
 		
@@ -2569,7 +2857,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		// Recompute from the independent load-change and relay fractions. Multiplying
 		// the prior value every step causes an unintended exponential decay.
-		this.Fonline = (1.0+this.accumulatedLoadChangeFactor)*this.Fuv;
+		this.Fonline = (1.0+this.accumulatedLoadChangeFactor)*(legacyCompositeProtectionScheduling?priorUvFraction:this.Fuv);
 
 		
 		return flag;
@@ -2580,10 +2868,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		//TODO move to afterStep() after 1/28/2025
 		//post_solution_step_process();
 		
-		if(this.Fonline>0.0){
+		if((legacyCompositeProtectionScheduling && this.Fonline<0.0) || this.Fonline>0.0){
 			Complex vt = this.getDStabBus().getVoltage();
 			 
-			Complex iEquivYSysBase = vt.multiply(equivYSysBase);
+			Complex iEquivYSysBase = vt.multiply(getPosSeqEquivY());
 			
 			  //Calculate the actual current following into the motor. the current direction is positive when following into the motor, which is also reflected by the "subtract"
 		 	  // current on system base 
@@ -2603,6 +2891,12 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	@Override
 	public boolean afterStep(double dt) {
+        if (legacyCompositeProtectionScheduling) {
+            if (motorProtectionList!=null && !motorProtectionList.isEmpty())
+                throw new IllegalStateException("Legacy composite protection cannot combine external protection controls");
+            if (!Double.isFinite(dt) || dt<0) throw new IllegalArgumentException("Invalid accepted protection interval");
+            if (dt==0) return true;
+        }
 		postSolutionStepProcess(dt);
 		return true;
 	}
@@ -2674,6 +2968,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 */
 	@Override
 	public boolean changeLoad(double percentageFactor){
+        if (legacyCompositeProtectionScheduling && accumulatedLoadChangeFactor<=-1 && percentageFactor>0) return false;
 		
 		if (percentageFactor < -1.0){
 			logger.error("percentageFactor < -1.0, this change will not be applied");
@@ -2682,7 +2977,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		if (this.accumulatedLoadChangeFactor <= -1.0 &&  percentageFactor < 0.0)
 			logger.error("this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
 		
-		this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + percentageFactor;
+		double appliedUvFraction=legacyCompositeProtectionScheduling && this.accumulatedLoadChangeFactor>-1
+                ? this.Fonline/(1+this.accumulatedLoadChangeFactor) : this.Fuv;
+        this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + percentageFactor;
 		
 		if (this.accumulatedLoadChangeFactor < -1.0){
 			logger.error("the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
@@ -2692,7 +2989,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		this.Fonline = 1.0 + this.accumulatedLoadChangeFactor;
 		
 		//also consider the load internal protection effects
-		this.Fonline = this.Fonline*this.Fuv;
+		this.Fonline = this.Fonline*appliedUvFraction;
 		
 		logger.info("this.accumulatedLoadChangeFactor = "+ this.accumulatedLoadChangeFactor +", Fonline = "+this.Fonline);
 		

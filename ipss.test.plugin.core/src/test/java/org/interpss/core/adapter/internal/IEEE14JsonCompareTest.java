@@ -37,7 +37,10 @@ public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 				path -> !path.endsWith("/extUID")
 						&& !path.equals("/deviceUIDType")
 						&& !path.equals("/nodeBreakerModel")
-						&& !path.startsWith("/busLoadLowVoltConfig"))
+						&& !path.startsWith("/busLoadLowVoltConfig")
+						// Added after the fixture was recorded; left at its default
+						// (no magnetizing bus-side placement) by this importer.
+						&& !path.endsWith("/fromShuntOnBusSide"))
 							.compareJson(aclfNet, new File(jsonFile)));
 	}
 }

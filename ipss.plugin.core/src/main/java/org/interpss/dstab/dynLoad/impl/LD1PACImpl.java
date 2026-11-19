@@ -7,12 +7,16 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.LD1PAC;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStateMonitor;
+import com.interpss.dstab.controller.runtime.StaggeredEulerParticipant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
@@ -21,7 +25,439 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 /**
  * An implementation of the model object '<em><b>LD1PAC</b></em>'.
  */
-public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider {
+public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider,
+        StaggeredEulerParticipant, IntegrationStateAccess, com.interpss.dstab.controller.runtime.NetworkEventInput,
+        com.interpss.dstab.controller.runtime.InitialEndpointAction,
+        com.interpss.dstab.controller.runtime.IntegrationStepContext,
+        com.interpss.dstab.controller.runtime.IntegrationStepAware {
+    private final double[] integrationRates = new double[9];
+    private final double[] timerStart = new double[5], timerFirstRates = new double[5], timerTrial = new double[5];
+    private final double[] evaluatedCurrent = new double[2];
+    private IntegrationStateMonitor integrationMonitor = new IntegrationStateMonitor(
+            "Vmeas", "Fmeas", "TemperatureA", "TemperatureB");
+    private long staggeredEvaluationCount;
+    public enum CharacteristicPolicy { STANDALONE, LEGACY_COMPOSITE, ZONE_COMPOSITE }
+    private CharacteristicPolicy characteristicPolicy = CharacteristicPolicy.STANDALONE;
+    private boolean legacyCompositeCharacteristic;
+    private Complex electricalNortonY;
+    private AclfLoad parentLoad;
+    private Complex initialLoadAllocation;
+    public enum AcceptedTimerPrecision { DOUBLE, BINARY32 }
+    private AcceptedTimerPrecision acceptedTimerPrecision = AcceptedTimerPrecision.DOUBLE;
+    public enum FrequencyInputMode { BUS_FREQUENCY, TERMINAL_PHASE_DOUBLE, TERMINAL_PHASE_BINARY32 }
+    private FrequencyInputMode frequencyInputMode = FrequencyInputMode.BUS_FREQUENCY;
+    private double acceptedPhase, phaseSampleTime, phaseFrequencyDeviation, eventFrequencyDeviation;
+    private double frequencyOutput = 1, lastFrequencyEventTime = Double.NaN;
+    private boolean frequencyEventPending;
+    private double reactiveFrequencyScale = 1;
+    public enum ElectricalInputMode { LIVE_NETWORK, ACCEPTED_ENDPOINT }
+    private ElectricalInputMode electricalInputMode = ElectricalInputMode.LIVE_NETWORK;
+    private double acceptedVoltageMagnitude, acceptedHeatingSquaredA, acceptedHeatingSquaredB;
+    private final double[] networkEventLeftRates = new double[9];
+    private boolean networkEventRatesPrepared;
+    private boolean legacyUvTripped;
+    private boolean initialEndpointAccepted;
+    private double pendingSamplingEndpoint = Double.NaN;
+
+    private double preparedNetworkStep;
+    private boolean shortVoltageLag, shortFrequencyLag, shortThermalLag;
+
+    /** Prepare lag branches from the outer interval; local stages do not reclassify them. */
+    @Override public void configureIntegrationStep(double timeStepSec) {
+        if (!Double.isFinite(timeStepSec) || timeStepSec <= 0
+                || !Float.isFinite((float) timeStepSec) || (float) timeStepSec == 0)
+            throw new IllegalArgumentException("A positive finite compressor network interval is required");
+        preparedNetworkStep = timeStepSec;
+        prepareLagBranches();
+    }
+    private void prepareLagBranches() {
+        shortVoltageLag = preparedShortLag(tv);
+        shortFrequencyLag = preparedShortLag(tf);
+        shortThermalLag = preparedShortLag(tth);
+    }
+    private boolean preparedShortLag(double timeConstant) {
+        return legacyCompositeCharacteristic && preparedNetworkStep > 0 && timeConstant >= 0
+                && (float) timeConstant <= 2.0 * (float) preparedNetworkStep;
+    }
+    private boolean voltageBypassed() { return tv <= 1e-12 || shortVoltageLag; }
+    private boolean frequencyBypassed() { return tf <= 1e-12 || shortFrequencyLag; }
+    public double getEffectiveTv() { return voltageBypassed() ? 0 : tv; }
+    public double getEffectiveTf() { return frequencyBypassed() ? 0 : tf; }
+    public double getEffectiveTth() { return thermalBypassed() ? 0 : tth; }
+
+    @Override public void prepareIntegrationStep(double startTimeSec, double stepSec) {
+        if (!Double.isFinite(startTimeSec) || !Double.isFinite(stepSec) || stepSec < 0
+                || !Double.isFinite(startTimeSec + stepSec))
+            throw new IllegalArgumentException("A finite compressor interval and physical clock are required");
+        pendingSamplingEndpoint = startTimeSec + stepSec;
+    }
+
+    private void updateLegacyContactor(double voltage) {
+        if (voltage < vc1off) {
+            double remaining = voltage < vc2off ? 0 : (voltage - vc2off) / (vc1off - vc2off);
+            kcon = Math.min(kcon, remaining);
+        }
+        if (voltage >= vc1on) kcon = 1;
+        else if (voltage >= vc2on)
+            kcon = Math.max(kcon, (voltage - vc2on) / (vc1on - vc2on));
+        fcon_trip = Math.max(fcon_trip, 1 - kcon);
+    }
+
+    private double thermalRemaining(double temperature) {
+        if (temperature < th1t) return 1;
+        if (th2t == 0 || th1t >= th2t) return 0;
+        return Math.max(0, Math.min(1, (th2t - temperature) / (th2t - th1t)));
+    }
+
+    private void updateLegacyThermalProtection() {
+        // A bypass exposes the current algebraic temperature immediately, but
+        // accepted trip decisions consume the separately sampled heating input.
+        fthA = Math.min(fthA, thermalRemaining(thermalBypassed() ? rstall * acceptedHeatingSquaredA : tempA));
+        // Group B holds its thermal fraction while waiting to restart. The
+        // accepted restart action clears its timer before this evaluation.
+        if (statusB != 0 || acRestartTimer == 0)
+            fthB = Math.min(fthB, thermalRemaining(thermalBypassed() ? rstall * acceptedHeatingSquaredB : tempB));
+        if (fthA == 0) tempA = tempA_old = 0;
+        if (fthB == 0) tempB = tempB_old = 0;
+    }
+
+    @Override public boolean acceptInitialEndpoint() {
+        if (!legacyCompositeCharacteristic) return false;
+        if (PQmotor == null) throw new IllegalStateException("Initialize the compressor before accepting its endpoint");
+        if (initialEndpointAccepted) return false;
+        initialEndpointAccepted = true;
+        double beforeA = fthA, beforeB = fthB;
+        updateLegacyThermalProtection();
+        calculateMotorPower();
+        sampleElectricalInputs();
+        return beforeA != fthA || beforeB != fthB;
+    }
+
+    @Override public void acceptInitialNetworkEndpoint() {
+        if (!legacyCompositeCharacteristic) return;
+        if (!initialEndpointAccepted) throw new IllegalStateException("Accept the initial physical action before sampling its network");
+        calculateMotorPower();
+        sampleElectricalInputs();
+    }
+
+    /** Select the model's electrical measurement boundary before initialization. */
+    public void setElectricalInputMode(ElectricalInputMode mode) {
+        java.util.Objects.requireNonNull(mode);
+        if (PQmotor != null && mode != electricalInputMode)
+            throw new IllegalStateException("Electrical input sampling must be selected before initialization");
+        electricalInputMode = mode;
+    }
+    public ElectricalInputMode getElectricalInputMode() { return electricalInputMode; }
+    @Override public boolean providesNetworkEventLeftRates() {
+        return electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT;
+    }
+    @Override public boolean readNetworkEventLeftRates(double[] rates, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), rates.length);
+        if (!networkEventRatesPrepared) return false;
+        System.arraycopy(networkEventLeftRates, 0, rates, offset, staggeredStateCount());
+        return true;
+    }
+    private double voltageInput() {
+        return electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT
+                ? acceptedVoltageMagnitude : getDStabBus().getVoltageMag();
+    }
+    private void sampleElectricalInputs() {
+        boolean held = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT;
+        if (!held && !thermalBypassed()) return;
+        Complex voltage = getDStabBus().getVoltage();
+        double magnitude = getDStabBus().getVoltageMag();
+        if (held) acceptedVoltageMagnitude = magnitude;
+        acceptedHeatingSquaredA = heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
+        acceptedHeatingSquaredB = heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
+        if (held && voltageBypassed()) vt_measured = vt_measured_old = acceptedVoltageMagnitude;
+    }
+
+    /** Choose a prepared phase sampler or the existing bus-frequency input before initialization. */
+    public void setFrequencyInputMode(FrequencyInputMode mode) {
+        java.util.Objects.requireNonNull(mode);
+        if (PQmotor != null && mode != frequencyInputMode)
+            throw new IllegalStateException("Frequency input must be selected before initialization");
+        frequencyInputMode = mode;
+    }
+    public FrequencyInputMode getFrequencyInputMode() { return frequencyInputMode; }
+    public double getFrequencyOutput() { return frequencyOutput; }
+    private void prepareReactiveFrequencyScale() {
+        reactiveFrequencyScale = !legacyCompositeCharacteristic ? 1
+                : Math.abs(powerFactor) < 1 ? 1 / Math.sqrt(1 - powerFactor * powerFactor) : 0;
+    }
+    private double frequencySignal() {
+        return legacyCompositeCharacteristic ? Math.max(.95, Math.min(1.05, freq_measured)) : freq_measured;
+    }
+    @Override public boolean averageStaggeredRateAtDiscontinuity(int index) {
+        // The sampled phase input has its own explicit event preparation.
+        return index != 1 || frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY;
+    }
+    @Override public void acceptNetworkEventInput(double physicalTimeSec) {
+        if (!Double.isFinite(physicalTimeSec)) throw new IllegalArgumentException("Invalid event time");
+        if ((frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
+                && electricalInputMode == ElectricalInputMode.LIVE_NETWORK && !legacyCompositeCharacteristic)
+                || physicalTimeSec == lastFrequencyEventTime) return;
+        if (physicalTimeSec < lastFrequencyEventTime)
+            throw new IllegalArgumentException("Frequency events must be ordered");
+        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT) {
+            networkEventLeftRates[0] = !voltageBypassed() ? (acceptedVoltageMagnitude - vt_measured) / tv : 0;
+            networkEventLeftRates[1] = !frequencyBypassed() ? (frequencyInput() - freq_measured) / tf : 0;
+            networkEventLeftRates[2] = temperatureRate(tempA, acceptedHeatingSquaredA, fthA);
+            networkEventLeftRates[3] = temperatureRate(tempB, acceptedHeatingSquaredB, fthB);
+            if (legacyCompositeCharacteristic) evaluateTimerRates(acceptedVoltageMagnitude, networkEventLeftRates, 4);
+            networkEventRatesPrepared = true;
+        }
+        if (legacyCompositeCharacteristic) {
+            projectTimerPickups(getDStabBus().getVoltageMag());
+            updateLegacyContactor(getDStabBus().getVoltageMag());
+        }
+        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT || thermalBypassed()) {
+            calculateMotorPower();
+            sampleElectricalInputs();
+        }
+        if (frequencyInputMode != FrequencyInputMode.BUS_FREQUENCY) {
+            eventFrequencyDeviation = phaseFrequencyDeviation;
+            phaseFrequencyDeviation = 0;
+            frequencyEventPending = true;
+            if (frequencyBypassed()) freq_measured = freq_measured_old = 1;
+        }
+        lastFrequencyEventTime = physicalTimeSec;
+    }
+    private BaseDStabBus<?, ?> frequencyBus() {
+        return frequencySourceBus == null ? getDStabBus() : frequencySourceBus;
+    }
+    private void acceptPhaseSample(double interval) {
+        double endpoint = pendingSamplingEndpoint;
+        pendingSamplingEndpoint = Double.NaN;
+        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY || interval == 0) return;
+        // Continuous states still integrate during startup. Only the sampled
+        // phase memory and its clock wait for the first positive endpoint.
+        if (endpoint <= 0) return;
+        double nextTime = frequencyInputMode == FrequencyInputMode.TERMINAL_PHASE_BINARY32
+                ? (double) ((float) phaseSampleTime + (float) interval) : phaseSampleTime + interval;
+        if (!Double.isFinite(nextTime) || !(nextTime > phaseSampleTime))
+            throw new IllegalStateException("Frequency input clock cannot advance");
+        double phase = frequencyBus().getVoltageAng();
+        phaseFrequencyDeviation = Math.IEEEremainder(phase - acceptedPhase, 2 * Math.PI)
+                / (2 * Math.PI * getDStabBus().getNetwork().getFrequency() * (nextTime - phaseSampleTime));
+        acceptedPhase = phase; phaseSampleTime = nextTime; frequencyEventPending = false;
+        if (frequencyBypassed()) freq_measured = 1 + phaseFrequencyDeviation;
+    }
+
+    /** Select the arithmetic of committed protection timers before initialization. */
+    public void setAcceptedTimerPrecision(AcceptedTimerPrecision precision) {
+        java.util.Objects.requireNonNull(precision);
+        if (PQmotor != null && precision != acceptedTimerPrecision)
+            throw new IllegalStateException("Timer precision must be selected before initialization");
+        acceptedTimerPrecision = precision;
+    }
+    public AcceptedTimerPrecision getAcceptedTimerPrecision() { return acceptedTimerPrecision; }
+    private double advanceAcceptedTimer(double timer, double interval) {
+        return acceptedTimerPrecision == AcceptedTimerPrecision.BINARY32
+                ? (double) ((float) timer + (float) interval) : timer + interval;
+    }
+
+    private void readTimers(double[] values, int offset) {
+        values[offset] = uVRelayTimer1; values[offset + 1] = uVRelayTimer2;
+        values[offset + 2] = acStallTimer; values[offset + 3] = acStallTimerB;
+        values[offset + 4] = acRestartTimer;
+    }
+    private void applyTimers(double[] values, int offset) {
+        uVRelayTimer1 = Math.max(0, values[offset]); uVRelayTimer2 = Math.max(0, values[offset + 1]);
+        acStallTimer = Math.max(0, values[offset + 2]); acStallTimerB = Math.max(0, values[offset + 3]);
+        acRestartTimer = Math.max(0, values[offset + 4]);
+    }
+    private void evaluateTimerRates(double voltage, double[] rates, int offset) {
+        boolean uv = fuvr > 0 && !legacyUvTripped;
+        rates[offset] = uv && voltage < uvtr1 ? 1 : 0;
+        rates[offset + 1] = uv && voltage < uvtr2 ? 1 : 0;
+        rates[offset + 2] = statusA == 1 && voltage < vstall ? 1 : 0;
+        rates[offset + 3] = frst > 0 && statusB == 1 && voltage < vstall ? 1 : 0;
+        rates[offset + 4] = frst > 0 && statusB == 0 && voltage > vrst ? 1 : 0;
+    }
+    private void projectTimerPickups(double voltage) {
+        if (!(fuvr > 0 && !legacyUvTripped && voltage < uvtr1)) uVRelayTimer1 = 0;
+        if (!(fuvr > 0 && !legacyUvTripped && voltage < uvtr2)) uVRelayTimer2 = 0;
+        if (!(statusA == 1 && voltage < vstall)) acStallTimer = 0;
+        if (!(frst > 0 && statusB == 1 && voltage < vstall)) acStallTimerB = 0;
+        if (!(frst > 0 && statusB == 0 && voltage > vrst)) acRestartTimer = 0;
+    }
+    private void roundAcceptedTimers() {
+        if (acceptedTimerPrecision != AcceptedTimerPrecision.BINARY32) return;
+        uVRelayTimer1 = (float) uVRelayTimer1; uVRelayTimer2 = (float) uVRelayTimer2;
+        acStallTimer = (float) acStallTimer; acStallTimerB = (float) acStallTimerB;
+        acRestartTimer = (float) acRestartTimer;
+    }
+
+    /** Bind a complete source load record before initialization; loading factor is not coverage. */
+    public void setParentLoad(AclfLoad load) {
+        java.util.Objects.requireNonNull(load);
+        if (initialLoadAllocation != null) throw new IllegalStateException("A compressor allocation already owns this load");
+        if (PQmotor != null) throw new IllegalStateException("Source load must be bound before initialization");
+        if (getDStabBus() == null || getDStabBus().getContributeLoad(load.getId()) != load)
+            throw new IllegalArgumentException("Source load must belong to the compressor bus");
+        parentLoad = load;
+    }
+
+    public AclfLoad getParentLoad() { return parentLoad; }
+
+    /** Bind a composite-owned operating-point allocation before the first initialization. */
+    public void setInitialLoadAllocation(Complex power) {
+        java.util.Objects.requireNonNull(power);
+        if (power.isNaN() || power.isInfinite() || power.getReal() <= 0)
+            throw new IllegalArgumentException("A finite positive compressor allocation is required");
+        if (parentLoad != null || PQmotor != null && !power.equals(initialLoadAllocation))
+            throw new IllegalStateException("Compressor allocation must be bound before initialization");
+        initialLoadAllocation = power;
+    }
+    public Complex getInitialLoadAllocation() { return initialLoadAllocation; }
+
+    /** Select the compressor family's characteristic before initialization. */
+    public void setCharacteristicPolicy(CharacteristicPolicy policy) {
+        java.util.Objects.requireNonNull(policy);
+        if (PQmotor != null && policy != characteristicPolicy)
+            throw new IllegalStateException("Compressor characteristic must be selected before initialization");
+        boolean wasLegacy = legacyCompositeCharacteristic;
+        characteristicPolicy = policy;
+        legacyCompositeCharacteristic = policy == CharacteristicPolicy.LEGACY_COMPOSITE;
+        if (wasLegacy != legacyCompositeCharacteristic)
+            integrationMonitor = legacyCompositeCharacteristic
+                    ? new IntegrationStateMonitor("Vmeas", "Fmeas", "TemperatureA", "TemperatureB",
+                            "UvTimer1", "UvTimer2", "StallTimer", "StallTimerB", "RestartTimer")
+                    : new IntegrationStateMonitor("Vmeas", "Fmeas", "TemperatureA", "TemperatureB");
+        prepareReactiveFrequencyScale();
+        prepareLagBranches();
+    }
+
+    @Override public int staggeredStateCount() { return legacyCompositeCharacteristic ? 9 : 4; }
+    @Override public void readStaggeredState(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        values[offset] = vt_measured; values[offset + 1] = freq_measured;
+        values[offset + 2] = tempA; values[offset + 3] = tempB;
+        if (legacyCompositeCharacteristic) readTimers(values, offset + 4);
+    }
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), rates.length);
+        if (!Double.isFinite(stepSec) || stepSec <= 0)
+            throw new IllegalArgumentException("A motor integration interval must be finite and positive");
+        evaluateRates(vt_measured, freq_measured, rates, offset, IntegrationStateMonitor.Stage.STAGGERED);
+        staggeredEvaluationCount++;
+    }
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Invalid motor interval");
+        for (int i = 0; i < staggeredStateCount(); i++)
+            if (!Double.isFinite(values[offset + i])) throw new IllegalArgumentException("Motor states must be finite");
+        vt_measured = !voltageBypassed() ? values[offset] : voltageInput();
+        freq_measured = !frequencyBypassed() ? values[offset + 1] : frequencyInput();
+        if (thermalBypassed()) refreshAlgebraicTemperatures(getDStabBus().getVoltage(), getDStabBus().getVoltageMag());
+        else {
+            tempA = legacyCompositeCharacteristic && fthA == 0 ? 0 : values[offset + 2];
+            tempB = legacyCompositeCharacteristic && fthB == 0 ? 0 : values[offset + 3];
+        }
+        if (legacyCompositeCharacteristic) applyTimers(values, offset + 4);
+    }
+    @Override public void completeStaggeredStep(double stepSec) {
+        if (!Double.isFinite(stepSec) || stepSec < 0)
+            throw new IllegalArgumentException("An accepted motor interval must be finite and nonnegative");
+        if (stepSec == 0) return;
+        vt_measured_old = vt_measured; freq_measured_old = freq_measured;
+        tempA_old = tempA; tempB_old = tempB;
+        timeCounter += stepSec;
+    }
+    private void evaluateRates(double measuredVoltage, double measuredFrequency, double[] rates,
+            int offset, IntegrationStateMonitor.Stage stage) {
+        Complex voltage = getDStabBus().getVoltage();
+        double magnitude = getDStabBus().getVoltageMag();
+        rates[offset] = !voltageBypassed() ? (voltageInput() - measuredVoltage) / tv : 0;
+        rates[offset + 1] = !frequencyBypassed() ? (frequencyInput() - measuredFrequency) / tf : 0;
+        if (thermalBypassed()) {
+            refreshAlgebraicTemperatures(voltage, magnitude);
+            rates[offset + 2] = rates[offset + 3] = 0;
+        } else {
+            double heatA = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredA
+                    : heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
+            double heatB = electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT ? acceptedHeatingSquaredB
+                    : heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
+            rates[offset + 2] = temperatureRate(tempA, heatA, fthA);
+            rates[offset + 3] = temperatureRate(tempB, heatB, fthB);
+        }
+        if (legacyCompositeCharacteristic) evaluateTimerRates(voltageInput(), rates, offset + 4);
+        integrationMonitor.begin(stage);
+        integrationMonitor.record(0, measuredVoltage, rates[offset]);
+        integrationMonitor.record(1, measuredFrequency, rates[offset + 1]);
+        integrationMonitor.record(2, tempA, rates[offset + 2]);
+        integrationMonitor.record(3, tempB, rates[offset + 3]);
+        if (legacyCompositeCharacteristic) {
+            integrationMonitor.record(4, uVRelayTimer1, rates[offset + 4]);
+            integrationMonitor.record(5, uVRelayTimer2, rates[offset + 5]);
+            integrationMonitor.record(6, acStallTimer, rates[offset + 6]);
+            integrationMonitor.record(7, acStallTimerB, rates[offset + 7]);
+            integrationMonitor.record(8, acRestartTimer, rates[offset + 8]);
+        }
+    }
+    private double temperatureRate(double temperature, double heatingSquared, double remaining) {
+        return thermalBypassed() || legacyCompositeCharacteristic && remaining == 0 ? 0 : (heatingSquared * rstall - temperature) / tth;
+    }
+    private double heatingCurrentSquared(Complex voltage, double magnitude, int status, double p, double q, double remaining) {
+        if (legacyCompositeCharacteristic && (kcon == 0 || remaining == 0)) return 0;
+        if (status == 0 || magnitude <= vstallbrk) {
+            double deviation = frequencySignal() - 1;
+            double conductance = YStall.getReal() * (legacyCompositeCharacteristic && status == 1
+                    ? loadFactor * (1 + cmpKpf * deviation) : 1);
+            double susceptance = YStall.getImaginary() * (legacyCompositeCharacteristic && status == 1
+                    ? 1 + cmpKqf * reactiveFrequencyScale * deviation : 1);
+            evaluatedCurrent[0] = voltage.getReal() * conductance - voltage.getImaginary() * susceptance;
+            evaluatedCurrent[1] = voltage.getReal() * susceptance + voltage.getImaginary() * conductance;
+        } else MotorElectricalKernel.divide(p, q, voltage.getReal(), voltage.getImaginary(), evaluatedCurrent);
+        return Math.pow(org.apache.commons.math3.util.FastMath.hypot(evaluatedCurrent[0], evaluatedCurrent[1]), 2);
+    }
+    @Override public Map<String, Double> getIntegrationStates() {
+        if (legacyCompositeCharacteristic)
+            return Map.of("Vmeas", vt_measured, "Fmeas", freq_measured,
+                    "TemperatureA", tempA, "TemperatureB", tempB, "UvTimer1", uVRelayTimer1,
+                    "UvTimer2", uVRelayTimer2, "StallTimer", acStallTimer,
+                    "StallTimerB", acStallTimerB, "RestartTimer", acRestartTimer);
+        return Map.of("Vmeas", vt_measured, "Fmeas", freq_measured,
+                "TemperatureA", tempA, "TemperatureB", tempB);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() { return integrationMonitor.snapshot(); }
+    @Override public Map<String, Double> getIntegrationHistories() {
+        Map<String, Double> result = Map.ofEntries(Map.entry("UvTimer1", uVRelayTimer1), Map.entry("UvTimer2", uVRelayTimer2),
+                Map.entry("StallTimer", acStallTimer), Map.entry("StallTimerB", acStallTimerB),
+                Map.entry("RestartTimer", acRestartTimer), Map.entry("ContactorFraction", kcon),
+                Map.entry("ContactorTripFraction", fcon_trip), Map.entry("UvFraction", kuv),
+                Map.entry("UvTripped", legacyUvTripped ? 1. : 0.),
+                Map.entry("ContactorClosed", kcon > 0 ? 1. : 0.),
+                Map.entry("ThermalFractionA", fthA), Map.entry("ThermalFractionB", fthB),
+                Map.entry("RunA", (double) statusA), Map.entry("RunB", (double) statusB),
+                Map.entry("InitialEndpointAccepted", initialEndpointAccepted ? 1. : 0.),
+                Map.entry("AcceptedTime", timeCounter));
+        if (frequencyInputMode == FrequencyInputMode.BUS_FREQUENCY
+                && electricalInputMode == ElectricalInputMode.LIVE_NETWORK && !thermalBypassed()) return result;
+        var history = new LinkedHashMap<>(result);
+        if (thermalBypassed()) {
+            history.put("ThermalBypass", 1.);
+            history.put("ThermalActionTemperatureA", rstall * acceptedHeatingSquaredA);
+            history.put("ThermalActionTemperatureB", rstall * acceptedHeatingSquaredB);
+        }
+        history.put("FrequencySampleTime", phaseSampleTime);
+        history.put("FrequencyPhase", acceptedPhase);
+        history.put("FrequencySampleDeviation", phaseFrequencyDeviation);
+        history.put("FrequencyEventDeviation", eventFrequencyDeviation);
+        history.put("FrequencyEventPending", frequencyEventPending ? 1. : 0.);
+        history.put("FrequencyInput", frequencyInput());
+        history.put("FrequencyEventSeen", Double.isFinite(lastFrequencyEventTime) ? 1. : 0.);
+        history.put("FrequencyEventTime", Double.isFinite(lastFrequencyEventTime) ? lastFrequencyEventTime : 0.);
+        if (electricalInputMode == ElectricalInputMode.ACCEPTED_ENDPOINT) {
+            history.put("ElectricalVoltage", acceptedVoltageMagnitude);
+            history.put("ElectricalHeatingSquaredA", acceptedHeatingSquaredA);
+            history.put("ElectricalHeatingSquaredB", acceptedHeatingSquaredB);
+            history.put("ElectricalEventRatesPrepared", networkEventRatesPrepared ? 1. : 0.);
+        }
+        return Map.copyOf(history);
+    }
+    public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
     private static final Logger logger = LoggerFactory.getLogger(LD1PACImpl.class);
 	private BaseDStabBus<?, ?> frequencySourceBus;
 	/**
@@ -116,16 +552,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	protected static final double LOAD_FACTOR_EDEFAULT = 0.85;
 
 	/**
-	 * The cached value of the '{@link #getLoadFactor() <em>Load Factor</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getLoadFactor()
-	 * @generated
-	 * @ordered
-	 */
-	protected double loadFactor = LOAD_FACTOR_EDEFAULT;
-
-	/**
 	 * The default value of the '{@link #getVstall() <em>Vstall</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -144,6 +570,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * @ordered
 	 */
 	protected double vstall = VSTALL_EDEFAULT;
+    private double configuredVstall = VSTALL_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getRstall() <em>Rstall</em>}' attribute.
@@ -404,6 +831,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * @ordered
 	 */
 	protected double vbrk = VBRK_EDEFAULT;
+    private double configuredVbrk = VBRK_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getFrst() <em>Frst</em>}' attribute.
@@ -804,6 +1232,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * @ordered
 	 */
 	protected double acStallTimer = AC_STALL_TIMER_EDEFAULT;
+    // Restartable motors can stall again after the non-restartable group has stopped.
+    protected double acStallTimerB;
 
 	/**
 	 * The default value of the '{@link #getAcRestartTimer() <em>Ac Restart Timer</em>}' attribute.
@@ -864,7 +1294,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	private double Gstall = 0.0, Bstall = 0.0;
 	private Complex YStall = null;
 	
-	private Complex equivYpq = null;
 	
 	private Complex PQmotor = null;
 	
@@ -916,6 +1345,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public LD1PACImpl() {
 		super();
+        // The inherited accessor and all numerical equations share one field.
+        this.loadFactor = LOAD_FACTOR_EDEFAULT;
 		this.states = new Hashtable<>();
 	}
 	
@@ -931,6 +1362,31 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	@Override
 	public boolean initStates() {
+        prepareReactiveFrequencyScale();
+        if (legacyCompositeCharacteristic && cmpKqf != 0 && reactiveFrequencyScale == 0)
+            throw new IllegalArgumentException("Reactive frequency sensitivity requires a nonunity power factor");
+        integrationMonitor.reset(); staggeredEvaluationCount = 0; timeCounter = 0;
+        acceptedPhase = frequencyBus().getVoltageAng(); phaseSampleTime = 0;
+        phaseFrequencyDeviation = 0; eventFrequencyDeviation = 0; frequencyEventPending = false;
+        frequencyOutput = 1; lastFrequencyEventTime = Double.NaN;
+        networkEventRatesPrepared = false;
+
+        acStallTimer = 0; acStallTimerB = 0; acRestartTimer = 0;
+        uVRelayTimer1 = 0; uVRelayTimer2 = 0;
+        statusA = 1; statusB = 1; fthA = 1; fthB = 1;
+        kuv = 1; kcon = 1; fcon_trip = 0;
+        legacyUvTripped = false;
+        initialEndpointAccepted = false;
+        pendingSamplingEndpoint = Double.NaN;
+        equivY = null; electricalNortonY = null; vstallbrk = 0;
+
+        vstall = configuredVstall; vbrk = configuredVbrk;
+        if (legacyCompositeCharacteristic) {
+            p0 = 1 - kp1 * Math.pow(1 - vbrk, np1);
+            q0 = Math.tan(Math.acos(powerFactor)) - kq1 * Math.pow(1 - vbrk, nq1);
+            vstall += lFadj * (loadFactor - 1);
+            vbrk += lFadj * (loadFactor - 1);
+        }
 		boolean flag = true;
         this.stage = 1; // initialized to running state
         
@@ -942,8 +1398,16 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		//TODO the initLoad is the total load at the bus ,include constant Z and I load
 		//In the future, this may need to be update to consider the constant P load only
         Complex busTotalLoad = this.getDStabBus().getInitLoad();
-        this.pac = busTotalLoad.getReal()*this.loadPercent/100.0d; // pu on system base
-        this.qac = this.pac*Math.tan(Math.acos(this.powerFactor));
+        if (parentLoad != null && !parentLoad.isActive()) return false;
+        Complex allocatedPower = initialLoadAllocation != null ? initialLoadAllocation : parentLoad == null
+                ? new Complex(busTotalLoad.getReal()*this.loadPercent/100.0d,
+                        busTotalLoad.getReal()*this.loadPercent/100.0d*Math.tan(Math.acos(this.powerFactor)))
+                : parentLoad.getLoad(getDStabBus().getVoltageMag());
+        if (allocatedPower == null || !Double.isFinite(allocatedPower.getReal())
+                || !Double.isFinite(allocatedPower.getImaginary()) || allocatedPower.getReal() <= 0) return false;
+        this.pac = allocatedPower.getReal();
+        this.qac = allocatedPower.getImaginary();
+        if (parentLoad != null || initialLoadAllocation != null) setLoadPercent(100 * pac / busTotalLoad.getReal());
 		
 		
 		// pac and qac is the initial power
@@ -951,13 +1415,15 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		this.setLoadPQ(new Complex(pac,qac));
 		
 		// if mva is not defined and loading factor is available
-		if(this.getMvaBase()==0.0){
+        if(legacyCompositeCharacteristic || this.getMvaBase()==0.0){
 			if(this.loadFactor >0 && this.loadFactor<=1.0)
 				logger.debug("AC motor MVABase will be calculated based on load factor");
 			else 
 				this.loadFactor = 1.0;
 			
-			this.setMvaBase(this.pac*this.getDStabBus().getNetwork().getBaseMva()/this.loadFactor);
+            double initialPower = legacyCompositeCharacteristic
+                    ? loadFactor * runningActiveCharacteristic(getDStabBus().getVoltageMag()) : loadFactor;
+            this.setMvaBase(this.pac*this.getDStabBus().getNetwork().getBaseMva()/initialPower);
 		}
 		
 		this.I_CONV_FACTOR_M2S = this.getMvaBase()/this.getDStabBus().getNetwork().getBaseMva();
@@ -987,6 +1453,10 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 				/this.getMvaBase();
 		double qac_mbase = this.qac*this.getDStabBus().getNetwork().getBaseMva()
 				/this.getMvaBase();
+        if (legacyCompositeCharacteristic) {
+            qac_mbase = runningReactiveCharacteristic(vt);
+            compensateShuntY = new Complex(0, (qac_mbase * I_CONV_FACTOR_M2S - qac) / (vt * vt));
+        }
 		Complex Sac = new Complex(pac_mbase, qac_mbase);
 		double i_motor = Sac.abs()/vt;
 		
@@ -997,8 +1467,10 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		this.tempB_old = this.tempB;
 		
 		// update the Vstall and Vbrk if necessary
-		this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
-		this.vbrk = this.vbrk*(1+this.lFadj*(this.loadFactor-1));
+        if (characteristicPolicy == CharacteristicPolicy.STANDALONE) {
+            this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
+            this.vbrk = this.vbrk*(1+this.lFadj*(this.loadFactor-1));
+        }
 		
 		// initialize the parts A and B of the motor
 		this.pac_a = pac_mbase; 
@@ -1009,31 +1481,59 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		
 		
 	   // Calculate the P0 and Q0 at stage 0
-		this.p0 = pac_mbase - kp1*Math.pow((vt-vbrk),np1);
-		this.q0 = qac_mbase - this.kq1*Math.pow((vt-vbrk),nq1);
+        if (!legacyCompositeCharacteristic) {
+            this.p0 = pac_mbase - kp1*Math.pow((vt-vbrk),np1);
+            this.q0 = qac_mbase - this.kq1*Math.pow((vt-vbrk),nq1);
+        }
 		
 		
 		
-		double pst = 0.0, pac_calc = 0.0;
-		for (double v = 0.4; v<vbrk; v+=0.0001){
-			pst = this.Gstall*v*v;
-			// Below Vbrk the running-motor characteristic is the Kp2/Np2
-			// branch. Using Kp1 with a negative base makes non-integer Np1
-			// produce NaN and leaves the impedance-transition voltage at zero.
-			pac_calc = this.p0 + kp2*Math.pow((vbrk-v),np2);
-			
-			if(pac_calc<pst){
-				this.vstallbrk = v;
-				break;
-			}
-			
-		}
-		
-		if(this.vstallbrk>this.vstall){
-			this.vstallbrk = this.vstall;
-		}
-		
-		
+        if(characteristicPolicy==CharacteristicPolicy.ZONE_COMPOSITE) {
+            // The running-to-impedance electrical crossing is independent of
+            // Vstall/Tstall, which govern the delayed mechanical stall state.
+            // Capping this crossing at Vstall switches two different P/Q curves
+            // at an unrelated voltage and can trap the algebraic network in a
+            // limit cycle before the stall timer expires. Compute the nominal
+            // motor-base P-curve intersection; keep the original thresholds,
+            // timers, frequency factors and intrinsic Q-branch jump unchanged.
+            // Other compressor families retain their separately qualified policy.
+            prepareZoneElectricalTransition();
+        } else {
+            double pst = 0.0, pac_calc = 0.0;
+            for (double v = 0.4; v<vbrk; v+=0.0001){
+                pst = this.Gstall*v*v;
+                // Below Vbrk the running-motor characteristic is the Kp2/Np2
+                // branch. Using Kp1 with a negative base makes non-integer Np1
+                // produce NaN and leaves the impedance-transition voltage at zero.
+                // The running low-voltage branch carries the same loading factor,
+                // so it cancels when finding its intersection with the polynomial.
+                pac_calc = runningActiveCharacteristic(v);
+
+                if(pac_calc<pst){
+                    // The zone-scoped composite uses the electrical P/impedance
+                    // intersection independently of its delayed stall pickup. Refine
+                    // the existing first-crossing bracket only for that dialect;
+                    // a coarse threshold can otherwise move the retained Q jump.
+                    this.vstallbrk = v;
+                    break;
+                }
+
+            }
+
+            // Electrical current selection and timed-stall protection are separate
+            // for the zone composite. Capping its intersection at Vstall introduces
+            // an artificial current jump while both motor groups are still running.
+            // Independent reduced-fixture evaluations distinguish this behavior from
+            // the standalone and legacy-composite dialects, which retain the cap.
+            // Do not change Vstall/Tstall or smooth Q: the zone model retains its
+            // common P/Q branch transition and the associated reactive-power jump.
+            if (vstallbrk > vstall) {
+                vstallbrk = vstall;
+            }
+
+
+        }
+
 		if(this.th1t >0 && this.th2t>this.th1t){
 			this.thermalEqnCoeff1 = -1/(this.th2t - this.th1t);
 			this.thermalEqnCoeff2 = this.th2t /(this.th2t - this.th1t);
@@ -1046,12 +1546,13 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		
 		this.PQmotor = new Complex(pac_mbase,qac_mbase);
 		
-		this.equivYpq = this.PQmotor.conjugate().divide(vt*vt);
 		
 		
 		extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, extended_device_Id);
 		this.setExtendedDeviceId(extended_device_Id);
+
+        sampleElectricalInputs();
 		
 		return flag;
 	}
@@ -1060,109 +1561,51 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	 * The thermal protection heating increase is modeled as 
 	 * differential equation, thus it must be represented with the nextStep();
 	 * 
-	 * The stall timer as well as the recovery timer are also counted and updated in this method
+     * Legacy timers share this integration owner; afterStep applies their discrete actions.
 	 */
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-		boolean boolFlag = true;
-		
-		// check the protection actions and update the status of AC motor accordingly
-		timestep = dt;
-		
-		// check whether the ac motor is stalled or not
-		double vmag = this.getDStabBus().getVoltageMag();
-		
-		// thermal overload protection
-		/*
-		 * When the motor is stalled, the temperature of the motor is computed by
-			integrating I^2 R through the thermal time constant Tth.  If the temperature reaches Th2t, all of the load is
-			tripped.   If the temperature is between  Th1t and  Th2t, a linear fraction of the load is tripped.   The termperature
-			 of the A and B portions of the load are computed separately.  The fractions of the A
-			and B parts of the load that have not been tripped by the thermal protection is output as fthA and fthB, respectively.	
-		 */
-		
-		Complex vt = this.getDStabBus().getVoltage();
-		
-		Complex ImotorA_pu = new Complex(0.0);
-		Complex ImotorB_pu = new Complex(0.0);
-		
-		if(this.statusA ==0)
-			 ImotorA_pu = vt.multiply(this.YStall);
-		else{
-			if(vmag>this.vstallbrk)
-				ImotorA_pu = new Complex(pac_a, qac_a).divide(vt).conjugate();
-			else
-				ImotorA_pu = vt.multiply(this.YStall);
-		}
-			
-		
-		if(this.statusB ==0)
-			 ImotorB_pu = vt.multiply(this.YStall);
-		else{
-			if(vmag>this.vstallbrk)
-			    ImotorB_pu = new Complex(pac_b, qac_b).divide(vt).conjugate();
-			else
-			    ImotorB_pu = vt.multiply(this.YStall);
-		}
-		
-		if(method==DynamicSimuMethod.MODIFIED_EULER) {
-			
-			if(flag == 0) {
-		       // voltage measurements
-			
-				if (this.tv > 1.0e-12) {
-					dv_dt0 = (vmag-this.vt_measured_old)/this.tv;
-					this.vt_measured = this.vt_measured_old+ dv_dt0*dt;
-				} else this.vt_measured = vmag;
-				if (this.tf > 1.0e-12) {
-					df_dt0 = (frequencyInput()-this.freq_measured_old)/this.tf;
-					this.freq_measured = this.freq_measured_old + df_dt0*dt;
-				} else this.freq_measured = frequencyInput();
-				
-				// temperature
-				
-			    dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
-				
-				dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
-					
-				this.tempA = this.tempA_old+ dThA_dt0*dt;
-				this.tempB = this.tempB_old+ dThB_dt0*dt;
-			}
-			else if (flag ==1) {
-				
-			   if (this.tv > 1.0e-12) {
-				   dv_dt1 = (vmag-vt_measured)/this.tv;
-				   this.vt_measured = this.vt_measured_old + (dv_dt0 + dv_dt1)*0.5*dt;
-			   } else this.vt_measured = vmag;
-			   if (this.tf > 1.0e-12) {
-				   df_dt1 = (frequencyInput()-this.freq_measured)/this.tf;
-				   this.freq_measured = this.freq_measured_old + (df_dt0 + df_dt1)*0.5*dt;
-			   } else this.freq_measured = frequencyInput();
-			   
-			   dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
-				
-			   dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
-			   
-			   this.tempA = this.tempA_old + (dThA_dt0+dThA_dt1)*0.5*dt;
-			   this.tempB = this.tempB_old + (dThB_dt0+dThB_dt1)*0.5*dt;
-			   
-			   this.vt_measured_old = this.vt_measured;
-			   this.freq_measured_old = this.freq_measured;
-			   
-			   this.tempA_old = this.tempA;
-			   this.tempB_old = this.tempB;
-			   
-			   timeCounter+=dt;
-			}
-		
-		}
-		else {
-			throw new Error("Only the Modified Euler method is supported. ");
-		}
-		
-		return boolFlag;
-	}
-	
+    public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        if (method != DynamicSimuMethod.MODIFIED_EULER)
+            throw new IllegalArgumentException("Only modified Euler is supported by ordinary motor dispatch");
+        if (!Double.isFinite(dt) || dt < 0 || flag < 0 || flag > 1)
+            throw new IllegalArgumentException("Invalid motor interval or integration stage");
+        evaluateRates(flag == 0 && dt > 0 ? vt_measured_old : vt_measured,
+                flag == 0 && dt > 0 ? freq_measured_old : freq_measured, integrationRates, 0,
+                flag == 0 ? IntegrationStateMonitor.Stage.PREDICTOR : IntegrationStateMonitor.Stage.CORRECTOR);
+        if (dt == 0) return true;
+        timestep = dt;
+        if (flag == 0) {
+            if (legacyCompositeCharacteristic) {
+                readTimers(timerStart, 0);
+                for (int i = 0; i < 5; i++) {
+                    timerFirstRates[i] = integrationRates[i + 4];
+                    timerTrial[i] = timerStart[i] + dt * timerFirstRates[i];
+                }
+                applyTimers(timerTrial, 0);
+            }
+            dv_dt0 = integrationRates[0]; df_dt0 = integrationRates[1];
+            dThA_dt0 = integrationRates[2]; dThB_dt0 = integrationRates[3];
+            vt_measured = !voltageBypassed() ? vt_measured_old + dv_dt0 * dt : voltageInput();
+            freq_measured = !frequencyBypassed() ? freq_measured_old + df_dt0 * dt : frequencyInput();
+            tempA = tempA_old + dThA_dt0 * dt;
+            tempB = tempB_old + dThB_dt0 * dt;
+        } else {
+            if (legacyCompositeCharacteristic) {
+                for (int i = 0; i < 5; i++)
+                    timerTrial[i] = timerStart[i] + .5 * dt * (timerFirstRates[i] + integrationRates[i + 4]);
+                applyTimers(timerTrial, 0);
+            }
+            dv_dt1 = integrationRates[0]; df_dt1 = integrationRates[1];
+            dThA_dt1 = integrationRates[2]; dThB_dt1 = integrationRates[3];
+            vt_measured = !voltageBypassed() ? vt_measured_old + (dv_dt0 + dv_dt1) * .5 * dt : voltageInput();
+            freq_measured = !frequencyBypassed() ? freq_measured_old + (df_dt0 + df_dt1) * .5 * dt : frequencyInput();
+            tempA = tempA_old + (dThA_dt0 + dThA_dt1) * .5 * dt;
+            tempB = tempB_old + (dThB_dt0 + dThB_dt1) * .5 * dt;
+            completeStaggeredStep(dt);
+        }
+        return true;
+    }
+
 	/**
 	 *  to check whether AC motor stalls, restarts and the actions of the protections
       %  this should be perform after the network solution step
@@ -1315,21 +1758,63 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	private Complex calculateMotorPower(){
 		
 		// Calculate the AC motor power
-		double freq = this.freq_measured;
-		double vmag = this.getDStabBus().getVoltageMag();
+        double freq = frequencySignal();
+        frequencyOutput = freq;
+        double reactiveFrequencyGain = cmpKqf * reactiveFrequencyScale;
+        double vmag = this.getDStabBus().getVoltageMag();
+        evaluateIndividualPowers(vmag, freq, reactiveFrequencyGain);
+        if (thermalBypassed()) projectAlgebraicTemperatures(getDStabBus().getVoltage(), vmag);
+
+        // ac motor total power on motor base
+
+        double Pmotor = this.pac_a*(1-this.frst)*this.fthA+this.pac_b*this.frst*this.fthB;
+        double Qmotor = this.qac_a*(1-this.frst)*this.fthA+this.qac_b*this.frst*this.fthB;
+
+        // consider the UV Relay,contractor as well as load change
+
+        Pmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Pmotor;
+        Qmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Qmotor;
+
+        this.PQmotor = new Complex(Pmotor, Qmotor);
+
+        double powerFactorM2S = getPowerConvFactorM2S();
+        Complex terminalPower = legacyCompositeCharacteristic
+                ? new Complex(Pmotor * powerFactorM2S, Qmotor * powerFactorM2S - compensateShuntY.getImaginary() * vmag * vmag)
+                : this.PQmotor.multiply(powerFactorM2S);
+        this.setLoadPQ(terminalPower);
+
+        this.pac = Pmotor*getPowerConvFactorM2S();       // both are on system base
+        this.qac = terminalPower.getImaginary();
+
+        return this.PQmotor;
+    }
+
+    private boolean thermalBypassed() { return legacyCompositeCharacteristic && (tth == 0 || shortThermalLag); }
+
+    private void refreshAlgebraicTemperatures(Complex voltage, double magnitude) {
+        evaluateIndividualPowers(magnitude, frequencySignal(), cmpKqf * reactiveFrequencyScale);
+        projectAlgebraicTemperatures(voltage, magnitude);
+    }
+
+    private void projectAlgebraicTemperatures(Complex voltage, double magnitude) {
+        tempA = tempA_old = rstall * heatingCurrentSquared(voltage, magnitude, statusA, pac_a, qac_a, fthA);
+        tempB = tempB_old = rstall * heatingCurrentSquared(voltage, magnitude, statusB, pac_b, qac_b, fthB);
+    }
+
+    private void evaluateIndividualPowers(double vmag, double freq, double reactiveFrequencyGain) {
 		if(this.statusA == 1){
 			if(vmag >= this.vbrk){
-				this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0));
-				this.qac_a  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
+                this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
+                this.qac_a = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+reactiveFrequencyGain*(freq-1.0));
 				
 			}
 			else if(vmag <this.vbrk && vmag > this.vstallbrk){
-				this.pac_a = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0));
-				this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
+                this.pac_a = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
+                this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+reactiveFrequencyGain*(freq-1.0));
 			}
 			else{
-				this.pac_a =this.Gstall*vmag*vmag;
-				this.qac_a =-this.Bstall*vmag*vmag;
+                this.pac_a = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor*(1+cmpKpf*(freq-1)) : 1);
+                this.qac_a = -this.Bstall*vmag*vmag*(legacyCompositeCharacteristic ? 1+reactiveFrequencyGain*(freq-1) : 1);
 			}
 			
 		}
@@ -1343,17 +1828,17 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			if(this.statusB == 1){
 				if(vmag >= this.vbrk){
-					this.pac_b  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0));
-					this.qac_b  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
+                    this.pac_b  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
+                    this.qac_b = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+reactiveFrequencyGain*(freq-1.0));
 					
 				}
 				else if(vmag <this.vbrk && vmag > this.vstallbrk){
-					this.pac_b = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0));
-					this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
+                    this.pac_b = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0))*(legacyCompositeCharacteristic ? loadFactor : 1);
+                    this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+reactiveFrequencyGain*(freq-1.0));
 				}
 				else{
-					this.pac_b =this.Gstall*vmag*vmag;
-					this.qac_b =-this.Bstall*vmag*vmag;
+                    this.pac_b = this.Gstall*vmag*vmag*(legacyCompositeCharacteristic ? loadFactor*(1+cmpKpf*(freq-1)) : 1);
+                    this.qac_b = -this.Bstall*vmag*vmag*(legacyCompositeCharacteristic ? 1+reactiveFrequencyGain*(freq-1) : 1);
 				}
 				
 			}
@@ -1364,25 +1849,36 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			}
 		}
 		
-		// ac motor total power on motor base
-		
-		double Pmotor = this.pac_a*(1-this.frst)*this.fthA+this.pac_b*this.frst*this.fthB;
-		double Qmotor = this.qac_a*(1-this.frst)*this.fthA+this.qac_b*this.frst*this.fthB;
-		
-		// consider the UV Relay,contractor as well as load change
-		
-		Pmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Pmotor;
-		Qmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Qmotor;
-		
-		this.PQmotor = new Complex(Pmotor, Qmotor);
-		
-		this.setLoadPQ(this.PQmotor.multiply(getPowerConvFactorM2S()));
-		
-		this.pac = Pmotor*getPowerConvFactorM2S();       // both are on system base
-		this.qac = Qmotor*getPowerConvFactorM2S();
-		
-		return this.PQmotor;
-	}
+    }
+
+    /** Locate Gstall*V^2=P_running(V) at initialized nominal frequency.
+     * Bisection avoids grid quantization of a constitutive branch boundary; it
+     * neither smooths the two branches nor changes the configured stall limit.
+     * No positive crossing means no added low-voltage impedance interval. */
+    private void prepareZoneElectricalTransition() {
+        double lower=0.,upper=vbrk;
+        double lowResidual=-runningActiveCharacteristic(lower);
+        double highResidual=Gstall*upper*upper-runningActiveCharacteristic(upper);
+        if(!(upper>0.)||!Double.isFinite(lowResidual)||!Double.isFinite(highResidual)
+                ||lowResidual>0.||highResidual<0.)return;
+        for(int i=0;i<64;i++) {
+            double middle=lower+(upper-lower)*.5;
+            if(middle==lower||middle==upper)break;
+            double residual=Gstall*middle*middle-runningActiveCharacteristic(middle);
+            if(!Double.isFinite(residual))throw new IllegalStateException("Nonfinite compressor electrical characteristic");
+            if(residual>0.)upper=middle;else lower=middle;
+        }
+        vstallbrk=lower+(upper-lower)*.5;
+    }
+
+    private double runningActiveCharacteristic(double voltage) {
+        return voltage >= vbrk ? p0 + kp1 * Math.pow(voltage - vbrk, np1)
+                : p0 + kp2 * Math.pow(vbrk - voltage, np2);
+    }
+    private double runningReactiveCharacteristic(double voltage) {
+        return voltage >= vbrk ? q0 + kq1 * Math.pow(voltage - vbrk, nq1)
+                : q0 + kq2 * Math.pow(vbrk - voltage, nq2);
+    }
 	
 	/**
 	 * calculation the factor for converting current from motor mvabase to system vabase
@@ -1405,7 +1901,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	public Complex getPosSeqEquivY() {
 		Complex zstall = new Complex(this.rstall,this.xstall);
 		Complex y = new Complex(1.0,0).divide(zstall);
-		this.equivY = y.multiply(getMvaBase()/this.getDStabBus().getNetwork().getBaseMva());
+        electricalNortonY = y.multiply(getMvaBase()/this.getDStabBus().getNetwork().getBaseMva());
+        this.equivY = legacyCompositeCharacteristic ? electricalNortonY.add(compensateShuntY) : electricalNortonY;
 		
 		return this.equivY;
 	}
@@ -1414,20 +1911,23 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	public Complex getNortonCurInj() {
 		Complex vt = this.getDStabBus().getVoltage();
 		
-		Complex Imotor_systembase = null;
-		
-		if(vt.abs()>this.vbrk){
-			// call this method to update "this.PQmotor"
-			calculateMotorPower();
-			Imotor_systembase = this.PQmotor.divide(vt).conjugate().multiply(this.I_CONV_FACTOR_M2S);
-		}
-		else
-			Imotor_systembase =  this.equivYpq.multiply(vt).multiply(this.I_CONV_FACTOR_M2S);
-		
-			
+        // Every trial voltage needs a fresh constitutive current. A cached
+        // low-voltage admittance can otherwise survive a branch or stall change.
+        calculateMotorPower();
+        if (vt.getReal() == 0 && vt.getImaginary() == 0) {
+            evaluatedCurrent[0] = 0;
+            evaluatedCurrent[1] = 0;
+        } else {
+            MotorElectricalKernel.divide(PQmotor.getReal(), PQmotor.getImaginary(),
+                    vt.getReal(), vt.getImaginary(), evaluatedCurrent);
+        }
+
 		if(this.equivY==null) getPosSeqEquivY();
 		
-		this.nortonCurInj = this.equivY.multiply(vt).subtract(Imotor_systembase);
+        Complex y = legacyCompositeCharacteristic ? electricalNortonY : equivY;
+        this.nortonCurInj = new Complex(
+                y.getReal()*vt.getReal() - y.getImaginary()*vt.getImaginary() - evaluatedCurrent[0]*I_CONV_FACTOR_M2S,
+                y.getReal()*vt.getImaginary() + y.getImaginary()*vt.getReal() + evaluatedCurrent[1]*I_CONV_FACTOR_M2S);
 		
 		 
 	 	  if(this.nortonCurInj.isNaN()) {
@@ -1452,6 +1952,16 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	
 	@Override
 	public boolean afterStep(double dt) {
+        if (!Double.isFinite(dt) || dt < 0)
+            throw new IllegalArgumentException("An accepted compressor interval must be finite and nonnegative");
+        if (dt == 0) return true;
+        networkEventRatesPrepared = false;
+        double protectionVoltage = legacyCompositeCharacteristic ? getDStabBus().getVoltageMag() : vt_measured;
+        boolean uvEnabled = fuvr > 0 && !(legacyCompositeCharacteristic && legacyUvTripped);
+        if (legacyCompositeCharacteristic) {
+            roundAcceptedTimers();
+            projectTimerPickups(protectionVoltage);
+        }
 		/**
 		 *  to check whether AC motor stalls, restarts and the actions of the protections
 	      %  this should be perform after the network solution step
@@ -1466,14 +1976,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	         % for ttr2 seconds, the fraction ?fuvr? of the load is tripped
 			*/
 			
-			if(this.vt_measured <this.getUVtr1() && this.fuvr >0.0){
-				this.uVRelayTimer1 = this.uVRelayTimer1 +dt;
+            if (protectionVoltage < getUVtr1() && uvEnabled) {
+                if (!legacyCompositeCharacteristic) this.uVRelayTimer1 = advanceAcceptedTimer(uVRelayTimer1, dt);
 			}
 			else
 				this.uVRelayTimer1 = 0.0;
 			
-			if(this.vt_measured <this.getUVtr2() && this.fuvr >0.0){
-				this.uVRelayTimer2 = this.uVRelayTimer2 +dt;
+            if (protectionVoltage < getUVtr2() && uvEnabled) {
+                if (!legacyCompositeCharacteristic) this.uVRelayTimer2 = advanceAcceptedTimer(uVRelayTimer2, dt);
 			}
 			else
 				this.uVRelayTimer2 = 0.0;
@@ -1486,6 +1996,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			if(this.uVRelayTimer2> this.ttr2){
 				this.kuv = 1.0 - this.fuvr;
 			}
+
+            if (legacyCompositeCharacteristic && uvEnabled
+                    && (uVRelayTimer1 > ttr1 || uVRelayTimer2 > ttr2)) {
+                legacyUvTripped = true;
+                uVRelayTimer1 = uVRelayTimer2 = 0;
+            }
 			
 			/*
 	        % contractor
@@ -1495,6 +2011,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	        % load is reconnected.
 	        */
 			
+            if (legacyCompositeCharacteristic) updateLegacyContactor(protectionVoltage);
+            else {
 			if(this.vt_measured < this.vc2off){
 				this.kcon  = 0.0;
 				this.fcon_trip = 1.0;
@@ -1513,6 +2031,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 				double Frecv = (this.vt_measured - this.vc2on)/(this.vc1on- this.vc2on);
 				this.kcon  = 1 - this.fcon_trip*(1-Frecv);
 			}
+            }
 			
 			
 			/*
@@ -1523,22 +2042,11 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			double vmag = this.getDStabBus().getVoltage().abs();
 			
-			if (this.statusA ==1){
-				if(vmag < this.vstall){
-					this.acStallTimer = this.acStallTimer+ dt;
-				}
-				else
-					this.acStallTimer = 0.0;
-			}
-			
-			
-			if (this.statusB ==0){
-				if(vmag > this.vrst){
-					this.acRestartTimer = this.acRestartTimer+ dt;
-				}
-				else
-					this.acRestartTimer = 0.0;
-			}
+            if (!legacyCompositeCharacteristic) {
+                acStallTimer = statusA == 1 && vmag < vstall ? advanceAcceptedTimer(acStallTimer, dt) : 0;
+                acStallTimerB = frst > 0 && statusB == 1 && vmag < vstall ? advanceAcceptedTimer(acStallTimerB, dt) : 0;
+                acRestartTimer = frst > 0 && statusB == 0 && vmag > vrst ? advanceAcceptedTimer(acRestartTimer, dt) : 0;
+            }
 			
 			/*
 			 *  % update the status of the motor. transition from running to
@@ -1547,13 +2055,22 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			
 			if(this.acStallTimer > this.tstall && this.statusA ==1){
 				this.statusA = 0;
-				this.statusB = 0;
+
+                acStallTimer = 0;
+                if (frst <= 0) statusB = 0;
 				this.stage = 0;
 			}
+
+            if (statusB == 1 && frst > 0 && acStallTimerB > tstall) {
+                statusB = 0; acStallTimerB = 0;
+                if (statusA == 0) stage = 0;
+            }
 			
 			// considering AC restarting 
-			if(this.frst >0.0 && this.statusB ==0 && this.acRestartTimer > this.trst){
+            if (frst > 0 && statusB == 0 && acRestartTimer > trst
+                    && (!legacyCompositeCharacteristic || fthB > 0)) {
 				this.statusB = 1;
+                acRestartTimer = 0; acStallTimerB = 0;
 				this.stage = 2;
 			}
 			
@@ -1563,7 +2080,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	          % the remaining fraction;
 			 */
 			
-			if(this.thermalEqnCoeff1< 0.0){
+            if (legacyCompositeCharacteristic) updateLegacyThermalProtection();
+            else if(this.thermalEqnCoeff1< 0.0){
 				if(this.tempA > this.th1t){
 					if(this.statusA == 0){
 						this.fthA = this.tempA*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
@@ -1589,12 +2107,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 			// call this method to update "this.PQmotor"
 			calculateMotorPower();
 			
-			if(vmag>1.0E-8)
-			    this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
-			else {
-				this.equivYpq = new Complex(1.0E4,1.0E4); // a large value
-				
-			}
+            sampleElectricalInputs();
+            acceptPhaseSample(dt);
 			return flag;
 	}
 	
@@ -1793,7 +2307,11 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	}
 
 	public void setPowerFactor(double newPowerFactor) {
+        if (PQmotor != null && legacyCompositeCharacteristic
+                && cmpKqf != 0 && Math.abs(newPowerFactor) >= 1)
+            throw new IllegalArgumentException("Reactive frequency sensitivity requires a nonunity power factor");
 		powerFactor = newPowerFactor;
+        prepareReactiveFrequencyScale();
 	}
 
 	public double getVstall() {
@@ -1802,6 +2320,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public void setVstall(double newVstall) {
 		vstall = newVstall;
+        configuredVstall = newVstall;
 	}
 
 	public double getRstall() {
@@ -1906,6 +2425,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public void setVbrk(double newVbrk) {
 		vbrk = newVbrk;
+        configuredVbrk = newVbrk;
 	}
 
 	public double getFrst() {
@@ -1945,6 +2465,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	}
 
 	public void setCmpKqf(double newCmpKqf) {
+        if (PQmotor != null && legacyCompositeCharacteristic
+                && newCmpKqf != 0 && reactiveFrequencyScale == 0)
+            throw new IllegalArgumentException("Reactive frequency sensitivity requires a nonunity power factor");
 		cmpKqf = newCmpKqf;
 	}
 
@@ -2026,6 +2549,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public void setTth(double newTth) {
 		tth = newTth;
+        prepareLagBranches();
 	}
 
 	public double getTh1t() {
@@ -2082,12 +2606,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 
 	public void setTv(double newTv) {
 		tv = newTv;
+        prepareLagBranches();
 	}
 
 	@Override public double getTf() { return tf; }
 	@Override public void setTf(double value) {
 		if (!Double.isFinite(value) || value < 0.0) throw new IllegalArgumentException("Tf must be non-negative");
 		tf = value;
+        prepareLagBranches();
 	}
 	@Override public double getMeasuredVoltage() { return vt_measured; }
 	@Override public double getMeasuredFrequency() { return freq_measured; }
@@ -2101,8 +2627,9 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 	}
 
 	private double frequencyInput() {
-		return frequencySourceBus == null
-				? this.getDStabBus().getFreq() : frequencySourceBus.getFreq();
+        if (frequencyInputMode != FrequencyInputMode.BUS_FREQUENCY)
+            return 1 + (frequencyEventPending && !frequencyBypassed() ? .5 * eventFrequencyDeviation : phaseFrequencyDeviation);
+        return frequencyBus().getFreq();
 	}
 
 	@Override
@@ -2110,12 +2637,15 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStatePro
 		Map<String, Double> named = new LinkedHashMap<>();
 		named.put("Vmeas", vt_measured);
 		named.put("Fmeas", freq_measured);
+        named.put("FrequencyOutput", frequencyOutput);
 		named.put("TemperatureA", tempA);
 		named.put("TemperatureB", tempB);
 		named.put("UvTimer1", uVRelayTimer1);
 		named.put("UvTimer2", uVRelayTimer2);
 		named.put("StallTimer", acStallTimer);
+        named.put("StallTimerB", acStallTimerB);
 		named.put("RestartTimer", acRestartTimer);
+        named.put("RunningP0", p0); named.put("RunningQ0", q0);
 		return Map.copyOf(named);
 	}
 

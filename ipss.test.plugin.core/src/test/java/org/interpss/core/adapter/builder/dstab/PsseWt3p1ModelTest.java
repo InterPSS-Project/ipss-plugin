@@ -8,9 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Wt3g2Model;
-import org.interpss.dstab.mach.Wt3p1Data;
-import org.interpss.dstab.mach.Wt3p1Model;
+import com.interpss.dstab.mach.model.Wt3g2Model;
+import com.interpss.dstab.mach.model.Wt3p1Data;
+import com.interpss.dstab.mach.model.Wt3p1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;

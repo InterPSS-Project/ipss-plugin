@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

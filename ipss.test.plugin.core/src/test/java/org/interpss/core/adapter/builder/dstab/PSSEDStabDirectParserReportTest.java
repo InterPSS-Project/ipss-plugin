@@ -12,9 +12,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
-import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
+import com.interpss.dstab.controller.exc.ieeex1.Ieeex1Exciter;
+import com.interpss.dstab.controller.exc.ieeex2.Ieeex2Exciter;
+import com.interpss.dstab.controller.uel.uel1.Uel1UnderExcitationLimiter;
 import org.interpss.dstab.relay.Lds3blRelayModel;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -33,6 +33,56 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     Path tempDir;
 
     @Test
+    void namedChvdcRecordsDistinguishInvalidDataFromMissingOwner() throws Exception {
+        for(boolean legacy:new boolean[]{false,true}) {
+            var builder=DStabBuilderTestFixture.createBuilder();
+            Path dyr=tempDir.resolve("named-chvdc.dyr");
+            String valid=org.interpss.core.dstab.Chvdc2ParametersTest.text(legacy);
+            Files.writeString(dyr,valid+" 1 'GENCLS' '1' 3 0 /\n");
+            var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+            assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+            var report=parser.getLastImportReport();
+            assertEquals(2,report.totalRecordCount());
+            assertEquals(1,report.count(DynamicModelImportStatus.REJECTED));
+            assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
+            assertEquals(legacy?"CHVDC2U1":"CHVDC2",report.failures().getFirst().sourceModelName());
+            assertTrue(report.failures().getFirst().message().contains("No static DC-link owner named"));
+            Files.writeString(dyr,valid.replace("3500.0","NaN"));
+            assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+            assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+        }
+    }
+
+    @Test
+    void userDcWrapperCannotBorrowAGeneratorModelRuntime() throws Exception {
+        Path dyr=tempDir.resolve("wrong-dc-family.dyr");
+        Files.writeString(dyr,"'link' 'USRDCL' 'GENCLS' 3 0 / 1 'GENCLS' '1' 3 0 /\n");
+        var parser=new PSSEDStabDirectParser(DStabBuilderTestFixture.createBuilder()).setStrictImport(true);
+        assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+        assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals(1,parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertTrue(parser.getLastImportReport().failures().getFirst().message().contains("generator aliases cannot be used"));
+    }
+
+    @Test
+    void missingNamedDcOwnerIsReportedWithoutLosingFollowingMachine() throws Exception {
+        var builder=DStabBuilderTestFixture.createBuilder();
+        Path dyr=tempDir.resolve("named-dc.dyr");
+        Files.writeString(dyr,"'North DC' 'CDC6T' "
+                +"5 20 .05 .05 .2 .3 .02 .2 .3 .02 250 500 99 99 400 250 450 500 2000 425 2000 .02 -999 999 -999 0 0 999 999 0 999 .05 "
+                +"/ 1 'GENCLS' '1' 3 0 /\n");
+        var parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+        assertThrows(InterpssException.class,()->parser.parseDynFile(dyr.toString()));
+        var report=parser.getLastImportReport();
+        assertEquals(2,report.totalRecordCount());
+        assertEquals(1,report.count(DynamicModelImportStatus.ERROR));
+        assertEquals(1,report.count(DynamicModelImportStatus.ATTACHED));
+        assertEquals("CDC6T",report.failures().getFirst().sourceModelName());
+        assertTrue(report.failures().getFirst().message().contains("No static DC-link owner named North DC"));
+        assertFalse(report.isStrictlyComplete());
+    }
+
+    @Test
     void directPssEDynamicParserRejectsPslfDydInput() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyd = tempDir.resolve("wrong-format.dyd");
@@ -43,6 +93,29 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
 
         assertTrue(error.getMessage().contains("GE PSLF .dyd is not PSS/E DYR input"));
         assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1"));
+    }
+
+    @Test
+    void exdc2aVendorRecordIsNotSilentlyTreatedAsNativeExdc2() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("vendor-exdc2a.dyr");
+        Files.writeString(dyr, "1 'EXDC2A' '1' .02 40 .05 .5 1 10 -10 1 .6 "
+                + ".03 1 .25 3 0 4 0 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals("EXDC2A", parser.getLastImportReport().failures().get(0).sourceModelName());
+        assertTrue(parser.getLastImportReport().failures().get(0).message()
+                .contains("Switch parameter is not Tf2"));
+        assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+
+        // The supported native name uses Switch in slot J+11, not a second lag.
+        Files.writeString(dyr, "1 'EXDC2' '1' .02 40 .05 .5 1 10 -10 1 .6 "
+                + ".03 1 0 3 0 4 0 /\n");
+        parser.parseDynFile(dyr.toString());
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertEquals(com.interpss.dstab.controller.exc.exdc2.Exdc2Exciter.class,
+                builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter().getClass());
     }
 
     @Test
@@ -83,7 +156,7 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         Files.writeString(dyr, "1 'GENROU' '1' 8.0 /\n"
                 + "2 'GENROU' '1' 8.0 0.03 0.4 0.05 5.0 3.0 "
                 + "1.8 1.7 0.3 0.55 0.25 0.15 0.10 0.20 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true).setIgnoreMissingHosts(false);
 
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
 

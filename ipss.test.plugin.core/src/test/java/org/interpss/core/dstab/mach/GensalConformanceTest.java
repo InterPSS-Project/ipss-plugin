@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -20,6 +22,33 @@ import com.interpss.dstab.util.sample.SampleDStabCase;
 /** Equation-level conformance checks for the shared core GENSAL model. */
 public class GensalConformanceTest extends TestSetupBase {
     private static final double TOL = 1.0e-8;
+
+    @ParameterizedTest
+    @CsvSource({"0.98, 0", "1.02, 0", "0.98, 2", "1.02, 2"})
+    void nativeMechanicalStagesConvertMechanicalPowerAndDampingToTorque(
+            double speed, double psseDamping) throws Exception {
+        BaseDStabNetwork<?, ?> network = SampleDStabCase.createDStabTestNet();
+        SalientPoleMachine machine = new DStabNetworkBuilder(network).addGensal(
+                "Gen", "G1", 100.0, 1.0, 5, .05, .07, 3.5, psseDamping,
+                1.8, 1.7, .3, .2, .1, 0, 0);
+        machine.setSpeed(speed);
+        machine.setAngle(.4);
+        machine.setPm(.8);
+        machine.setPe(.6);
+        double step = .0005;
+        double damping = psseDamping * (speed - 1);
+        double first = ((.8 - damping) / speed - .6) / 7;
+        double predicted = speed + step * first;
+        double predictedAngle = .4 + step * (speed - 1) * 2 * Math.PI * network.getFrequency();
+        assertTrue(machine.nextStepMechanical(step, DynamicSimuMethod.MODIFIED_EULER, network, 0));
+        assertEquals(predicted, machine.getSpeed(), 1.e-14);
+        assertEquals(predictedAngle, machine.getAngle(), 1.e-14);
+        double second = ((.8 - psseDamping * (predicted - 1)) / predicted - .6) / 7;
+        assertTrue(machine.nextStepMechanical(step, DynamicSimuMethod.MODIFIED_EULER, network, 1));
+        assertEquals(speed + .5 * step * (first + second), machine.getSpeed(), 1.e-14);
+        assertEquals(.4 + .5 * step * (speed + predicted - 2)
+                * 2 * Math.PI * network.getFrequency(), machine.getAngle(), 1.e-14);
+    }
 
     @Test
     void salientPoleStatesFieldCurrentTorqueAndNortonInjectionMatchReference() throws Exception {

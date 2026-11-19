@@ -1,6 +1,8 @@
 package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -13,6 +15,36 @@ import org.junit.jupiter.api.Test;
 
 /** Guards the source-neutral, in-code checkpoint stores used by public regression tests. */
 public class ReferenceArtifactManifestIntegrityTest {
+    @Test
+    void everyNativeCheckpointMatchesItsFixedFingerprint() {
+        assertEquals(63, EmbeddedNativeTrajectoryValues.checkpointPaths().size());
+        for (String key : EmbeddedNativeTrajectoryValues.checkpointPaths()) {
+            Path path = Path.of(key);
+            byte[] checkpoint = EmbeddedNativeTrajectoryValues.bytes(path);
+            EmbeddedNativeTrajectoryValues.verifyCheckpoint(path, checkpoint);
+            // Existing trajectory tests use this API; its result must stay fixed
+            // when the supplied data are damaged.
+            String expected = EmbeddedNativeTrajectoryValues.manifest(
+                    path.resolveSibling("manifest.json"));
+            assertEquals(64, expected.length(), key);
+            checkpoint[checkpoint.length - 1] ^= 1;
+            assertThrows(IllegalArgumentException.class,
+                    () -> EmbeddedNativeTrajectoryValues.verifyCheckpoint(path, checkpoint), key);
+            assertEquals(expected, EmbeddedNativeTrajectoryValues.manifest(
+                    path.resolveSibling("manifest.json")), key);
+        }
+    }
+
+    @Test
+    void unknownNativeCheckpointCannotAcquireAComputedFingerprint() {
+        assertThrows(IllegalArgumentException.class,
+                () -> EmbeddedNativeTrajectoryValues.verifyCheckpoint(
+                        Path.of("unknown", "psse.csv"), new byte[0]));
+        assertThrows(IllegalArgumentException.class,
+                () -> EmbeddedNativeTrajectoryValues.manifest(
+                        Path.of("unknown", "manifest.json")));
+    }
+
     @Test
     void zeroTimeNativeFixturesMatchTheirManifest() throws Exception {
         for(String model:new String[]{"SCRX","ESST4B","AC1C","AC2C","AC3C","AC7B","REXSYS","GASTWDD","GAST2AD"}) {

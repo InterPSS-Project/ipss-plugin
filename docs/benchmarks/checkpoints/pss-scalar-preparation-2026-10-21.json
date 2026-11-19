@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "description": "PSS2A scalar preparation screening; not a new selected performance checkpoint.",
+  "baseline_checkpoint": "docs/benchmarks/checkpoints/st1-generated-inputs-2026-10-21.json",
+  "profile_index": "docs/benchmarks/checkpoints/dynamic-device-profile-2026-10-21.json",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-pss-scalar-preparation/evidence.zip",
+  "archive_sha256": "e681be36620b5ff5a2f1f023294fcf5fae96fe8861817afaf7eb3825a38a2c7c",
+  "archive_bytes": 4869369,
+  "sources": {
+    "ipss.plugin.core/src/main/java/org/interpss/dstab/control/pss/ieee/y1992/pss2a/Pss2aDirectEvaluation.java": "3ad9e049cb53e9c6f9eb8b24d5788fcb45c770ebc286bdf3eb370dbcd3c5edc8",
+    "ipss.test.plugin.core/src/test/java/org/interpss/dstab/control/pss/ieee/y1992/pss2a/Pss2aScalarPreparationTest.java": "8233969ce958ff4f48b547444cba22c8c6a29260e098c1bf587adaf0ce8a771a",
+    "ipss.test.plugin.core/src/test/java/org/interpss/CorePluginTestSuite.java": "2d2295b9f3f7d12498094a605d690b79da1e991c2b08c75b858eb1158e7d0ff0"
+  },
+  "initial_screen": [
+    {
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        11.1692438,
+        10.8834024,
+        10.6209348,
+        10.4566829,
+        11.0053146
+      ],
+      "median_s": 10.8834024,
+      "min_s": 10.4566829,
+      "max_s": 11.1692438,
+      "compilation_ms": [
+        599,
+        209,
+        95,
+        82,
+        150
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      }
+    },
+    {
+      "case": 1,
+      "variant": "baseline",
+      "seconds": [
+        11.7377274,
+        11.1063008,
+        10.9812961,
+        10.8581612,
+        10.9610472
+      ],
+      "median_s": 10.9812961,
+      "min_s": 10.8581612,
+      "max_s": 11.7377274,
+      "compilation_ms": [
+        604,
+        207,
+        98,
+        93,
+        148
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      }
+    },
+    {
+      "case": 2,
+      "variant": "candidate",
+      "seconds": [
+        8.329245,
+        7.8249565,
+        8.127408,
+        7.7346406,
+        7.4636052
+      ],
+      "median_s": 7.8249565,
+      "min_s": 7.4636052,
+      "max_s": 8.329245,
+      "compilation_ms": [
+        580,
+        131,
+        270,
+        79,
+        40
+      ],
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+      }
+    }
+  ],
+  "refined_screen": [
+    {
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        11.5137481,
+        11.1120666,
+        10.9309274,
+        10.9200055,
+        11.2428823
+      ],
+      "median_s": 11.1120666,
+      "min_s": 10.9200055,
+      "max_s": 11.5137481,
+      "compilation_ms": [
+        607,
+        209,
+        100,
+        84,
+        159
+      ],
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c"
+      }
+    },
+    {
+      "case": 2,
+      "variant": "candidate",
+      "seconds": [
+        8.1416404,
+        7.6509808,
+        8.0308798,
+        7.5288336,
+        7.5695018
+      ],
+      "median_s": 7.6509808,
+      "min_s": 7.5288336,
+      "max_s": 8.1416404,
+      "compilation_ms": [
+        595,
+        130,
+        275,
+        81,
+        51
+      ],
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+      }
+    }
+  ],
+  "case34": [
+    {
+      "case": 3,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "unchanged_partial_recordings": {
+        "full-network.bin": "1ba9894bc281b8759d25bedfc27e4d3db30aa3b1ada9c9df77a030a30e85eddc",
+        "full-network-channels.json": "3d7ab40642dfb0b59e8a9afe8d790f0d80b2d72cdaf0ddcc4290a4b1080a140c",
+        "interpss.csv": "4ae9e78e69094faf72733ba0653b6f8c21f34af41f33101c6ee1a945e0d1446a"
+      }
+    },
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333",
+      "unchanged_partial_recordings": {
+        "full-network.bin": "4aeebabdb983e3b6ae8fb6f594aaed62ebb310a448ca92b1afd72d37aff9888e",
+        "full-network-channels.json": "9dddd524a1d0c5fca112ab60c86c65e662939c3cf58312c63cf48c4359cd7b63",
+        "interpss.csv": "64fc2ebb51cdfda9209f4f80b2bc434e25de814ea0edb0625c86105dcb07383b"
+      }
+    }
+  ],
+  "limitations": [
+    "Twelve warmups and five measured repetitions; JIT remains active. Timing ranges overlap.",
+    "Refined candidate uses the preceding baseline screening; no new full warmup qualification.",
+    "Independent-reference accuracy remains unresolved.",
+    "Uncommitted ST1 observation caches are excluded."
+  ],
+  "retained_implementation": "Scalar preparation only; original live algebraic classification retained",
+  "rejected_experiment": "Plan-time algebraic classification cache; Case 1 screening did not improve",
+  "validation": "Five focused tests passed; full Case 1/2 observations and Case 3/4 failure prefixes match the retained baseline byte for byte."
+}

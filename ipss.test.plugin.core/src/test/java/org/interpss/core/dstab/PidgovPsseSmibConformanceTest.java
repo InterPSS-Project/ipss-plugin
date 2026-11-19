@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
+import com.interpss.dstab.controller.gov.pidgov.PssePidgovdGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;

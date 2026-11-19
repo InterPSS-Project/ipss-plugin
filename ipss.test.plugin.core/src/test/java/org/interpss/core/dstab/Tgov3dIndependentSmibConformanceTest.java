@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,8 +14,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.test.TestConfig;
 import org.interpss.core.dstab.reference.Tgov3dPsseReference;
-import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.gov.tgov3.PsseTgov3dGovernor;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -34,7 +34,7 @@ public class Tgov3dIndependentSmibConformanceTest {
     @Test
     void threeCycleFaultMatchesPsseBoundaryMachineAndGovernorStates() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_tgov3d.dyr").toString());
         var network = context.getDStabilityNet();
@@ -48,7 +48,7 @@ public class Tgov3dIndependentSmibConformanceTest {
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
         List<double[]> actual = new ArrayList<>();
-        algorithm.setSolver(new com.interpss.dstab.algo.defaultImpl.DStabSolverImpl(algorithm) {
+        var solver = new com.interpss.dstab.algo.defaultImpl.DStabSolverImpl(algorithm) {
             { converge_tol = 1.e-6; setMaxIterationTimes(100); }
             @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                     throws com.interpss.dstab.common.DStabSimuException {
@@ -58,7 +58,15 @@ public class Tgov3dIndependentSmibConformanceTest {
                 record(actual, algorithm.getSimuTime(), network, m, ref,
                         (PsseTgov3dGovernor) m.getGovernor(), 0.0);
             }
+        };
+        // Record the pre-event side before the event is applied; the rebase records the post-event side.
+        solver.setEventBoundaryObserver((time, left) -> {
+            if (!left) return;
+            var m = (RoundRotorMachine) network.getMachine("Bus1-mach1");
+            record(actual, time, network, m, network.getMachine("Bus2-mach1"),
+                    (PsseTgov3dGovernor) m.getGovernor(), 0.0);
         });
+        algorithm.setSolver(solver);
         assertTrue(algorithm.initialization(), "GENROU + TGOV3D SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");

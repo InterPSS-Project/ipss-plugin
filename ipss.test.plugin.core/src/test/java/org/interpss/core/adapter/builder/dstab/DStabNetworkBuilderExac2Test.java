@@ -12,8 +12,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
+import com.interpss.dstab.controller.exc.exac2.Exac2Data;
+import com.interpss.dstab.controller.exc.exac2.Exac2Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -31,6 +31,22 @@ import com.interpss.dstab.mach.Machine;
 public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
     private static final double TOL=1e-8;
     @TempDir Path tempDir;
+
+    @Test void loadedMachineUsesTheSameFieldCurrentBaseAtInitializationAndRuntime()throws Exception {
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        Path dyr=tempDir.resolve("field-base.dyr");
+        Files.writeString(dyr,"1 'EXAC2' '1' 0 0 0 300 .066667 8 -8 20 105 -85 .3 10 1 .03 1.2 .3 .4 1 4.4 3.3 .01 4.4 .08 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var algorithm=DStabObjectFactory.createDynamicSimuAlgorithm(builder.getDStabNetwork());
+        algorithm.setSimuStepSec(.0005);algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());assertTrue(algorithm.initialization());
+        var machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var exciter=(Exac2Exciter)machine.getExciter();double initial=exciter.getOutput(machine);
+        assertNotEquals(machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.MACHINE),
+                machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.EXCITER),1e-5);
+        for(int i=0;i<100;i++)step(exciter,machine,.0005);
+        assertEquals(initial,exciter.getOutput(machine),1e-10,"Unchanged machine boundary must remain at equilibrium");
+    }
 
     @Test void parsesNativeRecordInitializesAndResponds() throws Exception {
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
@@ -87,6 +103,22 @@ public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
             }
         }
         assertTrue(maxError<1e-12,"EXAC2 blockwise modified-Euler max error="+maxError);
+    }
+
+    @Test void negativeSaturationInterceptUsesAbsoluteCutoffInInitializationAndFeedback() throws Exception {
+        Exac2Data data=baseData();
+        // Independent synthetic fit with A=-2 and B=1/32.
+        data.setE1(2.0); data.setSe1(.25); data.setE2(8.0); data.setSe2(.390625);
+        Fixture fixture=fixture(data);
+        Exac2Exciter exciter=fixture.exciter();
+        assertEquals(1.2,exciter.getInternalFieldVoltage(),TOL);
+        assertEquals(1.2,exciter.getFieldVaule("this.vfe.y"),TOL);
+        assertEquals(1.8,exciter.getRegulatorOutput(),TOL);
+        assertEquals(0.0,exciter.saturation.eval(new double[]{2.0}),0.0);
+        assertTrue(exciter.saturation.eval(new double[]{Math.nextUp(2.0)})>.249);
+        assertEquals(.390625,exciter.saturation.eval(new double[]{8.0}),TOL);
+        step(exciter,fixture.machine(),.001);
+        assertEquals(1.2,exciter.getOutput(fixture.machine()),TOL);
     }
 
     @Test void publishedGateAndInitializationEquationsAreApplied() throws Exception {

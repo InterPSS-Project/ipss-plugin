@@ -31,6 +31,8 @@ public record WeccModelApproval(
         comments = clean(comments);
     }
 
+    /** Runtime-path presence for this family mapping, not complete source-name,
+     * version/alias coverage, equation conformance or trajectory acceptance. */
     public boolean isImplementedExactly() {
         return !interpssModel.isEmpty()
                 && DynamicModelCatalog.find(interpssModel)
@@ -41,8 +43,8 @@ public record WeccModelApproval(
     /** True when the WECC row defines a native PTI PSS/E dynamic-model name. */
     public boolean hasPsseModel() {
         return !psseModel.isEmpty()
-                && !psseModel.equalsIgnoreCase("Not used")
-                && !psseModel.equalsIgnoreCase("Not converted");
+                && !psseModel.toLowerCase(Locale.ROOT).startsWith("not used")
+                && !psseModel.toLowerCase(Locale.ROOT).startsWith("not converted");
     }
 
     private static String normalize(String value) {

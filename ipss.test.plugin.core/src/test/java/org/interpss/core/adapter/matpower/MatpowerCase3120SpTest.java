@@ -148,6 +148,45 @@ public class MatpowerCase3120SpTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testCase3120SpPowerFlowWithAdjustmentsDisabled() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE3120SP_FILE);
+		long offlineGeneratorBuses = net.getBusList().stream()
+				.filter(bus -> !bus.getContributeGenList().isEmpty()
+						&& bus.getContributeGenList().stream().noneMatch(gen -> gen.isActive()))
+				.filter(bus -> !bus.isGenPV())
+				.count();
+		assertEquals(101, offlineGeneratorBuses);
+		long fixedZeroGenerators = net.getBusList().stream()
+				.flatMap(bus -> bus.getContributeGenList().stream())
+				.filter(gen -> gen.isActive() && gen.getQGenLimit().getMax() == 0.0
+						&& gen.getQGenLimit().getMin() == 0.0)
+				.count();
+		assertEquals(107, fixedZeroGenerators);
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+		net.getBusLoadLowVoltConfig().setApplyVoltAdjust(false);
+		algo.setTolerance(1e-8);
+		algo.setMaxIterations(30);
+		for (int solve = 0; solve < 2; solve++) {
+			assertTrue(algo.loadflow(), () -> algo.getTerminationReport().toString());
+			for (AclfBus bus : net.getBusList()) {
+				boolean online = bus.getContributeGenList().stream().anyMatch(gen -> gen.isActive());
+				if (online && !bus.isSwing()) {
+					assertTrue(bus.isGenPV(), bus.getId());
+					assertEquals(bus.getDesiredVoltMag(), bus.getVoltageMag(), 1e-8, bus.getId());
+				}
+			}
+		}
+		assertEquals(fixedZeroGenerators, net.getBusList().stream()
+				.flatMap(bus -> bus.getContributeGenList().stream())
+				.filter(gen -> gen.isActive() && gen.getQGenLimit().getMax() == 0.0
+						&& gen.getQGenLimit().getMin() == 0.0)
+				.count());
+	}
+
+	@Test
 	public void testCase3120SpNonDivergentPowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE3120SP_FILE);
 		net.setPolarCoordinate(false);

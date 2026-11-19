@@ -18,7 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1Governor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

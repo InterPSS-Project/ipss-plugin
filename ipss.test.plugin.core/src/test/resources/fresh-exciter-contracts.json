@@ -1,0 +1,1735 @@
+{
+  "schema": "fresh-exciter-numerical-projection-v1",
+  "profiles": [
+    {
+      "model": "ac7c",
+      "source_sha256": "48ade869cc16c1fa3c75a81bd1c543414df25ef93d8a2955963f3455d2b8c078",
+      "numeric_sha256": "12f32e8076f6f513a66ff6937cd6c6c5298f4d1be39e99047e6cedebe8f06733",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\VE"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\PI"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\Derivative"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\VA"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:6",
+          "Exciter State\\VF or Feedback"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac7c.dyr",
+          "sha256": "f25f396605b7d3956c508d80535e225589d1b253b93b1809b0530f1c739e2430"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac7c_powerworld.dyr",
+          "sha256": "b113c870b49e7ae487e4daac2e9d22fcb95b157b75ff76df693fb5b0a4617560"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac7c.json",
+          "sha256": "2f7702ee373938bea890fddda730b1b747bf9ceaad3d01aad81f2418632777b3"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac7c.dyr",
+          "sha256": "f25f396605b7d3956c508d80535e225589d1b253b93b1809b0530f1c739e2430"
+        }
+      }
+    },
+    {
+      "model": "ac8c",
+      "source_sha256": "d81a84c6121f6ef90bc312c45c2b33ae1dbf9c37a1b6e7a44ce27aaf38b4c388",
+      "numeric_sha256": "140df09e951cc3d3f5de9143996fb9387206e8c83eea55f5abc8ea10a74935a8",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\VE"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\Derivative"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\Integral"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8c.dyr",
+          "sha256": "8449c70b6cab29055d73c1f165a087f7076e52e1f7ae1b2d4427ac065c066cb4"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8c_powerworld.dyr",
+          "sha256": "0e232c2f7c3ef2e5e482953a704eee608de9c98396981784625633c5409f3162"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac8c.json",
+          "sha256": "7b290786801e9d774cecfddfce999e864cd569614f0e4987a465fc1afd8d058a"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8c.dyr",
+          "sha256": "8449c70b6cab29055d73c1f165a087f7076e52e1f7ae1b2d4427ac065c066cb4"
+        }
+      }
+    },
+    {
+      "model": "ac9c",
+      "source_sha256": "fe7cae7823d88bee00bba39c8e08981940ed19607530208b3a12b73c264d5c90",
+      "numeric_sha256": "bbdc1a37c7c92480e49994e10ef886818a871323f981434b0a3c10442bc93a21",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\VE"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\Derivative"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\Integral"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:6",
+          "Exciter State\\VAVR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:7",
+          "Exciter State\\VF"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac9c.dyr",
+          "sha256": "746ceb58782137cff81d0151bf41bb9c381633b0ec1cfbc70b0d331590754a98"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac9c_powerworld.dyr",
+          "sha256": "8ee01a4b48bf33a22858a4c79827c0be1f166fbc6f938ac7a360d815ed6a771b"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac9c.json",
+          "sha256": "2b53cb9fb546d6877d3a63d2941d945dc7ac9a7ee08d3e7547cc2ed58a5e4739"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac9c.dyr",
+          "sha256": "746ceb58782137cff81d0151bf41bb9c381633b0ec1cfbc70b0d331590754a98"
+        }
+      }
+    },
+    {
+      "model": "dc1c",
+      "source_sha256": "cc2d8c3823287ab13b70e737e5bcdef51c2c140dd54e10cb4f53b2a852966abd",
+      "numeric_sha256": "5264efe4db1c0139b6083072d31fd0597fb89066d06138568c4aa03d4b3f10b7",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\EField"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\VF"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\Lead-Lag"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc1c.dyr",
+          "sha256": "d96e84034f660a40c472eef250d62fe377715ed6ccba454ad3c03fef85ab5484"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc1c_powerworld.dyr",
+          "sha256": "83a85c05e1e8795233278d3818abac2ad1872589a26cf68684c874fa49dca15f"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-dc1c.json",
+          "sha256": "f81d5fc7e9b43c99ad6991a23a3b92bdcac380ff08607d966e29b284a40d0159"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc1c.dyr",
+          "sha256": "d96e84034f660a40c472eef250d62fe377715ed6ccba454ad3c03fef85ab5484"
+        }
+      }
+    },
+    {
+      "model": "dc2c",
+      "source_sha256": "f3f4312aa537048e29c0f7ddf9a15450f55459277c690c3caabd9d09bb14ea65",
+      "numeric_sha256": "598b31461c2a7e686135530abd061faacb21758edeb8b2e5c8c8e5b138df7988",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\EField"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\VF"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\Lead-Lag"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc2c.dyr",
+          "sha256": "6ac1af43b140f9a38978637af56f63d181e038378dbecb3fa462e5ee4c9d3838"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc2c_powerworld.dyr",
+          "sha256": "daef29c33385e2cd21f9671749fc2a6881fa91d295954a4a66f24e9f8237d848"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-dc2c.json",
+          "sha256": "b7710ab05e9c6f40718117acf0c46653d22aa2444fa47cb70ebf630aa10ad91b"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc2c.dyr",
+          "sha256": "6ac1af43b140f9a38978637af56f63d181e038378dbecb3fa462e5ee4c9d3838"
+        }
+      }
+    },
+    {
+      "model": "ac8b",
+      "source_sha256": "dbb14c9a3f570698baab7132c2d0710db4d9f0aba4c70864046648aac3629082",
+      "numeric_sha256": "59676dd49bf87e12e5f5c638da894fa436a47c7e6db372aacfb2402453953828",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\EFD"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\Derivative Controller"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\Integral Controller"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8b_powerworld.dyr",
+          "sha256": "3c58a6bd2b28061d76398481b59b3b6ef407639abd0eddf0607c29f8d0c71f06"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8b_powerworld_pti.dyr",
+          "sha256": "3e1022e0a8a31fd4e325cc26f8881a0fbe97512c8ff472bfd8d344d896a3ac83"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac8b.json",
+          "sha256": "57d6bcb2ae89a253816e6a3a4f759ca08fecd4ad1171ee3dc9df904c020d0dd9"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8b_independent.dyr",
+          "sha256": "3c58a6bd2b28061d76398481b59b3b6ef407639abd0eddf0607c29f8d0c71f06"
+        }
+      }
+    },
+    {
+      "model": "exac1a",
+      "source_sha256": "2b940b739dfebfc3e477cbd07b9c14bcd1ea032e1de260cab21d605ad0883eba",
+      "numeric_sha256": "3de4bfbec392bde3b2c2e508fef1a31b7054cf7c5f4c293c95429ec1a3727b02",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\VE"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\VLL"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\VF"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_exac1a_powerworld.dyr",
+          "sha256": "818b6864b2f8f09e14a7bf77a53f620bc0c3a32028cea2cf169034c381cc5d62"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-exac1a.json",
+          "sha256": "b80c4297328da3cfb134eb06ec2b574646fc45aa17ca2042968b7dfc48420ad0"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_exac1a_independent.dyr",
+          "sha256": "818b6864b2f8f09e14a7bf77a53f620bc0c3a32028cea2cf169034c381cc5d62"
+        }
+      }
+    },
+    {
+      "model": "st2c",
+      "source_sha256": "ad9d838d2c1e51a2a3e1ba0bfd98e0224af5317ff83554ae14ef52d7de88fcbc",
+      "numeric_sha256": "fa3b41ad0237c88ddb1525dce3eccfc6f39870158d1dc31e0b2cfc0d7423a39a",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\EFD"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\VF"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\IntegratorKIr"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:6",
+          "Exciter State\\State  6"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st2c_powerworld.dyr",
+          "sha256": "c6d7cf721f8115913656e02d2e05b02d6d9ad61602577e8ad017d2eaeb48b5df"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-st2c.json",
+          "sha256": "3ea8e6d77de65f371a43e152f0c12ded8315daf0bd7408c67d02cb570242be33"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st2c.dyr",
+          "sha256": "eaa5b978eab4815768ab2d22c41fa64b98f335a43b0daaedf9d3190f5b2e3368"
+        }
+      }
+    },
+    {
+      "model": "st3c",
+      "source_sha256": "c9536aa90b8f639a7e516265fb0d281023a698a158e08be91f3468b29711b655",
+      "numeric_sha256": "c6e74ec794e5c0d5d7f2852ab4721d83dfd46b13baa24043604af98432620595",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\VM"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\VR"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\LL"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\IntegratorKIr"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:6",
+          "Exciter State\\State  6"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st3c_powerworld.dyr",
+          "sha256": "ebb434a190d75ebd7ef842964c2b7c372e9e8ee37bb3bb6a54f7b712daa0c0ae"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-st3c.json",
+          "sha256": "ee8a80553a9b237d4ecb11e20f62a5c4f25d8e4dfe6e7e46bdf62c4e807214a5"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st3c.dyr",
+          "sha256": "36a67a5d79115dc9fac039e4bf817bc46c4be478cd094c073a7a7eae9c361d02"
+        }
+      }
+    },
+    {
+      "model": "st5c",
+      "source_sha256": "128cda1142581255b61bd2971c397d2365bf516758ec7992fb4a91a80b577320",
+      "numeric_sha256": "7ca84a159d9aad9a1fe577dad0a5f3acc104298604435e30d74228d883cb36f1",
+      "samples": 2003,
+      "fields": [
+        [
+          "Bus",
+          "1",
+          "GENERATOR_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Bus",
+          "2",
+          "INFINITE BUS_100.0",
+          "TSVpu",
+          "V pu"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMW",
+          "MW"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMvar",
+          "Mvar"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:1",
+          "Machine State\\Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:2",
+          "Machine State\\Speed w"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:3",
+          "Machine State\\Eqp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:4",
+          "Machine State\\PsiDp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:5",
+          "Machine State\\PsiQpp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSMachineState:6",
+          "Machine State\\Edp"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:1",
+          "Exciter State\\Efd"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:2",
+          "Exciter State\\Sensed Vt"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:3",
+          "Exciter State\\LL1"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:4",
+          "Exciter State\\LL2"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:5",
+          "Exciter State\\LLU1"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:6",
+          "Exciter State\\LLU2"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:7",
+          "Exciter State\\LLO1"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSExciterState:8",
+          "Exciter State\\LLO2"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "1 1",
+          "GENERATOR_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSRotorAngle",
+          "Rotor Angle"
+        ],
+        [
+          "Generator",
+          "2 1",
+          "INFINITE BUS_100.0 1",
+          "TSSpeed",
+          "Speed"
+        ]
+      ],
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st5c_powerworld.dyr",
+          "sha256": "a6b26d9a0ba42be246b9df531b9d40ec8dc5f168e806771cde16a79cc3904cc6"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-st5c.json",
+          "sha256": "5fdb12a34dae73cf8efcc6904c48cd791b33eec33ab36540380b67ba238f9dea"
+        }
+      },
+      "running_inputs": {
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st5c.dyr",
+          "sha256": "d93d997b6ab64b16c23f568ea3e7b1873c029b3d253c65a2eb9287c22998ed56"
+        }
+      }
+    }
+  ]
+}

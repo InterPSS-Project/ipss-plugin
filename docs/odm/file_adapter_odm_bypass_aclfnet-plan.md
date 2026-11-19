@@ -1,15 +1,15 @@
 ---
 name: ODM Bypass Direct Adapters
-overview: Replace the two-stage ODM-based import pipeline (File -> ODM XML -> AclfNetwork) with direct file-to-model adapters for all ACLF formats (PSS/E RAW/JSON, IEEE CDF, MATPOWER, UCTE, GE, PWD, BPA, and CIM/CGMES), eliminating the ipss-odm dependency for import and the XML intermediate representation.
+overview: Replace the two-stage ODM-based import pipeline (File -> ODM XML -> AclfNetwork) with direct file-to-model adapters for all ACLF formats (RAW/JSON, IEEE CDF, MATPOWER, UCTE, GE, PWD, BPA, and CIM/CGMES), eliminating the ipss-odm dependency for import and the XML intermediate representation.
 todos:
   - id: phase1-builder
     content: "Phase 1: Create AclfNetworkBuilder -- shared model-construction utility extracted from AclfBusDataHelper, AclfBranchDataHelper, AclfHvdcDataHelper, and AbstractODMAclfNetMapper"
     status: completed
   - id: phase2-psse-raw
-    content: "Phase 2: Create PSSEDirectParser for PSS/E RAW format -- port parsing logic from 18 ODM record mappers, handle v26-v36 version differences"
+    content: "Phase 2: Create PSSEDirectParser for RAW format -- port parsing logic from 18 ODM record mappers, handle v26-v36 version differences"
     status: completed
   - id: phase3-psse-json
-    content: "Phase 3: Create PSSEJsonDirectParser for PSS/E JSON (RAWX) format"
+    content: "Phase 3: Create PSSEJsonDirectParser for reference simulator JSON (RAWX) format"
     status: completed
   - id: phase4-ieee-cdf
     content: "Phase 4a: Create IEEE CDF direct adapter"
@@ -46,8 +46,8 @@ isProject: false
 
 | Format | Facade | Direct parser package |
 |--------|--------|------------------------|
-| PSS/E RAW | `PTIFormat` | `org.interpss.fadapter.psse.PSSEDirectParser` |
-| PSS/E JSON (RAWX) | `PTIFormat` / DSL | `org.interpss.fadapter.psse.PSSEJsonDirectParser` |
+| RAW | `PTIFormat` | `org.interpss.fadapter.psse.PSSEDirectParser` |
+| reference simulator JSON (RAWX) | `PTIFormat` / DSL | `org.interpss.fadapter.psse.PSSEJsonDirectParser` |
 | IEEE CDF | `IeeeCDFFormat` | `org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser` |
 | MATPOWER | `MatpowerFormat` | `org.interpss.fadapter.matpower.MatpowerDirectParser` |
 | UCTE-DEF | `UCTEFormat` | `org.interpss.fadapter.ucte.UCTEDirectParser` |
@@ -154,7 +154,7 @@ public class AclfNetworkBuilder {
 }
 ```
 
-### Phase 2: PSS/E RAW Direct Adapter
+### Phase 2: RAW Direct Adapter
 
 Create `org.interpss.fadapter.psse.PSSEDirectParser` and update `PTIFormat` to use it. This is the most complex format with ~18 record types and version-specific handling (v26-v36).
 
@@ -188,7 +188,7 @@ Version-specific section ordering (existing logic to preserve):
 - v34+: switching devices section, GNE, induction motors
 - v36+: voltage droop control, switching device rating sets
 
-### Phase 3: PSS/E JSON (RAWX) Direct Adapter
+### Phase 3: reference simulator JSON (RAWX) Direct Adapter
 
 Create `org.interpss.fadapter.psse.PSSEJsonDirectParser`. Port logic from [PSSEAclfJSonAdapter.java](../../ipss-odm/ieee.odm_pss/src/main/java/org/ieee/odm/adapter/psse/json/impl/PSSEAclfJSonAdapter.java) and its JSON-specific mappers. Uses the same `AclfNetworkBuilder`.
 

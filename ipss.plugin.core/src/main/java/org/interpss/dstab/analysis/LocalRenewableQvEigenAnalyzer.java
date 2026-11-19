@@ -9,9 +9,9 @@ import java.util.Objects;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Repca1Model;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
@@ -53,12 +53,12 @@ public final class LocalRenewableQvEigenAnalyzer {
             throws IpssNumericException {
         Objects.requireNonNull(network, "network");
         List<String> selectedBuses = validateBuses(network, busIds);
-        double[][] coupling = voltageMagnitudeSensitivity(network, selectedBuses);
         List<Device> devices = discoverDevices(network, selectedBuses);
         if (devices.isEmpty()) {
             throw new IllegalArgumentException(
                     "No eligible local-voltage REPC_A/REEC_A/REGC_A devices");
         }
+        double[][] coupling = voltageMagnitudeSensitivity(network, selectedBuses);
         double[][] stateMatrix = stateMatrix(coupling, devices, null, null);
         List<OperatingPointConstraint> constraints = operatingPointConstraints(devices);
         RegionSet regions = limiterRegions(coupling, devices, constraints);
@@ -118,6 +118,9 @@ public final class LocalRenewableQvEigenAnalyzer {
                         || !(gen.getDynamicGenDevice() instanceof Regca1Model converter)) {
                     continue;
                 }
+                if (converter.getEffectiveReactance() > 0.)
+                    throw new IllegalArgumentException("Local current-coordinate Q/V analysis does not support nonzero REGCAU2 Xe: "
+                            + busId + "/" + gen.getId());
                 Reeca1Model reeca = converter.getReeca1Controller();
                 if (reeca == null || reeca.getData().qFlag() != 1
                         || reeca.getData().vFlag() != 1) continue;

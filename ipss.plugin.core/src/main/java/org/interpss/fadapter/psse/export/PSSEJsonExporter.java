@@ -479,10 +479,14 @@ public class PSSEJsonExporter {
 						sourceZ.getReal(), sourceZ.getImaginary(),
 						xfrZ.getReal(), xfrZ.getImaginary(),
 						gen.getXfrTap() != 0.0 ? gen.getXfrTap() : 1.0,
-						gen.isActive() ? 1 : 0, 100.0,
+						gen.isActive() ? 1 : 0,
+                        // Emit the common plant setting on every record. Otherwise
+                        // export ordering can change the effective last-record value.
+                        100.0 * (bus.getPlantMvarControlPFactor() != null
+                                ? bus.getPlantMvarControlPFactor() : gen.getMvarControlPFactor()),
 						limitMax(pLimit, pq.getReal()) * baseMva,
 						limitMin(pLimit, pq.getReal()) * baseMva,
-						0, 1, 1.0, null, null, null, null, null, null,
+						gen.getBaseLoadFlag(), 1, 1.0, null, null, null, null, null, null,
 						0, 1.0, null, nullToEmpty(gen.getName())));
 				wroteGen = true;
 			}
@@ -494,7 +498,7 @@ public class PSSEJsonExporter {
 						bus.getGenQ() * baseMva, bus.getGenQ() * baseMva,
 						bus.getVoltageMag(), busNumber(bus), 0, baseMva,
 						0.0, 0.0, 0.0, 0.0, 1.0,
-						1, 100.0,
+						1, bus.getPlantMvarControlPFactor() != null ? 100.0 * bus.getPlantMvarControlPFactor() : 100.0,
 						bus.getGenP() * baseMva, bus.getGenP() * baseMva,
 						0, 1, 1.0, null, null, null, null, null, null,
 						0, 1.0, null, "Bus aggregate generation"));
@@ -689,7 +693,7 @@ public class PSSEJsonExporter {
 				continue;
 			}
 			Complex z = nonNull(branch.getZ());
-			Complex magY = nonNull(branch.getFromShuntY());
+			Complex magY = windingOneBusShunt(branch);
 			double angleDeg = Math.toDegrees(branch.getFromPSXfrAngle());
 			section.getAsJsonArray("data").add(row(
 					busNumber((AclfBus) branch.getFromBus()),
@@ -743,7 +747,7 @@ public class PSSEJsonExporter {
 		Complex z12 = z1.add(z2);
 		Complex z23 = z2.add(z3);
 		Complex z31 = z3.add(z1);
-		Complex magY = nonNull(fromLeg.getFromShuntY());
+		Complex magY = windingOneBusShunt(fromLeg);
 		AclfBus starBus = (AclfBus) branch3W.getStarBus();
 		return row(
 				busNumber((AclfBus) branch3W.getFromBus()),
@@ -860,13 +864,14 @@ public class PSSEJsonExporter {
 				LimitType invAngle = inv.getFiringAngLimit(UnitType.Deg);
 				LimitType recTap = rec.getXformerTapLimit();
 				LimitType invTap = inv.getXformerTapLimit();
+				var sourceControls = line.getExtensionObject() instanceof com.interpss.core.aclf.hvdc.LccSourceControls controls ? controls : null;
 				section.getAsJsonArray("data").add(row(
 						nullToEmpty(line.getName()),
 						twoTerminalDcMode(line),
 						line.getRdc(UnitType.Ohm),
 						twoTerminalDcSetpoint(line),
 						twoTerminalDcScheduledVoltage(line),
-						0.0,
+						sourceControls == null ? 0.0 : sourceControls.modeTransferKilovolts(),
 						line.getCompondR(UnitType.Ohm),
 						line.getPowerCurrentMargin(),
 						line.getMeterEnd() == ConverterType.RECTIFIER ? "R" : "I",
@@ -876,13 +881,13 @@ public class PSSEJsonExporter {
 						rec.getAcRatedVoltage(UnitType.kV, rec.getBus().getBaseVoltage()),
 						rec.getXformerRatio(), solvedLccTap(line, rec),
 						recTap.getMax(), recTap.getMin(), rec.getXformerTapStepSize(),
-						0, 0, 0, 0, 0, 0.0,
+						0, 0, 0, 0, 0, sourceControls == null ? 0.0 : sourceControls.rectifierCapacitorOhms(),
 						busNumber((AclfBus) inv.getBus()), inv.getNBridges(),
 						invAngle.getMax(), invAngle.getMin(), invZ.getReal(), invZ.getImaginary(),
 						inv.getAcRatedVoltage(UnitType.kV, inv.getBus().getBaseVoltage()),
 						inv.getXformerRatio(), solvedLccTap(line, inv),
 						invTap.getMax(), invTap.getMin(), inv.getXformerTapStepSize(),
-						0, 0, 0, 0, 0, 0.0,
+						0, 0, 0, 0, 0, sourceControls == null ? 0.0 : sourceControls.inverterCapacitorOhms(),
 						lccTapPosition(rec), solvedLccAngle(line, rec),
 						realOrNull(recPower), imaginaryOrNull(recPower),
 						lccTapPosition(inv), solvedLccAngle(line, inv),
@@ -1342,6 +1347,14 @@ public class PSSEJsonExporter {
 		} catch (NumberFormatException e) {
 			return 0;
 		}
+	}
+
+	private static Complex windingOneBusShunt(AclfBranch branch) {
+		Complex shunt = nonNull(branch.getFromShuntY());
+		if (branch.isFromShuntOnBusSide() || shunt.equals(Complex.ZERO)) return shunt;
+		// RAW and RAWX write CM=1, which uses the winding-one bus voltage.
+		double tap = branch.getFromTurnRatio();
+		return shunt.divide(tap * tap);
 	}
 
 	private static Complex nonNull(Complex value) {

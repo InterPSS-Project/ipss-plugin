@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,8 +13,7 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -31,7 +31,7 @@ public class Esst4bIndependentSmibConformanceTest {
     @Test
     void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esst4b.dyr").toString());
         var network = context.getDStabilityNet();
@@ -41,6 +41,11 @@ public class Esst4bIndependentSmibConformanceTest {
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
+        IEEE2005ST4BExciter exciter = (IEEE2005ST4BExciter) network
+                .getMachine("Bus1-mach1").getExciter();
+        // This PowerWorld fixture uses output-freeze PI limits. Native imports
+        // use separate integral-state limits, checked against native cold runs.
+        exciter.getData().setIntegralStateLimits(false);
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
@@ -48,7 +53,6 @@ public class Esst4bIndependentSmibConformanceTest {
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
-        IEEE2005ST4BExciter exciter = (IEEE2005ST4BExciter) machine.getExciter();
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,

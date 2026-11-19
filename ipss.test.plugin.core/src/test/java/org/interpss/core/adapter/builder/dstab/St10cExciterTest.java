@@ -11,9 +11,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
-import org.interpss.dstab.control.exc.psse.st10c.St10cData;
-import org.interpss.dstab.control.exc.psse.st10c.St10cExciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.st10c.St10cData;
+import com.interpss.dstab.controller.exc.st10c.St10cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

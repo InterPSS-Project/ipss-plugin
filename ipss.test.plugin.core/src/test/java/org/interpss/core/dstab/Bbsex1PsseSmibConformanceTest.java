@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Exciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

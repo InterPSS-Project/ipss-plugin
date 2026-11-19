@@ -1,0 +1,674 @@
+{
+  "core_commit": "bc81289c5",
+  "core_source_before": "14e7c4ebacbf92cdad3cd0d0df60294442a3ec45",
+  "status": "lifecycle_correctness_passed_performance_observations_retained",
+  "consolidation_complete": false,
+  "final_rustpower_qualification": false,
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 7878,
+    "totals": {
+      "passed": 7771,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 465,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract:0",
+        "ipss.test.plugin.core:org.interpss.dstab.control.gov.psse.hyg3.Hyg3PreparedCurveTest#equalRevisionsOnDifferentDataOwnersCannotReuseOldPoints:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_lifecycle_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#exceptionClosesOwnedStateAndTheSameSolverCanRecover(String)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#oldObservationOverridesRemainVisibleThroughTheCommonContract": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrSolverLifecycleTest#nonDefaultBridgeUsesOwnedLifecycleInBothCoordinatesAndEveryMode(boolean, NrExecutionMode)[6]": "passed"
+    }
+  },
+  "source_changes_after_full_audit": [],
+  "performance": {
+    "protocol": {
+      "cpu": 2,
+      "affinity_mask": 4,
+      "heap": [
+        "-Xms256m",
+        "-Xmx2g"
+      ],
+      "cold": {
+        "warmups_total": 1,
+        "measurements_per_jvm": 1,
+        "jvms_per_runtime_per_case": 2
+      },
+      "warmed": {
+        "warmups_total": 50,
+        "measurements_per_jvm": 10,
+        "jvms_per_runtime_per_case": 1
+      }
+    },
+    "results": {
+      "activsg25k": {
+        "before": {
+          "one_warmup_ms": [
+            145.0644,
+            138.3339
+          ],
+          "warmed_ms": [
+            54.0591,
+            52.9951,
+            54.2618,
+            57.8992,
+            55.9399,
+            54.9321,
+            54.4014,
+            54.314,
+            58.3459,
+            54.0768
+          ],
+          "warmed_mean_ms": 55.12253,
+          "warmed_median_ms": 54.3577,
+          "warmed_minimum_ms": 52.9951,
+          "warmed_maximum_ms": 58.3459,
+          "accuracy": {
+            "residual_pu": 3.0279286633572156e-08,
+            "voltage_error_pu": 5.495898477540642e-09
+          },
+          "cold_counters": {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 16,
+            "preparedWorkspaceScopes": 2,
+            "stableSolveScopes": 2,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 2,
+            "warmupLoadflowCalls": 1,
+            "measuredLoadflowCalls": 1,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "warmed_counters": {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 480,
+            "preparedWorkspaceScopes": 60,
+            "stableSolveScopes": 60,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 10,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "final_voltage_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+        },
+        "after": {
+          "one_warmup_ms": [
+            141.2923,
+            135.8024
+          ],
+          "warmed_ms": [
+            53.2497,
+            56.3813,
+            54.4696,
+            69.7593,
+            58.6935,
+            53.4512,
+            54.706,
+            53.8409,
+            52.6958,
+            54.8232
+          ],
+          "warmed_mean_ms": 56.20705,
+          "warmed_median_ms": 54.5878,
+          "warmed_minimum_ms": 52.6958,
+          "warmed_maximum_ms": 69.7593,
+          "accuracy": {
+            "residual_pu": 3.0279286633572156e-08,
+            "voltage_error_pu": 5.495898477540642e-09
+          },
+          "cold_counters": {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 16,
+            "preparedWorkspaceScopes": 2,
+            "stableSolveScopes": 2,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 2,
+            "warmupLoadflowCalls": 1,
+            "measuredLoadflowCalls": 1,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "warmed_counters": {
+            "preparations": 1,
+            "scalarEquations": 50000,
+            "structuralEntries": 335468,
+            "factorizedEntries": 773350,
+            "preparedResidualEvaluations": 480,
+            "preparedWorkspaceScopes": 60,
+            "stableSolveScopes": 60,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 10,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "final_voltage_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+        }
+      },
+      "activsg70k": {
+        "before": {
+          "one_warmup_ms": [
+            364.6392,
+            361.1613
+          ],
+          "warmed_ms": [
+            248.4976,
+            253.4563,
+            256.9864,
+            266.3618,
+            255.2315,
+            247.7672,
+            247.1644,
+            248.5,
+            244.9668,
+            248.5751
+          ],
+          "warmed_mean_ms": 251.75071,
+          "warmed_median_ms": 248.53755,
+          "warmed_minimum_ms": 244.9668,
+          "warmed_maximum_ms": 266.3618,
+          "accuracy": {
+            "residual_pu": 6.943662680749712e-10,
+            "voltage_error_pu": 4.389535414791633e-11
+          },
+          "cold_counters": {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 16,
+            "preparedWorkspaceScopes": 2,
+            "stableSolveScopes": 2,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 2,
+            "warmupLoadflowCalls": 1,
+            "measuredLoadflowCalls": 1,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "warmed_counters": {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 480,
+            "preparedWorkspaceScopes": 60,
+            "stableSolveScopes": 60,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 10,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "final_voltage_sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d"
+        },
+        "after": {
+          "one_warmup_ms": [
+            375.449,
+            364.1485
+          ],
+          "warmed_ms": [
+            245.0152,
+            241.1031,
+            239.0409,
+            240.164,
+            242.7078,
+            249.9679,
+            247.7027,
+            251.2251,
+            242.3763,
+            241.0356
+          ],
+          "warmed_mean_ms": 244.03386,
+          "warmed_median_ms": 242.54205,
+          "warmed_minimum_ms": 239.0409,
+          "warmed_maximum_ms": 251.2251,
+          "accuracy": {
+            "residual_pu": 6.943662680749712e-10,
+            "voltage_error_pu": 4.389535414791633e-11
+          },
+          "cold_counters": {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 16,
+            "preparedWorkspaceScopes": 2,
+            "stableSolveScopes": 2,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 2,
+            "warmupLoadflowCalls": 1,
+            "measuredLoadflowCalls": 1,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "warmed_counters": {
+            "preparations": 1,
+            "scalarEquations": 140000,
+            "structuralEntries": 915154,
+            "factorizedEntries": 2458082,
+            "preparedResidualEvaluations": 480,
+            "preparedWorkspaceScopes": 60,
+            "stableSolveScopes": 60,
+            "retainedSymbolicAcrossSolves": 1,
+            "loadflowCalls": 60,
+            "warmupLoadflowCalls": 50,
+            "measuredLoadflowCalls": 10,
+            "initialSolveCountedAsWarmup": 1
+          },
+          "final_voltage_sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d"
+        }
+      }
+    },
+    "measured_solves": 48,
+    "total_solves": 256,
+    "input_sha256": {
+      "activsg25k": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "activsg70k": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba"
+    },
+    "start_sha256": {
+      "activsg70k": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223"
+    },
+    "runtime_fingerprints_unchanged": true,
+    "final_voltage_files_identical_across_runtime_and_protocol": true,
+    "interpretation": "Limited matched observations against the preceding compiled InterPSS checkpoint; no general speedup, persistent cold-regression or final RustPower-target claim."
+  },
+  "completed_plan_items": [
+    "CLEAN-03",
+    "CLEAN-04"
+  ],
+  "remaining": [
+    "specialized contributor and retention-capability contracts",
+    "historical standalone numerical API migration",
+    "complete numerical/interaction coverage closure",
+    "final matched RustPower qualification across all five cases"
+  ],
+  "evidence_root": "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030",
+  "evidence_files": {
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-lifecycle-before-core.patch": {
+      "sha256": "e86112d7ee65699fb25d580c3b814f98677c2bdb64a00b5c2b87e496b63e35f8",
+      "bytes": 38501
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-lifecycle-before-plugin.patch": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-lifecycle-before-source-manifest.json": {
+      "sha256": "b09e99063530f5d073519030a92d411de6d17f2926977e67d833ebf6b9e0b191",
+      "bytes": 1143582
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-lifecycle-full-core.patch": {
+      "sha256": "cd4ee08ce7e917e3aa4c72113cd6be626c312c1d568007b8fc252fccca7cb273",
+      "bytes": 70883
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-lifecycle-full-plugin.patch": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-lifecycle-full-source-manifest.json": {
+      "sha256": "896347896da606d3129ca0bbdb66024ccb43265064078878cf20108b07776048",
+      "bytes": 1144509
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/audit_full.py": {
+      "sha256": "e041ef5f4f061e033e10c431096f23837257ec1bd07fe2f8505d2e87194779fb",
+      "bytes": 2643
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/edit_lifecycle.py": {
+      "sha256": "a55b5f3c50cf239973ba7f5b1e214e8f636c5ae88ffb8a5f7fa5a3c73e419163",
+      "bytes": 7477
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/full-test-audit.json": {
+      "sha256": "3009a4070725102f6e69b0c9279b9b1a1d663ca21df6a64cd4f87549eb3e3fae",
+      "bytes": 2549153
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/initial-test-audit.json": {
+      "sha256": "823a678bde2bd2329c278499229d6624870399f91aaf80cc96e20818f131874e",
+      "bytes": 1072
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/measure_lifecycle.py": {
+      "sha256": "f9df42362c5dd37c17957f88922ae3d278d5f46d200e35d0e7d36ba18045d81f",
+      "bytes": 6534
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/NrSolverLifecycleTest.java": {
+      "sha256": "d42415a7fb2d7e4e74d4257254d36fe2d0ce8af2469a23c9084cf32dc4218b00",
+      "bytes": 7876
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-0-before/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-0-before/activsg25k.m": {
+      "sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "bytes": 4759977
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-0-before/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-0-before/execution-prepared-0.json": {
+      "sha256": "31947f21419a59ae255c0f9dd1fcd36d23a82fffc9ab4836f48115536514e733",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-0-before/interpss-prepared-0.csv": {
+      "sha256": "a8cf8428acdd22d2dbe7db09647699c3b19ede5c883d599b3709c7a21cba0bd6",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-1-after/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-1-after/activsg25k.m": {
+      "sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "bytes": 4759977
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-1-after/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-1-after/execution-prepared-0.json": {
+      "sha256": "2a8e07f36cf8e4d14cd0c109ea768f85856adcd8937d7ee488226fecfa4eaa8a",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-1-after/interpss-prepared-0.csv": {
+      "sha256": "b87f7933cb0e08c8099efccf77ef062f975faee2cc693cd32380cc4815f6f665",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-2-after/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-2-after/activsg25k.m": {
+      "sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "bytes": 4759977
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-2-after/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-2-after/execution-prepared-0.json": {
+      "sha256": "080e97eec7b9d9f30bb46d809610b29e7fda371a9fe1102abe7b9495c3d9e09e",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-2-after/interpss-prepared-0.csv": {
+      "sha256": "c405cc0df5907e60168063b3179ab560c293869474153f224cc785b2cf87739e",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-3-before/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-3-before/activsg25k.m": {
+      "sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "bytes": 4759977
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-3-before/diagnostics-prepared-0.json": {
+      "sha256": "75179c9e95cfbf5983b25e5bb6bd12788ea13e780cc9d95b5aa8932cdada34a5",
+      "bytes": 407
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-3-before/execution-prepared-0.json": {
+      "sha256": "3e6bb6577b82c21305b12170210e2671a9b825ec55f55d445fe9ad10421f2373",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-cold-3-before/interpss-prepared-0.csv": {
+      "sha256": "5fe6434971bc48385cb08e94d45508848fbc08af60306ce01df1f869fbfffcff",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-after/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-after/activsg25k.m": {
+      "sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "bytes": 4759977
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-after/diagnostics-prepared-0.json": {
+      "sha256": "34dce19c3e13ea0304d41bdff42bbfe34cf8cbb6fcd05129fe49f6b01b1c4e0f",
+      "bytes": 413
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-after/execution-prepared-0.json": {
+      "sha256": "5ac5d9ea171955d3635aff0026eba64b4a5bffd360f16fa74e975dd72e9cb857",
+      "bytes": 629
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-after/interpss-prepared-0.csv": {
+      "sha256": "326de0fdeaf94861f0388ae42e95bfa043529209efabd8c75bc040bdbcad1eac",
+      "bytes": 644
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-before/activsg25k-interpss-prepared-0-voltage.csv": {
+      "sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864",
+      "bytes": 1099972
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-before/activsg25k.m": {
+      "sha256": "b93b4a02b3182ce1d3d1ed4c4139217a6b867b1662ffd3e54de3dd134afffb60",
+      "bytes": 4759977
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-before/diagnostics-prepared-0.json": {
+      "sha256": "34dce19c3e13ea0304d41bdff42bbfe34cf8cbb6fcd05129fe49f6b01b1c4e0f",
+      "bytes": 413
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-before/execution-prepared-0.json": {
+      "sha256": "3b03ac93ddd69c07fbf319980e224eb2dd64dca58263a29c2ff5b4ed0a513ce1",
+      "bytes": 629
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg25k-warmed-before/interpss-prepared-0.csv": {
+      "sha256": "a7ef1d128900d225ae307948f14109add93ba060b57de15cb085c766578a88fe",
+      "bytes": 644
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-0-before/activsg70k-interpss-prepared-0-voltage.csv": {
+      "sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d",
+      "bytes": 3088276
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-0-before/activsg70k-start.csv": {
+      "sha256": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223",
+      "bytes": 2586703
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-0-before/activsg70k.m": {
+      "sha256": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+      "bytes": 13833297
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-0-before/diagnostics-prepared-0.json": {
+      "sha256": "3c24fee6c869685ce431440467ed5fa8a0622763a3e3c686f1df5ab16a43428a",
+      "bytes": 409
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-0-before/execution-prepared-0.json": {
+      "sha256": "c381ddee1e4b9465aa8ddc975219fc8a4be352dec8a1afa7bbbf2eef9404f789",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-0-before/interpss-prepared-0.csv": {
+      "sha256": "39214b339e988123a1e4b7d3c65a03dd7e04fa1ce283c673be6ac3fc7686505b",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-1-after/activsg70k-interpss-prepared-0-voltage.csv": {
+      "sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d",
+      "bytes": 3088276
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-1-after/activsg70k-start.csv": {
+      "sha256": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223",
+      "bytes": 2586703
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-1-after/activsg70k.m": {
+      "sha256": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+      "bytes": 13833297
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-1-after/diagnostics-prepared-0.json": {
+      "sha256": "3c24fee6c869685ce431440467ed5fa8a0622763a3e3c686f1df5ab16a43428a",
+      "bytes": 409
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-1-after/execution-prepared-0.json": {
+      "sha256": "886892689054b34b4f4f1e1bdb1e22d5381fb044860524d0a52e0b6d459a91d1",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-1-after/interpss-prepared-0.csv": {
+      "sha256": "04654c2ca500297f9bf5b9b0d7b9ca1e72f79855f1127de71cd5befdc194287a",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-2-after/activsg70k-interpss-prepared-0-voltage.csv": {
+      "sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d",
+      "bytes": 3088276
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-2-after/activsg70k-start.csv": {
+      "sha256": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223",
+      "bytes": 2586703
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-2-after/activsg70k.m": {
+      "sha256": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+      "bytes": 13833297
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-2-after/diagnostics-prepared-0.json": {
+      "sha256": "3c24fee6c869685ce431440467ed5fa8a0622763a3e3c686f1df5ab16a43428a",
+      "bytes": 409
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-2-after/execution-prepared-0.json": {
+      "sha256": "353e63ba7346089e8ddcf99ccdc63582c0f0d0dab41f11e37a56e2d16e969a4d",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-2-after/interpss-prepared-0.csv": {
+      "sha256": "fb481a7af3a0d449326fd3d06589bbb74fd6f25d9645c789a4b3b71c95555c09",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-3-before/activsg70k-interpss-prepared-0-voltage.csv": {
+      "sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d",
+      "bytes": 3088276
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-3-before/activsg70k-start.csv": {
+      "sha256": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223",
+      "bytes": 2586703
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-3-before/activsg70k.m": {
+      "sha256": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+      "bytes": 13833297
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-3-before/diagnostics-prepared-0.json": {
+      "sha256": "3c24fee6c869685ce431440467ed5fa8a0622763a3e3c686f1df5ab16a43428a",
+      "bytes": 409
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-3-before/execution-prepared-0.json": {
+      "sha256": "f515780d51fa84bddd80bf34f74fa13f20b515e8b93fd06c735d0ebd92e7d159",
+      "bytes": 626
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-cold-3-before/interpss-prepared-0.csv": {
+      "sha256": "3849beaa4db746837d2e3b28accacae47d4235bcece946cb609d9370a404dba0",
+      "bytes": 123
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-after/activsg70k-interpss-prepared-0-voltage.csv": {
+      "sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d",
+      "bytes": 3088276
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-after/activsg70k-start.csv": {
+      "sha256": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223",
+      "bytes": 2586703
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-after/activsg70k.m": {
+      "sha256": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+      "bytes": 13833297
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-after/diagnostics-prepared-0.json": {
+      "sha256": "57cce2c347b3bc7497ff8ff9d53f34de5e3b7d824d69b0bb4838ad604be0e0c3",
+      "bytes": 415
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-after/execution-prepared-0.json": {
+      "sha256": "8484582db013f54035e18cd68f15029dc548f32086b5ccb0983be6c991ff2ad2",
+      "bytes": 630
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-after/interpss-prepared-0.csv": {
+      "sha256": "d28a532d210a8357afc15e8ff3228056c11c019498a8e9e49f502b516a06f8ee",
+      "bytes": 654
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-before/activsg70k-interpss-prepared-0-voltage.csv": {
+      "sha256": "9159bceafcdccb55f819a3ac5133b05e3c311030c39981f09d16584c0ebec57d",
+      "bytes": 3088276
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-before/activsg70k-start.csv": {
+      "sha256": "1f2584c1d9116d9af51ce54128577073b802687b396ade5474c5fb5dd10bd223",
+      "bytes": 2586703
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-before/activsg70k.m": {
+      "sha256": "de81dbc4a7350ad56a872b613fadade350b11bfc30213479bd0d4764a1a259ba",
+      "bytes": 13833297
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-before/diagnostics-prepared-0.json": {
+      "sha256": "57cce2c347b3bc7497ff8ff9d53f34de5e3b7d824d69b0bb4838ad604be0e0c3",
+      "bytes": 415
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-before/execution-prepared-0.json": {
+      "sha256": "958fad83a4d933f1eee941111bdbb2d01479d75e8912c597b808270329d5c5f2",
+      "bytes": 630
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/activsg70k-warmed-before/interpss-prepared-0.csv": {
+      "sha256": "9f301ff43feb9cc2b006b89454bf0b3b8699ee9d0e1e1d5996bc03e4b9fa1dc9",
+      "bytes": 654
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/performance/runs.json": {
+      "sha256": "25ce78474fb25e3d2c2f7781c8ad5ba7bad81e196a078d398de5e23f866cb874",
+      "bytes": 219532
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/preserve_unchanged_lines.py": {
+      "sha256": "14d20b1653006c183c68d34b71bcde70b912507a53ab40019de56b701162c7da",
+      "bytes": 1114
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/publish_checkpoint.py": {
+      "sha256": "77c9fbb70f2ba2eb530a1b0bcba400d831435d6b2b4b1bf4e53a2a2f1b33ebf8",
+      "bytes": 4734
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/update_core_document.py": {
+      "sha256": "e55c2a9e4c9f5079b6ae4aa87a3bc08023c0657afbb891210eb05a572cd2b470",
+      "bytes": 1681
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-lifecycle-20261030/update_coverage.py": {
+      "sha256": "9106ca9e8744a534ef28670222d09c4776bf0736800c0b7a2b2c121c2c4f3fc0",
+      "bytes": 2373
+    },
+    "ipss.test.plugin.core/target/nr-lifecycle-full-20261030.log": {
+      "sha256": "b3b08f3ccc2e8a822e6d1777b7b45af00f5083626168d0cb502bfa5a1dca53aa",
+      "bytes": 9155638
+    },
+    "ipss.test.plugin.core/target/nr-lifecycle-full-20261030.log.status.json": {
+      "sha256": "235e8ad5a12313201c2a9078844885b496777702ae87c1be69d62f39ff4c84c7",
+      "bytes": 161
+    },
+    "ipss.test.plugin.core/target/nr-lifecycle-performance-20261030.log": {
+      "sha256": "1ed06f961734a39b4a184ffe94b4edccf6475e741ad62a5a12f379a1ea0f4fbc",
+      "bytes": 1364
+    },
+    "ipss.test.plugin.core/target/nr-lifecycle-performance-20261030.log.status.json": {
+      "sha256": "0ea5876cfc8201885412f8de7208bd6eb555023f2acbedfe5ec9b646ff3d3cb1",
+      "bytes": 158
+    }
+  }
+}

@@ -11,8 +11,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aData;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -26,6 +26,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.MachineIfdBase;
 
 public class DStabNetworkBuilderEsac1aTest extends CorePluginTestSetup {
     private static final double TOL=1e-8;
@@ -133,6 +134,34 @@ public class DStabNetworkBuilderEsac1aTest extends CorePluginTestSetup {
                 exciter.getGatedRegulatorOutput(),TOL);
         exciter.setVoel(exciter.getRegulatorOutput()+.5);assertEquals(exciter.getRegulatorOutput()+.5,
                 exciter.getGatedRegulatorOutput(),TOL);
+    }
+
+    @Test
+    void initializesFeedbackOnExciterBaseAndUsesAbsoluteSaturationCutoff() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        var network = builder.getDStabNetwork();
+        Machine machine = network.getMachine("Bus1-mach1");
+        assertTrue(com.interpss.core.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network).loadflow());
+        assertTrue(machine.initStates(machine.getDStabBus()));
+
+        Esac1aData data = baseData();
+        data.setKc(0.2);
+        data.setKd(0.38);
+        data.setE1(2.355);
+        data.setSe1(0.513);
+        data.setE2(3.14);
+        data.setSe2(0.518);
+        Esac1aExciter exciter = builder.addExcEsac1a("Bus1", "1", data);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+        double fieldCurrent = machine.calculateIfd(MachineIfdBase.EXCITER);
+        assertTrue(Math.abs(fieldCurrent - machine.calculateIfd(MachineIfdBase.MACHINE)) > 0.01);
+        double ve = exciter.getInternalFieldVoltage();
+        assertTrue(ve < 2.54);
+        assertEquals(ve + data.getKd() * fieldCurrent, exciter.getRegulatorOutput(), TOL);
+        assertEquals(machine.getEfd(), exciter.getOutput(machine), TOL);
+        assertEquals(0.0, exciter.saturation.eval(new double[] {2.54}), TOL);
+        assertEquals(0.513, exciter.saturation.eval(new double[] {2.55}), 0.002);
     }
 
     @Test

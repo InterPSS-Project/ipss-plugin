@@ -1,0 +1,361 @@
+{
+  "schema": 1,
+  "description": "Paired single-core timing of unchanged QR-history prefix reuse with the one-step ST1 default.",
+  "base_plugin_commit": "2361695f7e2d1ebb87ffce709470642dc05e8cb2",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-anderson-qr-prefix-screen/evidence.zip",
+  "archive_bytes": 283143,
+  "archive_sha256": "68e38bc0d610b43ca19ba65f99db579edd3d469a2afd7d4c178b8cbe8a60c058",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.1975159,
+          9.3378983,
+          9.6042134,
+          9.5456552,
+          9.3152836,
+          9.7089185,
+          9.018545
+        ],
+        "candidate": [
+          9.2982151,
+          9.3453967,
+          9.3624916,
+          9.4174403,
+          9.4109854,
+          9.4787568,
+          9.0396701
+        ]
+      },
+      "medians_s": {
+        "control": 9.3378983,
+        "candidate": 9.3624916
+      },
+      "paired_savings_s": [
+        -0.10069919999999932,
+        -0.00749839999999935,
+        0.24172180000000054,
+        0.1282148999999997,
+        -0.09570179999999873,
+        0.23016170000000002,
+        -0.021125100000000785
+      ],
+      "median_paired_saving_s": -0.00749839999999935,
+      "candidate_wins": 3,
+      "recordings_identical": true,
+      "candidate_reuse_counts": [
+        7209,
+        7209,
+        7209,
+        7209,
+        7209,
+        7209,
+        7209
+      ]
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.1013617,
+          6.2508719,
+          6.2158797,
+          6.4039773,
+          6.2224616,
+          6.7352826,
+          6.0906988
+        ],
+        "candidate": [
+          6.1725173,
+          6.1687363,
+          6.0378278,
+          6.1947745,
+          6.2027322,
+          6.2543269,
+          6.2094682
+        ]
+      },
+      "medians_s": {
+        "control": 6.2224616,
+        "candidate": 6.1947745
+      },
+      "paired_savings_s": [
+        -0.07115559999999999,
+        0.08213559999999998,
+        0.1780519000000007,
+        0.2092027999999999,
+        0.01972940000000012,
+        0.4809557,
+        -0.11876939999999969
+      ],
+      "median_paired_saving_s": 0.08213559999999998,
+      "candidate_wins": 5,
+      "recordings_identical": true,
+      "candidate_reuse_counts": [
+        7209,
+        7209,
+        7209,
+        7209,
+        7209,
+        7209,
+        7209
+      ]
+    }
+  ],
+  "timing_context": [
+    {
+      "case": 1,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 9.1975159,
+          "process_cpu_s": 8.921875,
+          "compilation_time_ms": 44,
+          "gc_time_ms": 63
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 9.2982151,
+          "process_cpu_s": 9.109375,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 68
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 9.3453967,
+          "process_cpu_s": 9.171875,
+          "compilation_time_ms": 53,
+          "gc_time_ms": 133
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 9.3378983,
+          "process_cpu_s": 9.09375,
+          "compilation_time_ms": 46,
+          "gc_time_ms": 133
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 9.6042134,
+          "process_cpu_s": 9.375,
+          "compilation_time_ms": 35,
+          "gc_time_ms": 232
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 9.3624916,
+          "process_cpu_s": 9.125,
+          "compilation_time_ms": 7,
+          "gc_time_ms": 134
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 9.4174403,
+          "process_cpu_s": 9.15625,
+          "compilation_time_ms": 82,
+          "gc_time_ms": 131
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 9.5456552,
+          "process_cpu_s": 9.21875,
+          "compilation_time_ms": 31,
+          "gc_time_ms": 124
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 9.3152836,
+          "process_cpu_s": 8.9375,
+          "compilation_time_ms": 13,
+          "gc_time_ms": 122
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 9.4109854,
+          "process_cpu_s": 9.1875,
+          "compilation_time_ms": 205,
+          "gc_time_ms": 115
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 9.4787568,
+          "process_cpu_s": 9.203125,
+          "compilation_time_ms": 69,
+          "gc_time_ms": 110
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 9.7089185,
+          "process_cpu_s": 9.453125,
+          "compilation_time_ms": 279,
+          "gc_time_ms": 105
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 9.018545,
+          "process_cpu_s": 8.84375,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 94
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 9.0396701,
+          "process_cpu_s": 8.703125,
+          "compilation_time_ms": 4,
+          "gc_time_ms": 84
+        }
+      ],
+      "median_cpu_s": {
+        "False": 9.09375,
+        "True": 9.15625
+      }
+    },
+    {
+      "case": 2,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 6.1013617,
+          "process_cpu_s": 5.953125,
+          "compilation_time_ms": 24,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 6.1725173,
+          "process_cpu_s": 6.09375,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 90
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 6.1687363,
+          "process_cpu_s": 6.125,
+          "compilation_time_ms": 16,
+          "gc_time_ms": 100
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 6.2508719,
+          "process_cpu_s": 6.015625,
+          "compilation_time_ms": 52,
+          "gc_time_ms": 94
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 6.2158797,
+          "process_cpu_s": 6.203125,
+          "compilation_time_ms": 9,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 6.0378278,
+          "process_cpu_s": 5.9375,
+          "compilation_time_ms": 3,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 6.1947745,
+          "process_cpu_s": 5.828125,
+          "compilation_time_ms": 83,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 6.4039773,
+          "process_cpu_s": 6.25,
+          "compilation_time_ms": 170,
+          "gc_time_ms": 97
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 6.2224616,
+          "process_cpu_s": 6.0625,
+          "compilation_time_ms": 54,
+          "gc_time_ms": 90
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 6.2027322,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 11,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 6.2543269,
+          "process_cpu_s": 6.171875,
+          "compilation_time_ms": 49,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 6.7352826,
+          "process_cpu_s": 6.453125,
+          "compilation_time_ms": 265,
+          "gc_time_ms": 100
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 6.0906988,
+          "process_cpu_s": 5.875,
+          "compilation_time_ms": 15,
+          "gc_time_ms": 104
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 6.2094682,
+          "process_cpu_s": 6.0625,
+          "compilation_time_ms": 36,
+          "gc_time_ms": 95
+        }
+      ],
+      "median_cpu_s": {
+        "False": 6.0625,
+        "True": 6.078125
+      }
+    }
+  ],
+  "verified_complete_recordings": 92,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 32,
+  "measured_pairs_per_case": 7,
+  "bitwise_test_calls_per_arm": 64000,
+  "production_changed": false,
+  "limitations": [
+    "Both arms use the same experimental Anderson/deferred network path.",
+    "All complete recordings match the retained one-step baseline byte for byte.",
+    "No six-case completion or independent full-system accuracy acceptance is claimed."
+  ]
+}

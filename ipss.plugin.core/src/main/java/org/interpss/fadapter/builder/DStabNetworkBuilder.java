@@ -2,266 +2,285 @@ package org.interpss.fadapter.builder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.interpss.dstab.control.exc.ExciterObjectFactory;
-import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
-import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
-import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
-import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
-import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
-import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
-import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Data;
-import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter;
-import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
-import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter;
-import org.interpss.dstab.control.exc.psse.ac2c.Ac2cData;
-import org.interpss.dstab.control.exc.psse.ac2c.Ac2cExciter;
-import org.interpss.dstab.control.exc.psse.ac3c.Ac3cData;
-import org.interpss.dstab.control.exc.psse.ac3c.Ac3cExciter;
-import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
-import org.interpss.dstab.control.exc.psse.ac4c.Ac4cExciter;
-import org.interpss.dstab.control.exc.psse.ac5c.Ac5cData;
-import org.interpss.dstab.control.exc.psse.ac5c.Ac5cExciter;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cExciter;
-import org.interpss.dstab.control.exc.psse.ac7c.Ac7cData;
-import org.interpss.dstab.control.exc.psse.ac7c.Ac7cExciter;
-import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
-import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
-import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
-import org.interpss.dstab.control.exc.psse.esac8b.Esac8bExciter;
-import org.interpss.dstab.control.exc.psse.ac8c.Ac8cData;
-import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
-import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
-import org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter;
-import org.interpss.dstab.control.exc.psse.ac11c.Ac11cData;
-import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data;
-import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
-import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
-import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
-import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
-import org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
-import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
-import org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter;
-import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
-import org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter;
-import org.interpss.dstab.control.exc.psse.st6b.St6bData;
-import org.interpss.dstab.control.exc.psse.st6b.St6bExciter;
-import org.interpss.dstab.control.exc.psse.st6c.St6cData;
-import org.interpss.dstab.control.exc.psse.st6c.St6cExciter;
-import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
-import org.interpss.dstab.control.exc.psse.exeli.ExeliExciter;
-import org.interpss.dstab.control.exc.psse.st1c.St1cData;
-import org.interpss.dstab.control.exc.psse.st1c.St1cExciter;
-import org.interpss.dstab.control.exc.psse.st2c.St2cData;
-import org.interpss.dstab.control.exc.psse.st2c.St2cExciter;
-import org.interpss.dstab.control.exc.psse.st3c.St3cData;
-import org.interpss.dstab.control.exc.psse.st3c.St3cExciter;
-import org.interpss.dstab.control.exc.psse.st4c.St4cData;
-import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
-import org.interpss.dstab.control.exc.psse.st5c.St5cData;
-import org.interpss.dstab.control.exc.psse.st5c.St5cExciter;
-import org.interpss.dstab.control.exc.psse.st7b.St7bData;
-import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
-import org.interpss.dstab.control.exc.psse.st7c.St7cData;
-import org.interpss.dstab.control.exc.psse.st7c.St7cExciter;
-import org.interpss.dstab.control.exc.psse.st8c.St8cData;
-import org.interpss.dstab.control.exc.psse.st8c.St8cExciter;
-import org.interpss.dstab.control.exc.psse.st9c.St9cData;
-import org.interpss.dstab.control.exc.psse.st9c.St9cExciter;
-import org.interpss.dstab.control.exc.psse.st10c.St10cData;
-import org.interpss.dstab.control.exc.psse.st10c.St10cExciter;
-import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
-import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
-import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
-import org.interpss.dstab.control.exc.psse.exst2.Exst2Exciter;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Exciter;
-import org.interpss.dstab.control.exc.psse.st5b.St5bData;
-import org.interpss.dstab.control.exc.psse.st5b.St5bExciter;
-import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
-import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
-import org.interpss.dstab.svc.Csvgn5Data;
-import org.interpss.dstab.svc.Csvgn5Model;
-import org.interpss.dstab.svc.Svsmo1t2Data;
-import org.interpss.dstab.svc.Svsmo1t2Model;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
+import com.interpss.dstab.controller.exc.ieee1968type1.Ieee1968Type1Exciter;
+import com.interpss.dstab.controller.exc.ieee1981dc1.IEEE1981DC1Exciter;
+import com.interpss.dstab.controller.exc.ieeex1.Ieeex1Exciter;
+import com.interpss.dstab.controller.exc.ieeex2.Ieeex2Exciter;
+import com.interpss.dstab.controller.exc.exdc2.Exdc2Exciter;
+import com.interpss.dstab.controller.exc.exdc2a.Exdc2aExciter;
+import com.interpss.dstab.controller.exc.ieeet4.Ieeet4Data;
+import com.interpss.dstab.controller.exc.ieeet4.Ieeet4Exciter;
+import com.interpss.dstab.controller.exc.ac7b.Ac7bData;
+import com.interpss.dstab.controller.exc.ac7b.Ac7bExciter;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cData;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cExciter;
+import com.interpss.dstab.controller.exc.ac2c.Ac2cData;
+import com.interpss.dstab.controller.exc.ac2c.Ac2cExciter;
+import com.interpss.dstab.controller.exc.ac3c.Ac3cData;
+import com.interpss.dstab.controller.exc.ac3c.Ac3cExciter;
+import com.interpss.dstab.controller.exc.ac4c.Ac4cData;
+import com.interpss.dstab.controller.exc.ac4c.Ac4cExciter;
+import com.interpss.dstab.controller.exc.ac5c.Ac5cData;
+import com.interpss.dstab.controller.exc.ac5c.Ac5cExciter;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cData;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cExciter;
+import com.interpss.dstab.controller.exc.ac7c.Ac7cData;
+import com.interpss.dstab.controller.exc.ac7c.Ac7cExciter;
+import com.interpss.dstab.controller.exc.ac8b.Ac8bData;
+import com.interpss.dstab.controller.exc.ac8b.Ac8bExciter;
+import com.interpss.dstab.controller.exc.esac8b.Esac8bData;
+import com.interpss.dstab.controller.exc.esac8b.Esac8bExciter;
+import com.interpss.dstab.controller.exc.ac8c.Ac8cData;
+import com.interpss.dstab.controller.exc.ac8c.Ac8cExciter;
+import com.interpss.dstab.controller.exc.ac9c.Ac9cData;
+import com.interpss.dstab.controller.exc.ac9c.Ac9cExciter;
+import com.interpss.dstab.controller.exc.ac11c.Ac11cData;
+import com.interpss.dstab.controller.exc.ac11c.Ac11cExciter;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data;
+import com.interpss.dstab.controller.exc.bbsex1.Bbsex1Exciter;
+import com.interpss.dstab.controller.exc.esac4a.Esac4aData;
+import com.interpss.dstab.controller.exc.esac4a.Esac4aExciter;
+import com.interpss.dstab.controller.exc.exac4.Exac4Data;
+import com.interpss.dstab.controller.exc.exac4.Exac4Exciter;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bData;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bExciter;
+import com.interpss.dstab.controller.exc.dc4c.Dc4cData;
+import com.interpss.dstab.controller.exc.dc4c.Dc4cExciter;
+import com.interpss.dstab.controller.exc.dc3a.Dc3aData;
+import com.interpss.dstab.controller.exc.dc3a.Dc3aExciter;
+import com.interpss.dstab.controller.exc.st6b.St6bData;
+import com.interpss.dstab.controller.exc.st6b.St6bExciter;
+import com.interpss.dstab.controller.exc.st6c.St6cData;
+import com.interpss.dstab.controller.exc.st6c.St6cExciter;
+import com.interpss.dstab.controller.exc.exeli.ExeliData;
+import com.interpss.dstab.controller.exc.exeli.ExeliExciter;
+import com.interpss.dstab.controller.exc.st1c.St1cData;
+import com.interpss.dstab.controller.exc.st1c.St1cExciter;
+import com.interpss.dstab.controller.exc.st2c.St2cData;
+import com.interpss.dstab.controller.exc.st2c.St2cExciter;
+import com.interpss.dstab.controller.exc.st3c.St3cData;
+import com.interpss.dstab.controller.exc.st3c.St3cExciter;
+import com.interpss.dstab.controller.exc.st4c.St4cData;
+import com.interpss.dstab.controller.exc.st4c.St4cExciter;
+import com.interpss.dstab.controller.exc.st5c.St5cData;
+import com.interpss.dstab.controller.exc.st5c.St5cExciter;
+import com.interpss.dstab.controller.exc.st7b.St7bData;
+import com.interpss.dstab.controller.exc.st7b.St7bExciter;
+import com.interpss.dstab.controller.exc.st7c.St7cData;
+import com.interpss.dstab.controller.exc.st7c.St7cExciter;
+import com.interpss.dstab.controller.exc.st8c.St8cData;
+import com.interpss.dstab.controller.exc.st8c.St8cExciter;
+import com.interpss.dstab.controller.exc.st9c.St9cData;
+import com.interpss.dstab.controller.exc.st9c.St9cExciter;
+import com.interpss.dstab.controller.exc.st10c.St10cData;
+import com.interpss.dstab.controller.exc.st10c.St10cExciter;
+import com.interpss.dstab.controller.exc.esst2a.Esst2aData;
+import com.interpss.dstab.controller.exc.esst2a.Esst2aExciter;
+import com.interpss.dstab.controller.exc.exst2.Exst2Data;
+import com.interpss.dstab.controller.exc.exst2.Exst2Exciter;
+import com.interpss.dstab.controller.exc.exst3.Exst3Data;
+import com.interpss.dstab.controller.exc.exst3.Exst3Exciter;
+import com.interpss.dstab.controller.exc.st5b.St5bData;
+import com.interpss.dstab.controller.exc.st5b.St5bExciter;
+import com.interpss.dstab.controller.exc.rexsys.RexsysData;
+import com.interpss.dstab.controller.exc.rexsys.RexsysExciter;
+import com.interpss.dstab.svc.Csvgn5Data;
+import com.interpss.dstab.svc.Csvgn5Model;
+import com.interpss.dstab.svc.Svsmo1t2Data;
+import com.interpss.dstab.svc.Svsmo1t2Model;
+import com.interpss.dstab.svc.Svsmo3t2Data;
+import com.interpss.dstab.svc.Svsmo3t2Model;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
-import org.interpss.dstab.control.exc.psse.sexs.SexsData;
-import org.interpss.dstab.control.exc.psse.sexs.SexsExciter;
-import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
-import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
-import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
-import org.interpss.dstab.control.exc.psse.esurry.EsurryExciter;
-import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
-import org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
-import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
-import org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter;
-import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
-import org.interpss.dstab.control.exc.psse.esac3a.Esac3aExciter;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
+import com.interpss.dstab.controller.exc.scrx.ScrxData;
+import com.interpss.dstab.controller.exc.scrx.ScrxExciter;
+import com.interpss.dstab.controller.exc.sexs.SexsData;
+import com.interpss.dstab.controller.exc.sexs.SexsExciter;
+import com.interpss.dstab.controller.exc.esac5a.Esac5aData;
+import com.interpss.dstab.controller.exc.esac5a.Esac5aExciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Data;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.esurry.EsurryData;
+import com.interpss.dstab.controller.exc.esurry.EsurryExciter;
+import com.interpss.dstab.controller.exc.exac1a.Exac1aData;
+import com.interpss.dstab.controller.exc.exac1a.Exac1aExciter;
+import com.interpss.dstab.controller.exc.exac2.Exac2Data;
+import com.interpss.dstab.controller.exc.exac2.Exac2Exciter;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aData;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aExciter;
+import com.interpss.dstab.controller.exc.esac2a.Esac2aData;
+import com.interpss.dstab.controller.exc.esac2a.Esac2aExciter;
+import com.interpss.dstab.controller.exc.esac3a.Esac3aData;
+import com.interpss.dstab.controller.exc.esac3a.Esac3aExciter;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aData;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
-import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
-import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
-import org.interpss.dstab.control.gov.psse.degov1.PsseDegov1dGovernor;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
-import org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
-import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
-import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
-import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
-import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
-import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
-import org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter;
-import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
-import org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter;
-import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
-import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
-import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
-import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
-import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
-import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernor;
-import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernorData;
-import org.interpss.dstab.control.gov.wecc.wshydd.WshyddGovernor;
-import org.interpss.dstab.control.gov.wecc.wshydd.WshyddGovernorData;
-import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor;
-import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData;
-import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor;
-import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernorData;
+import com.interpss.dstab.controller.gov.ieeehydro1981type3.Ieee1981Type3HydroGovernor;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
+import com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor;
+import com.interpss.dstab.controller.gov.degov1.PsseDegov1dGovernor;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1Governor;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1GovernorData;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernor;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernorData;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3Governor;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3GovernorData;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernor;
+import com.interpss.dstab.controller.gov.hygov2.PsseHygov2dGovernor;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernorData;
+import com.interpss.dstab.controller.gov.hygovr.PsseHygovrGovernor;
+import com.interpss.dstab.controller.gov.hygovr.PsseHygovrGovernorData;
+import com.interpss.dstab.controller.gov.lcfb1.Lcfb1Data;
+import com.interpss.dstab.controller.gov.lcfb1.Lcfb1PrefController;
+import com.interpss.dstab.controller.uel.uel1.Uel1Data;
+import com.interpss.dstab.controller.uel.uel1.Uel1UnderExcitationLimiter;
+import com.interpss.dstab.controller.uel.uel2c.Uel2cData;
+import com.interpss.dstab.controller.uel.uel2c.Uel2cUnderExcitationLimiter;
+import com.interpss.dstab.controller.oel.oel2c.Oel2cData;
+import com.interpss.dstab.controller.oel.oel2c.Oel2cOverExcitationLimiter;
+import com.interpss.dstab.controller.gov.ieesgo.PsseIEESGOSteamTurGovernor;
+import com.interpss.dstab.controller.gov.pidgov.PssePidgovdGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.tgov3.PsseTgov3dGovernor;
+import com.interpss.dstab.controller.gov.wesgov.PsseWesgovdGovernor;
+import com.interpss.dstab.controller.gov.wpidhy.PsseWpidhydGovernor;
+import com.interpss.dstab.controller.gov.weccwshygp.WshygpGovernor;
+import com.interpss.dstab.controller.gov.weccwshygp.WshygpGovernorData;
+import com.interpss.dstab.controller.gov.weccwshydd.WshyddGovernor;
+import com.interpss.dstab.controller.gov.weccwshydd.WshyddGovernorData;
+import com.interpss.dstab.controller.gov.gastwd.PsseGastwddGovernor;
+import com.interpss.dstab.controller.gov.gastwd.PsseGastwddGovernorData;
+import com.interpss.dstab.controller.gov.gast2a.PsseGast2adGovernor;
+import com.interpss.dstab.controller.gov.gast2a.PsseGast2adGovernorData;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
-import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
-import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
-import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
-import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
-import org.interpss.dstab.renewable.Reecb1Data;
-import org.interpss.dstab.renewable.Reecb1Model;
-import org.interpss.dstab.renewable.Reecc1Data;
-import org.interpss.dstab.renewable.Reecc1Model;
-import org.interpss.dstab.renewable.Reecd1Data;
-import org.interpss.dstab.renewable.Reecd1Model;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Dera1Data;
-import org.interpss.dstab.renewable.Dera1Model;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regcb1Data;
-import org.interpss.dstab.renewable.Regcb1Model;
-import org.interpss.dstab.renewable.Regfma1Data;
-import org.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Repca1Model;
-import org.interpss.dstab.renewable.WindControlStack;
-import org.interpss.dstab.renewable.Wtara1Data;
-import org.interpss.dstab.renewable.Wtara1Model;
-import org.interpss.dstab.renewable.Wtdta1Data;
-import org.interpss.dstab.renewable.Wtdta1Model;
-import org.interpss.dstab.renewable.WtgtAData;
-import org.interpss.dstab.renewable.Wtpta1Data;
-import org.interpss.dstab.renewable.Wtpta1Model;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.GenqecMachine;
-import org.interpss.dstab.mach.GenqejData;
-import org.interpss.dstab.mach.GenqejMachine;
-import org.interpss.dstab.mach.Gentpj1Data;
-import org.interpss.dstab.mach.Gentpj1Machine;
-import org.interpss.dstab.mach.GentraData;
-import org.interpss.dstab.mach.GentraMachine;
-import org.interpss.dstab.mach.IeeeVcData;
-import org.interpss.dstab.mach.IeeeVcEConstMachine;
-import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
-import org.interpss.dstab.mach.IeeeVcSalientPoleMachine;
-import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
-import org.interpss.dstab.mach.Cimtr4Data;
-import org.interpss.dstab.mach.Cimtr4Machine;
-import org.interpss.dstab.mach.Wt1g1Data;
-import org.interpss.dstab.mach.Wt1g1Machine;
-import org.interpss.dstab.mach.Wt2g1Data;
-import org.interpss.dstab.mach.Wt2g1Machine;
-import org.interpss.dstab.mach.Wt2e1Data;
-import org.interpss.dstab.mach.Wt2e1Model;
-import org.interpss.dstab.mach.Wt3g1Data;
-import org.interpss.dstab.mach.Wt3g1Model;
-import org.interpss.dstab.mach.Gewtgcu1Data;
-import org.interpss.dstab.mach.Gewtgcu1Model;
-import org.interpss.dstab.mach.Gewtecu1Data;
-import org.interpss.dstab.mach.Gewtecu1Model;
-import org.interpss.dstab.mach.Gewt2mu1Data;
-import org.interpss.dstab.mach.Gewt2mu1Model;
-import org.interpss.dstab.mach.Gewtaru1Data;
-import org.interpss.dstab.mach.Gewtaru1Model;
-import org.interpss.dstab.mach.Gewtgdu1Data;
-import org.interpss.dstab.mach.Gewtgdu1Model;
-import org.interpss.dstab.mach.Gewtptu1Data;
-import org.interpss.dstab.mach.Gewtptu1Model;
-import org.interpss.dstab.mach.Reaxbu1Data;
-import org.interpss.dstab.mach.Reaxbu1Model;
-import org.interpss.dstab.mach.Plntbu1Data;
-import org.interpss.dstab.mach.Plntbu1Model;
-import org.interpss.dstab.mach.Wt3g2Data;
-import org.interpss.dstab.mach.Wt3g2Model;
-import org.interpss.dstab.mach.Wt4g1Data;
-import org.interpss.dstab.mach.Wt4g1Model;
-import org.interpss.dstab.mach.Wt4e1Data;
-import org.interpss.dstab.mach.Wt4e1Model;
-import org.interpss.dstab.mach.Wt3GeneratorModel;
-import org.interpss.dstab.mach.Wt3e1Data;
-import org.interpss.dstab.mach.Wt3e1Model;
-import org.interpss.dstab.mach.Wt3t1Data;
-import org.interpss.dstab.mach.Wt3t1Model;
-import org.interpss.dstab.mach.Wt3p1Data;
-import org.interpss.dstab.mach.Wt3p1Model;
-import org.interpss.dstab.mach.Wt12t1Data;
-import org.interpss.dstab.mach.Wt12t1Model;
-import org.interpss.dstab.mach.Wt12a1Data;
-import org.interpss.dstab.mach.Wt12a1Model;
-import org.interpss.dstab.mach.Wt12a1bData;
-import org.interpss.dstab.mach.Wt12a1bModel;
+import com.interpss.dstab.controller.pss.ieee1992pss2a.Ieee1992PSS2AStabilizer;
+import com.interpss.dstab.controller.pss.psssb.PsssbStabilizer;
+import com.interpss.dstab.controller.pss.psssb.PsssbStabilizerData;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss2c.Ieee2016PSS2CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss3c.Ieee2016PSS3CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss3c.Ieee2016PSS3CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss4c.Ieee2016PSS4CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss4c.Ieee2016PSS4CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss5c.Ieee2016PSS5CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss5c.Ieee2016PSS5CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss6c.Ieee2016PSS6CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss7c.Ieee2016PSS7CStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2005pss3b.Ieee2005PSS3BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2005pss3b.Ieee2005PSS3BStabilizerData;
+import com.interpss.dstab.controller.pss.ieee2005pss4b.Ieee2005PSS4BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2005pss4b.Ieee2005PSS4BStabilizerData;
+import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
+import com.interpss.dstab.renewable.Reecb1Data;
+import com.interpss.dstab.renewable.Reecb1Model;
+import com.interpss.dstab.renewable.Reecc1Data;
+import com.interpss.dstab.renewable.Reecc1Model;
+import com.interpss.dstab.renewable.Reecd1Data;
+import com.interpss.dstab.renewable.Reecd1Model;
+import com.interpss.dstab.renewable.Reece1Data;
+import com.interpss.dstab.renewable.Reece1Model;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Dera1Data;
+import com.interpss.dstab.renewable.Dera1Model;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regcb1Data;
+import com.interpss.dstab.renewable.Regcb1Model;
+import com.interpss.dstab.renewable.Regfma1Data;
+import com.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Regfmb1Model;
+import com.interpss.dstab.renewable.Regfmc1Data;
+import com.interpss.dstab.renewable.Regfmc1Model;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Wtara1Data;
+import com.interpss.dstab.renewable.Wtara1Model;
+import com.interpss.dstab.renewable.Wtdta1Data;
+import com.interpss.dstab.renewable.Wtdta1Model;
+import com.interpss.dstab.renewable.WtgtAData;
+import com.interpss.dstab.renewable.Wtdtb1Data;
+import com.interpss.dstab.renewable.Wtdtb1Model;
+import com.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtpta1Model;
+import com.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.Wtptb1Model;
+import com.interpss.dstab.renewable.WtgwgoaData;
+import com.interpss.dstab.renewable.WtgibffraData;
+import com.interpss.dstab.renewable.WtgibffraModel;
+import com.interpss.dstab.renewable.WtgwgoaModel;
+import com.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.GenqecMachine;
+import com.interpss.dstab.mach.model.GenqejData;
+import com.interpss.dstab.mach.model.GenqejMachine;
+import com.interpss.dstab.mach.model.Gentpj1Data;
+import com.interpss.dstab.mach.model.Gentpj1Machine;
+import com.interpss.dstab.mach.model.GentraData;
+import com.interpss.dstab.mach.model.GentraMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcData;
+import com.interpss.dstab.mach.ieeevc.IeeeVcEConstMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcSalientPoleMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine;
+import com.interpss.dstab.mach.model.Cimtr4Data;
+import com.interpss.dstab.mach.model.Cimtr4Machine;
+import com.interpss.dstab.mach.model.Wt1g1Data;
+import com.interpss.dstab.mach.model.Wt1g1Machine;
+import com.interpss.dstab.mach.model.Wt2g1Data;
+import com.interpss.dstab.mach.model.Wt2g1Machine;
+import com.interpss.dstab.mach.model.Wt2e1Data;
+import com.interpss.dstab.mach.model.Wt2e1Model;
+import com.interpss.dstab.mach.model.Wt3g1Data;
+import com.interpss.dstab.mach.model.Wt3g1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Data;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Gewtecu1Data;
+import com.interpss.dstab.mach.model.Gewtecu1Model;
+import com.interpss.dstab.mach.model.Gewt2mu1Data;
+import com.interpss.dstab.mach.model.Gewt2mu1Model;
+import com.interpss.dstab.mach.model.Gewtaru1Data;
+import com.interpss.dstab.mach.model.Gewtaru1Model;
+import com.interpss.dstab.mach.model.Gewtgdu1Data;
+import com.interpss.dstab.mach.model.Gewtgdu1Model;
+import com.interpss.dstab.mach.model.Gewtptu1Data;
+import com.interpss.dstab.mach.model.Gewtptu1Model;
+import com.interpss.dstab.mach.model.Reaxbu1Data;
+import com.interpss.dstab.mach.model.Reaxbu1Model;
+import com.interpss.dstab.mach.model.Plntbu1Data;
+import com.interpss.dstab.mach.model.Plntbu1Model;
+import com.interpss.dstab.mach.model.Wt3g2Data;
+import com.interpss.dstab.mach.model.Wt3g2Model;
+import com.interpss.dstab.mach.model.Wt4g1Data;
+import com.interpss.dstab.mach.model.Wt4g1Model;
+import com.interpss.dstab.mach.model.Wt4e1Data;
+import com.interpss.dstab.mach.model.Wt4e1Model;
+import com.interpss.dstab.mach.model.Wt3GeneratorModel;
+import com.interpss.dstab.mach.model.Wt3e1Data;
+import com.interpss.dstab.mach.model.Wt3e1Model;
+import com.interpss.dstab.mach.model.Wt3t1Data;
+import com.interpss.dstab.mach.model.Wt3t1Model;
+import com.interpss.dstab.mach.model.Wt3p1Data;
+import com.interpss.dstab.mach.model.Wt3p1Model;
+import com.interpss.dstab.mach.model.Wt12t1Data;
+import com.interpss.dstab.mach.model.Wt12t1Model;
+import com.interpss.dstab.mach.model.Wt12a1Data;
+import com.interpss.dstab.mach.model.Wt12a1Model;
+import com.interpss.dstab.mach.model.Wt12a1bData;
+import com.interpss.dstab.mach.model.Wt12a1bModel;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -281,6 +300,7 @@ import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.AcscFactory;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 
 public class DStabNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(DStabNetworkBuilder.class);
@@ -541,30 +561,37 @@ public class DStabNetworkBuilder {
 
     /** Attach a Type-3 REAXB auxiliary controller to its converter host. */
     public Reaxbu1Model addReax3bu1(String busId, String genId, Reaxbu1Data data) {
-        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
-        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
-            log.warn("GEWTGCU1 not found for REAX3BU1: bus={}, gen={}", busId, genId);
-            return null;
-        }
-        Reaxbu1Model model = new Reaxbu1Model("REAX3BU1", data);
-        model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
-        host.setAuxiliaryController(model);
-        return model;
+        return addReaxbu1(busId,genId,data,"REAX3BU1");
     }
 
     /** Attach a Type-4 REAXB auxiliary controller to its converter host. */
     public Reaxbu1Model addReax4bu1(String busId, String genId, Reaxbu1Data data) {
+        return addReaxbu1(busId,genId,data,"REAX4BU1");
+    }
+
+    private Reaxbu1Model addReaxbu1(String busId,String genId,Reaxbu1Data data,String name) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
-            log.warn("GEWTGCU1 not found for REAX4BU1: bus={}, gen={}", busId, genId);
+        Reaxbu1Model model=new Reaxbu1Model(name,data);
+        if(gen!=null&&gen.getDynamicGenDevice() instanceof Gewtgcu1Model host) {
+            host.setAuxiliaryController(model);
+        } else if(gen!=null&&gen.getDynamicGenDevice() instanceof Regca1Model host
+                &&supportsAuxiliaryReference(host.getActiveElectricalController())) {
+            host.getActiveElectricalController().setAuxiliaryController(model);
+        } else if(gen!=null&&gen.getDynamicGenDevice() instanceof Regcb1Model host
+                &&supportsAuxiliaryReference(host.getActiveElectricalController())) {
+            host.getActiveElectricalController().setAuxiliaryController(model);
+        } else {
+            log.warn("Supported converter/electrical host not found for {}: bus={}, gen={}",name,busId,genId);
             return null;
         }
-        Reaxbu1Model model = new Reaxbu1Model("REAX4BU1", data);
         model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
-        host.setAuxiliaryController(model);
         return model;
+    }
+
+    private static boolean supportsAuxiliaryReference(RenewableElectricalController controller) {
+        return controller instanceof Reeca1Model||controller instanceof Reecb1Model
+                ||controller instanceof Reecc1Model||controller instanceof Reecd1Model;
     }
 
     /** Attach one PLNTBU1 plant controller to every REAXB assigned to its plant bus. */
@@ -611,6 +638,16 @@ public class DStabNetworkBuilder {
                         && host.getAuxiliaryController() != null
                         && Math.abs(host.getAuxiliaryController().getData().plantBus()) == plantBus) {
                     host.getAuxiliaryController().setPlantController(controller);
+                } else if(gen.getDynamicGenDevice() instanceof Regca1Model converter
+                        &&converter.getActiveElectricalController()!=null) {
+                    var auxiliary=converter.getActiveElectricalController().getAuxiliaryController();
+                    if(auxiliary!=null&&Math.abs(auxiliary.getData().plantBus())==plantBus)
+                        auxiliary.setPlantController(controller);
+                } else if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
+                        &&converter.getActiveElectricalController()!=null) {
+                    var auxiliary=converter.getActiveElectricalController().getAuxiliaryController();
+                    if(auxiliary!=null&&Math.abs(auxiliary.getData().plantBus())==plantBus)
+                        auxiliary.setPlantController(controller);
                 }
             }
         }
@@ -695,34 +732,44 @@ public class DStabNetworkBuilder {
     /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */
     public Wt12t1Model addWt12t1(String busId, String genId, Wt12t1Data data) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
-        if (!(machine instanceof Wt1g1Machine wt1g1)) {
-            log.warn("WT1G1 not found for WT12T1: bus={}, gen={}", busId, genId);
+        if (!(machine instanceof Wt1g1Machine) && !(machine instanceof Wt2g1Machine)) {
+            log.warn("WT1G1/WT2G1 not found for WT12T1: bus={}, gen={}", busId, genId);
             return null;
         }
         Wt12t1Model model = new Wt12t1Model(data);
-        wt1g1.setDriveTrain(model);
+        if (machine instanceof Wt1g1Machine host) host.setDriveTrain(model);
+        else ((Wt2g1Machine) machine).setDriveTrain(model);
         return model;
+    }
+
+    private Wt12t1Model inductionDriveTrain(Machine machine) {
+        return machine instanceof Wt1g1Machine host ? host.getDriveTrain()
+                : machine instanceof Wt2g1Machine host ? host.getDriveTrain() : null;
     }
 
     public Wt12a1Model addWt12a1(String busId, String genId, Wt12a1Data data) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
-        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+        if (inductionDriveTrain(machine) == null) {
             log.warn("WT12T1 not found for WT12A1: bus={}, gen={}", busId, genId);
             return null;
         }
         Wt12a1Model model = new Wt12a1Model(data);
-        wt1g1.getDriveTrain().setAerodynamicController(model);
+        inductionDriveTrain(machine).setAerodynamicController(model);
         return model;
     }
 
     public Wt12a1bModel addWt12a1b(String busId, String genId, Wt12a1bData data) {
+        return addWt12a1b(busId,genId,data,Wt12a1bModel.Specification.PUBLISHED);
+    }
+
+    public Wt12a1bModel addWt12a1b(String busId,String genId,Wt12a1bData data,Wt12a1bModel.Specification specification) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
-        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+        if (inductionDriveTrain(machine) == null) {
             log.warn("WT12T1 not found for WT12A1B: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wt12a1bModel model = new Wt12a1bModel(data);
-        wt1g1.getDriveTrain().setAerodynamicController(model);
+        Wt12a1bModel model = new Wt12a1bModel(data,specification);
+        inductionDriveTrain(machine).setAerodynamicController(model);
         return model;
     }
 
@@ -818,30 +865,35 @@ public class DStabNetworkBuilder {
         }
 
         Gentpj1Machine mach = new Gentpj1Machine(inputData);
-        configureGenqeMachine(mach, "GENTPJ1", busId, genId, ratingMva, ratedKv,
-                mach.getGenqecData());
+        // Share attachment/base conversion only. A compatibility compound data
+        // view may normalize reactances for its own equations; it must never
+        // supply the native Type-J machine's physical parameters.
+        configureGenqeMachineBase(mach, "GENTPJ1", busId, genId, ratingMva, ratedKv);
+        mach.setH(inputData.h());
+        mach.setD(toCoreDamping(inputData.d()));
+        mach.setXl(inputData.xl());
+        mach.setXd(inputData.xd());
+        mach.setXq(inputData.xq());
+        mach.setXd1(inputData.xdp());
+        mach.setXq1(inputData.xqp());
+        mach.setXd11(inputData.xdpp());
+        mach.setXq11(inputData.xqpp());
+        mach.setTd01(inputData.tdop());
+        mach.setTq01(inputData.tqop());
+        mach.setTd011(inputData.tdopp());
+        mach.setTq011(inputData.tqopp());
+        mach.setSe100(0.0);
+        mach.setSe120(0.0);
         return mach;
     }
 
-    private void configureGenqeMachine(GenqecMachine mach, String modelName,
+    // Share parameter/base wiring, while each concrete machine owns its equations.
+    private void configureGenqeMachine(RoundRotorMachine mach, String modelName,
             String busId, String genId, double ratingMva, double ratedKv,
             GenqecData inputData) throws InterpssException {
-        mach.setId(busId + "-mach" + genId);
-        mach.setName(modelName);
-        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
-        mach.setMachData(DStabObjectFactory.createMachineData());
-        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
-        network.addMachine(mach, busId, genId);
-
-        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
-        mach.setRatedVoltage(ratedKv, UnitType.kV);
-        mach.calMultiFactors();
-        mach.setPoles(2);
+        configureGenqeMachineBase(mach,modelName,busId,genId,ratingMva,ratedKv);
         mach.setH(inputData.h());
         mach.setD(toCoreDamping(inputData.d()));
-        // Native PSS/E GENQEC/GENQEJ records do not carry Ra; it is the RAW
-        // generator source resistance, converted from system to machine base.
-        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(inputData.xl());
         mach.setXd(inputData.xd());
         mach.setXq(inputData.xq());
@@ -859,6 +911,25 @@ public class DStabNetworkBuilder {
         mach.setSe120(0.0);
     }
 
+    /** Common identity/base/source-resistance wiring, with no model-data conversion. */
+    private void configureGenqeMachineBase(RoundRotorMachine mach,String modelName,
+            String busId,String genId,double ratingMva,double ratedKv) throws InterpssException {
+        mach.setId(busId + "-mach" + genId);
+        mach.setName(modelName);
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        // Native PSS/E GENQEC/GENQEJ records do not carry Ra; it is the RAW
+        // generator source resistance, converted from system to machine base.
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+    }
+
     /**
      * GENSAL salient-pole generator (EQ11_SALIENT_POLE).
      * Parameters follow PSS/E GENSAL record order.
@@ -871,13 +942,28 @@ public class DStabNetworkBuilder {
             double h, double d,
             double xd, double xq, double xd1, double xd11, double xl,
             double se100, double se120) throws InterpssException {
+        return addSalient(busId,genId,ratingMva,ratedKv,td10,td110,tq110,h,d,
+                xd,xq,xd1,xd11,xl,se100,se120,false);
+    }
+
+    /** Same native twelve-constant layout, with exponential saturation on both axes. */
+    public SalientPoleMachine addGensae(String busId,String genId,double ratingMva,double ratedKv,
+            double td10,double td110,double tq110,double h,double d,double xd,double xq,
+            double xd1,double xd11,double xl,double se100,double se120)throws InterpssException {
+        return addSalient(busId,genId,ratingMva,ratedKv,td10,td110,tq110,h,d,
+                xd,xq,xd1,xd11,xl,se100,se120,true);
+    }
+
+    private SalientPoleMachine addSalient(String busId,String genId,double ratingMva,double ratedKv,
+            double td10,double td110,double tq110,double h,double d,double xd,double xq,
+            double xd1,double xd11,double xl,double se100,double se120,boolean exponential)throws InterpssException {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         if (bus == null) {
             log.warn("Bus not found for GENSAL: {}", busId);
             return null;
         }
-        IeeeVcSalientPoleMachine mach = new IeeeVcSalientPoleMachine();
-        configureMachineIdentity(mach, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
+        SalientPoleMachine mach = exponential?new com.interpss.dstab.mach.model.GensaeMachine():new IeeeVcSalientPoleMachine();
+        configureMachineIdentity(mach, exponential?"GENSAE":"GENSAL", MachineModelType.EQ11_SALIENT_POLE,
                 busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
@@ -1102,7 +1188,7 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2A: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+        if (ics1 < 0 || ics1 > 6 || ics2 < 0 || ics2 > 6) {
             log.warn("PSS2A selector combination is not implemented at {} {}: "
                     + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
                     busId, genId, ics1, remoteBus1, ics2, remoteBus2);
@@ -1223,9 +1309,16 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2B: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0) {
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0
+                || (m == 0 && n > 0)) {
             log.warn("Invalid PSS2B selectors/filter orders at {} {}: ICS1={}, ICS2={}, M={}, N={}",
                     busId, genId, ics1, ics2, m, n);
+            return null;
+        }
+        if (java.util.stream.DoubleStream.of(tw1,tw2,t6,tw3,tw4,t7,ks2,ks3,t8,t9,ks1,
+                t1,t2,t3,t4,t10,t11,vsi1max,vsi1min,vsi2max,vsi2min,vstmax,vstmin,a,ta,tb,ks4)
+                .anyMatch(value -> !Double.isFinite(value))) {
+            log.warn("Non-finite PSS2B parameter at {} {}", busId, genId);
             return null;
         }
         if (tw1 < 0.0 || tw2 < 0.0 || t6 < 0.0 || tw3 < 0.0 || tw4 < 0.0
@@ -1338,7 +1431,7 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS3B: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+        if (ics1 < 0 || ics1 > 6 || ics2 < 0 || ics2 > 6) {
             log.warn("Invalid PSS3B input selectors at {} {}: ICS1={}, ICS2={}",
                     busId, genId, ics1, ics2);
             return null;
@@ -1452,6 +1545,27 @@ public class DStabNetworkBuilder {
         }
         return StabilizerObjectFactory.createIeee2016PSS4CStabilizer(
                 busId + "-pss4c" + genId, data, machine);
+    }
+
+    /** Build full-order native PSS5C from exactly thirty constants, without a selector. */
+    public com.interpss.dstab.controller.pss.pss5c.Pss5cNativeStabilizer addPss5cNative(
+            String busId, String genId, double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) return null;
+        final com.interpss.dstab.controller.pss.pss5c.Pss5cNativeData data;
+        try {
+            data = new com.interpss.dstab.controller.pss.pss5c.Pss5cNativeData(parameters);
+            if (!data.isBypassed() && !data.hasSupportedTransducers()) {
+                log.warn("Native PSS5C degenerate transducer is not implemented at {} {}", busId, genId);
+                return null;
+            }
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid native PSS5C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        var pss = new com.interpss.dstab.controller.pss.pss5c.Pss5cNativeStabilizer(
+                busId + "-pss5c-native" + genId, data, machine);
+        return pss;
     }
 
     /** Build PSS5C from the 21-value PowerWorld/IEEE parameter order. */
@@ -2105,7 +2219,7 @@ public class DStabNetworkBuilder {
     }
 
     /** PSS/E ESDC2A exciter. */
-    public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
+    public com.interpss.dstab.controller.exc.esdc2a.Esdc2aExciter addExcEsdc2a(
             String busId, String genId,
             double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin, double ke, double te,
@@ -2115,7 +2229,7 @@ public class DStabNetworkBuilder {
     }
 
     /** PSS/E ESDC2A exciter including the documented-but-unused Switch field. */
-    public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
+    public com.interpss.dstab.controller.exc.esdc2a.Esdc2aExciter addExcEsdc2a(
             String busId, String genId,
             double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin, double ke, double te,
@@ -2123,19 +2237,19 @@ public class DStabNetworkBuilder {
             double e1, double se1, double e2, double se2) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) return null;
-        var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
+        var data = new com.interpss.dstab.controller.exc.esdc2a.Esdc2aData();
         data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
         data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
         data.setKf(kf); data.setTf(tf); data.setSwitchValue(switchValue);
         data.setE1(e1); data.setSe1(se1);
         data.setE2(e2); data.setSe2(se2);
-        var exc = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter(
+        var exc = new com.interpss.dstab.controller.exc.esdc2a.Esdc2aExciter(
                 mach.getId() + "_Exc", data, mach);
         return exc;
     }
 
     /** PSS/E ESDC1A reuses the DC model chain with constant regulator limits. */
-    public org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter addExcEsdc1a(
+    public com.interpss.dstab.controller.exc.esdc1a.Esdc1aExciter addExcEsdc1a(
             String busId, String genId,
             double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin, double ke, double te,
@@ -2143,17 +2257,17 @@ public class DStabNetworkBuilder {
             double e1, double se1, double e2, double se2) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) return null;
-        var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
+        var data = new com.interpss.dstab.controller.exc.esdc2a.Esdc2aData();
         data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
         data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
         data.setKf(kf); data.setTf(tf); data.setSwitchValue(switchValue);
         data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
-        return new org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter(
+        return new com.interpss.dstab.controller.exc.esdc1a.Esdc1aExciter(
                 mach.getId() + "_Exc", data, mach);
     }
 
     /** Native 19-parameter PSS/E DC1C exciter. */
-    public org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter addExcDc1c(
+    public com.interpss.dstab.controller.exc.dc1c.Dc1cExciter addExcDc1c(
             String busId, String genId, int oel, int uel,
             double tr, double ka, double ta, double tb, double tc,
             double vrmax, double vrmin, double ke, double te, double kf, double tf,
@@ -2163,12 +2277,12 @@ public class DStabNetworkBuilder {
         if (mach == null) return null;
         var data = dc1cData(oel, uel, tr, ka, ta, tb, tc, vrmax, vrmin,
                 ke, te, kf, tf, e1, se1, e2, se2, vemax, vemin);
-        return new org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter(
+        return new com.interpss.dstab.controller.exc.dc1c.Dc1cExciter(
                 mach.getId() + "_Exc", data, mach);
     }
 
     /** Native 19-parameter PSS/E DC2C exciter. */
-    public org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter addExcDc2c(
+    public com.interpss.dstab.controller.exc.dc2c.Dc2cExciter addExcDc2c(
             String busId, String genId, int oel, int uel,
             double tr, double ka, double ta, double tb, double tc,
             double vrmax, double vrmin, double ke, double te, double kf, double tf,
@@ -2178,16 +2292,16 @@ public class DStabNetworkBuilder {
         if (mach == null) return null;
         var data = dc1cData(oel, uel, tr, ka, ta, tb, tc, vrmax, vrmin,
                 ke, te, kf, tf, e1, se1, e2, se2, vemax, vemin);
-        return new org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter(
+        return new com.interpss.dstab.controller.exc.dc2c.Dc2cExciter(
                 mach.getId() + "_Exc", data, mach);
     }
 
-    private static org.interpss.dstab.control.exc.psse.dc1c.Dc1cData dc1cData(
+    private static com.interpss.dstab.controller.exc.dc1c.Dc1cData dc1cData(
             int oel, int uel, double tr, double ka, double ta, double tb, double tc,
             double vrmax, double vrmin, double ke, double te, double kf, double tf,
             double e1, double se1, double e2, double se2,
             double vemax, double vemin) {
-        var data = new org.interpss.dstab.control.exc.psse.dc1c.Dc1cData();
+        var data = new com.interpss.dstab.controller.exc.dc1c.Dc1cData();
         data.setOelLocation(oel); data.setUelLocation(uel);
         data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTb(tb); data.setTc(tc);
         data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
@@ -2213,6 +2327,12 @@ public class DStabNetworkBuilder {
     }
 
     /** Attach the PSS/E EXAC1 rotating AC exciter. */
+    public com.interpss.dstab.controller.exc.expic1.Expic1Exciter addExcExpic1(String busId,String genId,
+            com.interpss.dstab.controller.exc.expic1.Expic1Data data) {
+        Machine machine=findMachine(busId,genId);
+        return machine==null?null:new com.interpss.dstab.controller.exc.expic1.Expic1Exciter(machine.getId()+"_Exc",data,machine);
+    }
+
     public Exac1Exciter addExcExac1(String busId, String genId, Exac1Data data) {
         if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0 || data.getTf() <= 0.0
                 || data.getTr() < 0.0 || data.getTb() < 0.0 || data.getTa() < 0.0
@@ -2529,7 +2649,7 @@ public class DStabNetworkBuilder {
     }
 
     /** PSS/E ESST3A mapped to the existing IEEE 2005 ST3A implementation. */
-    public org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter addExcEsst3a(
+    public com.interpss.dstab.controller.exc.ieee2005st3a.IEEE2005ST3AExciter addExcEsst3a(
             String busId, String genId, double tr, double vimax, double vimin,
             double km, double tc, double tb, double ka, double ta,
             double vrmax, double vrmin, double kg, double kp, double ki,
@@ -2566,6 +2686,7 @@ public class DStabNetworkBuilder {
         target.setKi(source.getKi()); target.setVbmax(source.getVbmax());
         target.setKc(source.getKc()); target.setXl(source.getXl());
         target.setAngKp(source.getAngKp()); target.setVgmax(source.getVgmax());
+        target.setIntegralStateLimits(source.isIntegralStateLimits());
         return exc;
     }
 
@@ -2610,6 +2731,7 @@ public class DStabNetworkBuilder {
     }
 
     private static void copyH6eData(PsseH6eGovernorData s, PsseH6eGovernorData t) {
+        t.setNativeH6e1Derivative(s.isNativeH6e1Derivative());
         t.setFd(s.getFd()); t.setRe(s.getRe()); t.setRg(s.getRg());
         t.setTpe(s.getTpe()); t.setTsp(s.getTsp()); t.setKp(s.getKp());
         t.setKi(s.getKi()); t.setKd(s.getKd()); t.setTd(s.getTd());
@@ -2643,9 +2765,23 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /** Attach the exact standard-record WECC gas governor. */
+    public com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tGovernor addGovUrgs3t(
+            String busId, String genId, double[] constants) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) return null;
+        var governor = new com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tGovernor(machine.getId()+"_Gov", constants,
+                com.interpss.dstab.controller.gov.weccurgs3t.Urgs3tGovernor.RuntimeConvention.SOURCE_RECORD);
+        governor.setMachine(machine);
+        return governor;
+    }
+
     private static void copyHyg3Data(PsseHyg3GovernorData source,
             PsseHyg3GovernorData target) {
         target.setControlFlag(source.getControlFlag());
+        target.setFrequencyDeadbandConvention(source.getFrequencyDeadbandConvention());
+        target.setBacklashConvention(source.getBacklashConvention());
+        target.setZeroDerivativeFilterConvention(source.getZeroDerivativeFilterConvention());
         target.setRgate(source.getRgate()); target.setRelec(source.getRelec());
         target.setTt(source.getTt()); target.setTd(source.getTd());
         target.setK2(source.getK2()); target.setKi(source.getKi());
@@ -2773,6 +2909,8 @@ public class DStabNetworkBuilder {
         target.setKpload(source.getKpload()); target.setKiload(source.getKiload());
         target.setLdref(source.getLdref()); target.setDm(source.getDm());
         target.setRopen(source.getRopen()); target.setRclose(source.getRclose());
+        target.setUseDeclaredValveRates(source.isUseDeclaredValveRates());
+        target.setUseDeclaredValveLimits(source.isUseDeclaredValveLimits());
         target.setKimw(source.getKimw()); target.setAset(source.getAset());
         target.setKa(source.getKa()); target.setTa(source.getTa()); target.setTrate(source.getTrate());
         target.setDb(source.getDb()); target.setTsa(source.getTsa()); target.setTsb(source.getTsb());
@@ -3195,13 +3333,13 @@ public class DStabNetworkBuilder {
             return null;
         }
         WshygpGovernor gov = new WshygpGovernor(mach.getId() + "_Gov", "WSHYGP", "WECC");
-        gov.setMachine(mach);
         WshygpGovernorData data = gov.getData();
         for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
         if (!gov.validateParameters()) {
             log.warn("Invalid WSHYGP parameters at {} {}", busId, genId);
             return null;
         }
+        gov.setMachine(mach);
         return gov;
     }
 
@@ -3213,13 +3351,13 @@ public class DStabNetworkBuilder {
             return null;
         }
         WshyddGovernor gov = new WshyddGovernor(mach.getId() + "_Gov", "WSHYDD", "WECC");
-        gov.setMachine(mach);
         WshyddGovernorData data = gov.getData();
         for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
         if (!gov.validateParameters()) {
             log.warn("Invalid WSHYDD parameters at {} {}", busId, genId);
             return null;
         }
+        gov.setMachine(mach);
         return gov;
     }
 
@@ -3437,6 +3575,37 @@ public class DStabNetworkBuilder {
         catch(IllegalArgumentException ex){log.warn("Incompatible UEL2C target at {} {}: {}",busId,genId,ex.getMessage());return null;}
     }
 
+    /** Attach an OEL3C auxiliary controller through an explicitly compatible summation port. */
+    public com.interpss.dstab.controller.oel.oel3c.Oel3cModel addOel3c(String busId,String genId,
+            com.interpss.dstab.controller.oel.oel3c.Oel3cData data) {
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter())return null;
+        if(bus.getDynamicBusDeviceList().stream().anyMatch(device->genId.equals(device.getId())
+                &&(device instanceof com.interpss.dstab.controller.oel.oel3c.Oel3cModel
+                    ||device instanceof Oel2cOverExcitationLimiter)))return null;
+        try{return new com.interpss.dstab.controller.oel.oel3c.Oel3cModel(bus,machine,genId,data);}
+        catch(IllegalArgumentException failure){log.warn("Incompatible OEL3C target at {} {}: {}",busId,genId,failure.getMessage());return null;}
+    }
+
+    /** Typed BASOEL2 attachment with an explicit published timer dialect, not automatic native import. */
+    public com.interpss.dstab.controller.oel.basoel2.Basoel2Model addBasoel2(String busId,String genId,
+            com.interpss.dstab.controller.oel.basoel2.Basoel2Data data,
+            com.interpss.dstab.controller.oel.basoel2.Basoel2Kernel.TimerSemantics timerSemantics){
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter())return null;
+        try{return new com.interpss.dstab.controller.oel.basoel2.Basoel2Model(bus,machine,genId,data,timerSemantics);}
+        catch(IllegalArgumentException failure){log.warn("Incompatible BASOEL2 target at {} {}: {}",busId,genId,failure.getMessage());return null;}
+    }
+
+    /** Typed OEL4C attachment through the existing exclusive summation port; record import is separate. */
+    public com.interpss.dstab.controller.oel.oel4c.Oel4cModel addOel4c(String busId,String genId,
+            com.interpss.dstab.controller.oel.oel4c.Oel4cData data){
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter())return null;
+        try{return new com.interpss.dstab.controller.oel.oel4c.Oel4cModel(bus,machine,genId,data);}
+        catch(IllegalArgumentException failure){log.warn("Incompatible OEL4C target at {} {}: {}",busId,genId,failure.getMessage());return null;}
+    }
+
     /** Attach an OEL2C auxiliary controller without replacing the exciter. */
     public Oel2cOverExcitationLimiter addOel2c(String busId, String genId, Oel2cData data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
@@ -3463,6 +3632,15 @@ public class DStabNetworkBuilder {
         return new Regca1Model(gen, bus, genId, data);
     }
 
+    /** Attach the distinct effective-reactance variant without modifying RAW source data. */
+    public Regca1Model addRegcau2(String busId, String genId,
+            com.interpss.dstab.renewable.Regcau2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) return null;
+        return new Regca1Model(gen, bus, genId, data);
+    }
+
     /** Attach the published behind-impedance renewable converter model. */
     public Regcb1Model addRegcb1(String busId, String genId, Regcb1Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
@@ -3472,6 +3650,18 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regcb1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the nine-state PLL converter, retaining the physical source impedance. */
+    public com.interpss.dstab.renewable.RegccModel addRegcc(String busId,String genId,
+            com.interpss.dstab.renewable.RegccData data) {
+        var bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(gen==null || gen.getMach()!=null || gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getPosGenZ()==null || gen.getPosGenZ().abs()<1e-12
+                || (gen.getXfrZ()!=null && gen.getXfrZ().abs()>0))
+            throw new IllegalArgumentException("REGCC requires nonzero source impedance and no implicit transformer");
+        return new com.interpss.dstab.renewable.RegccModel(gen,bus,genId,data);
     }
 
     /** Attach the combined DERA1 converter and controls to a renewable generator. */
@@ -3495,10 +3685,34 @@ public class DStabNetworkBuilder {
         return new Regfma1Model(gen, bus, genId, data);
     }
 
+    public Regfmc1Model addRegfmc1(String busId,String genId,Regfmc1Data data) {
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||gen.getMach()!=null||gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getXfrZ()!=null&&gen.getXfrZ().abs()!=0)throw new IllegalArgumentException("Native REGFMC1U must not have an implicit RAW transformer");
+        return new Regfmc1Model(gen,bus,genId,data);
+    }
+
+    public com.interpss.dstab.renewable.Repcgfmc1Model addRepcgfmc1(String busId,String genId,com.interpss.dstab.renewable.Repcgfmc1Data data){
+        var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||!(gen.getDynamicGenDevice() instanceof Regfmc1Model converter)
+                ||converter.getPlantController()!=null)return null;
+        var plant=new com.interpss.dstab.renewable.Repcgfmc1Model(data,converter);converter.setPlantController(plant);return plant;
+    }
+
+    public Regfmb1Model addRegfmb1(String busId,String genId,Regfmb1Data data) {
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||gen.getMach()!=null||gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getXfrZ()!=null&&gen.getXfrZ().abs()!=0)throw new IllegalArgumentException("Native REGFMB1U must not have an implicit RAW transformer");
+        return new Regfmb1Model(gen,bus,genId,data);
+    }
+
     public Csvgn5Model addCsvgn5(String busId, String genId, Csvgn5Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        String remoteBusId = data.remoteBusNumber() == 0 ? busId
+                : "Bus" + Math.abs(data.remoteBusNumber());
         BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
         if (gen == null || remoteBus == null) {
             log.warn("Generator or remote bus not found for CSVGN5: bus={}, gen={}, remote={}",
@@ -3512,7 +3726,8 @@ public class DStabNetworkBuilder {
     public Svsmo1t2Model addSvsmo1t2(String busId, String shuntId,
             Svsmo1t2Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
-        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        String remoteBusId = data.remoteBusNumber() == 0 ? busId
+                : "Bus" + Math.abs(data.remoteBusNumber());
         BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
         com.interpss.core.aclf.adj.SwitchedShunt shunt = null;
         if (bus != null) {
@@ -3533,7 +3748,34 @@ public class DStabNetworkBuilder {
         return new Svsmo1t2Model(bus, remoteBus, shunt, shunt.getId(), data);
     }
 
+    /** Bind a named shunt FACTS controller once during import, never by bus number zero. */
+    public Svsmo3t2Model addSvsmo3t2(String factsName, Svsmo3t2Data data) {
+        BaseDStabBus<?, ?> host = null;
+        com.interpss.core.aclf.facts.StaticVarCompensator match = null;
+        for (Object item : network.getBusList()) {
+            BaseDStabBus<?, ?> candidate = (BaseDStabBus<?, ?>) item;
+            for (var device : candidate.getStaticVarCompensatorList()) {
+                if (!factsName.equals(device.getId())) continue;
+                if (match != null) throw new IllegalArgumentException("Ambiguous FACTS name: " + factsName);
+                host = candidate;
+                match = device;
+            }
+        }
+        if (match == null || !match.isActive() || !host.isActive()) return null;
+        BaseDStabBus<?, ?> remote = data.remoteBusNumber() == 0 ? host
+                : network.getDStabBus("Bus" + data.remoteBusNumber());
+        if (remote == null || !remote.isActive()) return null;
+        for (var device : host.getDynamicBusDeviceList()) {
+            if (device instanceof Svsmo3t2Model existing && existing.getStaticDevice() == match)
+                throw new IllegalArgumentException("Duplicate FACTS controller: " + factsName);
+        }
+        return new Svsmo3t2Model(host, remote, match, data);
+    }
+
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reecb1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECB1: bus={}, gen={}", busId, genId);
@@ -3545,6 +3787,9 @@ public class DStabNetworkBuilder {
     }
 
     public Reecc1Model addReecc1(String busId, String genId, Reecc1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reecc1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECC1: bus={}, gen={}", busId, genId);
@@ -3562,7 +3807,8 @@ public class DStabNetworkBuilder {
             log.warn("Renewable converter not found for REECD1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Reecd1Model controller = new Reecd1Model(data);
+        Reecd1Model controller = new Reecd1Model(data,
+                gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RenewableConverterHost host?host:null);
         if (gen.getDynamicGenDevice() instanceof Regca1Model converter) {
             converter.setActiveElectricalController(controller);
             return controller;
@@ -3571,48 +3817,174 @@ public class DStabNetworkBuilder {
             converter.setActiveElectricalController(controller);
             return controller;
         }
+        if (gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RegccModel converter) {
+            if(converter.getActiveElectricalController()!=null)return null;
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
         log.warn("REGCA1/REGCB1 not found for REECD1: bus={}, gen={}", busId, genId);
         return null;
     }
 
+    /** Native 36.7 REECE on an active REGCA/REGCB with an unused electrical port. */
+    public Reece1Model addReece(String busId,String genId,Reece1Data data) {
+        java.util.Objects.requireNonNull(data);
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive())return null;
+        Reece1Model controller=new Reece1Model(data);
+        if(gen.getDynamicGenDevice() instanceof Regca1Model converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
+        if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
+        if(gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RegccModel converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
+        return null;
+    }
+
     public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
+        var voltageSource=findRegcb1(busId,genId);
+        if(voltageSource!=null) {
+            if(voltageSource.getActiveElectricalController()!=null)return null;
+            var controller=Reeca1Model.forConverterHost(data,voltageSource);
+            voltageSource.setActiveElectricalController(controller);return controller;
+        }
+        var pll=findRegcc(busId,genId);
+        if(pll!=null){if(pll.getActiveElectricalController()!=null)return null;
+            var controller=Reeca1Model.forConverterHost(data,pll);pll.setActiveElectricalController(controller);return controller;}
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
             log.warn("REGCA1 not found for REECA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Reeca1Model controller = new Reeca1Model(data, converter);
+        Reeca1Model controller = Reeca1Model.fromNativeRecord(data, converter);
         converter.setReeca1Controller(controller);
         return controller;
     }
 
+    public record HybridUnit(String busId,String generatorId,com.interpss.dstab.renewable.ReaxdData data) {}
+
+    /** Resolve every downstream host before the shared coordinator mutates ports. */
+    public com.interpss.dstab.renewable.HplntdCoordinator addHplntd(String plantBusId,
+            com.interpss.dstab.renewable.HplntdData data,List<HybridUnit> units){
+        var plant=network.getDStabBus(plantBusId);
+        if(plant==null)throw new IllegalArgumentException("Hybrid plant bus not found: "+plantBusId);
+        var bindings=new ArrayList<com.interpss.dstab.renewable.HplntdCoordinator.Binding>();
+        for(var unit:units){
+            var converter=findRegca1(unit.busId(),unit.generatorId());
+            if(converter==null)throw new IllegalArgumentException("Hybrid unit requires REGCA1: "+unit.busId()+"/"+unit.generatorId());
+            bindings.add(new com.interpss.dstab.renewable.HplntdCoordinator.Binding(converter,unit.data()));
+        }
+        var nominal=new HashMap<com.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
+        var boundary=new com.interpss.dstab.renewable.HplntdNetworkBoundary(data,plant);
+        if(data.switchingFlag()==1&&data.switchingThresholdsValid()&&boundary.switchingBranchFound())for(var key:data.shunts()){
+            if(key.bus()==0)continue;
+            var bus=network.getDStabBus("Bus"+key.bus());
+            if(bus==null)throw new IllegalArgumentException("Hybrid shunt bus not found: "+key);
+            var matches=bus.getCompensatorList().stream().filter(s->s.getId().equals(key.id())).toList();
+            if(matches.size()!=1)throw new IllegalArgumentException("One named fixed shunt required: "+key);
+            var value=FixedShuntAdmittance.find(matches.getFirst()).orElseThrow(
+                    ()->new IllegalArgumentException("Retained nominal fixed-shunt admittance required: "+key));
+            if(nominal.putIfAbsent(key,value)!=null)throw new IllegalArgumentException("Duplicate hybrid shunt "+key);
+        }
+        return com.interpss.dstab.renewable.HplntdCoordinator.attach(data,plant,bindings,nominal);
+    }
+
+    /** Dedicated native REPCC port; no legacy controller is overwritten. */
+    public com.interpss.dstab.renewable.RepccModel addRepcc(String busId,String genId,com.interpss.dstab.renewable.RepccData data){
+        var converter=findRegca1(busId,genId);
+        if(converter==null||!(converter.getActiveElectricalController() instanceof Reeca1Model electrical)
+                ||electrical.getPlantController()!=null||electrical.getRepccController()!=null
+                ||data.frequencyFlag()!=1||data.reactiveFlag()!=1
+                ||data.value(com.interpss.dstab.renewable.RepccData.Parameter.KI)<=0
+                ||data.value(com.interpss.dstab.renewable.RepccData.Parameter.KIG)<=0)return null;
+        var nominal=new HashMap<com.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
+        var boundary=new com.interpss.dstab.renewable.RepccNetworkBoundary(data,converter.getParentGen(),converter.getDStabBus());
+        if(data.switchingFlag()==1&&data.switchingThresholdsValid()&&boundary.isSwitchingBranchFound()) {
+            for(var key:data.shunts()) {
+                if(key.bus()==0)continue;
+                var bus=network.getDStabBus("Bus"+key.bus());
+                if(bus==null)throw new IllegalArgumentException("REPCC shunt bus not found: "+key);
+                var matches=bus.getCompensatorList().stream().filter(s->s.getId().equals(key.id())).toList();
+                if(matches.size()!=1)throw new IllegalArgumentException("One named fixed shunt required: "+key);
+                var value=FixedShuntAdmittance.find(matches.getFirst()).orElseThrow(
+                        ()->new IllegalArgumentException("Retained nominal fixed-shunt admittance required: "+key));
+                if(nominal.putIfAbsent(key,value)!=null)throw new IllegalArgumentException("Duplicate REPCC shunt "+key);
+            }
+        }
+        var plant=new com.interpss.dstab.renewable.RepccModel(data,converter,nominal);electrical.setRepccController(plant);return plant;
+    }
+
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
+        var pll=findRegcc(busId,genId);
+        if(pll!=null && pll.getActiveElectricalController()!=null){
+            if(pll.getActiveElectricalController().getPlantController()!=null)return null;
+            var controller=Repca1Model.forConverterHost(data,pll);pll.getActiveElectricalController().setPlantController(controller);return controller;
+        }
         Regca1Model converter = findRegca1(busId, genId);
         if (converter != null && converter.getActiveElectricalController() != null) {
-            Repca1Model controller = new Repca1Model(data, converter);
+            Repca1Model controller = Repca1Model.fromNativeRecord(data, converter);
             converter.getActiveElectricalController().setPlantController(controller);
             return controller;
         }
         Regcb1Model behindImpedance = findRegcb1(busId, genId);
         if (behindImpedance != null
                 && behindImpedance.getActiveElectricalController() != null) {
-            Repca1Model controller = new Repca1Model(data, behindImpedance);
+            Repca1Model controller = Repca1Model.fromNativeRecord(data, behindImpedance);
             behindImpedance.getActiveElectricalController().setPlantController(controller);
             return controller;
         }
         Regfma1Model gridForming = findRegfma1(busId, genId);
         if (gridForming != null) {
-            Repca1Model controller = new Repca1Model(data, gridForming);
+            Repca1Model controller = Repca1Model.fromNativeRecord(data, gridForming);
             gridForming.setPlantController(controller);
             return controller;
         }
-        log.warn("REGCA1/REGCB1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
+        var vsmBus=network.getDStabBus(busId);
+        DStabGen vsmGen=vsmBus==null?null:(DStabGen)vsmBus.getContributeGen(genId);
+        if(vsmGen!=null&&vsmGen.getDynamicGenDevice() instanceof Regfmb1Model vsm) {
+            Repca1Model controller=Repca1Model.fromNativeRecord(data,vsm);vsm.setPlantController(controller);return controller;
+        }
+        log.warn("REGCA1/REGCB1/REEC or REGFMA1/REGFMB1U chain not found for REPCA1: bus={}, gen={}",
                 busId, genId);
         return null;
     }
 
+    /** Native weak-grid option; an optional REPCA is not a prerequisite. */
+    public WtgwgoaModel addWtgwgoa(String busId, String genId, WtgwgoaData data) {
+        Regca1Model currentSource = findRegca1(busId, genId);
+        Regcb1Model voltageSource = findRegcb1(busId, genId);
+        RenewableElectricalController controller = currentSource != null
+                ? currentSource.getActiveElectricalController() : voltageSource != null
+                ? voltageSource.getActiveElectricalController() : null;
+        if (controller == null || controller.getWeakGridController() != null
+                || !(controller instanceof Reeca1Model || controller instanceof Reecb1Model
+                    || controller instanceof Reecc1Model || controller instanceof Reecd1Model)) return null;
+        WtgwgoaModel model = WtgwgoaModel.forNativePsse367(data);
+        controller.setWeakGridController(model);
+        return model;
+    }
+
+    /** Native inertia-response Paux port, currently supported by REECD only. */
+    public WtgibffraModel addWtgibffra(String busId, String genId, WtgibffraData data) {
+        Regca1Model currentSource = findRegca1(busId, genId);
+        Regcb1Model voltageSource = findRegcb1(busId, genId);
+        RenewableElectricalController controller = currentSource != null
+                ? currentSource.getActiveElectricalController() : voltageSource != null
+                ? voltageSource.getActiveElectricalController() : null;
+        if (!(controller instanceof Reecd1Model reecd)
+                || reecd.getInertialResponseController() != null) return null;
+        BaseDStabBus<?, ?> local = network.getDStabBus(busId);
+        BaseDStabBus<?, ?> remote = data.frequencyBus() == 0 ? null
+                : network.getDStabBus("Bus" + data.frequencyBus());
+        WtgibffraModel model = new WtgibffraModel(data);
+        reecd.setInertialResponseController(model,
+                () -> remote != null && remote.isActive() ? remote.getFreq() : local.getFreq());
+        return model;
+    }
+
     public Wtara1Model addWtara1(String busId, String genId, Wtara1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTARA1: bus={}, gen={}", busId, genId);
             return null;
@@ -3623,25 +3995,47 @@ public class DStabNetworkBuilder {
     }
 
     public Wtdta1Model addWtdta1(String busId, String genId, Wtdta1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTDTA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wtdta1Model model = new Wtdta1Model(data);
-        windStack(controller).setDriveTrain(model);
+        WindControlStack stack = windStack(controller);
+        if (stack.getDriveTrain() != null || stack.getTorsionalEmulation() != null) {
+            log.warn("Drive train already exists for WTDTA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtdta1Model model = Wtdta1Model.fromNativeRecord(data,network.getFrequency());
+        stack.setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach the exact native six-CON WTDTB1/legacy WTDTBU1 convention. */
+    public Wtdtb1Model addWtdtb1(String busId, String genId, Wtdtb1Data data) {
+        RenewableElectricalController controller = findWindController(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTDTB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WindControlStack stack = windStack(controller);
+        if (stack.getDriveTrain() != null || stack.getTorsionalEmulation() != null) {
+            log.warn("Drive train already exists for WTDTB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtdtb1Model model = Wtdtb1Model.forNativePsse367(data, network.getFrequency());
+        stack.setTorsionalEmulation(model);
         return model;
     }
 
     /** Attach a PowerWorld WTGT_A record without replacing an existing drive train. */
     public Wtdta1Model addWtgtA(String busId, String genId, WtgtAData data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTGT_A: bus={}, gen={}", busId, genId);
             return null;
         }
         WindControlStack stack = windStack(controller);
-        if (stack.getDriveTrain() != null) {
+        if (stack.getDriveTrain() != null || stack.getTorsionalEmulation() != null) {
             log.warn("Drive train already exists for WTGT_A: bus={}, gen={}", busId, genId);
             return null;
         }
@@ -3655,23 +4049,45 @@ public class DStabNetworkBuilder {
     }
 
     public Wtpta1Model addWtpta1(String busId, String genId, Wtpta1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTPTA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wtpta1Model model = new Wtpta1Model(data);
-        windStack(controller).setPitchController(model);
+        WindControlStack stack=windStack(controller);
+        if(stack.getPitchController()!=null || stack.getPitchControllerB()!=null)return null;
+        Wtpta1Model model = Wtpta1Model.fromNativeRecord(data);
+        stack.setPitchController(model);
+        return model;
+    }
+
+    /** Attach native WTPTB1 only to its supported complete mechanical stack. */
+    public Wtptb1Model addWtptb1(String busId,String genId,Wtptb1Data data) {
+        RenewableElectricalController controller=findWindController(busId,genId);
+        if(controller==null)return null;
+        WindControlStack stack=windStack(controller);
+        if(stack.getPitchController()!=null || stack.getPitchControllerB()!=null
+                || stack.getAerodynamics()==null || stack.getTorqueController()==null
+                || stack.getDriveTrain()==null && stack.getTorsionalEmulation()==null)return null;
+        Wtptb1Model model=new Wtptb1Model(data);
+        stack.setPitchControllerB(model);
         return model;
     }
 
     public Wttqa1Model addWttqa1(String busId, String genId, Wttqa1Data data) {
-        Reeca1Model controller = findReeca1(busId, genId);
+        return attachWttqa1(busId, genId, new Wttqa1Model(data));
+    }
+
+    public Wttqa1Model addWttqa1FromNativeRecord(String busId, String genId, Wttqa1Data data) {
+        return attachWttqa1(busId, genId, Wttqa1Model.fromNativeRecord(data));
+    }
+
+    private Wttqa1Model attachWttqa1(String busId, String genId, Wttqa1Model model) {
+        RenewableElectricalController controller = findWindController(busId, genId);
         if (controller == null) {
             log.warn("REECA1 not found for WTTQA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wttqa1Model model = new Wttqa1Model(data);
         windStack(controller).setTorqueController(model);
         return model;
     }
@@ -3680,6 +4096,11 @@ public class DStabNetworkBuilder {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private com.interpss.dstab.renewable.RegccModel findRegcc(String busId,String genId) {
+        var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        return gen!=null && gen.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.RegccModel model?model:null;
     }
 
     private Regcb1Model findRegcb1(String busId, String genId) {
@@ -3694,12 +4115,15 @@ public class DStabNetworkBuilder {
         return gen != null && gen.getDynamicGenDevice() instanceof Regfma1Model model ? model : null;
     }
 
-    private Reeca1Model findReeca1(String busId, String genId) {
+    private RenewableElectricalController findWindController(String busId, String genId) {
         Regca1Model converter = findRegca1(busId, genId);
-        return converter == null ? null : converter.getReeca1Controller();
+        var controller = converter == null ? (findRegcb1(busId, genId) == null ? null
+                : findRegcb1(busId, genId).getActiveElectricalController()) : converter.getActiveElectricalController();
+        return controller instanceof Reeca1Model || controller instanceof Reecd1Model
+                || controller instanceof com.interpss.dstab.renewable.ConverterCurrentCommands ? controller : null;
     }
 
-    private static WindControlStack windStack(Reeca1Model controller) {
+    private static WindControlStack windStack(RenewableElectricalController controller) {
         WindControlStack stack = controller.getWindControlStack();
         if (stack == null) {
             stack = new WindControlStack();
@@ -3723,15 +4147,21 @@ public class DStabNetworkBuilder {
     }
 
     /**
-     * PSS/E stores armature resistance with the static generator source
-     * impedance. InterPSS machines store resistance on machine base.
+     * The static source impedance is stored on the contributing generator's
+     * own MVA base. Convert it to system base before applying the machine's
+     * inverse impedance factor. Dividing the RAW value directly by that factor
+     * converts its MVA base twice: a large generator then acquires exaggerated
+     * stator losses and an artificial initial turbine overload.
      */
     private double sourceResistanceOnMachineBase(Machine machine) {
         if (machine.getParentGen().getSourceZ() == null
                 || machine.getZMultiFactor() == 0.0) {
             return 0.0;
         }
-        return machine.getParentGen().getSourceZ().getReal() / machine.getZMultiFactor();
+        double generatorToSystem = machine.getDStabBus().getNetwork().getBaseMva()
+                / machine.getParentGen().getMvaBase();
+        return machine.getParentGen().getSourceZ().getReal()
+                * generatorToSystem / machine.getZMultiFactor();
     }
 
     @SuppressWarnings("unchecked")
@@ -3745,5 +4175,9 @@ public class DStabNetworkBuilder {
             return null;
         }
         return gen.getMach();
+    }
+    /** Retain the exact named link before load flow; prepare its terminal equations at initialization. */
+    public com.interpss.dstab.hvdc.model.Cdc6tDyrModel addCdc6t(com.interpss.dstab.hvdc.model.Cdc6tParameters parameters) {
+        return com.interpss.dstab.hvdc.model.Cdc6tDyrModel.attach(getBaseDStabNetwork(),parameters);
     }
 }

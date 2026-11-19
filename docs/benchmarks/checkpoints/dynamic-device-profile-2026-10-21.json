@@ -1,0 +1,563 @@
+{
+  "schema": 1,
+  "description": "Per-model dynamic update attribution; instrumented diagnostic, not a production timing claim.",
+  "baseline_checkpoint": "docs/benchmarks/checkpoints/st1-generated-inputs-2026-10-21.json",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-device-model-profile/profile-evidence.zip",
+  "archive_sha256": "1ade0a2f54c1a520ecbe476f0fa125a440ae60f7594506105262fe319ca34881",
+  "archive_bytes": 4205419,
+  "archive_entries": 168,
+  "summary": [
+    {
+      "case": 1,
+      "profiled_runs": [
+        32,
+        33,
+        34
+      ],
+      "instrumented_total_wall_s": [
+        15.5923479,
+        15.7025097,
+        15.7979509
+      ],
+      "compilation_ms": [
+        58,
+        25,
+        105
+      ],
+      "exclusive_timed_updates_s_per_run": 7.212939666666664,
+      "models": [
+        {
+          "model": "PSS2A",
+          "devices": 333,
+          "exclusive_s_per_run": 1.6099697333333314,
+          "share_of_timed_update_percent": 22.32057673757517,
+          "ms_per_device_per_run": 4.834743943943938,
+          "calls_per_run": 5298812.0,
+          "mean_us_per_call": 0.3038359793352418,
+          "phases_s_per_run": {
+            "boundary_update": 1.3157819999999993,
+            "held_input_preparation": 0.2941877333333332
+          }
+        },
+        {
+          "model": "EXST1",
+          "devices": 91,
+          "exclusive_s_per_run": 1.383118466666666,
+          "share_of_timed_update_percent": 19.175516926316543,
+          "ms_per_device_per_run": 15.199104029304022,
+          "calls_per_run": 895946.0,
+          "mean_us_per_call": 1.5437520416036974,
+          "phases_s_per_run": {
+            "boundary_update": 0.5820978,
+            "local_store": 0.801020666666667
+          }
+        },
+        {
+          "model": "Shared state arrays",
+          "devices": 1,
+          "exclusive_s_per_run": 1.1092969666666666,
+          "share_of_timed_update_percent": 15.379263073460715,
+          "ms_per_device_per_run": 1109.2969666666665,
+          "calls_per_run": 36856288.0,
+          "mean_us_per_call": 0.030097902606650635,
+          "phases_s_per_run": {
+            "advance": 0.5280537333333334,
+            "capture": 0.5812432333333333
+          }
+        },
+        {
+          "model": "ESST4B",
+          "devices": 208,
+          "exclusive_s_per_run": 1.0279477333333331,
+          "share_of_timed_update_percent": 14.251439507858542,
+          "ms_per_device_per_run": 4.942056410256409,
+          "calls_per_run": 1508456.0,
+          "mean_us_per_call": 0.6814568892518794,
+          "phases_s_per_run": {
+            "boundary_update": 1.0279477333333331
+          }
+        },
+        {
+          "model": "ESST1A",
+          "devices": 23,
+          "exclusive_s_per_run": 0.4247144333333334,
+          "share_of_timed_update_percent": 5.888229389968098,
+          "ms_per_device_per_run": 18.465844927536235,
+          "calls_per_run": 276230.0,
+          "mean_us_per_call": 1.5375391280213353,
+          "phases_s_per_run": {
+            "boundary_update": 0.20797050000000003,
+            "local_store": 0.21674393333333333
+          }
+        },
+        {
+          "model": "REGCA1 bundle",
+          "devices": 96,
+          "exclusive_s_per_run": 0.4053344000000001,
+          "share_of_timed_update_percent": 5.619545133216378,
+          "ms_per_device_per_run": 4.222233333333334,
+          "calls_per_run": 1152960.0,
+          "mean_us_per_call": 0.35155981126838753,
+          "phases_s_per_run": {
+            "advance": 0.16814546666666666,
+            "boundary_update": 0.23718893333333335
+          }
+        },
+        {
+          "model": "GGOV1",
+          "devices": 287,
+          "exclusive_s_per_run": 0.40360219999999986,
+          "share_of_timed_update_percent": 5.595529959375325,
+          "ms_per_device_per_run": 1.4062794425087104,
+          "calls_per_run": 4138646.0,
+          "mean_us_per_call": 0.09752034844246157,
+          "phases_s_per_run": {
+            "advance": 0.057758933333333436,
+            "boundary_update": 0.22759796666666668,
+            "capture": 0.022495533333333328,
+            "complete": 0.09574976666666668
+          }
+        },
+        {
+          "model": "IEEEG1",
+          "devices": 26,
+          "exclusive_s_per_run": 0.33138419999999996,
+          "share_of_timed_update_percent": 4.5943015651639785,
+          "ms_per_device_per_run": 12.745546153846153,
+          "calls_per_run": 249808.0,
+          "mean_us_per_call": 1.3265555946967271,
+          "phases_s_per_run": {
+            "boundary_update": 0.33138419999999996
+          }
+        },
+        {
+          "model": "IEEET1",
+          "devices": 11,
+          "exclusive_s_per_run": 0.27714826666666664,
+          "share_of_timed_update_percent": 3.8423760557357602,
+          "ms_per_device_per_run": 25.19529696969697,
+          "calls_per_run": 105688.0,
+          "mean_us_per_call": 2.6223248303181688,
+          "phases_s_per_run": {
+            "boundary_update": 0.27714826666666664
+          }
+        },
+        {
+          "model": "IeeeVcRoundRotorMachine",
+          "devices": 313,
+          "exclusive_s_per_run": 0.1992464999999999,
+          "share_of_timed_update_percent": 2.7623480745414066,
+          "ms_per_device_per_run": 0.6365702875399358,
+          "calls_per_run": 3007304.0,
+          "mean_us_per_call": 0.06625419312447292,
+          "phases_s_per_run": {
+            "electrical_endpoint": 0.05002906666666671,
+            "machine_derivative": 0.14921743333333357
+          }
+        },
+        {
+          "model": "HYGOV",
+          "devices": 20,
+          "exclusive_s_per_run": 0.028737166666666685,
+          "share_of_timed_update_percent": 0.39841129961852395,
+          "ms_per_device_per_run": 1.4368583333333342,
+          "calls_per_run": 336280.0,
+          "mean_us_per_call": 0.08545606835573535,
+          "phases_s_per_run": {
+            "advance": 0.0057002,
+            "boundary_update": 0.016375166666666666,
+            "capture": 0.002217533333333333,
+            "complete": 0.004444266666666666
+          }
+        },
+        {
+          "model": "IeeeVcSalientPoleMachine",
+          "devices": 20,
+          "exclusive_s_per_run": 0.0124396,
+          "share_of_timed_update_percent": 0.17246227716956278,
+          "ms_per_device_per_run": 0.62198,
+          "calls_per_run": 192160.0,
+          "mean_us_per_call": 0.06473563696919234,
+          "phases_s_per_run": {
+            "machine_derivative": 0.0124396
+          }
+        }
+      ],
+      "top_devices": [
+        {
+          "model": "IEEET1",
+          "device": "Bus2057-mach1/IEEET1",
+          "exclusive_s_per_run": 0.0383508
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus1051-mach1/EXST1",
+          "exclusive_s_per_run": 0.029337666666666665
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus6110-mach1/IEEET1",
+          "exclusive_s_per_run": 0.025907133333333332
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus8131-mach1/IEEET1",
+          "exclusive_s_per_run": 0.02561883333333333
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus5419-mach1/IEEET1",
+          "exclusive_s_per_run": 0.024808633333333333
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus3106-mach1/IEEET1",
+          "exclusive_s_per_run": 0.024248166666666668
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus6269-mach1/IEEET1",
+          "exclusive_s_per_run": 0.024223666666666668
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus3105-mach1/ESST1A",
+          "exclusive_s_per_run": 0.023926933333333334
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus4046-mach1/IEEET1",
+          "exclusive_s_per_run": 0.023652999999999997
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus4094-mach1/IEEET1",
+          "exclusive_s_per_run": 0.023040833333333333
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus4026-mach1/IEEET1",
+          "exclusive_s_per_run": 0.02299356666666667
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus4097-mach1/IEEET1",
+          "exclusive_s_per_run": 0.022204166666666664
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus6111-mach1/IEEET1",
+          "exclusive_s_per_run": 0.022099466666666664
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus5342-mach1/ESST1A",
+          "exclusive_s_per_run": 0.0196376
+        },
+        {
+          "model": "IEEEG1",
+          "device": "Bus2057-mach1/IEEEG1",
+          "exclusive_s_per_run": 0.019577433333333335
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus5360-mach1/ESST1A",
+          "exclusive_s_per_run": 0.019481766666666667
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus7335-mach1/ESST1A",
+          "exclusive_s_per_run": 0.01948036666666667
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus8088-mach1/ESST1A",
+          "exclusive_s_per_run": 0.01921626666666667
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus6078-mach1/ESST1A",
+          "exclusive_s_per_run": 0.018968366666666667
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus4091-mach1/ESST1A",
+          "exclusive_s_per_run": 0.018729733333333335
+        }
+      ]
+    },
+    {
+      "case": 2,
+      "profiled_runs": [
+        32,
+        33,
+        34
+      ],
+      "instrumented_total_wall_s": [
+        9.2522752,
+        9.0045077,
+        8.9213387
+      ],
+      "compilation_ms": [
+        57,
+        27,
+        21
+      ],
+      "exclusive_timed_updates_s_per_run": 2.4706951333333333,
+      "models": [
+        {
+          "model": "PSS2A",
+          "devices": 103,
+          "exclusive_s_per_run": 0.47659779999999996,
+          "share_of_timed_update_percent": 19.29002868747303,
+          "ms_per_device_per_run": 4.627163106796116,
+          "calls_per_run": 1642968.0,
+          "mean_us_per_call": 0.2900834343699938,
+          "phases_s_per_run": {
+            "boundary_update": 0.3929870666666668,
+            "held_input_preparation": 0.08361073333333341
+          }
+        },
+        {
+          "model": "EXST1",
+          "devices": 29,
+          "exclusive_s_per_run": 0.4447787666666667,
+          "share_of_timed_update_percent": 18.00217115685149,
+          "ms_per_device_per_run": 15.337198850574715,
+          "calls_per_run": 283436.0,
+          "mean_us_per_call": 1.569238793472483,
+          "phases_s_per_run": {
+            "boundary_update": 0.14995576666666668,
+            "local_store": 0.2948230000000001
+          }
+        },
+        {
+          "model": "REGCA1 bundle",
+          "devices": 96,
+          "exclusive_s_per_run": 0.3520216666666669,
+          "share_of_timed_update_percent": 14.247879550875126,
+          "ms_per_device_per_run": 3.6668923611111133,
+          "calls_per_run": 1152960.0,
+          "mean_us_per_call": 0.30531993015080044,
+          "phases_s_per_run": {
+            "advance": 0.1582755,
+            "boundary_update": 0.19374616666666664
+          }
+        },
+        {
+          "model": "Shared state arrays",
+          "devices": 1,
+          "exclusive_s_per_run": 0.3305938666666666,
+          "share_of_timed_update_percent": 13.380601362202327,
+          "ms_per_device_per_run": 330.5938666666666,
+          "calls_per_run": 11616072.0,
+          "mean_us_per_call": 0.028460039389103877,
+          "phases_s_per_run": {
+            "advance": 0.16442583333333333,
+            "capture": 0.16616803333333333
+          }
+        },
+        {
+          "model": "ESST4B",
+          "devices": 64,
+          "exclusive_s_per_run": 0.31178443333333333,
+          "share_of_timed_update_percent": 12.619300096029654,
+          "ms_per_device_per_run": 4.871631770833333,
+          "calls_per_run": 468390.0,
+          "mean_us_per_call": 0.6656513446771565,
+          "phases_s_per_run": {
+            "boundary_update": 0.31178443333333333
+          }
+        },
+        {
+          "model": "IEEEG1",
+          "devices": 15,
+          "exclusive_s_per_run": 0.17481839999999996,
+          "share_of_timed_update_percent": 7.075676704966187,
+          "ms_per_device_per_run": 11.654559999999998,
+          "calls_per_run": 144120.0,
+          "mean_us_per_call": 1.2130058284762697,
+          "phases_s_per_run": {
+            "boundary_update": 0.17481839999999996
+          }
+        },
+        {
+          "model": "ESST1A",
+          "devices": 7,
+          "exclusive_s_per_run": 0.12385826666666672,
+          "share_of_timed_update_percent": 5.013093885831377,
+          "ms_per_device_per_run": 17.694038095238103,
+          "calls_per_run": 84070.0,
+          "mean_us_per_call": 1.4732754450656205,
+          "phases_s_per_run": {
+            "boundary_update": 0.05037743333333333,
+            "local_store": 0.07348083333333333
+          }
+        },
+        {
+          "model": "GGOV1",
+          "devices": 88,
+          "exclusive_s_per_run": 0.11633399999999998,
+          "share_of_timed_update_percent": 4.708553411972289,
+          "ms_per_device_per_run": 1.3219772727272725,
+          "calls_per_run": 1268256.0,
+          "mean_us_per_call": 0.09172753765801225,
+          "phases_s_per_run": {
+            "advance": 0.01787333333333333,
+            "boundary_update": 0.0649411,
+            "capture": 0.0047689666666666675,
+            "complete": 0.028750600000000015
+          }
+        },
+        {
+          "model": "IEEET1",
+          "devices": 3,
+          "exclusive_s_per_run": 0.07152763333333334,
+          "share_of_timed_update_percent": 2.895040847748463,
+          "ms_per_device_per_run": 23.842544444444446,
+          "calls_per_run": 28824.0,
+          "mean_us_per_call": 2.481530437598298,
+          "phases_s_per_run": {
+            "boundary_update": 0.07152763333333334
+          }
+        },
+        {
+          "model": "IeeeVcRoundRotorMachine",
+          "devices": 103,
+          "exclusive_s_per_run": 0.0683803,
+          "share_of_timed_update_percent": 2.76765429605007,
+          "ms_per_device_per_run": 0.6638864077669904,
+          "calls_per_run": 989624.0,
+          "mean_us_per_call": 0.06909725309814638,
+          "phases_s_per_run": {
+            "electrical_endpoint": 0.016760133333333333,
+            "machine_derivative": 0.05162016666666666
+          }
+        }
+      ],
+      "top_devices": [
+        {
+          "model": "IEEET1",
+          "device": "Bus4026-mach1/IEEET1",
+          "exclusive_s_per_run": 0.03151896666666667
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus1051-mach1/EXST1",
+          "exclusive_s_per_run": 0.0251069
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus4094-mach1/IEEET1",
+          "exclusive_s_per_run": 0.0201977
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus5262-mach1/ESST1A",
+          "exclusive_s_per_run": 0.019971766666666668
+        },
+        {
+          "model": "IEEET1",
+          "device": "Bus6110-mach1/IEEET1",
+          "exclusive_s_per_run": 0.019810966666666666
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus7098-mach1/ESST1A",
+          "exclusive_s_per_run": 0.018543
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus5263-mach1/ESST1A",
+          "exclusive_s_per_run": 0.017874033333333334
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus8088-mach1/ESST1A",
+          "exclusive_s_per_run": 0.017139699999999997
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus6078-mach1/ESST1A",
+          "exclusive_s_per_run": 0.017039500000000003
+        },
+        {
+          "model": "IEEEG1",
+          "device": "Bus4026-mach1/IEEEG1",
+          "exclusive_s_per_run": 0.016893500000000002
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus5360-mach1/ESST1A",
+          "exclusive_s_per_run": 0.016849199999999998
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus7196-mach1/EXST1",
+          "exclusive_s_per_run": 0.016841899999999996
+        },
+        {
+          "model": "ESST1A",
+          "device": "Bus7099-mach1/ESST1A",
+          "exclusive_s_per_run": 0.016441066666666667
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus6079-mach1/EXST1",
+          "exclusive_s_per_run": 0.016115466666666668
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus1078-mach1/EXST1",
+          "exclusive_s_per_run": 0.0160699
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus6080-mach1/EXST1",
+          "exclusive_s_per_run": 0.015857066666666666
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus7045-mach1/EXST1",
+          "exclusive_s_per_run": 0.015664566666666668
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus7136-mach1/EXST1",
+          "exclusive_s_per_run": 0.015265266666666668
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus5206-mach1/EXST1",
+          "exclusive_s_per_run": 0.015089233333333334
+        },
+        {
+          "model": "EXST1",
+          "device": "Bus4052-mach1/EXST1",
+          "exclusive_s_per_run": 0.015081566666666666
+        }
+      ]
+    }
+  ],
+  "protocol": {
+    "scope": "Diagnostic per-model update timers plus sampled main-thread stacks; not a qualified runtime benchmark.",
+    "baseline_plugin_commit": "3e1bf2d3c",
+    "baseline_checkpoint": "docs/benchmarks/checkpoints/st1-generated-inputs-2026-10-21.json",
+    "candidate_observation_caches_included": false,
+    "network_voltage_tolerance_pu": 1e-05,
+    "step_s": 0.004166666666666667,
+    "end_s": 10,
+    "logical_processors": 1,
+    "warmups": 32,
+    "profiled_repetitions": 3,
+    "recording": "Full original channels and event-side samples; first repetition compared byte-for-byte to retained baseline; remaining repetitions compared to first.",
+    "timer_scope": "Startup history and dynamic steps only. Exclusive counters subtract nested PSS preparation from exciter/local integration. Shared state array handling is separate. Network injection assembly and full recording remain outside these per-device update counters.",
+    "overhead": "Timers and identity lookups alter runtime; times are diagnostic attribution, not uninstrumented performance claims. Sampled stacks independently identify hot code and profiler overhead.",
+    "sources": {
+      "DeviceUpdateProfile.java": "76098712537dd4ba92ad96e9e7aeebf96120c40864343be42f47e59c32a52f26",
+      "PsseStaggeredEulerSolver.java": "d9984585ee976abea7e598e04c09888e5bc06957981faed397047dbb73658825",
+      "DeviceModelProfileRun.java": "c12c95b9b4dc34b0cf02b9f894a6b5b731a237185758ec615f0ba26055e71fe9"
+    },
+    "identity_limitation": "REGCA1 getId() is only a unit ID and is not bus-qualified. Its 96 objects are separately timed, but per-unit ranks cannot be recovered from the exported identity. Use aggregate timings only."
+  }
+}

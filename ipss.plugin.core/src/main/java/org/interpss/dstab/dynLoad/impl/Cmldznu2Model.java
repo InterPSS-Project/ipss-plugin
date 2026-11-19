@@ -9,21 +9,79 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.Cmldznu2Data;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
+import com.interpss.dstab.controller.runtime.IntegrationStateAccess;
+import com.interpss.dstab.controller.runtime.IntegrationStepAware;
 
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** Zone-scoped composite load assembled from the native distribution and motor components. */
-public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider {
+public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider, IntegrationStepAware,
+        com.interpss.dstab.relay.model.CompositeLoadSheddingTarget {
     private static final double EPS = 1.0e-10;
 
     private final Cmldznu2Data data;
     private final Set<String> targetLoadIds;
     private final Complex targetPower;
+    private final java.util.List<Cmldznu2Model> sourceModels=new java.util.ArrayList<>();
+    private boolean sharedSourceBus;
+
+    /** Existing models remain separate owners; the first supplies the engine's preparation entry point. */
+    public void addSourceModel(Cmldznu2Model model) {
+        if(model==this || model.getDStabBus()!=getDStabBus() || capacityLeaves!=null)
+            throw new IllegalArgumentException("Composite sources must share an uninitialized parent bus");
+        for(var existing:sourceModels)if(!java.util.Collections.disjoint(existing.targetLoadIds,model.targetLoadIds))
+            throw new IllegalArgumentException("Duplicate composite source load IDs: "+model.targetLoadIds);
+        sourceModels.add(model);sharedSourceBus=true;model.sharedSourceBus=true;
+    }
+    public java.util.List<Cmldznu2Model> getSourceModels() { return java.util.Collections.unmodifiableList(sourceModels); }
+    @Override public java.util.List<Cmldznu2Model> getSourceTargets() { return getSourceModels(); }
+    @Override public boolean isInitializationBypassed() { return initializationScreen != null && initializationScreen.bypassed(); }
+
+    @Override public boolean initStates(BaseDStabBus<?,?> bus) {
+        boolean accepted=super.initStates(bus);
+        // Prepare every owned source before the engine traverses devices and
+        // relays. These are the same model instances, not equivalent injections.
+        for(var source:sourceModels)if(source!=this)accepted=source.initStates(bus)&&accepted;
+        return accepted;
+    }
+    @Override protected String distributionBusId(String suffix) {
+        return sharedSourceBus ? getDStabBus().getId()+"_"+getId()+suffix : super.distributionBusId(suffix);
+    }
+
+    private org.interpss.plugin.dstab.config.LoadModelThresholds initializationThresholds;
+    public record InitializationScreen(String bus, Set<String> loadIds, double pMw,
+            double qMvar, double voltagePu, boolean thresholdsConsulted, java.util.List<String> violations) {
+        public InitializationScreen { loadIds=Set.copyOf(loadIds);violations=java.util.List.copyOf(violations); }
+        public boolean bypassed() { return !violations.isEmpty(); }
+    }
+    private InitializationScreen initializationScreen;
+    public void setInitializationThresholds(org.interpss.plugin.dstab.config.LoadModelThresholds thresholds) {
+        if(capacityLeaves!=null)throw new IllegalStateException("Composite already initialized");
+        initializationThresholds=thresholds;
+    }
+    public InitializationScreen getInitializationScreen() { return initializationScreen; }
+    /** Subsystem assignments screen each source load; an explicit legacy bus assignment does not. */
+    protected boolean consumesInitializationThresholds() { return true; }
+
     private double staticFraction;
     private Cmldznu2AlgebraicLoadModel staticLoadComponent;
     private Cmldznu2AlgebraicLoadModel electronicLoadComponent;
+    private Complex collapsedParentRemainder;
+    private Complex collapsedParentOriginalShunt;
+    private Complex ownedLowSideShunt = Complex.ZERO;
+    private CompositeTapControlPort tapControl;
+    private Complex nearCompensation = Complex.ZERO, farCompensation = Complex.ZERO;
+    private com.interpss.dstab.dynLoad.DynLoadModel[] capacityLeaves;
+    private double remainingCapacity = 1.0;
+    private double disconnectedLowVoltage, disconnectedLoadVoltage;
+    protected LegacyDistributionShuntPort ownedDistributionShuntPort;
+    private BaseDStabBus<?,?> capacityParent, capacityLowBus, capacityLoadBus;
+    private DStabilityNetwork capacityNetwork;
 
     public Cmldznu2Model(String id, BaseDStabBus<?, ?> bus, Set<String> targetLoadIds,
             Complex targetPower, Cmldznu2Data data) {
@@ -34,9 +92,16 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
         this.data = data;
         this.targetLoadIds = Set.copyOf(new LinkedHashSet<>(targetLoadIds));
         this.targetPower = targetPower;
+        sourceModels.add(this);
         setId(id);
         setGroupId("zone:" + (bus.getZone() == null ? "" : bus.getZone().getNumber()));
         configure();
+    }
+
+    @Override public void configureIntegrationStep(double timeStepSec) {
+        if (get1PhaseACMotor() instanceof IntegrationStepAware motor)
+            motor.configureIntegrationStep(timeStepSec);
+        for(var source:sourceModels)if(source!=this)source.configureIntegrationStep(timeStepSec);
     }
 
     private void configure() {
@@ -102,6 +167,7 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
     private void configureMotorD(LD1PAC motor) {
 		if (motor instanceof LD1PACImpl implementation) {
 			implementation.setFrequencySourceBus(getDStabBus());
+            implementation.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.ZONE_COMPOSITE);
 		}
         motor.setTstall(data.value(97)); motor.setTrst(data.value(98));
         motor.setTv(data.value(99)); motor.setTf(data.value(100));
@@ -123,6 +189,144 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
         motor.setUVtr2(data.value(130)); motor.setTtr2(data.value(131));
     }
 
+    @Override protected boolean initializeOmittedDistribution(double mvaFactor) {
+        boolean omitTransformer = data.value(5) == 0;
+        boolean omitFeeder = data.value(3) == 0;
+        if (!omitTransformer && !omitFeeder) return false;
+        var parent = getDStabBus();
+        lowBus = omitTransformer ? parent : internalBus("_lowBus");
+        loadBus = omitFeeder ? lowBus : internalBus("_loadBus");
+        if (loadBus == parent) {
+            collapsedParentRemainder = new Complex(parent.getLoadP(), parent.getLoadQ());
+            collapsedParentOriginalShunt = parent.getShuntY() == null ? Complex.ZERO : parent.getShuntY();
+        }
+        loadBus.setLoadCode(AclfLoadCode.CONST_P);
+        var network = (DStabilityNetwork) parent.getNetwork();
+        try {
+            distXfr = omitTransformer ? null : DStabObjectFactory.createDStabBranch(parent.getId(), lowBus.getId(), network);
+            if (distXfr != null) { distXfr.setBranchCode(AclfBranchCode.XFORMER); distXfr.setZ(new Complex(0, data.value(5) * mvaFactor)); }
+            distFdr = omitFeeder ? null : DStabObjectFactory.createDStabBranch(lowBus.getId(), loadBus.getId(), network);
+            if (distFdr != null) distFdr.setZ(new Complex(data.value(2), data.value(3)).multiply(mvaFactor));
+        } catch (com.interpss.common.exp.InterpssException e) { throw new IllegalArgumentException("Cannot attach composite distribution elements", e); }
+        initializeDistributionEquivalent(parent.getVoltage(), totalLoad.divide(parent.getVoltage()).conjugate(), mvaFactor);
+        return true;
+    }
+
+    private BaseDStabBus<?, ?> internalBus(String suffix) {
+        var parent = getDStabBus(); var network = (DStabilityNetwork) parent.getNetwork();
+        var bus = DStabObjectFactory.createDStabBus(distributionBusId(suffix), network).orElseThrow();
+        bus.setBaseVoltage(1); bus.setSortNumber(network.getNoBus() - 1); bus.setArea(parent.getArea()); bus.setZone(parent.getZone());
+        return bus;
+    }
+
+    @Override protected boolean initializeInductionMotor(InductionMotor motor) {
+        // The composite card supplies performance reactances without a leakage
+        // reactance. The two-cage equivalent uses 80% of Xpp. The generic
+        // performance-data initializer can instead select 80% of Xp when
+        // Xp and Xpp are close, changing both rotor resistances and initial slip.
+        // Keep explicit leakage and single-cage preparation with the base motor.
+        if (motor.getXl() == 0.0 && motor.getTpp0() > 0.0
+                && motor.getXpp() > 0.0 && motor.getXpp() < motor.getXp()) {
+            motor.setXl(0.8 * motor.getXpp());
+        }
+        return super.initializeInductionMotor(motor);
+    }
+
+    @Override protected boolean initializeSinglePhaseMotor(LD1PAC motor) {
+        if (getLoadBus() == getDStabBus() && motor instanceof LD1PACImpl compressor) {
+            double active = getLoadBus().getInitLoad().getReal() * getFmD();
+            compressor.setInitialLoadAllocation(new Complex(active, active * reactiveRatio(data.value(102))));
+        }
+        return super.initializeSinglePhaseMotor(motor);
+    }
+
+    @Override protected void initializeDistributionEquivalent(Complex voltage, Complex incomingCurrent, double mvaFactor) {
+        var data = getData();
+        boolean legacyAllocation = distributionIncludesReactiveCompensation();
+        if (!legacyAllocation && distXfr != null) distXfr.setZ(distXfr.getZ().multiply(data.value(6) * data.value(6)));
+        double fixedRatio = distXfr == null ? 1 : data.value(7) / data.value(6);
+        if (!Double.isFinite(fixedRatio) || fixedRatio <= 0)
+            throw new IllegalArgumentException("Composite fixed transformer taps must be positive");
+        Complex highSide = distXfr == null ? voltage : voltage.subtract(distXfr.getZ().multiply(incomingCurrent));
+        double tap = fixedRatio, step = data.value(11), target = .5 * (data.value(12) + data.value(13));
+        if (distXfr != null && step > 0) {
+            Complex compensationDrop = new Complex(data.value(16), data.value(17)).multiply(mvaFactor).multiply(incomingCurrent);
+            double a = highSide.abs() * highSide.abs();
+            double b = target * target + 2 * highSide.multiply(compensationDrop.conjugate()).getReal();
+            double c = compensationDrop.abs() * compensationDrop.abs();
+            double discriminant = b * b - 4 * a * c;
+            if (discriminant < 0 || !(a > 0)) throw new IllegalArgumentException("No valid compensated initial transformer ratio");
+            double continuous = Math.sqrt((b + Math.sqrt(discriminant)) / (2 * a));
+            long moves = Math.round((continuous - fixedRatio) / step);
+            if (moves > 0) moves = Math.min(moves, Math.max(0, Math.round((data.value(10) - fixedRatio) / step)));
+            else if (moves < 0) moves = Math.max(moves, Math.min(0, Math.round((data.value(9) - fixedRatio) / step)));
+            tap = fixedRatio + moves * step;
+        }
+        if (distXfr != null) { distXfr.setFromTurnRatio(1); distXfr.setToTurnRatio(tap); }
+        Complex lowVoltage = highSide.multiply(tap);
+        getLowVoltBus().setVoltage(lowVoltage);
+        double initialReactiveDemandRatio = legacyAllocation ? (getFmA() > 1e-10 ? getFmA() * motorReactiveRatio(data.value(38)) : 0)
+                + (getFmB() > 1e-10 ? getFmB() * motorReactiveRatio(data.value(58)) : 0)
+                + (getFmC() > 1e-10 ? getFmC() * motorReactiveRatio(data.value(78)) : 0)
+                + getFmD() * reactiveRatio(data.value(102)) + getFel() * reactiveRatio(data.value(23))
+                + getStaticFraction() * staticReactiveDemandRatio() : 0;
+        double fromCompensation = (legacyAllocation ? Math.max(0, Math.min(1, data.value(4))) : 0)
+                * (totalLoad.getReal() * initialReactiveDemandRatio - totalLoad.getImaginary())
+                / (lowVoltage.abs() * lowVoltage.abs());
+        double lowSusceptance = data.value(1) / mvaFactor + fromCompensation;
+        Complex componentLowShunt = new Complex(0, lowSusceptance);
+        ownedLowSideShunt = componentLowShunt;
+        nearCompensation = new Complex(0, fromCompensation);
+        if (getLowVoltBus() == getDStabBus()) addShunt(getLowVoltBus(), lowSusceptance);
+        else getLowVoltBus().setShuntY(componentLowShunt);
+        Complex feederCurrent = incomingCurrent.divide(tap).subtract(lowVoltage.multiply(componentLowShunt));
+        Complex loadVoltage = distFdr == null ? lowVoltage : lowVoltage.subtract(distFdr.getZ().multiply(feederCurrent));
+        if (loadVoltage.abs() < .95 && distFdr != null) {
+            if (lowVoltage.abs() <= .95) {
+                // The nominal initialization target is unattainable even with
+                // zero feeder drop. Keep a finite branch instead of rejecting
+                // the solved source voltage or inserting a singular zero Z.
+                // This published distribution-equivalent compatibility rule is
+                // on system base, after the model-base conversion above:
+                // https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Transient_Stability_Load_Model_Group_Distribution_Feeder_Equivalent.htm
+                // Native captures independently permit this low-voltage start;
+                // exact native feeder-preparation parity remains unqualified.
+                distFdr.setZ(new Complex(1e-7,1e-5));
+                org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                        "Composite {} at {}: low-side voltage {} cannot reach the 0.95 pu initialization target; using finite feeder floor on system base and retaining source constants",
+                        getId(),getDStabBus().getId(),lowVoltage.abs());
+            } else {
+                Complex drop = distFdr.getZ().multiply(feederCurrent);
+                double a = drop.abs() * drop.abs(), projection = lowVoltage.multiply(drop.conjugate()).getReal();
+                double c = lowVoltage.abs() * lowVoltage.abs() - .95 * .95;
+                double scale = (projection - Math.sqrt(Math.max(0, projection * projection - a * c))) / a;
+                distFdr.setZ(distFdr.getZ().multiply(Math.max(0, Math.min(1, scale))));
+            }
+            loadVoltage = lowVoltage.subtract(distFdr.getZ().multiply(feederCurrent));
+        }
+        // With an omitted feeder there is no impedance to adjust. Initialize
+        // components at the actual low-side voltage, including a value below
+        // the nominal distribution target; component limits remain authoritative.
+        Complex loadPower = loadVoltage.multiply(feederCurrent.conjugate());
+        double grossReactiveDemand = legacyAllocation ? loadPower.getReal() * initialReactiveDemandRatio : loadPower.getImaginary();
+        getLoadBus().setVoltage(loadVoltage); getLoadBus().setLoadP(loadPower.getReal()); getLoadBus().setLoadQ(grossReactiveDemand);
+        // The engine subtracts owned component demand from this gross load.
+        // The explicitly stamped far-end capacitor already supplies the Q difference.
+        getLoadBus().setInitLoad(new Complex(loadPower.getReal(), grossReactiveDemand));
+        double farCompensation = legacyAllocation ? (loadPower.getReal() * initialReactiveDemandRatio - loadPower.getImaginary())
+                / (loadVoltage.abs() * loadVoltage.abs()) : 0;
+        this.farCompensation = new Complex(0, farCompensation);
+        if (getLoadBus() == getLowVoltBus()) addShunt(getLoadBus(), farCompensation);
+        else getLoadBus().setShuntY(new Complex(0, farCompensation));
+    }
+
+    private static double reactiveRatio(double powerFactor) { return Math.tan(Math.acos(powerFactor)); }
+    protected double staticReactiveDemandRatio() { return reactiveRatio(data.value(26)); }
+    protected static double motorReactiveRatio(double loading) {
+        if (!(loading > 0 && loading <= 1)) throw new IllegalArgumentException("Composite motor loading factor must be in (0,1]");
+        return Math.sqrt(1 / (loading * loading) - 1);
+    }
+
     @Override
     protected Complex resolveCompositeLoad() { return targetPower; }
 
@@ -138,22 +342,252 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
 
     @Override
     public boolean initStates() {
+        // Evaluate after the caller's power flow, but before detaching the source
+        // ZIP load or creating any feeder/motor. A screened assignment leaves
+        // that source record and its status untouched. The remaining static P/Q
+        // is converted by the network's declared static-load policy (I/Z for
+        // newly imported networks), rather than retaining RAW ZIP dynamics.
+        // Do not apply these subsystem thresholds to explicit bus assignments.
+        Complex screenPower=Complex.ZERO;
+        for(String id:targetLoadIds) {
+            var source=getDStabBus().getContributeLoad(id);
+            if(source!=null&&source.isActive())screenPower=screenPower.add(source.getLoad(getDStabBus().getVoltageMag()));
+        }
+        double base=getDStabBus().getNetwork().getBaseMva();
+        boolean consult=initializationThresholds!=null&&consumesInitializationThresholds();
+        var reasons=consult?initializationThresholds.violations(screenPower.getReal()*base,
+                screenPower.getImaginary()*base,getDStabBus().getVoltageMag()):java.util.List.<String>of();
+        initializationScreen=new InitializationScreen(getDStabBus().getId(),targetLoadIds,
+                screenPower.getReal()*base,screenPower.getImaginary()*base,getDStabBus().getVoltageMag(),consult,reasons);
+        if(!reasons.isEmpty()) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                    "Composite assignment {} at {} bypassed: {}; retaining source static load {}",
+                    getId(),getDStabBus().getId(),reasons,targetLoadIds);
+            return true;
+        }
         if (!super.initStates()) return false;
+        double assignedActive = getLoadBus() == getDStabBus() ? getLoadBus().getInitLoad().getReal() : Double.NaN;
         if (staticFraction > EPS) {
-            staticLoadComponent = new Cmldznu2AlgebraicLoadModel(
-                    Cmldznu2AlgebraicLoadModel.Kind.STATIC, getLoadBus(), getId() + "_S",
-                    staticFraction, data);
+            staticLoadComponent = createStaticComponent(assignedActive * staticFraction);
             if (!staticLoadComponent.initStates()) return false;
         }
         if (getFel() > EPS) {
             electronicLoadComponent = new Cmldznu2AlgebraicLoadModel(
                     Cmldznu2AlgebraicLoadModel.Kind.ELECTRONIC, getLoadBus(), getId() + "_E",
-                    getFel(), data);
+                    getFel(), data, assignedActive * getFel());
             if (!electronicLoadComponent.initStates()) return false;
         }
-        applyReactiveCompensation();
+        prepareAlgebraicNetworkInterface(staticLoadComponent, electronicLoadComponent);
+        if (data.value(8) == 1 && distXfr != null && data.value(11) > 0) {
+            tapControl = new CompositeTapControlPort(this);
+            if (!tapControl.initStates()) return false;
+        }
+        if (!distributionIncludesReactiveCompensation()) applyReactiveCompensation();
+        if (getLoadBus() == getDStabBus()) {
+            var parent = getDStabBus(); Complex combined = collapsedParentRemainder.add(parent.getInitLoad());
+            parent.setLoadP(combined.getReal()); parent.setLoadQ(combined.getImaginary()); parent.setInitLoad(combined);
+            parent.setNetLoadResults(combined);
+            for (var motor : new InductionMotor[]{getInductionMotorA(), getInductionMotorB(), getInductionMotorC()})
+                if (motor != null) motor.setLoadPercent(100 * motor.getInitLoadPQ().getReal() / combined.getReal());
+            if (get1PhaseACMotor() != null) get1PhaseACMotor().setLoadPercent(100 * get1PhaseACMotor().getInitLoadPQ().getReal() / combined.getReal());
+            if (staticLoadComponent != null) staticLoadComponent.setLoadPercent(100 * staticLoadComponent.getInitLoadPQ().getReal() / combined.getReal());
+            if (electronicLoadComponent != null) electronicLoadComponent.setLoadPercent(100 * electronicLoadComponent.getInitLoadPQ().getReal() / combined.getReal());
+        }
+        capacityLeaves = java.util.stream.Stream.of(getInductionMotorA(), getInductionMotorB(),
+                getInductionMotorC(), get1PhaseACMotor(), staticLoadComponent, electronicLoadComponent)
+                .filter(java.util.Objects::nonNull).toArray(com.interpss.dstab.dynLoad.DynLoadModel[]::new);
+        remainingCapacity = 1.0;
+        capacityParent=getDStabBus(); capacityLowBus=getLowVoltBus(); capacityLoadBus=getLoadBus();
+        capacityNetwork=(DStabilityNetwork)capacityParent.getNetwork();
         return true;
     }
+
+    // Both source dialects use the same owned-subtree capacity equations.
+    // Exposing this contract on the common implementation lets relays follow
+    // source load IDs after distribution expansion without duplicating P/Q.
+    /** Source-ID action is unambiguous only for a singleton owner or a whole-owner wildcard. */
+    public boolean canChangeLoad(String sourceLoadId, double factor) {
+        return matchesCapacitySource(sourceLoadId) && canChangeCompositeCapacity(factor);
+    }
+
+    /** Validate prepared ownership before the engine has constructed its dynamic matrix. */
+    public boolean canPrepareLoadChange(String sourceLoadId, double factor) {
+        return matchesCapacitySource(sourceLoadId) && canPrepareCompositeCapacity(factor);
+    }
+
+    private boolean matchesCapacitySource(String sourceLoadId) {
+        return "*".equals(sourceLoadId) || "#".equals(sourceLoadId)
+                || getTargetLoadIds().size() == 1 && getTargetLoadIds().contains(sourceLoadId);
+    }
+
+    public boolean canChangeLoad(double factor) { return canChangeCompositeCapacity(factor); }
+
+    @Override public boolean changeLoad(double factor) { return changeCompositeCapacity(factor); }
+
+    /** Prepared whole-owner capacity action, including verified owned-subtree disconnection. */
+    protected final boolean canChangeCompositeCapacity(double factor) {
+        return canPrepareCompositeCapacity(factor) && capacityNetwork.getYMatrix()!=null;
+    }
+
+    protected final boolean canPrepareCompositeCapacity(double factor) {
+        if (capacityLeaves == null || !Double.isFinite(factor) || factor > 0 || remainingCapacity <= 0 || remainingCapacity + factor < 0
+                || getDStabBus()!=capacityParent || getLowVoltBus()!=capacityLowBus || getLoadBus()!=capacityLoadBus
+                || capacityParent.getNetwork()!=capacityNetwork || capacityLowBus.getNetwork()!=capacityNetwork
+                || capacityLoadBus.getNetwork()!=capacityNetwork) return false;
+        if (distFdr!=null && (distFdr.getFromBus()!=capacityLowBus || distFdr.getToBus()!=capacityLoadBus)) return false;
+        if (distXfr!=null && (distXfr.getFromBus()!=capacityParent || distXfr.getToBus()!=capacityLowBus)) return false;
+        for (var leaf:capacityLeaves) if (leaf.getDStabBus()!=capacityLoadBus) return false;
+        if (remainingCapacity+factor==0 && !canDisconnectOwnedDistribution()) return false;
+        return true;
+    }
+
+    private boolean canDisconnectOwnedDistribution() {
+        // With both elements omitted, remove only this owner; the common bus stays live.
+        if (distXfr==null && distFdr==null && capacityLowBus==capacityParent && capacityLoadBus==capacityParent)
+            return true;
+        // Internal buses may coincide, or the low-side bus may be the energized parent.
+        if (capacityLoadBus==capacityParent) return false;
+        for (var bus:new BaseDStabBus<?,?>[]{capacityLowBus,capacityLoadBus}) {
+            if (bus==capacityParent) continue;
+            if (!bus.getContributeGenList().isEmpty()) return false;
+            for (var device:bus.getDynamicBusDeviceList()) if(!isOwnedCapacityDevice(device)) return false;
+            // Eligibility is rechecked for live topology on every relay stage.
+            // Only incident branches can prevent removal of this internal bus;
+            // scanning the complete network here makes a flat relay audit
+            // quadratic in case size. The live adjacency view retains foreign
+            // connections and status changes without a cached ownership result.
+            for (var branch:bus.getBranchList())
+                if (branch.isActive() && (branch.getFromBus()==bus || branch.getToBus()==bus)
+                        && branch!=distFdr && branch!=distXfr) return false;
+            if(bus.getDynLoadModelList()!=null) for (var leaf:bus.getDynLoadModelList()) {
+                if (!isOwnedCapacityDevice(leaf)) return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isOwnedCapacityDevice(Object device) {
+        if(device==tapControl)return true;
+        for(var leaf:capacityLeaves)if(leaf==device)return true;
+        return device==ownedDistributionShuntPort;
+    }
+
+    private void disconnectOwnedDistribution(double factor) {
+        disconnectedLowVoltage=capacityLowBus.getVoltageMag();
+        disconnectedLoadVoltage=capacityLoadBus.getVoltageMag();
+        if (capacityLowBus==capacityParent) {
+            // Remove physical shunts and each active owned leaf's numerical stamp separately.
+            // Their cancellation is model-specific; neither includes unrelated parent equipment.
+            Complex parentOwned=ownedLowSideShunt.add(capacityLoadBus==capacityParent?farCompensation:Complex.ZERO);
+            changePhysicalShunt(capacityParent,parentOwned.negate(),capacityNetwork);
+            int row=capacityParent.getSortNumber();
+            for (var leaf:capacityLeaves) if (leaf.isActive() && leaf.getDStabBus()==capacityParent)
+                capacityNetwork.getYMatrix().addToA(leaf.getPosSeqEquivY().negate(),row,row);
+            if (ownedDistributionShuntPort!=null && ownedDistributionShuntPort.isActive()) {
+                capacityNetwork.getYMatrix().addToA(ownedDistributionShuntPort.getPosSeqEquivY().negate(),row,row);
+                ownedDistributionShuntPort.setStatus(false);
+            }
+        }
+        // Remove live stamps in place, preserving an unrelated active fault's diagonal.
+        removeDistributionBranch(distFdr);removeDistributionBranch(distXfr);
+        for (var leaf:capacityLeaves) {
+            leaf.changeLoad(factor);
+            leaf.setLoadPQ(Complex.ZERO);leaf.setStatus(false);
+        }
+        if (tapControl!=null)tapControl.setStatus(false);
+        for (var bus:new BaseDStabBus<?,?>[]{capacityLowBus,capacityLoadBus}) if (bus!=capacityParent && bus.isActive()) {
+            if(bus.getDynLoadModelList()!=null)for (var leaf:bus.getDynLoadModelList())leaf.setStatus(false);
+            bus.setStatus(false);
+            int row=bus.getSortNumber();capacityNetwork.getYMatrix().setA(Complex.ONE,row,row);
+            capacityNetwork.getYMatrix().setBi(Complex.ZERO,row);
+        }
+        ownedLowSideShunt=Complex.ZERO;nearCompensation=Complex.ZERO;farCompensation=Complex.ZERO;
+        remainingCapacity=0;
+        capacityNetwork.setYMatrixDirty(true);
+    }
+
+    private void removeDistributionBranch(com.interpss.dstab.DStabBranch branch) {
+        if(branch==null || !branch.isActive())return;
+        int from=branch.getFromBus().getSortNumber(),to=branch.getToBus().getSortNumber();
+        var matrix=capacityNetwork.getYMatrix();
+        matrix.addToA(branch.yff().negate(),from,from);matrix.addToA(branch.yft().negate(),from,to);
+        matrix.addToA(branch.ytf().negate(),to,from);matrix.addToA(branch.ytt().negate(),to,to);
+        branch.setStatus(false);
+    }
+
+    protected final boolean changeCompositeCapacity(double factor) {
+        if (!canChangeCompositeCapacity(factor)) return false;
+        if (factor == 0) return true;
+        if (remainingCapacity+factor==0) { disconnectOwnedDistribution(factor);return true; }
+        double next = remainingCapacity + factor, ratio = next / remainingCapacity;
+        var network = (DStabilityNetwork)getDStabBus().getNetwork();
+        if (distFdr != null) {
+            var ff=distFdr.yff(); var ft=distFdr.yft(); var tf=distFdr.ytf(); var tt=distFdr.ytt();
+            distFdr.setZ(distFdr.getZ().divide(ratio));
+            int from=getLowVoltBus().getSortNumber(), to=getLoadBus().getSortNumber();
+            network.getYMatrix().addToA(distFdr.yff().subtract(ff),from,from);
+            network.getYMatrix().addToA(distFdr.yft().subtract(ft),from,to);
+            network.getYMatrix().addToA(distFdr.ytf().subtract(tf),to,from);
+            network.getYMatrix().addToA(distFdr.ytt().subtract(tt),to,to);
+        }
+        Complex nearDelta=nearCompensation.multiply(ratio-1), farDelta=farCompensation.multiply(ratio-1);
+        changePhysicalShunt(getLowVoltBus(),nearDelta,network);
+        changePhysicalShunt(getLoadBus(),farDelta,network);
+        ownedLowSideShunt=ownedLowSideShunt.add(nearDelta);
+        nearCompensation=nearCompensation.multiply(ratio); farCompensation=farCompensation.multiply(ratio);
+        for (var leaf:capacityLeaves) if (!leaf.changeLoad(factor))
+            throw new IllegalStateException("Prepared composite leaf rejected a valid capacity decrement");
+        remainingCapacity=next;
+        network.setYMatrixDirty(true);
+        return true;
+    }
+
+    private static void changePhysicalShunt(BaseDStabBus<?,?> bus,Complex delta,DStabilityNetwork network) {
+        bus.setShuntY(bus.getShuntY().add(delta));
+        bus.applyPositiveSequenceShuntAdmittanceChange(delta);
+        int row=bus.getSortNumber(); network.getYMatrix().addToA(delta,row,row);
+    }
+
+    /** Identity membership for callers that also traverse the source bus's dynamic loads. */
+    public boolean ownsCapacityLoad(com.interpss.dstab.dynLoad.DynLoadModel load) {
+        if (load==null || capacityLeaves==null) return false;
+        for (var leaf:capacityLeaves) if (leaf==load) return true;
+        return false;
+    }
+
+    public double getRemainingCapacity() { return remainingCapacity; }
+
+    /** Prepare only this composite's owned leaves before the engine builds its dynamic matrix. */
+    protected void prepareAlgebraicNetworkInterface(Cmldznu2AlgebraicLoadModel staticComponent,
+            Cmldznu2AlgebraicLoadModel electronicComponent) { }
+
+    protected Cmldznu2AlgebraicLoadModel createStaticComponent(double assignedActivePower) {
+        return new Cmldznu2AlgebraicLoadModel(Cmldznu2AlgebraicLoadModel.Kind.STATIC,
+                getLoadBus(), getId() + "_S", staticFraction, data, assignedActivePower);
+    }
+
+    /** Prepared unrelated parent demand and shunt, before owned leaves are allocated. */
+    public record CollapsedParentAllocation(Complex staticPower, Complex shunt)
+            implements com.interpss.dstab.relay.model.CompositeLoadSheddingTarget.ParentAllocation { }
+
+    public CollapsedParentAllocation getCollapsedParentAllocation() {
+        if (getLoadBus() != getDStabBus() || collapsedParentRemainder == null
+                || collapsedParentOriginalShunt == null || capacityLeaves == null)
+            throw new IllegalStateException("Collapsed parent ownership has not been prepared");
+        return new CollapsedParentAllocation(collapsedParentRemainder, collapsedParentOriginalShunt);
+    }
+
+    protected Complex getCollapsedParentOwnedShunt() {
+        if (getLoadBus() != getDStabBus() || collapsedParentOriginalShunt == null)
+            throw new IllegalStateException("An owned parent shunt requires omitted distribution elements");
+        return getDStabBus().getShuntY().subtract(collapsedParentOriginalShunt);
+    }
+
+    /** The low-side capacitor owned by this composite, excluding unrelated parent shunts. */
+    protected Complex getOwnedLowSideShunt() { return ownedLowSideShunt; }
+
+    /** Whether the distribution hook already included all reactive compensation. */
+    protected boolean distributionIncludesReactiveCompensation() { return false; }
 
     private void applyReactiveCompensation() {
         double componentQ = initialQ(getInductionMotorA()) + initialQ(getInductionMotorB())
@@ -161,9 +595,12 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
                 + initialQ(staticLoadComponent) + initialQ(electronicLoadComponent);
         double voltageSquared = Math.max(EPS, getLoadBus().getVoltageMag() * getLoadBus().getVoltageMag());
         double compensation = (componentQ - getLoadBus().getInitLoad().getImaginary()) / voltageSquared;
-        double fb = Math.max(0.0, Math.min(1.0, getDistEquivalent().getFB()));
-        addShunt(getLowVoltBus(), fb * compensation);
-        addShunt(getLoadBus(), (1.0 - fb) * compensation);
+        // This dialect allocates the compensation at the far end. Keep gross
+        // owned demand on the internal bus so the engine creates no second
+        // residual static compensation while assembling the dynamic network.
+        getLoadBus().setLoadQ(componentQ);
+        getLoadBus().setInitLoad(new Complex(getLoadBus().getInitLoad().getReal(), componentQ));
+        addShunt(getLoadBus(), compensation);
     }
 
     private static double initialQ(com.interpss.dstab.dynLoad.DynLoadModel model) {
@@ -179,6 +616,10 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
     @Override
     public Map<String, Double> getNamedStates() {
         Map<String, Double> states = new LinkedHashMap<>();
+        if (getLowVoltBus()!=null && getLoadBus()!=null) {
+            states.put("Distribution.LowVoltage",remainingCapacity==0?disconnectedLowVoltage:getLowVoltBus().getVoltageMag());
+            states.put("Distribution.LoadVoltage",remainingCapacity==0?disconnectedLoadVoltage:getLoadBus().getVoltageMag());
+        }
         addMotorStates(states, "MotorA", getInductionMotorA());
         addMotorStates(states, "MotorB", getInductionMotorB());
         addMotorStates(states, "MotorC", getInductionMotorC());
@@ -195,6 +636,7 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
         }
         if (staticLoadComponent != null) states.putAll(staticLoadComponent.getNamedStates());
         if (electronicLoadComponent != null) states.putAll(electronicLoadComponent.getNamedStates());
+        if (tapControl != null) states.putAll(tapControl.getNamedStates());
         return Map.copyOf(states);
     }
 
@@ -213,6 +655,38 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
     public Cmldznu2Data getData() { return data; }
     public Set<String> getTargetLoadIds() { return targetLoadIds; }
     public double getStaticFraction() { return staticFraction; }
+    /** Owned distribution transformer, or null when the input omits it. */
+    public com.interpss.dstab.DStabBranch getDistributionTransformer() { return distXfr; }
+
+    /** Change the active tap-control target between completed integration intervals. */
+    public void setTapVoltageBand(double minimum, double maximum) {
+        if (tapControl == null) throw new IllegalStateException("No active transformer tap controller");
+        tapControl.setVoltageBand(minimum,maximum);
+    }
+
+    /** Leaf-owned coordinates and diagnostics; the composite container owns no duplicate state vector. */
+    public Map<String, IntegrationStateAccess> getIntegrationStateOwners() {
+        var owners = new LinkedHashMap<String, IntegrationStateAccess>();
+        if (getInductionMotorA() instanceof IntegrationStateAccess state) owners.put("MotorA", state);
+        if (getInductionMotorB() instanceof IntegrationStateAccess state) owners.put("MotorB", state);
+        if (getInductionMotorC() instanceof IntegrationStateAccess state) owners.put("MotorC", state);
+        if (get1PhaseACMotor() instanceof IntegrationStateAccess state) owners.put("MotorD", state);
+        if (tapControl != null) owners.put("TapControl",tapControl);
+        return Map.copyOf(owners);
+    }
+
+    /** Exact algebraic leaf type; the shared solver must not accept arbitrary custom loads. */
+    public static boolean isAlgebraicComponent(Object model) {
+        return model != null && (model.getClass() == Cmldznu2AlgebraicLoadModel.class
+                || model.getClass() == LegacyStaticLoadModel.class || model.getClass() == LegacyStaticLoadPort.class
+                || model.getClass() == LegacyDistributedStaticLoadPort.class
+                || model.getClass() == LegacyDistributionShuntPort.class);
+    }
+
+    /** Exact supported discrete-history leaf; it is not an algebraic load. */
+    public static boolean isTapControl(Object model) {
+        return model != null && model.getClass() == CompositeTapControlPort.class;
+    }
 
     /** Refreshes the algebraic components after a network-voltage or frequency change. */
     public void refreshAlgebraicComponents() {

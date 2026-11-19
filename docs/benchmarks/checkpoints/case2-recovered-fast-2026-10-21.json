@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "status": "recovered-experimental-runtime",
+  "production": false,
+  "exact_historical_checkout": false,
+  "core_base_commit": "9e479a4f5",
+  "plugin_base_commit": "79afa24b6",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-recovered-fast-stack/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1359928,
+    "sha256": "3475afae10a3ac2b9eb4a20481fa3117079ad16e6e8312a517fb1b67306aa160"
+  },
+  "archive": {
+    "bytes": 115292412,
+    "sha256": "75998d1044698874a97b2edae73163928d28d31f87e5e3a889c471c701be5ece"
+  },
+  "summary": {
+    "status": "completed",
+    "warmup_runs": 12,
+    "measured_runs": 5,
+    "case_wall_s": [
+      8.8609319,
+      8.405851,
+      8.6535034,
+      8.516267,
+      8.3183149
+    ],
+    "median_case_wall_s": 8.516267,
+    "single_cpu_verified": true,
+    "full_recording_included": true,
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "experimental_class_overlay": true,
+    "exact_historical_checkout": false,
+    "independent_accuracy_qualified": false,
+    "frozen_directory_classes": 5287
+  },
+  "requires": [
+    "Private executable snapshot and retained input files",
+    "External Maven dependencies matching the private manifest"
+  ],
+  "limitation": "This checkpoint index does not make the historical fast implementation a production source checkout."
+}

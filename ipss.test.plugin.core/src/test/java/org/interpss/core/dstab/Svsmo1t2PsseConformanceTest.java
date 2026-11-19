@@ -18,12 +18,14 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.svc.Svsmo1t2Model;
+import com.interpss.dstab.svc.Svsmo1t2Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
@@ -50,6 +52,7 @@ public class Svsmo1t2PsseConformanceTest {
         var context = new PSSEMultiFileLoader().loadDStab(RAW.toString(), DYR.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        configureNativeLoadLaw(network);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         network.setLfConverged(true);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -95,15 +98,48 @@ public class Svsmo1t2PsseConformanceTest {
         }
         System.out.println("SVSMO1T2 PSS/E max errors: " + Arrays.toString(maximum));
         System.out.println("SVSMO1T2 PSS/E max-error times: " + Arrays.toString(maximumTime));
-        // Diagnostic ceilings tracked to observed 1.4.9 max errors on this fixture
-        // (V_BUS4≈0.282, STATE_1/STATE_2/MVAR channels ≈0.15–0.17).
-        double[] diagnosticBounds = {.12, .285, .12, .16, .05, .17, 1.0e-12, .17,
-                1.05, .16, .004, .004, .17, .17, 90.0};
+        // Diagnostic non-regression envelope, not tight model-parity acceptance:
+        // initial switched-shunt control and transient discrepancies remain open.
+        // The 1.5.0 SVSMO1 runtime (UV1 cap at filtered-voltage pickup, PLL hold
+        // and continuous susceptance through command-only limits) moves STATE_3,
+        // VAR_2 and VAR_29 near fault clearing; their envelopes were widened from
+        // .17, .95 and 55 after that intentional model change.
+        double[] diagnosticBounds = {.065, .16, .065, .032, .012, .18, 1.0e-12, .04,
+                1.1, .032, .004, .004, .04, .04, 65.0};
         for (int column = 0; column < signals.length; column++) {
             assertTrue(maximum[column] <= diagnosticBounds[column], String.format(Locale.ROOT,
                     "%s max error %.9g at %.9g exceeds %.9g", signals[column],
                     maximum[column], maximumTime[column], diagnosticBounds[column]));
         }
+    }
+
+    @Test
+    void nativeConlZeroProfileRetainsConstantPowerUnderVoltagePerturbation() throws Exception {
+        IpssCorePlugin.init();
+        var context = new PSSEMultiFileLoader().loadDStab(RAW.toString(), DYR.toString());
+        var network = context.getDStabilityNet();
+        var algorithm = context.getDynSimuAlgorithm();
+        configureNativeLoadLaw(network);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.initialization());
+        var bus = network.getDStabBus("Bus4");
+        Complex initialLoad = bus.calStaticLoad();
+        assertEquals(0.0, initialLoad.subtract(new Complex(.45, .45)).abs(), 1e-12);
+        bus.setVoltage(bus.getVoltage().multiply(.9));
+        assertEquals(0.0, bus.calStaticLoad().subtract(initialLoad).abs(), 1e-12,
+                "Native CONL [0,0,0,0] leaves both load components constant MVA");
+    }
+
+    private static void configureNativeLoadLaw(BaseDStabNetwork<?, ?> network) {
+        // The frozen native probe calls CONL with [0,0,0,0]: no P or Q is
+        // converted to constant current/admittance. Merely selecting CONST_P
+        // is insufficient while the all-loads-in-Y representation remains enabled.
+        network.setStaticLoadIncludedInYMatrix(false);
+        network.setStaticLoadModel(StaticLoadModel.CONST_P);
+        network.setReactiveStaticLoadModel(StaticLoadModel.CONST_P);
     }
 
     @Test

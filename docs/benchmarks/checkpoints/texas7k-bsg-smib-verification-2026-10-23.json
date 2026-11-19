@@ -1,0 +1,61 @@
+{
+  "status": "response_limits_verified_full_case_accuracy_not_accepted",
+  "source_base_commit": "8fbdc466e16ba517b5c155e6c619929b1cc72f71",
+  "source_inventory_files": 2304,
+  "source_inventory_unchanged": true,
+  "java_tests": {
+    "ipss.plugin.3phase": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    "ipss.plugin.core": {
+      "tests": 442,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.test.plugin.core": {
+      "tests": 3254,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 54
+    }
+  },
+  "java_passed": 4078,
+  "java_skipped": 86,
+  "python_passed": 396,
+  "reference_smib": {
+    "profiles": 20,
+    "cold_runs": 40,
+    "maximum_cold_repeat_state_error": 0,
+    "maximum_fixed_order_error_pu": 1.4901e-08,
+    "native_response_flags": {
+      "0": "normal",
+      "1": "down_only",
+      "2": "fixed"
+    }
+  },
+  "texas7k": {
+    "buses": 6717,
+    "bsg_entries": 120,
+    "power_flow_tolerance_pu": 0.001,
+    "full_dynamic_accuracy_accepted": false,
+    "model_coverage_gaps": {
+      "EXPIC1": 86,
+      "IEEEST": 31,
+      "WTTQA1": 18,
+      "REAX3BU1": 13,
+      "REAX4BU1": 2
+    }
+  },
+  "validation_execution": "Completed reports from the interrupted main run plus 37 remaining integration classes in a successful closure; all 672 integration classes accounted for.",
+  "package_install": "passed; installed main class hashes match the tested build",
+  "private_evidence": {
+    "manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-texas7k-bsg/manifest.json",
+    "sha256": "1162791013bfa391b66969e18e2935a2afb12fda627550724ed35b62ab613084",
+    "archive_sha256": "944af74f7cfdbc154e03533c8811ae2b250f05060fef4de16029d0c45300a126",
+    "archive_bytes": 4872930
+  }
+}

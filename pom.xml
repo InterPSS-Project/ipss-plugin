@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <revision>1.4.7</revision>
-        <ipss.core.version>1.4.9</ipss.core.version>
+        <revision>1.5.0</revision>
+        <ipss.core.version>1.5.0</ipss.core.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,6 +21,7 @@
 
     <modules>
         <module>ipss.plugin.core</module>
+        <module>ipss.plugin.ecf</module>
         <module>ipss.plugin.3phase</module>
         <module>ipss.test.plugin.core</module>
         <module>ipss.sample</module>
@@ -69,6 +70,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -106,6 +108,20 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Keep long verification runs independent of IDE/default-target rebuilds.
+             This changes output locations only: no test selection or tolerances. -->
+        <profile>
+            <id>isolated-verification</id>
+            <properties>
+                <verification.run.id>local</verification.run.id>
+            </properties>
+            <build>
+                <directory>${maven.multiModuleProjectDirectory}/.verification-build/${verification.run.id}/${project.artifactId}</directory>
+            </build>
+        </profile>
+    </profiles>
 
   <repositories>
     <repository>

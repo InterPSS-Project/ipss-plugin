@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,9 +14,9 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.pss.ieee2016pss5c.Ieee2016PSS5CStabilizer;
+import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -43,10 +44,13 @@ public class Pss5cIndependentSmibConformanceTest {
     @Test
     void threeCycleFaultMatchesIndependentBoundaryAndPublishedPssResponse() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_esst1a_pss5c.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_esst1a.dyr").toString());
         var network = context.getDStabilityNet();
+        assertTrue(new DStabNetworkBuilder(network).addPss5c("Bus1", "1", new double[] {
+                .5,.01,.01,-.01,3,.07,.075,-.075,20,.6,.6,-.6,80,9,.6,-.6,
+                5.736,6.883,8.259,.15,-.15}) != null);
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
