@@ -2,6 +2,7 @@ package org.interpss.core.adapter.matpower;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
@@ -9,14 +10,18 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.fadapter.matpower.MatpowerDirectParser;
+import org.interpss.fadapter.matpower.MatpowerOpfDirectParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -35,6 +40,84 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	private static final String CASE2736SP_FILE = "testData/adpter/matpower/case2736sp.m";
 	private static final double DATA_TOL = 1.0E-6;
 	@TempDir Path temporaryDirectory;
+
+	@ParameterizedTest
+	@CsvSource({
+		"0.0, 0.0, 0.08, 1",
+		"1.0, 0.0, 0.08, 1",
+		"0.9, 0.0, 0.08, 1",
+		"1.1, 0.0, 0.08, 1",
+		"0.0, 17.0, 0.08, 1",
+		"0.92, -13.0, 0.08, 1",
+		"1.1, 11.0, -0.04, 1",
+		"0.9, 0.0, 0.0, 1",
+		"0.0, 0.0, 0.08, 0",
+		"0.9, 0.0, 0.08, 0",
+		"0.92, -13.0, 0.08, 0"
+	})
+	void testBranchChargingAdmittanceAndTerminalPower(double ratio, double angle, double charging, int status)
+			throws Exception {
+		Path input = temporaryDirectory.resolve("charging.m");
+		Files.writeString(input, String.format(Locale.ROOT, """
+				function mpc = charging
+				mpc.version = '2';
+				mpc.baseMVA = 100;
+				mpc.bus = [
+				1 3 0 0 0 0 1 1.04 0 230 1 1.1 0.9;
+				2 1 40 15 0 0 1 1.0 0 230 1 1.1 0.9;
+				];
+				mpc.gen = [
+				1 40 15 100 -100 1.04 100 1 200 0;
+				];
+				mpc.branch = [
+				1 2 0.02 0.15 %.16g 100 100 100 %.16g %.16g %d -360 360;
+				];
+				""", charging, ratio, angle, status));
+		AclfNetwork net = loadMatpowerCase(input.toString());
+		AclfBranch branch = net.getBranch("Bus1", "Bus2", "1");
+		assertEquals(status == 1, branch.isActive());
+		assertEquals(0.0, net.getBus("Bus1").getShuntY().abs(), 1e-12);
+		assertEquals(0.0, net.getBus("Bus2").getShuntY().abs(), 1e-12);
+		double tap = ratio == 0.0 ? 1.0 : ratio;
+		assertBranchChargingStamp(branch, tap, angle, charging);
+		assertBranchChargingStamp(new MatpowerOpfDirectParser().parse(input.toString())
+				.getBranch("Bus1", "Bus2", "1"), tap, angle, charging);
+		branch.setStatus(false);
+		assertBranchChargingStamp(branch, tap, angle, charging);
+		branch.setStatus(true);
+		assertBranchChargingStamp(branch, tap, angle, charging);
+		if (ratio != 0.0 || angle != 0.0) {
+			assertFalse(branch.isFromShuntOnBusSide());
+			branch.setFromTurnRatio(1.07);
+			assertBranchChargingStamp(branch, 1.07, angle, charging);
+		}
+	}
+
+	private static void assertBranchChargingStamp(AclfBranch branch, double tap, double angle, double charging) {
+		Complex seriesY = new Complex(0.02, 0.15).reciprocal();
+		Complex terminalY = seriesY.add(new Complex(0.0, charging / 2.0));
+		Complex complexTap = new Complex(Math.cos(Math.toRadians(angle)), Math.sin(Math.toRadians(angle)))
+				.multiply(tap);
+		Complex yff = terminalY.divide(tap * tap);
+		Complex ytt = terminalY;
+		Complex yft = seriesY.negate().divide(complexTap.conjugate());
+		Complex ytf = seriesY.negate().divide(complexTap);
+		if (!branch.isActive()) {
+			yff = ytt = yft = ytf = Complex.ZERO;
+		}
+		assertEquals(0.0, branch.yff().subtract(yff).abs(), 1e-12, "Yff");
+		assertEquals(0.0, branch.ytt().subtract(ytt).abs(), 1e-12, "Ytt");
+		assertEquals(0.0, branch.yft().subtract(yft).abs(), 1e-12, "Yft");
+		assertEquals(0.0, branch.ytf().subtract(ytf).abs(), 1e-12, "Ytf");
+		branch.getFromAclfBus().setVoltage(1.04, 0.07);
+		branch.getToAclfBus().setVoltage(0.97, -0.04);
+		Complex vf = branch.getFromAclfBus().getVoltage();
+		Complex vt = branch.getToAclfBus().getVoltage();
+		Complex sf = vf.multiply(yff.multiply(vf).add(yft.multiply(vt)).conjugate());
+		Complex st = vt.multiply(ytf.multiply(vf).add(ytt.multiply(vt)).conjugate());
+		assertEquals(0.0, branch.powerFrom2To().subtract(sf).abs(), 1e-12, "From terminal power");
+		assertEquals(0.0, branch.powerTo2From().subtract(st).abs(), 1e-12, "To terminal power");
+	}
 
 	private AclfNetwork loadMatpowerCase(String path) throws Exception {
 		return CorePluginFactory
