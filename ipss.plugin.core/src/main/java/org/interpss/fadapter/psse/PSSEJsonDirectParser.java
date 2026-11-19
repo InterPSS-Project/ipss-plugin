@@ -845,7 +845,12 @@ public class PSSEJsonDirectParser {
         double g_rv = mag1 / (nomv1Kv * nomv1Kv) * 1.0E-6;
         double g_pu = g_rv / ybase;
         double ybase_w12 = sbase12 / (nomv1Kv * nomv1Kv);
-        double b_rv = -mag2 * ybase_w12;
+        // CM=2: MAG2 is the no-load exciting current, the magnitude of the
+        // magnetizing admittance in pu on SBASE1-2 and NOMV1. MAG1 (no-load loss)
+        // is its conductive part, so the susceptance is -sqrt(I0^2 - G^2).
+        double g_w12 = mag1 * 1.0E-6 / sbase12;
+        double b_w12 = -Math.sqrt(Math.max(mag2 * mag2 - g_w12 * g_w12, 0.0));
+        double b_rv = b_w12 * ybase_w12;
         double b_pu = b_rv / ybase;
         return new Complex(g_pu, b_pu);
     }
