@@ -251,11 +251,13 @@ public class TestSinglePhaseACMotorModel {
 					sm.getBusPhAVoltTable().get("Bus1").get(10).getValue())<1.0E-3);
 
 
+		  // The load change at 0.2 s is recorded on both sides: record 40 holds the
+		  // pre-event value and record 41 the post-event value at the same time.
 		  assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(0).getValue()-
-				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(41).getValue())<1.0E-4);
+				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(40).getValue())<1.0E-4);
 
 		  assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(0).getValue()*0.8-
-				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(42).getValue())<1.0E-3);
+				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(41).getValue())<1.0E-3);
 
 		  /*
 AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
