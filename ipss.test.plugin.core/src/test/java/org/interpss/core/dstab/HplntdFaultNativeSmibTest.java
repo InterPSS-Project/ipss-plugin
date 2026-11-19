@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.EventLeftLimits;
 import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.util.*;
@@ -82,10 +83,12 @@ public class HplntdFaultNativeSmibTest extends CorePluginTestSetup {
         net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",net,SimpleFaultCode.GROUND_3P,new Complex(0,.1),null,.05,.05),"three-cycle");
         assertTrue(algo.initialization());
         var converter=(Regca1Model)((DStabGen)net.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();var group=converter.getReeca1Controller().getHybridController().owner();
+        // Samples after each step hold the pre-event side at an event tick.
+        var left=EventLeftLimits.capture(algo,profile.step(),()->snapshot(algo));
         var actual=new ArrayList<double[]>();int steps=(int)Math.round(.2/profile.step()),event=(int)Math.round(.05/profile.step());
         for(int tick=0;tick<=steps;tick++){
             if(tick==event){var r=group.kernel().references();group.kernel().setReferences(new HplntdKernel.References(r.voltage(),r.reactive()+.02,r.frequency(),r.active()+.05,r.powerFactor(),r.voltageAux(),r.activeAux()));}
-            actual.add(snapshot(algo));if(tick<steps)assertTrue(algo.solveDEqnStep(true));
+            actual.add(left.at(algo.getSimuTime(),()->snapshot(algo)));if(tick<steps)assertTrue(algo.solveDEqnStep(true));
         }
         return new Result(actual,solver,group);
     }
@@ -103,7 +106,8 @@ public class HplntdFaultNativeSmibTest extends CorePluginTestSetup {
     @Test void disabledEventsDoNotRebaseContinuousFrequencyInputs(@TempDir Path dir)throws Exception {
         for(var profile:HplntdKernelNativeConformanceTest.reviewedProfiles())if(profile.name().startsWith("plant-low-window")){
             var result=simulate(profile,dir.resolve(profile.name()),true);
-            assertEquals(2,result.solver().eventEndpoints);
+            // With events disabled, exact event stepping has no event boundary at all.
+            assertEquals(0,result.solver().eventEndpoints);
             assertEquals(0,result.solver().maximumReferenceShift,0,"Disabled events must not shift the frequency reference");
             assertEquals(0,result.solver().maximumEventFrequencyChange,1e-15);
         }

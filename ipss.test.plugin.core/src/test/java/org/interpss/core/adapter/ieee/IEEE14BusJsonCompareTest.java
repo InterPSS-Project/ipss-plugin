@@ -46,7 +46,13 @@ public class IEEE14BusJsonCompareTest extends CorePluginTestSetup {
 						&& !path.equals("/lfDataLoaded")
 						&& !path.equals("/deviceUIDType")
 						&& !path.equals("/nodeBreakerModel")
-						&& !path.startsWith("/busLoadLowVoltConfig"))
+						&& !path.startsWith("/busLoadLowVoltConfig")
+						// Fields added after the fixture was recorded; the importer leaves
+						// them at their defaults (no magnetizing bus-side placement, no
+						// base-load flag, no zone area number).
+						&& !path.endsWith("/fromShuntOnBusSide")
+						&& !path.endsWith("/baseLoadFlag")
+						&& !path.matches("/zoneAry\\[[^\\]]+\\]/areaNo"))
 							.compareJson(aclfNet, new File(jsonFile)));
 	}
 }

@@ -91,7 +91,11 @@ public class DStabNetworkBuilderAc5cTest extends CorePluginTestSetup {
 
     @Test
     void enforcesRotatingExciterLimitAndLoadedRectifier()throws Exception{
-        Ac5cData d=baseData();d.setKc(.2);d.setKd(.1);d.setVfemax(1.5);
+        Ac5cData d=baseData();d.setKc(.2);d.setKd(.1);
+        // The fixture initializes at Efd = 1.62 pu with a loaded rectifier, which needs
+        // VFE of about 2.0 pu. A ceiling below that cannot initialize; the network
+        // initialization now rejects such an exciter instead of switching it off.
+        d.setVfemax(2.5);
         Fixture f=fixture(d);DynamicSimuAlgorithm a=DStabObjectFactory.createDynamicSimuAlgorithm(f.builder.getDStabNetwork());
         a.setSimuOutputHandler(new StateMonitor());assertTrue(a.getAclfAlgorithm().loadflow());assertTrue(a.initialization());
         double upper=f.exciter.getDynamicFieldUpperLimit();assertTrue(Double.isFinite(upper));

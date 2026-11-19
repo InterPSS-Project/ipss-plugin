@@ -8,7 +8,6 @@ import java.util.Hashtable;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.dynLoad.LD1PAC;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -26,13 +25,17 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 
 public class TestDynLoad_IEEE39 {
 	
 	@Test
 	public void test_IEEE39Bus_DynLoad_ACMotor() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
+		// The checkpoint below was recorded with constant-impedance static load, the
+		// loader default before 1.5.0. With constant-current P the fault stalls the
+		// network solution, so keep the recorded load model explicit.
+		SimuContext simuCtx = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_3AC.dyr");
@@ -152,12 +155,14 @@ public class TestDynLoad_IEEE39 {
 		Hashtable<Integer, MonitorRecord> bus507Volt = sm.getBusVoltTable().get("Bus507");
 		assertTrue(bus507Volt != null);
 		assertTrue(Math.abs(bus507Volt.get(0).value-0.97123)<1.0E-4);
+		// The clearing time is recorded twice, fault-on then cleared. Keep the
+		// cleared side: the last record at each time.
+		var lastAtTime = new java.util.TreeMap<Double, Double>();
+		bus507Volt.entrySet().stream().sorted(java.util.Map.Entry.comparingByKey())
+				.forEach(e -> lastAtTime.put(e.getValue().getTime(), e.getValue().value));
 		double minPostFaultVolt = Double.MAX_VALUE;
-		for (MonitorRecord rec : bus507Volt.values()) {
-			if (rec.getTime() >= 1.07) {
-				minPostFaultVolt = Math.min(minPostFaultVolt, rec.value);
-			}
-		}
+		for (var rec : lastAtTime.tailMap(1.07 - 1.0e-9).values())
+			minPostFaultVolt = Math.min(minPostFaultVolt, rec);
 		System.out.println("Minimum Bus 507 voltage after fault clearing = "+minPostFaultVolt);
 
 		// The source-owned compressor represents only load ID 2's 40% bus share.

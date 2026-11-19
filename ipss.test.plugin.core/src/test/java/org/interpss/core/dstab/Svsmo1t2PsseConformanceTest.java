@@ -100,8 +100,12 @@ public class Svsmo1t2PsseConformanceTest {
         System.out.println("SVSMO1T2 PSS/E max-error times: " + Arrays.toString(maximumTime));
         // Diagnostic non-regression envelope, not tight model-parity acceptance:
         // initial switched-shunt control and transient discrepancies remain open.
-        double[] diagnosticBounds = {.065, .16, .065, .032, .012, .17, 1.0e-12, .04,
-                .95, .032, .004, .004, .04, .04, 55.0};
+        // The 1.5.0 SVSMO1 runtime (UV1 cap at filtered-voltage pickup, PLL hold
+        // and continuous susceptance through command-only limits) moves STATE_3,
+        // VAR_2 and VAR_29 near fault clearing; their envelopes were widened from
+        // .17, .95 and 55 after that intentional model change.
+        double[] diagnosticBounds = {.065, .16, .065, .032, .012, .18, 1.0e-12, .04,
+                1.1, .032, .004, .004, .04, .04, 65.0};
         for (int column = 0; column < signals.length; column++) {
             assertTrue(maximum[column] <= diagnosticBounds[column], String.format(Locale.ROOT,
                     "%s max error %.9g at %.9g exceeds %.9g", signals[column],

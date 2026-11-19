@@ -108,6 +108,9 @@ public class Svsmo3t2ReleaseStageDiscriminatorTest extends CorePluginTestSetup {
         var algorithm = context.getDynSimuAlgorithm();
         algorithm.getAclfAlgorithm().getLfAdjAlgo().setLocalContinuousSvcAsPv(true);
         algorithm.getAclfAlgorithm().setTolerance(1e-10); assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        // Prepare the device for the same interval the test integrates. The default
+        // 5 ms step selects the sampled firing path for this 10 ms firing lag.
+        algorithm.setSimuStepSec(H);
         algorithm.setSimuOutputHandler(new StateMonitor()); assertTrue(algorithm.initialization());
         var bus = context.getDStabilityNet().getDStabBus("Bus3");
         var model = (Svsmo3t2Model)bus.getDynamicBusDeviceList().stream().filter(Svsmo3t2Model.class::isInstance).findFirst().orElseThrow();
