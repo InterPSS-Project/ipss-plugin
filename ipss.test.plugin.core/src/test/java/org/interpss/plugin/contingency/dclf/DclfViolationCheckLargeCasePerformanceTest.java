@@ -7,12 +7,15 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,6 +39,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.DclfContingencyLimitStudy;
 import com.interpss.core.algo.dclf.DclfIslandingTreatment;
+import com.interpss.core.algo.dclf.DclfMultiOutageReplayMode;
 import com.interpss.core.algo.dclf.solver.DclfContingencySolutionMethod;
 import com.interpss.core.algo.dclf.solver.FlowgateDclfAnalyzer;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
@@ -289,6 +293,110 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
                     DclfContingencySolutionMethod.SparseEqnSolve,
                     reportedRepeat, warmup, contingencies.size(), monitorIds.size(), parallelism, rhsBatchSize, result);
         }
+    }
+
+    @Test
+    public void compareActivs70kAutomaticHighImpedanceReplay() throws Exception {
+        assumeTrue(CONFIG.bool("interpss.activs70kHighZComparison"),
+                "Enable interpss.activs70kHighZComparison in the JSON test settings");
+        SparseEqnSolverProvider.useJavaKlu();
+        Path rawPath = Path.of(setting("interpss.activs70kRaw",
+                "testData/external/ACTIVSg70k.RAW"));
+        Path jsonPath = Path.of(setting("interpss.activs70kMultiJson",
+                "testData/psse/v33/ACTIVSg70k_random_multiline_outages_10000_n3_n4.json"));
+        assumeTrue(Files.isRegularFile(rawPath), "RAW not found: " + rawPath);
+        assumeTrue(Files.isRegularFile(jsonPath), "Contingencies not found: " + jsonPath);
+        int count = intSetting("interpss.activs70kHighZContingencies", 1000);
+        int monitors = intSetting("interpss.activs70kHighZMonitors", 1000);
+        int parallelism = intSetting("interpss.activs70kHighZParallelism", 10);
+        int warmups = intSetting("interpss.activs70kHighZWarmups", 1);
+        int repeats = intSetting("interpss.activs70kHighZRepeats", 3);
+        boolean includeLoss = CONFIG.bool("interpss.activs70kHighZIncludeLoss", true);
+        double highXPu = Double.parseDouble(setting("interpss.activs70kHighZReactancePu", "10000.0"));
+        List<ContingencyDefinition> definitions = selectMixedMultiOutageDefinitions(
+                ContingencyFileUtil.importContingencyDefinitionsFromJson(jsonPath.toFile()), count);
+        assertEquals(count, definitions.size());
+        assertTrue(warmups >= 0 && repeats > 0 && parallelism > 0);
+        AclfNetwork exactNet = new PSSEDirectParser().parse(rawPath.toString());
+        Set<String> monitorIds = monitoredBranchIds(exactNet, monitors);
+        assertEquals(monitors, monitorIds.size());
+        DclfContingencyConfig config = new DclfContingencyConfig();
+        config.setOverloadThreshold(0.0);
+        config.setDclfInclLoss(includeLoss);
+        config.setSolutionMethod(DclfContingencySolutionMethod.SparseEqnSolve);
+        config.setKluEndpointRhsBatchSize(64);
+        config.setCacheViolationCombinedShiftFactors(false);
+        config.setIslandingTreatment(DclfIslandingTreatment.ANCHORED_COMPENSATE_ONE_BUS);
+        config.setHighImpedanceReactancePu(highXPu);
+        config.setMultiOutageReplayMode(DclfMultiOutageReplayMode.EXACT_TOPOLOGY);
+        long start = System.nanoTime();
+        var exact = ParallelDclfContingencyAnalyzer.executeContingencyDefinitions(
+                exactNet, definitions, monitorIds, config, parallelism);
+        double exactMs = ms(System.nanoTime() - start);
+        Map<FlowKey, Double> reference = replayFlows(exact.results(), count * monitors);
+        exact.results().clear();
+        System.out.println("highZExactBaseline,elapsedMs=" + format(exactMs)
+                + ",normalMulti=" + exact.normalMultiOutageCount()
+                + ",islanding=" + exact.islandingCount() + ",singular=" + exact.ePtdfSingularCount());
+        DclfContingencyConfig defaultConfig = new DclfContingencyConfig();
+        assertEquals(DclfMultiOutageReplayMode.HIGH_IMPEDANCE, defaultConfig.getMultiOutageReplayMode());
+        defaultConfig.setOverloadThreshold(config.getOverloadThreshold());
+        defaultConfig.setDclfInclLoss(includeLoss);
+        defaultConfig.setSolutionMethod(config.getSolutionMethod());
+        defaultConfig.setKluEndpointRhsBatchSize(config.getKluEndpointRhsBatchSize());
+        defaultConfig.setHighImpedanceReactancePu(highXPu);
+        System.out.println("case,replayMode,repeat,warmup,contingencies,monitors,parallelism,includeLoss,highXPu,elapsedMs,replayMs,normalMulti,islanding,singular,results,meanAbsMw,maxAbsMw");
+        for (int repeat = 0; repeat < warmups + repeats; repeat++) {
+            AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
+            start = System.nanoTime();
+            var actual = ParallelDclfContingencyAnalyzer.executeContingencyDefinitions(
+                    net, definitions, monitorIds, defaultConfig, parallelism);
+            double elapsedMs = ms(System.nanoTime() - start);
+            Map<FlowKey, Double> remaining = new HashMap<>(reference);
+            double sum = 0.0;
+            double max = 0.0;
+            FlowKey worst = null;
+            assertEquals(reference.size(), actual.results().size());
+            assertEquals(exact.normalMultiOutageCount(), actual.normalMultiOutageCount());
+            assertEquals(exact.islandingCount(), actual.islandingCount());
+            assertEquals(exact.ePtdfSingularCount(), actual.ePtdfSingularCount());
+            assertTrue(actual.replayCount() > 0, "The fixture must exercise replay");
+            for (BranchCAResultRec row : actual.results()) {
+                FlowKey key = new FlowKey(row.getContingencyId(), row.aclfBranch.getId());
+                Double expected = remaining.remove(key);
+                assertNotNull(expected, () -> "Unexpected or duplicate result: " + key);
+                double flow = row.getPostFlowMW();
+                assertTrue(Double.isFinite(flow), () -> "Non-finite flow: " + key);
+                double error = Math.abs(flow - expected);
+                sum += error;
+                if (error > max) { max = error; worst = key; }
+            }
+            assertTrue(remaining.isEmpty(), "Missing contingency/monitor results");
+            boolean warmup = repeat < warmups;
+            System.out.println("ACTIVSg70k,HIGH_IMPEDANCE," + (warmup ? repeat + 1 : repeat - warmups + 1)
+                    + "," + warmup + "," + count + "," + monitors + "," + parallelism
+                    + "," + includeLoss + "," + highXPu + "," + format(elapsedMs)
+                    + "," + format(ms(actual.timings().replayNs()))
+                    + "," + actual.normalMultiOutageCount() + "," + actual.islandingCount()
+                    + "," + actual.ePtdfSingularCount() + "," + actual.results().size()
+                    + "," + sum / reference.size() + "," + max);
+            assertTrue(max < 0.01, "High-Z flow error must be below 0.01 MW; max=" + max + " at " + worst);
+            actual.results().clear();
+        }
+    }
+
+    private record FlowKey(String contingencyId, String branchId) { }
+
+    private static Map<FlowKey, Double> replayFlows(Collection<BranchCAResultRec> rows, int expectedCount) {
+        assertEquals(expectedCount, rows.size());
+        Map<FlowKey, Double> flows = new HashMap<>();
+        for (BranchCAResultRec row : rows) {
+            FlowKey key = new FlowKey(row.getContingencyId(), row.aclfBranch.getId());
+            double flow = row.getPostFlowMW();
+            assertTrue(Double.isFinite(flow), () -> "Non-finite reference flow: " + key);
+            assertTrue(flows.put(key, flow) == null, () -> "Duplicate reference result: " + key);
+        }
+        return flows;
     }
 
     private static void runCase(

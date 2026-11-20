@@ -303,6 +303,14 @@
     "interpss.performanceOverloadThreshold": null
   },
   "DclfViolationCheckLargeCasePerformanceTest": {
+    "interpss.activs70kHighZComparison": false,
+    "interpss.activs70kHighZContingencies": 1000,
+    "interpss.activs70kHighZMonitors": 1000,
+    "interpss.activs70kHighZParallelism": 10,
+    "interpss.activs70kHighZWarmups": 1,
+    "interpss.activs70kHighZRepeats": 3,
+    "interpss.activs70kHighZIncludeLoss": true,
+    "interpss.activs70kHighZReactancePu": 10000.0,
     "interpss.activs70kFullReplayDefinitionToken": null,
     "interpss.activs70kFullReplayProfile": false,
     "interpss.activs70kMultiBranchTiming": false,
