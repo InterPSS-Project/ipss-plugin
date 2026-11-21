@@ -1591,6 +1591,15 @@ public class AclfNetworkBuilder {
         network.initContributeGenLoad(false);
 
         if (network.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
+            // Tap controls are created before generator aggregation can remove a PV code.
+            for (Object obj : network.getBranchList()) {
+                AclfBranch branch = (AclfBranch) obj;
+                if (branch.getFlowControl() instanceof TapControl tap && tap.isVcGenPVBus()
+                        && tap.getVcBus() != null && tap.getVcBus().getGenCode() == AclfGenCode.NON_GEN
+                        && !tap.getVcBus().isPVBusLimit()) {
+                    tap.setVcGenPVBus(false);
+                }
+            }
             long maxBusNum = 0;
             for (Object obj : network.getBusList()) {
                 BaseAclfBus bus = (BaseAclfBus) obj;

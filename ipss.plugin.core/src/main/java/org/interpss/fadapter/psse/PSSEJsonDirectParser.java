@@ -577,8 +577,7 @@ public class PSSEJsonDirectParser {
         // Retain individual record factors too; never divide by active unit count.
         bus.setPlantMvarControlPFactor(rmpct * 0.01);
 
-		boolean genStatus = (stat == 1);
-        if (!bus.isActive()) genStatus = false;
+        boolean genStatus = PSSEGeneratorReactivePower.isPsseMachineInService(bus, stat);
 
         String remoteBusId = (ireg > 0 && ireg != busNum) ? BUS_ID_PREFIX + ireg : null;
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
@@ -589,6 +588,7 @@ public class PSSEJsonDirectParser {
                 qt / baseMva, qb / baseMva, pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap, remoteBusId, rmpct * 0.01, 1.0);
         generator.setBaseLoadFlag(baseLoadFlag);
+        PSSEGeneratorReactivePower.retainWindInput(generator, wmod, wpf);
 
         if (bus.getGenCode() == AclfGenCode.SWING) {
             builder.setSwingBus(busId, vs, bus.getVoltageAng());
@@ -1313,19 +1313,30 @@ public class PSSEJsonDirectParser {
     // ==================== Area / Zone / Owner ====================
 
     private void parseAreaRow(Map<String, JsonElement> row) throws InterpssException {
-        int areaNum = getInt(row, "iarea", 0);
+        int areaNum = getInt(row, "iarea", getInt(row, "i", 0));
+        if (areaNum <= 0) return;
         String name = getString(row, "arname", getString(row, "arnam", "Area " + areaNum));
-        if (areaNum > 0) builder.addArea(String.valueOf(areaNum), name, null);
+        builder.addArea(String.valueOf(areaNum), name, null);
+        int swingBusNum = getInt(row, "isw", 0);
+        if (swingBusNum > 0) {
+            String swingBusId = BUS_ID_PREFIX + swingBusNum;
+            BaseAclfBus areaSwingBus = builder.getBus(swingBusId);
+            // The system swing's area is represented without interchange control.
+            if (areaSwingBus != null && !areaSwingBus.isSwing()) {
+                builder.addAreaInterchangeControl(areaNum, name, swingBusId,
+                        getDouble(row, "pdes", 0.0), getDouble(row, "ptol", 10.0));
+            }
+        }
     }
 
     private void parseZoneRow(Map<String, JsonElement> row) throws InterpssException {
-        int zoneNum = getInt(row, "izone", 0);
+        int zoneNum = getInt(row, "izone", getInt(row, "i", 0));
         String name = getString(row, "zoname", getString(row, "zonam", "Zone " + zoneNum));
         if (zoneNum > 0) builder.addZone(String.valueOf(zoneNum), name, null);
     }
 
     private void parseOwnerRow(Map<String, JsonElement> row) throws InterpssException {
-        int ownerNum = getInt(row, "iowner", 0);
+        int ownerNum = getInt(row, "iowner", getInt(row, "i", 0));
         String name = getString(row, "owname", getString(row, "ownam", "Owner " + ownerNum));
         if (ownerNum > 0) builder.addOwner(String.valueOf(ownerNum), name);
     }

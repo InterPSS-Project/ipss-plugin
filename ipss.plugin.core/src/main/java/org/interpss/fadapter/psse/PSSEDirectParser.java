@@ -552,8 +552,7 @@ public class PSSEDirectParser {
         // Retain individual record factors too; never divide by active unit count.
         bus.setPlantMvarControlPFactor(rmpct * 0.01);
 
-        boolean genStatus = (stat == 1);
-        if (!bus.isActive()) genStatus = false;
+        boolean genStatus = PSSEGeneratorReactivePower.isPsseMachineInService(bus, stat);
 
         String remoteBusId = null;
         if (ireg > 0 && ireg != busNum) {
@@ -577,6 +576,7 @@ public class PSSEDirectParser {
                 remoteBusId,
                 rmpct * 0.01, 1.0);
         generator.setBaseLoadFlag(baseLoadFlag);
+        PSSEGeneratorReactivePower.retainWindInput(generator, wmod, wpf);
         applyNameTagMetadata(rec, generator);
 
         // Refine bus gen code based on generator data

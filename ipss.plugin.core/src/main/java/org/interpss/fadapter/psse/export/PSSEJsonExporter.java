@@ -13,6 +13,7 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.bean.PSSESchema;
 import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings;
+import org.interpss.fadapter.psse.PSSEGeneratorReactivePower;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonAclineUpdater;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonBusUpdater;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonDc2TLCCUpdater;
@@ -47,12 +48,16 @@ import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.XfrZTableEntry;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
+import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcControlSide;
+import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.ThyConverter;
@@ -61,6 +66,7 @@ import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.LoadflowAlgorithmInitializer;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 
 /**
  * Standalone PSS/E RAWX-style JSON exporter for the direct RAWX parser.
@@ -186,12 +192,51 @@ public class PSSEJsonExporter {
 		network.add("sysswd", systemSwitchingDeviceSection());
 		network.add("twotermdc", twoTerminalDcSection());
 		network.add("vscdc", vscDcSection());
+		addMultiTerminalDcSections(network);
 		network.add("impcor", impedanceCorrectionSection());
 		network.add("area", areaSection());
 		network.add("zone", zoneSection());
 		network.add("owner", ownerSection());
 		network.add("facts", factsSection());
 		return root;
+	}
+
+
+	/** Preserve the complete MTDC topology; omitting terminals changes AC injections. */
+	private void addMultiTerminalDcSections(JsonObject network) {
+		JsonObject lines = section(List.of("name", "nconv", "ndcbs", "ndcln", "mdc", "vconv", "vcmod", "vconvn"), List.of());
+		JsonObject converters = section(List.of("name", "ib", "nbrdg", "angmx", "angmn", "rc", "xc", "ebas", "tr", "tap", "tpmx", "tpmn", "tstp", "setvl", "dcpf", "marg", "cnvcod"), List.of());
+		JsonObject buses = section(List.of("name", "idc", "ib", "area", "zone", "dcname", "idc2", "rgrnd", "owner"), List.of());
+		JsonObject links = section(List.of("name", "idc", "jdc", "dcckt", "met", "rdc", "ldc"), List.of());
+		for (Object device : aclfNet.getHvdcLineMTList()) {
+			HvdcLineMT line = (HvdcLineMT) device;
+			String name = line.getName() == null || line.getName().isBlank() ? line.getId() : line.getName();
+			int mode = !line.isActive() ? 0 : line.getControlMode() == HvdcControlMode.DC_POWER ? 1
+					: line.getControlMode() == HvdcControlMode.DC_CURRENT ? 2 : 0;
+			lines.getAsJsonArray("data").add(row(name, line.getConverterList().size(), line.getDcBusList().size(),
+					line.getDcLinkList().size(), mode, busNumber(line.getVConvBusId(), 0), line.getVcMod(), busNumber(line.getVConvNBusId(), 0)));
+			for (var converter : line.getConverterList()) {
+				LimitType angle = converter.getFiringAngLimit(UnitType.Deg);
+				LimitType tap = converter.getXformerTapLimit();
+				converters.getAsJsonArray("data").add(row(name, busNumber(converter.getRefBusId(), 0),
+						converter.getNBridges(), angle.getMax(), angle.getMin(), converter.getCommutingZ().getReal(),
+						converter.getCommutingZ().getImaginary(), converter.getAcBaseKv(), converter.getXformerRatio(),
+						converter.getXformerTapSetting(), tap.getMax(), tap.getMin(), converter.getXformerTapStepSize(),
+						converter.getSetValue(), converter.getDcpf(), converter.getMarg(), converter.getCnvCod()));
+			}
+			for (var bus : line.getDcBusList()) {
+				buses.getAsJsonArray("data").add(row(name, bus.getIdc(), busNumber(bus.getAcBusId(), 0),
+						bus.getArea(), bus.getZone(), bus.getDcName(), bus.getIdc2(), bus.getRgrnd(), bus.getOwner()));
+			}
+			for (var link : line.getDcLinkList()) {
+				links.getAsJsonArray("data").add(row(name, link.getFromIdc(), link.getToIdc(),
+						link.getCkt(), link.getMet(), link.getRdc(), link.getLdc()));
+			}
+		}
+		network.add("ntermdc", lines);
+		network.add("ntermdcconv", converters);
+		network.add("ntermdcbus", buses);
+		network.add("ntermdclink", links);
 	}
 
 	private void addSolutionSettings(JsonObject general) {
@@ -229,6 +274,7 @@ public class PSSEJsonExporter {
 		JsonObject section = section(List.of("ibus", "name", "baskv", "ide", "area", "zone", "owner",
 				"vm", "va", "nvhi", "nvlo", "evhi", "evlo"));
 		Set<Object> threeWStarBuses = threeWStarBuses();
+		Set<AclfBus> deviceInjectionBuses = deviceInjectionBuses();
 		for (Object obj : aclfNet.getBusList()) {
 			AclfBus bus = (AclfBus) obj;
 			if (threeWStarBuses.contains(bus)) {
@@ -238,7 +284,7 @@ public class PSSEJsonExporter {
 					busNumber(bus),
 					nullToEmpty(bus.getName()),
 					bus.getBaseVoltage() / 1000.0,
-					busIde(bus),
+					busIde(bus, deviceInjectionBuses.contains(bus)),
 					intId(bus.getAreaId()),
 					intId(bus.getZoneId()),
 					bus.getOwner() != null ? (int) bus.getOwner().getNumber() : 0,
@@ -341,15 +387,22 @@ public class PSSEJsonExporter {
 		JsonObject section = section(List.of("ibus", "shntid", "stat", "gl", "bl", "name"));
 		for (Object obj : aclfNet.getBusList()) {
 			AclfBus bus = (AclfBus) obj;
-			Complex shuntY = nonNull(bus.getShuntY());
-			if (shuntY.getReal() != 0.0 || shuntY.getImaginary() != 0.0) {
-				section.getAsJsonArray("data").add(row(busNumber(bus), "EQ", 1,
-						shuntY.getReal() * baseMva, shuntY.getImaginary() * baseMva, "Equivalent shunt"));
-			}
+			double namedShuntConductance = 0.0;
 			for (Object compObj : bus.getCompensatorList()) {
 				ShuntCompensator comp = (ShuntCompensator) compObj;
+				double conductance = FixedShuntAdmittance.find(comp)
+						.map(Complex::getReal).orElse(0.0);
 				section.getAsJsonArray("data").add(row(busNumber(bus), comp.getId(),
-						comp.isActive() ? 1 : 0, 0.0, comp.getB() * baseMva, nullToEmpty(comp.getName())));
+						comp.isActive() ? 1 : 0, conductance * baseMva, comp.getB() * baseMva,
+						nullToEmpty(comp.getName())));
+				if (comp.isActive()) namedShuntConductance += conductance;
+			}
+			Complex shuntY = nonNull(bus.getShuntY());
+			// Imported fixed-shunt G already contributes to bus.shuntY.
+			double residualConductance = shuntY.getReal() - namedShuntConductance;
+			if (residualConductance != 0.0 || shuntY.getImaginary() != 0.0) {
+				section.getAsJsonArray("data").add(row(busNumber(bus), "EQ", 1,
+						residualConductance * baseMva, shuntY.getImaginary() * baseMva, "Equivalent shunt"));
 			}
 			int fixedSvcIndex = 1;
 			for (Object svcObj : bus.getStaticVarCompensatorList()) {
@@ -460,6 +513,8 @@ public class PSSEJsonExporter {
 			}
 			List<Complex> exportedGeneration = solvedGeneratorAllocation(
 					bus, generators, exportSolvedState);
+			boolean exportFixedQ = exportSolvedState && bus.isGenPV()
+					&& violatesReactiveLimit(bus);
 			boolean wroteGen = false;
 			for (int genIndex = 0; genIndex < generators.size(); genIndex++) {
 				AclfGen gen = generators.get(genIndex);
@@ -468,11 +523,21 @@ public class PSSEJsonExporter {
 				LimitType pLimit = gen.getPGenLimit();
 				Complex sourceZ = nonNull(gen.getSourceZ());
 				Complex xfrZ = nonNull(gen.getXfrZ());
+				double pMw = pq.getReal() * baseMva;
+				double qMvar = pq.getImaginary() * baseMva;
+				double qMax = limitMax(qLimit, pq.getImaginary()) * baseMva;
+				double qMin = limitMin(qLimit, pq.getImaginary()) * baseMva;
+				if (exportFixedQ && gen.isActive()) {
+					// Keep the supplied operating point as fixed Q on a type 2 plant.
+					// A type 1 bus would drop both the machine and its dispatch.
+					qMax = qMvar;
+					qMin = qMvar;
+				}
+				var wind = PSSEGeneratorReactivePower.exportWindInput(gen, exportSolvedState,
+						pMw, qMvar, qMax, qMin);
 				section.getAsJsonArray("data").add(row(
 						busNumber(bus), gen.getId(),
-						pq.getReal() * baseMva, pq.getImaginary() * baseMva,
-						limitMax(qLimit, pq.getImaginary()) * baseMva,
-						limitMin(qLimit, pq.getImaginary()) * baseMva,
+						pMw, qMvar, qMax, qMin,
 						gen.getDesiredVoltMag() != 0.0 ? gen.getDesiredVoltMag() : bus.getVoltageMag(),
 						busNumber(gen.getRemoteVControlBusId(), busNumber(bus)), 0,
 						gen.getMvaBase() != 0.0 ? gen.getMvaBase() : baseMva,
@@ -487,7 +552,7 @@ public class PSSEJsonExporter {
 						limitMax(pLimit, pq.getReal()) * baseMva,
 						limitMin(pLimit, pq.getReal()) * baseMva,
 						gen.getBaseLoadFlag(), 1, 1.0, null, null, null, null, null, null,
-						0, 1.0, null, nullToEmpty(gen.getName())));
+						wind.mode(), wind.powerFactor(), null, nullToEmpty(gen.getName())));
 				wroteGen = true;
 			}
 			if (!wroteGen && bus.getGenCode() == AclfGenCode.GEN_PQ
@@ -695,11 +760,12 @@ public class PSSEJsonExporter {
 			Complex z = nonNull(branch.getZ());
 			Complex magY = windingOneBusShunt(branch);
 			double angleDeg = Math.toDegrees(branch.getFromPSXfrAngle());
+			WindingControl control = windingControl(branch, false);
 			section.getAsJsonArray("data").add(row(
 					busNumber((AclfBus) branch.getFromBus()),
 					busNumber((AclfBus) branch.getToBus()),
 					0, branch.getCircuitNumber(), 1, 1, 1,
-					magY.getReal(), magY.getImaginary(), 2, nullToEmpty(branch.getName()),
+					magY.getReal(), magY.getImaginary(), control.meteringEnd(), nullToEmpty(branch.getName()),
 					branch.isActive() ? 1 : 0, 1, 1.0, 0, 1.0, 0, 1.0, 0, 1.0, "",
 					0,
 					z.getReal(), z.getImaginary(), baseMva,
@@ -708,7 +774,8 @@ public class PSSEJsonExporter {
 					angleDeg, branch.getRatingMva1(), branch.getRatingMva2(), branch.getRatingMva3(),
 					branch.getRatingMva1(), branch.getRatingMva2(), branch.getRatingMva3(),
 					branch.getRatingMva1(), branch.getRatingMva2(),
-					0, 0, 0, 1.1, 0.9, 1.1, 0.9, 33, branch.getXfrZTableNumber(),
+					control.code(), control.pilot(), 0, control.ratioMax(), control.ratioMin(),
+					control.targetMax(), control.targetMin(), control.positions(), branch.getXfrZTableNumber(),
 					0, 0, 0,
 					branch.getToTurnRatio(), ((AclfBus) branch.getToBus()).getBaseVoltage() / 1000.0));
 		}
@@ -749,6 +816,9 @@ public class PSSEJsonExporter {
 		Complex z31 = z3.add(z1);
 		Complex magY = windingOneBusShunt(fromLeg);
 		AclfBus starBus = (AclfBus) branch3W.getStarBus();
+		WindingControl from = windingControl(fromLeg, true);
+		WindingControl to = windingControl(toLeg, true);
+		WindingControl tert = windingControl(tertLeg, true);
 		return row(
 				busNumber((AclfBus) branch3W.getFromBus()),
 				busNumber((AclfBus) branch3W.getToBus()),
@@ -767,13 +837,45 @@ public class PSSEJsonExporter {
 				fromLeg.getRatingMva1(), fromLeg.getRatingMva2(), fromLeg.getRatingMva3(),
 				fromLeg.getRatingMva1(), fromLeg.getRatingMva2(), fromLeg.getRatingMva3(),
 				fromLeg.getRatingMva1(), fromLeg.getRatingMva2(),
-				0, 0, 0, 1.1, 0.9, 1.1, 0.9, 33, fromLeg.getXfrZTableNumber(),
+				from.code(), from.pilot(), 0, from.ratioMax(), from.ratioMin(),
+				from.targetMax(), from.targetMin(), from.positions(), fromLeg.getXfrZTableNumber(),
 				0, 0, 0,
 				toLeg.getToTurnRatio(), ((AclfBus) branch3W.getToBus()).getBaseVoltage() / 1000.0,
 				Math.toDegrees(toLeg.getToPSXfrAngle()),
 				tertLeg.getToTurnRatio(), ((AclfBus) branch3W.getTertiaryBus()).getBaseVoltage() / 1000.0,
 				Math.toDegrees(tertLeg.getToPSXfrAngle()),
-				toLeg.getXfrZTableNumber(), tertLeg.getXfrZTableNumber());
+				toLeg.getXfrZTableNumber(), tertLeg.getXfrZTableNumber(),
+				to.code(), to.pilot(), to.ratioMax(), to.ratioMin(), to.targetMax(), to.targetMin(), to.positions(),
+				tert.code(), tert.pilot(), tert.ratioMax(), tert.ratioMin(), tert.targetMax(),
+				tert.targetMin(), tert.positions());
+	}
+
+	private record WindingControl(int code, int pilot, double ratioMax, double ratioMin,
+			double targetMax, double targetMin, int positions, int meteringEnd) {
+		private static final WindingControl NONE = new WindingControl(0, 0, 1.1, 0.9, 1.1, 0.9, 33, 2);
+	}
+
+	private WindingControl windingControl(AclfBranch branch, boolean threeWinding) {
+		if (exportSolvedState) return WindingControl.NONE;
+		if (branch.getFlowControl() instanceof TapControl tap
+				&& tap.getTapControlType() == BusBranchControlType.BUS_VOLTAGE
+				&& tap.getVcBus() instanceof AclfBus pilotBus && tap.getTurnRatioLimit() != null) {
+			int pilot = busNumber(pilotBus);
+			if (tap.isVcBusOnFromSide()) pilot = -pilot;
+			LimitType ratio = tap.getTurnRatioLimit();
+			LimitType target = tap.getAdjControlType() == AclfAdjustControlType.RANGE_CONTROL
+					? tap.getDesiredControlRange() : new LimitType(tap.getVSpecified(), tap.getVSpecified());
+			return new WindingControl(threeWinding || !tap.isControlStatus() ? -1 : 1,
+					pilot, ratio.getMax(), ratio.getMin(), target.getMax(), target.getMin(), tap.getTapSteps(), 2);
+		}
+		if (!threeWinding && branch.getFlowControl() instanceof PSXfrPControl phase) {
+			LimitType angle = phase.getAngLimit(UnitType.Deg);
+			LimitType target = phase.getAdjControlType() == AclfAdjustControlType.RANGE_CONTROL
+					? phase.getDesiredControlRange() : new LimitType(phase.getPSpecified(), phase.getPSpecified());
+			return new WindingControl(phase.isControlStatus() ? 3 : -3, 0, angle.getMax(), angle.getMin(),
+					target.getMax() * baseMva, target.getMin() * baseMva, 33, phase.isMeteredOnFromSide() ? 1 : 2);
+		}
+		return WindingControl.NONE;
 	}
 
 	private JsonObject impedanceCorrectionSection() {
@@ -967,52 +1069,36 @@ public class PSSEJsonExporter {
 		}
 		for (Object obj : aclfNet.getSpecialBranchList()) {
 			if (obj instanceof HvdcLine2TVSC line) {
-				VSCConverter rec = (VSCConverter) line.getRecConverter();
-				VSCConverter inv = (VSCConverter) line.getInvConverter();
-				Complex recPower = solvedVscPower(line, rec);
-				Complex invPower = solvedVscPower(line, inv);
-				section.getAsJsonArray("data").add(row(
-						nullToEmpty(line.getName()),
-						line.isActive() ? 1 : 0,
-						line.getRdc(UnitType.Ohm),
-						1, 1.0, null, null, null, null, null, null,
-						busNumber((AclfBus) rec.getBus()),
-						vscDcType(rec),
-						vscAcMode(rec),
-						vscDcSetpoint(rec, true),
-						vscAcSetpoint(rec),
-						rec.getLossA(),
-						rec.getLossB(),
-						rec.getMinimumLoss(),
-						rec.getMvaRating(),
-						rec.getAcCurrentRating(),
-						vscPowerFactor(rec),
-						limitMax(rec.getQMvarLimit(), 9999.0),
-						limitMin(rec.getQMvarLimit(), -9999.0),
-						busNumber(rec.getRemoteControlBusId(), busNumber((AclfBus) rec.getBus())),
-						0,
-						rec.getRemoteControlPercent(),
-						busNumber((AclfBus) inv.getBus()),
-						vscDcType(inv),
-						vscAcMode(inv),
-						vscDcSetpoint(inv, false),
-						vscAcSetpoint(inv),
-						inv.getLossA(),
-						inv.getLossB(),
-						inv.getMinimumLoss(),
-						inv.getMvaRating(),
-						inv.getAcCurrentRating(),
-						vscPowerFactor(inv),
-						limitMax(inv.getQMvarLimit(), 9999.0),
-						limitMin(inv.getQMvarLimit(), -9999.0),
-						busNumber(inv.getRemoteControlBusId(), busNumber((AclfBus) inv.getBus())),
-						0,
-						inv.getRemoteControlPercent(),
-						realOrNull(recPower), imaginaryOrNull(recPower),
-						realOrNull(invPower), imaginaryOrNull(invPower)));
+				VSCConverter<?> rec = (VSCConverter<?>) line.getRecConverter();
+				VSCConverter<?> inv = (VSCConverter<?>) line.getInvConverter();
+				// Import uses the signed power order, with converter two as the
+				// rectifier when neither converter specifies nonzero DC power.
+				boolean rectifierFirst = (vscDcType(rec) == 2 && vscDcSetpoint(rec, true) < 0.0)
+						|| (vscDcType(inv) == 2 && vscDcSetpoint(inv, false) > 0.0);
+				VSCConverter<?> first = rectifierFirst ? rec : inv;
+				VSCConverter<?> second = rectifierFirst ? inv : rec;
+				JsonArray data = row(nullToEmpty(line.getName()), line.isActive() ? 1 : 0,
+						line.getRdc(UnitType.Ohm), 1, 1.0, null, null, null, null, null, null);
+				data.addAll(vscEquipment(first, rectifierFirst));
+				data.addAll(vscEquipment(second, !rectifierFirst));
+				Complex firstPower = solvedVscPower(line, first);
+				Complex secondPower = solvedVscPower(line, second);
+				data.addAll(row(realOrNull(firstPower), imaginaryOrNull(firstPower),
+						realOrNull(secondPower), imaginaryOrNull(secondPower)));
+				section.getAsJsonArray("data").add(data);
 			}
 		}
 		return section;
+	}
+
+	private JsonArray vscEquipment(VSCConverter<?> converter, boolean rectifier) {
+		int bus = busNumber((AclfBus) converter.getBus());
+		return row(bus, vscDcType(converter), vscAcMode(converter), vscDcSetpoint(converter, rectifier),
+				vscAcSetpoint(converter), converter.getLossA(), converter.getLossB(),
+				converter.getMinimumLoss(), converter.getMvaRating(), converter.getAcCurrentRating(),
+				vscPowerFactor(converter), limitMax(converter.getQMvarLimit(), 9999.0),
+				limitMin(converter.getQMvarLimit(), -9999.0),
+				busNumber(converter.getRemoteControlBusId(), bus), 0, converter.getRemoteControlPercent());
 	}
 
 	private Complex solvedVscPower(HvdcLine2TVSC line, VSCConverter converter) {
@@ -1074,7 +1160,9 @@ public class PSSEJsonExporter {
 				"wdg1rate1", "wdg1rate2", "wdg1rate3", "wdg1rate4", "wdg1rate5", "wdg1rate6",
 				"wdg1rate7", "wdg1rate8", "cod1", "cont1", "node1", "rma1", "rmi1", "vma1",
 				"vmi1", "ntp1", "tab1", "cr1", "cx1", "cnxa1", "windv2", "nomv2",
-				"ang2", "windv3", "nomv3", "ang3", "tab2", "tab3");
+				"ang2", "windv3", "nomv3", "ang3", "tab2", "tab3",
+				"cod2", "cont2", "rma2", "rmi2", "vma2", "vmi2", "ntp2",
+				"cod3", "cont3", "rma3", "rmi3", "vma3", "vmi3", "ntp3");
 	}
 
 	private static JsonObject section(List<String> fields) {
@@ -1112,32 +1200,15 @@ public class PSSEJsonExporter {
 		}
 	}
 
-	private int busIde(AclfBus bus) {
+	private static int busIde(AclfBus bus, boolean deviceInjectionBus) {
 		if (!bus.isActive()) return 4;
 		if (bus.getGenCode() == AclfGenCode.SWING) return 3;
-		/*
-		 * Generator remote-voltage control is represented internally as a PQ bus
-		 * plus a RemoteQBus controller. PSS/E reconstructs that controller only
-		 * when the generator bus remains IDE=2; exporting its runtime PQ code
-		 * silently discards IREG on the next import.
-		 */
-		if (hasEnabledGeneratorRemoteVoltageControl(bus)) return 2;
-		if (bus.getGenCode() == AclfGenCode.GEN_PV) {
-			return exportSolvedState && violatesReactiveLimit(bus) ? 1 : 2;
-		}
-		return 1;
-	}
-
-	private static boolean hasEnabledGeneratorRemoteVoltageControl(AclfBus bus) {
-		if (!bus.isRemoteQBus() || bus.getRemoteQBus() == null
-				|| !bus.getRemoteQBus().isControlStatus()) {
-			return false;
-		}
-		return bus.getContributeGenList().stream()
-				.filter(AclfGen::isActive)
-				.map(AclfGen::getRemoteVControlBusId)
-				.anyMatch(remoteId -> remoteId != null && !remoteId.isBlank()
-						&& !remoteId.equals(bus.getId()));
+		// Type 2 represents plants at fixed Q as well as regulating plants.
+		// Type 1 would discard the active generation on the next import.
+		boolean hasActiveMachine = bus.getContributeGenList().stream().anyMatch(AclfGen::isActive);
+		boolean hasAggregateMachine = bus.getGenCode() == AclfGenCode.GEN_PQ
+				&& bus.getContributeGenList().isEmpty() && !deviceInjectionBus;
+		return bus.getGenCode() == AclfGenCode.GEN_PV || hasActiveMachine || hasAggregateMachine ? 2 : 1;
 	}
 
 	private static boolean violatesReactiveLimit(AclfBus bus) {
@@ -1147,8 +1218,7 @@ public class PSSEJsonExporter {
 		double qMax = 0.0;
 		double qMin = 0.0;
 		boolean foundActiveGenerator = false;
-		for (Object object : bus.getContributeGenList()) {
-			AclfGen gen = (AclfGen) object;
+		for (AclfGen gen : bus.getContributeGenList()) {
 			if (!gen.isActive()) {
 				continue;
 			}

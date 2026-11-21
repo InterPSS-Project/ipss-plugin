@@ -106,6 +106,7 @@ public class PSSERawExporter {
 		writeVscDcSection(out);
 		end(out, "VSC DC LINE DATA", "IMPEDANCE CORRECTION DATA");
 		writeImpedanceCorrectionSection(out);
+		writeMultiTerminalDcSection(out);
 		end(out, "MULTI-TERMINAL DC DATA", "MULTI-SECTION LINE DATA");
 		end(out, "MULTI-SECTION LINE DATA", "ZONE DATA");
 		writeSimpleSection(out, "zone");
@@ -127,6 +128,22 @@ public class PSSERawExporter {
 		return out.toString();
 	}
 
+
+	private void writeMultiTerminalDcSection(StringBuilder out) {
+		for (JsonArray header : rawRows("ntermdc")) {
+			out.append(csv(jsonValues(header))).append('\n');
+			String name = header.get(0).getAsString();
+			for (String section : List.of("ntermdcconv", "ntermdcbus", "ntermdclink")) {
+				for (JsonArray record : rawRows(section)) {
+					if (name.equals(record.get(0).getAsString())) {
+						List<JsonElement> values = jsonValues(record);
+						out.append(csv(values.subList(1, values.size()))).append('\n');
+					}
+				}
+			}
+		}
+	}
+
 	private void writeV30Sections(StringBuilder out) {
 		writeV30BusSection(out);
 		writeV30LoadSection(out);
@@ -141,6 +158,7 @@ public class PSSERawExporter {
 		writeSwitchedShuntSection(out);
 		end(out, "SWITCHED SHUNT DATA", "TRANS. IMP. CORR. TABLE DATA");
 		writeImpedanceCorrectionSection(out);
+		writeMultiTerminalDcSection(out);
 		end(out, "MULTI-TERMINAL DC DATA", "MULTI-SECTION LINE DATA");
 		end(out, "MULTI-SECTION LINE DATA", "ZONE DATA");
 		writeSimpleSection(out, "zone");
@@ -311,33 +329,19 @@ public class PSSERawExporter {
 		values.add(row.get("wdg1rate1"));
 		values.add(row.get("wdg1rate2"));
 		values.add(row.get("wdg1rate3"));
-		if (version == 30) {
-			values.add(winding.equals("1") ? row.get("cod1") : 0);
-			values.add(winding.equals("1") ? row.get("cont1") : 0);
-			values.add(winding.equals("1") ? row.get("rma1") : 1.1);
-			values.add(winding.equals("1") ? row.get("rmi1") : 0.9);
-			values.add(winding.equals("1") ? row.get("vma1") : 1.1);
-			values.add(winding.equals("1") ? row.get("vmi1") : 0.9);
-			values.add(winding.equals("1") ? row.get("ntp1") : 33);
-			values.add(row.get("tab" + winding));
-			values.add(0);
-			values.add(0);
-			out.append(csv(values)).append('\n');
-			return;
-		}
-		for (int i = 4; i <= 12; i++) values.add(0.0);
-		values.add(winding.equals("1") ? row.get("cod1") : 0);
-		values.add(winding.equals("1") ? row.get("cont1") : 0);
+		if (version != 30) for (int i = 4; i <= 12; i++) values.add(0.0);
+		values.add(row.get("cod" + winding));
+		values.add(row.get("cont" + winding));
 		if (version >= 35) values.add(0);
-		values.add(winding.equals("1") ? row.get("rma1") : 1.1);
-		values.add(winding.equals("1") ? row.get("rmi1") : 0.9);
-		values.add(winding.equals("1") ? row.get("vma1") : 1.1);
-		values.add(winding.equals("1") ? row.get("vmi1") : 0.9);
-		values.add(winding.equals("1") ? row.get("ntp1") : 33);
+		values.add(row.get("rma" + winding));
+		values.add(row.get("rmi" + winding));
+		values.add(row.get("vma" + winding));
+		values.add(row.get("vmi" + winding));
+		values.add(row.get("ntp" + winding));
 		values.add(row.get("tab" + winding));
 		values.add(0);
 		values.add(0);
-		values.add(0);
+		if (version != 30) values.add(0);
 		out.append(csv(values)).append('\n');
 	}
 
