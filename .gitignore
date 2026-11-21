@@ -47,3 +47,4 @@ ipss.plugin.py/tests/**/*.py
 ipss.test.plugin.core/testData/reference/**
 ipss.test.plugin.core/src/test/resources/reference/**
 **/target/classes/**/*.*
+ipss.plugin.3phase/.settings/org.eclipse.jdt.core.prefs
