@@ -1072,9 +1072,15 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			   }
 			   else{
 
-				   Complex transBusVolt = transBoundaryBus.getVoltage();
-				   
-				   Complex currInj = e.getValue().divide(transBusVolt).conjugate();
+                   // Transfer the actual terminal current. During a deep fault,
+                   // feeder and transmission iterates need not yet have equal
+                   // voltage. S_feeder / V_trans can then converge to a spurious
+                   // high-voltage root even when both power iterates look steady.
+                   // The positive-sequence port retains its defined sequence and
+                   // converts current from feeder to transmission MVA base.
+                   var distributionNet = subNetProcessor.getSubNetworkByBusId(distBoundaryBusId);
+                   Complex currInj = dist2Trans3PhaseCurInjTable.get(distBoundaryBusId).to012().b_1
+                           .multiply(distributionNet.getBaseMva() / transmissionNet.getBaseMva());
 				   
 				   this.dist2TransEquivCurInjTable.put(transBoundaryBusId, currInj);
 	
