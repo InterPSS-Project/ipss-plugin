@@ -204,7 +204,8 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	// Mod 26-03: use absolute value for voltAdjTolerance
 	public int voltAdjStartPoint = 10;
 	public double voltAdjTolearnce = 0.005;
-	public double dQ_dVThreshold = 1.0;
+	/** Minimum retained inverse voltage response; explicit legacy values remain supported. */
+	public double dQ_dVThreshold = 0.1;
 	public AdjustApplyType voltAdjApplyType = AdjustApplyType.DURING_ITERATION;
 	
 	public int powerAdjStartPoint = 10;

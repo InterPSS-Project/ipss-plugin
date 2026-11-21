@@ -16,6 +16,38 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.LoadflowAlgorithm.VscCapabilityPriority;
 
 class AclfRunConfigRecTest {
+    @Test
+    void omittedSensitivityCutoffUsesTheCoreDefault() {
+        assertEquals(.1, new AclfRunConfigRec().dQ_dVThreshold, 0.);
+        for (String json : new String[] {"{}", "{\"lfMethod\":\"NR\"}"}) {
+            var config = AclfRunConfigRec.fromJson(json);
+            assertEquals(.1, config.dQ_dVThreshold, 0.);
+            var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(CoreObjectFactory.createAclfNetwork());
+            assertEquals(.1, algorithm.getLfAdjAlgo().getVoltAdjConfig().getDQ_dVThreshold(), 0.);
+            config.configAclfRun(algorithm, true, true, false);
+            assertEquals(.1, algorithm.getLfAdjAlgo().getVoltAdjConfig().getDQ_dVThreshold(), 0.);
+        }
+    }
+
+    @Test
+    void explicitSensitivityCutoffsRoundTripAndApplyIncludingTheLegacyValue() {
+        for (double value : new double[] {0., .1, 1.}) {
+            var config = AclfRunConfigRec.fromJson("{\"dQ_dVThreshold\":" + value + "}");
+            var parsed = AclfRunConfigRec.fromJson(config.toString());
+            assertEquals(value, parsed.dQ_dVThreshold, 0.);
+            var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(CoreObjectFactory.createAclfNetwork());
+            parsed.configAclfRun(algorithm, true, true, false);
+            assertEquals(value, algorithm.getLfAdjAlgo().getVoltAdjConfig().getDQ_dVThreshold(), 0.);
+        }
+    }
+
+    @Test
+    void missingOverlayFieldPreservesAnExplicitLegacySensitivityCutoff() {
+        var defaults = new AclfRunConfigRec();
+        defaults.dQ_dVThreshold = 1.;
+        assertEquals(1., AclfRunConfigRec.overlayJson(defaults, "{}").dQ_dVThreshold, 0.);
+    }
+
 	@Test
 	void schemaVersionDefaultsToOneAndRejectsUnsupportedVersions() {
 		AclfRunConfigRec config = new AclfRunConfigRec();
