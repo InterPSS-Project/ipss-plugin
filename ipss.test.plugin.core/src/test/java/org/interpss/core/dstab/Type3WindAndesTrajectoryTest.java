@@ -3,6 +3,7 @@ package org.interpss.core.dstab;
 import org.interpss.test.TestConfig;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,7 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Public full-stack Type-3 trajectory comparison fixture shared with ANDES. */
@@ -63,6 +65,10 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
                         com.interpss.dstab.renewable.Reeca1Model.WindSpeedConvention.WTTQA_POWER_REFERENCE);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "Type-3 public load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        // Resolve algebraic error below the unchanged mechanical-state comparison limit.
+        DStabSolverImpl solver = assertInstanceOf(DStabSolverImpl.class, algorithm.getSolver());
+        solver.setVoltageTolerance(Double.parseDouble(CONFIG.string(
+                "type3.wind.networkTolerance", "1.0e-8")));
         double simulationStep = Double.parseDouble(CONFIG.string(
                 "type3.wind.step", Double.toString(STEP)));
         algorithm.setSimuStepSec(simulationStep);

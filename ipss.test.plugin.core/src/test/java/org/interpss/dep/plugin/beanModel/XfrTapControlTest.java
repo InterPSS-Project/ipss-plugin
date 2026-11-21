@@ -1,6 +1,7 @@
 package org.interpss.dep.plugin.beanModel;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
@@ -48,7 +49,11 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 				.getAclfNet();
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
-	  	algo.loadflow();
+		// Match the direct fixture: four-decimal swing power needs a tighter electrical solve.
+		algo.setTolerance(1.0E-8);
+		assertTrue(algo.loadflow(), () -> algo.getTerminationReport().toString());
+		assertEquals(0, algo.getTerminationReport().unsettledControlCount(),
+				algo.getTerminationReport().toString());
   		//System.out.println(net.net2String());
 
         AclfBus swingBus = (AclfBus)aclfNet.getBus("0001");

@@ -197,7 +197,8 @@
     "texas2k.dynamic.case.dir": null
   },
   "Type3WindAndesTrajectoryTest": {
-    "type3.wind.step": null
+    "type3.wind.step": null,
+    "type3.wind.networkTolerance": 1.0e-8
   },
   "Wecc179FaultBenchmarkTest": {
     "wecc179.total.time": "5.0",
