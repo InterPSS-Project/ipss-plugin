@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,14 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Gewtecu1Model;
-import org.interpss.dstab.mach.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Gewtecu1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -35,6 +38,82 @@ public class Gewtecu1ModelTest {
         assertTrue(fixture.controller.getNamedStates().containsKey("Filter in Voltage regulator"));
         assertTrue(fixture.controller.getNamedStates().containsKey("Washout in WindInertia"));
         assertNotNull(fixture.generator.getElectricalController());
+        assertTrue(fixture.generator.getNamedStates().keySet()
+                .containsAll(fixture.controller.getNamedStates().keySet()));
+    }
+
+    @Test
+    void remoteVoltageInitializesWindVarAndLvplWhileInnerLoopUsesTerminal(
+            @TempDir Path tempDir) throws Exception {
+        var fixture = loadWithVoltageBus(tempDir, 2);
+        var terminal = fixture.generator.getDStabBus();
+        var remote = assertInstanceOf(BaseDStabBus.class, terminal.getNetwork().getBus("Bus2"));
+        terminal.setVoltage(new Complex(.99, 0));
+        remote.setVoltage(new Complex(.95, 0));
+        assertTrue(fixture.generator.initStates(terminal));
+
+        var controller = fixture.controller;
+        assertEquals(.95, controller.getNamedState("Voltage sensor"), 1.0e-12);
+        assertEquals(.95, controller.getNamedState("LVPL limit"), 1.0e-12);
+        assertEquals(.99, controller.getNamedState("Mvar/Volt integrator"), 1.0e-12);
+        double initialCommand = controller.getNamedState("Volt/Mvar integrator");
+        assertTrue(controller.step(.001, 0));
+        assertEquals(.95, controller.getNamedState("Voltage sensor"), 1.0e-12);
+        assertEquals(0, controller.getNamedState("Lag of the WindVar controller"), 1.0e-12);
+        assertEquals(initialCommand, controller.getNamedState("Volt/Mvar integrator"), 1.0e-12);
+
+        remote.setVoltage(new Complex(.90, 0));
+        assertTrue(controller.step(.001, 1));
+        assertEquals(.95 + .0005 * (.90 - .95) / controller.getData().voltageSensorTime(),
+                controller.getNamedState("Voltage sensor"), 1.0e-12);
+        assertTrue(controller.getNamedState("LVPL limit") < .95);
+        assertEquals(initialCommand, controller.getNamedState("Volt/Mvar integrator"), 1.0e-12);
+    }
+
+    @Test
+    void missingVoltageBusFallsBackToTerminalAtInitializationAndDuringStepping(
+            @TempDir Path tempDir) throws Exception {
+        var fixture = loadWithVoltageBus(tempDir, 999);
+        var terminal = fixture.generator.getDStabBus();
+        terminal.setVoltage(new Complex(.97, 0));
+        assertTrue(fixture.generator.initStates(terminal));
+        var controller = fixture.controller;
+        assertEquals(.97, controller.getNamedState("Voltage sensor"), 1.0e-12);
+        assertEquals(.97, controller.getNamedState("LVPL limit"), 1.0e-12);
+        assertTrue(controller.step(.001, 0));
+        terminal.setVoltage(new Complex(.93, 0));
+        assertTrue(controller.step(.001, 1));
+        assertEquals(.97 + .0005 * (.93 - .97) / controller.getData().voltageSensorTime(),
+                controller.getNamedState("Voltage sensor"), 1.0e-12);
+    }
+
+    @Test
+    void bypassedLvplUsesLiveRemoteVoltageOnTheFirstPredictor(@TempDir Path tempDir)
+            throws Exception {
+        Path dyr = tempDir.resolve("bypassed-lvpl.dyr");
+        Files.writeString(dyr, Files.readString(MODEL_DYR)
+                .replace("  0 0 1 0 0 0 0 ", "  2 0 1 0 0 0 0 ")
+                .replace("1.2 0.0 0.10 0.02 0.70", "1.2 0.0 0.10 0.0 0.70"));
+        var fixture = loadDyr(dyr);
+        var remote = assertInstanceOf(BaseDStabBus.class,
+                fixture.generator.getDStabBus().getNetwork().getBus("Bus2"));
+        var controller = fixture.controller;
+        assertEquals(0.0, controller.getData().lvplSensorTime(), 0.0);
+        controller.setMeasuredPower(.4, 0.0);
+        remote.setVoltage(new Complex(.35, 0));
+
+        assertTrue(controller.step(.001, 0));
+        assertEquals(.35, controller.getNamedState("LVPL limit"), 1.0e-12);
+        assertEquals(0.0, controller.getNamedState("Braking resistor integrator"), 0.0);
+        assertTrue(controller.step(.001, 1));
+        assertEquals(0.0, controller.getNamedState("Braking resistor integrator"), 0.0);
+    }
+
+    private static Fixture loadWithVoltageBus(Path directory, int remoteBus) throws Exception {
+        Path dyr = directory.resolve("voltage-sensing.dyr");
+        Files.writeString(dyr, Files.readString(MODEL_DYR)
+                .replace("  0 0 1 0 0 0 0 ", "  " + remoteBus + " 0 1 0 0 0 0 "));
+        return loadDyr(dyr);
     }
 
     @Test
@@ -46,6 +125,30 @@ public class Gewtecu1ModelTest {
         assertEquals(.95, model.frequencyPower(1.0), 1.0e-12);
         assertEquals(1.05, model.frequencyPower(1.035), 1.0e-12);
         assertEquals(1.1, model.frequencyPower(1.06), 0.0);
+    }
+
+    @Test
+    void nonzeroReactivePowerAndAbsoluteShaftSpeedRemainAtEquilibrium(@TempDir Path tempDir)
+            throws Exception {
+        var fixture = load(tempDir);
+        var generator = fixture.generator;
+        var controller = fixture.controller;
+        var bus = generator.getDStabBus();
+        bus.setVoltage(new org.apache.commons.math3.complex.Complex(.99, 0));
+        generator.getParentGen().setGen(new org.apache.commons.math3.complex.Complex(.5, -.1));
+        assertTrue(generator.initStates(bus));
+        controller.setRotorSpeed(controller.getInitialRotorSpeed());
+        var initial = controller.getNamedStates();
+        assertEquals(0, initial.get("Lag of the WindVar controller"), 0);
+        for (int i = 0; i < 100; i++) {
+            assertTrue(generator.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 0));
+            assertTrue(generator.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 1));
+            assertTrue(generator.updateAttributes(false));
+        }
+        assertEquals(.5, generator.getP(), 1e-10);
+        assertEquals(-.1, generator.getQ(), 1e-10);
+        initial.forEach((name, value) -> assertEquals(value,
+                controller.getNamedState(name), 1e-10, name));
     }
 
     @Test
@@ -61,6 +164,39 @@ public class Gewtecu1ModelTest {
         assertTrue(fixture.controller.step(.0005, 0));
         assertTrue(fixture.controller.step(.0005, 1));
         assertTrue(fixture.controller.isTripped());
+    }
+
+    @Test
+    void highWindProtectionIntegratesExcessAndRetainsExposure(@TempDir Path tempDir)
+            throws Exception {
+        Path dyr = tempDir.resolve("wind-protection.dyr");
+        String original = Files.readString(MODEL_DYR);
+        String adjusted = original.replace("10.0 100.0 -100.0 -1.0 1000.0",
+                "14.0 25.0 3.0 -0.9 8.0");
+        assertTrue(!original.equals(adjusted));
+        Files.writeString(dyr, adjusted);
+        var controller = loadDyr(dyr).controller;
+        for (int i = 0; i < 2000; i++) protectionStep(controller, 14);
+        assertEquals(0, controller.getNamedState("High wind speed trip integrator"), 0);
+        assertTrue(!controller.isTripped());
+        for (int i = 0; i < 500; i++) protectionStep(controller, 34);
+        assertEquals(4.5, controller.getNamedState("High wind speed trip integrator"), 1e-10);
+        assertTrue(!controller.isTripped());
+        for (int i = 0; i < 500; i++) protectionStep(controller, 14);
+        assertEquals(4.5, controller.getNamedState("High wind speed trip integrator"), 1e-10);
+        for (int i = 0; i < 500; i++) protectionStep(controller, 34);
+        assertEquals(9, controller.getNamedState("High wind speed trip integrator"), 1e-10);
+        assertTrue(controller.isTripped());
+        controller.setWindSpeed(14);
+        assertTrue(controller.initialize());
+        assertEquals(0, controller.getNamedState("High wind speed trip integrator"), 0);
+        assertTrue(!controller.isTripped());
+    }
+
+    private static void protectionStep(Gewtecu1Model controller, double wind) {
+        controller.setWindSpeed(wind);
+        assertTrue(controller.step(.001, 0));
+        assertTrue(controller.step(.001, 1));
     }
 
     @Test
@@ -126,10 +262,14 @@ public class Gewtecu1ModelTest {
     }
 
     private static Fixture load(Path tempDir) throws Exception {
+        return loadDyr(MODEL_DYR);
+    }
+
+    private static Fixture loadDyr(Path modelDyr) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
-                MODEL_DYR.toString());
+                modelDyr.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         DStabGen gen = (DStabGen) network.getBus("Bus1").getContributeGen("1");
@@ -147,4 +287,23 @@ public class Gewtecu1ModelTest {
     }
 
     private record Fixture(Gewtgcu1Model generator, Gewtecu1Model controller) { }
+
+    @Test void reinitializationDiscardsPendingConverterAndControllerHistory(@TempDir Path directory)
+            throws Exception {
+        var fixture = load(directory);
+        var generator = fixture.generator;
+        var controller = fixture.controller;
+        var method = com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER;
+        assertFalse(generator.nextStep(.001, method, 1));
+        assertTrue(generator.nextStep(.001, method, 0));
+        assertTrue(generator.initStates(generator.getDStabBus()));
+        var converterState = generator.getNamedStates();
+        var controlState = controller.getNamedStates();
+        assertFalse(generator.nextStep(.001, method, 1));
+        assertFalse(controller.step(.001, 1));
+        assertEquals(converterState, generator.getNamedStates());
+        assertEquals(controlState, controller.getNamedStates());
+        assertTrue(generator.nextStep(.001, method, 0));
+        assertTrue(generator.nextStep(.001, method, 1));
+    }
 }

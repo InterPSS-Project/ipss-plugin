@@ -1,0 +1,225 @@
+{
+  "status": "terminal_contracts_verified_candidate_rejected",
+  "consolidation_complete": false,
+  "final_release_qualified": false,
+  "core_test_commit": "65039c29a83a2ea3d3552bcd990391e3dba341c5",
+  "accepted_production_code_commit": "74d19134c13d805fb76c3f8eaabc58e22609d3ba",
+  "production_changes_retained": false,
+  "accepted_external_evidence_reused": "docs/benchmarks/checkpoints/nr-exact-factor-reuse-2026-10-31.json",
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 8001,
+    "totals": {
+      "passed": 7894,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 588,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_terminal_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[7]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#mixedInternalAndAliasedOutsideVoltagesMatchPhysicalPowerAndFrozenAssembly(boolean, boolean, boolean)[8]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#repeatedOutsideGetterCallsKeepTheirOrderAndIndividualValues": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrTerminalEvaluationContractTest#unchangedPlansReadFreshInternalCoordinatesAtEveryEvaluation(boolean)[2]": "passed"
+    }
+  },
+  "candidate_matched_results": {
+    "case118": {
+      "before": {
+        "samples": 20000,
+        "mean_ms": 0.038594685000000004,
+        "median_ms": 0.037,
+        "min_ms": 0.0365,
+        "max_ms": 0.6309
+      },
+      "after": {
+        "samples": 20000,
+        "mean_ms": 0.04097971,
+        "median_ms": 0.0374,
+        "min_ms": 0.0368,
+        "max_ms": 16.4449
+      },
+      "mean_reduction_percent": -6.1796721491573114,
+      "byte_identical_voltages_sha256": "081a09d4c0db179b842da519d326462f9ae45f015bb869eaf3817161dd472f16"
+    },
+    "case9241pegase": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 14.237511,
+        "median_ms": 14.0059,
+        "min_ms": 12.7008,
+        "max_ms": 18.6877
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 14.114153,
+        "median_ms": 13.70345,
+        "min_ms": 12.6561,
+        "max_ms": 23.2965
+      },
+      "mean_reduction_percent": 0.8664295325215177,
+      "byte_identical_voltages_sha256": "25c9574689f76b0c234580bda2b9138f419692d4e3f9a7ccb13965cb37d1e32d"
+    },
+    "activsg25k": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 46.496774,
+        "median_ms": 45.5293,
+        "min_ms": 42.8768,
+        "max_ms": 68.802
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 46.5247175,
+        "median_ms": 45.48425,
+        "min_ms": 42.5309,
+        "max_ms": 66.3867
+      },
+      "mean_reduction_percent": -0.06009771774704298,
+      "byte_identical_voltages_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+    }
+  },
+  "candidate_promoted": false,
+  "candidate_measured_samples": 40800,
+  "profile_main_thread_samples": 482,
+  "profile_scope": "Diagnostic-only public API JFR; no acceptance timing claim",
+  "production_classpath_entries_identical_to_accepted_external_runtime": 108,
+  "evidence_root": "ipss.test.plugin.core/target/nr-capability-contracts-20261031",
+  "evidence_hashes": {
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/full-test-audit.json": {
+      "sha256": "31eefc4fce3ed3e6d8d1dcaf487c04e838af3bd3ff2d9e6da0439b50d762490f",
+      "bytes": 2600656
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/runtime-equivalence.json": {
+      "sha256": "8150397dd9002b5b4710a98994423ea8cff3c4e040f5a40db1da25363deb8a1e",
+      "bytes": 45281
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/focused-audit.json": {
+      "sha256": "79b275d655dbe456ba20836aab7d07b290d447c1c7ce9bf64323357cab4baea9",
+      "bytes": 114774
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/matched-summary.json": {
+      "sha256": "8a15768b6c53cbcb163f58d30201944c8e8d514559ad1c512d6a4b6c23dc8af2",
+      "bytes": 1506
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/matched/runs.json": {
+      "sha256": "a32b924d19315fd080ddbc5a51d3de276e95d4f370689c892da341b190e43329",
+      "bytes": 165229
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/profile-current/runs.json": {
+      "sha256": "8cbd52327a7071e50c288468a17a1d51b3c5885d901ac0b9acf39aba8c825cf3",
+      "bytes": 37275
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/profile-current/case118/profile-summary.json": {
+      "sha256": "26d16a5f894ff1eaaa40114a9693cb7179c937d0865f265113e369c431793c03",
+      "bytes": 37163
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/profile-current/case118/profile.jfr": {
+      "sha256": "36d19e3ff4cb641bf6f8ad82b52b28aff0c92b80a4a76a200c169eaaee93b532",
+      "bytes": 550952
+    },
+    "docs/benchmarks/checkpoints/nr-exact-factor-reuse-2026-10-31.json": {
+      "sha256": "30b6eeae25f4b5daa700d1468692ecfa7cf7a08ce474f12e172bb2454a35f79f",
+      "bytes": 56414
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-terminal-contract-full-20261031-source-manifest.json": {
+      "sha256": "dd8c50f564841cdbfc373eecdf0ae03c0f3098b31295150a0ce8392781c4547d",
+      "bytes": 1146775
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/before/NrAssemblyPlan.java": {
+      "sha256": "a05207ed67b01cec0e04b88ef2573de7125133ef412b8c5b2ab31c3809b92b67",
+      "bytes": 14728
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/before/NrNumericalWorkspace.java": {
+      "sha256": "6258c15de636b60bf4e0a257a46e913f4617c1f2f776f341a6bd436fb197dc75",
+      "bytes": 3205
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/before/NrPowerEvaluation.java": {
+      "sha256": "a7b5861a8f499c7cff0a6d4257333379a09fe799c83610dc701018bf4f63225f",
+      "bytes": 1902
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/before/PolarNrFormulation.java": {
+      "sha256": "31ddfeb6478fe2bc795ff94b89e97c06a3181ae717f3241bd8c307152d89cbaf",
+      "bytes": 7850
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/rejected-candidate/NrAssemblyPlan.java": {
+      "sha256": "a0ba06cb8b2f7f9fee32014f7c04f49af4f0cda979ff22be8f3a9a20458ae2f5",
+      "bytes": 15357
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/rejected-candidate/NrNumericalWorkspace.java": {
+      "sha256": "c3242f40363b638cf2e1f64dee860a1933e751a99a0febd2313dc55b39ac6603",
+      "bytes": 3278
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/rejected-candidate/NrPowerEvaluation.java": {
+      "sha256": "960a65678dd3181f64e40ec174287473dd6fc8a7a07b5ed89999006d80521c4c",
+      "bytes": 1940
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/rejected-candidate/NrTerminalIndexTest.java": {
+      "sha256": "359f41bacafe1b4d32338b253f3114910d58e751a8006235984ca50dc071a9db",
+      "bytes": 9062
+    },
+    "ipss.test.plugin.core/target/nr-capability-contracts-20261031/rejected-candidate/PolarNrFormulation.java": {
+      "sha256": "0e6aa0184ce3063e720507377b52d1975f7969441efa380bc903bf08c828c717",
+      "bytes": 7888
+    },
+    "ipss.test.plugin.core/target/nr-terminal-index-focused-20261031.log.status.json": {
+      "sha256": "b11174665139048b7af25e0eeb31614399ad1676df8955c49e9b9a6e41852a0a",
+      "bytes": 159
+    },
+    "ipss.test.plugin.core/target/nr-terminal-index-focused-b-20261031.log.status.json": {
+      "sha256": "6b5b3287685bcc54de96115a940e3d9e6311a6281c51dd27babf7152c5eb3905",
+      "bytes": 159
+    },
+    "ipss.test.plugin.core/target/nr-terminal-index-matched-20261031.log.status.json": {
+      "sha256": "393f96279efbcaf0d57c3383c79942cd2ffb0421cb9c9da13f1afc96021f50e9",
+      "bytes": 158
+    },
+    "ipss.test.plugin.core/target/nr-capability-profile-current-20261031.log.status.json": {
+      "sha256": "e95371dbb310dbc1031e6d62db89d6d4c65ac70c07b68a21919e5b2ac86762b7",
+      "bytes": 158
+    },
+    "ipss.test.plugin.core/target/nr-terminal-contract-full-20261031.log.status.json": {
+      "sha256": "a526ffd466d51b03b6ea685a93a68c9870d3cb2df226a7309bc08c5ee812dd25",
+      "bytes": 161
+    }
+  },
+  "remaining": [
+    "IEEE118 <=1.2 target",
+    "Separate structure/coefficient/publication capabilities",
+    "Explicit adversarial equal-hash CSC patterns",
+    "Remaining architecture, interactions and generic/frozen release comparisons"
+  ]
+}

@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
+import com.interpss.dstab.controller.uel.uel1.Uel1UnderExcitationLimiter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

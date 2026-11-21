@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "description": "Static-load work audit and bounded voltage-norm screen. Not promoted: no consistent two-case timing gain.",
+  "base_commit": "1f8db496e0d183c8aef772d947f3ffe3371584ce",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-bounded-voltage-norm/evidence.zip",
+  "archive_sha256": "f2f8fc75b41e1e1112858ef1327bb74542bfd2b362e4a513ed599a197adf761b",
+  "archive_bytes": 4533844,
+  "protocol": {
+    "cases": [
+      1,
+      2
+    ],
+    "warmups_per_case": 12,
+    "measured_pairs_per_case": 5,
+    "logical_processors": 1,
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "st1_substeps": 10,
+    "st1_boundary_reuse": true,
+    "scope": "Fresh parsing, preparation, initialization, all observations and writer closure; compilation and GC included"
+  },
+  "static_load_audit": {
+    "eligibility_checks": 33269630,
+    "eligibility_rebuilds": 1126,
+    "eligibility_fallbacks": 0,
+    "static_injection_calls": 33269922,
+    "all_recordings_match": true,
+    "hashes": {
+      "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+      "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+      "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    }
+  },
+  "initial_focused_tests": 43,
+  "extended_before_failures": 1,
+  "guarded_focused_tests": 44,
+  "timing_source": "Initial prototype; guarded version additionally excludes subnormal half-maxima and has separate full-recording audits, not warmed timing qualification.",
+  "results": [
+    {
+      "case": 1,
+      "arms": {
+        "control": {
+          "seconds": [
+            10.8737118,
+            10.3492877,
+            10.4879167,
+            10.6224818,
+            10.4186111
+          ],
+          "median_s": 10.4879167,
+          "min_s": 10.3492877,
+          "max_s": 10.8737118,
+          "compilation_ms": [
+            627,
+            94,
+            133,
+            161,
+            66
+          ],
+          "skips": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            10.4751292,
+            10.2273612,
+            10.3980398,
+            10.4058288,
+            10.8051839
+          ],
+          "median_s": 10.4058288,
+          "min_s": 10.2273612,
+          "max_s": 10.8051839,
+          "compilation_ms": [
+            207,
+            307,
+            238,
+            131,
+            221
+          ],
+          "skips": [
+            50700905,
+            50700905,
+            50700905,
+            50700905,
+            50700905
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.398582600000001,
+        0.12192649999999894,
+        0.08987690000000015,
+        0.2166529999999991,
+        -0.3865727999999997
+      ],
+      "median_paired_reduction_s": 0.12192649999999894,
+      "candidate_wins": 4,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "arms": {
+        "control": {
+          "seconds": [
+            8.0312445,
+            7.3981068,
+            7.6764035,
+            7.5057784,
+            7.4122416
+          ],
+          "median_s": 7.5057784,
+          "min_s": 7.3981068,
+          "max_s": 8.0312445,
+          "compilation_ms": [
+            644,
+            83,
+            48,
+            187,
+            85
+          ],
+          "skips": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            7.4139355,
+            7.933499,
+            7.6987319,
+            7.5216177,
+            7.4722534
+          ],
+          "median_s": 7.5216177,
+          "min_s": 7.4139355,
+          "max_s": 7.933499,
+          "compilation_ms": [
+            129,
+            523,
+            309,
+            19,
+            205
+          ],
+          "skips": [
+            61098200,
+            61098200,
+            61098200,
+            61098200,
+            61098200
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.6173089999999997,
+        -0.5353922000000004,
+        -0.022328400000000137,
+        -0.015839300000000556,
+        -0.06001179999999984
+      ],
+      "median_paired_reduction_s": -0.022328400000000137,
+      "candidate_wins": 1,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "guarded_audits": [
+    {
+      "case": 1,
+      "status": "completed",
+      "bounded_norm_skips": 50700905,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "status": "completed",
+      "bounded_norm_skips": 61098200,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "decision": "Retain the production convergence calculation. The initial screen has a small Case 1 gain but no Case 2 gain; the guarded version is not timing-qualified.",
+  "dependencies": [
+    "st1-boundary-qualification-2026-10-21.json",
+    "dynamic-parameter-validation-2026-10-21.json"
+  ]
+}

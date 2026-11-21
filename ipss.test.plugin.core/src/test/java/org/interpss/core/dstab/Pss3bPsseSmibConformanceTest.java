@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
+import com.interpss.dstab.controller.pss.ieee2005pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

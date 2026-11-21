@@ -1,6 +1,6 @@
 ---
 name: Eliminate ODM Dependency
-overview: Fully remove the ieee.odm dependency from ipss-plugin by extending the direct file-to-model adapter pattern (already completed for ACLF) to cover Acsc, DStab, OPF, Distribution, DC System, PSS/E JSON export, and trivial infrastructure references. This is organized into 7 phases of decreasing priority.
+overview: Fully remove the ieee.odm dependency from ipss-plugin by extending the direct file-to-model adapter pattern (already completed for ACLF) to cover Acsc, DStab, OPF, Distribution, DC System, reference simulator JSON export, and trivial infrastructure references. This is organized into 7 phases of decreasing priority.
 todos:
   - id: phase1-trivial
     content: "Phase 1: Replace ODMLogger, IFileReader/ODMTextFileReader, delete deprecated QA files"
@@ -30,7 +30,7 @@ isProject: false
 The ACLF import path has been migrated to direct file-to-model adapters (Phases 1-5 of the prior plan). The remaining ODM usage falls into these categories:
 
 - **42 mapper files** in `org.interpss.odm.mapper` (Aclf remnants, Acsc, DStab, Opf, Dist, DcSys, MultiNet)
-- **13 PSS/E JSON export files** using `PSSESchema` bean and `IODMModelParser.BusIdPreFix`
+- **13 reference simulator JSON export files** using `PSSESchema` bean and `IODMModelParser.BusIdPreFix`
 - **IpssAdapter.java** routing for IEEE_ODM, Acsc/DStab multi-file, Custom format
 - **CorePluginFunction.java** with 5 remaining ODM mapping functions
 - **CorePluginFactory.java** with remaining ODM mapper factory methods
@@ -112,15 +112,15 @@ Create a simple `BufferedReaderWrapper` in ipss.plugin.core that implements the 
 
 ---
 
-## Phase 2: PSS/E JSON Export (Moderate Effort, Isolated)
+## Phase 2: reference simulator JSON Export (Moderate Effort, Isolated)
 
 The 13 files in `org.interpss.fadapter.psse.export` depend on:
-- `org.ieee.odm.adapter.psse.bean.PSSESchema` -- a Gson-deserialized POJO for PSS/E JSON structure
+- `org.ieee.odm.adapter.psse.bean.PSSESchema` -- a Gson-deserialized POJO for reference simulator JSON structure
 - `IODMModelParser.BusIdPreFix` -- just the string constant `"Bus"`
 
 ### Approach
 
-1. **Copy `PSSESchema` bean** into `ipss.plugin.core` as `org.interpss.fadapter.psse.bean.PSSESchema`. This is a standalone Gson POJO with no other ODM dependencies -- ~30 inner static classes representing PSS/E JSON sections.
+1. **Copy `PSSESchema` bean** into `ipss.plugin.core` as `org.interpss.fadapter.psse.bean.PSSESchema`. This is a standalone Gson POJO with no other ODM dependencies -- ~30 inner static classes representing reference simulator JSON sections.
 
 2. **Replace `IODMModelParser.BusIdPreFix`** with a local constant in [BasePSSEJSonUpdater.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/psse/export/psse/BasePSSEJSonUpdater.java): `private static final String BUS_ID_PREFIX = "Bus";`
 
@@ -145,7 +145,7 @@ Reference: [AbstractODMAcscParserMapper.java](ipss.plugin.core/src/main/java/org
 
 ### 3b. Create `PSSEAcscDirectParser`
 
-Parse PSS/E sequence data file (10 sections), populating the `AcscNetworkBuilder`. The 10 sections are:
+Parse reference simulator sequence data file (10 sections), populating the `AcscNetworkBuilder`. The 10 sections are:
 1. Change code
 2. Positive-sequence generator Z
 3. Negative-sequence generator Z
@@ -161,7 +161,7 @@ Reference: The 10 mappers in `org.ieee.odm.adapter.psse.raw.impl.acsc/` in ipss-
 
 ### 3c. Wire into IpssAdapter
 
-Update `IpssAdapter.FileImportDSL.load(NetType, String[])` to use the direct Acsc parser for 2-file PSS/E loading (LF + sequence) instead of `PSSERawAdapter`.
+Update `IpssAdapter.FileImportDSL.load(NetType, String[])` to use the direct Acsc parser for 2-file reference simulator loading (LF + sequence) instead of `PSSERawAdapter`.
 
 ---
 
@@ -197,13 +197,13 @@ Reference: [MachDataHelper.java](ipss.plugin.core/src/main/java/org/interpss/odm
 
 ### 4b. Create `PSSEDStabDirectParser`
 
-Parse PSS/E dynamic data file (model records in `IBUS 'TYPE' ID DATALIST /` format). Route by `DynModelType` to create the appropriate machine/exciter/governor/PSS/load/relay via `DStabNetworkBuilder`.
+Parse reference simulator dynamic data file (model records in `IBUS 'TYPE' ID DATALIST /` format). Route by `DynModelType` to create the appropriate machine/exciter/governor/PSS/load/relay via `DStabNetworkBuilder`.
 
 Reference: `org.ieee.odm.adapter.psse.raw.impl.dstab/` mappers in ipss-odm (~27 mapper classes).
 
 ### 4c. Wire multi-file loading
 
-Update `IpssAdapter.FileImportDSL.load(NetType, String[])` to use direct parsers for 3-file PSS/E loading (LF + sequence + dynamic) instead of `PSSERawAdapter`.
+Update `IpssAdapter.FileImportDSL.load(NetType, String[])` to use direct parsers for 3-file reference simulator loading (LF + sequence + dynamic) instead of `PSSERawAdapter`.
 
 ### 4d. Update 3-phase DStab mappers
 
@@ -295,7 +295,7 @@ And the `ieee.odm.version` property.
 | Phase | Files touched | Relative effort | Risk |
 |-------|--------------|----------------|------|
 | Phase 1: Trivial infrastructure | ~12 | Low | Low |
-| Phase 2: PSS/E JSON export | ~14 | Low-Medium | Low |
+| Phase 2: reference simulator JSON export | ~14 | Low-Medium | Low |
 | Phase 3: Acsc direct pipeline | ~8 new + ~6 wire | Medium | Medium |
 | Phase 4: DStab direct pipeline | ~10 new + ~30 wire | **Very High** | **High** |
 | Phase 5: OPF/Dist/DcSys | ~6-10 | Medium | Low (can skip) |

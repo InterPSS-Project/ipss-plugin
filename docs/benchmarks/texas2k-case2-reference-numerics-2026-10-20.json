@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "scope": "Latest supplied Case 2 full-system reference run; user-confirmed settings received 2026-10-20",
+  "confirmed_reference_settings": {
+    "loadflow_maximum_bus_mismatch_mva": 0.1,
+    "converted_network_voltage_correction_pu": 0.00001,
+    "dynamic_network_voltage_correction_pu": 0.0001
+  },
+  "input_system_base_mva": 100.0,
+  "comparison_plan_overrides": {
+    "loadflow_tolerance_pu": 0.001,
+    "network_voltage_tolerance": 0.0001,
+    "network_convergence_norm": "COMPLEX_MAGNITUDE",
+    "minimum_network_iterations": 1,
+    "reuse_network_endpoint": true,
+    "static_load_z_part_in_y_matrix": true,
+    "converter_network_voltage_memory": true,
+    "machine_measurement_stage": "LAST_NETWORK_INJECTION",
+    "integration_step_s": 0.001
+  },
+  "startup_conversion_diagnostic": {
+    "voltage_correction_tolerance_pu": 0.00001,
+    "arithmetic_policy": "Declared binary32 constant-source conversion with one reused factorization; calculated from original inputs, not supplied trajectories",
+    "ordinary_runner_integration_complete": false
+  },
+  "not_established_by_settings_image": [
+    "Exact voltage-correction norm",
+    "Maximum and minimum network iteration counts",
+    "Arithmetic precision or factorization ordering"
+  ],
+  "acceptance_contract": "texas2k-current-acceptance.json"
+}

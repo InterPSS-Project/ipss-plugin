@@ -1,0 +1,1623 @@
+{
+  "schema": 1,
+  "description": "Pure Java solver and ST4 scheduling experiments, followed by complete simulation phase attribution.",
+  "scope": "pure-java-only",
+  "goal_complete": false,
+  "production_source_changed": false,
+  "experiments": [
+    {
+      "name": "java-row-scatter-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-row-scatter/evidence.zip",
+      "bytes": 403492,
+      "sha256": "e480a265fabf24cae87c06ecb9169aabb24777dd9f288c73cad9b80b01c312f0",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "st4-fixed-schedule-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st4-fixed-schedule/evidence.zip",
+      "bytes": 5057030,
+      "sha256": "4c5e5c8d9b9f64c917b2f7c958dabe8d07a9ea807496aeaea16c021c09f54017",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "java-complete-phase-audit-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-complete-phase-audit/evidence.zip",
+      "bytes": 1776800,
+      "sha256": "bee3859088cb4292e8f32401a473d2e46949df0c52f95e6bfce7e06c6ff2a539",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "java-integration-breakdown-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-integration-breakdown/evidence.zip",
+      "bytes": 1822159,
+      "sha256": "3872ab40190dd0747dea9faad2737d99897a6b1a17d497ae1ddd3adcb5ce8882",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "st4-pi-dispatch-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st4-pi-dispatch-v2/evidence.zip",
+      "bytes": 5053889,
+      "sha256": "e5ecc10ab238bd3ea93e18f35bc99d2d193b21ed063fd16bdd29f59979518406",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "tagged-cml-kernel-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-tagged-cml-kernel/evidence.zip",
+      "bytes": 5084131,
+      "sha256": "1ea110a30c68393cc6aae21afa4b6306f42c86769fb6b2bdade7d664a7477380",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-typed-input-v3-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-typed-input-v3/evidence.zip",
+      "bytes": 5065381,
+      "sha256": "17019997696721d34d748487d043e87947fad5a36b2a4b18328d055497074818",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-prepared-endpoint-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-prepared-endpoint-v2/evidence.zip",
+      "bytes": 5130448,
+      "sha256": "7504960d8aff8b34b30b34f22694f1d0adabcefa49f00889145f3d38841949aa",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "java-network-breakdown-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-network-breakdown/evidence.zip",
+      "bytes": 3114448,
+      "sha256": "bfd32c897cef14c6572c7faebc7e72f2c23c124d8759fd23b2a6c23a9a366346",
+      "outcome": "diagnostic-only"
+    },
+    {
+      "name": "staged-voltage-publication-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-staged-voltage-publication/evidence.zip",
+      "bytes": 5136378,
+      "sha256": "80fbcbd5865c872d8846253e70ff4b1e3cbadc5485e7d6d1cd784bb191a8f637",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "staged-voltage-matrix-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-staged-voltage-matrix/evidence.zip",
+      "bytes": 5119865,
+      "sha256": "795e3086139b25e0770950e4eba20e6eadeab75e7c85eaa827d041221ef58826",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-prepared-cascade-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-prepared-cascade-v2/evidence.zip",
+      "bytes": 5585170,
+      "sha256": "a7642c8270d958952f6ba971f76978cc740fdae369cdf71c91e48e69a272b599",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-endpoint-cost-audit-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-endpoint-cost-audit-v2/evidence.zip",
+      "bytes": 2924227,
+      "sha256": "55d462bf46765573b3eaf01b21514027040ed63dbb6125e6daa8906e00c9623d",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-live-algebraic-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-live-algebraic/evidence.zip",
+      "bytes": 5072197,
+      "sha256": "6a613b130fcc4deaf34630975a5e3e300ee695d0499371ff633cc6527b45669d",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "network-secant-carry-v5-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-network-secant-carry-v5/evidence.zip",
+      "bytes": 3843950,
+      "sha256": "63ab37072af0bad9a7021e1042ef32f12a11deb85e2598f13d0afa32384f00f9",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "java-cpu-placement-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-cpu-placement/evidence.zip",
+      "bytes": 2875347,
+      "sha256": "6ccd8d36133839b348f5af0ba948857e19a283d05ad6cbd15eb41f56ac11d6be",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "current-assembly-components-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-current-assembly-components/evidence.zip",
+      "bytes": 3106147,
+      "sha256": "185016b3650fd8ec87343c44173801924e6ce895e5d1504b40f0ce0a6de404e7",
+      "outcome": "diagnostic-resolution-insufficient",
+      "summary": {
+        "1": {
+          "sampled_assembly_ms": 84.6647,
+          "generator_section_ms": 20.0713,
+          "dynamic_device_section_ms": 11.4815,
+          "static_load_section_ms": 17.9403,
+          "empty_clock_pair_ns": 18.571,
+          "per_section_timer_count": 574000,
+          "clock_floor_indicator_ms": 10.659754,
+          "network_iterations": 18340,
+          "sampled_equation_calls": [
+            287,
+            286,
+            287
+          ],
+          "equation_calls": 18342
+        },
+        "2": {
+          "sampled_assembly_ms": 92.6586,
+          "generator_section_ms": 19.6041,
+          "dynamic_device_section_ms": 12.6388,
+          "static_load_section_ms": 19.7415,
+          "empty_clock_pair_ns": 19.369,
+          "per_section_timer_count": 632000,
+          "clock_floor_indicator_ms": 12.241208,
+          "network_iterations": 20202,
+          "sampled_equation_calls": [
+            316,
+            316,
+            316
+          ],
+          "equation_calls": 20204
+        }
+      }
+    },
+    {
+      "name": "java-current-execution-profile-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-current-execution-profile/evidence.zip",
+      "bytes": 3228695,
+      "sha256": "094528b99a2e1a1f42072b70549bfde878ef993729b03cdae33af6fc538ffd26",
+      "outcome": "diagnostic-only"
+    },
+    {
+      "name": "cml-voltage-magnitude-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-cml-voltage-magnitude/evidence.zip",
+      "bytes": 5053118,
+      "sha256": "67dbca8cbc41c80cece5791c90f1489b91418882adcf26f00e632c4d60ef08bb",
+      "outcome": "screened-not-promoted"
+    },
+    {
+      "name": "case3-stored-renewable-trace-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-case3-stored-renewable-trace/evidence.zip",
+      "bytes": 12251859,
+      "sha256": "e65b6852260a88c12ed3bb51baee0c8a03a70d29a90858d9d7260a8db77e9bf4",
+      "outcome": "diagnostic-only"
+    },
+    {
+      "name": "case3-renewable-boundary-replay-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-case3-renewable-boundary-replay/evidence.zip",
+      "bytes": 46923037,
+      "sha256": "f09536f6caef98cd40e3ddf383f022f1a9704f0eede22c7d799d5f7c1357ef37",
+      "outcome": "diagnostic-only"
+    },
+    {
+      "name": "case3-renewable-replay-step-boundary-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-case3-renewable-replay-step-boundary/evidence.zip",
+      "bytes": 31013319,
+      "sha256": "b9d023663504826eff1db06a0dc29f2392506d64244453a41e8b610cb157b1b1",
+      "outcome": "diagnostic-only"
+    },
+    {
+      "name": "static-current-compensation-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-static-current-compensation/evidence.zip",
+      "bytes": 5086431,
+      "sha256": "42c65eea627d3ffac7f4ac1f1cad5fe742018ca8249edfbcfc5b5be8ecdeb4dc",
+      "outcome": "screened-not-promoted"
+    },
+    {
+      "name": "anderson-vector-loops-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-anderson-vector-loops/evidence.zip",
+      "bytes": 5048792,
+      "sha256": "65943c9513332fd171a9bcaa72e2ce7826f47683625fa4fffcc9bbb20bffc147",
+      "outcome": "screened-not-promoted"
+    },
+    {
+      "name": "filter-coefficients-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-filter-coefficients/evidence.zip",
+      "bytes": 275933,
+      "sha256": "dd1945cfff2f59d9f8edb8f6592312ee6ee3a740cf43fc3520326a44904258c6",
+      "outcome": "component-screen-not-promoted"
+    },
+    {
+      "name": "scoped-filter-coefficients-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-scoped-filter-coefficients/evidence.zip",
+      "bytes": 566834,
+      "sha256": "4639a56563963ebd5b8f95000dc0907af648d48e5f7f705f6c79ad51b48f9cd8",
+      "outcome": "component-and-compatibility-screen-not-promoted"
+    },
+    {
+      "name": "anderson-depth-screen-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-anderson-depth/evidence.zip",
+      "bytes": 11059893,
+      "sha256": "7dc3a7b5bd2b3156c4fe5fb1381bf913246c6c4f7cbd4cf7b55b287eb5416fcf",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-numeric-frame-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-numeric-frame/evidence.zip",
+      "bytes": 5333763,
+      "sha256": "c2301b4d87e86fc97c84089244249c50a331b9210a61fc04fac7953c362d6b93",
+      "outcome": "numerical-frame-prototype-full-timing-screen"
+    },
+    {
+      "name": "pss-numeric-frame-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-numeric-frame-v2/evidence-v2.zip",
+      "bytes": 5460558,
+      "sha256": "b1bcd92e35059f77f34f01bd8f492632234f5412aaa30f2539aee05a7ecdf54d",
+      "outcome": "opt-in-numerical-frame-integrated-default-disabled"
+    }
+  ],
+  "row_solve": {
+    "medians_s": {
+      "False": 0.0811736,
+      "True": 0.080357
+    },
+    "paired_savings_s": [
+      0.001216800000000004,
+      0.0053409999999999985,
+      -0.004500900000000002,
+      0.001966499999999996,
+      0.0001305000000000056,
+      -0.0009849999999999998,
+      0.001160300000000003
+    ],
+    "median_paired_saving_s": 0.001160300000000003,
+    "candidate_wins": 5,
+    "scope": "Repeated solves on the captured final Case 1 network factor; includes resetting RHS. Not whole-simulation timing."
+  },
+  "st4_schedule": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.0896127,
+          9.5237197,
+          9.7608692,
+          8.950128,
+          10.324362
+        ],
+        "candidate": [
+          10.0726256,
+          9.4165411,
+          9.0862313,
+          10.0325845,
+          9.9448453
+        ]
+      },
+      "medians_s": {
+        "control": 9.5237197,
+        "candidate": 9.9448453
+      },
+      "paired_savings_s": [
+        -0.9830129000000003,
+        0.10717859999999924,
+        0.6746379000000005,
+        -1.082456500000001,
+        0.37951669999999993
+      ],
+      "median_paired_saving_s": 0.10717859999999924,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.1811931,
+          7.9815575,
+          7.1284312,
+          7.1556937,
+          8.0834975
+        ],
+        "candidate": [
+          7.0247152,
+          6.2019048,
+          7.0733592,
+          6.419952,
+          6.5741866
+        ]
+      },
+      "medians_s": {
+        "control": 7.1556937,
+        "candidate": 6.5741866
+      },
+      "paired_savings_s": [
+        -0.8435221000000004,
+        1.7796526999999998,
+        0.05507200000000001,
+        0.7357416999999993,
+        1.5093109
+      ],
+      "median_paired_saving_s": 0.7357416999999993,
+      "candidate_wins": 4,
+      "recordings_identical": true
+    }
+  ],
+  "phase_medians": {
+    "complete_case_wall_s": 10.2302021,
+    "network_s": 3.6494672,
+    "integration_excluding_network_and_event_recording_s": 5.6469507,
+    "selected_sampling_s": 0.0022751,
+    "recording_write_s": 0.3006581,
+    "nested_event_recording_s": 0.0001365,
+    "process_cpu_s": 9.59375,
+    "compilation_time_ms": 336
+  },
+  "integration_breakdown": {
+    "scope": "Instrumented phase attribution only, not performance qualification.",
+    "labels": [
+      "attachment_checks",
+      "initial_evaluation",
+      "state_and_participant_capture",
+      "local_st1_advance",
+      "bus_predictor",
+      "renewable_advance",
+      "state_advance",
+      "participant_state_advance",
+      "participant_completion",
+      "electrical_preparation",
+      "pre_network_evaluation",
+      "post_network_evaluation",
+      "endpoint_accept_and_bus_corrector"
+    ],
+    "medians_s": {
+      "attachment_checks": 0.0364649,
+      "initial_evaluation": 1.2332897,
+      "state_and_participant_capture": 0.2364969,
+      "local_st1_advance": 0.2963188,
+      "bus_predictor": 0.1291488,
+      "renewable_advance": 0.161828,
+      "state_advance": 0.1922212,
+      "participant_state_advance": 0.0196266,
+      "participant_completion": 0.0396662,
+      "electrical_preparation": 0.4727003,
+      "pre_network_evaluation": 1.1517975,
+      "post_network_evaluation": 1.2592661,
+      "endpoint_accept_and_bus_corrector": 0.2731306
+    },
+    "complete_case_median_s": 10.2595463,
+    "recordings_identical": true
+  },
+  "st4_pi_dispatch": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.3046912,
+          9.16421,
+          8.933141,
+          8.5175758,
+          8.7672993
+        ],
+        "candidate": [
+          9.0027726,
+          8.8955215,
+          8.9741121,
+          9.1208535,
+          8.9361282
+        ]
+      },
+      "medians_s": {
+        "control": 8.933141,
+        "candidate": 8.9741121
+      },
+      "paired_savings_s": [
+        0.3019186000000005,
+        0.26868850000000144,
+        -0.04097109999999837,
+        -0.6032777000000014,
+        -0.16882890000000117
+      ],
+      "median_paired_saving_s": -0.04097109999999837,
+      "candidate_wins": 2,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.1783878,
+          6.4574126,
+          6.0979857,
+          6.2496663,
+          6.5894204
+        ],
+        "candidate": [
+          6.4777487,
+          6.2637097,
+          6.2276181,
+          6.1216126,
+          6.4600313
+        ]
+      },
+      "medians_s": {
+        "control": 6.2496663,
+        "candidate": 6.2637097
+      },
+      "paired_savings_s": [
+        -0.29936089999999993,
+        0.1937028999999999,
+        -0.1296324000000002,
+        0.1280537000000006,
+        0.12938910000000003
+      ],
+      "median_paired_saving_s": 0.1280537000000006,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    }
+  ],
+  "tagged_cml_kernel": {
+    "full_runs": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            9.0185725,
+            8.9242813,
+            8.8271149,
+            8.8652235,
+            8.5116993
+          ],
+          "candidate": [
+            8.9242992,
+            9.5237449,
+            8.9643138,
+            9.1015964,
+            9.1136978
+          ]
+        },
+        "medians_s": {
+          "control": 8.8652235,
+          "candidate": 9.1015964
+        },
+        "paired_savings_s": [
+          0.09427329999999934,
+          -0.5994636,
+          -0.13719889999999957,
+          -0.23637289999999922,
+          -0.6019985000000005
+        ],
+        "median_paired_saving_s": -0.23637289999999922,
+        "candidate_wins": 1,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.1321759,
+            6.5951148,
+            6.0872125,
+            6.3304824,
+            6.1971487
+          ],
+          "candidate": [
+            6.3289456,
+            6.1436761,
+            6.2640331,
+            6.3348394,
+            6.8734004
+          ]
+        },
+        "medians_s": {
+          "control": 6.1971487,
+          "candidate": 6.3289456
+        },
+        "paired_savings_s": [
+          -0.19676969999999994,
+          0.45143869999999975,
+          -0.1768206000000001,
+          -0.004356999999999722,
+          -0.6762517000000008
+        ],
+        "median_paired_saving_s": -0.1768206000000001,
+        "candidate_wins": 1,
+        "recordings_identical": true
+      }
+    ],
+    "advance_micro": {
+      "scope": "Synthetic mixed first-order kernel component benchmark only; not whole simulation timing.",
+      "medians_s": {
+        "False": 0.0060192,
+        "True": 0.0029939
+      },
+      "paired_savings_s": [
+        0.0030253,
+        0.002912,
+        0.0030237,
+        0.0029476999999999997,
+        0.0031561000000000002,
+        0.0029915999999999996,
+        0.0031138999999999997
+      ],
+      "median_paired_saving_s": 0.0030237,
+      "wins": 7,
+      "kernel_calls_per_batch": 1600000
+    },
+    "advance_output_micro": {
+      "scope": "Synthetic advance-plus-output component test; one getAsDouble per advance, accumulated output observed after timing. Not whole simulation timing.",
+      "medians_s": {
+        "False": 0.0084695,
+        "True": 0.005159
+      },
+      "paired_savings_s": [
+        0.0031157,
+        0.0033260999999999994,
+        0.0031883999999999992,
+        0.0032598,
+        0.003288899999999999,
+        0.0032404,
+        0.0039257
+      ],
+      "median_paired_saving_s": 0.0032598,
+      "wins": 7
+    }
+  },
+  "pss_typed_input": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.1948209,
+          8.9240642,
+          9.08967,
+          8.8623153,
+          8.9533865
+        ],
+        "candidate": [
+          8.7474011,
+          8.8866262,
+          8.931192,
+          8.9476224,
+          9.090558
+        ]
+      },
+      "medians_s": {
+        "control": 8.9533865,
+        "candidate": 8.931192
+      },
+      "paired_savings_s": [
+        0.4474198000000005,
+        0.03743799999999986,
+        0.15847800000000056,
+        -0.08530709999999964,
+        -0.1371714999999991
+      ],
+      "median_paired_saving_s": 0.03743799999999986,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.0903731,
+          6.291398,
+          6.1548783,
+          6.4183524,
+          6.316735
+        ],
+        "candidate": [
+          6.4619984,
+          6.3268377,
+          6.2467051,
+          6.1551717,
+          6.6222914
+        ]
+      },
+      "medians_s": {
+        "control": 6.291398,
+        "candidate": 6.3268377
+      },
+      "paired_savings_s": [
+        -0.3716252999999998,
+        -0.03543969999999952,
+        -0.09182679999999976,
+        0.2631806999999995,
+        -0.3055563999999995
+      ],
+      "median_paired_saving_s": -0.09182679999999976,
+      "candidate_wins": 1,
+      "recordings_identical": true
+    }
+  ],
+  "pss_prepared_endpoint": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.0087818,
+          8.9512109,
+          8.6540666,
+          9.1527471,
+          8.8211315
+        ],
+        "candidate": [
+          9.0195325,
+          9.1694055,
+          8.7476477,
+          8.9059266,
+          8.9045246
+        ]
+      },
+      "medians_s": {
+        "control": 8.9512109,
+        "candidate": 8.9059266
+      },
+      "paired_savings_s": [
+        -0.01075070000000089,
+        -0.21819460000000035,
+        -0.09358109999999975,
+        0.24682049999999833,
+        -0.08339310000000033
+      ],
+      "median_paired_saving_s": -0.08339310000000033,
+      "candidate_wins": 1,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.3650149,
+          6.5058723,
+          6.3442266,
+          6.6651101,
+          6.5755647
+        ],
+        "candidate": [
+          6.789633,
+          6.5577508,
+          6.4177844,
+          6.3522323,
+          6.6370302
+        ]
+      },
+      "medians_s": {
+        "control": 6.5058723,
+        "candidate": 6.5577508
+      },
+      "paired_savings_s": [
+        -0.4246181,
+        -0.05187849999999994,
+        -0.07355780000000056,
+        0.3128777999999999,
+        -0.06146549999999973
+      ],
+      "median_paired_saving_s": -0.06146549999999973,
+      "candidate_wins": 1,
+      "recordings_identical": true
+    }
+  ],
+  "related_prior_screens": [
+    "docs/benchmarks/checkpoints/pss-endpoint-scope-screen-2026-10-22.json",
+    "docs/benchmarks/checkpoints/controller-binding-screen-2026-10-21.json",
+    "docs/benchmarks/checkpoints/pss-zero-step-screen-2026-10-21.json",
+    "docs/benchmarks/checkpoints/imported-norton-source-screen-2026-10-21.json"
+  ],
+  "network_breakdown": {
+    "medians": {
+      "1": {
+        "complete_case_wall_s": 9.0266168,
+        "network_s": 3.3360883,
+        "current_assembly_s": 1.2138367,
+        "custom_current_s": 0.000374,
+        "sparse_solve_s": 0.722714,
+        "solved_voltage_publication_and_convergence_s": 0.4593904,
+        "factorization_s": 0.0019702,
+        "factorizations": 2,
+        "network_equation_calls": 18341,
+        "acceleration_compute_s": 0.5413064,
+        "mixed_voltage_publication_s": 0.3212485,
+        "integration_excluding_network_and_event_recording_s": 4.883229,
+        "recording_write_s": 0.2556805
+      },
+      "2": {
+        "complete_case_wall_s": 6.5058623,
+        "network_s": 3.4708841,
+        "current_assembly_s": 1.1466577,
+        "custom_current_s": 0.0004446,
+        "sparse_solve_s": 0.7816949,
+        "solved_voltage_publication_and_convergence_s": 0.4855386,
+        "factorization_s": 0.0016616,
+        "factorizations": 2,
+        "network_equation_calls": 20203,
+        "acceleration_compute_s": 0.6104068,
+        "mixed_voltage_publication_s": 0.3604027,
+        "integration_excluding_network_and_event_recording_s": 2.1209868,
+        "recording_write_s": 0.2074101
+      }
+    },
+    "scope_correction": {
+      "network_s": "Outer networkSolutionStep wrapper, excluding the direct event-processor solve.",
+      "component_timers": "Every network equation call after initialization, including the direct event solve, plus acceleration compute/publication.",
+      "network_other_s": "INVALID as an exclusive remainder: numerator and subtracted timers cover different scopes. Retained raw for audit only; do not use.",
+      "integration_excluding_network_and_event_recording_s": "Excludes outer network wrapper and recording only; still contains direct event network work.",
+      "factorizations": "Two counted factorizations after initialization; initialization factorization is outside these counters."
+    },
+    "complete_recordings": 30,
+    "recordings_identical": true
+  },
+  "staged_voltage_publication": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            8.7956216,
+            8.8536455,
+            8.8450551,
+            8.816743,
+            8.8509134
+          ],
+          "candidate": [
+            9.1591142,
+            9.0037074,
+            9.0337627,
+            9.022781,
+            8.9979859
+          ]
+        },
+        "medians_s": {
+          "control": 8.8450551,
+          "candidate": 9.022781
+        },
+        "paired_savings_s": [
+          -0.36349259999999894,
+          -0.15006189999999897,
+          -0.18870760000000075,
+          -0.2060379999999995,
+          -0.14707250000000016
+        ],
+        "median_paired_saving_s": -0.18870760000000075,
+        "candidate_wins": 0,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.0685015,
+            6.419475,
+            6.28026,
+            6.2505844,
+            6.2123326
+          ],
+          "candidate": [
+            6.6813059,
+            6.4810227,
+            6.4762845,
+            6.3064406,
+            6.6594796
+          ]
+        },
+        "medians_s": {
+          "control": 6.2505844,
+          "candidate": 6.4810227
+        },
+        "paired_savings_s": [
+          -0.6128043999999999,
+          -0.06154769999999932,
+          -0.19602450000000005,
+          -0.05585620000000002,
+          -0.4471470000000002
+        ],
+        "median_paired_saving_s": -0.19602450000000005,
+        "candidate_wins": 0,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": {
+        "scopes": 18340,
+        "published": 9616000,
+        "discarded_intermediate_writes": 27064000
+      },
+      "2": {
+        "scopes": 20202,
+        "published": 9616000,
+        "discarded_intermediate_writes": 30788000
+      }
+    },
+    "focused_tests": 9,
+    "complete_recordings": 52
+  },
+  "staged_voltage_matrix": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            8.9094059,
+            8.9373536,
+            8.8894894,
+            8.9536709,
+            8.8700425
+          ],
+          "candidate": [
+            9.0589345,
+            8.9575679,
+            8.8406517,
+            8.8464167,
+            8.8626368
+          ]
+        },
+        "medians_s": {
+          "control": 8.9094059,
+          "candidate": 8.8626368
+        },
+        "paired_savings_s": [
+          -0.1495286,
+          -0.020214300000001018,
+          0.048837699999999984,
+          0.10725419999999986,
+          0.0074056999999996265
+        ],
+        "median_paired_saving_s": 0.0074056999999996265,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.1110835,
+            6.4659157,
+            6.0824144,
+            6.4717451,
+            6.3276624
+          ],
+          "candidate": [
+            6.5376013,
+            6.4013983,
+            6.1884243,
+            6.2747592,
+            6.4971653
+          ]
+        },
+        "medians_s": {
+          "control": 6.3276624,
+          "candidate": 6.4013983
+        },
+        "paired_savings_s": [
+          -0.42651780000000006,
+          0.06451739999999972,
+          -0.1060099000000001,
+          0.1969858999999996,
+          -0.16950289999999946
+        ],
+        "median_paired_saving_s": -0.1060099000000001,
+        "candidate_wins": 2,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": {
+        "scopes": 18340,
+        "published": 9616000,
+        "discarded_intermediate_writes": 27064000
+      },
+      "2": {
+        "scopes": 20202,
+        "published": 9616000,
+        "discarded_intermediate_writes": 30788000
+      }
+    },
+    "focused_tests": 9,
+    "complete_recordings": 52
+  },
+  "pss_prepared_cascade": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            8.8168482,
+            8.980253,
+            8.7591026,
+            8.8687424,
+            8.9515785
+          ],
+          "candidate": [
+            8.9156164,
+            8.9621669,
+            8.7496568,
+            8.8770943,
+            8.6918422
+          ]
+        },
+        "medians_s": {
+          "control": 8.8687424,
+          "candidate": 8.8770943
+        },
+        "paired_savings_s": [
+          -0.09876819999999853,
+          0.01808609999999966,
+          0.009445799999999949,
+          -0.00835189999999919,
+          0.25973630000000014
+        ],
+        "median_paired_saving_s": 0.009445799999999949,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.0557252,
+            6.3374315,
+            6.076351,
+            6.2893248,
+            6.3807966
+          ],
+          "candidate": [
+            6.4622628,
+            6.0395052,
+            6.3368473,
+            6.2244405,
+            6.3485243
+          ]
+        },
+        "medians_s": {
+          "control": 6.2893248,
+          "candidate": 6.3368473
+        },
+        "paired_savings_s": [
+          -0.40653760000000005,
+          0.2979263000000003,
+          -0.2604962999999998,
+          0.06488430000000012,
+          0.03227229999999981
+        ],
+        "median_paired_saving_s": 0.03227229999999981,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": {
+        "models": 333,
+        "stages": 2513491,
+        "physical_states_per_model": 5,
+        "omitted_child_propagation_visits": 25134910
+      },
+      "2": {
+        "models": 103,
+        "stages": 778557,
+        "physical_states_per_model": 5,
+        "omitted_child_propagation_visits": 7785570
+      }
+    },
+    "initial_tests": 8,
+    "guarded_tests": 10,
+    "complete_recordings": 56,
+    "guarded_source_timed": false
+  },
+  "pss_endpoint_cost_audit": {
+    "summary": [
+      {
+        "case": 1,
+        "arms": {
+          "False": {
+            "region_median_s": {
+              "zero_time_predictor": 0.0,
+              "post_step_eligibility": 0.0,
+              "fresh_output": 0.0,
+              "ordinary_output": 0.2227634,
+              "pre_step_eligibility": 0.0
+            },
+            "counts": {
+              "zero_time_predictor": 0,
+              "post_step_eligibility": 0,
+              "fresh_output": 0,
+              "ordinary_output": 2786653,
+              "pre_step_eligibility": 0
+            },
+            "complete_case_s": [
+              9.1535055,
+              9.2529607,
+              9.6689968
+            ],
+            "empty_timer_pair_mean_ns": [
+              19.023,
+              19.046,
+              18.95
+            ]
+          },
+          "True": {
+            "region_median_s": {
+              "zero_time_predictor": 0.8949039,
+              "post_step_eligibility": 0.0478445,
+              "fresh_output": 0.0571423,
+              "ordinary_output": 0.0598197,
+              "pre_step_eligibility": 0.1252016
+            },
+            "counts": {
+              "zero_time_predictor": 2407126,
+              "post_step_eligibility": 2407126,
+              "fresh_output": 2407126,
+              "ordinary_output": 379527,
+              "pre_step_eligibility": 2512825
+            },
+            "complete_case_s": [
+              9.1624649,
+              9.1074721,
+              9.4061446
+            ],
+            "empty_timer_pair_mean_ns": [
+              19.055,
+              19.082,
+              19.033
+            ]
+          }
+        }
+      },
+      {
+        "case": 2,
+        "arms": {
+          "False": {
+            "region_median_s": {
+              "zero_time_predictor": 0.0,
+              "post_step_eligibility": 0.0,
+              "fresh_output": 0.0,
+              "ordinary_output": 0.0632321,
+              "pre_step_eligibility": 0.0
+            },
+            "counts": {
+              "zero_time_predictor": 0,
+              "post_step_eligibility": 0,
+              "fresh_output": 0,
+              "ordinary_output": 864823,
+              "pre_step_eligibility": 0
+            },
+            "complete_case_s": [
+              6.2641645,
+              6.4534867,
+              6.4771038
+            ],
+            "empty_timer_pair_mean_ns": [
+              20.329,
+              19.054,
+              18.88
+            ]
+          },
+          "True": {
+            "region_median_s": {
+              "zero_time_predictor": 0.2799778,
+              "post_step_eligibility": 0.0149229,
+              "fresh_output": 0.0173488,
+              "ordinary_output": 0.0125021,
+              "pre_step_eligibility": 0.0438288
+            },
+            "counts": {
+              "zero_time_predictor": 749524,
+              "post_step_eligibility": 749524,
+              "fresh_output": 749524,
+              "ordinary_output": 115299,
+              "pre_step_eligibility": 778351
+            },
+            "complete_case_s": [
+              6.2433115,
+              6.3067963,
+              6.2735325
+            ],
+            "empty_timer_pair_mean_ns": [
+              18.958,
+              18.916,
+              19.142
+            ]
+          }
+        }
+      }
+    ],
+    "diagnostic_only": true,
+    "focused_tests": 7,
+    "complete_recordings": 28
+  },
+  "pss_live_algebraic": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            9.2139503,
+            9.0003972,
+            9.6365395,
+            8.9685729,
+            8.7519322
+          ],
+          "candidate": [
+            8.7697914,
+            8.8899057,
+            8.7889243,
+            9.026238,
+            8.9956936
+          ]
+        },
+        "medians_s": {
+          "control": 9.0003972,
+          "candidate": 8.8899057
+        },
+        "paired_savings_s": [
+          0.4441588999999997,
+          0.11049150000000019,
+          0.8476151999999999,
+          -0.05766509999999947,
+          -0.24376139999999857
+        ],
+        "median_paired_saving_s": 0.11049150000000019,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.1730856,
+            6.3778168,
+            6.2403531,
+            6.1528111,
+            6.6242949
+          ],
+          "candidate": [
+            6.658092,
+            6.2953614,
+            6.331145,
+            6.245095,
+            6.4361413
+          ]
+        },
+        "medians_s": {
+          "control": 6.2403531,
+          "candidate": 6.331145
+        },
+        "paired_savings_s": [
+          -0.4850063999999996,
+          0.08245539999999973,
+          -0.09079190000000015,
+          -0.09228389999999997,
+          0.1881535999999997
+        ],
+        "median_paired_saving_s": -0.09079190000000015,
+        "candidate_wins": 2,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": [
+        333
+      ],
+      "2": [
+        103
+      ]
+    },
+    "focused_tests": 7,
+    "complete_recordings": 52
+  },
+  "network_secant_carry": {
+    "variants": [
+      {
+        "version": "v2",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 18318,
+            "carry_counts": [
+              2400,
+              2400,
+              18
+            ],
+            "maximum_accepted": 9.966555563801199e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 20199,
+            "carry_counts": [
+              2400,
+              2400,
+              2
+            ],
+            "maximum_accepted": 9.987997067838125e-06
+          }
+        ]
+      },
+      {
+        "version": "v3",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 18209,
+            "carry_counts": [
+              2400,
+              2400,
+              242,
+              2353,
+              2158,
+              0
+            ],
+            "maximum_accepted": 9.958271969701793e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 20180,
+            "carry_counts": [
+              2400,
+              2400,
+              42,
+              2397,
+              2358,
+              0
+            ],
+            "maximum_accepted": 9.993843812138275e-06
+          }
+        ]
+      },
+      {
+        "version": "v4",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 17876,
+            "carry_counts": [
+              2400,
+              2400,
+              2395,
+              2337,
+              5,
+              0
+            ],
+            "maximum_accepted": 9.999221736827537e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 20100,
+            "carry_counts": [
+              2400,
+              2400,
+              2373,
+              2395,
+              27,
+              0
+            ],
+            "maximum_accepted": 9.99906764867433e-06
+          }
+        ]
+      },
+      {
+        "version": "v5",
+        "cases": [
+          {
+            "case": 1,
+            "control_iterations": 18340,
+            "candidate_iterations": 17598,
+            "carry_counts": [
+              2400,
+              2400,
+              2400,
+              2325,
+              0,
+              0
+            ],
+            "maximum_accepted": 9.989289954121482e-06
+          },
+          {
+            "case": 2,
+            "control_iterations": 20202,
+            "candidate_iterations": 19882,
+            "carry_counts": [
+              2400,
+              2400,
+              2397,
+              2395,
+              3,
+              0
+            ],
+            "maximum_accepted": 9.999168925463402e-06
+          }
+        ]
+      }
+    ],
+    "final_focused_tests": 13,
+    "complete_recordings": 16,
+    "warmed_timing": false,
+    "reference_summary": [
+      {
+        "case": 2,
+        "compared_channels": 4501,
+        "worst_full_rmse": {
+          "0": {
+            "active_power": 112.78126313436353,
+            "bus_angle": 1441.9130455629722,
+            "reactive_power": 127.82825917311658,
+            "rotor_angle": 91.97052256177119,
+            "voltage": 0.04522698642995318
+          },
+          "1": {
+            "active_power": 112.79970207274025,
+            "bus_angle": 1442.1280902088793,
+            "reactive_power": 128.73967835360827,
+            "rotor_angle": 92.07548405896115,
+            "voltage": 0.045270923314788394
+          }
+        },
+        "failed_channels": {
+          "0": {
+            "active_power": {
+              "full": 0,
+              "prefault": 197,
+              "fault_and_postfault": 189
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 199,
+              "fault_and_postfault": 199
+            },
+            "rotor_angle": {
+              "full": 103,
+              "prefault": 103,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 2000,
+              "fault_and_postfault": 2000
+            }
+          },
+          "1": {
+            "active_power": {
+              "full": 0,
+              "prefault": 197,
+              "fault_and_postfault": 189
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 199,
+              "fault_and_postfault": 199
+            },
+            "rotor_angle": {
+              "full": 103,
+              "prefault": 103,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 2000,
+              "fault_and_postfault": 2000
+            }
+          }
+        }
+      },
+      {
+        "case": 1,
+        "compared_channels": 5191,
+        "worst_full_rmse": {
+          "0": {
+            "active_power": 56.877770735562784,
+            "bus_angle": 548.6410339260615,
+            "reactive_power": 45.08951396201423,
+            "rotor_angle": 9.921306468064362,
+            "voltage": 0.019194505259100443
+          },
+          "1": {
+            "active_power": 59.0576660888613,
+            "bus_angle": 548.7083230796599,
+            "reactive_power": 45.236902797237086,
+            "rotor_angle": 10.036526613235297,
+            "voltage": 0.019193153648029006
+          }
+        },
+        "failed_channels": {
+          "0": {
+            "active_power": {
+              "full": 0,
+              "prefault": 265,
+              "fault_and_postfault": 375
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 242,
+              "fault_and_postfault": 406
+            },
+            "rotor_angle": {
+              "full": 333,
+              "prefault": 333,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 1664,
+              "fault_and_postfault": 1834
+            }
+          },
+          "1": {
+            "active_power": {
+              "full": 0,
+              "prefault": 265,
+              "fault_and_postfault": 374
+            },
+            "bus_angle": {
+              "full": 0,
+              "prefault": 0,
+              "fault_and_postfault": 0
+            },
+            "reactive_power": {
+              "full": 0,
+              "prefault": 242,
+              "fault_and_postfault": 407
+            },
+            "rotor_angle": {
+              "full": 333,
+              "prefault": 333,
+              "fault_and_postfault": 0
+            },
+            "voltage": {
+              "full": 0,
+              "prefault": 1665,
+              "fault_and_postfault": 1836
+            }
+          }
+        }
+      }
+    ],
+    "full_reference_details": "all-channel-accuracy-summary.json and case*-all-channel-errors.json in the private evidence archive"
+  },
+  "cpu_placement": {
+    "summary": {
+      "case": 1,
+      "times_s": {
+        "0": [
+          9.0223596,
+          8.9532332,
+          8.4801778,
+          8.9281112,
+          8.7871852
+        ],
+        "8": [
+          8.7318969,
+          8.7219682,
+          8.7709896,
+          8.914391,
+          8.9291527
+        ]
+      },
+      "medians_s": {
+        "0": 8.9281112,
+        "8": 8.7709896
+      },
+      "paired_cpu8_savings_s": [
+        0.2904626999999991,
+        0.2312650000000005,
+        -0.2908118000000002,
+        0.01372019999999985,
+        -0.1419674999999998
+      ],
+      "median_paired_saving_s": 0.01372019999999985,
+      "cpu8_wins": 3,
+      "median_process_cpu_s": {
+        "0": 8.703125,
+        "8": 8.40625
+      },
+      "compiler_ms": {
+        "0": [
+          131,
+          165,
+          72,
+          21,
+          5
+        ],
+        "8": [
+          320,
+          128,
+          102,
+          190,
+          254
+        ]
+      },
+      "gc_ms": {
+        "0": [
+          134,
+          129,
+          88,
+          107,
+          63
+        ],
+        "8": [
+          189,
+          61,
+          62,
+          64,
+          60
+        ]
+      }
+    },
+    "complete_recordings": 26,
+    "simultaneous_logical_processors": 1,
+    "production_source_changed": false
+  },
+  "voltage_magnitude_screen": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.3716342,
+          9.1875273,
+          8.9395273,
+          8.8604556,
+          8.8411392
+        ],
+        "candidate": [
+          8.9718347,
+          8.9821789,
+          8.8536074,
+          9.0007401,
+          9.0631077
+        ]
+      },
+      "medians_s": {
+        "control": 8.9395273,
+        "candidate": 8.9821789
+      },
+      "paired_savings_s": [
+        0.3997995000000003,
+        0.2053484000000001,
+        0.08591990000000038,
+        -0.14028449999999992,
+        -0.22196849999999912
+      ],
+      "median_paired_saving_s": 0.08591990000000038,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.0914921,
+          6.3135151,
+          6.0940934,
+          6.2820189,
+          6.4680917
+        ],
+        "candidate": [
+          6.4756113,
+          6.4325453,
+          6.2493243,
+          6.1686756,
+          6.4248808
+        ]
+      },
+      "medians_s": {
+        "control": 6.2820189,
+        "candidate": 6.4248808
+      },
+      "paired_savings_s": [
+        -0.38411919999999977,
+        -0.11903020000000009,
+        -0.1552308999999994,
+        0.11334329999999948,
+        0.04321090000000005
+      ],
+      "median_paired_saving_s": -0.11903020000000009,
+      "candidate_wins": 2,
+      "recordings_identical": true
+    }
+  ]
+}

@@ -10,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor;
-import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernorData;
+import com.interpss.dstab.controller.gov.gast2a.PsseGast2adGovernor;
+import com.interpss.dstab.controller.gov.gast2a.PsseGast2adGovernorData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

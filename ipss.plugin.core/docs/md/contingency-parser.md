@@ -1,4 +1,4 @@
-# PSS/E Contingency (`.con`) Parser — Implementation Summary
+# reference simulator Contingency (`.con`) Parser — Implementation Summary
 
 **Module:** `ipss.plugin.core`  
 **Package:** `org.interpss.plugin.contingency.parser`  
@@ -9,12 +9,12 @@
 
 ## 1. Overview
 
-This module parses PSS/E-format contingency definition (`.con`) files and maps them to InterPSS `AclfMultiOutage` objects for load-flow contingency analysis.
+This module parses reference simulator-format contingency definition (`.con`) files and maps them to InterPSS `AclfMultiOutage` objects for load-flow contingency analysis.
 
 The workflow is a two-stage pipeline:
 
 ```
-PSS/E .con file
+reference simulator .con file
       │
       ▼  ConFileParser  (network-independent)
 ConContainer  ──  list of ConCase
@@ -62,10 +62,10 @@ These four enums replaced the original monolithic `ConEventType` enum, which enc
 
 ---
 
-## 3. PSS/E Record Coverage
+## 3. reference simulator Record Coverage
 
 ### Branch / Transformer
-| PSS/E syntax | `ConBranchAction` | Notes |
+| reference simulator syntax | `ConBranchAction` | Notes |
 |---|---|---|
 | `DISCONNECT BRANCH FROM i TO j CKT c` | `DISCONNECT` | 2-terminal |
 | `OPEN BRANCH FROM i TO j CKT c` | `DISCONNECT` | synonym |
@@ -76,12 +76,12 @@ These four enums replaced the original monolithic `ConEventType` enum, which enc
 | `DISCONNECT THREEWINDING AT BUS i TO BUS j TO BUS k` | `DISCONNECT_3W_WINDING` | single winding |
 
 ### Bus
-| PSS/E syntax | Event class |
+| reference simulator syntax | Event class |
 |---|---|
 | `DISCONNECT BUS n` | `ConBusEvent` |
 
 ### Equipment (REMOVE / ADD)
-| PSS/E syntax | `ConEquipAction` | `ConEquipType` |
+| reference simulator syntax | `ConEquipAction` | `ConEquipType` |
 |---|---|---|
 | `REMOVE MACHINE id FROM BUS n` | `REMOVE` | `MACHINE` |
 | `REMOVE UNIT id FROM BUS n` | `REMOVE` | `MACHINE` (synonym) |
@@ -95,7 +95,7 @@ These four enums replaced the original monolithic `ConEventType` enum, which enc
 | `BLOCK TWOTERMDC id` | `BLOCK` | `DC_LINE` (busNum = -1) |
 
 ### Bus Modification
-| PSS/E keyword | `ConBusModAction` |
+| reference simulator keyword | `ConBusModAction` |
 |---|---|
 | `SET` | `SET` |
 | `CHANGE` | `CHANGE` |
@@ -103,7 +103,7 @@ These four enums replaced the original monolithic `ConEventType` enum, which enc
 | `DECREASE` / `REDUCE` | `DECREASE` |
 
 ### Load / Generation Move
-| PSS/E syntax | `ConEquipType` |
+| reference simulator syntax | `ConEquipType` |
 |---|---|
 | `MOVE r MW LOAD FROM BUS i TO BUS j` | `LOAD` |
 | `MOVE r MW GENERATION FROM BUS i TO BUS j` | `GENERATION` |
@@ -115,7 +115,7 @@ These four enums replaced the original monolithic `ConEventType` enum, which enc
 
 ## 4. Field Naming Conventions
 
-All event classes store PSS/E bus references as **`int busNum`** (integer, as written in the file), consistent with the parser data model:
+All event classes store reference simulator bus references as **`int busNum`** (integer, as written in the file), consistent with the parser data model:
 
 | Field | Type | Appears in |
 |---|---|---|
@@ -145,7 +145,7 @@ All event classes store PSS/E bus references as **`int busNum`** (integer, as wr
 
 | Test class | Tests | Scope |
 |---|---|---|
-| `ConFileParser_Test` | 30 | Parser: one test per PSS/E record type |
+| `ConFileParser_Test` | 30 | Parser: one test per reference simulator record type |
 | `ConToIpssMapper_Test` | 11 | Mapper: branch open/close, bus disconnect, miss/warning cases |
 | **Total** | **41** | All passing |
 
@@ -159,6 +159,6 @@ All event classes store PSS/E bus references as **`int busNum`** (integer, as wr
 | Parser stores `int busNum`, not `String busId` | Parser is network-independent; ID format varies by loader |
 | Mapper uses `net.getBranch(ToBranchId.f(...))` | O(1) hash lookup instead of O(n) branch scan; uses authoritative InterPSS object IDs |
 | `ConBusEvent` has no action field | It always means DISCONNECT; carrying a redundant field would add noise |
-| `UNIT` treated as synonym for `MACHINE` | PSS/E allows both; stored as `ConEquipType.MACHINE` |
-| `REDUCE` treated as synonym for `DECREASE` | PSS/E BUS_MOD section allows both spellings |
+| `UNIT` treated as synonym for `MACHINE` | reference simulator allows both; stored as `ConEquipType.MACHINE` |
+| `REDUCE` treated as synonym for `DECREASE` | reference simulator BUS_MOD section allows both spellings |
 | `REACTIVE` checked before `ACTIVE` in `ConEquipMoveEvent.equipTypeOf()` | "ACTIVE" is a substring of "REACTIVE"; wrong order would misclassify reactive load |

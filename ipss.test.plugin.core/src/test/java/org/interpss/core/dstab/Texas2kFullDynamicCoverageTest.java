@@ -27,10 +27,10 @@ import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelCategory;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.Regfma1Model;
-import org.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regfma1Model;
+import com.interpss.dstab.renewable.WindControlStack;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -52,7 +52,7 @@ public class Texas2kFullDynamicCoverageTest {
     private static final Path ROOT = relativeCaseRoot();
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
-                    "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
+                    "Texas2k_series24_case1_2016summerPeak.RAW", "dynamic_models_case1.dyr",
                     "dynamic_models_case1_gnet.idv", "dynamic_models_case1_MODREMOVE.idv",
                     2223, 0, 0, 0, 31, 31),
             new CaseFile("Texas2k_series24_case2_2016lowload",
@@ -232,6 +232,11 @@ public class Texas2kFullDynamicCoverageTest {
 
     private static Object runtimeModelFor(BaseDStabNetwork<?, ?> network,
             DynamicModelImportEntry entry, DynamicModelCategory category) {
+        if (category == DynamicModelCategory.FACTS_DEVICE) {
+            return network.getBusList().stream().flatMap(candidate -> candidate.getDynamicBusDeviceList().stream())
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && device.getId().equals(entry.deviceId())).findFirst().orElse(null);
+        }
         var bus = network.getDStabBus("Bus" + entry.busNumber());
         if (category == DynamicModelCategory.LOAD_CHARACTERISTIC) {
             return bus.getDynLoadModelList().stream()
@@ -262,13 +267,18 @@ public class Texas2kFullDynamicCoverageTest {
                                     || device.getId().equals(entry.deviceId())))
                     .findFirst().orElse(null);
         }
+        if(category==DynamicModelCategory.HVDC_LINK)
+            return com.interpss.dstab.hvdc.model.Cdc6tDyrModel.models(network).stream()
+                    .filter(model->model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
         DStabGen generator = (DStabGen) bus
                 .getContributeGen(entry.deviceId());
         assertNotNull(generator, "Missing generator for attached record " + entry);
         var machine = generator.getMach();
         return switch (category) {
+            case HVDC_LINK -> com.interpss.dstab.hvdc.model.Cdc6tDyrModel.models(network).stream()
+                    .filter(model -> model.getParameters().linkName().equals(entry.deviceId())).findFirst().orElse(null);
             case SYNCHRONOUS_MACHINE -> machine;
-            case COMPENSATOR -> machine instanceof org.interpss.dstab.mach.IeeeVoltageCompensatedMachine
+            case COMPENSATOR -> machine instanceof com.interpss.dstab.mach.ieeevc.IeeeVoltageCompensatedMachine
                     compensated && compensated.getIeeeVcData() != null ? compensated : null;
             case EXCITER -> machine == null ? null : machine.getExciter();
             case GOVERNOR -> machine == null ? null : machine.getGovernor();
@@ -285,6 +295,13 @@ public class Texas2kFullDynamicCoverageTest {
             case ELECTRICAL_CONTROLLER -> regca(generator) == null ? null
                     : regca(generator).getActiveElectricalController();
             case PLANT_CONTROLLER -> plantController(generator);
+            case POWER_REFERENCE_CONTROLLER -> generator.getDynamicGenDevice()
+                    instanceof com.interpss.dstab.renewable.Regca1Model converter
+                    && converter.getActiveElectricalController() != null
+                    ? converter.getActiveElectricalController().getWeakGridController()
+                    : generator.getDynamicGenDevice() instanceof com.interpss.dstab.renewable.Regcb1Model converter
+                        && converter.getActiveElectricalController() != null
+                        ? converter.getActiveElectricalController().getWeakGridController() : null;
             case DRIVE_TRAIN -> windStack(generator) == null ? null
                     : windStack(generator).getDriveTrain();
             case AERODYNAMIC_CONTROLLER -> windStack(generator) == null ? null
@@ -297,10 +314,14 @@ public class Texas2kFullDynamicCoverageTest {
                     "load characteristics are resolved before generator models");
             case LOAD_PROTECTION -> throw new IllegalStateException(
                     "load protection is resolved before generator models");
+            case BRANCH_PROTECTION -> throw new IllegalStateException(
+                    "branch protection requires a branch-specific coverage resolver");
             case GENERATOR_PROTECTION -> throw new IllegalStateException(
                     "generator protection is resolved before generator controllers");
             case SWITCHED_SHUNT -> throw new IllegalStateException(
                     "switched shunts are resolved before generator models");
+            case FACTS_DEVICE -> throw new IllegalStateException(
+                    "named FACTS devices are resolved before bus/generator models");
         };
     }
 

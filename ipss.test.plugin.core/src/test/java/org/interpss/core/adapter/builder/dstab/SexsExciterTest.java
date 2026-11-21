@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.sexs.SexsData;
-import org.interpss.dstab.control.exc.psse.sexs.SexsExciter;
+import com.interpss.dstab.controller.exc.sexs.SexsData;
+import com.interpss.dstab.controller.exc.sexs.SexsExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

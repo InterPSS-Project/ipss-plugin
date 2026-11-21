@@ -1,0 +1,578 @@
+{
+  "schema": 1,
+  "description": "Independent scalar retained-base step-transition regression and isolated quarter-cycle startup diagnostics. No production solver change.",
+  "base_plugin_commit": "6d2ca6c1d7fc6bfc417d19005898202df8794d18",
+  "prior_checkpoint": "case5-equal-startup-duration-2026-10-22.json",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-reference-startup-transition/evidence.zip",
+  "archive_bytes": 10955196,
+  "archive_sha256": "f4c0b4d340136da3643f4c58652af509c043e51d10ff6f3e4fb460cbda63af03",
+  "test_source": {
+    "path": "ipss.test.plugin.core/src/test/java/org/interpss/dstab/renewable/TwoStepHistoryStepTransitionTest.java",
+    "sha256": "8937719f42ddc1912862f21dec624734997cf103dbe64a86d10013e7629c96e1"
+  },
+  "reference_probe": {
+    "cold_repeats_identical": true,
+    "maximum_store_error": 0.0,
+    "maximum_variable_ab2_error": 0.00878668243384284,
+    "rows": [
+      {
+        "step": 0,
+        "dt": 0.0010000000474974513,
+        "reference": 0.9074999690055847,
+        "retained_store": 0.9074999690055847,
+        "store_error": 0.0,
+        "variable_ab2": 0.907499978778884,
+        "variable_ab2_error": 9.773299280979586e-09,
+        "fixed_ab2_error": 9.654555599425407e-09
+      },
+      {
+        "step": 1,
+        "dt": 0.0010000000474974513,
+        "reference": 0.9119374752044678,
+        "retained_store": 0.9119374752044678,
+        "store_error": 0.0,
+        "variable_ab2": 0.9119374706468661,
+        "variable_ab2_error": -4.557601629429087e-09,
+        "fixed_ab2_error": -4.557601629429087e-09
+      },
+      {
+        "step": 2,
+        "dt": 0.004166666883975267,
+        "reference": 0.9371445178985596,
+        "retained_store": 0.9371445178985596,
+        "store_error": 0.0,
+        "variable_ab2": 0.9283578354647167,
+        "variable_ab2_error": -0.00878668243384284,
+        "fixed_ab2_error": -0.007322922409657373
+      },
+      {
+        "step": 3,
+        "dt": 0.004166666883975267,
+        "reference": 0.9476137161254883,
+        "retained_store": 0.9476137161254883,
+        "store_error": 0.0,
+        "variable_ab2": 0.9476136769350676,
+        "variable_ab2_error": -3.91904206864524e-08,
+        "fixed_ab2_error": -3.91904206864524e-08
+      },
+      {
+        "step": 4,
+        "dt": 0.004166666883975267,
+        "reference": 0.9574369788169861,
+        "retained_store": 0.9574369788169861,
+        "store_error": 0.0,
+        "variable_ab2": 0.9574369842963631,
+        "variable_ab2_error": 5.479377063188906e-09,
+        "fixed_ab2_error": 5.479377063188906e-09
+      },
+      {
+        "step": 5,
+        "dt": 0.0010000000474974513,
+        "reference": 0.9551722407341003,
+        "retained_store": 0.9551722407341003,
+        "store_error": 0.0,
+        "variable_ab2": 0.959506190532059,
+        "variable_ab2_error": 0.004333949797958647,
+        "fixed_ab2_error": 0.00414730784298023
+      },
+      {
+        "step": 6,
+        "dt": 0.0010000000474974513,
+        "reference": 0.9574702382087708,
+        "retained_store": 0.9574702382087708,
+        "store_error": 0.0,
+        "variable_ab2": 0.9574702473778263,
+        "variable_ab2_error": 9.169055514846036e-09,
+        "fixed_ab2_error": 9.169055514846036e-09
+      },
+      {
+        "step": 7,
+        "dt": 0.0010000000474974513,
+        "reference": 0.9595392942428589,
+        "retained_store": 0.9595392942428589,
+        "store_error": 0.0,
+        "variable_ab2": 0.9595392765789488,
+        "variable_ab2_error": -1.7663910112375447e-08,
+        "fixed_ab2_error": -1.7663910112375447e-08
+      }
+    ]
+  },
+  "focused_tests": {
+    "unique": 22,
+    "production_passed": 22,
+    "prototype_default_path_passed": 22,
+    "new_regressions": 1
+  },
+  "runs": {
+    "case5-startup-transition-20261022": [
+      {
+        "variant": "fixed-control",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "startup_step_s": 0.004166666666666667,
+        "runtime_step_s": 0.004166666666666667,
+        "acceptance_run": false,
+        "control_bytes_identical": {
+          "full-network.bin": true,
+          "interpss.csv": true
+        }
+      },
+      {
+        "variant": "startup1ms-original",
+        "status": "failed",
+        "reached_s": 0.05416666666666666,
+        "error": "java.lang.IllegalStateException: Integration failed at 0.05416666666666666",
+        "startup_step_s": 0.001,
+        "runtime_step_s": 0.004166666666666667,
+        "acceptance_run": false
+      },
+      {
+        "variant": "startup1ms-selector",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "startup_step_s": 0.001,
+        "runtime_step_s": 0.004166666666666667,
+        "acceptance_run": false
+      }
+    ],
+    "case5-startup-local4-20261022": [
+      {
+        "variant": "startup1ms-original",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "startup_step_s": 0.001,
+        "runtime_step_s": 0.004166666666666667,
+        "renewable_local_steps": 4,
+        "acceptance_run": false
+      },
+      {
+        "variant": "startup1ms-selector",
+        "status": "completed",
+        "reached_s": 0.09999999999999999,
+        "error": null,
+        "startup_step_s": 0.001,
+        "runtime_step_s": 0.004166666666666667,
+        "renewable_local_steps": 4,
+        "acceptance_run": false
+      }
+    ]
+  },
+  "channels": 4919,
+  "last_times": {
+    "startup1ms-local4-original": 0.09999999999999999,
+    "startup1ms-local4-selector": 0.09999999999999999,
+    "fixed-local4": 0.09999999999999999,
+    "fixed-local1": 0.03333333333333333,
+    "fine-selector": 0.09999999999999995,
+    "quarter-selector": 0.09999999999999999,
+    "startup1ms-original": 0.05416666666666666,
+    "startup1ms-selector": 0.09999999999999999
+  },
+  "reference_files": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case5_bus6307_fault_fullsystem_1ms_part01.parquet",
+      "sha256": "d49dc7d3875fea9d2e87de6865e3b6171db5ccfc8e8454fa8a52c0bb09637843"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case5_bus6307_fault_fullsystem_1ms_part02.parquet",
+      "sha256": "0245aa8b4fc8a9c7dd22212537a2216af43db36af5f5b08cbad8a5739b5fb827"
+    }
+  ],
+  "cold_value_invariance": {
+    "startup1ms-local4-original": true,
+    "startup1ms-local4-selector": true,
+    "startup1ms-original": true,
+    "startup1ms-selector": true
+  },
+  "available_prefix_metrics": {
+    "startup1ms-local4-original": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_1083__id_2",
+        "max_abs": 8.11931689738492,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 3.4643685096920875,
+        "nrmse_channel": "generator_p_mw__bus_8012__id_1",
+        "nrmse": 0.00956492504376651
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1007",
+        "max_abs": 1.2662350001348486,
+        "max_abs_time_s": 0.08333333333333333,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 0.8053371052022081,
+        "nrmse_channel": "bus_angle_deg__bus_3075",
+        "nrmse": 6.35384141872639e-05
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_1083__id_2",
+        "max_abs": 26.29819991070098,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_q_mvar__bus_3142__id_1",
+        "rmse": 14.006860962319962,
+        "nrmse_channel": "generator_q_mvar__bus_6325__id_1",
+        "nrmse": 0.2360382962493478
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.1483408946417626,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.06218784852369479,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 8.720198487794426e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.03234208888735335,
+        "max_abs_time_s": 0.07083333333333333,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.021101132114639196,
+        "nrmse_channel": "bus_voltage_pu__bus_5345",
+        "nrmse": 0.03140539232213731
+      }
+    },
+    "startup1ms-local4-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 5.873453159396604,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 2.511794405254412,
+        "nrmse_channel": "generator_p_mw__bus_5131__id_1",
+        "nrmse": 0.004181337939411303
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 0.3278813571535011,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "bus_angle_deg__bus_1011",
+        "rmse": 0.1141840939410357,
+        "nrmse_channel": "bus_angle_deg__bus_1066",
+        "nrmse": 1.583366813868867e-05
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_2057__id_1",
+        "max_abs": 3.4451872421074228,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_q_mvar__bus_2057__id_1",
+        "rmse": 1.5002497960426728,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.016285600026632603
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.02695949892775218,
+        "max_abs_time_s": 0.075,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.018452297942995913,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_2057__id_1",
+        "nrmse": 4.811748783414624e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_3009",
+        "max_abs": 0.004082141867017608,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "bus_voltage_pu__bus_3113",
+        "rmse": 0.0018802532825599066,
+        "nrmse_channel": "bus_voltage_pu__bus_5303",
+        "nrmse": 0.0039568561387079955
+      }
+    },
+    "fixed-local4": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 24.45256505604334,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 12.67244162612062,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.027657234122493334
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1007",
+        "max_abs": 1.8624316587453151,
+        "max_abs_time_s": 0.09583333333333333,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 1.089887170004467,
+        "nrmse_channel": "bus_angle_deg__bus_1023",
+        "nrmse": 0.00012630154708837303
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_1083__id_2",
+        "max_abs": 35.96416881026107,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 19.988458686862426,
+        "nrmse_channel": "generator_q_mvar__bus_6325__id_1",
+        "nrmse": 0.24739361916761188
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.29541071250319817,
+        "max_abs_time_s": 0.08333333333333333,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.19996911013389057,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 2.804037079897914e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.040133951176613,
+        "max_abs_time_s": 0.07083333333333333,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.026187722724322696,
+        "nrmse_channel": "bus_voltage_pu__bus_5345",
+        "nrmse": 0.042689438659669794
+      }
+    },
+    "fixed-local1": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_1007__id_1",
+        "max_abs": 48.01292706981576,
+        "max_abs_time_s": 0.029166666666666664,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 20.97926482065415,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.06152170376603903
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1007",
+        "max_abs": 2.794324029432211,
+        "max_abs_time_s": 0.03333333333333333,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 1.5760040729748672,
+        "nrmse_channel": "bus_angle_deg__bus_1062",
+        "nrmse": 0.00019023029840194343
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_2087__id_2",
+        "max_abs": 112.98661688739999,
+        "max_abs_time_s": 0.029166666666666664,
+        "rmse_channel": "generator_q_mvar__bus_2087__id_2",
+        "rmse": 50.270738414138656,
+        "nrmse_channel": "generator_q_mvar__bus_5113__id_1",
+        "nrmse": 0.5632168127093148
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.12910344502199678,
+        "max_abs_time_s": 0.03333333333333333,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.06267665177434667,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 8.788740195995496e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.3296599597576959,
+        "max_abs_time_s": 0.029166666666666664,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.13279262494663158,
+        "nrmse_channel": "bus_voltage_pu__bus_2087",
+        "nrmse": 0.08981365962848767
+      }
+    },
+    "fine-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 0.8037837858139483,
+        "max_abs_time_s": 0.06562500000000007,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 0.48627288280821696,
+        "nrmse_channel": "generator_p_mw__bus_5046__id_2",
+        "nrmse": 0.0010214678341804902
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 0.0792561743287834,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 0.051617153920850346,
+        "nrmse_channel": "bus_angle_deg__bus_1016",
+        "nrmse": 6.324137555303069e-06
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_5263__id_1",
+        "max_abs": 1.8791555553853243,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 0.9098659420604148,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.004966013281553607
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.022592340299034674,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.0118853802091921,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 1.666609747522762e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1030",
+        "max_abs": 0.002001780629596772,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "bus_voltage_pu__bus_1046",
+        "rmse": 0.0008857198967159514,
+        "nrmse_channel": "bus_voltage_pu__bus_2059",
+        "nrmse": 0.0015363866905292668
+      }
+    },
+    "quarter-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 19.40031535511639,
+        "max_abs_time_s": 0.029166666666666664,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 13.717262846616824,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.03711092872554639
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 1.6203621844577398,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "bus_angle_deg__bus_1016",
+        "rmse": 1.081094753467885,
+        "nrmse_channel": "bus_angle_deg__bus_1016",
+        "nrmse": 0.0001507961109815144
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_5263__id_1",
+        "max_abs": 34.92575355937856,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 21.13871589755538,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.14447424194196706
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.816907090796505,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.42994282939017914,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 6.0288093247956356e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1012",
+        "max_abs": 0.03211559641755013,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "bus_voltage_pu__bus_1026",
+        "rmse": 0.016387290251591333,
+        "nrmse_channel": "bus_voltage_pu__bus_2026",
+        "nrmse": 0.02974300853146571
+      }
+    },
+    "startup1ms-original": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_1007__id_1",
+        "max_abs": 147.71873044663786,
+        "max_abs_time_s": 0.049999999999999996,
+        "rmse_channel": "generator_p_mw__bus_1007__id_1",
+        "rmse": 47.44844041445734,
+        "nrmse_channel": "generator_p_mw__bus_2029__id_3",
+        "nrmse": 0.0826130672677154
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1031",
+        "max_abs": 11.504122251383844,
+        "max_abs_time_s": 0.049999999999999996,
+        "rmse_channel": "bus_angle_deg__bus_1031",
+        "rmse": 3.288757784876763,
+        "nrmse_channel": "bus_angle_deg__bus_1031",
+        "nrmse": 0.00014093585297669735
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_2087__id_2",
+        "max_abs": 196.4570608833251,
+        "max_abs_time_s": 0.049999999999999996,
+        "rmse_channel": "generator_q_mvar__bus_2087__id_2",
+        "rmse": 64.50300291195232,
+        "nrmse_channel": "generator_q_mvar__bus_5113__id_1",
+        "nrmse": 0.9924349816417996
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.03783014257228956,
+        "max_abs_time_s": 0.05416666666666666,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.01642686750039308,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 2.3034330425749935e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.8978684377858004,
+        "max_abs_time_s": 0.049999999999999996,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.26904333129618746,
+        "nrmse_channel": "bus_voltage_pu__bus_2087",
+        "nrmse": 0.1366813265513319
+      }
+    },
+    "startup1ms-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 8.350501896931519,
+        "max_abs_time_s": 0.0375,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 4.087682152509829,
+        "nrmse_channel": "generator_p_mw__bus_5057__id_2",
+        "nrmse": 0.00914569039562503
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 0.3464036535260817,
+        "max_abs_time_s": 0.029166666666666664,
+        "rmse_channel": "bus_angle_deg__bus_1062",
+        "rmse": 0.21313853752172904,
+        "nrmse_channel": "bus_angle_deg__bus_1062",
+        "nrmse": 2.9760675437393217e-05
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_1083__id_2",
+        "max_abs": 11.109605084556257,
+        "max_abs_time_s": 0.0375,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 5.094621725318386,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.09472126520218431
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.15065845482041595,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.07329242182540216,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 1.0277320749006843e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_2087",
+        "max_abs": 0.010128307892157018,
+        "max_abs_time_s": 0.05833333333333333,
+        "rmse_channel": "bus_voltage_pu__bus_3132",
+        "rmse": 0.004680973311487652,
+        "nrmse_channel": "bus_voltage_pu__bus_2059",
+        "nrmse": 0.006358344020777375
+      }
+    }
+  },
+  "limitations": [
+    "Independent step-transition evidence directly covers the converter filtered-voltage scalar, not all synchronous/controller states.",
+    "Prototype global and local ST1 transitions use the retained-base algebraic extension; their complete transition/lifecycle accuracy is unqualified.",
+    "Measured selector arms use supplied initial signs only as counterfactual diagnostics. No initialization rule is inferred.",
+    "All Case 5 comparisons are short prefixes; five new runs include one baseline reproduction.",
+    "Production sources and default policies are unchanged; only the independent regression test is added.",
+    "No new warm ten-second timing or six-case acceptance claim.",
+    "An initial sandbox documentation import stalled and was explicitly terminated; the bounded authorized runtime check and both probes subsequently completed.",
+    "Existing full-reactor compilation limitations remain; focused tests use retained compatible dependencies."
+  ]
+}

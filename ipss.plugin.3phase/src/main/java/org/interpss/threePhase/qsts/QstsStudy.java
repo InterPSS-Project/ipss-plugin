@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticGenerator;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
@@ -774,7 +775,7 @@ public class QstsStudy {
 	private void addBranchPowerSamples(List<QstsBranchPowerSample> samples,
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
 		int phaseMask = branch instanceof IBranch3Phase
-				? phaseCodeMask(((IBranch3Phase) branch).getPhaseCode()) : 0b111;
+				? terminalPhaseMask((IBranch3Phase) branch, terminal == 1) : 0b111;
 		phaseMask = branchPowerPhaseMask(branch, terminal, phaseMask, power);
 		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 0), busId, "A",
 				power == null ? null : power.a_0, phaseActive(phaseMask, 0));
@@ -818,6 +819,9 @@ public class QstsStudy {
 	}
 
 	private int branchPowerPhaseMask(AclfBranch branch, int terminal, int phaseCodeMask, Complex3x1 power) {
+		if(branch instanceof IBranch3Phase && ((IBranch3Phase) branch).hasExplicitYabc()) {
+			return phaseCodeMask;
+		}
 		Map<Integer, Integer> terminalByPhase = this.branchPowerTerminalByPhase.get(branch);
 		if(terminalByPhase == null || terminalByPhase.isEmpty()) {
 			return phaseCodeMask | valuePhaseMask(power);
@@ -865,10 +869,30 @@ public class QstsStudy {
 				if(branchObject instanceof Branch
 						&& ((Branch) branchObject).isActive()
 						&& branchObject instanceof IBranch3Phase) {
-					mask |= phaseCodeMask(((IBranch3Phase) branchObject).getPhaseCode());
+					Branch branch = (Branch) branchObject;
+					mask |= terminalPhaseMask((IBranch3Phase) branchObject, branch.getFromBus() == bus);
 				}
 			}
 		}
+		return mask;
+	}
+
+	private static int terminalPhaseMask(IBranch3Phase branch, boolean fromSide) {
+		if(!branch.hasExplicitYabc()) {
+			return phaseCodeMask(branch.getPhaseCode());
+		}
+		// Explicit winding stamps encode the local conductor mapping at each end.
+		// Use topology rather than solved voltage/current so real zeros are retained.
+		Complex3x3 self = fromSide ? branch.getYffabc() : branch.getYttabc();
+		Complex3x3 mutual = fromSide ? branch.getYftabc() : branch.getYtfabc();
+		return admittanceRowMask(self) | admittanceRowMask(mutual);
+	}
+
+	private static int admittanceRowMask(Complex3x3 y) {
+		int mask = 0;
+		if(!Complex.ZERO.equals(y.aa) || !Complex.ZERO.equals(y.ab) || !Complex.ZERO.equals(y.ac)) mask |= 0b001;
+		if(!Complex.ZERO.equals(y.ba) || !Complex.ZERO.equals(y.bb) || !Complex.ZERO.equals(y.bc)) mask |= 0b010;
+		if(!Complex.ZERO.equals(y.ca) || !Complex.ZERO.equals(y.cb) || !Complex.ZERO.equals(y.cc)) mask |= 0b100;
 		return mask;
 	}
 

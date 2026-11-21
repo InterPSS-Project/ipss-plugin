@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,8 +13,7 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.ac7c.Ac7cExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.ac7c.Ac7cExciter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -30,9 +30,20 @@ public class Ac7cIndependentSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates() throws Exception {
+        verify(EmbeddedTrajectoryReference.embedded("smib-genrou-ac7c"),CASE,"historical");
+    }
+
+    @Test
+    void freshColdPairedReferenceMatchesTheOriginalBounds(@org.junit.jupiter.api.io.TempDir Path staged)throws Exception {
+        var reference=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.reference("ac7c");
+        var inputs=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.stageInputs("ac7c",CASE,staged);
+        verify(reference,inputs,"fresh");
+    }
+
+    private void verify(EmbeddedTrajectoryReference reference,Path inputs,String referenceId)throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ac7c.dyr").toString());
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
+                inputs.resolve("SMIB_v33_genrou_ac7c.dyr").toString());
         var network = context.getDStabilityNet(); var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + AC7C SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER); algorithm.setSimuStepSec(STEP);
@@ -50,7 +61,7 @@ public class Ac7cIndependentSmibConformanceTest {
         while(algorithm.getSimuTime()<1.0-STEP/2){assertTrue(algorithm.solveDEqnStep(true));
             record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialRelativeAngle);}
 
-        EmbeddedTrajectoryReference reference=EmbeddedTrajectoryReference.embedded("smib-genrou-ac7c");
+
         assertTrue(!reference.samples().isEmpty()); assertTrue(!reference.postEventSamples().isEmpty());
         int[] field={reference.fieldIndex("Bus","1","TSVpu"),reference.fieldIndex("Bus","2","TSVpu"),
                 reference.fieldIndex("Generator","1 1","TSMW"),reference.fieldIndex("Generator","1 1","TSMvar"),
@@ -70,6 +81,7 @@ public class Ac7cIndependentSmibConformanceTest {
             pw[4]-=expected.value(refAngle)+initialPwAngle;pw[5]-=expected.value(refSpeed);
             for(int i=0;i<field.length;i++){double error=Math.abs(row[i+1]-pw[i]);if(error>maximum[i]){maximum[i]=error;maximumTime[i]=expected.time();}}
         }
+        org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.trace("ac7c",referenceId,reference,actual);
         System.out.printf(Locale.ROOT,"AC7C Independent max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g edp=%.9g ve=%.9g sensedV=%.9g pi=%.9g derivative=%.9g va=%.9g feedback=%.9g%n",Arrays.stream(maximum).boxed().toArray());
         System.out.println("AC7C Independent max-error times: "+Arrays.toString(maximumTime));
         double[] tolerance={3.7e-4,1.3e-4,.09,.24,.016,7e-6,5e-5,1.6e-4,1.1e-4,8e-5,

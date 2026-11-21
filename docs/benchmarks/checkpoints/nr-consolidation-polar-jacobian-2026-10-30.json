@@ -1,0 +1,121 @@
+{
+  "status": "polar_jacobian_extraction_verified_residual_state_and_rectangular_consolidation_pending",
+  "totals": {
+    "tests": 136,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "reports": [
+    {
+      "name": "com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest",
+      "sha256": "8628d2fbf3b10a8ae0be6bc274e8f7752e3f79078c8d0089b08df4f9d0841c70",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.CommonLiveShuntModelTest.xml",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest",
+      "sha256": "d02d8b5f1943694ff51452979a5dfc15fdf754ac321097eaa374174fc39ea8d1",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedDynamicLoadflowTest.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest",
+      "sha256": "d1e806a30eee5f45a38721eb5cf0fe9f14928515fbcdc2186b32380a87935cd2",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.calc.PreparedPolarJacobianTest.xml",
+      "tests": 55,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.core.algo.impl.solver.ContinuousShuntNrIntegrationTest",
+      "sha256": "ae84072f8e11abdda969552eef29201222a8386a1060e7c3baa26864f61c6c69",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.ContinuousShuntNrIntegrationTest.xml",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.core.algo.impl.solver.FixedGenerationShuntNrTest",
+      "sha256": "7283df972caed8e0b9ac1af19f68c1069b986dc6e3f894228e6671b9b8ce241e",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.FixedGenerationShuntNrTest.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.core.algo.impl.solver.NrExecutionModeTest",
+      "sha256": "a2b0759f1e68109664b91b9229a55db5fa8c6a9b4130ac77abcac2ef00ba7675",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrExecutionModeTest.xml",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.core.algo.impl.solver.NrPolarFormulationTest",
+      "sha256": "8bb49be313bd0b2ee484da8070d703ebd0e3addf52fb53e943d5aee77b831500",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.core.algo.impl.solver.NrPolarFormulationTest.xml",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.interpss.test.core.aclf.cord_polar.helper.LowVoltageLoadJacobianTest",
+      "sha256": "6f47c9714b7b05828a476b9d211e672a2ff81077c3e495ca84308bea41566069",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.core.test\\surefire-reports\\TEST-com.interpss.test.core.aclf.cord_polar.helper.LowVoltageLoadJacobianTest.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "org.interpss.core.aclf.PreparedNewtonLoadflowTest",
+      "sha256": "e1acb7a544693c5753daae6413fa41db5b92c92ae1fec8f0af49fbb4b3f25df8",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.aclf.PreparedNewtonLoadflowTest.xml",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "org.interpss.core.dstab.DynamicPowerFlowTransferTest",
+      "sha256": "706b84a24d55fceb9865ec8daa2d836941e1f21a1942a7dc3e4c6aecbea474cc",
+      "path": ".verification-build\\nr-consolidation-polar-jacobian-gate-20261030\\ipss.test.plugin.core\\surefire-reports\\TEST-org.interpss.core.dstab.DynamicPowerFlowTransferTest.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "core_commit": "87eae80ff",
+  "completed_plan_items": {
+    "POLAR-03": {
+      "core_commit": "87eae80ff",
+      "evidence": "docs/nr-consolidation-progress.md#polar-jacobian-extraction"
+    },
+    "POLAR-04": {
+      "core_commit": "87eae80ff",
+      "evidence": "docs/nr-consolidation-progress.md#polar-jacobian-extraction"
+    },
+    "POLAR-06": {
+      "core_commit": "87eae80ff",
+      "evidence": "docs/nr-consolidation-progress.md#polar-jacobian-extraction"
+    },
+    "POLAR-07": {
+      "core_commit": "87eae80ff",
+      "evidence": "docs/nr-consolidation-progress.md#polar-jacobian-extraction"
+    }
+  },
+  "remaining": "Residual/state and rectangular consolidation, contributors, cleanup, full regression comparison and RustPower performance qualification remain required."
+}

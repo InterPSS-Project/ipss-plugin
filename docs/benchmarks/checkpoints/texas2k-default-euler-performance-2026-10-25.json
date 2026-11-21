@@ -1,0 +1,492 @@
+{
+  "schema": 1,
+  "status": "default-modified-euler-performance-benefit-with-accuracy-limits",
+  "source_commits": {
+    "plugin": "112405774ce1b3b63744b310a2c48f6861cc4b6b",
+    "core": "730d52fa7f414fd051b025436c0f954dad995623"
+  },
+  "logical_cpu": 6,
+  "affinity_mask": 64,
+  "warmups_per_profile": 4,
+  "measurements_per_profile": 5,
+  "cases": {
+    "1": {
+      "before": {
+        "folder": "ipss.test.plugin.core/testData/private/texas2k-euler-case1-before-warm-20261025-1",
+        "median_seconds": 13.8405451,
+        "range_seconds": [
+          12.5312608,
+          14.5253515
+        ],
+        "measured_seconds": [
+          14.4420122,
+          13.8405451,
+          12.5312608,
+          14.5253515,
+          12.9151291
+        ],
+        "compilation_ms": [
+          810,
+          239,
+          378,
+          1756,
+          116
+        ],
+        "median_network_seconds": 6.4404741,
+        "median_device_seconds": 5.2545224,
+        "recording_hashes": {
+          "full-network.bin": "1066ded292fadb08cc5eb3cbba59440cf737b8378e41e3c419051d7a1de793b9",
+          "interpss.csv": "a1ea8f4069a3eba9a5af2807c28f68e40b307b4714878ee59f14edcf9e84653b",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        },
+        "recorded_samples": 2405,
+        "recorded_channels": 6190
+      },
+      "after": {
+        "folder": "ipss.test.plugin.core/testData/private/texas2k-euler-case1-after-warm-20261025-1",
+        "median_seconds": 10.0219287,
+        "range_seconds": [
+          8.9545142,
+          11.341732
+        ],
+        "measured_seconds": [
+          9.7620071,
+          10.0219287,
+          10.3115358,
+          11.341732,
+          8.9545142
+        ],
+        "compilation_ms": [
+          813,
+          232,
+          363,
+          1789,
+          117
+        ],
+        "median_network_seconds": 3.2304515,
+        "median_device_seconds": 5.0889857,
+        "recording_hashes": {
+          "full-network.bin": "464c31afa696759b5b0bf2353b2bd0d4f3f0675c4a7e2d9c21fb649b2631bf63",
+          "interpss.csv": "351030667780a4ea0e82614a4c9208343d576865313d92638467d682657ed9c7",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        },
+        "recorded_samples": 2405,
+        "recorded_channels": 6190
+      },
+      "reduction_percent": 27.590072301415358
+    },
+    "2": {
+      "before": {
+        "folder": "ipss.test.plugin.core/testData/private/texas2k-euler-case2-before-warm-20261025-1",
+        "median_seconds": 9.6591933,
+        "range_seconds": [
+          9.4027753,
+          10.8670871
+        ],
+        "measured_seconds": [
+          10.2264677,
+          9.4537806,
+          9.4027753,
+          10.8670871,
+          9.6591933
+        ],
+        "compilation_ms": [
+          885,
+          223,
+          238,
+          1819,
+          374
+        ],
+        "median_network_seconds": 6.1140108,
+        "median_device_seconds": 2.0981743,
+        "recording_hashes": {
+          "full-network.bin": "d687d8250bb26c815761fa598acb1e021f56882368c9617e91b93444a5c8e254",
+          "interpss.csv": "e39a85dcbbd33078d57978264c771427cdda954592bb95db77e9ab0a30311103",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        },
+        "recorded_samples": 2405,
+        "recorded_channels": 4810
+      },
+      "after": {
+        "folder": "ipss.test.plugin.core/testData/private/texas2k-euler-case2-after-warm-20261025-1",
+        "median_seconds": 5.8629466,
+        "range_seconds": [
+          5.7070893,
+          7.2949549
+        ],
+        "measured_seconds": [
+          6.3151909,
+          5.7070893,
+          5.8629466,
+          7.2949549,
+          5.741316
+        ],
+        "compilation_ms": [
+          881,
+          205,
+          262,
+          1913,
+          365
+        ],
+        "median_network_seconds": 2.793452,
+        "median_device_seconds": 1.7306015,
+        "recording_hashes": {
+          "full-network.bin": "d5cea1575eb7a04e695cfc617a66f75e528a4ae7dfdd8006fef3bd1e5afdf332",
+          "interpss.csv": "e3f764e2c8a2501d0d035bfdae8688d47f1ff5bf4d6b9a457397c19772f4c72b",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        },
+        "recorded_samples": 2405,
+        "recorded_channels": 4810
+      },
+      "reduction_percent": 39.301902157812705
+    }
+  },
+  "internal_accuracy": {
+    "1": {
+      "tight-pair": {
+        "voltage_magnitude": {
+          "prefault": {
+            "maximum_rmse": 2.3613623607160899e-07,
+            "rmse_channel": "bus_voltage_pu__bus_1009",
+            "maximum_absolute_difference": 3.8276192326769376e-07,
+            "peak_channel": "bus_voltage_pu__bus_1009",
+            "maximum_range_nrmse": 2.074403110975089e-06,
+            "nrmse_channel": "bus_voltage_pu__bus_1039",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 2.1721818556981668e-05,
+            "rmse_channel": "bus_voltage_pu__bus_1082",
+            "maximum_absolute_difference": 0.0002426839483647969,
+            "peak_channel": "bus_voltage_pu__bus_1082",
+            "maximum_range_nrmse": 0.00019930720978310606,
+            "nrmse_channel": "bus_voltage_pu__bus_1082",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "full": {
+            "maximum_rmse": 2.0608671843304697e-05,
+            "rmse_channel": "bus_voltage_pu__bus_1082",
+            "maximum_absolute_difference": 0.0002426839483647969,
+            "peak_channel": "bus_voltage_pu__bus_1082",
+            "maximum_range_nrmse": 0.0001890936005956339,
+            "nrmse_channel": "bus_voltage_pu__bus_1082",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          }
+        },
+        "rotor_angle": {
+          "prefault": {
+            "maximum_rmse": 2.756851385181094e-05,
+            "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+            "maximum_absolute_difference": 6.189547591617384e-05,
+            "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.0101880662967984,
+            "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+            "maximum_absolute_difference": 0.03145567225067225,
+            "peak_channel": "machine_ANGLE_deg__bus_1079__id_1"
+          },
+          "full": {
+            "maximum_rmse": 0.0096659187353343,
+            "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+            "maximum_absolute_difference": 0.03145567225067225,
+            "peak_channel": "machine_ANGLE_deg__bus_1079__id_1"
+          }
+        }
+      },
+      "before-vs-tight": {
+        "voltage_magnitude": {
+          "prefault": {
+            "maximum_rmse": 1.616578145222393e-05,
+            "rmse_channel": "bus_voltage_pu__bus_1026",
+            "maximum_absolute_difference": 2.5164983489922577e-05,
+            "peak_channel": "bus_voltage_pu__bus_1026",
+            "maximum_range_nrmse": 0.00017488721530428293,
+            "nrmse_channel": "bus_voltage_pu__bus_1050",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.0016604846464094796,
+            "rmse_channel": "bus_voltage_pu__bus_1082",
+            "maximum_absolute_difference": 0.01346511449647192,
+            "peak_channel": "bus_voltage_pu__bus_1082",
+            "maximum_range_nrmse": 0.015235674715512732,
+            "nrmse_channel": "bus_voltage_pu__bus_1082",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 51
+          },
+          "full": {
+            "maximum_rmse": 0.0015753898964034664,
+            "rmse_channel": "bus_voltage_pu__bus_1082",
+            "maximum_absolute_difference": 0.01346511449647192,
+            "peak_channel": "bus_voltage_pu__bus_1082",
+            "maximum_range_nrmse": 0.014454893072097416,
+            "nrmse_channel": "bus_voltage_pu__bus_1082",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 47
+          }
+        },
+        "rotor_angle": {
+          "prefault": {
+            "maximum_rmse": 0.0024875252204120107,
+            "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+            "maximum_absolute_difference": 0.0057246850407821626,
+            "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.922731300327992,
+            "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+            "maximum_absolute_difference": 2.849213863004934,
+            "peak_channel": "machine_ANGLE_deg__bus_1079__id_1"
+          },
+          "full": {
+            "maximum_rmse": 0.875440490826523,
+            "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+            "maximum_absolute_difference": 2.849213863004934,
+            "peak_channel": "machine_ANGLE_deg__bus_1079__id_1"
+          }
+        }
+      },
+      "after-vs-tight": {
+        "voltage_magnitude": {
+          "prefault": {
+            "maximum_rmse": 2.069556285910156e-06,
+            "rmse_channel": "bus_voltage_pu__bus_1050",
+            "maximum_absolute_difference": 3.891556514146188e-06,
+            "peak_channel": "bus_voltage_pu__bus_1050",
+            "maximum_range_nrmse": 5.034362132975217e-05,
+            "nrmse_channel": "bus_voltage_pu__bus_1050",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.0006870547311136092,
+            "rmse_channel": "bus_voltage_pu__bus_1082",
+            "maximum_absolute_difference": 0.006330518158129461,
+            "peak_channel": "bus_voltage_pu__bus_1082",
+            "maximum_range_nrmse": 0.006304028415821704,
+            "nrmse_channel": "bus_voltage_pu__bus_1082",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 12
+          },
+          "full": {
+            "maximum_rmse": 0.0006518427521102254,
+            "rmse_channel": "bus_voltage_pu__bus_1082",
+            "maximum_absolute_difference": 0.006330518158129461,
+            "peak_channel": "bus_voltage_pu__bus_1082",
+            "maximum_range_nrmse": 0.005980943068814693,
+            "nrmse_channel": "bus_voltage_pu__bus_1082",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 10
+          }
+        },
+        "rotor_angle": {
+          "prefault": {
+            "maximum_rmse": 0.0005408287453463032,
+            "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+            "maximum_absolute_difference": 0.0011190857098100082,
+            "peak_channel": "machine_ANGLE_deg__bus_1050__id_1"
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.07986903638732358,
+            "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+            "maximum_absolute_difference": 0.3510625078687326,
+            "peak_channel": "machine_ANGLE_deg__bus_1052__id_1"
+          },
+          "full": {
+            "maximum_rmse": 0.0757756761427312,
+            "rmse_channel": "machine_ANGLE_deg__bus_1079__id_1",
+            "maximum_absolute_difference": 0.3510625078687326,
+            "peak_channel": "machine_ANGLE_deg__bus_1052__id_1"
+          }
+        }
+      }
+    },
+    "2": {
+      "tight-pair": {
+        "voltage_magnitude": {
+          "prefault": {
+            "maximum_rmse": 1.0045349767986753e-06,
+            "rmse_channel": "bus_voltage_pu__bus_3095",
+            "maximum_absolute_difference": 1.7585627598570852e-06,
+            "peak_channel": "bus_voltage_pu__bus_3095",
+            "maximum_range_nrmse": 5.753676562389235e-06,
+            "nrmse_channel": "bus_voltage_pu__bus_3095",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 3.357583466078391e-05,
+            "rmse_channel": "bus_voltage_pu__bus_3062",
+            "maximum_absolute_difference": 0.0005273023298517643,
+            "peak_channel": "bus_voltage_pu__bus_1084",
+            "maximum_range_nrmse": 0.00024461597783138797,
+            "nrmse_channel": "bus_voltage_pu__bus_3062",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "full": {
+            "maximum_rmse": 3.185564183998812e-05,
+            "rmse_channel": "bus_voltage_pu__bus_3062",
+            "maximum_absolute_difference": 0.0005273023298517643,
+            "peak_channel": "bus_voltage_pu__bus_1084",
+            "maximum_range_nrmse": 0.00023208355225898757,
+            "nrmse_channel": "bus_voltage_pu__bus_3062",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          }
+        },
+        "rotor_angle": {
+          "prefault": {
+            "maximum_rmse": 7.361391675151562e-05,
+            "rmse_channel": "machine_ANGLE_deg__bus_1051__id_1",
+            "maximum_absolute_difference": 0.00015351926248285963,
+            "peak_channel": "machine_ANGLE_deg__bus_1051__id_1"
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.0022757990996489447,
+            "rmse_channel": "machine_ANGLE_deg__bus_1078__id_1",
+            "maximum_absolute_difference": 0.007613663629854273,
+            "peak_channel": "machine_ANGLE_deg__bus_1078__id_1"
+          },
+          "full": {
+            "maximum_rmse": 0.002159247475503117,
+            "rmse_channel": "machine_ANGLE_deg__bus_1078__id_1",
+            "maximum_absolute_difference": 0.007613663629854273,
+            "peak_channel": "machine_ANGLE_deg__bus_1078__id_1"
+          }
+        }
+      },
+      "before-vs-tight": {
+        "voltage_magnitude": {
+          "prefault": {
+            "maximum_rmse": 0.0001241839210540408,
+            "rmse_channel": "bus_voltage_pu__bus_3095",
+            "maximum_absolute_difference": 0.00022750065856547153,
+            "peak_channel": "bus_voltage_pu__bus_3095",
+            "maximum_range_nrmse": 0.0007112884394242747,
+            "nrmse_channel": "bus_voltage_pu__bus_3095",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.0030912912055270124,
+            "rmse_channel": "bus_voltage_pu__bus_3062",
+            "maximum_absolute_difference": 0.024537921148964692,
+            "peak_channel": "bus_voltage_pu__bus_3062",
+            "maximum_range_nrmse": 0.022521531590836866,
+            "nrmse_channel": "bus_voltage_pu__bus_3062",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 130
+          },
+          "full": {
+            "maximum_rmse": 0.0029329596415716007,
+            "rmse_channel": "bus_voltage_pu__bus_3062",
+            "maximum_absolute_difference": 0.024537921148964692,
+            "peak_channel": "bus_voltage_pu__bus_3062",
+            "maximum_range_nrmse": 0.02136801059188572,
+            "nrmse_channel": "bus_voltage_pu__bus_3062",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 96
+          }
+        },
+        "rotor_angle": {
+          "prefault": {
+            "maximum_rmse": 0.008316530153711098,
+            "rmse_channel": "machine_ANGLE_deg__bus_1051__id_1",
+            "maximum_absolute_difference": 0.01777144600605851,
+            "peak_channel": "machine_ANGLE_deg__bus_1051__id_1"
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.3616968356680757,
+            "rmse_channel": "machine_ANGLE_deg__bus_5263__id_1",
+            "maximum_absolute_difference": 0.9780235757493756,
+            "peak_channel": "machine_ANGLE_deg__bus_5263__id_1"
+          },
+          "full": {
+            "maximum_rmse": 0.3431598902512347,
+            "rmse_channel": "machine_ANGLE_deg__bus_5263__id_1",
+            "maximum_absolute_difference": 0.9780235757493756,
+            "peak_channel": "machine_ANGLE_deg__bus_5263__id_1"
+          }
+        }
+      },
+      "after-vs-tight": {
+        "voltage_magnitude": {
+          "prefault": {
+            "maximum_rmse": 6.8546656473764615e-06,
+            "rmse_channel": "bus_voltage_pu__bus_3095",
+            "maximum_absolute_difference": 1.4192251724276517e-05,
+            "peak_channel": "bus_voltage_pu__bus_3095",
+            "maximum_range_nrmse": 3.9261479181156366e-05,
+            "nrmse_channel": "bus_voltage_pu__bus_3095",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.00020887837040259598,
+            "rmse_channel": "bus_voltage_pu__bus_1070",
+            "maximum_absolute_difference": 0.0019000877562791452,
+            "peak_channel": "bus_voltage_pu__bus_1070",
+            "maximum_range_nrmse": 0.0013053977793106664,
+            "nrmse_channel": "bus_voltage_pu__bus_3062",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          },
+          "full": {
+            "maximum_rmse": 0.00019817416411373886,
+            "rmse_channel": "bus_voltage_pu__bus_1070",
+            "maximum_absolute_difference": 0.0019000877562791452,
+            "peak_channel": "bus_voltage_pu__bus_1070",
+            "maximum_range_nrmse": 0.0012385330652997211,
+            "nrmse_channel": "bus_voltage_pu__bus_3062",
+            "zero_range_channels": 0,
+            "channels_above_period_threshold": 0
+          }
+        },
+        "rotor_angle": {
+          "prefault": {
+            "maximum_rmse": 0.00043919842292485347,
+            "rmse_channel": "machine_ANGLE_deg__bus_1050__id_1",
+            "maximum_absolute_difference": 0.0008179620658594899,
+            "peak_channel": "machine_ANGLE_deg__bus_1051__id_1"
+          },
+          "fault_and_postfault": {
+            "maximum_rmse": 0.02685556747361669,
+            "rmse_channel": "machine_ANGLE_deg__bus_5416__id_1",
+            "maximum_absolute_difference": 0.06625404876649554,
+            "peak_channel": "machine_ANGLE_deg__bus_1051__id_1"
+          },
+          "full": {
+            "maximum_rmse": 0.025479232235989704,
+            "rmse_channel": "machine_ANGLE_deg__bus_5416__id_1",
+            "maximum_absolute_difference": 0.06625404876649554,
+            "peak_channel": "machine_ANGLE_deg__bus_1051__id_1"
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "The comparison uses current maintained source with recent optimizations disabled versus enabled; it does not rebuild an older release.",
+    "Both arms use default modified Euler and ordinary renewable modified-Euler/double-precision states without converter iteration-voltage memory. Older staggered-solver timings are not directly comparable.",
+    "Both keep the quarter-cycle step, 1e-5 complex voltage-correction tolerance, two fresh-solve minimum iterations, 50 maximum, current-P/impedance-Q loads and complete output.",
+    "Cases use separate sequential JVMs because current-handoff eligibility is static at class initialization. Case order is before/after for Case 1 and after/before for Case 2. CPU affinity and all settings are pinned; measurements are not interleaved in one JVM.",
+    "Residual compilation is included in all measurements. All five measurements and their compiler counters are retained; no isolated minimum or time subtraction is substituted.",
+    "The existing PSS2A helper is unclassified by the conservative frequency selector; both cases retain all 2000 frequency measurements. No frequency-selection or passive-bus skipping gain is exercised.",
+    "All 36 warmup/measured recordings are complete and repeatable within their profile; each profile also matches its complete pilot. Both event sides and negative-time startup history remain.",
+    "The default-Euler full-profile paths change finite-tolerance results. Optimized rotor-angle RMSE against the tighter internal control is 0.0757756761 and 0.0254792322 degrees, above 0.01 degrees. Case 1 voltage NRMSE also exceeds 0.005.",
+    "Tighter internal controls establish neither independent reference accuracy nor approval of the profile as a new production default. No engine source or production configuration is changed.",
+    "Failed harness compilation/qualification and missing numerical-package analysis attempts are retained, separately from completed simulation results."
+  ],
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-25-texas2k-default-euler-improvements/manifest.json",
+  "manifest_sha256": "514e66cc5021dc730778f583818c237b5db49722eeb7e2bb998d3f17fd58fa32",
+  "metadata_notes": {
+    "machine_measurement_stage": "The inherited raw status field is a legacy staggered option and is unused here. Actual execution uses ordinary modified-Euler stages, as the archived runner source and superclass show.",
+    "reuse_network_endpoint": "Legacy staggered setting is unused. Checked-certificate coverage is recorded separately as accepted_endpoint_reuses."
+  }
+}

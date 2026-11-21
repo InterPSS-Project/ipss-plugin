@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import org.interpss.core.dstab.reference.EmbeddedNativeTrajectoryValues;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,8 +20,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.st7b.St7bExciter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -43,7 +43,7 @@ public class St7bPsseSmibConformanceTest {
         assertTrue(EmbeddedNativeTrajectoryValues.manifest(manifest).contains(hash),
                 "PSS/E reference CSV hash is absent from its manifest");
 
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_st7b.dyr").toString());
         var network = context.getDStabilityNet();

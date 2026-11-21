@@ -18,12 +18,13 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Gentpj1Machine;
+import com.interpss.dstab.mach.model.Gentpj1Machine;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
@@ -50,6 +51,14 @@ public class Gentpj1PsseSmibConformanceTest {
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENTPJ1 SMIB load flow");
+        // The independent reference retains constant-MVA real/reactive loads.
+        // The core default includes static load in Y (constant impedance), which
+        // changes the fault response even for an exact machine realization.
+        // Disable that representation as well as selecting both P/Q models;
+        // selecting CONST_P alone leaves the load-in-Y path unchanged.
+        network.setStaticLoadIncludedInYMatrix(false);
+        network.setStaticLoadModel(StaticLoadModel.CONST_P);
+        network.setReactiveStaticLoadModel(StaticLoadModel.CONST_P);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);

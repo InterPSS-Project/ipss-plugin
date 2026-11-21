@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,9 +13,11 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.core.dstab.reference.Ac11cFreshPowerWorldReference;
+import java.nio.file.Files;
+import com.interpss.dstab.controller.exc.ac11c.Ac11cExciter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -30,8 +33,25 @@ public class Ac11cIndependentSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesIndependentBoundaryMachineAndAllNineExciterStates()throws Exception{
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ac11c.dyr").toString());
+        verify(EmbeddedTrajectoryReference.embedded("smib-genrou-ac11c"),"historical",CASE);
+    }
+
+    @Test
+    void freshColdPairedReferenceMatchesWithTheOriginalModelAndBounds(@TempDir Path staged)throws Exception {
+        var reference=Ac11cFreshPowerWorldReference.reference();
+        String[] files={"SMIB_v33.raw","SMIB_v33_genrou_ac11c.dyr"};
+        String[] digests={"986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b","0489565825a23cd8c768fbdbbe6216684c636b89deeab3119e737b68129db047"};
+        for(int i=0;i<files.length;i++) {
+            byte[] bytes=Files.readAllBytes(CASE.resolve(files[i]));String text=new String(bytes,java.nio.charset.StandardCharsets.UTF_8).replace("\r\n","\n").replace('\r','\n');
+            assertEquals(digests[i],org.interpss.core.dstab.reference.WtgibffraNativeReference.digest(text),"The running native input must match the cold reference contract");
+            Files.write(staged.resolve(files[i]),bytes);
+        }
+        assertEquals(2003,reference.samples().size());verify(reference,"fresh",staged);
+    }
+
+    private void verify(EmbeddedTrajectoryReference reference,String referenceId,Path inputs)throws Exception {
+        IpssCorePlugin.init();var context=ReferenceLoadModel.constantImpedanceLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
+                inputs.resolve("SMIB_v33_genrou_ac11c.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),"GENROU + AC11C SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);
@@ -46,7 +66,7 @@ public class Ac11cIndependentSmibConformanceTest {
         while(algorithm.getSimuTime()<1.0-STEP/2){assertTrue(algorithm.solveDEqnStep(true));
             record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialRelativeAngle);}
 
-        EmbeddedTrajectoryReference reference=EmbeddedTrajectoryReference.embedded("smib-genrou-ac11c");
+        System.out.println("AC11C reference="+referenceId+" full rows="+reference.samples().size());
         assertTrue(!reference.samples().isEmpty());assertTrue(!reference.postEventSamples().isEmpty());
         int[] field={reference.fieldIndex("Bus","1","TSVpu"),reference.fieldIndex("Bus","2","TSVpu"),
                 reference.fieldIndex("Generator","1 1","TSMW"),reference.fieldIndex("Generator","1 1","TSMvar"),
@@ -67,6 +87,9 @@ public class Ac11cIndependentSmibConformanceTest {
             pw[4]-=expected.value(refAngle)+initialPwAngle;pw[5]-=expected.value(refSpeed);
             for(int i=0;i<field.length;i++){double error=Math.abs(row[i+1]-pw[i]);if(error>maximum[i]){maximum[i]=error;maximumTime[i]=expected.time();}}
         }
+        Path output=Path.of("target/ac11c-cross-reference",referenceId+"-actual.csv");Files.createDirectories(output.getParent());
+        var trace=new StringBuilder("time_s,v1,v2,pMW,qMvar,angle,speed,eqp,psiDp,psiQpp,edp,ve,sensedV,mainI,mainLag,pssI,pssLag,uelI,uelLag,oelOutput\n");
+        for(double[] row:actual){for(int i=0;i<row.length;i++){if(i>0)trace.append(',');trace.append(row[i]);}trace.append('\n');}Files.writeString(output,trace);
         System.out.printf(Locale.ROOT,"AC11C Independent max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g edp=%.9g ve=%.9g sensedV=%.9g mainI=%.9g mainLag=%.9g pssI=%.9g pssLag=%.9g uelI=%.9g uelLag=%.9g oelOutput=%.9g%n",Arrays.stream(maximum).boxed().toArray());
         System.out.println("AC11C Independent max-error times: "+Arrays.toString(maximumTime));
         String[] label={"Bus1 V","Bus2 V","P MW","Q Mvar","relative angle","relative speed","Eqp","PsiDp","PsiQpp","Edp","VE","sensed Vt","main integral","main lag","PSS integral","PSS lag","UEL integral","UEL lag","OEL PI output"};

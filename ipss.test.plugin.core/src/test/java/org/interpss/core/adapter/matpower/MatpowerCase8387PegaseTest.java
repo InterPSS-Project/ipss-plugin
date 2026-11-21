@@ -209,6 +209,12 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 
 		boolean solved = runPqNonDivergentNormalControlPowerflow(net);
 		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
+		// This source has Qmin = Qmax: it must retain fixed-Q operation rather
+		// than repeatedly releasing its limit to regain voltage regulation.
+		AclfBus fixedQ = net.getBus("Bus7726");
+		assertTrue(fixedQ.isGenPQ());
+		assertEquals(0.011, fixedQ.getGenQ(), DATA_TOL);
+		assertTrue(net.maxMismatch(AclfMethodType.PQ).maxAbs() < 0.001);
 	}
 
 	@Test

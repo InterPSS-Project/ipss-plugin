@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "status": "isolated-probes",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-network-reduction-probes/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 59704,
+    "sha256": "d5fb5c1b2b13c5c0989c3fbc1b0dcec5f567391ce1439cf82ff56fc7c7a6297e"
+  },
+  "archive": {
+    "bytes": 4072337,
+    "sha256": "26d57d73afedab3e223dbdd875afa7751b9c02c2d642ed11dc44c8e2b35e1ff6"
+  },
+  "results": {
+    "empty-traversal": {
+      "status": "completed",
+      "warmup_runs": 32,
+      "measured_runs_per_arm": 7,
+      "alternating_same_jvm": true,
+      "full_recording_included": true,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "results": {
+        "control": {
+          "case_wall_s": [
+            9.3792464,
+            9.4433389,
+            9.4462055,
+            9.7436708,
+            9.3844776,
+            9.4005173,
+            9.4181654
+          ],
+          "median_case_wall_s": 9.4181654,
+          "compilation_ms": [
+            23,
+            13,
+            8,
+            87,
+            53,
+            52,
+            27
+          ],
+          "gc_ms": [
+            127,
+            139,
+            130,
+            132,
+            131,
+            137,
+            182
+          ]
+        },
+        "candidate": {
+          "case_wall_s": [
+            9.4214767,
+            9.4552599,
+            9.3174403,
+            9.5544178,
+            9.4763942,
+            9.910888,
+            9.8063443
+          ],
+          "median_case_wall_s": 9.4763942,
+          "compilation_ms": [
+            1,
+            83,
+            18,
+            204,
+            14,
+            266,
+            81
+          ],
+          "gc_ms": [
+            123,
+            138,
+            129,
+            140,
+            132,
+            134,
+            125
+          ]
+        }
+      }
+    },
+    "bounded-magnitude": {
+      "status": "completed",
+      "warmup_runs": 32,
+      "measured_runs_per_arm": 7,
+      "alternating_same_jvm": true,
+      "full_recording_included": true,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "results": {
+        "control": {
+          "case_wall_s": [
+            9.3118139,
+            9.4148572,
+            9.3474952,
+            9.5130042,
+            9.4831316,
+            9.5686342,
+            9.5739394
+          ],
+          "median_case_wall_s": 9.4831316,
+          "compilation_ms": [
+            23,
+            13,
+            6,
+            79,
+            53,
+            51,
+            26
+          ],
+          "gc_ms": [
+            125,
+            128,
+            139,
+            131,
+            130,
+            137,
+            177
+          ]
+        },
+        "candidate": {
+          "case_wall_s": [
+            9.2830717,
+            9.5258147,
+            9.4712002,
+            9.548612,
+            9.2973047,
+            9.6095004,
+            9.3848199
+          ],
+          "median_case_wall_s": 9.4712002,
+          "compilation_ms": [
+            1,
+            84,
+            18,
+            209,
+            15,
+            266,
+            69
+          ],
+          "gc_ms": [
+            127,
+            138,
+            134,
+            130,
+            129,
+            134,
+            124
+          ]
+        }
+      }
+    }
+  },
+  "report": "docs/benchmarks/case2-network-reduction-probes-2026-10-21.md",
+  "focused_tests": {
+    "empty_traversal": 16,
+    "bounded_magnitude": 16
+  },
+  "complete_cases": 92,
+  "full_recording_identical": true,
+  "production_source_changed": false,
+  "independent_accuracy_qualified": false
+}

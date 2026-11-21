@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3Governor;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3GovernorData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -43,6 +44,8 @@ public class PsseHyg3GovernorTest extends CorePluginTestSetup {
         assertNotNull(governor);
         assertEquals(PsseHyg3GovernorData.PID_CONTROL,
                 governor.getData().getControlFlag());
+        assertEquals(PsseHyg3GovernorData.BacklashConvention.PER_UNIT_GATE,
+                governor.getData().getBacklashConvention());
         assertEquals(0.0, governor.getData().getRgate(), TOL);
         assertEquals(.0527, governor.getData().getRelec(), TOL);
         assertEquals(2.0, governor.getData().getTt(), TOL);
@@ -60,6 +63,77 @@ public class PsseHyg3GovernorTest extends CorePluginTestSetup {
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
         assertEquals(1, parser.getLastImportReport().aliasConversionCount());
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void builderPreservesIndependentTypedAndImportedBacklashConventions() throws Exception {
+        assertEquals(PsseHyg3GovernorData.BacklashConvention.MW_ON_GOVERNOR_BASE,
+                new PsseHyg3GovernorData().getBacklashConvention());
+        for (var convention : PsseHyg3GovernorData.BacklashConvention.values()) {
+            var builder=DStabBuilderTestFixture.createWithMachine();
+            var data=data(PsseHyg3GovernorData.PID_CONTROL); data.setDb2(.02); data.setBacklashConvention(convention);
+            data.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.HZ_HYSTERESIS);
+            var governor=builder.addGovHyg3("Bus1","1",data);
+            assertEquals(convention,governor.getData().getBacklashConvention());
+            assertEquals(data.getFrequencyDeadbandConvention(),governor.getData().getFrequencyDeadbandConvention());
+            assertEquals(.02,governor.getData().getDb2(),0.);
+        }
+    }
+
+    @Test
+    void namedNumericEditsReachBothControllerBranchesThroughBuilder() throws Exception {
+        String[] names = {"Rgate", "Relec", "Tt", "Td", "K2", "Ki", "K1", "Tf",
+                "Kg", "Tp", "Velopen", "Velclose", "Pmax", "Pmin", "Db2",
+                "H0", "Qnl", "Tw", "At", "Dturb", "Trate", "DbH", "Eps", "DbL"};
+        double[] values = {.07, .03, .16, .04, .18, 1.9, .22, .08,
+                4.8, .09, .24, -.23, 1.1, .01, .005,
+                1.05, .11, .9, 1.3, .12, 55., .014, .001, -.016};
+        for (int flag : new int[]{PsseHyg3GovernorData.PID_CONTROL,
+                PsseHyg3GovernorData.DOUBLE_DERIVATIVE_CONTROL}) {
+          for (boolean staggered : new boolean[]{false, true}) {
+            var data = new PsseHyg3GovernorData();
+            data.setValue("ControlFlag", flag);
+            data.setValue("cflag", (double)flag);
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> data.setValue("cflag", .5));
+            assertEquals(flag, data.getControlFlag());
+            for (int i = 0; i < names.length; i++) data.setValue(names[i], values[i]);
+            double[] gate = {.1, .25, .5, .7, .85, 1.};
+            for (int i = 0; i < gate.length; i++) {
+                data.setValue("GV" + (i + 1), gate[i]);
+                data.setValue("PGV" + (i + 1), gate[i]);
+            }
+            var builder = DStabBuilderTestFixture.createWithMachine();
+            var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+            machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1.);
+            var governor = builder.addGovHyg3("Bus1", "1", data);
+            assertNotNull(governor);
+            var attached = governor.getData();
+            assertEquals(flag, attached.getControlFlag());
+            assertArrayEquals(values, new double[]{attached.getRgate(), attached.getRelec(),
+                    attached.getTt(), attached.getTd(), attached.getK2(), attached.getKi(),
+                    attached.getK1(), attached.getTf(), attached.getKg(), attached.getTp(),
+                    attached.getVelopen(), attached.getVelclose(), attached.getPmax(), attached.getPmin(),
+                    attached.getDb2(), attached.getH0(), attached.getQnl(), attached.getTw(),
+                    attached.getAt(), attached.getDturb(), attached.getTrate(), attached.getDbH(),
+                    attached.getEps(), attached.getDbL()}, 0.);
+            assertArrayEquals(gate, attached.getGv(), 0.);
+            assertArrayEquals(gate, attached.getPgv(), 0.);
+            governor.configureIntegrationStep(.005);
+            assertTrue(governor.initStates(machine.getDStabBus(), machine));
+            machine.setSpeed(.99);
+            if (staggered) {
+                double[] states = new double[governor.staggeredStateCount()];
+                double[] rates = new double[states.length];
+                governor.readStaggeredState(states, 0);
+                governor.evaluateStaggered(.005, rates, 0);
+                for (int i = 0; i < states.length; i++) states[i] += .005 * rates[i];
+                governor.applyStaggeredState(states, 0, .005);
+                governor.completeStaggeredStep(.005);
+            } else step(governor, machine, .005);
+            assertTrue(Double.isFinite(governor.getOutput(machine)));
+          }
+        }
     }
 
     @Test

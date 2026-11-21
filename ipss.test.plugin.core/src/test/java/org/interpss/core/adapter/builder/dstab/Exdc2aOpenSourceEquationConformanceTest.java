@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
+import com.interpss.dstab.controller.exc.exdc2a.Exdc2aExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;
 

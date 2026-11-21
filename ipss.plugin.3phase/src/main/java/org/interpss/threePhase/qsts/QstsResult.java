@@ -33,6 +33,11 @@ public class QstsResult {
 		return Collections.unmodifiableList(samples);
 	}
 
+	/**
+	 * Returns per-phase load powers in per unit on {@code networkBaseKva / 3}.
+	 * Multiply each P/Q value by that base to obtain kW/kvar.
+	 * @see QstsDevicePowerSample
+	 */
 	public List<QstsDevicePowerSample> getLoadPowers() {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
 		for(QstsStepResult step : stepResults) {
@@ -41,6 +46,12 @@ public class QstsResult {
 		return Collections.unmodifiableList(samples);
 	}
 
+	/**
+	 * Returns per-phase generator powers in per unit on {@code networkBaseKva}.
+	 * Multiply each P/Q value by that full network base to obtain kW/kvar.
+	 * Includes PV/storage; positive active power is injection and charging is negative.
+	 * @see QstsDevicePowerSample
+	 */
 	public List<QstsDevicePowerSample> getGeneratorPowers() {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
 		for(QstsStepResult step : stepResults) {

@@ -10,9 +10,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac11c.Ac11cData;
-import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.ac11c.Ac11cData;
+import com.interpss.dstab.controller.exc.ac11c.Ac11cExciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -192,5 +192,14 @@ public class DStabNetworkBuilderAc11cTest extends CorePluginTestSetup {
         private final double output;
         FixedOutputStabilizer(Machine machine,double output){super("fixed-pss","Fixed PSS","test");this.output=output;setMachine(machine);}
         @Override public double getOutput(Machine machine){return output;}
+    }
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = dynamicData();
+            data.setTr(time);
+            return builder.addExcAc11c("Bus1", "1", data);
+        });
     }
 }

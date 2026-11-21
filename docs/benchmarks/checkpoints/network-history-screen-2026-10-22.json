@@ -1,0 +1,3336 @@
+{
+  "schema": 1,
+  "description": "Depth-three network acceleration: full reference comparisons, paired warmed timing and Cases 3\u20134 checks; experimental only.",
+  "base_commit": "f296dd4b0",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-network-history-screen/evidence.zip",
+  "archive_sha256": "470b422905548095edeff333c91b8dbb3668600de49488cb0e067fe8719c3705",
+  "archive_bytes": 7611276,
+  "protocol": {
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "logical_processors": 1,
+    "st1_substeps": 10,
+    "acceleration_depth": 3,
+    "warmups_per_case": 12,
+    "measured_pairs_per_case": 5,
+    "recording": "Complete channels and event-side samples; no sampling reduction.",
+    "timing": "Fresh parsing, preparation, initialization, startup, ten-second simulation and writer closure. Compilation and GC included. Both arms write to the same D: artifact volume."
+  },
+  "focused_tests": 47,
+  "iterations": [
+    {
+      "case": 1,
+      "calls": 2405,
+      "iterations": 18338,
+      "baseline_iterations": 29699,
+      "mixes": 13530,
+      "max_accepted_residual": 9.992381199351885e-06,
+      "correction_changes": 0
+    },
+    {
+      "case": 2,
+      "calls": 2405,
+      "iterations": 20197,
+      "baseline_iterations": 36369,
+      "mixes": 15389,
+      "max_accepted_residual": 9.991072318292628e-06,
+      "correction_changes": 0
+    }
+  ],
+  "timing": [
+    {
+      "case": 1,
+      "arms": {
+        "control": {
+          "seconds": [
+            11.1529121,
+            10.3370442,
+            10.8211702,
+            10.9348725,
+            10.6430845
+          ],
+          "median_s": 10.8211702,
+          "min_s": 10.3370442,
+          "max_s": 11.1529121,
+          "compilation_ms": [
+            634,
+            102,
+            132,
+            159,
+            67
+          ],
+          "iterations": [
+            29699,
+            29699,
+            29699,
+            29699,
+            29699
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            10.7497141,
+            10.794781,
+            11.6593433,
+            10.5399549,
+            10.8790907
+          ],
+          "median_s": 10.794781,
+          "min_s": 10.5399549,
+          "max_s": 11.6593433,
+          "compilation_ms": [
+            212,
+            307,
+            351,
+            132,
+            103
+          ],
+          "iterations": [
+            18338,
+            18338,
+            18338,
+            18338,
+            18338
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.4031979999999997,
+        -0.45773680000000105,
+        -0.8381731000000006,
+        0.3949176000000012,
+        -0.23600620000000028
+      ],
+      "median_paired_reduction_s": -0.23600620000000028,
+      "candidate_wins": 2,
+      "all_runs_match_their_arm": true,
+      "hashes": {
+        "false": {
+          "full-network.bin": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078",
+          "interpss.csv": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        },
+        "true": {
+          "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+          "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+          "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+        }
+      }
+    },
+    {
+      "case": 2,
+      "arms": {
+        "control": {
+          "seconds": [
+            8.1292353,
+            7.3162988,
+            7.3199594,
+            7.4491238,
+            7.3598229
+          ],
+          "median_s": 7.3598229,
+          "min_s": 7.3162988,
+          "max_s": 8.1292353,
+          "compilation_ms": [
+            662,
+            92,
+            49,
+            178,
+            85
+          ],
+          "iterations": [
+            36369,
+            36369,
+            36369,
+            36369,
+            36369
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            7.4712325,
+            7.7038182,
+            7.6464238,
+            7.1585885,
+            7.4882625
+          ],
+          "median_s": 7.4882625,
+          "min_s": 7.1585885,
+          "max_s": 7.7038182,
+          "compilation_ms": [
+            130,
+            521,
+            286,
+            17,
+            209
+          ],
+          "iterations": [
+            20197,
+            20197,
+            20197,
+            20197,
+            20197
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.6580027999999993,
+        -0.3875193999999995,
+        -0.3264643999999999,
+        0.29053530000000016,
+        -0.1284396000000001
+      ],
+      "median_paired_reduction_s": -0.1284396000000001,
+      "candidate_wins": 2,
+      "all_runs_match_their_arm": true,
+      "hashes": {
+        "false": {
+          "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+          "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        },
+        "true": {
+          "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+          "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+          "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+        }
+      }
+    }
+  ],
+  "reference_comparison": [
+    {
+      "case": 2,
+      "compared_channels": 4501,
+      "last_times": {
+        "10": 9.999999999999753
+      },
+      "reference_files": [
+        "ipss.test.plugin.core/testData/private/reference-imports/case2-full-system-20261018/case2_bus6307_fault_fullsystem_1ms.parquet"
+      ],
+      "reference_comparison": {
+        "10": {
+          "active_power": {
+            "channels": 199,
+            "periods": {
+              "full": {
+                "worst_rmse": 112.7119143926506,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 190.7520858117037,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.7799841006569841,
+                "worst_nrmse_channel": "generator_p_mw__bus_1023__id_1",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "generator_p_mw__bus_3081__id_1",
+                    "samples": 2403,
+                    "rmse": 112.7119143926506,
+                    "max_abs": 190.7520858117037,
+                    "nrmse": 0.5908673047031288
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_1023__id_1",
+                    "samples": 2403,
+                    "rmse": 106.62092018594834,
+                    "max_abs": 137.45753433653746,
+                    "nrmse": 0.7799841006569841
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3028__id_1",
+                    "samples": 2403,
+                    "rmse": 92.89757182487237,
+                    "max_abs": 168.54859880729083,
+                    "nrmse": 0.614052375962243
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3056__id_1",
+                    "samples": 2403,
+                    "rmse": 78.77984751453056,
+                    "max_abs": 180.086513407108,
+                    "nrmse": 0.4216569817961176
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3055__id_1",
+                    "samples": 2403,
+                    "rmse": 78.2826964425195,
+                    "max_abs": 179.97601903936777,
+                    "nrmse": 0.42596468012280914
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 36.25182823226949,
+                "worst_rmse_channel": "generator_p_mw__bus_3113__id_1",
+                "worst_max_abs": 123.72048674280406,
+                "worst_max_abs_channel": "generator_p_mw__bus_1033__id_1",
+                "worst_nrmse": 0.6443698834842608,
+                "worst_nrmse_channel": "generator_p_mw__bus_3113__id_1",
+                "failed_channels": 197,
+                "top_rmse": [
+                  {
+                    "channel": "generator_p_mw__bus_3113__id_1",
+                    "samples": 241,
+                    "rmse": 36.25182823226949,
+                    "max_abs": 55.323625102598996,
+                    "nrmse": 0.6443698834842608,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3068__id_1",
+                    "samples": 241,
+                    "rmse": 34.96184387336464,
+                    "max_abs": 108.0138128833958,
+                    "nrmse": 0.2639066150574937,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_1039__id_1",
+                    "samples": 241,
+                    "rmse": 30.88731642903567,
+                    "max_abs": 106.98921473513816,
+                    "nrmse": 0.277018205297174,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3098__id_1",
+                    "samples": 241,
+                    "rmse": 29.724696043972358,
+                    "max_abs": 110.91003404677977,
+                    "nrmse": 0.20366856446317563,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3117__id_1",
+                    "samples": 241,
+                    "rmse": 28.646246151351914,
+                    "max_abs": 47.53126726276262,
+                    "nrmse": 0.5820288485411882,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 118.82680369824703,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 190.7520858117037,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.8223054688559671,
+                "worst_nrmse_channel": "generator_p_mw__bus_1023__id_1",
+                "failed_channels": 189,
+                "top_rmse": [
+                  {
+                    "channel": "generator_p_mw__bus_3081__id_1",
+                    "samples": 2162,
+                    "rmse": 118.82680369824703,
+                    "max_abs": 190.7520858117037,
+                    "nrmse": 0.6229232606508643,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_1023__id_1",
+                    "samples": 2162,
+                    "rmse": 112.40609352102418,
+                    "max_abs": 137.45753433653746,
+                    "nrmse": 0.8223054688559671,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3028__id_1",
+                    "samples": 2162,
+                    "rmse": 97.93816346383012,
+                    "max_abs": 168.54859880729083,
+                    "nrmse": 0.6473706555615459,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3056__id_1",
+                    "samples": 2162,
+                    "rmse": 83.05383864169805,
+                    "max_abs": 180.086513407108,
+                    "nrmse": 0.4445328600284591,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3055__id_1",
+                    "samples": 2162,
+                    "rmse": 82.52895658417705,
+                    "max_abs": 179.97601903936777,
+                    "nrmse": 0.4490701290298675,
+                    "passes": false
+                  }
+                ]
+              }
+            }
+          },
+          "bus_angle": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 1441.9702789296407,
+                "worst_rmse_channel": "bus_angle_deg__bus_8026",
+                "worst_max_abs": 3156.3561413137145,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+                "worst_nrmse": 0.4750603080000634,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_angle_deg__bus_8026",
+                    "samples": 2403,
+                    "rmse": 1441.9702789296407,
+                    "max_abs": 3142.566908453014,
+                    "nrmse": 0.4750158593356017
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8013",
+                    "samples": 2403,
+                    "rmse": 1441.9634724339467,
+                    "max_abs": 3142.5452304787277,
+                    "nrmse": 0.47495968474173994
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8146",
+                    "samples": 2403,
+                    "rmse": 1441.8978769655157,
+                    "max_abs": 3142.6152555248623,
+                    "nrmse": 0.4750603080000634
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8039",
+                    "samples": 2403,
+                    "rmse": 1441.8431856839727,
+                    "max_abs": 3142.5541609224615,
+                    "nrmse": 0.4749734226855866
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8073",
+                    "samples": 2403,
+                    "rmse": 1441.7757905983158,
+                    "max_abs": 3142.508945582514,
+                    "nrmse": 0.4748690335114532
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 11.953522727890546,
+                "worst_rmse_channel": "bus_angle_deg__bus_3113",
+                "worst_max_abs": 25.16156214403446,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1026",
+                "worst_nrmse": 0.003870256873396575,
+                "worst_nrmse_channel": "bus_angle_deg__bus_3113",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_angle_deg__bus_3113",
+                    "samples": 241,
+                    "rmse": 11.953522727890546,
+                    "max_abs": 23.46991856267564,
+                    "nrmse": 0.003870256873396575
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_3117",
+                    "samples": 241,
+                    "rmse": 10.119574585479606,
+                    "max_abs": 21.548282000402438,
+                    "nrmse": 0.0032779571616037163
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_3086",
+                    "samples": 241,
+                    "rmse": 9.862986183198846,
+                    "max_abs": 21.637377716598444,
+                    "nrmse": 0.0031966461970964607
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_1026",
+                    "samples": 241,
+                    "rmse": 9.692691358220072,
+                    "max_abs": 25.16156214403446,
+                    "nrmse": 0.003132310971087231
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_3065",
+                    "samples": 241,
+                    "rmse": 9.405929830544103,
+                    "max_abs": 20.57505469567532,
+                    "nrmse": 0.0030492151369517074
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 1520.216009506224,
+                "worst_rmse_channel": "bus_angle_deg__bus_8026",
+                "worst_max_abs": 3156.3561413137145,
+                "worst_max_abs_channel": "bus_angle_deg__bus_1070",
+                "worst_nrmse": 0.500838538974839,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_angle_deg__bus_8026",
+                    "samples": 2162,
+                    "rmse": 1520.216009506224,
+                    "max_abs": 3142.566908453014,
+                    "nrmse": 0.5007916769736511
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8013",
+                    "samples": 2162,
+                    "rmse": 1520.208830439501,
+                    "max_abs": 3142.5452304787277,
+                    "nrmse": 0.5007324531102015
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8146",
+                    "samples": 2162,
+                    "rmse": 1520.1396830867939,
+                    "max_abs": 3142.6152555248623,
+                    "nrmse": 0.500838538974839
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8039",
+                    "samples": 2162,
+                    "rmse": 1520.0820195107226,
+                    "max_abs": 3142.5541609224615,
+                    "nrmse": 0.5007469374884408
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8073",
+                    "samples": 2162,
+                    "rmse": 1520.0109621093472,
+                    "max_abs": 3142.508945582514,
+                    "nrmse": 0.5006368821078213
+                  }
+                ]
+              }
+            }
+          },
+          "reactive_power": {
+            "channels": 199,
+            "periods": {
+              "full": {
+                "worst_rmse": 128.7432967734741,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 288.44354545854617,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 289.1108091082673,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "generator_q_mvar__bus_5263__id_1",
+                    "samples": 2403,
+                    "rmse": 128.7432967734741,
+                    "max_abs": 288.44354545854617,
+                    "nrmse": 0.25498384863517953
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3057__id_1",
+                    "samples": 2403,
+                    "rmse": 50.55059936762422,
+                    "max_abs": 58.039679511916816,
+                    "nrmse": 0.46199104540728625
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3028__id_1",
+                    "samples": 2403,
+                    "rmse": 48.525512831920544,
+                    "max_abs": 65.77572826418645,
+                    "nrmse": 0.5100727034061465
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5262__id_1",
+                    "samples": 2403,
+                    "rmse": 47.20356234448659,
+                    "max_abs": 142.4744036136964,
+                    "nrmse": 0.13915070216422482
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3055__id_1",
+                    "samples": 2403,
+                    "rmse": 45.15751816530931,
+                    "max_abs": 61.21951112909695,
+                    "nrmse": 0.495706731694363
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 62.37147895974318,
+                "worst_rmse_channel": "generator_q_mvar__bus_5262__id_1",
+                "worst_max_abs": 142.4744036136964,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5262__id_1",
+                "worst_nrmse": 75.27069328948335,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7032__id_1",
+                "failed_channels": 199,
+                "top_rmse": [
+                  {
+                    "channel": "generator_q_mvar__bus_5262__id_1",
+                    "samples": 241,
+                    "rmse": 62.37147895974318,
+                    "max_abs": 142.4744036136964,
+                    "nrmse": 0.18386398528421985,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5263__id_1",
+                    "samples": 241,
+                    "rmse": 51.890594937734924,
+                    "max_abs": 133.02388799283295,
+                    "nrmse": 0.10277244669657198,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5303__id_1",
+                    "samples": 241,
+                    "rmse": 41.15937844113655,
+                    "max_abs": 99.56852506444537,
+                    "nrmse": 0.17103171621741048,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_6349__id_7",
+                    "samples": 241,
+                    "rmse": 24.738156142963497,
+                    "max_abs": 55.985380435214026,
+                    "nrmse": 0.08228486659415177,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5058__id_1",
+                    "samples": 241,
+                    "rmse": 21.986204706538583,
+                    "max_abs": 50.47656481014055,
+                    "nrmse": 0.16743135003133483,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 134.61908309500024,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 288.44354545854617,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 304.7799837982857,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 199,
+                "top_rmse": [
+                  {
+                    "channel": "generator_q_mvar__bus_5263__id_1",
+                    "samples": 2162,
+                    "rmse": 134.61908309500024,
+                    "max_abs": 288.44354545854617,
+                    "nrmse": 0.26662119712297566,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3057__id_1",
+                    "samples": 2162,
+                    "rmse": 53.29336869781557,
+                    "max_abs": 58.039679511916816,
+                    "nrmse": 0.4870577090278505,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3028__id_1",
+                    "samples": 2162,
+                    "rmse": 51.14256612127159,
+                    "max_abs": 65.77572826418645,
+                    "nrmse": 0.5375816851428451,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3055__id_1",
+                    "samples": 2162,
+                    "rmse": 47.603696031939755,
+                    "max_abs": 61.21951112909695,
+                    "nrmse": 0.5225591116451724,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5262__id_1",
+                    "samples": 2162,
+                    "rmse": 45.19855010291852,
+                    "max_abs": 75.72912126541894,
+                    "nrmse": 0.13324015542993473,
+                    "passes": false
+                  }
+                ]
+              }
+            }
+          },
+          "rotor_angle": {
+            "channels": 103,
+            "periods": {
+              "full": {
+                "worst_rmse": 92.39361547913899,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "worst_max_abs": 142.48917813552316,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5416__id_1",
+                "worst_nrmse": 0.030498547337929557,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "failed_channels": 103,
+                "top_rmse": [
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                    "samples": 2403,
+                    "rmse": 92.39361547913899,
+                    "max_abs": 140.49631070496685,
+                    "nrmse": 0.030498547337929557,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_5281__id_1",
+                    "samples": 2403,
+                    "rmse": 90.99127242632122,
+                    "max_abs": 138.9418986643691,
+                    "nrmse": 0.029992693364866718,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_6257__id_1",
+                    "samples": 2403,
+                    "rmse": 90.89231056311387,
+                    "max_abs": 138.85724156252718,
+                    "nrmse": 0.03004947727455915,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_6244__id_1",
+                    "samples": 2403,
+                    "rmse": 90.8442787034504,
+                    "max_abs": 139.2457296094003,
+                    "nrmse": 0.030018638416126876,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_7098__id_1",
+                    "samples": 2403,
+                    "rmse": 90.80052991158311,
+                    "max_abs": 138.74563946893613,
+                    "nrmse": 0.03013081346549499,
+                    "passes": false
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 5.669587559647624,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "worst_max_abs": 17.73577733914923,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "worst_nrmse": 0.0018548894643613304,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                "failed_channels": 103,
+                "top_rmse": [
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                    "samples": 241,
+                    "rmse": 5.669587559647624,
+                    "max_abs": 17.73577733914923,
+                    "nrmse": 0.0018548894643613304,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1050__id_1",
+                    "samples": 241,
+                    "rmse": 4.686326572934545,
+                    "max_abs": 12.078529839280684,
+                    "nrmse": 0.0015349391454275202,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1073__id_1",
+                    "samples": 241,
+                    "rmse": 3.582460442227829,
+                    "max_abs": 11.657760319867585,
+                    "nrmse": 0.0011739779896514807,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1078__id_1",
+                    "samples": 241,
+                    "rmse": 3.539655116100236,
+                    "max_abs": 11.853010946796243,
+                    "nrmse": 0.001161182267525482,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1072__id_1",
+                    "samples": 241,
+                    "rmse": 2.6700884275502514,
+                    "max_abs": 8.315452397717483,
+                    "nrmse": 0.0008764288048867979,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 97.40605848164073,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "worst_max_abs": 142.48917813552316,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_5416__id_1",
+                "worst_nrmse": 0.032153123029092866,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                    "samples": 2162,
+                    "rmse": 97.40605848164073,
+                    "max_abs": 140.49631070496685,
+                    "nrmse": 0.032153123029092866
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_5281__id_1",
+                    "samples": 2162,
+                    "rmse": 95.92854100481252,
+                    "max_abs": 138.9418986643691,
+                    "nrmse": 0.03162012398085891
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_6257__id_1",
+                    "samples": 2162,
+                    "rmse": 95.82417125055268,
+                    "max_abs": 138.85724156252718,
+                    "nrmse": 0.03167997643043194
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_6244__id_1",
+                    "samples": 2162,
+                    "rmse": 95.77362358316684,
+                    "max_abs": 139.2457296094003,
+                    "nrmse": 0.03164749412046496
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_7098__id_1",
+                    "samples": 2162,
+                    "rmse": 95.72753466079371,
+                    "max_abs": 138.74563946893613,
+                    "nrmse": 0.03176576715119077
+                  }
+                ]
+              }
+            }
+          },
+          "voltage": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 0.04517909203698255,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+                "worst_max_abs": 0.1354550878943559,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+                "worst_nrmse": 0.3010205626970707,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_voltage_pu__bus_3057",
+                    "samples": 2403,
+                    "rmse": 0.04517909203698255,
+                    "max_abs": 0.09821212246303845,
+                    "nrmse": 0.2465978448416009
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3034",
+                    "samples": 2403,
+                    "rmse": 0.03973655225954528,
+                    "max_abs": 0.12448282828348833,
+                    "nrmse": 0.1746523739516775
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3081",
+                    "samples": 2403,
+                    "rmse": 0.039533279653918875,
+                    "max_abs": 0.10472764697503467,
+                    "nrmse": 0.21334161018925396
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3060",
+                    "samples": 2403,
+                    "rmse": 0.03563984190156524,
+                    "max_abs": 0.10374734232712624,
+                    "nrmse": 0.18523954658903885
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3131",
+                    "samples": 2403,
+                    "rmse": 0.033867062201394675,
+                    "max_abs": 0.12558583418868918,
+                    "nrmse": 0.15276757691835197
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 0.06266183916278485,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3095",
+                "worst_max_abs": 0.1354550878943559,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3095",
+                "worst_nrmse": 0.2752575630590162,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_3095",
+                "failed_channels": 2000,
+                "top_rmse": [
+                  {
+                    "channel": "bus_voltage_pu__bus_3095",
+                    "samples": 241,
+                    "rmse": 0.06266183916278485,
+                    "max_abs": 0.1354550878943559,
+                    "nrmse": 0.2752575630590162,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3068",
+                    "samples": 241,
+                    "rmse": 0.06042757624236651,
+                    "max_abs": 0.13073424307925607,
+                    "nrmse": 0.27020688337485416,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3047",
+                    "samples": 241,
+                    "rmse": 0.0594649131745006,
+                    "max_abs": 0.13179498548021829,
+                    "nrmse": 0.2343591594995298,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3122",
+                    "samples": 241,
+                    "rmse": 0.0591096534651036,
+                    "max_abs": 0.13099083020656133,
+                    "nrmse": 0.23613662410199843,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3067",
+                    "samples": 241,
+                    "rmse": 0.05834654022439212,
+                    "max_abs": 0.127134381937427,
+                    "nrmse": 0.2616583767533411,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 0.0452948257668213,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3057",
+                "worst_max_abs": 0.12448282828348833,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3034",
+                "worst_nrmse": 0.31637912062185086,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7286",
+                "failed_channels": 2000,
+                "top_rmse": [
+                  {
+                    "channel": "bus_voltage_pu__bus_3057",
+                    "samples": 2162,
+                    "rmse": 0.0452948257668213,
+                    "max_abs": 0.07984671298669421,
+                    "nrmse": 0.24722954607920775,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3081",
+                    "samples": 2162,
+                    "rmse": 0.03845789456650759,
+                    "max_abs": 0.09556592234733552,
+                    "nrmse": 0.20753828731469726,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3034",
+                    "samples": 2162,
+                    "rmse": 0.03840161457274952,
+                    "max_abs": 0.12448282828348833,
+                    "nrmse": 0.16878497925287256,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3060",
+                    "samples": 2162,
+                    "rmse": 0.03425914543242913,
+                    "max_abs": 0.08208743650663175,
+                    "nrmse": 0.1780633198081724,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3062",
+                    "samples": 2162,
+                    "rmse": 0.03153452891231645,
+                    "max_abs": 0.0870957773043648,
+                    "nrmse": 0.16861064845719403,
+                    "passes": false
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "case": 1,
+      "compared_channels": 5191,
+      "last_times": {
+        "10": 9.999999999999753
+      },
+      "reference_files": [
+        "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case1_bus6307_fault_fullsystem_1ms_part01.parquet",
+        "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case1_bus6307_fault_fullsystem_1ms_part02.parquet"
+      ],
+      "reference_comparison": {
+        "10": {
+          "active_power": {
+            "channels": 429,
+            "periods": {
+              "full": {
+                "worst_rmse": 63.51192101853509,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 185.12663779624023,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.7104824173370677,
+                "worst_nrmse_channel": "generator_p_mw__bus_3120__id_1",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "generator_p_mw__bus_3081__id_1",
+                    "samples": 2403,
+                    "rmse": 63.51192101853509,
+                    "max_abs": 185.12663779624023,
+                    "nrmse": 0.3402245143788434
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_8099__id_1",
+                    "samples": 2403,
+                    "rmse": 55.18218745079515,
+                    "max_abs": 85.59450755684803,
+                    "nrmse": 0.6424694676828049
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_1079__id_1",
+                    "samples": 2403,
+                    "rmse": 26.688159686406625,
+                    "max_abs": 183.60683892955547,
+                    "nrmse": 0.09626329982008892
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3120__id_1",
+                    "samples": 2403,
+                    "rmse": 24.119214501593017,
+                    "max_abs": 29.900038039728663,
+                    "nrmse": 0.7104824173370677
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_5263__id_1",
+                    "samples": 2403,
+                    "rmse": 15.277648768534542,
+                    "max_abs": 47.573695591155,
+                    "nrmse": 0.060395579825867664
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 8.587238673381785,
+                "worst_rmse_channel": "generator_p_mw__bus_5263__id_1",
+                "worst_max_abs": 17.07584658666792,
+                "worst_max_abs_channel": "generator_p_mw__bus_5263__id_1",
+                "worst_nrmse": 0.03595012106922303,
+                "worst_nrmse_channel": "generator_p_mw__bus_7032__id_1",
+                "failed_channels": 260,
+                "top_rmse": [
+                  {
+                    "channel": "generator_p_mw__bus_5263__id_1",
+                    "samples": 241,
+                    "rmse": 8.587238673381785,
+                    "max_abs": 17.07584658666792,
+                    "nrmse": 0.03394705995926332,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_2057__id_1",
+                    "samples": 241,
+                    "rmse": 0.9744194289980507,
+                    "max_abs": 3.4996536692028144,
+                    "nrmse": 0.0049457529112702965,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_5262__id_1",
+                    "samples": 241,
+                    "rmse": 0.9682488937538798,
+                    "max_abs": 2.8949626564574373,
+                    "nrmse": 0.004664857395697585,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_5069__id_1",
+                    "samples": 241,
+                    "rmse": 0.746825072098517,
+                    "max_abs": 1.6867519658812284,
+                    "nrmse": 0.01290219657822625,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3057__id_1",
+                    "samples": 241,
+                    "rmse": 0.6369733189800829,
+                    "max_abs": 4.1626530536336475,
+                    "nrmse": 0.003131801915922482,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 66.95811514905779,
+                "worst_rmse_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_max_abs": 185.12663779624023,
+                "worst_max_abs_channel": "generator_p_mw__bus_3081__id_1",
+                "worst_nrmse": 0.749034818294265,
+                "worst_nrmse_channel": "generator_p_mw__bus_3120__id_1",
+                "failed_channels": 375,
+                "top_rmse": [
+                  {
+                    "channel": "generator_p_mw__bus_3081__id_1",
+                    "samples": 2162,
+                    "rmse": 66.95811514905779,
+                    "max_abs": 185.12663779624023,
+                    "nrmse": 0.35868529631882173,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_8099__id_1",
+                    "samples": 2162,
+                    "rmse": 58.176548546468304,
+                    "max_abs": 85.59450755684803,
+                    "nrmse": 0.6773319055102766,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_1079__id_1",
+                    "samples": 2162,
+                    "rmse": 28.136276904770952,
+                    "max_abs": 183.60683892955547,
+                    "nrmse": 0.10148661021706024,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_3120__id_1",
+                    "samples": 2162,
+                    "rmse": 25.427978245139563,
+                    "max_abs": 29.900038039728663,
+                    "nrmse": 0.749034818294265,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_p_mw__bus_5263__id_1",
+                    "samples": 2162,
+                    "rmse": 15.849436751240685,
+                    "max_abs": 47.573695591155,
+                    "nrmse": 0.06265597128244604,
+                    "passes": false
+                  }
+                ]
+              }
+            }
+          },
+          "bus_angle": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 548.9601367913915,
+                "worst_rmse_channel": "bus_angle_deg__bus_5139",
+                "worst_max_abs": 1106.9793979584092,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3120",
+                "worst_nrmse": 0.4965796068394718,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_angle_deg__bus_5139",
+                    "samples": 2403,
+                    "rmse": 548.9601367913915,
+                    "max_abs": 1101.0272140395152,
+                    "nrmse": 0.4951076121149911
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_5183",
+                    "samples": 2403,
+                    "rmse": 548.7115341265535,
+                    "max_abs": 1101.0282197092483,
+                    "nrmse": 0.494896075311941
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_5344",
+                    "samples": 2403,
+                    "rmse": 548.6625784308242,
+                    "max_abs": 1101.0285000620788,
+                    "nrmse": 0.49487046269144863
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8146",
+                    "samples": 2403,
+                    "rmse": 548.5943657374103,
+                    "max_abs": 1101.3931164825049,
+                    "nrmse": 0.4965796068394718
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_5062",
+                    "samples": 2403,
+                    "rmse": 548.5236241487816,
+                    "max_abs": 1101.1876896496078,
+                    "nrmse": 0.49646638581871433
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 0.20072200422795544,
+                "worst_rmse_channel": "bus_angle_deg__bus_3034",
+                "worst_max_abs": 0.8409929851325231,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3034",
+                "worst_nrmse": 0.00017316191388125026,
+                "worst_nrmse_channel": "bus_angle_deg__bus_3034",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_angle_deg__bus_3034",
+                    "samples": 241,
+                    "rmse": 0.20072200422795544,
+                    "max_abs": 0.8409929851325231,
+                    "nrmse": 0.00017316191388125026
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_3118",
+                    "samples": 241,
+                    "rmse": 0.17072799492341348,
+                    "max_abs": 0.7431568766049743,
+                    "nrmse": 0.0001480321628585053
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_1023",
+                    "samples": 241,
+                    "rmse": 0.1699077824684971,
+                    "max_abs": 0.7793849860003732,
+                    "nrmse": 0.00014933248148271862
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_1026",
+                    "samples": 241,
+                    "rmse": 0.16775729385622618,
+                    "max_abs": 0.7787175611105592,
+                    "nrmse": 0.00014484519181913802
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_3117",
+                    "samples": 241,
+                    "rmse": 0.16639369539447832,
+                    "max_abs": 0.7160450906399234,
+                    "nrmse": 0.00014439449479045045
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 578.7484614349604,
+                "worst_rmse_channel": "bus_angle_deg__bus_5139",
+                "worst_max_abs": 1106.9793979584092,
+                "worst_max_abs_channel": "bus_angle_deg__bus_3120",
+                "worst_nrmse": 0.52352559718077,
+                "worst_nrmse_channel": "bus_angle_deg__bus_8146",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_angle_deg__bus_5139",
+                    "samples": 2162,
+                    "rmse": 578.7484614349604,
+                    "max_abs": 1101.0272140395152,
+                    "nrmse": 0.5219737273294517
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_5183",
+                    "samples": 2162,
+                    "rmse": 578.4863687982103,
+                    "max_abs": 1101.0282197092483,
+                    "nrmse": 0.5217507118661387
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_5344",
+                    "samples": 2162,
+                    "rmse": 578.4347566105675,
+                    "max_abs": 1101.0285000620788,
+                    "nrmse": 0.5217237094233095
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_8146",
+                    "samples": 2162,
+                    "rmse": 578.3628424868583,
+                    "max_abs": 1101.3931164825049,
+                    "nrmse": 0.52352559718077
+                  },
+                  {
+                    "channel": "bus_angle_deg__bus_5062",
+                    "samples": 2162,
+                    "rmse": 578.2882622328635,
+                    "max_abs": 1101.1876896496078,
+                    "nrmse": 0.5234062324255727
+                  }
+                ]
+              }
+            }
+          },
+          "reactive_power": {
+            "channels": 429,
+            "periods": {
+              "full": {
+                "worst_rmse": 47.05111139800044,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 168.25538300020554,
+                "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+                "worst_nrmse": 6831.105962903381,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "generator_q_mvar__bus_5263__id_1",
+                    "samples": 2403,
+                    "rmse": 47.05111139800044,
+                    "max_abs": 114.5695167287649,
+                    "nrmse": 0.09216710181283999
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_1079__id_1",
+                    "samples": 2403,
+                    "rmse": 24.728540368825193,
+                    "max_abs": 168.25538300020554,
+                    "nrmse": 0.07014072970401244
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5262__id_1",
+                    "samples": 2403,
+                    "rmse": 13.34106392612645,
+                    "max_abs": 30.823268420911475,
+                    "nrmse": 0.09500541237186853
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_8099__id_1",
+                    "samples": 2403,
+                    "rmse": 10.234068331304252,
+                    "max_abs": 16.326836185442662,
+                    "nrmse": 113.16410687592706
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_7308__id_1",
+                    "samples": 2403,
+                    "rmse": 8.124660031504945,
+                    "max_abs": 14.421169685409254,
+                    "nrmse": 0.49069593795885896
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 4.220686956741057,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 9.739883581849625,
+                "worst_max_abs_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_nrmse": 133.72079550740756,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7288__id_1",
+                "failed_channels": 241,
+                "top_rmse": [
+                  {
+                    "channel": "generator_q_mvar__bus_5263__id_1",
+                    "samples": 241,
+                    "rmse": 4.220686956741057,
+                    "max_abs": 9.739883581849625,
+                    "nrmse": 0.008267785242552436,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_7308__id_1",
+                    "samples": 241,
+                    "rmse": 2.9174080455798967,
+                    "max_abs": 5.454355620762669,
+                    "nrmse": 0.17619940671774528,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5303__id_1",
+                    "samples": 241,
+                    "rmse": 1.409724250913679,
+                    "max_abs": 4.5798686680549565,
+                    "nrmse": 0.008025566443161242,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_7032__id_1",
+                    "samples": 241,
+                    "rmse": 1.1702096806717506,
+                    "max_abs": 1.8351953484584869,
+                    "nrmse": 0.45717295890533277,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_3120__id_1",
+                    "samples": 241,
+                    "rmse": 0.9278119853000151,
+                    "max_abs": 2.2831104852582143,
+                    "nrmse": 0.2656030903800845,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 49.58423438924094,
+                "worst_rmse_channel": "generator_q_mvar__bus_5263__id_1",
+                "worst_max_abs": 168.25538300020554,
+                "worst_max_abs_channel": "generator_q_mvar__bus_1079__id_1",
+                "worst_nrmse": 7201.694594857204,
+                "worst_nrmse_channel": "generator_q_mvar__bus_7285__id_1",
+                "failed_channels": 404,
+                "top_rmse": [
+                  {
+                    "channel": "generator_q_mvar__bus_5263__id_1",
+                    "samples": 2162,
+                    "rmse": 49.58423438924094,
+                    "max_abs": 114.5695167287649,
+                    "nrmse": 0.09712916535823014,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_1079__id_1",
+                    "samples": 2162,
+                    "rmse": 26.07033678667801,
+                    "max_abs": 168.25538300020554,
+                    "nrmse": 0.07394663892706853,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_5262__id_1",
+                    "samples": 2162,
+                    "rmse": 14.063083434877255,
+                    "max_abs": 30.823268420911475,
+                    "nrmse": 0.10014711332984609,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_8099__id_1",
+                    "samples": 2162,
+                    "rmse": 10.787179872512159,
+                    "max_abs": 16.326836185442662,
+                    "nrmse": 119.280186184495,
+                    "passes": false
+                  },
+                  {
+                    "channel": "generator_q_mvar__bus_7308__id_1",
+                    "samples": 2162,
+                    "rmse": 8.50996737817563,
+                    "max_abs": 14.421169685409254,
+                    "nrmse": 0.5139669116542334,
+                    "passes": false
+                  }
+                ]
+              }
+            }
+          },
+          "rotor_angle": {
+            "channels": 333,
+            "periods": {
+              "full": {
+                "worst_rmse": 12.511335007175417,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_max_abs": 45.104820855147295,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_nrmse": 0.009089926021804928,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "failed_channels": 333,
+                "top_rmse": [
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                    "samples": 2403,
+                    "rmse": 12.511335007175417,
+                    "max_abs": 45.104820855147295,
+                    "nrmse": 0.009089926021804928,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1050__id_1",
+                    "samples": 2403,
+                    "rmse": 7.841993606016512,
+                    "max_abs": 24.357781181650125,
+                    "nrmse": 0.006900975224904547,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                    "samples": 2403,
+                    "rmse": 7.067389294593681,
+                    "max_abs": 20.746136084256477,
+                    "nrmse": 0.006375816257007657,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_8117__id_1",
+                    "samples": 2403,
+                    "rmse": 6.7216808756481345,
+                    "max_abs": 21.57736515877832,
+                    "nrmse": 0.0061450541463676355,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_8079__id_1",
+                    "samples": 2403,
+                    "rmse": 6.699382317474779,
+                    "max_abs": 21.595687388978376,
+                    "nrmse": 0.00604811138812667,
+                    "passes": false
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 0.543595086620105,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "worst_max_abs": 1.1301456643306302,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "worst_nrmse": 0.0004958462592866776,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                "failed_channels": 333,
+                "top_rmse": [
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_7308__id_1",
+                    "samples": 241,
+                    "rmse": 0.543595086620105,
+                    "max_abs": 1.1301456643306302,
+                    "nrmse": 0.0004958462592866776,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1051__id_1",
+                    "samples": 241,
+                    "rmse": 0.07004080045107965,
+                    "max_abs": 0.12631076295581067,
+                    "nrmse": 6.164337592853193e-05,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1052__id_1",
+                    "samples": 241,
+                    "rmse": 0.05587183684276129,
+                    "max_abs": 0.11984490674356607,
+                    "nrmse": 4.915814591260515e-05,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1050__id_1",
+                    "samples": 241,
+                    "rmse": 0.05418455140038461,
+                    "max_abs": 0.1388248993737946,
+                    "nrmse": 4.768254930732646e-05,
+                    "passes": false
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1078__id_1",
+                    "samples": 241,
+                    "rmse": 0.046599524615596404,
+                    "max_abs": 0.08610863025295501,
+                    "nrmse": 4.134261788809078e-05,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 13.190236537512018,
+                "worst_rmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_max_abs": 45.104820855147295,
+                "worst_max_abs_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "worst_nrmse": 0.009583171921088306,
+                "worst_nrmse_channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1079__id_1",
+                    "samples": 2162,
+                    "rmse": 13.190236537512018,
+                    "max_abs": 45.104820855147295,
+                    "nrmse": 0.009583171921088306
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_1050__id_1",
+                    "samples": 2162,
+                    "rmse": 8.26750535212095,
+                    "max_abs": 24.357781181650125,
+                    "nrmse": 0.007275426692898566
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_5263__id_1",
+                    "samples": 2162,
+                    "rmse": 7.450879272962445,
+                    "max_abs": 20.746136084256477,
+                    "nrmse": 0.006721780167663246
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_8117__id_1",
+                    "samples": 2162,
+                    "rmse": 7.086417352015748,
+                    "max_abs": 21.57736515877832,
+                    "nrmse": 0.006478501306073533
+                  },
+                  {
+                    "channel": "sync_rotor_angle_deg__bus_8079__id_1",
+                    "samples": 2162,
+                    "rmse": 7.062908833410714,
+                    "max_abs": 21.595687388978376,
+                    "nrmse": 0.006376298190540252
+                  }
+                ]
+              }
+            }
+          },
+          "voltage": {
+            "channels": 2000,
+            "periods": {
+              "full": {
+                "worst_rmse": 0.01919248882737569,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.05125133799620463,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3074",
+                "worst_nrmse": 0.39331046409967657,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_8024",
+                "failed_channels": 0,
+                "top_rmse": [
+                  {
+                    "channel": "bus_voltage_pu__bus_3120",
+                    "samples": 2403,
+                    "rmse": 0.01919248882737569,
+                    "max_abs": 0.0493495870197358,
+                    "nrmse": 0.09269546954200421
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3074",
+                    "samples": 2403,
+                    "rmse": 0.017842551718271975,
+                    "max_abs": 0.05125133799620463,
+                    "nrmse": 0.06385715206589644
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_8024",
+                    "samples": 2403,
+                    "rmse": 0.015378177858542064,
+                    "max_abs": 0.023932750350462495,
+                    "nrmse": 0.39331046409967657
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3119",
+                    "samples": 2403,
+                    "rmse": 0.014810857029916106,
+                    "max_abs": 0.03903222858662758,
+                    "nrmse": 0.07211961131879814
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_4002",
+                    "samples": 2403,
+                    "rmse": 0.014618529124875056,
+                    "max_abs": 0.03557772141786408,
+                    "nrmse": 0.06423245916309674
+                  }
+                ]
+              },
+              "prefault": {
+                "worst_rmse": 0.0032948530287401027,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.008223208119933156,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3120",
+                "worst_nrmse": 0.04242664011893191,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_7032",
+                "failed_channels": 1651,
+                "top_rmse": [
+                  {
+                    "channel": "bus_voltage_pu__bus_3120",
+                    "samples": 241,
+                    "rmse": 0.0032948530287401027,
+                    "max_abs": 0.008223208119933156,
+                    "nrmse": 0.01591341025741893,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_7032",
+                    "samples": 241,
+                    "rmse": 0.002850951575670343,
+                    "max_abs": 0.004521449529402144,
+                    "nrmse": 0.04242664011893191,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3119",
+                    "samples": 241,
+                    "rmse": 0.002476690923540487,
+                    "max_abs": 0.006193599277906081,
+                    "nrmse": 0.012059935924150021,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_4002",
+                    "samples": 241,
+                    "rmse": 0.001981756053862773,
+                    "max_abs": 0.004964652724848806,
+                    "nrmse": 0.008707652029393092,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3034",
+                    "samples": 241,
+                    "rmse": 0.0018085983625631043,
+                    "max_abs": 0.006066620906224562,
+                    "nrmse": 0.018342100644665862,
+                    "passes": false
+                  }
+                ]
+              },
+              "fault_and_postfault": {
+                "worst_rmse": 0.020204008667506573,
+                "worst_rmse_channel": "bus_voltage_pu__bus_3120",
+                "worst_max_abs": 0.05125133799620463,
+                "worst_max_abs_channel": "bus_voltage_pu__bus_3074",
+                "worst_nrmse": 0.41460402712725974,
+                "worst_nrmse_channel": "bus_voltage_pu__bus_8024",
+                "failed_channels": 1837,
+                "top_rmse": [
+                  {
+                    "channel": "bus_voltage_pu__bus_3120",
+                    "samples": 2162,
+                    "rmse": 0.020204008667506573,
+                    "max_abs": 0.0493495870197358,
+                    "nrmse": 0.09758088629932667,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3074",
+                    "samples": 2162,
+                    "rmse": 0.01880590430851829,
+                    "max_abs": 0.05125133799620463,
+                    "nrmse": 0.06730491860847211,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_8024",
+                    "samples": 2162,
+                    "rmse": 0.01621074202697787,
+                    "max_abs": 0.023932750350462495,
+                    "nrmse": 0.41460402712725974,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_3119",
+                    "samples": 2162,
+                    "rmse": 0.01559263087147289,
+                    "max_abs": 0.03903222858662758,
+                    "nrmse": 0.07592636102128976,
+                    "passes": false
+                  },
+                  {
+                    "channel": "bus_voltage_pu__bus_4002",
+                    "samples": 2162,
+                    "rmse": 0.015397567539043424,
+                    "max_abs": 0.03557772141786408,
+                    "nrmse": 0.06765548159559341,
+                    "passes": false
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "case34": [
+    {
+      "case": 3,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "calls": 15,
+      "iterations": 373,
+      "mixes": 58,
+      "last_network_diagnostic": "NetworkSolutionDiagnostics[stage=DIRECT, stepStartTime=0.04583333333333333, evaluationTime=0.04583333333333333, iterations=53, iterationLimit=500, voltageTolerance=1.0E-5, maximumVoltageChange=NaN, leadingBusId=null, previousVoltage=null, voltage=null, converged=false, reason=NETWORK_EQUATION_FAILURE]",
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333"
+    },
+    {
+      "case": 4,
+      "status": "failed",
+      "reached_s": 0.04583333333333333,
+      "calls": 15,
+      "iterations": 363,
+      "mixes": 65,
+      "last_network_diagnostic": "NetworkSolutionDiagnostics[stage=DIRECT, stepStartTime=0.04583333333333333, evaluationTime=0.04583333333333333, iterations=39, iterationLimit=500, voltageTolerance=1.0E-5, maximumVoltageChange=NaN, leadingBusId=null, previousVoltage=null, voltage=null, converged=false, reason=NETWORK_EQUATION_FAILURE]",
+      "error": "java.lang.IllegalStateException: Integration failed at 0.04583333333333333"
+    }
+  ],
+  "sampling_profile": {
+    "samples": 1151,
+    "categories": {
+      "other": 368,
+      "PSS2A": 131,
+      "ST1": 160,
+      "other_network": 412,
+      "recording": 10,
+      "acceleration_history": 70
+    },
+    "top_leaves": [
+      [
+        "com.interpss.core.sparse.solver.klu.FactoredComplexRowSolve.solve",
+        81
+      ],
+      [
+        "org.apache.commons.math3.util.FastMath.atan",
+        81
+      ],
+      [
+        "com.interpss.dstab.impl.BaseDStabBusImpl.scalarLoadPartsEligible",
+        68
+      ],
+      [
+        "com.interpss.dstab.impl.BaseDStabNetworkImpl.addCustomBusCurrentInj",
+        57
+      ],
+      [
+        "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aDirectEvaluation$Node.accept",
+        49
+      ],
+      [
+        "org.eclipse.emf.common.util.AbstractEList$EIterator.hasNext",
+        45
+      ],
+      [
+        "com.interpss.dstab.mach.impl.MachineControllerImpl.getMachine",
+        44
+      ],
+      [
+        "com.interpss.dstab.algo.defaultImpl.AndersonOne.mix",
+        38
+      ],
+      [
+        "com.interpss.dstab.impl.BaseDStabBusImpl.injCurDynamic",
+        34
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1InputEquations.evaluate",
+        30
+      ],
+      [
+        "com.interpss.dstab.controller.cml.runtime.CmlBlockKernel.advance",
+        27
+      ],
+      [
+        "com.interpss.dstab.mach.impl.MachineImpl.getController",
+        27
+      ],
+      [
+        "org.apache.commons.math3.util.FastMath.atan2",
+        24
+      ],
+      [
+        "org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.getCmlMachineVoltage",
+        23
+      ],
+      [
+        "org.interpss.dstab.algo.PsseStaggeredEulerSolver.nextStep",
+        19
+      ],
+      [
+        "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveEqn",
+        18
+      ],
+      [
+        "com.interpss.dstab.algo.defaultImpl.AndersonOne.norm",
+        18
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y2005.st4b.St4DirectEvaluation.y",
+        17
+      ],
+      [
+        "java.lang.String.equalsIgnoreCase",
+        16
+      ],
+      [
+        "com.interpss.dstab.controller.cml.field.block.DelayControlBlock.getY",
+        15
+      ],
+      [
+        "com.interpss.dstab.mach.impl.SalientPoleMachineImpl$GENSALDEqnSolver.getOutputObject",
+        15
+      ],
+      [
+        "org.interpss.dstab.algo.PsseStaggeredEulerSolver.evaluate",
+        14
+      ],
+      [
+        "com.interpss.dstab.algo.defaultImpl.AndersonOne.dot",
+        14
+      ],
+      [
+        "com.interpss.core.aclf.impl.BaseAclfBusImpl.getVoltageAng",
+        14
+      ],
+      [
+        "com.interpss.core.aclf.impl.BaseAclfBusImpl.getVoltage",
+        12
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.voltage",
+        12
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.evaluate",
+        12
+      ],
+      [
+        "org.eclipse.emf.common.notify.impl.BasicNotifierImpl.eBasicHasAdapters",
+        11
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation$Node.prepare",
+        11
+      ],
+      [
+        "org.interpss.core.dstab.reference.NetworkAndersonHistoryProfileRun$1.hasDynEvent",
+        11
+      ]
+    ],
+    "warmups": 8,
+    "profiled_runs": 2,
+    "sample_period_ms": 5,
+    "recordings_match": true,
+    "interpretation": "Main-thread samples with runCase on stack; approximate attribution, not exclusive wall-clock timers. Compilation/GC remain in runs."
+  },
+  "profile_verification": {
+    "verified_complete_recordings": 10,
+    "hashes": {
+      "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    },
+    "atan_callers": [
+      {
+        "samples": 55,
+        "stack": [
+          "org.apache.commons.math3.util.FastMath.atan",
+          "org.apache.commons.math3.util.FastMath.atan2",
+          "org.apache.commons.math3.complex.Complex.getArgument",
+          "com.interpss.core.aclf.impl.BaseAclfBusImpl.setVoltage",
+          "com.interpss.dstab.algo.defaultImpl.DStabSolverImpl.iterateNetworkSolution",
+          "com.interpss.dstab.algo.defaultImpl.DStabSolverImpl.networkSolutionStep",
+          "org.interpss.fadapter.psse.PsseDStabSolver.networkSolutionStep",
+          "org.interpss.dstab.algo.PsseStaggeredEulerSolver.networkSolutionStep"
+        ]
+      },
+      {
+        "samples": 18,
+        "stack": [
+          "org.apache.commons.math3.util.FastMath.atan",
+          "org.apache.commons.math3.util.FastMath.atan2",
+          "org.apache.commons.math3.complex.Complex.getArgument",
+          "com.interpss.core.aclf.impl.BaseAclfBusImpl.getVoltageAng",
+          "com.interpss.dstab.impl.BaseDStabBusImpl.nextStep",
+          "org.interpss.dstab.algo.PsseStaggeredEulerSolver.nextStep",
+          "com.interpss.dstab.algo.defaultImpl.AbstractDStabSolver.solveDEqnStep",
+          "com.interpss.dstab.algo.impl.DynamicSimuAlgorithmImpl.solveDEqnStep"
+        ]
+      },
+      {
+        "samples": 7,
+        "stack": [
+          "org.apache.commons.math3.util.FastMath.atan",
+          "org.apache.commons.math3.util.FastMath.atan2",
+          "org.apache.commons.math3.complex.Complex.getArgument",
+          "org.interpss.dstab.renewable.Regca1Model.injectedCurrent",
+          "org.interpss.dstab.renewable.Regca1Model.getOutputObject",
+          "com.interpss.dstab.impl.BaseDStabBusImpl.injCurDynamic",
+          "com.interpss.dstab.impl.BaseDStabNetworkImpl.solveNetEqn_impl",
+          "com.interpss.dstab.impl.BaseDStabNetworkImpl.solveNetEqn"
+        ]
+      },
+      {
+        "samples": 1,
+        "stack": [
+          "org.apache.commons.math3.util.FastMath.atan",
+          "org.apache.commons.math3.util.FastMath.atan2",
+          "org.apache.commons.math3.complex.Complex.getArgument",
+          "org.interpss.dstab.renewable.Regca1Model.injectedCurrent",
+          "org.interpss.dstab.renewable.Regca1Model.updateAttributes",
+          "org.interpss.dstab.renewable.Regca1Model.nextTwoStep",
+          "org.interpss.dstab.renewable.Regca1Model.nextStep",
+          "org.interpss.dstab.algo.PsseStaggeredEulerSolver.evaluate"
+        ]
+      }
+    ]
+  },
+  "deferred_publication_audit": [
+    {
+      "case": 1,
+      "all_recordings_identical": true,
+      "network_iterations": 18338,
+      "mixes": 13530,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "all_recordings_identical": true,
+      "network_iterations": 20197,
+      "mixes": 15389,
+      "hashes": {
+        "full-network.bin": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289",
+        "interpss.csv": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "deferred_setter_test": {
+    "status": "passed",
+    "exact_double_assertions": 4274,
+    "notification_history_equal": true
+  },
+  "invalid_first_case34_attempt": "Runtime classpath mixed incompatible ST1 classes and stopped before simulation. Corrected v2 uses the Cases 1\u20132 runtime; the first attempt is execution evidence only.",
+  "reference_and_control_index": "docs/benchmarks/checkpoints/network-iteration-audit-2026-10-22.json",
+  "external_store": "external-generated-artifacts (location retained privately in archive)",
+  "retained_dependencies": [
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/actual/case1_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
+      "bytes": 221533,
+      "sha256": "b363f633eafd06b48949ebbdae6e55d3b501fcf265d43ea0b5f4e3f912433bfe"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/Texas2k_series24_case1_2016summerPeak.RAW",
+      "bytes": 2830920,
+      "sha256": "ccb5daa9391618c0546e910a4e5eade43446b37b29b1bd3ecb1e69a4e02ecb8b"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/actual/case2_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
+      "bytes": 221411,
+      "sha256": "4e37dadd5e5eb76eaeb3dc1399851a83d909cf90eca066ab985c71bfd2e7aeb8"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-audit-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/Texas2k_series24_case2_2016lowload.RAW",
+      "bytes": 2830917,
+      "sha256": "0ccfe235aae428ab47a1a92f4901a2517008db3f6745422b0131535f38d5a89d"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-1/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-10/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-10/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-10/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-11/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-11/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-11/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-12/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-12/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-12/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-13/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-13/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-13/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-14/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-14/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-14/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-15/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-15/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-15/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-16/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-16/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-16/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-17/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-17/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-17/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-18/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-18/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-18/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-19/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-19/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-19/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-2/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-20/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-20/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-20/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-21/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-21/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-21/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-3/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-4/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-5/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-6/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-7/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "540208c63bdf45527e6cf828cdc02991fc86860d347bf63a58c6861bfb9c1078"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-8/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "bytes": 2405146,
+      "sha256": "77b9b9ce981042ea214466c69192555b4bf51a30a079d814306f4f3600bb5e72"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-9/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
+      "bytes": 221533,
+      "sha256": "b363f633eafd06b48949ebbdae6e55d3b501fcf265d43ea0b5f4e3f912433bfe"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/Texas2k_series24_case1_2016summerPeak.RAW",
+      "bytes": 2830920,
+      "sha256": "ccb5daa9391618c0546e910a4e5eade43446b37b29b1bd3ecb1e69a4e02ecb8b"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-1/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-1/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-1/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-10/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-10/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-10/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-11/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-11/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-11/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-12/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-12/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-12/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-13/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-13/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-13/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-14/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-14/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-14/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-15/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-15/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-15/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-16/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-16/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-16/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-17/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-17/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-17/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-18/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-18/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-18/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-19/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-19/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-19/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-2/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-2/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-2/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-20/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-20/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-20/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-21/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-21/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-21/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-3/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-3/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-3/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-4/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-4/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-4/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-5/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-5/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-5/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-6/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-6/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-6/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-7/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-7/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-7/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-8/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-8/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-8/interpss.csv",
+      "bytes": 10197164,
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-9/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-9/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/actual/case2_bus_fault_01/run-9/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
+      "bytes": 221411,
+      "sha256": "4e37dadd5e5eb76eaeb3dc1399851a83d909cf90eca066ab985c71bfd2e7aeb8"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-screen-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/Texas2k_series24_case2_2016lowload.RAW",
+      "bytes": 2830917,
+      "sha256": "0ccfe235aae428ab47a1a92f4901a2517008db3f6745422b0131535f38d5a89d"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/actual/case3_bus_fault_01/run-0/full-network.bin",
+      "bytes": 737025,
+      "sha256": "8ede9746cf1b722ddf32b64367ff29878ccf60c33eb338e00e4815199b5bc408"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/actual/case3_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 145540,
+      "sha256": "582ee549a7f55444090543848e746330fbe7b98583960ef1cbb74a5a14dbb8c4"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/actual/case3_bus_fault_01/run-0/interpss.csv",
+      "bytes": 15434,
+      "sha256": "259072519f47d36951bebd275fca31da3bc94ca9d093e54224fbde6845ac8157"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/dynamic_models_case3.dyr",
+      "bytes": 301765,
+      "sha256": "dff0bccf7960b9fad00dd76f288f75740e16eb64516e8fd63d37c0d8b023aa65"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/dynamic_models_case3_gnet.idv",
+      "bytes": 65,
+      "sha256": "d35f8a5cd32c631cd825f9ba95e5e4223c8e1f5a2d2693946e2980e83585802a"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/dynamic_models_case3_MODREMOVE.idv",
+      "bytes": 4374,
+      "sha256": "fbd5ba2d5cda3914934148cc4c835a516995a4ac6920c9412670a863cfb23104"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/Texas2k_series24_case3_2024summerpeak.RAW",
+      "bytes": 3160216,
+      "sha256": "1001edd7bc8e14d848a9a78b27e2a7154f1a597c3021f6602d19b985bf77e938"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/actual/case4_bus_fault_01/run-0/full-network.bin",
+      "bytes": 589185,
+      "sha256": "700229a70d132339aa304c83ae5c3e5e481a56d8579cc41e2e3e630654019f10"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/actual/case4_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 133003,
+      "sha256": "bb66bcc04eeb42c7cfb7171168148688b3dd1d52e1c43b279e1759c1c2ab6f43"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/actual/case4_bus_fault_01/run-0/interpss.csv",
+      "bytes": 15417,
+      "sha256": "ae03097e2aabf8302e5cfa51999efa4d62ab43aab9b09b078926afb34fbedc29"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/inputs/Texas2k_series24_case4_2024lowload/dynamic_models_case4.dyr",
+      "bytes": 301911,
+      "sha256": "41ccdd1e16dc6a81dbc77e8a8762a35c54f4739c5b23e0cbb2ec4ed403249550"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/inputs/Texas2k_series24_case4_2024lowload/dynamic_models_case4_gnet.idv",
+      "bytes": 65,
+      "sha256": "d35f8a5cd32c631cd825f9ba95e5e4223c8e1f5a2d2693946e2980e83585802a"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/inputs/Texas2k_series24_case4_2024lowload/dynamic_models_case4_MODREMOVE.idv",
+      "bytes": 4374,
+      "sha256": "fbd5ba2d5cda3914934148cc4c835a516995a4ac6920c9412670a863cfb23104"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-v2-20261022/case4/inputs/Texas2k_series24_case4_2024lowload/Texas2k_series24_case4_2024lowload.RAW",
+      "bytes": 3160967,
+      "sha256": "e098d781995bedb0d3007861506d0b6550c2530746d4791fbe90759554d829d8"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/actual/case3_bus_fault_01/run-0/full-network.bin",
+      "bytes": 52655,
+      "sha256": "44479d20ae4a81ab5e954ce835c16d9839353d7bbb7b15eafc5294639b1c01cf"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/actual/case3_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 145540,
+      "sha256": "582ee549a7f55444090543848e746330fbe7b98583960ef1cbb74a5a14dbb8c4"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/actual/case3_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2599,
+      "sha256": "42556e49c0180d9f6acb2f0251aae7aba3218a92d48414f597875660aae1724f"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/dynamic_models_case3.dyr",
+      "bytes": 301765,
+      "sha256": "dff0bccf7960b9fad00dd76f288f75740e16eb64516e8fd63d37c0d8b023aa65"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/dynamic_models_case3_gnet.idv",
+      "bytes": 65,
+      "sha256": "d35f8a5cd32c631cd825f9ba95e5e4223c8e1f5a2d2693946e2980e83585802a"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/dynamic_models_case3_MODREMOVE.idv",
+      "bytes": 4374,
+      "sha256": "fbd5ba2d5cda3914934148cc4c835a516995a4ac6920c9412670a863cfb23104"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-case34-20261022/case3/inputs/Texas2k_series24_case3_2024summerpeak/Texas2k_series24_case3_2024summerpeak.RAW",
+      "bytes": 3160216,
+      "sha256": "1001edd7bc8e14d848a9a78b27e2a7154f1a597c3021f6602d19b985bf77e938"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-1/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-2/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-3/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-4/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-5/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-6/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-7/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-8/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-9/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
+      "bytes": 221533,
+      "sha256": "b363f633eafd06b48949ebbdae6e55d3b501fcf265d43ea0b5f4e3f912433bfe"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-history-profile-20261022/inputs/Texas2k_series24_case1_2016summerpeak/Texas2k_series24_case1_2016summerPeak.RAW",
+      "bytes": 2830920,
+      "sha256": "ccb5daa9391618c0546e910a4e5eade43446b37b29b1bd3ecb1e69a4e02ecb8b"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "bytes": 119143713,
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/actual/case1_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 144784,
+      "sha256": "a24a6bec0a3e85c4aa22330fe173898112dbed7627e9fbb3e679b1a730b5b2df"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "bytes": 2405420,
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
+      "bytes": 221533,
+      "sha256": "b363f633eafd06b48949ebbdae6e55d3b501fcf265d43ea0b5f4e3f912433bfe"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/dynamic_models_case1_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case1/inputs/Texas2k_series24_case1_2016summerpeak/Texas2k_series24_case1_2016summerPeak.RAW",
+      "bytes": 2830920,
+      "sha256": "ccb5daa9391618c0546e910a4e5eade43446b37b29b1bd3ecb1e69a4e02ecb8b"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "bytes": 92592513,
+      "sha256": "ca976fa50ad47ee71b2b37c14c6fc5add5e7f80262e8feabf7778801b5213289"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/actual/case2_bus_fault_01/run-0/initial-norton-compensation.csv",
+      "bytes": 130775,
+      "sha256": "2250255b8cb6ed20e1bd1c46419f857dbc3a53793fd552856790bc05c23ddde1"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "bytes": 10200397,
+      "sha256": "6f50b741605d689647a3370278adb90f30c12430f12425c8944d5c302afa3537"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
+      "bytes": 221411,
+      "sha256": "4e37dadd5e5eb76eaeb3dc1399851a83d909cf90eca066ab985c71bfd2e7aeb8"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_gnet.idv",
+      "bytes": 23,
+      "sha256": "b652c1cc86d16d0e721aaa57bff116b5c600d53b6b7753ac3dd0da8db1f43912"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/dynamic_models_case2_MODREMOVE.idv",
+      "bytes": 1674,
+      "sha256": "92c29450955c390e6b082ea7d7e4c08d14720cfe8c273fcf40a71cfc8cc41120"
+    },
+    {
+      "store": "external-generated-artifacts",
+      "path": "network-anderson-deferred-publication-20261022/case2/inputs/Texas2k_series24_case2_2016lowload/Texas2k_series24_case2_2016lowload.RAW",
+      "bytes": 2830917,
+      "sha256": "0ccfe235aae428ab47a1a92f4901a2517008db3f6745422b0131535f38d5a89d"
+    }
+  ],
+  "qualification": "Experimental only. Not a proof of independent-reference accuracy or of the complete eight-second objective."
+}

@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1ExciterData;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1ExciterData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -95,6 +95,26 @@ public class PsseEsst1aExciterTest extends CorePluginTestSetup {
         gate2.exciter().setVuel(gate2Floor);
         assertEquals(gate2Floor, gate2.exciter().getOutput(gate2.machine()), 1.0e-9,
                 "UEL=3 must drive high-value gate 2 after the regulator");
+    }
+
+    @Test
+    void absentInputUelDoesNotClampNegativeError() throws Exception {
+        ExciterFixture fixture = createLimiterFixture(2, 2, 0.0);
+        IEEE1981ST1Exciter exciter = fixture.exciter();
+        exciter.setRefPoint(exciter.getRefPoint() - fixture.machine().getEfd() - 0.25);
+        step(fixture, 0.005);
+        assertEquals(-0.25, exciter.getUelGate1Output(), TOL);
+        assertEquals(-0.25, exciter.getOutput(fixture.machine()), TOL);
+
+        exciter.setVuel(0.0);
+        step(fixture, 0.005);
+        assertEquals(0.0, exciter.getUelGate1Output(), TOL);
+        assertEquals(0.0, exciter.getOutput(fixture.machine()), TOL);
+
+        exciter.clearVuel();
+        step(fixture, 0.005);
+        assertEquals(-0.25, exciter.getUelGate1Output(), TOL);
+        assertEquals(-0.25, exciter.getOutput(fixture.machine()), TOL);
     }
 
     @Test

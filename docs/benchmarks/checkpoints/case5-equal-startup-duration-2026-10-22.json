@@ -1,0 +1,369 @@
+{
+  "schema": 1,
+  "description": "Case 5 equal-startup-duration discriminator. Separates a known startup clock difference from global-step changes without shifting acceptance samples.",
+  "base_plugin_commit": "749ed802a2218528d309446435d70494e9c8c20d",
+  "prior_checkpoint": "case5-selector-step-localization-2026-10-22.json",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-case5-equal-startup/evidence.zip",
+  "archive_bytes": 14364049,
+  "archive_sha256": "2a2d6133dd757297441fccd634b77cbd7e8141ee273e54c5121163d7dc4a2d80",
+  "runs": [
+    {
+      "variant": "fine2-control",
+      "status": "completed",
+      "reached_s": 0.09999999999999995,
+      "error": null,
+      "startup_steps": 2,
+      "startup_duration_s": 0.0020833333333333333,
+      "acceptance_run": false,
+      "control_bytes_identical": {
+        "full-network.bin": true,
+        "interpss.csv": true
+      }
+    },
+    {
+      "variant": "fine8-original",
+      "status": "completed",
+      "reached_s": 0.09999999999999995,
+      "error": null,
+      "startup_steps": 8,
+      "startup_duration_s": 0.008333333333333333,
+      "acceptance_run": false
+    },
+    {
+      "variant": "fine8-selector",
+      "status": "completed",
+      "reached_s": 0.09999999999999995,
+      "error": null,
+      "startup_steps": 8,
+      "startup_duration_s": 0.008333333333333333,
+      "acceptance_run": false
+    }
+  ],
+  "channels": 4919,
+  "last_times": {
+    "fixed-local4": 0.09999999999999999,
+    "fine-global": 0.09999999999999995,
+    "fine-selector": 0.09999999999999995,
+    "quarter-selector": 0.09999999999999999,
+    "fine8-original": 0.09999999999999995,
+    "fine8-selector": 0.09999999999999995
+  },
+  "reference_files": [
+    {
+      "path": "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case5_bus6307_fault_fullsystem_1ms_part01.parquet",
+      "sha256": "d49dc7d3875fea9d2e87de6865e3b6171db5ccfc8e8454fa8a52c0bb09637843"
+    },
+    {
+      "path": "ipss.test.plugin.core/testData/private/reference-imports/texas2k-full-system-bus6307-1ms-20261020/case5_bus6307_fault_fullsystem_1ms_part02.parquet",
+      "sha256": "0245aa8b4fc8a9c7dd22212537a2216af43db36af5f5b08cbad8a5739b5fb827"
+    }
+  ],
+  "ordinal_comparison": {
+    "fine8-original": {
+      "common_samples": 99,
+      "identical_value_frames": 99,
+      "first_nonidentical_ordinal": null,
+      "cold_values_identical": true,
+      "known_start_time_difference_s": -0.00625
+    },
+    "fine8-selector": {
+      "common_samples": 99,
+      "identical_value_frames": 99,
+      "first_nonidentical_ordinal": null,
+      "cold_values_identical": true,
+      "known_start_time_difference_s": -0.00625
+    }
+  },
+  "available_prefix_metrics": {
+    "fixed-local4": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 24.45256505604334,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 12.67244162612062,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.027657234122493334
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1007",
+        "max_abs": 1.8624316587453151,
+        "max_abs_time_s": 0.09583333333333333,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 1.089887170004467,
+        "nrmse_channel": "bus_angle_deg__bus_1023",
+        "nrmse": 0.00012630154708837303
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_1083__id_2",
+        "max_abs": 35.96416881026107,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 19.988458686862426,
+        "nrmse_channel": "generator_q_mvar__bus_6325__id_1",
+        "nrmse": 0.24739361916761188
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.29541071250319817,
+        "max_abs_time_s": 0.08333333333333333,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.19996911013389057,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 2.804037079897914e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.040133951176613,
+        "max_abs_time_s": 0.07083333333333333,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.026187722724322696,
+        "nrmse_channel": "bus_voltage_pu__bus_5345",
+        "nrmse": 0.042689438659669794
+      }
+    },
+    "fine-global": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 13.927280821968225,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 5.955391148537991,
+        "nrmse_channel": "generator_p_mw__bus_8012__id_1",
+        "nrmse": 0.013138956481941591
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1007",
+        "max_abs": 1.4125929988015997,
+        "max_abs_time_s": 0.0875,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 0.8625415084382454,
+        "nrmse_channel": "bus_angle_deg__bus_1023",
+        "nrmse": 7.052631813610203e-05
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_1083__id_2",
+        "max_abs": 29.881720437610724,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_q_mvar__bus_3142__id_1",
+        "rmse": 13.987399492981263,
+        "nrmse_channel": "generator_q_mvar__bus_6325__id_1",
+        "nrmse": 0.23583584412004188
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.12132465731941267,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.040260650071108496,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 5.6454897251177955e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.03277339355313025,
+        "max_abs_time_s": 0.06979166666666672,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.021940411649871004,
+        "nrmse_channel": "bus_voltage_pu__bus_5345",
+        "nrmse": 0.034012844350241545
+      }
+    },
+    "fine-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 0.8037837858139483,
+        "max_abs_time_s": 0.06562500000000007,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 0.48627288280821696,
+        "nrmse_channel": "generator_p_mw__bus_5046__id_2",
+        "nrmse": 0.0010214678341804902
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 0.0792561743287834,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 0.051617153920850346,
+        "nrmse_channel": "bus_angle_deg__bus_1016",
+        "nrmse": 6.324137555303069e-06
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_5263__id_1",
+        "max_abs": 1.8791555553853243,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 0.9098659420604148,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.004966013281553607
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.022592340299034674,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.0118853802091921,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 1.666609747522762e-06
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1030",
+        "max_abs": 0.002001780629596772,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "bus_voltage_pu__bus_1046",
+        "rmse": 0.0008857198967159514,
+        "nrmse_channel": "bus_voltage_pu__bus_2059",
+        "nrmse": 0.0015363866905292668
+      }
+    },
+    "quarter-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 19.40031535511639,
+        "max_abs_time_s": 0.029166666666666664,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 13.717262846616824,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.03711092872554639
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 1.6203621844577398,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "bus_angle_deg__bus_1016",
+        "rmse": 1.081094753467885,
+        "nrmse_channel": "bus_angle_deg__bus_1016",
+        "nrmse": 0.0001507961109815144
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_5263__id_1",
+        "max_abs": 34.92575355937856,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 21.13871589755538,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.14447424194196706
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.816907090796505,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.42994282939017914,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 6.0288093247956356e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1012",
+        "max_abs": 0.03211559641755013,
+        "max_abs_time_s": 0.09999999999999999,
+        "rmse_channel": "bus_voltage_pu__bus_1026",
+        "rmse": 0.016387290251591333,
+        "nrmse_channel": "bus_voltage_pu__bus_2026",
+        "nrmse": 0.02974300853146571
+      }
+    },
+    "fine8-original": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 31.2864708443783,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 14.817925927969215,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.028000494655098792
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1007",
+        "max_abs": 2.1283353197700876,
+        "max_abs_time_s": 0.09791666666666662,
+        "rmse_channel": "bus_angle_deg__bus_1007",
+        "rmse": 1.1908439000391426,
+        "nrmse_channel": "bus_angle_deg__bus_1066",
+        "nrmse": 0.00014280248454700767
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_1083__id_2",
+        "max_abs": 39.67091977121876,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 20.777150689109593,
+        "nrmse_channel": "generator_q_mvar__bus_6325__id_1",
+        "nrmse": 0.2465868574911385
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.32637841139461443,
+        "max_abs_time_s": 0.08020833333333335,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.22257783295725972,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_2057__id_1",
+        "nrmse": 3.2318487044977785e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1007",
+        "max_abs": 0.04030835843021552,
+        "max_abs_time_s": 0.07187500000000005,
+        "rmse_channel": "bus_voltage_pu__bus_1007",
+        "rmse": 0.02674749275017167,
+        "nrmse_channel": "bus_voltage_pu__bus_5345",
+        "nrmse": 0.0450682404097465
+      }
+    },
+    "fine8-selector": {
+      "active_power": {
+        "max_channel": "generator_p_mw__bus_5263__id_1",
+        "max_abs": 16.468253779311908,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_p_mw__bus_5263__id_1",
+        "rmse": 10.217135937500444,
+        "nrmse_channel": "generator_p_mw__bus_2051__id_1",
+        "nrmse": 0.027636244906220235
+      },
+      "bus_angle": {
+        "max_channel": "bus_angle_deg__bus_1011",
+        "max_abs": 1.3826102092870443,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "bus_angle_deg__bus_1011",
+        "rmse": 0.8997495700786072,
+        "nrmse_channel": "bus_angle_deg__bus_1016",
+        "nrmse": 0.0001252883996321539
+      },
+      "reactive_power": {
+        "max_channel": "generator_q_mvar__bus_5263__id_1",
+        "max_abs": 27.450257659745773,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "generator_q_mvar__bus_5263__id_1",
+        "rmse": 17.06442445540714,
+        "nrmse_channel": "generator_q_mvar__bus_8066__id_1",
+        "nrmse": 0.07867285861665059
+      },
+      "rotor_angle": {
+        "max_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "max_abs": 0.4450241834784592,
+        "max_abs_time_s": 0.09687499999999996,
+        "rmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "rmse": 0.279313644513339,
+        "nrmse_channel": "sync_rotor_angle_deg__bus_1050__id_1",
+        "nrmse": 3.916634002183771e-05
+      },
+      "voltage": {
+        "max_channel": "bus_voltage_pu__bus_1012",
+        "max_abs": 0.02820039145708586,
+        "max_abs_time_s": 0.09999999999999995,
+        "rmse_channel": "bus_voltage_pu__bus_1026",
+        "rmse": 0.01384253709628866,
+        "nrmse_channel": "bus_voltage_pu__bus_2026",
+        "nrmse": 0.02470240638699591
+      }
+    }
+  },
+  "limitations": [
+    "All runs are diagnostic prefixes, not full-ten-second performance or accuracy acceptance.",
+    "Measured recovery-selector signs remain counterfactual; no production selector or input-data change.",
+    "Only harness startup count restrictions changed. Two-step control full recordings match the prior harness byte for byte.",
+    "Ordinal equality checks all physical frames at equal elapsed time since initialization; it does not shift or replace reference comparison timestamps.",
+    "No variable-step solver support was introduced. Existing fixed-step global, local ST1 and renewable STORE history rules must be addressed explicitly before changing startup step.",
+    "Full available samples and channels retained. No new production tests were required because production code is unchanged."
+  ]
+}

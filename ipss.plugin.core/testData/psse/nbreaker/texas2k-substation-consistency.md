@@ -1,7 +1,7 @@
 # Texas2k Substation Data Consistency
 
 **Case:** `ipss-plugin/ipss.plugin.core/testData/psse/nbreaker/Texas2k_series24_case3_2024summerpeak.RAW`  
-**Spec:** [substation-data.md](./substation-data.md) (PSS®E 36.1 §1.33)  
+**Spec:** [substation-data.md](./substation-data.md) (reference simulator 36.1 §1.33)
 **RAW revision:** 34  
 **Date analyzed:** 2026-07-29
 
@@ -108,7 +108,7 @@ Checks against [substation-data.md](./substation-data.md):
 |-------|-----|-----|-------|
 | `LATI` °N | 25.913 | 35.831 | Texas band |
 | `LONG` °E | −104.625 | −94.367 | No (0,0) placeholders |
-| `SRG` Ω | 0.01 | 16.0 | No zeros; PSS/E default would be 0.1 |
+| `SRG` Ω | 0.01 | 16.0 | No zeros; reference simulator default would be 0.1 |
 
 ## Findings for InterPSS NB import
 

@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "status": "scalar-voltage-production-evidence",
+  "goal_achieved": false,
+  "core_commit": "7a9808da4",
+  "plugin_commit": "3119e08c3",
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.9552706,
+        9.6043267,
+        10.3844472,
+        9.7381862,
+        9.4207706,
+        9.7010904
+      ],
+      "median_case_wall_s": 9.7196383,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.6717546,
+        9.4978083,
+        9.7472866,
+        9.5446956,
+        9.4230412,
+        9.750479
+      ],
+      "median_case_wall_s": 9.6082251,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "scalar_voltage_read_counts": {
+    "control": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "candidate": [
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000,
+      72738000
+    ]
+  },
+  "focused_tests": {
+    "tests": 41,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "registered_gate": {
+    "found": 2669,
+    "passed": 2651,
+    "failed": 5,
+    "skipped": 9,
+    "aborted": 4,
+    "same_failure_methods_as_baseline": true,
+    "same_failure_messages_as_baseline": true
+  },
+  "independent_accuracy_qualified": false,
+  "verification": {
+    "recordings": 36,
+    "samples_per_recording": 2405,
+    "channels": 4810,
+    "event_post_rows": 2,
+    "finite": true,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true,
+    "experimental_class_overlay": false
+  },
+  "archive": {
+    "bytes": 1937266,
+    "sha256": "11d292d9110cd156aec488f866c056fda00d9830600e73477a9fd809840c05d8"
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-scalar-voltage-production/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1088230,
+    "sha256": "32a986ae7821160c1c5c30fa6ffc3169872ca0ba9c8d0e6e934b19e7db305d18"
+  },
+  "requirements": [
+    "Paired source commits",
+    "Retained runner and inputs",
+    "Matching external dependency hashes"
+  ]
+}

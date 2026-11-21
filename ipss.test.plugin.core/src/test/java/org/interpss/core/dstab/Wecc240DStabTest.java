@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.algo.LoadflowAlgorithm;

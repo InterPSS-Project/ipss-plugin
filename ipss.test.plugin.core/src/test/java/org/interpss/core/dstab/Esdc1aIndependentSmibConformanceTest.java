@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,10 +13,10 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.esdc2a.Esdc2aExciter;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -29,21 +30,27 @@ public class Esdc1aIndependentSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
-    @ParameterizedTest(name = "{0} terminal-fault trajectory")
-    @ValueSource(strings = {"ESDC1A", "ESDC2A"})
-    void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterSignals(String model)
+    static java.util.stream.Stream<Arguments> integrationProfiles(){
+        return java.util.stream.Stream.of("ESDC1A","ESDC2A").flatMap(model->
+            java.util.stream.Stream.of(Arguments.of(model,false),Arguments.of(model,true)));
+    }
+    @ParameterizedTest(name = "{0} terminal-fault trajectory; optimized={1}")
+    @MethodSource("integrationProfiles")
+    void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterSignals(String model,boolean optimized)
             throws Exception {
+        double step=StaggeredExciterFixture.referenceStep(optimized,STEP);
         String modelLower = model.toLowerCase(Locale.ROOT);
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_" + modelLower + ".dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        StaggeredExciterFixture.configure(algorithm,optimized);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),
                 "GENROU + " + model + " SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuStepSec(step);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
@@ -58,7 +65,7 @@ public class Esdc1aIndependentSmibConformanceTest {
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine,
                 exciter, initialRelativeAngle);
-        while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
+        while (algorithm.getSimuTime() < 1.0 - step / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
                     "ESDC1A solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine,

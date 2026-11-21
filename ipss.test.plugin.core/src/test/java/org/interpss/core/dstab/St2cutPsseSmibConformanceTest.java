@@ -19,9 +19,9 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutTransducerBlock;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutWashoutBlock;
+import com.interpss.dstab.controller.pss.st2cut.St2cutStabilizer;
+import com.interpss.dstab.controller.pss.st2cut.St2cutTransducerBlock;
+import com.interpss.dstab.controller.pss.st2cut.St2cutWashoutBlock;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -160,6 +160,34 @@ public class St2cutPsseSmibConformanceTest {
         assertTrue(substitutedLag.initStateU0(0.75));
         assertEquals(0.75, substitutedLag.getY(), 1.0e-12,
                 "PSS/E substitutes unity for s*T3 when T3 is zero");
+    }
+
+    @Test
+    void bypassedLeadLagCoordinatesObserveAlgebraicOutputWithoutChangingStorage(
+            @org.junit.jupiter.api.io.TempDir Path directory) throws Exception {
+        IpssCorePlugin.init();
+        String original=Files.readString(CASE.resolve("SMIB_v33_genrou_esst1a_st2cut.dyr"));
+        String times="9.5 9.5 0.15 0.30 0.15 0.30 0.10 0.20";
+        assertTrue(original.contains(times));
+        Path dynamic=directory.resolve("dynamic.dyr");
+        Files.writeString(dynamic,original.replace(times,"9.5 9.5 0.0 0.0 0.0 0.0 0.0 0.0"));
+        var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),dynamic.toString());
+        var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuOutputHandler(new StateMonitor());assertTrue(algorithm.initialization());
+        var stabilizer=(St2cutStabilizer)context.getDStabilityNet().getMachine("Bus1-mach1").getStabilizer();
+        var names=List.of("First lead-lag","Second lead-lag","Third lead-lag");
+        var fields=List.of("leadLag1","leadLag2","leadLag3");
+        for(int index=0;index<fields.size();index++) {
+            var block=stabilizer.getNamedStateBlocks().get(fields.get(index));
+            for(double input:new double[]{.02,-.015}) {
+                block.eulerStep1(input,STEP);
+                Map<String,Double> canonical=stabilizer.getNamedStates();
+                assertEquals(0.,canonical.get(names.get(index)),1e-12,"Bypass has no moving integrator memory");
+                assertEquals(input,stabilizer.getPsseStateCoordinates().get(names.get(index)),1e-12,
+                        "A bypassed native state slot reports its algebraic output");
+                assertEquals(canonical,stabilizer.getNamedStates(),"Observation must not rewrite canonical storage");
+            }
+        }
     }
 
     private static void assertManifestHash() throws Exception { assertTrue(!EmbeddedNativeTrajectoryValues.lines(REFERENCE).isEmpty()); }

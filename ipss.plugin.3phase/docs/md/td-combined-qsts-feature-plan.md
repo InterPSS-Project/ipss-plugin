@@ -105,7 +105,7 @@ Generic combined T&D study layer:
 - `org.interpss.threePhase.qsts.td.opendss`
   - Builds `TdFeederSession` objects from OpenDSS parser/factory output.
 - `org.interpss.threePhase.qsts.td.psse`
-  - Later adapter for PSS/E or RAW-side time-series profile metadata if needed.
+  - Later adapter for reference simulator or RAW-side time-series profile metadata if needed.
 
 ## Boundary Coupling Contract
 
@@ -347,7 +347,7 @@ Reference checks:
 ## Open Questions
 
 - Should the first transmission schedule source be a simple Java API only, CSV,
-  or adapter metadata from a PSS/E-style source?
+  or adapter metadata from a reference simulator-style source?
 - Which base should be canonical at the boundary: transmission network base MVA
   or feeder base MVA with conversion at the mapper?
 - Should v1 attach feeders as equivalent loads only, or also support feeder DER

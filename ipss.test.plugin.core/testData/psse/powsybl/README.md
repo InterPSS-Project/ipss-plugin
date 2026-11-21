@@ -1,4 +1,4 @@
-# PowSyBl PSS/E test fixtures
+# PowSyBl reference simulator test fixtures
 
 Vendored from [powsybl/powsybl-core](https://github.com/powsybl/powsybl-core) (`main`), Apache License 2.0.
 

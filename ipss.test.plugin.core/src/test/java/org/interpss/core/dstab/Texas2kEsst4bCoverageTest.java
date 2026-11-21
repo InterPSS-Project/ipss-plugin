@@ -28,7 +28,7 @@ class Texas2kEsst4bCoverageTest {
     private static final Path ROOT = Path.of(CONFIG.string("texas2k.case.root",
             Path.of("testData", "private", "texas2k").toString()));
     private static final Path CASE = ROOT.resolve("Texas2k_series24_case1_2016summerpeak");
-    private static final Path RAW = CASE.resolve("Texas2k_series24_case1_2016summerPeak_v36.RAW");
+    private static final Path RAW = CASE.resolve("Texas2k_series24_case1_2016summerPeak.RAW");
     private static final Path DYR = CASE.resolve("dynamic_models_case1.dyr");
 
     @Test

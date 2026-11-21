@@ -1,0 +1,1391 @@
+{
+  "schema": 1,
+  "base_commit": "6cea93e3a0d9af41cfc5a416928bc9e2ea2f12b9",
+  "description": "Case 1 sampling profile, network/device wall-clock phase audits, and ST4B repeated-output input audit. No production optimization or new timing qualification.",
+  "prior_evidence": [
+    "network-deferred-screen-2026-10-22.json",
+    "dynamic-parameter-validation-extension-2026-10-22.json"
+  ],
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-phase-profiles/evidence.zip",
+  "archive_sha256": "84fe25ba85a158624a9e8ca558d979cc152909e8aff03addce67b206a71f8ca6",
+  "archive_bytes": 4205950,
+  "verified_complete_recordings": 38,
+  "profile": {
+    "samples": 2173,
+    "categories": {
+      "other": 742,
+      "other_network": 723,
+      "PSS2A": 253,
+      "ST1": 297,
+      "acceleration_history": 129,
+      "recording": 29
+    },
+    "top_leaves": [
+      [
+        "com.interpss.core.sparse.solver.klu.FactoredComplexRowSolve.solve",
+        170
+      ],
+      [
+        "com.interpss.dstab.impl.BaseDStabNetworkImpl.addCustomBusCurrentInj",
+        141
+      ],
+      [
+        "com.interpss.dstab.impl.BaseDStabBusImpl.scalarLoadPartsEligible",
+        124
+      ],
+      [
+        "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aDirectEvaluation$Node.accept",
+        106
+      ],
+      [
+        "com.interpss.dstab.mach.impl.MachineControllerImpl.getMachine",
+        99
+      ],
+      [
+        "org.eclipse.emf.common.util.AbstractEList$EIterator.hasNext",
+        73
+      ],
+      [
+        "com.interpss.dstab.mach.impl.MachineImpl.getController",
+        65
+      ],
+      [
+        "com.interpss.dstab.impl.BaseDStabBusImpl.injCurDynamic",
+        62
+      ],
+      [
+        "org.interpss.dstab.mach.IeeeVoltageCompensatedMachine.getCmlMachineVoltage",
+        60
+      ],
+      [
+        "com.interpss.dstab.controller.cml.runtime.CmlBlockKernel.advance",
+        56
+      ],
+      [
+        "com.interpss.dstab.algo.defaultImpl.AndersonOne.mix",
+        53
+      ],
+      [
+        "com.interpss.dstab.algo.defaultImpl.AndersonOne.norm",
+        44
+      ],
+      [
+        "org.apache.commons.math3.util.FastMath.atan",
+        43
+      ],
+      [
+        "org.apache.commons.math3.util.FastMath.atan2",
+        43
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1InputEquations.evaluate",
+        42
+      ],
+      [
+        "java.lang.FdLibm$IEEEremainder.compute",
+        39
+      ],
+      [
+        "com.interpss.core.aclf.impl.BaseAclfBusImpl.getVoltage",
+        39
+      ],
+      [
+        "com.interpss.dstab.controller.cml.field.block.DelayControlBlock.getY",
+        39
+      ],
+      [
+        "org.interpss.dstab.algo.PsseStaggeredEulerSolver.nextStep",
+        36
+      ],
+      [
+        "com.interpss.dstab.mach.impl.SalientPoleMachineImpl$GENSALDEqnSolver.getOutputObject",
+        34
+      ],
+      [
+        "com.interpss.dstab.algo.defaultImpl.AndersonOne.dot",
+        32
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation$Node.prepare",
+        30
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y2005.st4b.St4DirectEvaluation.y",
+        29
+      ],
+      [
+        "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveEqn",
+        28
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y2005.st4b.St4DirectEvaluation.prepare",
+        26
+      ],
+      [
+        "java.lang.String.equalsIgnoreCase",
+        25
+      ],
+      [
+        "org.interpss.dstab.algo.PsseStaggeredEulerSolver.evaluate",
+        25
+      ],
+      [
+        "org.eclipse.emf.common.notify.impl.BasicNotifierImpl.eBasicHasAdapters",
+        22
+      ],
+      [
+        "org.interpss.dstab.renewable.RenewableElectricalController.getSelectedPowerReference",
+        21
+      ],
+      [
+        "jdk.internal.math.DoubleToDecimal.toDecimalString",
+        20
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.advanceZero",
+        19
+      ],
+      [
+        "com.interpss.core.sparse.solver.klu.JKLUSquareMatrixEqnComplexSolver.solveInterleavedInPlace",
+        17
+      ],
+      [
+        "org.interpss.core.dstab.reference.NetworkAndersonDeferredProfileRun$1.hasDynEvent",
+        15
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.voltage",
+        15
+      ],
+      [
+        "com.interpss.dstab.datatype.ExpCalculator.evalResolvedIndexed",
+        15
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter.observedFieldCurrent",
+        14
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.evaluate",
+        14
+      ],
+      [
+        "java.lang.String.hashCode",
+        13
+      ],
+      [
+        "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aDirectEvaluation.prepareScalar",
+        12
+      ],
+      [
+        "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer.selectedInput",
+        12
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.lambda$bindSignal$11",
+        11
+      ],
+      [
+        "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aDirectEvaluation.prepare",
+        11
+      ],
+      [
+        "com.interpss.dstab.controller.cml.annotate.CmlRuntimeStagePlan$Node.prepare",
+        11
+      ],
+      [
+        "com.interpss.common.util.StringUtil.getControlFieldName",
+        10
+      ],
+      [
+        "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aDirectEvaluation.y",
+        9
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y2005.st4b.Esst4bPIControlBlock.getY",
+        9
+      ],
+      [
+        "org.interpss.dstab.algo.PsseStaggeredEulerSolver.lambda$bind$21",
+        9
+      ],
+      [
+        "org.eclipse.emf.common.util.BasicEList.get",
+        8
+      ],
+      [
+        "org.interpss.dstab.renewable.Regca1Model.reactiveNetworkOutput",
+        8
+      ],
+      [
+        "org.interpss.dstab.control.exc.ieee.y1981.st1.St1DirectEvaluation.y",
+        7
+      ]
+    ],
+    "warmups": 12,
+    "profiled_runs": 4,
+    "sample_period_ms": 2,
+    "recordings_match": true,
+    "interpretation": "Main-thread samples with runCase on stack; approximate attribution, not exclusive wall-clock timers. Compilation/GC remain in runs.",
+    "verified_complete_recordings": 16
+  },
+  "instrumented_phase_medians": {
+    "phases": {
+      "setup_s": 0.00480655,
+      "publish_s": 0.45473235,
+      "assembly_s": 1.2277647,
+      "solve_s": 0.7577512,
+      "custom_s": 0.0006348
+    },
+    "controllers": {
+      "machine_s": 0.15984935,
+      "exciter_s": 1.9652006499999999,
+      "local_st1_advance_s": 0.7995715999999999,
+      "stabilizer_s": 1.1513816000000001,
+      "renewable_evaluation_s": 0.19412659999999998,
+      "electrical_only_s": 0.13643915,
+      "governor_s": 0.5471133
+    }
+  },
+  "summaries": {
+    "network-phase-timers-v2-20261022": {
+      "completed_runs": 10,
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "measured": [
+        {
+          "total_s": 10.5020184,
+          "simulation_s": 10.1194179,
+          "phases": {
+            "publish_s": 0.4562184,
+            "setup_s": 0.0067732,
+            "custom_s": 0.0005708,
+            "calls": 18340,
+            "solve_s": 0.731128,
+            "assembly_s": 1.2733687
+          }
+        },
+        {
+          "total_s": 10.4109476,
+          "simulation_s": 10.0987986,
+          "phases": {
+            "publish_s": 0.4561683,
+            "setup_s": 0.0038227,
+            "custom_s": 0.0005768,
+            "calls": 18340,
+            "solve_s": 0.7412773,
+            "assembly_s": 1.2139634
+          }
+        }
+      ],
+      "interpretation": "Instrumented wall-clock phase totals; includes timer overhead and is not a performance qualification."
+    },
+    "controller-phase-timers-20261022": {
+      "completed_runs": 10,
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "measured": [
+        {
+          "total_s": 10.6410641,
+          "simulation_s": 10.279967,
+          "phases": {
+            "setup_s": 0.0064556,
+            "publish_s": 0.4560629,
+            "assembly_s": 1.2344632,
+            "solve_s": 0.782494,
+            "calls": 18340,
+            "custom_s": 0.0006507
+          },
+          "controllers": {
+            "machine_s": 0.1584513,
+            "exciter_s": 1.9620053,
+            "machine_evaluations": 2512825,
+            "local_st1_advance_s": 0.8027524,
+            "stabilizer_s": 1.1617254,
+            "renewable_evaluation_s": 0.1913029,
+            "electrical_only_s": 0.1397507,
+            "governor_s": 0.5510397
+          }
+        },
+        {
+          "total_s": 10.5413547,
+          "simulation_s": 10.2387573,
+          "phases": {
+            "setup_s": 0.0031575,
+            "publish_s": 0.4534018,
+            "assembly_s": 1.2210662,
+            "solve_s": 0.7330084,
+            "calls": 18340,
+            "custom_s": 0.0006189
+          },
+          "controllers": {
+            "machine_s": 0.1612474,
+            "exciter_s": 1.968396,
+            "machine_evaluations": 2512825,
+            "local_st1_advance_s": 0.7963908,
+            "stabilizer_s": 1.1410378,
+            "renewable_evaluation_s": 0.1969503,
+            "electrical_only_s": 0.1331276,
+            "governor_s": 0.5431869
+          }
+        }
+      ],
+      "interpretation": "Instrumented wall-clock phase totals; includes timer overhead and is not a performance qualification."
+    },
+    "st4-output-iterations-audit-20261022": {
+      "audit": {
+        "step_calls": 1509080,
+        "output_calls": 1508664,
+        "voltage_reads": 7544568,
+        "prepare_calls": 7544568,
+        "output_iteration_histogram": [
+          0,
+          0,
+          1508664,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    "st4-output-inputs-audit-20261022": {
+      "audit": {
+        "second_output_refresh_input_masks": [
+          1508664,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "voltage_reads": 7544568,
+        "prepare_calls": 7544568,
+        "first_output_refresh_input_masks": [
+          1508664,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "step_calls": 1509080,
+        "output_iteration_histogram": [
+          0,
+          0,
+          1508664,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "output_calls": 1508664,
+        "step_last_refresh_input_masks": [
+          1509080,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "all_recordings_identical": true,
+      "hashes": {
+        "full-network.bin": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+        "interpss.csv": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    }
+  },
+  "production_changed": false,
+  "retained_dependencies": [
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-10/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-10/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-10/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-11/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-11/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-11/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-12/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-12/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-12/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-13/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-13/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-13/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-14/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-14/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-14/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-15/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-15/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-15/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-anderson-deferred-profile-20261022/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "network-phase-timers-v2-20261022/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-1/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-1/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-1/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-2/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-2/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-2/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-3/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-3/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-3/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-4/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-4/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-4/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-5/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-5/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-5/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-6/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-6/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-6/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-7/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-7/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-7/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-8/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-8/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-8/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-9/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-9/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "controller-phase-timers-20261022/actual/case1_bus_fault_01/run-9/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-output-iterations-audit-20261022/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-output-iterations-audit-20261022/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-output-iterations-audit-20261022/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-output-inputs-audit-20261022/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "076ed65da468be3ac7608510f51d7d73fcf7bde73be6205547e02153ba6230bb",
+      "bytes": 119143713
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-output-inputs-audit-20261022/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "79c61b77498a3d3f6ce0135b71ded5a2691bab04b5716c4930b23935b25b7edc",
+      "bytes": 2405420
+    },
+    {
+      "storage": "external-generated-artifacts",
+      "path": "st4-output-inputs-audit-20261022/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528
+    }
+  ]
+}

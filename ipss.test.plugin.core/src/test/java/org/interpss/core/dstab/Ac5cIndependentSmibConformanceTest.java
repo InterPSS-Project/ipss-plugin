@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,8 +13,7 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.psse.ac5c.Ac5cExciter;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.exc.ac5c.Ac5cExciter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -31,7 +31,7 @@ public class Ac5cIndependentSmibConformanceTest {
     @Test
     void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates() throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_ac5c.dyr").toString());
         var network = context.getDStabilityNet();

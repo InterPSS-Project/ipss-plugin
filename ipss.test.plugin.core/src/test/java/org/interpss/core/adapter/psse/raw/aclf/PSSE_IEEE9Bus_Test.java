@@ -145,8 +145,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-0.7198)<0.0001);
-  		assertTrue(Math.abs(p.getImaginary()-0.3880)<0.0001, ""+p.getImaginary());
+  		// PSS/E 36.7 FNSL (no adjustments): swing 0.72000 + j0.38700 pu.
+  		assertTrue(Math.abs(p.getReal()-0.7200)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.3870)<0.0001, ""+p.getImaginary());
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();
@@ -189,8 +190,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-0.7226)<0.0001);
-  		assertTrue(Math.abs(p.getImaginary()-0.3650)<0.0001, ""+p.getImaginary());
+  		// PSS/E 36.7 FNSL (no adjustments): swing 0.72279 + j0.36394 pu.
+  		assertTrue(Math.abs(p.getReal()-0.7228)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.3639)<0.0001, ""+p.getImaginary());
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();
@@ -204,7 +206,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfBus bus10 = net.getBus("Bus10");
 		double voltageMagBus10 = bus10.getVoltageMag();
-		assertTrue(Math.abs(voltageMagBus10 - 1.03514) < 0.0001);
+		// PSS/E 36.7: winding 1 (COD -1, NTP 33, 61.713-75.798 kV) sits on its nearest
+		// tap position, 69.196 kV for WINDV1 = 69.0, so bus 10 solves to 1.03801 pu.
+		assertTrue(Math.abs(voltageMagBus10 - 1.03801) < 0.0001, ""+voltageMagBus10);
 	}
 
 	@Test
@@ -257,8 +261,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertEquals(p.getReal(), -0.0136, 0.0001);
-  		assertEquals(p.getImaginary(), 0.5989, 0.0001);
+  		// PSS/E 36.7 FNSL (no adjustments): swing -0.01338 + j0.59782 pu.
+  		assertEquals(-0.0134, p.getReal(), 0.0001);
+  		assertEquals(0.5978, p.getImaginary(), 0.0001);
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();

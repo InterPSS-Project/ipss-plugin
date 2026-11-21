@@ -2,7 +2,7 @@
 
 ## Accepted matched-settings result
 
-The production `PsseStaggeredEulerSolver` passes all **246 compared channels**
+The production `StaggeredEulerSolver` passes all **246 compared channels**
 in both five-second flat and fault cases. Both simulators use a **0.00025 s
 integration step**, **1e-6 dynamic network tolerance**, 100 maximum network
 iterations, a 50 ms bus-frequency filter and constant-impedance loads. The
@@ -60,7 +60,7 @@ history. Final algebraic measurements are refreshed after the network solve.
 No model gains, limits or physical initial states were fitted to trajectories.
 
 ```java
-algorithm.setSolver(new PsseStaggeredEulerSolver(algorithm));
+algorithm.setSolver(new StaggeredEulerSolver(algorithm));
 algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 algorithm.setSimuStepSec(0.00025);
 ```
@@ -100,7 +100,7 @@ regression is distinct from the IEEE39 matched-step study.
 The former TGOV3D PowerWorld state-offset assumption was invalid. Its regression
 now compares directly with the benchmark reference at matched 0.1 ms and 1e-6 tolerance.
 All 10,003 samples pass with bounds retained or tightened. The public suite
-uses hashed checkpoints. See [native TGOV3D evidence](tgov3d-native-2026-10-15.md).
+uses hashed checkpoints. See native TGOV3D evidence (Core `docs/benchmarks/tgov3d-native-2026-10-15.md`).
 Fast-valving nonlinear behavior is outside this disturbance's verified scope.
 The legacy IEEET1 endpoint expectation is independently replaced using a fresh
 benchmarking run: native 1.11633646 versus InterPSS 1.11604027 pu, within the

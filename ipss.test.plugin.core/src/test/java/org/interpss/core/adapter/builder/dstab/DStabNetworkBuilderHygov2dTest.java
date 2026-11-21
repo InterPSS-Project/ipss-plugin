@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor;
+import com.interpss.dstab.controller.gov.hygov2.PsseHygov2dGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;

@@ -12,8 +12,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
-import org.interpss.dstab.control.exc.psse.esac3a.Esac3aExciter;
+import com.interpss.dstab.controller.exc.esac3a.Esac3aData;
+import com.interpss.dstab.controller.exc.esac3a.Esac3aExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -180,4 +180,13 @@ public class DStabNetworkBuilderEsac3aTest extends CorePluginTestSetup {
         assertTrue(exciter.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,machine,1));
     }
     private record Fixture(Machine machine,Esac3aExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcEsac3a("Bus1", "1", data);
+        });
+    }
 }

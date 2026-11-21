@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.psse.st9c.St9cExciter;
+import com.interpss.dstab.controller.exc.st9c.St9cExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

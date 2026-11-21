@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "status": "failed-validation",
+  "merge_gate_passed": false,
+  "merged": false,
+  "milestone_commits_created": false,
+  "plugin_head": "f18fd5ee8aaf28ce3ce6f0d6ebb219d58ad34be6",
+  "plugin_master": "74985520add5240245f79e77e40f2fbd527cdd79",
+  "core_head": "46c8576e617fc0427dc42d3de7f9cafe64e38ff6",
+  "core_master": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+  "branch": "restore/best-two-case-20261023",
+  "main_branch": "master",
+  "documentation": "docs/benchmarks/milestone-full-validation-2026-10-23.md",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-milestone-full-validation/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 5006,
+    "sha256": "0f81b8633f59503665053b129bfc177e36eb0a591b0704068846903733979378"
+  },
+  "evidence": {
+    "bytes": 1277139,
+    "sha256": "5a851c3a55d5b65d57898557d9a9332263e0f1ae00ed04666e3620b111b40fbe"
+  },
+  "reported_plugin_tests": 903,
+  "plugin_assertion_failures": 1,
+  "reported_plugin_skips": 32,
+  "core_tests_executed": 0,
+  "plugin_integration_tests_executed": 0
+}

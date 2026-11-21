@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "status": "validated-50-iteration-ceiling",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-network-iteration-ceiling/manifest.json",
+  "manifest_sha256": "d2ca0d144e969d3d942bd5895f4b13fac0ad75b8362e57716667f2ef422648a5",
+  "maximum_network_iterations": 50,
+  "ordinary_and_staggered_solvers": true,
+  "java_tests_passed": 50,
+  "python_tests_passed": 6,
+  "full_ten_second_fault_samples": 2403,
+  "full_trace_byte_identical": true,
+  "maximum_observed_iterations": 27,
+  "performance_goal_complete": false
+}

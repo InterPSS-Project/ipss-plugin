@@ -10,8 +10,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
-import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
+import com.interpss.dstab.controller.exc.esac5a.Esac5aData;
+import com.interpss.dstab.controller.exc.esac5a.Esac5aExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

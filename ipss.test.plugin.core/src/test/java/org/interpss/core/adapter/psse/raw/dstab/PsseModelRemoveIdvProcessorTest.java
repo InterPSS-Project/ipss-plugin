@@ -1,6 +1,8 @@
 package org.interpss.core.adapter.psse.raw.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -97,6 +99,33 @@ public class PsseModelRemoveIdvProcessorTest {
     }
 
     @Test
+    void slotRemovalsSkipOnlyTheirNamedControllersBeforeAttachment() throws Exception {
+        Path raw = tempDir.resolve("case.raw");
+        Files.copy(Path.of("testData/adpter/psse/v33/SMIB/SMIB_v33.raw"), raw);
+        String machine = "1 'GENROU' 1 6.0 .033 .54 .078 6.4 0 .8958 .8645 .1189 .1969 .089 .0521 0 0 /\n";
+        String exciter = "1 'IEEET1' 1 0 400 .066667 1 -1 0 .9032 .08 .35 0 3.3544 .1599 4.4725 .4275 /\n";
+        String governor = "1 'TGOV1' 1 .05 .4 1.2 0 2 8 0 /\n";
+        // A deliberately incomplete stabilizer is still an intentional skip:
+        // slot processing must precede schema/prerequisite validation.
+        String stabilizer = "1 'IEEEST' 1 1 /\n";
+        Path dyr = tempDir.resolve("model.dyr");
+        Files.writeString(dyr, machine + exciter + governor + stabilizer);
+        for (int slot : new int[]{3,6,7}) {
+            Files.writeString(tempDir.resolve("model_MODREMOVE.idv"), "BAT_PLMOD_REMOVE 1 '1' " + slot + "\n");
+            var loader = new PSSEMultiFileLoader();
+            var context = loader.loadDStab(raw.toString(), dyr.toString());
+            var owner = context.getDStabilityNet().getMachine("Bus1-mach1");
+            assertNotNull(owner);
+            assertEquals(slot == 6, owner.getExciter() == null);
+            assertEquals(slot == 7, owner.getGovernor() == null);
+            assertNull(owner.getStabilizer());
+            assertEquals(1, loader.getLastDynamicImportReport().count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE));
+            assertTrue(loader.getLastDynamicImportReport().entries().stream().anyMatch(entry ->
+                    entry.message().equals("model intentionally removed by BAT_PLMOD_REMOVE type " + slot)));
+        }
+    }
+
+    @Test
     void reportsMissingGeneratorAndMalformedCommand() throws Exception {
         var network = oneGeneratorNetwork();
         Path missing = tempDir.resolve("missing_MODREMOVE.idv");
@@ -108,6 +137,59 @@ public class PsseModelRemoveIdvProcessorTest {
         Files.writeString(malformed, "BAT_PLMOD_REMOVE 1 1\n");
         assertThrows(InterpssException.class,
                 () -> PsseModelRemoveIdvProcessor.apply(network, malformed.toString()));
+    }
+
+    @Test
+    void defaultLoaderNetsMissingModelsAfterPowerFlowBeforeDynamicLoadConversion() throws Exception {
+        var context = missingModelContext();
+        var net = context.getDStabilityNet();
+        var bus = net.getDStabBus("Bus1");
+        var generator = (DStabGen) bus.getContributeGen("1");
+        assertTrue(net.isAllowGenWithoutMach());
+        assertTrue(generator.isActive(), "Import must retain the original power-flow generator");
+        var algorithm = context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        assertTrue(generator.isActive(), "Checking must not net unsolved generation");
+        var solvedPower = generator.getGen();
+        var solvedVoltage = bus.getVoltage();
+        net.setStaticLoadIncludedInYMatrix(false);
+        // With no CONL conversion, ordinary loads retain constant P and Q.
+        // A missing machine's implicit GNET equivalent still uses I and Z.
+        net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
+        net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        long checks = ((com.interpss.dstab.impl.BaseDStabNetworkImpl<?, ?>)net)
+                .getDynamicModelInventoryBuildCount();
+        assertTrue(algorithm.initialization());
+        assertFalse(generator.isActive());
+        assertNotNull(bus.getContributeLoad("Gen-Equiv"));
+        assertEquals(solvedPower.negate(), bus.getContributeLoad("Gen-Equiv").getLoadCP());
+        assertEquals(solvedVoltage, bus.getVoltage());
+        assertEquals(checks, ((com.interpss.dstab.impl.BaseDStabNetworkImpl<?, ?>)net)
+                .getDynamicModelInventoryBuildCount(), "Initialization must reuse the data-check inventory");
+        bus.setVoltage(solvedVoltage.multiply(.9));
+        assertEquals(-solvedPower.getReal()*.9, bus.calStaticLoad().getReal(), 1.e-12);
+        assertEquals(-solvedPower.getImaginary()*.81, bus.calStaticLoad().getImaginary(), 1.e-12);
+    }
+
+    @Test
+    void defaultLoaderAllowsStrictMissingModelRejection() throws Exception {
+        var context = missingModelContext();
+        var net = context.getDStabilityNet();
+        net.setAllowGenWithoutMach(false);
+        assertFalse(net.checkData(context.getDynSimuAlgorithm().getAclfAlgorithm().getDataCheckConfig()));
+        assertFalse(net.prepareDStabModels());
+        assertTrue(net.getDStabBus("Bus1").getContributeGen("1").isActive());
+        assertNull(net.getDStabBus("Bus1").getContributeLoad("Gen-Equiv"));
+    }
+
+    private com.interpss.simu.SimuContext missingModelContext() throws Exception {
+        org.interpss.IpssCorePlugin.init();
+        Path raw = tempDir.resolve("missing.raw");
+        Files.copy(Path.of("testData", "adpter", "psse", "v33", "SMIB", "SMIB_v33.raw"), raw);
+        Path dyr = tempDir.resolve("missing.dyr");
+        Files.writeString(dyr, "2 'GENCLS' 1 3.5 0 /\n");
+        return new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
     }
 
     private static com.interpss.dstab.DStabilityNetwork oneGeneratorNetwork()

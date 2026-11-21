@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
+import com.interpss.dstab.controller.exc.ac8c.Ac8cExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 

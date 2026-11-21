@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
-import org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter;
+import com.interpss.dstab.controller.exc.exac4.Exac4Data;
+import com.interpss.dstab.controller.exc.exac4.Exac4Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -97,4 +97,13 @@ public class Exac4ExciterTest extends CorePluginTestSetup {
     private static void step(Exac4Exciter e,Machine m,double dt){e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0);e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1);}
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Exac4Exciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcExac4("Bus1", "1", data);
+        });
+    }
 }

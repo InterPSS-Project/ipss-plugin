@@ -1,6 +1,6 @@
 # IEEE14 Substation ↔ NBNode Containing Relationship
 
-Walk-through of how **substations contain nodes** in the PSS®E Substation Data Group, using the fixture:
+Walk-through of how **substations contain nodes** in the reference simulator Substation Data Group, using the fixture:
 
 [`IEEE_14_bus_nodeBreaker_rev35_exported.raw`](../../../ipss-plugin/ipss.test.plugin.core/testData/psse/nbreaker/IEEE_14_bus_nodeBreaker_rev35_exported.raw)
 
@@ -32,7 +32,7 @@ AclfNetwork
 | `NBNode` → `Bus` | N → 1 | Many nodes may share one electrical bus `I` (closed switches merge them) |
 | `Substation` → `Bus` | N → M | Station also collects buses it references (`sub.addBus(bus)` on first sight) |
 
-Key rule from PSS®E: **node numbers (`NI`) are unique only inside one substation.** Station 1 node `1` and Station 5 node `1` are unrelated objects.
+Key rule from reference simulator: **node numbers (`NI`) are unique only inside one substation.** Station 1 node `1` and Station 5 node `1` are unrelated objects.
 
 In InterPSS: `Substation.addNBNode(node)` sets `node.setSubstation(this)` and fills `getNbNodeList()`.
 

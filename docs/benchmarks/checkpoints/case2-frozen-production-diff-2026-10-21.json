@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "status": "audited-no-production-change",
+  "report": "docs/benchmarks/case2-frozen-production-differences-2026-10-21.md",
+  "production_core_commit": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+  "production_plugin_commit": "6578ca8f7e86fae4e3534d7151943f594c0f4a79",
+  "frozen_evidence_commit": "e2e0a892f",
+  "effective_class_counts": {
+    "frozen": 5287,
+    "production": 5275,
+    "identical": 5148,
+    "changed": 116,
+    "frozen_only": 23,
+    "production_only": 11
+  },
+  "input_files_identical": true,
+  "external_dependencies_identical": true,
+  "measured_phase_medians": {
+    "frozen": {
+      "measured_runs": 5,
+      "complete_case_wall_s": 8.5065261,
+      "setup_initialization_wall_s": 0.3798433,
+      "simulation_output_wall_s": 8.132447
+    },
+    "production": {
+      "measured_runs": 6,
+      "complete_case_wall_s": 9.6082251,
+      "setup_initialization_wall_s": 0.31810215,
+      "simulation_output_wall_s": 9.1890786
+    }
+  },
+  "timings_from_retained_separate_sessions": true,
+  "new_timing_experiment": false,
+  "full_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+  "independent_accuracy_qualified": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-production-diff/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 4705,
+    "sha256": "f54d093cd6ca06a34b7e403139ccf785c367a70935cfa1d0f550f0d84da728c5"
+  },
+  "archive": {
+    "bytes": 2173632,
+    "sha256": "743aff16656f65c4421aa63c61faee658575974df5f4df83aa834216292911f8"
+  }
+}

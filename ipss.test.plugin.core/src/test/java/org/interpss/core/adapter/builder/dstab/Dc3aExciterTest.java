@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
-import org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter;
+import com.interpss.dstab.controller.exc.dc3a.Dc3aData;
+import com.interpss.dstab.controller.exc.dc3a.Dc3aExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;

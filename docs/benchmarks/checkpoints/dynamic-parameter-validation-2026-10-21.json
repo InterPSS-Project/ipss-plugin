@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "description": "Non-mutating parameter validation and six-case imported-data audit; no claim that numerical instability is resolved.",
+  "base_commit": "95234284344a78f008fbd13b877a5026c1319e2a",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-parameter-validation/evidence.zip",
+  "archive_sha256": "3f66007da4d99451f6f333303f02d871df86509c5797ca1242c0753abab15ccc",
+  "archive_bytes": 341650,
+  "focused_tests": {
+    "isolated_passed": 32,
+    "combined_worktree_passed": 32
+  },
+  "audit": [
+    {
+      "case": "Texas2k_series24_case1_2016summerpeak",
+      "errors": 0,
+      "active_warnings": 44,
+      "active_affected_machines": 22,
+      "inactive_warnings": 0,
+      "warning_models": [
+        "Ieee1992PSS2AStabilizer"
+      ],
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25
+      },
+      "uncovered": {
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "IeeeSteamTCDRGovernor": 43,
+        "Regca1Model": 107
+      }
+    },
+    {
+      "case": "Texas2k_series24_case2_2016lowload",
+      "errors": 0,
+      "active_warnings": 10,
+      "active_affected_machines": 5,
+      "inactive_warnings": 34,
+      "warning_models": [
+        "Ieee1992PSS2AStabilizer"
+      ],
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25
+      },
+      "uncovered": {
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "IeeeSteamTCDRGovernor": 43,
+        "Regca1Model": 107
+      }
+    },
+    {
+      "case": "Texas2k_series24_case3_2024summerpeak",
+      "errors": 0,
+      "active_warnings": 44,
+      "active_affected_machines": 22,
+      "inactive_warnings": 0,
+      "warning_models": [
+        "Ieee1992PSS2AStabilizer"
+      ],
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25
+      },
+      "uncovered": {
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "IeeeSteamTCDRGovernor": 43,
+        "Regca1Model": 301
+      }
+    },
+    {
+      "case": "Texas2k_series24_case4_2024lowload",
+      "errors": 0,
+      "active_warnings": 6,
+      "active_affected_machines": 3,
+      "inactive_warnings": 38,
+      "warning_models": [
+        "Ieee1992PSS2AStabilizer"
+      ],
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25
+      },
+      "uncovered": {
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "IeeeSteamTCDRGovernor": 43,
+        "Regca1Model": 301
+      }
+    },
+    {
+      "case": "Texas2k_series24_case5_2024highrenewables",
+      "errors": 0,
+      "active_warnings": 10,
+      "active_affected_machines": 5,
+      "inactive_warnings": 34,
+      "warning_models": [
+        "Ieee1992PSS2AStabilizer"
+      ],
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25
+      },
+      "uncovered": {
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "IeeeSteamTCDRGovernor": 43,
+        "Regca1Model": 301
+      }
+    },
+    {
+      "case": "Texas2k_series24_case6_2024lowloadwithgfm",
+      "errors": 0,
+      "active_warnings": 6,
+      "active_affected_machines": 3,
+      "inactive_warnings": 38,
+      "warning_models": [
+        "Ieee1992PSS2AStabilizer"
+      ],
+      "checked": {
+        "IEEE1981ST1Exciter": 154,
+        "Ieee1992PSS2AStabilizer": 435,
+        "IeeeVcRoundRotorMachine": 410,
+        "IeeeVcSalientPoleMachine": 25,
+        "PsseGgov1Governor": 367,
+        "PsseHygovGovernor": 25
+      },
+      "uncovered": {
+        "IEEE2005ST4BExciter": 265,
+        "Ieee1968Type1Exciter": 16,
+        "IeeeSteamTCDRGovernor": 43,
+        "Regca1Model": 301,
+        "Regfma1Model": 5
+      }
+    }
+  ],
+  "regression": [
+    {
+      "case": 1,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "expected": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0"
+    },
+    {
+      "case": 2,
+      "all_recordings_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      },
+      "expected": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0"
+    }
+  ],
+  "retained_dependencies": [
+    {
+      "path": "target/parameter-validation-20261021/case1-regression/actual/case1_bus_fault_01/run-0/full-network.bin",
+      "sha256": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+      "bytes": 119143713,
+      "identical_to": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0/full-network.bin"
+    },
+    {
+      "path": "target/parameter-validation-20261021/case1-regression/actual/case1_bus_fault_01/run-0/interpss.csv",
+      "sha256": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+      "bytes": 2404926,
+      "identical_to": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0/interpss.csv"
+    },
+    {
+      "path": "target/parameter-validation-20261021/case1-regression/actual/case1_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce",
+      "bytes": 992528,
+      "identical_to": "target/configurable-substeps-20261021/case1-substeps10/actual/case1_bus_fault_01/run-0/full-network-channels.json"
+    },
+    {
+      "path": "target/parameter-validation-20261021/case2-regression/actual/case2_bus_fault_01/run-0/full-network.bin",
+      "sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "bytes": 92592513,
+      "identical_to": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0/full-network.bin"
+    },
+    {
+      "path": "target/parameter-validation-20261021/case2-regression/actual/case2_bus_fault_01/run-0/interpss.csv",
+      "sha256": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+      "bytes": 10197164,
+      "identical_to": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0/interpss.csv"
+    },
+    {
+      "path": "target/parameter-validation-20261021/case2-regression/actual/case2_bus_fault_01/run-0/full-network-channels.json",
+      "sha256": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee",
+      "bytes": 758545,
+      "identical_to": "target/configurable-substeps-20261021/case2-substeps10/actual/case2_bus_fault_01/run-0/full-network-channels.json"
+    }
+  ]
+}

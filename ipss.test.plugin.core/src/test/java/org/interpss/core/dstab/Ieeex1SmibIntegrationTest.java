@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Path;
 
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -27,15 +28,24 @@ public class Ieeex1SmibIntegrationTest {
     }
 
     @Test
-    void exdc2aRawDyrCaseInitializesAndRemainsAtEquilibrium() throws Exception {
-        assertSteadyState("EXDC2A", "SMIB_v33_genrou_exdc2a.dyr");
+    void explicitExdc2aBuilderInitializesAndRemainsAtEquilibrium() throws Exception {
+        assertSteadyState("EXDC2A typed API", "SMIB_v33_genrou.dyr", true);
     }
 
     private static void assertSteadyState(String model, String dyrName) throws Exception {
+        assertSteadyState(model, dyrName, false);
+    }
+
+    private static void assertSteadyState(String model, String dyrName, boolean typedExdc2a)
+            throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve(dyrName).toString());
+        if (typedExdc2a) {
+            new DStabNetworkBuilder(context.getDStabilityNet()).addExcExdc2a("Bus1", "1",
+                    .02, 40, .02, .5, 1, 10, -10, 1, .6, .03, 1, .25, 3, 0, 4, 0);
+        }
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

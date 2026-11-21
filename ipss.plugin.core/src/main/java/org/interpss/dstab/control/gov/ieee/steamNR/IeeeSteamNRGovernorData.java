@@ -24,7 +24,7 @@
 
 package org.interpss.dstab.control.gov.ieee.steamNR;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class IeeeSteamNRGovernorData extends BaseControllerData {
 	private double k = 10.0;

@@ -1,6 +1,6 @@
 package org.interpss.dstab.control.gov.turbine;
 
-import org.interpss.dstab.control.base.BaseControllerData;
+import com.interpss.dstab.controller.runtime.BaseControllerData;
 
 public class BpaTBTurbineData extends BaseControllerData{
 	private double tch=0D;

@@ -4,7 +4,7 @@
 
 This note documents the production changes on the
 `ac_dc-power-flow-enhancement` branch of `ipss-plugin`. The plugin is the
-boundary between PSS/E/EPC source data and the core ACLF model, so it must
+boundary between reference simulator/EPC source data and the core ACLF model, so it must
 preserve enough source intent for the solver while keeping explicit JSON run
 configuration authoritative.
 
@@ -36,11 +36,11 @@ applying newer or incompatible field meanings. Nullable advanced fields mean
 carry the schema default.
 
 Numerical NR configuration is independent of adjustment inclusion. In
-particular, normal NR (`nonDivergent=false`) may still use PSS/E DVLIM through
+particular, normal NR (`nonDivergent=false`) may still use reference simulator DVLIM through
 `variableUpdateLimit`. Step-size optimization fields affect only the
 non-divergent solver path.
 
-## PSS/E Solution Settings
+## reference simulator Solution Settings
 
 `PsseLoadflowSolutionSettings` retains the original system-wide lines and maps
 only fields with a verified InterPSS equivalent. The relevant mappings are:
@@ -61,7 +61,7 @@ versus non-divergent NR is an explicit run-policy choice in JSON.
 RAWX stores the original solution-setting lines in the
 `general.ipss_loadflow_solution_settings` extension. The parser restores that
 extension to network extra info so RAW -> RAWX -> ACLF retains source settings
-without making the extension part of the PSS/E standard schema.
+without making the extension part of the reference simulator standard schema.
 
 ## EPC Parser
 
@@ -77,7 +77,7 @@ creating duplicate devices during the real section pass.
 Transformer parsing now distinguishes explicit star-point records from ordinary
 two-winding records, preserves impedance-correction table references, and
 handles continuations by section grammar. Generator reactive data is finalized
-through the same public normalization helper used by PSS/E parsing so fixed-Q,
+through the same public normalization helper used by reference simulator parsing so fixed-Q,
 usable-Q-range, and PV/PQ classification are consistent across direct adapters.
 
 SVD records create switched-shunt/SVC controls with their limits, setpoints,
@@ -87,7 +87,7 @@ rounding.
 
 ## RAW And RAWX Import Fidelity
 
-Both PSS/E direct parsers preserve switched-shunt `RMPCT`. Controls that share a
+Both reference simulator direct parsers preserve switched-shunt `RMPCT`. Controls that share a
 remote pilot therefore retain their source participation instead of reverting
 to equal 100-percent participation.
 
@@ -164,7 +164,7 @@ the LCC record and adds fixed terminal-load equivalents equal to its accepted
 P/Q injections. This is an electrical-equivalence fallback, used only for links
 identified by core metadata. RAWX additionally appends firing/extinction angle,
 tap position, and terminal P/Q information. RAW appends the same information in
-a trailing comment so it is available for diagnostics without changing PSS/E
+a trailing comment so it is available for diagnostics without changing reference simulator
 field parsing.
 
 For VSC links, solved export retains terminal P/Q extension fields. A remote

@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,10 +13,10 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
-import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
-import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1Exciter;
+import com.interpss.dstab.controller.pss.ieee1992pss2b.Ieee1992PSS2BStabilizer;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -31,11 +32,12 @@ public class Pss2bIndependentSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
-    @Test
-    void threeCycleFaultMatchesIndependentBoundaryMachineExciterAndPssStates()
+    @ParameterizedTest(name="staggered={0}")
+    @ValueSource(booleans={false,true})
+    void threeCycleFaultMatchesIndependentBoundaryMachineExciterAndPssStates(boolean staggered)
             throws Exception {
         IpssCorePlugin.init();
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esst1a_pss2b.dyr").toString());
         var network = context.getDStabilityNet();
@@ -43,6 +45,7 @@ public class Pss2bIndependentSmibConformanceTest {
         PowerWorldGenrouBoundary.install(network);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "PSS2B SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        if (staggered) algorithm.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm));
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
@@ -122,18 +125,21 @@ public class Pss2bIndependentSmibConformanceTest {
             }
         }
         System.out.printf(Locale.ROOT,
-                "PSS2B Independent max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
+                "PSS2B Independent staggered="+staggered+" max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
                 + "angleDeg=%.9g speed=%.9g machine=%.9g/%.9g/%.9g/%.9g "
                 + "exciter=%.9g/%.9g/%.9g/%.9g pss=%.9g/%.9g/%.9g/%.9g/"
                 + "%.9g/%.9g/%.9g/%.9g/%.9g/%.9g/%.9g%n",
                 Arrays.stream(maximum).boxed().toArray());
         System.out.println("PSS2B Independent max-error times: " + Arrays.toString(maximumTime));
+        // Both integration methods are below these reference-backed envelopes
+        // at the same 0.25 ms interval. Retain per-channel limits so an upstream
+        // machine or exciter regression cannot hide behind the stabilizer gate.
         double[] tolerance = {
-                4.0e-4, 1.5e-4, 0.10, 0.30, 0.018, 8.0e-6,
-                1.2e-4, 2.0e-4, 2.0e-4, 1.3e-4,
-                5.0e-3, 4.0e-4, 1.5e-4, 5.0e-5,
-                8.0e-6, 8.0e-6, 8.0e-6, 1.0e-10, 1.0e-10,
-                1.0e-10, 1.0e-5, 6.0e-5, 8.0e-6, 1.2e-4, 1.2e-4
+                1.2e-5, 4.0e-6, 3.0e-3, 1.5e-2, 5.0e-4, 5.0e-7,
+                1.5e-5, 3.0e-5, 8.0e-6, 5.0e-6,
+                5.0e-4, 1.3e-4, 1.5e-4, 4.0e-5,
+                2.5e-7, 2.5e-7, 8.0e-6, 1.0e-10, 1.0e-10,
+                1.0e-10, 2.0e-6, 2.0e-6, 2.5e-7, 2.0e-6, 2.0e-6
         };
         String[] label = {
                 "Bus1 V", "Bus2 V", "P MW", "Q Mvar", "relative angle",

@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -122,8 +122,8 @@ public class Esst4bAndesSmibConformanceTest {
                 internalMax[4], internalMaxTime[4], internalMax[5], internalMaxTime[5],
                 internalMax[6], internalMaxTime[6], internalMax[7], internalMaxTime[7]);
         // ANDES represents both PI blocks with a stored bias even when Ki=0 and
-        // uses back-calculation at the output limit. PowerWorld's documented
-        // ESST4B realization freezes the integrator and exposes no zero-Ki state.
+        // uses back-calculation at the output limit. The native ESST4B path
+        // limits the integral state separately and exposes no zero-Ki state.
         // Keep ANDES as an independent boundary/common-output oracle, but do not
         // assert equality for the four solver-specific PI state/output channels.
         for (int i : new int[] {0, 5, 6, 7}) {

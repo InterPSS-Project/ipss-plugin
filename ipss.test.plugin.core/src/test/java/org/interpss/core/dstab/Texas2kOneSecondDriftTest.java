@@ -28,10 +28,10 @@ import org.interpss.dstab.analysis.LocalRenewableQvEigenReportWriter;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Device;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Mode;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.StateComponent;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.RenewableElectricalController;
-import org.interpss.dstab.renewable.Repca1Model;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.RenewableElectricalController;
+import com.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
@@ -67,7 +67,7 @@ public class Texas2kOneSecondDriftTest {
             Path.of("testData", "private", "texas2k"));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
-                    "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
+                    "Texas2k_series24_case1_2016summerPeak.RAW", "dynamic_models_case1.dyr",
                     "dynamic_models_case1_gnet.idv"),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",

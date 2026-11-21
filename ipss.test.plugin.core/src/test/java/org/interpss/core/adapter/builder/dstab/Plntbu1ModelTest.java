@@ -10,9 +10,9 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Gewtgcu1Model;
-import org.interpss.dstab.mach.Plntbu1Data;
-import org.interpss.dstab.mach.Plntbu1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Plntbu1Data;
+import com.interpss.dstab.mach.model.Plntbu1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -26,6 +26,17 @@ import com.interpss.dstab.cache.StateMonitor;
 /** Synthetic equation, state, limit, and exact-wrapper checks for PLNTBU1. */
 public class Plntbu1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
+
+    @Test void doubleRoundoffDoesNotDriveThePlantButRealSmallInputsStillDo() {
+        var model=new Plntbu1Model(new Plntbu1Data(1,1,2,"1",0,1,1,
+                .066667,0,25,0,.02,.7,0,0,-.01,.001,-.001,0,0,1,-1,.01,.06,.25,0,0,999,-999,999,-999,.1,50,0,0));
+        model.setBoundary(Complex.ONE,Complex.ONE,new Complex(.24,.047),1);assertTrue(model.initialize());
+        model.setBoundary(new Complex(Math.nextUp(1.),0),Complex.ONE,new Complex(Math.nextUp(.24),Math.nextUp(.047)),Math.nextUp(1.));
+        for(int i=0;i<1000;i++){assertTrue(model.step(1./240,0));assertTrue(model.step(1./240,1));}
+        assertEquals(0,model.getReactiveOutput(),0);assertEquals(0,model.getActiveOutput(),0);
+        model.setAuxiliaryInputs(1e-9,0,1e-9);model.step(1./240,0);model.step(1./240,1);
+        assertTrue(model.getReactiveOutput()>0);assertTrue(model.getActiveOutput()>0);
+    }
 
     @Test
     void sevenStateModifiedEulerStepMatchesIndependentCalculation() {
@@ -73,8 +84,8 @@ public class Plntbu1ModelTest {
 
         assertEquals(0.0, model.getReactiveIntegral(), 0.0,
                 "reactive integrator must freeze below Vfrz");
-        assertEquals(.0882475, model.getActiveOutput(), 1e-12,
-                "Fflag=0 must disable droop but retain active-power control");
+        assertEquals(0.0, model.getActiveOutput(), 0,
+                "Native command-step discriminators show Fflag=0 disables the whole active-power path");
         assertThrows(IllegalArgumentException.class, () -> data(0, 3, 1, .2, .1, .2, .1));
     }
 

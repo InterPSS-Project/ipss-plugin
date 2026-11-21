@@ -1,5 +1,7 @@
 package org.interpss.fadapter.psse;
 
+import com.interpss.dstab.renewable.Reeca1Model;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,110 +29,115 @@ import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
-import org.interpss.dstab.renewable.Reecb1Data;
-import org.interpss.dstab.renewable.Reecc1Data;
-import org.interpss.dstab.renewable.Reecd1Data;
-import org.interpss.dstab.renewable.Reeca1Data;
-import org.interpss.dstab.renewable.Dera1Data;
-import org.interpss.dstab.renewable.Regca1Data;
-import org.interpss.dstab.renewable.Regcb1Data;
-import org.interpss.dstab.renewable.Regfma1Data;
-import org.interpss.dstab.renewable.Repca1Data;
-import org.interpss.dstab.renewable.Wtara1Data;
-import org.interpss.dstab.renewable.Wtdta1Data;
-import org.interpss.dstab.renewable.Wtpta1Data;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.svc.Csvgn5Data;
-import org.interpss.dstab.svc.Svsmo1t2Data;
-import org.interpss.dstab.svc.Svsmo1t2Data.MssDevice;
-import org.interpss.dstab.mach.GenqecData;
-import org.interpss.dstab.mach.Cimtr4Data;
-import org.interpss.dstab.mach.GenqejData;
-import org.interpss.dstab.mach.Gentpj1Data;
-import org.interpss.dstab.mach.GentraData;
-import org.interpss.dstab.mach.IeeeVcData;
-import org.interpss.dstab.mach.Wt1g1Data;
-import org.interpss.dstab.mach.Wt2g1Data;
-import org.interpss.dstab.mach.Wt2e1Data;
-import org.interpss.dstab.mach.Wt3g1Data;
-import org.interpss.dstab.mach.Gewtgcu1Data;
-import org.interpss.dstab.mach.Gewtecu1Data;
-import org.interpss.dstab.mach.Gewt2mu1Data;
-import org.interpss.dstab.mach.Gewtaru1Data;
-import org.interpss.dstab.mach.Gewtgdu1Data;
-import org.interpss.dstab.mach.Gewtptu1Data;
-import org.interpss.dstab.mach.Reaxbu1Data;
-import org.interpss.dstab.mach.Plntbu1Data;
-import org.interpss.dstab.mach.Wt3g2Data;
-import org.interpss.dstab.mach.Wt4g1Data;
-import org.interpss.dstab.mach.Wt4e1Data;
-import org.interpss.dstab.mach.Wt3e1Data;
-import org.interpss.dstab.mach.Wt3t1Data;
-import org.interpss.dstab.mach.Wt3p1Data;
-import org.interpss.dstab.mach.Wt12t1Data;
-import org.interpss.dstab.mach.Wt12a1Data;
-import org.interpss.dstab.mach.Wt12a1bData;
+import com.interpss.dstab.renewable.Reecb1Data;
+import com.interpss.dstab.renewable.Reecc1Data;
+import com.interpss.dstab.renewable.Reecd1Data;
+import com.interpss.dstab.renewable.Reece1Data;
+import com.interpss.dstab.renewable.Regfmb1Data;
+import com.interpss.dstab.renewable.Reeca1Data;
+import com.interpss.dstab.renewable.Dera1Data;
+import com.interpss.dstab.renewable.Regca1Data;
+import com.interpss.dstab.renewable.Regcb1Data;
+import com.interpss.dstab.renewable.Regfma1Data;
+import com.interpss.dstab.renewable.Repca1Data;
+import com.interpss.dstab.renewable.Wtara1Data;
+import com.interpss.dstab.renewable.Wtdta1Data;
+import com.interpss.dstab.renewable.Wtdtb1Data;
+import com.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtptb1Data;
+import com.interpss.dstab.renewable.WtgwgoaData;
+import com.interpss.dstab.renewable.WtgibffraData;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.svc.Csvgn5Data;
+import com.interpss.dstab.svc.Svsmo1t2Data;
+import com.interpss.dstab.svc.Svsmo1t2Data.MssDevice;
+import com.interpss.dstab.mach.model.GenqecData;
+import com.interpss.dstab.mach.model.Cimtr4Data;
+import com.interpss.dstab.mach.model.GenqejData;
+import com.interpss.dstab.mach.model.Gentpj1Data;
+import com.interpss.dstab.mach.model.GentraData;
+import com.interpss.dstab.mach.ieeevc.IeeeVcData;
+import com.interpss.dstab.mach.model.Wt1g1Data;
+import com.interpss.dstab.mach.model.Wt2g1Data;
+import com.interpss.dstab.mach.model.Wt2e1Data;
+import com.interpss.dstab.mach.model.Wt3g1Data;
+import com.interpss.dstab.mach.model.Gewtgcu1Data;
+import com.interpss.dstab.mach.model.Gewtecu1Data;
+import com.interpss.dstab.mach.model.Gewt2mu1Data;
+import com.interpss.dstab.mach.model.Gewtaru1Data;
+import com.interpss.dstab.mach.model.Gewtgdu1Data;
+import com.interpss.dstab.mach.model.Gewtptu1Data;
+import com.interpss.dstab.mach.model.Reaxbu1Data;
+import com.interpss.dstab.mach.model.Plntbu1Data;
+import com.interpss.dstab.mach.model.Wt3g2Data;
+import com.interpss.dstab.mach.model.Wt4g1Data;
+import com.interpss.dstab.mach.model.Wt4e1Data;
+import com.interpss.dstab.mach.model.Wt3e1Data;
+import com.interpss.dstab.mach.model.Wt3t1Data;
+import com.interpss.dstab.mach.model.Wt3p1Data;
+import com.interpss.dstab.mach.model.Wt12t1Data;
+import com.interpss.dstab.mach.model.Wt12a1Data;
+import com.interpss.dstab.mach.model.Wt12a1bData;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
-import org.interpss.dstab.relay.LoadSheddingStage;
+import com.interpss.dstab.relay.model.LoadSheddingStage;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
-import org.interpss.dstab.relay.StagedLoadSheddingRelayData;
+import com.interpss.dstab.relay.model.StagedLoadSheddingRelayData;
 import org.interpss.dstab.relay.VtgtpatRelayModel;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
-import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
-import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizerData;
-import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
-import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
-import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
-import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
-import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
-import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
-import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
-import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
-import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
-import org.interpss.dstab.control.exc.psse.sexs.SexsData;
-import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
-import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
-import org.interpss.dstab.control.exc.psse.ac2c.Ac2cData;
-import org.interpss.dstab.control.exc.psse.ac3c.Ac3cData;
-import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
-import org.interpss.dstab.control.exc.psse.ac5c.Ac5cData;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
-import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
-import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
-import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
-import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
-import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
-import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
-import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
-import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
-import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
-import org.interpss.dstab.control.exc.psse.st1c.St1cData;
-import org.interpss.dstab.control.exc.psse.st2c.St2cData;
-import org.interpss.dstab.control.exc.psse.st3c.St3cData;
-import org.interpss.dstab.control.exc.psse.st4c.St4cData;
-import org.interpss.dstab.control.exc.psse.st5c.St5cData;
-import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
-import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
-import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
-import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
-import org.interpss.dstab.control.exc.psse.st6b.St6bData;
-import org.interpss.dstab.control.exc.psse.st6c.St6cData;
-import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
-import org.interpss.dstab.control.exc.psse.st7b.St7bData;
-import org.interpss.dstab.control.exc.psse.st7c.St7cData;
-import org.interpss.dstab.control.exc.psse.st8c.St8cData;
-import org.interpss.dstab.control.exc.psse.st9c.St9cData;
-import org.interpss.dstab.control.exc.psse.st10c.St10cData;
-import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
-import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
-import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
-import org.interpss.dstab.control.exc.psse.st5b.St5bData;
+import com.interpss.dstab.controller.pss.st2cut.St2cutData;
+import com.interpss.dstab.controller.pss.st2cut.St2cutStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.IeeestData;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.gov.ggov1.PsseGgov1GovernorData;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernorData;
+import com.interpss.dstab.controller.gov.hyg3.PsseHyg3GovernorData;
+import com.interpss.dstab.controller.gov.hygov.PsseHygovGovernorData;
+import com.interpss.dstab.controller.gov.lcfb1.Lcfb1Data;
+import com.interpss.dstab.controller.uel.uel1.Uel1Data;
+import com.interpss.dstab.controller.uel.uel2c.Uel2cData;
+import com.interpss.dstab.controller.oel.oel2c.Oel2cData;
+import com.interpss.dstab.controller.exc.ieee2005st4b.IEEE2005ST4BExciterData;
+import com.interpss.dstab.controller.exc.scrx.ScrxData;
+import com.interpss.dstab.controller.exc.sexs.SexsData;
+import com.interpss.dstab.controller.exc.esac5a.Esac5aData;
+import com.interpss.dstab.controller.exc.ac1c.Ac1cData;
+import com.interpss.dstab.controller.exc.ac2c.Ac2cData;
+import com.interpss.dstab.controller.exc.ac3c.Ac3cData;
+import com.interpss.dstab.controller.exc.ac4c.Ac4cData;
+import com.interpss.dstab.controller.exc.ac5c.Ac5cData;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cData;
+import com.interpss.dstab.controller.exc.exac1.Exac1Data;
+import com.interpss.dstab.controller.exc.esurry.EsurryData;
+import com.interpss.dstab.controller.exc.exac1a.Exac1aData;
+import com.interpss.dstab.controller.exc.exac2.Exac2Data;
+import com.interpss.dstab.controller.exc.esac1a.Esac1aData;
+import com.interpss.dstab.controller.exc.esac2a.Esac2aData;
+import com.interpss.dstab.controller.exc.esac3a.Esac3aData;
+import com.interpss.dstab.controller.exc.esac8b.Esac8bData;
+import com.interpss.dstab.controller.exc.esac6a.Esac6aData;
+import com.interpss.dstab.controller.exc.esac4a.Esac4aData;
+import com.interpss.dstab.controller.exc.st1c.St1cData;
+import com.interpss.dstab.controller.exc.st2c.St2cData;
+import com.interpss.dstab.controller.exc.st3c.St3cData;
+import com.interpss.dstab.controller.exc.st4c.St4cData;
+import com.interpss.dstab.controller.exc.st5c.St5cData;
+import com.interpss.dstab.controller.exc.exac4.Exac4Data;
+import com.interpss.dstab.controller.exc.dc4b.Dc4bData;
+import com.interpss.dstab.controller.exc.dc4c.Dc4cData;
+import com.interpss.dstab.controller.exc.dc3a.Dc3aData;
+import com.interpss.dstab.controller.exc.st6b.St6bData;
+import com.interpss.dstab.controller.exc.st6c.St6cData;
+import com.interpss.dstab.controller.exc.exeli.ExeliData;
+import com.interpss.dstab.controller.exc.st7b.St7bData;
+import com.interpss.dstab.controller.exc.st7c.St7cData;
+import com.interpss.dstab.controller.exc.st8c.St8cData;
+import com.interpss.dstab.controller.exc.st9c.St9cData;
+import com.interpss.dstab.controller.exc.st10c.St10cData;
+import com.interpss.dstab.controller.exc.esst2a.Esst2aData;
+import com.interpss.dstab.controller.exc.exst2.Exst2Data;
+import com.interpss.dstab.controller.exc.exst3.Exst3Data;
+import com.interpss.dstab.controller.exc.st5b.St5bData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,17 +162,35 @@ public class PSSEDStabDirectParser {
     private static final String BUS_ID_PREFIX = "Bus";
 
     private final DStabNetworkBuilder builder;
+    private final List<PsseDyrRecord> pendingWsieg1 = new ArrayList<>();
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtdtb1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtptb1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtgwgoa = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtgibffra = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingReece = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingRepcgfmc1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingRepcc = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
     private final List<PendingUel2c> pendingUel2c = new ArrayList<>();
     private final List<PendingOel2c> pendingOel2c = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingOel3c = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingBasoel2 = new ArrayList<>();
+    /** Declared documented model contract; loadability does not assert reference-tool parity. */
+    public static final com.interpss.dstab.controller.oel.basoel2.Basoel2Kernel.TimerSemantics BASOEL2_TIMER_POLICY =
+            com.interpss.dstab.controller.oel.basoel2.Basoel2Kernel.TimerSemantics.POWERWORLD_DOCUMENTED;
     private boolean strictImport;
+    /** Pin a known native schema when legacy cardinality inference is not appropriate. */
+    public enum Regfma1RecordFormat { AUTO_COMPATIBLE, NATIVE_PSSE_36_7, TEXAS2K_LEGACY }
+    private Regfma1RecordFormat regfma1RecordFormat = Regfma1RecordFormat.AUTO_COMPATIBLE;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
+    private final java.util.Map<GeneratorKey, Set<Integer>> modelRemovalTypes = new java.util.HashMap<>();
+    private final Set<GeneratorKey> declaredElectricalGenerators = new java.util.HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
     public PSSEDStabDirectParser(DStabNetworkBuilder builder) {
@@ -175,6 +200,82 @@ public class PSSEDStabDirectParser {
     /** Enable or disable fail-fast coverage checking after a complete DYR import. */
     public PSSEDStabDirectParser setStrictImport(boolean strictImport) {
         this.strictImport = strictImport;
+        return this;
+    }
+
+    private java.util.function.Function<PsseDyrRecord, java.util.Map<Integer,String>> parameterOverrides =
+            record -> java.util.Map.of();
+    private boolean ignoreMissingHosts=true;
+
+    /** Retain a skip diagnostic for absent hosts; false restores coverage-failure reporting. */
+    public PSSEDStabDirectParser setIgnoreMissingHosts(boolean ignore) {ignoreMissingHosts=ignore;return this;}
+
+    /**
+     * Explicit source-data corrections, indexed in {@link PsseDyrRecord#parameters()}.
+     * The default preserves all entered data. Corrections cannot change identity,
+     * allocation, or cardinality; normal validation still runs on effective data.
+     * Every changed value is retained in the source-located import diagnostic.
+     */
+    public PSSEDStabDirectParser setDynamicModelParameterOverrides(
+            java.util.function.Function<PsseDyrRecord, java.util.Map<Integer,String>> overrides) {
+        parameterOverrides=java.util.Objects.requireNonNull(overrides,"overrides");return this;
+    }
+
+    private PsseDyrRecord applyParameterOverrides(PsseDyrRecord record,
+            DynamicModelImportReport.Builder report) {
+        var overrides=java.util.Objects.requireNonNull(parameterOverrides.apply(record),"parameter overrides");
+        if(overrides.isEmpty())return record;
+        String wrapper=record.fields().get(1).toUpperCase(Locale.ROOT);
+        if(wrapper.startsWith("USR")&&!wrapper.equals("USRMDL")&&!wrapper.equals("USRBUS"))
+            throw new IllegalArgumentException("Parameter overrides are not supported for wrapper "+wrapper);
+        var fields=new ArrayList<>(record.fields());
+        for(var entry:overrides.entrySet()) {
+            int index=entry.getKey();
+            if(index<0||index>=record.parameterCount())throw new IllegalArgumentException("Override parameter index out of range: "+index);
+            // Wrapped records include allocation fields in parameters(); do
+            // not allow an override to reinterpret the wrapper or its sizes.
+            int firstData=record.fields().get(1).equalsIgnoreCase("USRMDL")?10:
+                    record.fields().get(1).equalsIgnoreCase("USRBUS")?9:record.parameterOffset();
+            if(record.parameterOffset()+index<firstData)throw new IllegalArgumentException("Cannot override wrapper allocation");
+            String value=java.util.Objects.requireNonNull(entry.getValue(),"override value").trim();
+            if(value.isEmpty()||!Double.isFinite(Double.parseDouble(value)))
+                throw new IllegalArgumentException("Override must be a finite numeric parameter");
+            fields.set(record.parameterOffset()+index,value);
+        }
+        var effective=new PsseDyrRecord(record.source(),record.startLine(),record.endLine(),record.rawText(),
+                record.busNumber(),record.sourceModelName(),record.canonicalModelName(),record.deviceId(),fields,record.parameterOffset());
+        report.recordParameterOverrides(record,effective);
+        log.warn("Explicit dynamic parameter overrides at {}:{}",record.source(),record.startLine());
+        return effective;
+    }
+
+    /** Normalize the documented active-power range before constructing REECA1.
+     * This exchanges the entered bounds, without changing their magnitudes or
+     * expanding them to the operating point. Runtime initialization owns that
+     * separate accommodation. Preserve source text and report both values.
+     */
+    private PsseDyrRecord autoCorrectReeca1Limits(PsseDyrRecord record,
+            DynamicModelImportReport.Builder report) {
+        if(!record.canonicalModelName().equals("REECA1")
+                ||record.parameterOffset()!=3||record.parameterCount()!=51)return record;
+        double maximum=record.doubleParameter(31),minimum=record.doubleParameter(32);
+        if(!Double.isFinite(maximum)||!Double.isFinite(minimum))
+            throw new IllegalArgumentException("REECA1 Pmax/Pmin must be finite");
+        if(maximum>=minimum)return record;
+        var fields=new ArrayList<>(record.fields());
+        fields.set(record.parameterOffset()+31,record.parameter(32));
+        fields.set(record.parameterOffset()+32,record.parameter(31));
+        var effective=new PsseDyrRecord(record.source(),record.startLine(),record.endLine(),record.rawText(),
+                record.busNumber(),record.sourceModelName(),record.canonicalModelName(),record.deviceId(),fields,record.parameterOffset());
+        report.recordAutomaticParameterCorrections(record,effective);
+        log.warn("REECA1 at {}:{}: automatically swapped Pmax={} and Pmin={}",
+                record.source(),record.startLine(),maximum,minimum);
+        return effective;
+    }
+
+    /** AUTO retains existing Texas2k imports but identifies their distinct layout in the report. */
+    public PSSEDStabDirectParser setRegfma1RecordFormat(Regfma1RecordFormat format) {
+        regfma1RecordFormat = java.util.Objects.requireNonNull(format,"format");
         return this;
     }
 
@@ -189,6 +290,16 @@ public class PSSEDStabDirectParser {
     public PSSEDStabDirectParser setModelRemovedGenerators(Collection<GeneratorKey> keys) {
         modelRemovedGenerators.clear();
         if (keys != null) modelRemovedGenerators.addAll(keys);
+        return this;
+    }
+
+    /** Apply slot-specific preprocessing without removing the generator or its other controls. */
+    public PSSEDStabDirectParser setModelRemovalDirectives(
+            Collection<PsseModelRemoveIdvProcessor.Directive> directives) {
+        modelRemovalTypes.clear();
+        if (directives != null) for (var directive : directives)
+            modelRemovalTypes.computeIfAbsent(directive.generator(), ignored -> new HashSet<>())
+                    .add(directive.modelType());
         return this;
     }
 
@@ -215,32 +326,91 @@ public class PSSEDStabDirectParser {
     }
 
     private void parseDynData(List<PsseDyrRecord> records, String source) throws InterpssException {
+        declaredElectricalGenerators.clear();
+        for (var record : records) {
+            if (record.canonicalModelName().startsWith("REEC")
+                    || DynamicModelCatalog.find(record.canonicalModelName()).map(model -> model.category()
+                    == org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER).orElse(false))
+                declaredElectricalGenerators.add(targetGeneratorKey(record));
+        }
+        pendingWsieg1.clear();
         pendingSt2cut.clear();
         pendingIeeest.clear();
         pendingRepca1.clear();
+        pendingWtdtb1.clear();
+        pendingWtptb1.clear();
+        pendingWtgwgoa.clear();
+        pendingWtgibffra.clear();
+        pendingReece.clear();
         pendingLcfb1.clear();
+        pendingRepcgfmc1.clear();
+        pendingRepcc.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
         pendingUel2c.clear();
         pendingOel2c.clear();
+        pendingOel3c.clear();
+        pendingBasoel2.clear();
+        shadowedLoadDefaults.clear();inactiveLoadRelays.clear();loadScopeDiagnostics.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
-        for (PsseDyrRecord record : records) {
+        if(ignoreMissingHosts)report.ignoreMissingHosts(this::missingRequiredHost);
+        var hybridRecords=new ArrayList<PsseDyrRecord>();
+        var removedHybrid=new java.util.LinkedHashMap<PsseDyrRecord,DynamicModelImportStatus>();
+        // Establish converter/electrical hosts before mechanical and auxiliary
+        // controllers. Resolve specific load characteristics before zone defaults,
+        // then area defaults. DYR order must never let a broad assignment claim
+        // an explicitly modeled source or create two injections for one load.
+        // Stable sorting preserves order within each remaining family.
+        var orderedRecords=new ArrayList<>(records);
+        orderedRecords.sort(java.util.Comparator.comparingInt(r->(r.canonicalModelName().equals("REGCA1")||r.canonicalModelName().equals("REGCB1")
+                || r.canonicalModelName().equals("REGCAU2") || r.canonicalModelName().equals("REGCC"))?0:
+                r.canonicalModelName().equals("REECA1")?1:r.canonicalModelName().equals("CMLDZNU2")?3:
+                r.canonicalModelName().equals("IEELAR")?4:2));
+        for (PsseDyrRecord record : orderedRecords) {
             try {
                 String type = record.canonicalModelName();
                 GeneratorKey key = targetGeneratorKey(record);
-                boolean generatorTarget = DynamicModelCatalog.find(type)
+                boolean generatorTarget = !record.hasNamedTarget() && !type.equals("HPLNTDU") && DynamicModelCatalog.find(type)
                         .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT)
                         .orElse(true);
                 if (generatorTarget && gnetRemovedGenerators.contains(key)) {
+                    if(type.equals("REAXDU"))removedHybrid.put(record,DynamicModelImportStatus.SKIPPED_GNET);
                     report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
                             "generator intentionally removed by GNET preprocessing");
                     continue;
                 }
-                if (generatorTarget && modelRemovedGenerators.contains(key)) {
+                Set<Integer> removedSlots = modelRemovalTypes.getOrDefault(key, Set.of());
+                if (generatorTarget && (modelRemovedGenerators.contains(key) || removedSlots.contains(1))) {
+                    if(type.equals("REAXDU"))removedHybrid.put(record,DynamicModelImportStatus.SKIPPED_MODEL_REMOVE);
                     report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
                             "dynamic stack intentionally removed by BAT_PLMOD_REMOVE type 1");
+                    continue;
+                }
+                int removalType = PsseModelRemoveIdvProcessor.modelType(record);
+                if (generatorTarget && removalType != 0 && removedSlots.contains(removalType)) {
+                    report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
+                            "model intentionally removed by BAT_PLMOD_REMOVE type " + removalType);
+                    continue;
+                }
+                if(org.interpss.fadapter.psse.dyr.HplntdImporter.recognizes(record)){
+                    hybridRecords.add(record);continue;
+                }
+                if (type.equals("CHVDC2") || type.equals("CHVDC2U1")) {
+                    try {
+                        var parameters = org.interpss.fadapter.psse.dyr.Chvdc2RecordMapper.prepare(record);
+                        com.interpss.dstab.hvdc.model.Chvdc2DyrModel.attach(builder.getBaseDStabNetwork(), parameters);
+                        report.add(record, DynamicModelImportStatus.ATTACHED,
+                                "Named-link runtime retained; solved-network preparation occurs at dynamic initialization; general trajectory qualification remains open");
+                    } catch (IllegalArgumentException invalid) {
+                        report.add(record, DynamicModelImportStatus.REJECTED, invalid.getMessage());
+                    }
+                    continue;
+                }
+                if (record.hasNamedTarget() && record.fields().get(1).equalsIgnoreCase("USRDCL")) {
+                    report.add(record, DynamicModelImportStatus.UNSUPPORTED,
+                            "User DC-link model requires an exact named-link runtime; generator aliases cannot be used");
                     continue;
                 }
                 if (!hasExpectedParameterCount(record)) {
@@ -253,15 +423,18 @@ public class PSSEDStabDirectParser {
                     report.add(record, DynamicModelImportStatus.MISSING_TARGET, missingTarget);
                     continue;
                 }
-                boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
-                        || type.equals("REPCA1") || type.equals("LCFB1")
+                record=applyParameterOverrides(record,report);
+                record=autoCorrectReeca1Limits(record,report);
+                boolean deferred = type.equals("WSIEG1") || type.equals("ST2CUT") || type.equals("IEEEST")
+                        || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
-                        || type.equals("OEL2C") || type.equals("UEL2C");
+                        || type.equals("OEL2C") || type.equals("UEL2C") || type.equals("OEL3C") || type.equals("BASOEL2")
+                        || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
                 } else {
-                    report.add(record, rejectedStatus(type), rejectionMessage(type, record));
+                    report.addAttachment(record, rejectedStatus(type), rejectionMessage(type, record));
                 }
             } catch (Exception e) {
                 log.warn("Error processing dynamic record at {}:{}: {}",
@@ -269,62 +442,186 @@ public class PSSEDStabDirectParser {
                 report.add(record, DynamicModelImportStatus.ERROR, e.getMessage());
             }
         }
+        for(PsseDyrRecord record:pendingWsieg1) {
+            try {
+                boolean attached=procGovWsieg1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact extended steam governor with resolved shaft ownership":"WSIEG1 requires valid curves and available shaft machines");
+            } catch(RuntimeException invalid) {report.add(record,DynamicModelImportStatus.REJECTED,invalid.getMessage());}
+        }
+        pendingWsieg1.clear();
+        // Electrical controls must attach after their converter but before
+        // deferred plant controls, regardless of source-record ordering.
+        for(PsseDyrRecord record:pendingReece) {
+            try {
+                boolean attached=procReece(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"PSS/E 36.7 standard REECE: eight ICONs/79 CONs; no inferred legacy aliases"
+                                :"REECE requires standard native schema and active REGCA1/REGCB1 with an unused electrical-controller port");
+            } catch(IllegalArgumentException failure) {
+                report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());
+            } catch(RuntimeException failure) {
+                report.add(record,DynamicModelImportStatus.ERROR,failure.getMessage());
+            }
+        }
+        pendingReece.clear();
+        // Attach after REGCA/REECA and mechanical auxiliary records, regardless
+        // of the drivetrain record's position. Report the actual final outcome.
+        for (PsseDyrRecord record : pendingWtdtb1) {
+            try {
+                boolean attached = procWtdtb1(BUS_ID_PREFIX + record.busNumber(),
+                        record.deviceId(), record);
+                report.addAttachment(record, attached ? DynamicModelImportStatus.ATTACHED
+                        : DynamicModelImportStatus.REJECTED, attached
+                        ? "PSS/E 36.7 WTDTB1 convention; native six-CON or exact legacy allocation"
+                        : "WTDTB1 requires an exact schema, REGCA1/REECA1 host and no existing drive train");
+            } catch (RuntimeException failure) {
+                report.add(record, DynamicModelImportStatus.ERROR, failure.getMessage());
+            }
+        }
+        pendingWtdtb1.clear();
+        for(PsseDyrRecord record:pendingWtptb1) {
+            try {
+                boolean attached=procWtptb1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"PSS/E 36.7 WTPTB1 fourteen-CON or exact legacy allocation"
+                                :"WTPTB1 requires an exact schema and complete compatible wind stack with no existing pitch controller");
+            } catch(RuntimeException failure) {
+                report.add(record,DynamicModelImportStatus.ERROR,failure.getMessage());
+            }
+        }
+        pendingWtptb1.clear();
         for (PendingSt2cut pending : pendingSt2cut) {
             boolean attached = procPssSt2cut(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "ST2CUT prerequisites or signal mode are unsupported");
         }
         pendingSt2cut.clear();
         for (PendingIeeest pending : pendingIeeest) {
             boolean attached = procPssIeeest(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "IEEEST prerequisites, remote bus, or signal mode are unsupported");
         }
         pendingIeeest.clear();
         for (PendingRepca1 pending : pendingRepca1) {
-            boolean attached = procRepca1(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
-                    : DynamicModelImportStatus.REJECTED,
-                    attached ? "" : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
+            // Deferred validation must preserve the source-located report just
+            // as immediate records do. Strict import still rejects this report.
+            try {
+                boolean attached = procRepca1(pending.busId(), pending.genId(), pending.fields());
+                report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                        : DynamicModelImportStatus.REJECTED,
+                        attached ? attachedMessage(pending.record()) : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
+            } catch (IllegalArgumentException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.REJECTED, failure.getMessage());
+            } catch (RuntimeException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.ERROR, failure.toString());
+            }
         }
         pendingRepca1.clear();
+        for(PsseDyrRecord record:pendingRepcgfmc1){
+            try {
+                boolean attached=procRepcgfmc1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact hybrid-plant wrapper; four references on REGFMC1U":"REPCGFMC1U requires exact allocation and an unused REGFMC1U plant port");
+            } catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+        }
+        pendingRepcgfmc1.clear();
+        for(PsseDyrRecord record:pendingRepcc){
+            try{
+                boolean attached=procRepcc(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.addAttachment(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact standard REPCC schema and dedicated plant reference port"
+                                :"REPCC requires REGCA1/REECA1, an unused plant port, positive integral gains, enabled control loops and disabled automatic shunt switching");
+            }catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+        }
+        pendingRepcc.clear();
+        for (PsseDyrRecord record : pendingWtgwgoa) {
+            try {
+                boolean attached = procWtgwgoa(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
+                report.addAttachment(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
+                        attached ? "PSS/E 36.7 WTGWGOA eight-CON or exact legacy allocation; native recovery convention"
+                                : "WTGWGOA requires an exact schema and REGCA1/REGCB1 plus REEC host without an existing weak-grid option");
+            } catch (RuntimeException failure) {
+                report.add(record, DynamicModelImportStatus.ERROR, failure.getMessage());
+            }
+        }
+        pendingWtgwgoa.clear();
+        for (PsseDyrRecord record : pendingWtgibffra) {
+            try {
+                boolean attached = procWtgibffra(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
+                report.addAttachment(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
+                        attached ? "WTGIBFFRA native one-ICON/45-CON schema; published WECC recovery equation"
+                                : "WTGIBFFRA requires standard native schema and REGCA1/REGCB1 with an unused REECD Paux host");
+            } catch (RuntimeException failure) {
+                report.add(record, DynamicModelImportStatus.ERROR, failure.getMessage());
+            }
+        }
+        pendingWtgibffra.clear();
         for (PendingLcfb1 pending : pendingLcfb1) {
             boolean attached = procLcfb1(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "LCFB1 requires a loaded machine and turbine governor");
         }
         pendingLcfb1.clear();
         for (PendingIeeeVc pending : pendingIeeeVc) {
             boolean attached = procIeeeVc(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "IEEEVC requires a compatible loaded machine");
         }
         pendingIeeeVc.clear();
         for (PendingUel1 pending : pendingUel1) {
             boolean attached = procUel1(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "UEL1 requires a compatible loaded exciter");
         }
         pendingUel1.clear();
         for (PendingUel2c pending : pendingUel2c) {
-            boolean attached = procUel2c(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
-                    : DynamicModelImportStatus.REJECTED,
-                    attached ? "" : "UEL2C requires a compatible loaded exciter");
+            try {
+                boolean attached = procUel2c(pending.busId(), pending.genId(), pending.fields());
+                report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                        : DynamicModelImportStatus.REJECTED,
+                        attached ? "" : "UEL2C requires a compatible loaded exciter");
+            } catch (IllegalArgumentException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.REJECTED, failure.getMessage());
+            } catch (RuntimeException failure) {
+                report.add(pending.record(), DynamicModelImportStatus.ERROR, failure.toString());
+            }
         }
         pendingUel2c.clear();
         for (PendingOel2c pending : pendingOel2c) {
             boolean attached = procOel2c(pending.busId(), pending.genId(), pending.fields());
-            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+            report.addAttachment(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
                     : DynamicModelImportStatus.REJECTED,
                     attached ? "" : "OEL2C requires a compatible loaded exciter");
         }
         pendingOel2c.clear();
+        org.interpss.fadapter.psse.dyr.HplntdImporter.attach(builder,hybridRecords,removedHybrid,report);
+        for(PsseDyrRecord pending:pendingOel3c) {
+            try {
+                boolean attached=procOel3c(pending);
+                report.add(pending,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                    attached?"Exact OEL3C standard record with compatible summation port":
+                        "OEL3C requires an unoccupied compatible summation-point exciter; takeover/disabled ports are rejected");
+            }catch(IllegalArgumentException failure){report.add(pending,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+            catch(RuntimeException failure){report.add(pending,DynamicModelImportStatus.ERROR,failure.getMessage());}
+        }
+        pendingOel3c.clear();
+        for(PsseDyrRecord pending:pendingBasoel2) {
+            try {
+                boolean attached=procBasoel2(pending);
+                report.add(pending,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                    attached?"BASOEL2 3-selector/12-constant record; timer policy "+BASOEL2_TIMER_POLICY+
+                        "; documented implementation is loadable, reference-tool/coupled trajectory acceptance remains open":
+                        "BASOEL2 requires an unoccupied compatible AC1C summation port; takeover/disabled ports are rejected");
+            }catch(IllegalArgumentException failure){report.add(pending,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+            catch(RuntimeException failure){report.add(pending,DynamicModelImportStatus.ERROR,failure.getMessage());}
+        }
+        pendingBasoel2.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -333,15 +630,94 @@ public class PSSEDStabDirectParser {
     }
 
     private boolean hasExpectedParameterCount(PsseDyrRecord record) {
+        if (record.sourceModelName().equals("H6E1")) return record.parameterCount() == 63;
+        if (record.sourceModelName().equals("OEL3CU")) return record.parameterCount() == 18;
+        if (record.sourceModelName().equals("OEL3C")) return record.parameterCount() == 12;
+        if (record.canonicalModelName().equals("REGFMA1")) {
+            if (regfma1RecordFormat == Regfma1RecordFormat.NATIVE_PSSE_36_7)
+                return record.parameterCount() == 20;
+            if (regfma1RecordFormat == Regfma1RecordFormat.TEXAS2K_LEGACY)
+                return record.parameterCount() == 19;
+        }
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.recordSchema().accepts(record.parameterCount()))
                 .orElse(true);
     }
 
     @SuppressWarnings("unchecked")
+    /** Identify genuinely absent parents after all deferred attachment passes.
+     * A present but unsupported controller/port remains a rejection to fix,
+     * rather than being mislabeled as an absent host.
+     */
+    private String missingRequiredHost(PsseDyrRecord record) {
+        try {
+            if(!hasExpectedParameterCount(record))return null;
+            String missing=missingCatalogTarget(record);if(missing!=null)return missing;
+            if(record.hasNamedTarget())return null;
+            var net=builder.getBaseDStabNetwork();String type=record.canonicalModelName();
+            if(type.equals("PLNTBU1")) {
+                int remote=record.intParameter(6);
+                if(remote!=0&&net.getDStabBus(BUS_ID_PREFIX+Math.abs(remote))==null)
+                    return "regulated bus "+Math.abs(remote)+" is absent";
+                int from=record.intParameter(7),to=record.intParameter(8);
+                if((from!=0||to!=0)&&relayBranch(net,from,to,record.parameter(9))==null)
+                    return "monitored branch "+from+"/"+to+"/"+record.parameter(9).trim()+" is absent";
+                return null;
+            }
+            var descriptor=DynamicModelCatalog.find(type);if(descriptor.isEmpty())return null;
+            var bus=net.getDStabBus(BUS_ID_PREFIX+record.busNumber());
+            DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(record.deviceId());
+            if(gen==null)return null; // Physical absence was handled by the target mapper above.
+            var machine=gen.getMach();var category=descriptor.get().category();
+            switch(category) {
+                case EXCITER,GOVERNOR,STABILIZER,COMPENSATOR,UNDER_EXCITATION_LIMITER,OVER_EXCITATION_LIMITER -> {
+                    if(machine==null)return "loaded synchronous-machine host is absent at "+bus.getId()+"/"+gen.getId();
+                    if((category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER
+                            ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.OVER_EXCITATION_LIMITER)
+                            &&machine.getExciter()==null)return "loaded exciter host is absent at "+bus.getId()+"/"+gen.getId();
+                }
+                default -> { }
+            }
+            if(type.equals("LCFB1")&&(machine==null||machine.getGovernor()==null))
+                return "loaded machine/turbine-governor host is absent at "+bus.getId()+"/"+gen.getId();
+            if(category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER
+                    ||category==org.interpss.fadapter.psse.dyr.DynamicModelCategory.AERODYNAMIC_CONTROLLER) {
+                var device=gen.getDynamicGenDevice();
+                if(device==null)return "loaded converter/machine host is absent at "+bus.getId()+"/"+gen.getId();
+                com.interpss.dstab.renewable.RenewableElectricalController electrical=
+                        device instanceof com.interpss.dstab.renewable.Regca1Model r?r.getActiveElectricalController():
+                        device instanceof com.interpss.dstab.renewable.Regcb1Model r?r.getActiveElectricalController():
+                        device instanceof com.interpss.dstab.renewable.RegccModel r?r.getActiveElectricalController():null;
+                if(device instanceof com.interpss.dstab.renewable.RenewableConverterHost&&!type.startsWith("REEC")
+                        &&(electrical==null||electrical instanceof com.interpss.dstab.renewable.ConverterCurrentCommands))
+                    return "loaded electrical-controller host is absent at "+bus.getId()+"/"+gen.getId();
+            }
+            return null;
+        }catch(IllegalArgumentException invalid) {return null;}
+    }
+
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
+        // Named FACTS identity and remote-bus validation are atomic with builder
+        // attachment. A bus-number lookup would invent an invalid Bus0 owner.
+        if (record.hasNamedTarget() || record.canonicalModelName().equals("CDC6T")) return null;
+        if (record.canonicalModelName().equals("TIOCR1")) {
+            int loadBus=Integer.parseInt(record.fields().get(6));
+            String loadId=record.fields().get(7);
+            if(loadBus!=0 && (loadId.equals("*") || loadId.equals("#"))) {
+                var host=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+loadBus);
+                if(host==null || host.getContributeLoad(loadId)==null)
+                    return "TIOCR1 exact load target does not exist; native import does not expand wildcard load IDs";
+            }
+            return relayBranch(builder.getBaseDStabNetwork(),record.busNumber(),
+                    Integer.parseInt(record.fields().get(2)),record.fields().get(3)) == null
+                    ? "TIOCR1 monitored branch does not exist" : null;
+        }
         if (record.canonicalModelName().equals("IEELAR")) {
             return ieelTargets(record).isEmpty()
                     ? "no active load matches IEELAR area " + record.busNumber()
@@ -367,7 +743,9 @@ public class PSSEDStabDirectParser {
             String targetBusId = BUS_ID_PREFIX + Math.abs(record.intParameter(0));
             BaseDStabBus<?, ?> targetBus = builder.getBaseDStabNetwork().getDStabBus(targetBusId);
             if (targetBus == null) return "target bus " + targetBusId + " does not exist";
-            String targetId = record.parameter(1);
+            // Embedded quoted IDs use the same padding-free identity as the
+            // generator's main record ID. Keep the source spelling in metadata.
+            String targetId = record.parameter(1).trim();
             return targetBus.getContributeGen(targetId) == null
                     ? "target generator " + targetBusId + "/" + targetId + " does not exist" : null;
         }
@@ -414,11 +792,19 @@ public class PSSEDStabDirectParser {
         }
 
         switch (type) {
+            case "CDC6T":
+                return builder.addCdc6t(org.interpss.fadapter.psse.dyr.Cdc6tRecordMapper.prepare(record)) != null;
+            case "SVSMO3T2":
+                return procSvsmo3t2(record);
             case "IEELBL":
             case "IEELAR":
                 return procIeel(type, record);
             case "PERC1":
                 return procPerc1(busId, genId, fields);
+            case "TIOCR1":
+                return procTiocr1(record);
+            case "CMLDBLU1":
+                return procCmldblu1(record);
             case "CMLDZNU2":
                 return procCmldznu2(record);
             case "IEEEVC":
@@ -433,15 +819,19 @@ public class PSSEDStabDirectParser {
             case "OEL2C":
                 pendingOel2c.add(new PendingOel2c(busId, genId, fields.clone(), record));
                 return true;
+            case "OEL3C":
+                pendingOel3c.add(record);return true;
+            case "BASOEL2":
+                pendingBasoel2.add(record);return true;
             case "GENCLS":
                 return procGencls(busId, genId, fields);
             case "GENROU":
             case "GENROE":
-                return procGenrou(busId, genId, fields);
+                return procGenrou(busId, genId, fields, record.sourceModelName().equals("GENROE"));
             case "GENQEC":
-                return procGenqec(busId, genId, fields);
+                return procGenqec(busId, genId, record);
             case "GENQEJ":
-                return procGenqej(busId, genId, fields);
+                return procGenqej(busId, genId, record);
             case "GENTPJ1":
                 return procGentpj1(busId, genId, fields);
             case "GENTRA":
@@ -491,10 +881,10 @@ public class PSSEDStabDirectParser {
             case "WT12A1":
                 return procWt12a1(busId, genId, fields);
             case "WT12A1B":
-                return procWt12a1b(busId, genId, fields);
+                return procWt12a1b(busId, genId, record);
             case "GENSAL":
             case "GENSAE":
-                return procGensal(busId, genId, fields);
+                return procGensal(busId, genId, fields, record.sourceModelName().equals("GENSAE"));
             case "IEEET1":
                 return procExcIeeet1(busId, genId, fields);
             case "IEEEX1":
@@ -503,8 +893,6 @@ public class PSSEDStabDirectParser {
                 return procExcIeeex2(busId, genId, fields);
             case "EXDC2":
                 return procExcExdc2(busId, genId, fields);
-            case "EXDC2A":
-                return procExcExdc2a(busId, genId, fields);
             case "AC8B":
                 return procExcAc8b(busId, genId, fields);
             case "ESAC8B":
@@ -572,6 +960,12 @@ public class PSSEDStabDirectParser {
                 return procExcExst3(busId, genId, fields);
             case "ST5B":
                 return procExcSt5b(record.sourceModelName(), busId, genId, fields);
+            case "EXPIC1": {
+                double[] constants = new double[24];
+                for (int i=0;i<constants.length;i++) constants[i]=record.doubleParameter(i);
+                return builder.addExcExpic1(busId, genId,
+                        com.interpss.dstab.controller.exc.expic1.Expic1Data.fromNativeParameters(constants)) != null;
+            }
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
             case "ESURRY":
@@ -622,6 +1016,8 @@ public class PSSEDStabDirectParser {
             case "SEXS":
                 return procExcSexs(busId, genId, fields);
 
+            case "WSIEG1":
+                pendingWsieg1.add(record);return true;
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
             case "IEEEG1D":
@@ -634,6 +1030,11 @@ public class PSSEDStabDirectParser {
                 return procGovTgov1d(busId, genId, fields);
             case "GAST":
                 return procGovGast(busId, genId, fields);
+            case "URGS3T":
+                if (fields.length != 36 || !"URGS3T".equalsIgnoreCase(fields[1])) return false;
+                double[] urgs3t = new double[33];
+                for (int i = 0; i < urgs3t.length; i++) urgs3t[i] = getDouble(fields, i+3, Double.NaN);
+                return builder.addGovUrgs3t(busId, genId, urgs3t) != null;
             case "GASTD":
             case "GASTDU":
                 return procGovGastd(busId, genId, fields);
@@ -705,8 +1106,6 @@ public class PSSEDStabDirectParser {
                 return true;
             case "PSS2A":
                 return procPss2a(busId, genId, fields);
-            case "PSSSB":
-                return procPsssb(busId, genId, fields);
             case "PSS2B":
                 return procPss2b(busId, genId, fields);
             case "PSS2C":
@@ -725,8 +1124,6 @@ public class PSSEDStabDirectParser {
                 return procPss6c(busId, genId, fields);
             case "PSS7C":
                 return procPss7c(busId, genId, fields);
-            case "PSS1A":
-                return procPss1a(busId, genId, fields);
 
             case "CMPLDW":
             case "CIM6BL":
@@ -742,18 +1139,30 @@ public class PSSEDStabDirectParser {
                 return procGeneratorTripRelay(type, record);
 
             case "ACMTBLU1":
-                return procAcmtblu1(busId, genId, fields);
+                return procAcmtblu1(record);
 
             case "REGCA1":
             case "REGCAU1":
                 return procRegca1(busId, genId, fields);
+            case "REGCAU2":
+                return procRegcau2(busId, genId, fields);
             case "REGCB1":
             case "REGCBU1":
                 return procRegcb1(busId, genId, fields);
+            case "REGCC":
+                return procRegcc(busId, genId, fields);
             case "DERA1":
                 return procDera1(busId, genId, fields);
             case "REGFMA1":
-                return procRegfma1(busId, genId, fields);
+                return procRegfma1(busId, genId, record);
+            case "REGFMB1U":
+                return procRegfmb1(busId,genId,record);
+            case "REGFMC1U":
+                return procRegfmc1(busId,genId,record);
+            case "REPCGFMC1U":
+                pendingRepcgfmc1.add(record);return true;
+            case "REPCC":
+                pendingRepcc.add(record);return true;
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
             case "SVSMO1T2":
@@ -770,6 +1179,9 @@ public class PSSEDStabDirectParser {
             case "REECD1":
             case "REECDU1":
                 return procReecd1(busId, genId, fields);
+            case "REECE":
+                pendingReece.add(record);
+                return true;
             case "REECA1":
             case "REECAU1":
                 return procReeca1(busId, genId, fields);
@@ -777,6 +1189,18 @@ public class PSSEDStabDirectParser {
             case "WTDTAU1":
             case "WTDAT1":
                 return procWtdta1(busId, genId, fields);
+            case "WTDTB1":
+                pendingWtdtb1.add(record);
+                return true;
+            case "WTPTB1":
+                pendingWtptb1.add(record);
+                return true;
+            case "WTGWGOA":
+                pendingWtgwgoa.add(record);
+                return true;
+            case "WTGIBFFRA":
+                pendingWtgibffra.add(record);
+                return true;
             case "WTARA1":
             case "WTARAU1":
                 return procWtara1(busId, genId, fields);
@@ -785,7 +1209,7 @@ public class PSSEDStabDirectParser {
                 return procWtpta1(busId, genId, fields);
             case "WTTQA1":
             case "WTTQAU1":
-                return procWttqa1(busId, genId, fields);
+                return procWttqa1(busId, genId, record);
             case "REPCA1":
             case "REPCAU1":
                 pendingRepca1.add(new PendingRepca1(busId, genId, fields.clone(), record));
@@ -797,62 +1221,82 @@ public class PSSEDStabDirectParser {
         }
     }
 
-    // USRLOD/ACMTBLU1:
-    // IBUS, 'USRLOD', LID, 'ACMTBLU1', seven model-library fields,
-    // then the 35 LD1PAC parameters.
-    private boolean procAcmtblu1(String busId, String loadId, String[] f) {
-        if (f.length < 46) {
-            log.warn("Incomplete ACMTBLU1 record at bus {}: expected 46 fields, found {}", busId, f.length);
-            return false;
+    // One exact bus/load record: seven allocation fields followed by 35 constants.
+    private boolean procAcmtblu1(PsseDyrRecord record) {
+        if (!record.fields().get(1).equalsIgnoreCase("USRLOD") || record.parameterCount() != 42) return false;
+        int[] allocation = {12, 1, 0, 35, 9, 29, 16};
+        for (int i = 0; i < allocation.length; i++) if (record.intParameter(i) != allocation[i]) return false;
+        double[] c = new double[35];
+        for (int i = 0; i < c.length; i++) {
+            c[i] = record.doubleParameter(7 + i);
+            if (!Double.isFinite(c[i])) return false;
         }
-
-        BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
-        if (bus == null) {
-            log.warn("Cannot attach ACMTBLU1 model {}: bus {} was not found", loadId, busId);
-            return false;
+        if (c[4] == 0 || c[4] > 1) c[4] = 1;
+        if (!(c[4] > 0) || !(c[5] > 0 && c[5] <= 1)
+                || c[7] < 0 || c[8] < 0 || c[7] + c[8] == 0 || c[27] < 0) return false;
+        if (c[5] == 1 && c[22] != 0) return false;
+        var bus = builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX + record.busNumber());
+        var targets = new ArrayList<LoadTarget>();
+        boolean wildcard = record.deviceId().equals("*");
+        addMatchingLoads(targets, bus, record.deviceId(), wildcard);
+        if (targets.isEmpty()) return false;
+        for (var target : targets) {
+            Complex power = target.load().getLoad(bus.getVoltageMag());
+            if (power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary()) || power.getReal() <= 0) return false;
+            if (bus.getInfoOnlyDynModel() instanceof Cmldznu2Model composite && composite.getSourceModels().stream().anyMatch(m->m.getTargetLoadIds().contains(target.load().getId()))) return false;
+            for (var existing : target.bus().getDynLoadModelList())
+                if (existing.isActive() && existing.getId().equals(target.load().getId())) return false;
         }
-
-        double compLf = getDouble(f, 15, 1.0);
-        if (compLf <= 0.0) {
-            compLf = 1.0;
+        double totalP = 0;
+        for (Object object : bus.getContributeLoadList()) {
+            var load = (AclfLoad) object;
+            if (load.isActive()) totalP += load.getLoad(bus.getVoltageMag()).getReal();
         }
-
-        LD1PAC acMotor = new LD1PACImpl(bus, trimQuote(loadId));
-        acMotor.setTstall(getDouble(f, 11, 0.0));
-        acMotor.setTrst(getDouble(f, 12, 0.0));
-        acMotor.setTv(getDouble(f, 13, 0.0));
-        acMotor.setLoadPercent(compLf * 100.0);
-        acMotor.setLoadFactor(compLf);
-        acMotor.setPowerFactor(getDouble(f, 16, 0.0));
-        acMotor.setVstall(getDouble(f, 17, 0.0));
-        acMotor.setRstall(getDouble(f, 18, 0.0));
-        acMotor.setXstall(getDouble(f, 19, 0.0));
-        acMotor.setLFadj(getDouble(f, 20, 0.0));
-        acMotor.setKp1(getDouble(f, 21, 0.0));
-        acMotor.setNp1(getDouble(f, 22, 0.0));
-        acMotor.setKq1(getDouble(f, 23, 0.0));
-        acMotor.setNq1(getDouble(f, 24, 0.0));
-        acMotor.setKp2(getDouble(f, 25, 0.0));
-        acMotor.setNp2(getDouble(f, 26, 0.0));
-        acMotor.setKq2(getDouble(f, 27, 0.0));
-        acMotor.setNq2(getDouble(f, 28, 0.0));
-        acMotor.setVbrk(getDouble(f, 29, 0.0));
-        acMotor.setFrst(getDouble(f, 30, 0.0));
-        acMotor.setVrst(getDouble(f, 31, 0.0));
-        acMotor.setCmpKpf(getDouble(f, 32, 0.0));
-        acMotor.setCmpKqf(getDouble(f, 33, 0.0));
-        acMotor.setVc1off(getDouble(f, 34, 0.0));
-        acMotor.setVc2off(getDouble(f, 35, 0.0));
-        acMotor.setVc1on(getDouble(f, 36, 0.0));
-        acMotor.setVc2on(getDouble(f, 37, 0.0));
-        acMotor.setTth(getDouble(f, 38, 0.0));
-        acMotor.setTh1t(getDouble(f, 39, 0.0));
-        acMotor.setTh2t(getDouble(f, 40, 0.0));
-        acMotor.setFuvr(getDouble(f, 41, 0.0));
-        acMotor.setUVtr1(getDouble(f, 42, 0.0));
-        acMotor.setTtr1(getDouble(f, 43, 0.0));
-        acMotor.setUVtr2(getDouble(f, 44, 0.0));
-        acMotor.setTtr2(getDouble(f, 45, 0.0));
+        if (!(totalP > 0)) return false;
+        for (var target : targets) {
+            var acMotor = new LD1PACImpl(target.bus(), target.load().getId());
+            acMotor.setParentLoad(target.load());
+            acMotor.setCharacteristicPolicy(LD1PACImpl.CharacteristicPolicy.LEGACY_COMPOSITE);
+            acMotor.setAcceptedTimerPrecision(LD1PACImpl.AcceptedTimerPrecision.BINARY32);
+            acMotor.setFrequencyInputMode(LD1PACImpl.FrequencyInputMode.TERMINAL_PHASE_BINARY32);
+            acMotor.setElectricalInputMode(LD1PACImpl.ElectricalInputMode.ACCEPTED_ENDPOINT);
+            acMotor.setLoadPercent(100 * target.load().getLoad(bus.getVoltageMag()).getReal() / totalP);
+            acMotor.setTstall(c[0]);
+            acMotor.setTrst(c[1]);
+            acMotor.setTv(c[2]);
+            acMotor.setTf(c[3]);
+            acMotor.setLoadFactor(c[4]);
+            acMotor.setPowerFactor(c[5]);
+            acMotor.setVstall(c[6]);
+            acMotor.setRstall(c[7]);
+            acMotor.setXstall(c[8]);
+            acMotor.setLFadj(c[9]);
+            acMotor.setKp1(c[10]);
+            acMotor.setNp1(c[11]);
+            acMotor.setKq1(c[12]);
+            acMotor.setNq1(c[13]);
+            acMotor.setKp2(c[14]);
+            acMotor.setNp2(c[15]);
+            acMotor.setKq2(c[16]);
+            acMotor.setNq2(c[17]);
+            acMotor.setVbrk(c[18]);
+            acMotor.setFrst(c[19]);
+            acMotor.setVrst(c[20]);
+            acMotor.setCmpKpf(c[21]);
+            acMotor.setCmpKqf(c[22]);
+            acMotor.setVc1off(c[23]);
+            acMotor.setVc2off(c[24]);
+            acMotor.setVc1on(c[25]);
+            acMotor.setVc2on(c[26]);
+            acMotor.setTth(c[27]);
+            acMotor.setTh1t(c[28]);
+            acMotor.setTh2t(c[29]);
+            acMotor.setFuvr(c[30]);
+            acMotor.setUVtr1(c[31]);
+            acMotor.setTtr1(c[32]);
+            acMotor.setUVtr2(c[33]);
+            acMotor.setTtr2(c[34]);
+        }
         return true;
     }
 
@@ -884,7 +1328,7 @@ public class PSSEDStabDirectParser {
 
     // GENROU: IBUS 'GENROU' ID T'do T''do T'qo T''qo H D Xd Xq X'd X'q X''d Xl S(1.0) S(1.2)
     //         idx:  0    1    2   3    4    5    6   7 8  9  10  11  12  13  14   15     16
-    private boolean procGenrou(String busId, String genId, String[] f) throws InterpssException {
+    private boolean procGenrou(String busId, String genId, String[] f, boolean exponential) throws InterpssException {
         double td10 = getDouble(f, 3, 0);
         double td110 = getDouble(f, 4, 0);
         double tq10 = getDouble(f, 5, 0);
@@ -900,14 +1344,18 @@ public class PSSEDStabDirectParser {
         double s100 = getDouble(f, 15, 0) * 100;
         double s120 = getDouble(f, 16, 0) * 100;
         double[] rating = getGenRating(busId, genId);
-        return builder.addGenrou(busId, genId, rating[0], rating[1],
+        var machine = builder.addGenrou(busId, genId, rating[0], rating[1],
                 td10, td110, tq10, tq110, h, d, xd, xq, xd1, xq1, xd11, xl,
-                s100, s120) != null;
+                s100, s120);
+        if (machine == null) return false;
+        ((com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine)machine).setExponentialSaturation(exponential);
+        if (exponential) machine.setName("GENROE");
+        return true;
     }
 
     // GENSAL: IBUS 'GENSAL' ID T'do T''do T''qo H D Xd Xq X'd X''d Xl S(1.0) S(1.2)
     //         idx:  0    1   2   3    4     5   6 7  8  9  10  11  12   13     14
-    private boolean procGensal(String busId, String genId, String[] f) throws InterpssException {
+    private boolean procGensal(String busId, String genId, String[] f, boolean exponential) throws InterpssException {
         double td10 = getDouble(f, 3, 0);
         double td110 = getDouble(f, 4, 0);
         double tq110 = getDouble(f, 5, 0);
@@ -921,8 +1369,10 @@ public class PSSEDStabDirectParser {
         double s100 = getDouble(f, 13, 0) * 100;
         double s120 = getDouble(f, 14, 0) * 100;
         double[] rating = getGenRating(busId, genId);
-        return builder.addGensal(busId, genId, rating[0], rating[1],
-                td10, td110, tq110, h, d, xd, xq, xd1, xd11, xl, s100, s120) != null;
+        return (exponential?builder.addGensae(busId,genId,rating[0],rating[1],
+                td10,td110,tq110,h,d,xd,xq,xd1,xd11,xl,s100,s120):
+                builder.addGensal(busId,genId,rating[0],rating[1],
+                td10,td110,tq110,h,d,xd,xq,xd1,xd11,xl,s100,s120))!=null;
     }
 
     // ==================== Exciter Model Parsers ====================
@@ -999,34 +1449,23 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 18, 0)) != null;
     }
 
-    // EXDC2A: IBUS 'EXDC2A' ID TR KA TA TB TC VRMAX VRMIN KE TE KF TF1 TF2 E1 SE1 E2 SE2
-    private boolean procExcExdc2a(String busId, String genId, String[] f) {
-        return builder.addExcExdc2a(busId, genId,
-                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
-                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
-                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
-                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
-                getDouble(f, 15, 0), getDouble(f, 16, 0), getDouble(f, 17, 0),
-                getDouble(f, 18, 0)) != null;
-    }
-
-    // IEEE 421.5-2005/PSS/E AC8B (21 values). This is the schema used by
-    // ANDES and the supplied cases, not PowerWorld's newer extended data form.
-    // IBUS 'AC8B' ID TR KPR KIR KDR TDR VPIDMAX VPIDMIN VRMAX VRMIN
-    //                 VFEMAX VEMIN TA KA TE KC KD KE E1 SE1 E2 SE2
+    // AC8B's native 21-CON layout is selected by the source model identity.
+    // It is not the alternate export layout with VR/VFE limits before KA/TA.
+    // IBUS 'AC8B' ID TR KPR KIR KDR TDR VPIDMAX VPIDMIN KA TA VRMAX VRMIN
+    //                 KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
     private boolean procExcAc8b(String busId, String genId, String[] f) {
         if (f.length < 24) return false;
-        org.interpss.dstab.control.exc.psse.ac8b.Ac8bData d =
-                new org.interpss.dstab.control.exc.psse.ac8b.Ac8bData();
+        com.interpss.dstab.controller.exc.ac8b.Ac8bData d =
+                new com.interpss.dstab.controller.exc.ac8b.Ac8bData();
         d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
         d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
         d.setTdr(getDouble(f,7,0)); d.setVpidmax(getDouble(f,8,0));
-        d.setVpidmin(getDouble(f,9,0)); d.setVrmax(getDouble(f,10,0));
-        d.setVrmin(getDouble(f,11,0)); d.setVfemax(getDouble(f,12,0));
-        d.setVemin(getDouble(f,13,0)); d.setTa(getDouble(f,14,0));
-        d.setKa(getDouble(f,15,0)); d.setTe(getDouble(f,16,0));
-        d.setKc(getDouble(f,17,0)); d.setKd(getDouble(f,18,0));
-        d.setKe(getDouble(f,19,0)); d.setE1(getDouble(f,20,0));
+        d.setVpidmin(getDouble(f,9,0)); d.setKa(getDouble(f,10,0));
+        d.setTa(getDouble(f,11,0)); d.setVrmax(getDouble(f,12,0));
+        d.setVrmin(getDouble(f,13,0)); d.setKc(getDouble(f,14,0));
+        d.setKd(getDouble(f,15,0)); d.setKe(getDouble(f,16,0));
+        d.setTe(getDouble(f,17,0)); d.setVfemax(getDouble(f,18,0));
+        d.setVemin(getDouble(f,19,0)); d.setE1(getDouble(f,20,0));
         d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
         d.setSe2(getDouble(f,23,0));
         return builder.addExcAc8b(busId,genId,d) != null;
@@ -1052,14 +1491,23 @@ public class PSSEDStabDirectParser {
     // KA TA VRMAX VRMIN KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
     // KP KI XL THETAP KC1 VBMAX
     private boolean procExcAc8c(String busId,String genId,String[] f){
+        if(f.length==35&&!"USRMDL".equalsIgnoreCase(f[1])) {
+            // Current flat records carry five ICONs (including SCL), then
+            // 27 CONs. Reuse the exact wrapper mapper rather than shifting
+            // these fields into the legacy four-ICON interpretation.
+            String[] wrapped=new String[42];
+            System.arraycopy(new String[]{f[0],"USRMDL",f[2],"AC8CU1","2","0","5","27","5","3"},0,wrapped,0,10);
+            System.arraycopy(f,3,wrapped,10,32);
+            return procExcAc8c(busId,genId,wrapped);
+        }
         if("USRMDL".equalsIgnoreCase(f[1])){
             if(f.length!=42||getInt(f,4,-1)!=2||getInt(f,5,-1)!=0
                     ||getInt(f,6,-1)!=5||getInt(f,7,-1)!=27
                     ||getInt(f,8,-1)!=5||getInt(f,9,-1)!=3){
                 log.warn("Invalid native AC8CU1 allocation at bus {}",busId);return false;
             }
-            org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
-                    new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();
+            com.interpss.dstab.controller.exc.ac8c.Ac8cData d=
+                    new com.interpss.dstab.controller.exc.ac8c.Ac8cData();
             d.setOelLocation(getInt(f,10,0));d.setUelLocation(getInt(f,11,0));
             d.setSclLocation(getInt(f,12,0));d.setVosLocation(getInt(f,13,1));
             d.setSw1(getInt(f,14,1));int c=15;
@@ -1079,8 +1527,8 @@ public class PSSEDStabDirectParser {
             return builder.addExcAc8c(busId,genId,d)!=null;
         }
         if(f.length<34)return false;
-        org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
-                new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();
+        com.interpss.dstab.controller.exc.ac8c.Ac8cData d=
+                new com.interpss.dstab.controller.exc.ac8c.Ac8cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));
         d.setKpr(getDouble(f,8,0));d.setKir(getDouble(f,9,0));d.setKdr(getDouble(f,10,0));
@@ -1102,8 +1550,8 @@ public class PSSEDStabDirectParser {
     // THETAP VBMAX1 VBMAX2 VLIM1 VLIM2
     private boolean procExcAc9c(String busId,String genId,String[] f){
         if(f.length<48)return false;
-        org.interpss.dstab.control.exc.psse.ac9c.Ac9cData d=
-                new org.interpss.dstab.control.exc.psse.ac9c.Ac9cData();
+        com.interpss.dstab.controller.exc.ac9c.Ac9cData d=
+                new com.interpss.dstab.controller.exc.ac9c.Ac9cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setSw1(getInt(f,5,1));d.setTr(getDouble(f,6,0));d.setKpr(getDouble(f,7,0));
         d.setKir(getDouble(f,8,0));d.setKdr(getDouble(f,9,0));d.setTdr(getDouble(f,10,0));
@@ -1131,8 +1579,8 @@ public class PSSEDStabDirectParser {
     // E1 SE1 E2 SE2 KP KI XL THETAP KC1 VBMAX1 KI2 KC2 VBMAX2 KBOOST VBOOST
     private boolean procExcAc11c(String busId,String genId,String[] f){
         if(f.length<43)return false;
-        org.interpss.dstab.control.exc.psse.ac11c.Ac11cData d=
-                new org.interpss.dstab.control.exc.psse.ac11c.Ac11cData();
+        com.interpss.dstab.controller.exc.ac11c.Ac11cData d=
+                new com.interpss.dstab.controller.exc.ac11c.Ac11cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));
         d.setKpa(getDouble(f,8,0));d.setTia(getDouble(f,9,0));
@@ -1159,8 +1607,8 @@ public class PSSEDStabDirectParser {
     // IBUS 'BBSEX1' ID Tf K T1 T2 T3 T4 Vrmax Vrmin Efdmax Efdmin Switch
     private boolean procExcBbsex1(String busId, String genId, String[] f) {
         if (f.length < 14) return false;
-        org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data d =
-                new org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data();
+        com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data d =
+                new com.interpss.dstab.controller.exc.bbsex1.Bbsex1Data();
         d.setTf(getDouble(f, 3, 0.0));
         d.setK(getDouble(f, 4, 0.0));
         d.setT1(getDouble(f, 5, 0.0));
@@ -1352,7 +1800,10 @@ public class PSSEDStabDirectParser {
         d.setVamax(getDouble(f,15,0)); d.setVamin(getDouble(f,16,0)); d.setVrmax(getDouble(f,17,0));
         d.setVrmin(getDouble(f,18,0)); d.setKc(getDouble(f,19,0)); d.setKf(getDouble(f,20,0));
         d.setTf(getDouble(f,21,0)); d.setKlr(getDouble(f,22,0)); d.setIlr(getDouble(f,23,0));
-        return builder.addExcSt1c(busId,genId,d) != null;
+        var exciter = builder.addExcSt1c(busId, genId, d);
+        if (exciter == null) return false;
+        exciter.useNativeAlgebraicSampling();
+        return true;
     }
 
     // ST4C flat interchange form, or the ST4CU1 USRMDL wrapper with five ICONs,
@@ -1588,8 +2039,8 @@ public class PSSEDStabDirectParser {
     private boolean procExcAc7b(String modelName, String busId, String genId, String[] f) {
         int required = modelName.equals("ESAC7B") ? 31 : 30;
         if (f.length < required) return false;
-        org.interpss.dstab.control.exc.psse.ac7b.Ac7bData d =
-                new org.interpss.dstab.control.exc.psse.ac7b.Ac7bData();
+        com.interpss.dstab.controller.exc.ac7b.Ac7bData d =
+                new com.interpss.dstab.controller.exc.ac7b.Ac7bData();
         d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
         d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
         d.setTdr(getDouble(f,7,0)); d.setVrmax(getDouble(f,8,0));
@@ -1622,19 +2073,19 @@ public class PSSEDStabDirectParser {
     //         FBF KIP KII TP VFMAX VFMIN KH KE TE KC KD E1 SE1 E2 SE2 FLIMF
     private boolean procExcRexsys(String busId,String genId,String[] f) {
         if (f.length < 34) return false;
-        org.interpss.dstab.control.exc.psse.rexsys.RexsysData d =
-                new org.interpss.dstab.control.exc.psse.rexsys.RexsysData();
+        com.interpss.dstab.controller.exc.rexsys.RexsysData d =
+                new com.interpss.dstab.controller.exc.rexsys.RexsysData();
         d.setTr(getDouble(f,3,0));d.setKvp(getDouble(f,4,0));d.setKvi(getDouble(f,5,0));
         d.setVimax(getDouble(f,6,0));d.setTa(getDouble(f,7,0));d.setTb1(getDouble(f,8,0));
         d.setTc1(getDouble(f,9,0));d.setTb2(getDouble(f,10,0));d.setTc2(getDouble(f,11,0));
         d.setVrmax(getDouble(f,12,0));d.setVrmin(getDouble(f,13,0));d.setKf(getDouble(f,14,0));
         d.setTf(getDouble(f,15,0));d.setTf1(getDouble(f,16,0));d.setTf2(getDouble(f,17,0));
-        d.setFbf(getInt(f,18,0));d.setKip(getDouble(f,19,0));d.setKii(getDouble(f,20,0));
+        d.setFbf(getIntegralConstant(f,18,0));d.setKip(getDouble(f,19,0));d.setKii(getDouble(f,20,0));
         d.setTp(getDouble(f,21,0));d.setVfmax(getDouble(f,22,0));d.setVfmin(getDouble(f,23,0));
         d.setKh(getDouble(f,24,0));d.setKe(getDouble(f,25,0));d.setTe(getDouble(f,26,0));
         d.setKc(getDouble(f,27,0));d.setKd(getDouble(f,28,0));d.setE1(getDouble(f,29,0));
         d.setSe1(getDouble(f,30,0));d.setE2(getDouble(f,31,0));d.setSe2(getDouble(f,32,0));
-        d.setFlimf(getInt(f,33,0));
+        d.setFlimf(getIntegralConstant(f,33,0));
         return builder.addExcRexsys(busId,genId,d)!=null;
     }
 
@@ -1662,8 +2113,12 @@ public class PSSEDStabDirectParser {
         double kc = getDouble(f, 12, 0);
         double vimax = getDouble(f, 4, 0);
         double vimin = getDouble(f, 5, 0);
-        builder.addExcIeee1981St1(busId, genId, tr, ka, ta, tc, tb,
+        var exciter = builder.addExcIeee1981St1(busId, genId, tr, ka, ta, tc, tb,
                 vrmax, vrmin, kf, tf, kc, vimax, vimin);
+        if (exciter == null) return false;
+        exciter.getData().setFieldVoltageLimitConvention(
+                com.interpss.dstab.controller.exc.ieee1981st1.IEEE1981ST1ExciterData
+                        .FieldVoltageLimitConvention.EXST1);
         return true;
     }
 
@@ -1847,8 +2302,8 @@ public class PSSEDStabDirectParser {
     // E1 SE1 E2 SE2 KI XL THETAP KC1 VBMAX KR. SCL and Spdmlt are typed-only.
     private boolean procExcAc7c(String busId,String genId,String[] f){
         if(f.length<41)return false;
-        org.interpss.dstab.control.exc.psse.ac7c.Ac7cData d=
-                new org.interpss.dstab.control.exc.psse.ac7c.Ac7cData();
+        com.interpss.dstab.controller.exc.ac7c.Ac7cData d=
+                new com.interpss.dstab.controller.exc.ac7c.Ac7cData();
         d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
         d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setSw2(getInt(f,7,1));
         d.setTr(getDouble(f,8,0));d.setKpr(getDouble(f,9,0));d.setKir(getDouble(f,10,0));
@@ -2072,6 +2527,7 @@ public class PSSEDStabDirectParser {
     private boolean procExcEsst4b(String busId, String genId, String[] f) {
         if (f.length < 20) return false;
         IEEE2005ST4BExciterData d = new IEEE2005ST4BExciterData();
+        d.setIntegralStateLimits(true);
         d.setTr(getDouble(f, 3, 0)); d.setKpr(getDouble(f, 4, 0));
         d.setKir(getDouble(f, 5, 0)); d.setVrmax(getDouble(f, 6, 0));
         d.setVrmin(getDouble(f, 7, 0)); d.setTa(getDouble(f, 8, 0));
@@ -2095,7 +2551,7 @@ public class PSSEDStabDirectParser {
         data.setTe(getDouble(f, 6, 0));
         data.setEfdmin(getDouble(f, 7, 0));
         data.setEfdmax(getDouble(f, 8, 0));
-        data.setCswitch(getInt(f, 9, 0));
+        data.setCswitch(getIntegralConstant(f, 9, 0));
         data.setRcOverRfd(getDouble(f, 10, 0));
         return builder.addExcScrx(busId, genId, data) != null;
     }
@@ -2131,9 +2587,17 @@ public class PSSEDStabDirectParser {
         if (f.length < 22) return false;
         int mode = getInt(f, 3, 0);
         int remoteBus = getInt(f, 4, 0);
-        if ((mode < 1 || mode > 5 || mode == 2) || remoteBus != 0) {
+        if (mode < 1 || mode > 6 || remoteBus < 0
+                || (remoteBus != 0 && mode != 2 && mode != 5 && mode != 6)) {
             log.warn("IEEEST remote-bus or unsupported signal mode {} at bus {}", mode, busId);
             return false;
+        }
+        if (remoteBus != 0) {
+            var measuredBus = builder.getBaseDStabNetwork().getBus("Bus" + remoteBus);
+            if (measuredBus == null || !measuredBus.isActive()) {
+                log.warn("IEEEST at bus {} requires an active measurement bus {}", busId, remoteBus);
+                return false;
+            }
         }
         var machine = builder.getBaseDStabNetwork().getMachine(busId + "-mach" + genId);
         if (machine == null || machine.getExciter() == null) {
@@ -2244,6 +2708,35 @@ public class PSSEDStabDirectParser {
     private record PendingOel2c(String busId,String genId,String[] fields,
             PsseDyrRecord record) {}
 
+    private boolean procOel3c(PsseDyrRecord record) {
+        int offset = 0;
+        if (record.sourceModelName().equals("OEL3CU")) {
+            if (!record.fields().get(1).equalsIgnoreCase("USRMDL") || record.parameterCount() != 18)
+                throw new IllegalArgumentException("OEL3CU requires its exact user-model wrapper");
+            int[] allocation = {10, 0, 2, 10, 2, 4};
+            for (int i = 0; i < allocation.length; i++)
+                if (record.intParameter(i) != allocation[i])
+                    throw new IllegalArgumentException("Incorrect OEL3CU allocation field " + (i + 1));
+            offset = allocation.length;
+        } else if (!record.sourceModelName().equals("OEL3C") || record.parameterCount() != 12) return false;
+        var d=new com.interpss.dstab.controller.oel.oel3c.Oel3cData(record.intParameter(offset),record.intParameter(offset+1),
+            record.doubleParameter(offset+2),record.doubleParameter(offset+3),record.doubleParameter(offset+4),record.doubleParameter(offset+5),
+            record.doubleParameter(offset+6),record.doubleParameter(offset+7),record.doubleParameter(offset+8),record.doubleParameter(offset+9),
+            record.doubleParameter(offset+10),record.doubleParameter(offset+11));
+        return builder.addOel3c(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),d)!=null;
+    }
+
+    private boolean procBasoel2(PsseDyrRecord record) {
+        if(!record.sourceModelName().equals("BASOEL2")||record.parameterCount()!=15)return false;
+        var d=new com.interpss.dstab.controller.oel.basoel2.Basoel2Data(
+            record.intParameter(0),record.intParameter(1),record.intParameter(2),
+            record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),
+            record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),
+            record.doubleParameter(9),record.doubleParameter(10),record.doubleParameter(11),
+            record.doubleParameter(12),record.doubleParameter(13),record.doubleParameter(14));
+        return builder.addBasoel2(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),d,BASOEL2_TIMER_POLICY)!=null;
+    }
+
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}
 
     private record CompositeLoadTarget(BaseDStabBus<?, ?> bus, Set<String> loadIds,
@@ -2264,7 +2757,7 @@ public class PSSEDStabDirectParser {
     // PSS2A: IBUS 'PSS2A' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
     //         Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3 T8 T9 Ks1 T1 T2 T3 T4 VSTMAX VSTMIN
     private boolean procPss2a(String busId, String genId, String[] f) {
-        return builder.addPss2a(busId, genId,
+        var stabilizer = builder.addPss2a(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0),
                 getInt(f, 5, 0), getInt(f, 6, 0),
                 getInt(f, 7, 0), getInt(f, 8, 0),
@@ -2274,50 +2767,50 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
                 getDouble(f, 20, 0), getDouble(f, 21, 0),
                 getDouble(f, 22, 0), getDouble(f, 23, 0),
-                getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
-    }
-
-    // PSSSB: PSS2A fields with Ks4, followed by Sw1 Td1 Td2 Vtl Vk Vcutoff.
-    private boolean procPsssb(String busId, String genId, String[] f) {
-        PsssbStabilizerData data = new PsssbStabilizerData();
-        data.setIcs1(getInt(f, 3, 0));
-        data.setRemoteBus1(getInt(f, 4, 0));
-        data.setIcs2(getInt(f, 5, 0));
-        data.setRemoteBus2(getInt(f, 6, 0));
-        data.setM(getInt(f, 7, 0));
-        data.setN(getInt(f, 8, 0));
-        data.setTw1(getDouble(f, 9, 0));
-        data.setTw2(getDouble(f, 10, 0));
-        data.setTw3(getDouble(f, 11, 0));
-        data.setTw4(getDouble(f, 12, 0));
-        data.setT6(getDouble(f, 13, 0));
-        data.setT7(getDouble(f, 14, 0));
-        data.setKs2(getDouble(f, 15, 0));
-        data.setKs3(getDouble(f, 16, 0));
-        data.setKs4(getDouble(f, 17, 1));
-        data.setT8(getDouble(f, 18, 0));
-        data.setT9(getDouble(f, 19, 0));
-        data.setKs1(getDouble(f, 20, 0));
-        data.setT1(getDouble(f, 21, 0));
-        data.setT2(getDouble(f, 22, 0));
-        data.setT3(getDouble(f, 23, 0));
-        data.setT4(getDouble(f, 24, 0));
-        data.setVstmax(getDouble(f, 25, 0));
-        data.setVstmin(getDouble(f, 26, 0));
-        data.setSw1(getInt(f, 27, 0));
-        data.setTd1(getDouble(f, 28, 0));
-        data.setTd2(getDouble(f, 29, 0));
-        data.setVtl(getDouble(f, 30, 0));
-        data.setVk(getDouble(f, 31, 0));
-        data.setVcutoff(getDouble(f, 32, 0));
-        return builder.addPsssb(busId, genId, data) != null;
+                getDouble(f, 24, 0), getDouble(f, 25, 0));
+        if (stabilizer == null) {
+            return false;
+        }
+        stabilizer.useTerminalElectricalPowerInput();
+        return true;
     }
 
     // PSS2B: IBUS 'PSS2B' ID ICS1 ICS2 M N Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3
     //         T8 T9 Ks1 T1 T2 T3 T4 T10 T11 VSI1MAX VSI1MIN VSI2MAX VSI2MIN
     //         VSTMAX VSTMIN A Ta Tb Ks4
     private boolean procPss2b(String busId, String genId, String[] f) {
-        return builder.addPss2b(busId, genId,
+        // The standard record and the two existing typed layouts have distinct cardinalities.
+        if (f.length != 30 && f.length != 32 && f.length != 34) return false;
+        if (f.length == 32) {
+            int first = Integer.parseInt(f[3]), remote1 = Integer.parseInt(f[4]);
+            int second = Integer.parseInt(f[5]), remote2 = Integer.parseInt(f[6]);
+            // An explicit reference to the owning bus is still a local machine signal.
+            int ownBus=Integer.parseInt(busId.substring(BUS_ID_PREFIX.length()));
+            if ((remote1 != 0 && remote1 != ownBus && (first == 1 || first == 3 || first == 4))
+                    || (remote2 != 0 && remote2 != ownBus && (second == 1 || second == 3 || second == 4))) return false;
+            var network = builder.getBaseDStabNetwork();
+            BaseDStabBus<?, ?> b1 = network.getDStabBus(remote1 == 0 ? busId : BUS_ID_PREFIX + remote1);
+            BaseDStabBus<?, ?> b2 = network.getDStabBus(remote2 == 0 ? busId : BUS_ID_PREFIX + remote2);
+            if (b1 == null || b2 == null) return false;
+            int m = Integer.parseInt(f[7]), n = Integer.parseInt(f[8]);
+            if ((long) m * n > 8) return false;
+            var pss = builder.addPss2b(busId, genId, first, second,
+                    m, n,
+                    getDouble(f,9,0),getDouble(f,10,0),getDouble(f,11,0),
+                    getDouble(f,12,0),getDouble(f,13,0),getDouble(f,14,0),
+                    getDouble(f,15,0),getDouble(f,16,0),getDouble(f,17,0),getDouble(f,18,0),
+                    getDouble(f,19,0),getDouble(f,20,0),getDouble(f,21,0),
+                    getDouble(f,22,0),getDouble(f,23,0),getDouble(f,24,0),getDouble(f,25,0),
+                    getDouble(f,26,0),getDouble(f,27,0),getDouble(f,28,0),getDouble(f,29,0),
+                    getDouble(f,30,0),getDouble(f,31,0),1.0,0.0,0.0,1.0);
+            if (pss == null) return false;
+            pss.getData().setStandardInputLagPreparation(true);
+            pss.getData().setSampledInputPathOutputs(true);
+            pss.setInputSignalBuses(b1, b2);
+            pss.useTerminalElectricalPowerInput();
+            return true;
+        }
+        var pss = builder.addPss2b(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0),
                 getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
                 getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
@@ -2328,7 +2821,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 24, 0), getDouble(f, 25, 0), getDouble(f, 26, 0),
                 getDouble(f, 27, 0), getDouble(f, 28, 0), getDouble(f, 29, 0),
                 getDouble(f, 30, 1), getDouble(f, 31, 0), getDouble(f, 32, 0),
-                getDouble(f, 33, 1)) != null;
+                getDouble(f, 33, 1));
+        if (pss == null) return false;
+        if (f.length == 30) pss.useTerminalElectricalPowerInput();
+        return true;
     }
 
     // PSS2C: IBUS 'PSS2C' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
@@ -2345,7 +2841,7 @@ public class PSSEDStabDirectParser {
             }
             offset=10;
         } else if(f.length<38)return false;
-        return builder.addPss2c(busId, genId,
+        var pss = builder.addPss2c(busId, genId,
                 getInt(f,offset,0),getInt(f,offset+1,0),getInt(f,offset+2,0),getInt(f,offset+3,0),
                 getInt(f,offset+4,0),getInt(f,offset+5,0),
                 getDouble(f,offset+6,0),getDouble(f,offset+7,0),getDouble(f,offset+8,0),
@@ -2357,7 +2853,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f,offset+24,0),getDouble(f,offset+25,0),getDouble(f,offset+26,0),
                 getDouble(f,offset+27,0),getDouble(f,offset+28,0),getDouble(f,offset+29,0),
                 getDouble(f,offset+30,0),getDouble(f,offset+31,0),getDouble(f,offset+32,0),
-                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0)) != null;
+                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0));
+        if (pss == null) return false;
+        pss.setUseTerminalElectricalPowerInput(true);
+        return true;
     }
 
     // PSS3B: IBUS 'PSS3B' ID ICS1 REMBUS1 ICS2 REMBUS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
@@ -2414,48 +2913,55 @@ public class PSSEDStabDirectParser {
         return builder.addPss4c(busId, genId, parameters) != null;
     }
 
-    // PowerWorld DYR extension: WECC lists no native PSS/E PSS5C name.
+    // Native PSS5C: thirty constants; its internal ICON is not a record selector.
     private boolean procPss5c(String busId, String genId, String[] f) {
-        if (f.length < 24) return false;
-        double[] parameters = new double[21];
+        if (f.length != 33) return false;
+        double[] parameters = new double[30];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
-        return builder.addPss5c(busId, genId, parameters) != null;
+        return builder.addPss5cNative(busId, genId, parameters) != null;
     }
 
-    // PSS6C: four selectors and 30 constants; PowerWorld adds Tpgfilt before Xcomp.
+    // Native PSS6C: four selectors and 30 constants; no inferred vendor filter.
     private boolean procPss6c(String busId, String genId, String[] f) {
-        if (f.length < 37) return false;
-        int count = f.length >= 38 ? 35 : 34;
-        double[] parameters = new double[count];
+        if (f.length != 37) return false;
+        double[] parameters = new double[34];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss6c(busId, genId, parameters) != null;
     }
 
-    // PSS7C: six ICONs and 32 constants; PowerWorld adds Tpgfilt before Xcomp.
+    // Native PSS7C: six selectors and 32 constants; no inferred vendor filter.
     private boolean procPss7c(String busId, String genId, String[] f) {
-        if (f.length < 41) return false;
-        int count = f.length >= 42 ? 39 : 38;
-        double[] parameters = new double[count];
+        if (f.length != 41) return false;
+        double[] parameters = new double[38];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss7c(busId, genId, parameters) != null;
     }
 
-    // PSS1A: IBUS 'PSS1A' ID ICS A1 A2 T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
-    private boolean procPss1a(String busId, String genId, String[] f) {
-        if (f.length < 17) return false;
-        return builder.addPss1a(busId, genId,
-                getInt(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
-                getDouble(f, 6, 0), getDouble(f, 7, 0),
-                getDouble(f, 8, 0), getDouble(f, 9, 0),
-                getDouble(f, 10, 0), getDouble(f, 11, 0),
-                getDouble(f, 12, 0), getDouble(f, 13, 0),
-                getDouble(f, 14, 0), getDouble(f, 15, 0), getDouble(f, 16, 0)) != null;
+    private boolean procGovWsieg1(String busId, String genId, PsseDyrRecord record) {
+        double[] constants = new double[34];
+        for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 2);
+        var bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen generator = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (generator == null || !(generator.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine machine)) return false;
+        com.interpss.dstab.mach.Machine secondary=null;
+        int secondaryBus=record.intParameter(0);
+        if(secondaryBus!=0) {
+            var secondBus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+secondaryBus);
+            DStabGen second=secondBus==null?null:(DStabGen)secondBus.getContributeGen(record.parameter(1));
+            if(second==null || !(second.getDynamicGenDevice() instanceof com.interpss.dstab.mach.Machine other)
+                    || other==machine || other.getGovernor()!=null)return false;
+            secondary=other;
+        }
+        var governor = new com.interpss.dstab.controller.gov.weccwsieg1.Wsieg1Governor(machine.getId()+"_Gov", constants);
+        governor.setMachine(machine);
+        if(secondary!=null)governor.attachSecondaryShaft(secondary);
+        return true;
     }
 
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
@@ -2695,7 +3201,7 @@ public class PSSEDStabDirectParser {
     //           TauF Kf K5 K4 T3 T4 TauT T5 Af1 Bf1 Af2 Bf2 Cf2 Tr K6 Tc Td dbH dbL
     private boolean procGovGastwdd(String busId, String genId, String[] f) {
         if (f.length < 37) return false;
-        var d = new org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData();
+        var d = new com.interpss.dstab.controller.gov.gastwd.PsseGastwddGovernorData();
         d.setKdroop(getDouble(f,3,0)); d.setKp(getDouble(f,4,0)); d.setKi(getDouble(f,5,0));
         d.setKd(getDouble(f,6,0)); d.setEtd(getDouble(f,7,0)); d.setTcd(getDouble(f,8,0));
         d.setTrate(getDouble(f,9,0)); d.setT(getDouble(f,10,0)); d.setMaxLimit(getDouble(f,11,0));
@@ -2715,7 +3221,7 @@ public class PSSEDStabDirectParser {
     //           K5 K4 T3 T4 TauT T5 Af1 Bf1 Af2 Bf2 Cf2 Tr K6 Tc dbH dbL
     private boolean procGovGast2ad(String busId, String genId, String[] f) {
         if (f.length < 36) return false;
-        var d = new org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernorData();
+        var d = new com.interpss.dstab.controller.gov.gast2a.PsseGast2adGovernorData();
         d.setW(getDouble(f, 3, 0)); d.setX(getDouble(f, 4, 0));
         d.setY(getDouble(f, 5, 0)); d.setZ(getInt(f, 6, 0));
         d.setEtd(getDouble(f, 7, 0)); d.setTcd(getDouble(f, 8, 0));
@@ -2741,6 +3247,8 @@ public class PSSEDStabDirectParser {
     private boolean procGovGgov1(String busId, String genId, String[] f, boolean deadbandVariant) {
         if (f.length < (deadbandVariant ? 40 : 38)) return false;
         PsseGgov1GovernorData d = new PsseGgov1GovernorData();
+        d.setUseDeclaredValveRates(true);
+        d.setUseDeclaredValveLimits(true);
         d.setRselect(getInt(f, 3, 0)); d.setFlag(getInt(f, 4, 0));
         d.setR(getDouble(f, 5, 0)); d.setTpelec(getDouble(f, 6, 0));
         d.setMaxerr(getDouble(f, 7, 0)); d.setMinerr(getDouble(f, 8, 0));
@@ -2787,8 +3295,8 @@ public class PSSEDStabDirectParser {
     // Native PSS/E HYGOVR1 order: 26 CONs, no ICONs.
     private boolean procGovHygovr1(String busId, String genId, String[] f) {
         if (f.length < 29) return false;
-        org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData d =
-                new org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData();
+        com.interpss.dstab.controller.gov.hygovr.PsseHygovrGovernorData d =
+                new com.interpss.dstab.controller.gov.hygovr.PsseHygovrGovernorData();
         int p = 3;
         d.setDb1(getDouble(f, p++, 0)); d.setErr(getDouble(f, p++, 0));
         d.setTd(getDouble(f, p++, 0)); d.setT1(getDouble(f, p++, 0));
@@ -2809,8 +3317,24 @@ public class PSSEDStabDirectParser {
     // PSS/E HYG3U1 conversion order: one controller ICON followed by 36 CONs.
     // ICON 1 selects PID and ICON 0 selects the double-derivative branch.
     private boolean procGovHyg3(String busId, String genId, String[] f) {
-        if (f.length < 40) return false;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            int[] allocation = {5, 0, 2, 36, 9, 5};
+            if (f.length != 48) return false;
+            for (int i = 0; i < allocation.length; i++)
+                if (Integer.parseInt(f[4+i]) != allocation[i]) return false;
+            // The second allocated ICON is internal storage, initialized to zero.
+            if (Integer.parseInt(f[11]) != 0) return false;
+            String[] normalized = new String[40];
+            System.arraycopy(f, 0, normalized, 0, 3);
+            normalized[3] = f[10];
+            System.arraycopy(f, 12, normalized, 4, 36);
+            f = normalized;
+        }
+        if (f.length != 40) return false;
         PsseHyg3GovernorData d = new PsseHyg3GovernorData();
+        d.setFrequencyDeadbandConvention(PsseHyg3GovernorData.FrequencyDeadbandConvention.PER_UNIT_SCALED_ERROR);
+        d.setBacklashConvention(PsseHyg3GovernorData.BacklashConvention.PER_UNIT_GATE);
+        d.setZeroDerivativeFilterConvention(PsseHyg3GovernorData.ZeroDerivativeFilterConvention.FOUR_OUTER_INTERVALS);
         d.setControlFlag(getInt(f, 3, 0));
         d.setRgate(getDouble(f, 4, 0)); d.setRelec(getDouble(f, 5, 0));
         d.setTt(getDouble(f, 6, 0)); d.setTd(getDouble(f, 7, 0));
@@ -2836,7 +3360,10 @@ public class PSSEDStabDirectParser {
     private boolean procGovH6e(String busId, String genId, String[] f, PsseDyrRecord record) {
         PsseH6eGovernorData d = new PsseH6eGovernorData();
         boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
-        if (wrapped || "H6EU1".equalsIgnoreCase(record.sourceModelName())) {
+        boolean nativeH6e1 = record.sourceModelName().equals("H6E1");
+        d.setNativeH6e1Derivative(nativeH6e1);
+        if (nativeH6e1 && wrapped) throw new IllegalArgumentException("H6E1 requires the standard native header");
+        if (wrapped || nativeH6e1 || "H6EU1".equalsIgnoreCase(record.sourceModelName())) {
             int icon = wrapped ? 10 : 3;
             int c = icon + 1;
             if (f.length < c + 62) return false;
@@ -2854,10 +3381,18 @@ public class PSSEDStabDirectParser {
             d.setTbs(getDouble(f, c + 20, 0)); d.setBgvmin(getDouble(f, c + 21, 0));
             d.setBlv(getDouble(f, c + 22, 0)); d.setDturb(getDouble(f, c + 23, 0));
             d.setPgc(getDouble(f, c + 24, 0)); d.setDeff(getDouble(f, c + 25, 0));
-            d.setHdam(getDouble(f, c + 26, 1)); d.setTw(getDouble(f, c + 27, 0));
-            for (int i = 0; i < 10; i++) d.setGv(i, getDouble(f, c + 28 + i, 0));
-            for (int i = 0; i < 10; i++) d.setPgv(i, getDouble(f, c + 38 + i, 0));
-            for (int i = 0; i < 10; i++) d.setBgv(i, getDouble(f, c + 48 + i, 0));
+            d.setHdam(getDouble(f, c + 26, 1));
+            // Native H6E1 puts Tw after all three curves. H6EU1 puts it before
+            // them. The source model identity, not the RAW revision or plausible
+            // curve values, determines the layout even though both have 63 fields.
+            boolean currentNativeOrder = nativeH6e1;
+            if (currentNativeOrder && (getDouble(f, c + 59, 0) != 0 || getDouble(f, c + 60, 0) != 0))
+                throw new IllegalArgumentException("Native H6E1 asymmetric speed deadband is not qualified by the H6E runtime; zero bounds required");
+            int curve = currentNativeOrder ? 27 : 28;
+            d.setTw(getDouble(f, c + (currentNativeOrder ? 57 : 27), 0));
+            for (int i = 0; i < 10; i++) d.setGv(i, getDouble(f, c + curve + i, 0));
+            for (int i = 0; i < 10; i++) d.setPgv(i, getDouble(f, c + curve + 10 + i, 0));
+            for (int i = 0; i < 10; i++) d.setBgv(i, getDouble(f, c + curve + 20 + i, 0));
             d.setSprate(getDouble(f, c + 58, 0)); d.setDb1(getDouble(f, c + 59, 0));
             d.setEps(getDouble(f, c + 60, 0)); d.setTrate(getDouble(f, c + 61, 0));
         } else {
@@ -2887,91 +3422,59 @@ public class PSSEDStabDirectParser {
         return builder.addGovH6e(busId, genId, d) != null;
     }
 
-    // Native PSS/E GENQEC interchange order. Accel is a numerical
-    // network-boundary iteration parameter, not a machine differential state.
-    // IBUS 'GENQEC' ID Accel T'do T''do T'qo T''qo H D Xd Xq X'd X'q
-    //                    X''d X''q Xl S(1.0) S(1.2) Kw SatFunc
-    // Ra comes from the RAW generator source impedance. Rcomp and Xcomp are
-    // PowerWorld typed properties and are not fields in the PSS/E DYR record.
-    private boolean procGenqec(String busId, String genId, String[] f) throws InterpssException {
-        if ("USRMDL".equalsIgnoreCase(f[1])) {
-            if (f.length != 27
-                    || getInt(f, 4, -1) != 1 || getInt(f, 5, -1) != 1
-                    || getInt(f, 6, -1) != 1 || getInt(f, 7, -1) != 16
-                    || getInt(f, 8, -1) != 6 || getInt(f, 9, -1) != 1) {
-                log.warn("Invalid native GENQECU allocation at bus {}", busId);
-                return false;
+    // Ra comes from the RAW generator source impedance. Compensation and
+    // acceleration remain typed properties, not native record fields.
+    /** Native standard GENQEC: one ICON followed by sixteen CON values.
+     * Wrapper allocation precedes the same ICON/CON vector. Typed three-way
+     * saturation and acceleration settings are not native record fields. */
+    private int nativeGenqecSelectorOffset(PsseDyrRecord record, boolean allowStandard) {
+        if ("USRMDL".equalsIgnoreCase(record.fields().get(1))) {
+            int[] allocation = {1, 1, 1, 16, 6, 1};
+            if (record.parameterCount() != 23) return -1;
+            for (int i = 0; i < allocation.length; i++) {
+                if (record.intParameter(i) != allocation[i]) return -1;
             }
-            GenqecData data = new GenqecData(
-                    getDouble(f, 15, 0.0), getDouble(f, 16, 0.0), 0.0,
-                    getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                    getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
-                    getDouble(f, 21, 0.0), getDouble(f, 22, 0.0), getDouble(f, 23, 0.0),
-                    getDouble(f, 11, 0.0), getDouble(f, 13, 0.0),
-                    getDouble(f, 12, 0.0), getDouble(f, 14, 0.0),
-                    getDouble(f, 24, 0.0), getDouble(f, 25, 0.0),
-                    0.0, 0.0, 0.0, getDouble(f, 26, 0.0), getInt(f, 10, 0));
-            double[] rating = getGenRating(busId, genId);
-            builder.addGenqec(busId, genId, rating[0], rating[1], data);
-            return true;
+            return 6;
         }
-        if (f.length < 21) {
-            log.warn("Incomplete GENQEC record at bus {}: expected 21 fields, found {}", busId, f.length);
-            return false;
+        return allowStandard && record.parameterCount() == 17 ? 0 : -1;
+    }
+
+    private double[] nativeGenqecConstants(PsseDyrRecord record, int selectorOffset) {
+        double[] constants = new double[16];
+        for (int i = 0; i < constants.length; i++) {
+            constants[i] = record.doubleParameter(selectorOffset + 1 + i);
+            if (!Double.isFinite(constants[i])) {
+                throw new IllegalArgumentException("Generator constant must be finite: " + (i + 1));
+            }
         }
-        GenqecData data = new GenqecData(
-                getDouble(f, 8, 0.0), getDouble(f, 9, 0.0), 0.0,
-                getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
-                getDouble(f, 12, 0.0), getDouble(f, 13, 0.0),
-                getDouble(f, 14, 0.0), getDouble(f, 15, 0.0), getDouble(f, 16, 0.0),
-                getDouble(f, 4, 0.0), getDouble(f, 6, 0.0),
-                getDouble(f, 5, 0.0), getDouble(f, 7, 0.0),
-                getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                0.0, 0.0,
-                getDouble(f, 3, 0.0), getDouble(f, 19, 0.0), (int) getDouble(f, 20, 0.0));
+        return constants;
+    }
+
+    private boolean procGenqec(String busId, String genId, PsseDyrRecord record) throws InterpssException {
+        int selectorOffset = nativeGenqecSelectorOffset(record, true);
+        if (selectorOffset < 0) return false;
+        // Every nonzero native ICON means scaled quadratic, including 2/-1.
+        int saturation = record.intParameter(selectorOffset) == 0 ? 0 : 1;
+        double[] c = nativeGenqecConstants(record, selectorOffset);
+        GenqecData data = new GenqecData(c[4], c[5], 0.0,
+                c[6], c[7], c[8], c[9], c[10], c[11], c[12],
+                c[0], c[2], c[1], c[3], c[13], c[14],
+                0.0, 0.0, 0.0, c[15], saturation);
         double[] rating = getGenRating(busId, genId);
         builder.addGenqec(busId, genId, rating[0], rating[1], data);
         return true;
     }
 
-    // GENQEJ has a flat 18-field interchange form. Native 36.7 supplies
-    // GENQEJU through USRMDL with six allocation fields, one ICON, and 16 CONs.
-    private boolean procGenqej(String busId, String genId, String[] f) throws InterpssException {
-        if ("USRMDL".equalsIgnoreCase(f[1])) {
-            if (f.length != 27
-                    || getInt(f, 4, -1) != 1 || getInt(f, 5, -1) != 1
-                    || getInt(f, 6, -1) != 1 || getInt(f, 7, -1) != 16
-                    || getInt(f, 8, -1) != 6 || getInt(f, 9, -1) != 1) {
-                log.warn("Invalid native GENQEJU allocation at bus {}", busId);
-                return false;
-            }
-            GenqejData data = new GenqejData(
-                    getDouble(f, 15, 0.0), getDouble(f, 16, 0.0), 0.0,
-                    getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                    getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
-                    getDouble(f, 21, 0.0), getDouble(f, 22, 0.0), getDouble(f, 23, 0.0),
-                    getDouble(f, 11, 0.0), getDouble(f, 13, 0.0),
-                    getDouble(f, 12, 0.0), getDouble(f, 14, 0.0),
-                    getDouble(f, 24, 0.0), getDouble(f, 25, 0.0),
-                    0.0, 0.0, 0.0, getDouble(f, 26, 0.0), getInt(f, 10, 0));
-            double[] rating = getGenRating(busId, genId);
-            builder.addGenqej(busId, genId, rating[0], rating[1], data);
-            return true;
-        }
-        if (f.length < 21) {
-            log.warn("Incomplete GENQEJ record at bus {}: expected 21 fields, found {}", busId, f.length);
-            return false;
-        }
-        GenqejData data = new GenqejData(
-                getDouble(f, 8, 0.0), getDouble(f, 9, 0.0), 0.0,
-                getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
-                getDouble(f, 12, 0.0), getDouble(f, 13, 0.0),
-                getDouble(f, 14, 0.0), getDouble(f, 15, 0.0), getDouble(f, 16, 0.0),
-                getDouble(f, 4, 0.0), getDouble(f, 6, 0.0),
-                getDouble(f, 5, 0.0), getDouble(f, 7, 0.0),
-                getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                0.0, 0.0,
-                getDouble(f, 3, 0.0), getDouble(f, 19, 0.0), (int) getDouble(f, 20, 0.0));
+    /** This library contract supplies GENQEJU only through its exact wrapper. */
+    private boolean procGenqej(String busId, String genId, PsseDyrRecord record) throws InterpssException {
+        int selectorOffset = nativeGenqecSelectorOffset(record, false);
+        if (selectorOffset < 0) return false;
+        int saturation = record.intParameter(selectorOffset) == 0 ? 0 : 1;
+        double[] c = nativeGenqecConstants(record, selectorOffset);
+        GenqejData data = new GenqejData(c[4], c[5], 0.0,
+                c[6], c[7], c[8], c[9], c[10], c[11], c[12],
+                c[0], c[2], c[1], c[3], c[13], c[14],
+                0.0, 0.0, 0.0, c[15], saturation);
         double[] rating = getGenRating(busId, genId);
         builder.addGenqej(busId, genId, rating[0], rating[1], data);
         return true;
@@ -3262,32 +3765,34 @@ public class PSSEDStabDirectParser {
     }
 
     // Built-in 14-CON form or WT12A1U_B wrapper: 105 0 1 14 3 2.
-    private boolean procWt12a1b(String busId, String genId, String[] f) {
-        boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
+    private boolean procWt12a1b(String busId,String genId,PsseDyrRecord record) {
+        boolean wrapped = "USRMDL".equalsIgnoreCase(record.fields().get(1));
         int offset;
         int icon;
         if (wrapped) {
-            if (f.length != 24 || getInt(f,3,-1)!=105 || getInt(f,4,-1)!=0
-                    || getInt(f,5,-1)!=1 || getInt(f,6,-1)!=14
-                    || getInt(f,7,-1)!=3 || getInt(f,8,-1)!=2) {
+            if (record.parameterCount()!=21 || record.intParameter(0)!=105 || record.intParameter(1)!=0
+                    || record.intParameter(2)!=1 || record.intParameter(3)!=14
+                    || record.intParameter(4)!=3 || record.intParameter(5)!=2) {
                 log.warn("Invalid WT12A1U_B allocation at bus {}", busId);
                 return false;
             }
-            icon = getInt(f,9,0);
-            offset = 10;
+            icon = record.intParameter(6);
+            offset = 7;
         } else {
-            if (f.length != 17) return false;
+            if (record.parameterCount()!=14) return false;
             icon = 0;
-            offset = 3;
+            offset = 0;
         }
+        var reference=record.deviceId().equals("*")?com.interpss.dstab.mach.model.Wt12a1bModel.Specification.PUBLISHED
+                :com.interpss.dstab.mach.model.Wt12a1bModel.Specification.NATIVE_STANDARD;
         return builder.addWt12a1b(busId, genId, new Wt12a1bData(icon,
-                getDouble(f,offset,0), getDouble(f,offset+1,0),
-                getDouble(f,offset+2,0), getDouble(f,offset+3,0),
-                getDouble(f,offset+4,0), getDouble(f,offset+5,0),
-                getDouble(f,offset+6,0), getDouble(f,offset+7,0),
-                getDouble(f,offset+8,0), getDouble(f,offset+9,0),
-                getDouble(f,offset+10,0), getDouble(f,offset+11,0),
-                getDouble(f,offset+12,0), getDouble(f,offset+13,0))) != null;
+                record.doubleParameter(offset),record.doubleParameter(offset+1),
+                record.doubleParameter(offset+2),record.doubleParameter(offset+3),
+                record.doubleParameter(offset+4),record.doubleParameter(offset+5),
+                record.doubleParameter(offset+6),record.doubleParameter(offset+7),
+                record.doubleParameter(offset+8),record.doubleParameter(offset+9),
+                record.doubleParameter(offset+10),record.doubleParameter(offset+11),
+                record.doubleParameter(offset+12),record.doubleParameter(offset+13)),reference) != null;
     }
 
     // PSS/E 36.7: IBUS 'GENTRA' ID T'do H D Xd Xq X'd S(1.0) S(1.2) AF
@@ -3319,14 +3824,33 @@ public class PSSEDStabDirectParser {
     // REGCA1: IBUS MODEL ID LVPLSW Tg Rrpwr Brkpt Zerox Lvpl1 Volim
     //         Lvpnt1 Lvpnt0 Iolim Tfltr Khv Iqrmax Iqrmin Accel
     private boolean procRegca1(String busId, String genId, String[] f) {
-        if (f.length < 18) return false;
+        if (f.length != 18) return false;
         Regca1Data data = new Regca1Data(
                 getInt(f, 3, 1), getDouble(f, 4, 0.02), getDouble(f, 5, 10.0),
                 getDouble(f, 6, 0.9), getDouble(f, 7, 0.4), getDouble(f, 8, 1.22),
                 getDouble(f, 9, 1.2), getDouble(f, 10, 0.9), getDouble(f, 11, 0.5),
                 getDouble(f, 12, -1.3), getDouble(f, 13, 0.02), getDouble(f, 14, 0.0),
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
-        return builder.addRegca1(busId, genId, data) != null;
+        var converter = builder.addRegca1(busId, genId, data);
+        if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId, genId)))
+            converter.setActiveElectricalController(new com.interpss.dstab.renewable.ConverterCurrentCommands());
+        return converter != null;
+    }
+
+    private boolean procRegcau2(String busId, String genId, String[] f) {
+        if (f.length != 26 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f,4,-1)!=101 || getInt(f,5,-1)!=1
+                || getInt(f,6,-1)!=1 || getInt(f,7,-1)!=15
+                || getInt(f,8,-1)!=3 || getInt(f,9,-1)!=4) return false;
+        var controls = new Regca1Data(getInt(f,10,1),getDouble(f,11,0.),getDouble(f,12,0.),
+                getDouble(f,13,0.),getDouble(f,14,0.),getDouble(f,15,0.),getDouble(f,16,0.),
+                getDouble(f,17,0.),getDouble(f,18,0.),getDouble(f,19,0.),getDouble(f,20,0.),
+                getDouble(f,21,0.),getDouble(f,22,0.),getDouble(f,23,0.),getDouble(f,24,0.));
+        var converter = builder.addRegcau2(busId,genId,
+                new com.interpss.dstab.renewable.Regcau2Data(controls,getDouble(f,25,0.)));
+        if (converter != null && !declaredElectricalGenerators.contains(new GeneratorKey(busId,genId)))
+            converter.setActiveElectricalController(new com.interpss.dstab.renewable.ConverterCurrentCommands());
+        return converter != null;
     }
 
     // REGCB1 flat form, or REGCBU1 wrapper with two ICONs, seven CONs,
@@ -3351,6 +3875,15 @@ public class PSSEDStabDirectParser {
                 getDouble(f, offset + 6, 0.0), getDouble(f, offset + 7, 0.0),
                 getDouble(f, offset + 8, 0.0));
         return builder.addRegcb1(busId, genId, data) != null;
+    }
+
+    private boolean procRegcc(String busId,String genId,String[] f) {
+        if(f.length!=18 || "USRMDL".equalsIgnoreCase(f[1]))return false;
+        int rate=Integer.parseInt(f[3]),priority=Integer.parseInt(f[4]);
+        double[] c=new double[13];
+        for(int i=0;i<c.length;i++)c[i]=Double.parseDouble(f[i+5].replace('D','E').replace('d','e'));
+        return builder.addRegcc(busId,genId,new com.interpss.dstab.renewable.RegccData(rate,priority,
+                c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]))!=null;
     }
 
     // DERA1 flat form, or DERAU1 wrapper with six ICONs, 41 CONs,
@@ -3385,21 +3918,85 @@ public class PSSEDStabDirectParser {
         return builder.addDera1(busId,genId,d)!=null;
     }
 
-    // PSS/E REGFMA1: IBUS MODEL ID Vflag TPf TQf TVf Imax Emax Emin
-    // Pmax Pmin Qmax Qmin Mp Mq Kppmax Kipmax Kpqmax Kiqmax Kpv Kiv
-    private boolean procRegfma1(String busId, String genId, String[] f) {
-        if (f.length < 22) return false;
-        Regfma1Data data = new Regfma1Data(
-                getInt(f, 3, 0), getDouble(f, 4, 0.02), getDouble(f, 5, 0.02),
-                getDouble(f, 6, 0.02), getDouble(f, 7, 0.0),
-                getDouble(f, 8, 1.2), getDouble(f, 9, 0.0),
-                getDouble(f, 10, 1.0), getDouble(f, 11, 0.0),
-                getDouble(f, 12, 1.0), getDouble(f, 13, -1.0),
-                getDouble(f, 14, 0.01), getDouble(f, 15, 0.05),
-                getDouble(f, 16, 0.01), getDouble(f, 17, 0.1),
-                getDouble(f, 18, 3.0), getDouble(f, 19, 20.0),
-                getDouble(f, 20, 0.0), getDouble(f, 21, 6.0));
+    private boolean procRegfma1(String busId, String genId, PsseDyrRecord record) {
+        boolean nativeLayout = record.parameterCount() == 20;
+        if (!nativeLayout && record.parameterCount() != 19) return false;
+        int offset = nativeLayout ? 2 : 1;
+        int vflag = record.intParameter(0);
+        double[] constants = new double[18];
+        for (int i=0;i<constants.length;i++) constants[i]=record.doubleParameter(offset+i);
+        Regfma1Data data;
+        if (nativeLayout) {
+            var bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+            DStabGen gen = (DStabGen)bus.getContributeGen(genId);
+            if (gen.getXfrZ() != null && gen.getXfrZ().abs() != 0.0)
+                throw new IllegalArgumentException("Native REGFMA1 must not have an implicit RAW transformer (RTRAN/XTRAN)");
+            data = Regfma1Data.nativePsse(vflag,record.intParameter(1),gen.getSourceZ(),constants);
+        } else {
+            data = new Regfma1Data(vflag,constants[0],constants[1],constants[2],constants[3],
+                    constants[4],constants[5],constants[6],constants[7],constants[8],constants[9],
+                    constants[10],constants[11],constants[12],constants[13],constants[14],constants[15],
+                    constants[16],constants[17]);
+        }
         return builder.addRegfma1(busId, genId, data) != null;
+    }
+
+    private boolean procRegfmc1(String busId,String genId,PsseDyrRecord record) {
+        if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=43)return false;
+        int[] allocation={101,1,3,34,11,27};
+        for(int i=0;i<6;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);if(gen==null)return false;
+        int[] flags=new int[3];double[] constants=new double[34];
+        for(int i=0;i<3;i++)flags[i]=record.intParameter(6+i);
+        for(int i=0;i<34;i++)constants[i]=record.doubleParameter(9+i);
+        return builder.addRegfmc1(busId,genId,com.interpss.dstab.renewable.Regfmc1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
+    }
+
+    private boolean procRepcc(String busId,String genId,PsseDyrRecord r){
+        if(r.parameterOffset()!=3||r.parameterCount()!=92)return false;
+        var matcher=java.util.regex.Pattern.compile("'(?:[^']|'')*'|[^\\s,]+").matcher(r.rawText());
+        var tokens=new java.util.ArrayList<String>();while(matcher.find())tokens.add(matcher.group());
+        var character=new java.util.HashSet<Integer>(java.util.List.of(3,12));
+        for(int i=0;i<10;i++)character.add(14+2*i);
+        for(int index:character){
+            boolean unused=index>=14&&r.intParameter(index-1)==0&&r.parameter(index).equals("0");
+            if(!unused&&!tokens.get(r.parameterOffset()+index).startsWith("'"))return false;
+        }
+        for(int i=0;i<35;i++)if(!character.contains(i))r.intParameter(i);
+        var shunts=new java.util.ArrayList<com.interpss.dstab.renewable.RepccData.Shunt>();
+        for(int i=0;i<10;i++)shunts.add(new com.interpss.dstab.renewable.RepccData.Shunt(r.intParameter(13+2*i),r.parameter(14+2*i)));
+        double[] c=new double[57];for(int i=0;i<57;i++)c[i]=r.doubleParameter(35+i);
+        var d=new com.interpss.dstab.renewable.RepccData(r.intParameter(0),
+                new com.interpss.dstab.renewable.RepccData.Branch(r.intParameter(1),r.intParameter(2),r.parameter(3)),
+                r.intParameter(4),r.intParameter(5),r.intParameter(6),r.intParameter(7),r.intParameter(8),r.intParameter(9),
+                new com.interpss.dstab.renewable.RepccData.Branch(r.intParameter(10),r.intParameter(11),r.parameter(12)),
+                shunts,r.intParameter(33),r.intParameter(34),c);
+        return builder.addRepcc(busId,genId,d)!=null;
+    }
+
+    private boolean procRepcgfmc1(String busId,String genId,PsseDyrRecord record){
+        if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=67)return false;
+        int[] allocation={107,0,7,54,15,20};for(int i=0;i<6;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var tokens=java.util.regex.Pattern.compile("'(?:[^']|'')*'|[^\\s,]+").matcher(record.rawText());
+        for(int i=0;i<=record.parameterOffset()+9;i++)if(!tokens.find())return false;
+        if(!tokens.group().startsWith("'"))return false;
+        double[] constants=new double[54];for(int i=0;i<54;i++)constants[i]=record.doubleParameter(13+i);
+        var data=new com.interpss.dstab.renewable.Repcgfmc1Data(record.intParameter(6),record.intParameter(7),record.intParameter(8),record.parameter(9),
+                record.intParameter(10),record.intParameter(11),record.intParameter(12),constants);
+        return builder.addRepcgfmc1(busId,genId,data)!=null;
+    }
+
+    private boolean procRegfmb1(String busId,String genId,PsseDyrRecord record) {
+        if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=37)return false;
+        int[] allocation={101,1,6,25,14,17};
+        for(int i=0;i<6;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);if(gen==null)return false;
+        int[] flags=new int[6];double[] constants=new double[25];
+        for(int i=0;i<6;i++)flags[i]=record.intParameter(6+i);
+        for(int i=0;i<25;i++)constants[i]=record.doubleParameter(12+i);
+        return builder.addRegfmb1(busId,genId,Regfmb1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
     }
 
     // PSS/E 36.7 CSVGN5: IBUS MODEL ID IB TS1 VEMAX TS2 TS3 TS4 TS5
@@ -3690,6 +4287,15 @@ public class PSSEDStabDirectParser {
         return builder.addReecd1(busId, genId, data) != null;
     }
 
+    private boolean procReece(String busId,String genId,PsseDyrRecord record) {
+        if(record.parameterOffset()!=3||!record.fields().get(1).equalsIgnoreCase("REECE")
+                ||record.parameterCount()!=Reece1Data.ICON_COUNT+Reece1Data.CON_COUNT)return false;
+        int[] icons=new int[Reece1Data.ICON_COUNT];double[] constants=new double[Reece1Data.CON_COUNT];
+        for(int i=0;i<icons.length;i++)icons[i]=record.intParameter(i);
+        for(int i=0;i<constants.length;i++)constants[i]=record.doubleParameter(icons.length+i);
+        return builder.addReece(busId,genId,Reece1Data.fromNativeParameters(icons,constants))!=null;
+    }
+
     // REECA1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PFLAG PQFLAG followed by
     // voltage-dip, reactive-control, active-control, current-limit, and VDL data.
     private boolean procReeca1(String busId, String genId, String[] f) {
@@ -3716,7 +4322,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 48, 0), getDouble(f, 49, 0),
                 getDouble(f, 50, 0), getDouble(f, 51, 0),
                 getDouble(f, 52, 0), getDouble(f, 53, 0));
-        return builder.addReeca1(busId, genId, data) != null;
+        var model = builder.addReeca1(busId, genId, data);
+        if (model == null) return false;
+        model.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
+        return true;
     }
 
     private boolean procWtara1(String busId, String genId, String[] f) {
@@ -3735,6 +4344,78 @@ public class PSSEDStabDirectParser {
         return builder.addWtdta1(busId, genId, data) != null;
     }
 
+    private boolean procWtdtb1(String busId, String genId, PsseDyrRecord record) {
+        int con;
+        if (record.fields().get(1).equalsIgnoreCase("USRMDL")) {
+            if (!record.sourceModelName().equals("WTDTBU1") || record.parameterCount() != 12)
+                return false;
+            int[] allocation = {103, 0, 0, 6, 5, 3};
+            for (int i = 0; i < allocation.length; i++)
+                if (record.intParameter(i) != allocation[i]) return false;
+            con = 6;
+        } else {
+            // The installed native record proves WTDTB1, not a guessed flat
+            // WTDTBU1 alias or a PowerWorld eight-parameter WTGT_B record.
+            if (!record.fields().get(1).equalsIgnoreCase("WTDTB1")
+                    || !record.sourceModelName().equals("WTDTB1") || record.parameterCount() != 6)
+                return false;
+            con = 0;
+        }
+        return builder.addWtdtb1(busId, genId, new Wtdtb1Data(
+                record.doubleParameter(con), record.doubleParameter(con + 1),
+                record.doubleParameter(con + 2), record.doubleParameter(con + 3),
+                record.doubleParameter(con + 4), record.doubleParameter(con + 5))) != null;
+    }
+
+    private boolean procWtptb1(String busId,String genId,PsseDyrRecord record) {
+        int con;
+        if(record.fields().get(1).equalsIgnoreCase("USRMDL")) {
+            if(!record.sourceModelName().equals("WTPTBU1") || record.parameterCount()!=20)return false;
+            int[] allocation={104,0,0,14,3,1};
+            for(int i=0;i<allocation.length;i++)if(record.intParameter(i)!=allocation[i])return false;
+            con=6;
+        } else {
+            if(!record.fields().get(1).equalsIgnoreCase("WTPTB1")
+                    || !record.sourceModelName().equals("WTPTB1") || record.parameterCount()!=14)return false;
+            con=0;
+        }
+        return builder.addWtptb1(busId,genId,new Wtptb1Data(record.doubleParameter(con),record.doubleParameter(con+1),
+                record.doubleParameter(con+2),record.doubleParameter(con+3),record.doubleParameter(con+4),
+                record.doubleParameter(con+5),record.doubleParameter(con+6),record.doubleParameter(con+7),
+                record.doubleParameter(con+8),record.doubleParameter(con+9),record.doubleParameter(con+10),
+                record.doubleParameter(con+11),record.doubleParameter(con+12),record.doubleParameter(con+13)))!=null;
+    }
+
+    private boolean procWtgwgoa(String busId, String genId, PsseDyrRecord record) {
+        int con;
+        if (record.fields().get(1).equalsIgnoreCase("USRMDL")) {
+            if (!record.sourceModelName().equals("WTGWGOAU") || record.parameterCount() != 14) return false;
+            int[] allocation = {109, 0, 0, 8, 3, 3};
+            for (int i = 0; i < allocation.length; i++)
+                if (record.intParameter(i) != allocation[i]) return false;
+            con = 6;
+        } else {
+            if (!record.fields().get(1).equalsIgnoreCase("WTGWGOA")
+                    || !record.sourceModelName().equals("WTGWGOA") || record.parameterCount() != 8) return false;
+            con = 0;
+        }
+        return builder.addWtgwgoa(busId, genId, new WtgwgoaData(record.doubleParameter(con),
+                record.doubleParameter(con+1), record.doubleParameter(con+2), record.doubleParameter(con+3),
+                record.doubleParameter(con+4), record.doubleParameter(con+5), record.doubleParameter(con+6),
+                record.doubleParameter(con+7))) != null;
+    }
+
+    private boolean procWtgibffra(String busId, String genId, PsseDyrRecord record) {
+        // No guessed USRMDL allocation or cross-tool aliases.
+        if (!record.fields().get(1).equalsIgnoreCase("WTGIBFFRA")
+                || !record.sourceModelName().equals("WTGIBFFRA") || record.parameterCount() != 46) return false;
+        int frequencyBus = record.intParameter(0);
+        double[] constants = new double[45];
+        for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 1);
+        return builder.addWtgibffra(busId, genId,
+                WtgibffraData.fromNativeParameters(frequencyBus, constants)) != null;
+    }
+
     private boolean procWtpta1(String busId, String genId, String[] f) {
         if (f.length < 13) return false;
         Wtpta1Data data = new Wtpta1Data(
@@ -3746,17 +4427,13 @@ public class PSSEDStabDirectParser {
     }
 
     // PSS/E order starts with TFLAG, followed by Kpp, Kip, Tp, and Twref.
-    private boolean procWttqa1(String busId, String genId, String[] f) {
-        if (f.length < 19) return false;
+    private boolean procWttqa1(String busId, String genId, PsseDyrRecord record) {
         Wttqa1Data data = new Wttqa1Data(
-                getInt(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, .1),
-                getDouble(f, 6, .05), getDouble(f, 7, 30),
-                getDouble(f, 8, 1.2), getDouble(f, 9, 0),
-                getDouble(f, 10, .2), getDouble(f, 11, .58),
-                getDouble(f, 12, .4), getDouble(f, 13, .72),
-                getDouble(f, 14, .6), getDouble(f, 15, .86),
-                getDouble(f, 16, .8), getDouble(f, 17, 1), getDouble(f, 18, 0));
-        return builder.addWttqa1(busId, genId, data) != null;
+                record.intParameter(0),record.doubleParameter(1),record.doubleParameter(2),
+                record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),record.doubleParameter(6),
+                record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),record.doubleParameter(10),
+                record.doubleParameter(11),record.doubleParameter(12),record.doubleParameter(13),record.doubleParameter(14),record.doubleParameter(15));
+        return builder.addWttqa1FromNativeRecord(busId, genId, data) != null;
     }
 
     // REPCA1: IBUS MODEL ID IBRANCH JBUS KBus ID VCFlag RefFlag FFlag ...
@@ -3833,11 +4510,63 @@ public class PSSEDStabDirectParser {
                 record.doubleParameter(6), record.doubleParameter(7),
                 record.doubleParameter(8), record.doubleParameter(9), record.doubleParameter(10),
                 record.doubleParameter(11), record.doubleParameter(12), record.doubleParameter(13));
-        List<LoadTarget> targets = ieelTargets(record);
+        List<LoadTarget> matched = ieelTargets(record);
+        List<LoadTarget> targets = matched;
+        if(type.equals("IEELAR")) {
+            // A subsystem default fills only unassigned loads. Explicit load
+            // characteristics retain ownership regardless of DYR record order.
+            targets=matched.stream().filter(t->!hasSpecificLoadCharacteristic(t)).toList();
+            int skipped=matched.size()-targets.size();
+            loadScopeDiagnostics.put(record,"Area default attached to "+targets.size()+" loads; "+skipped
+                    +" targets retained their more-specific characteristic models");
+            if(!matched.isEmpty()&&targets.isEmpty())shadowedLoadDefaults.add(record);
+        }
+        // Validate the whole target set before installing any characteristic.
+        // Two explicit characteristics are conflicting input, not two parallel loads.
+        if(type.equals("IEELBL"))for(var target:targets)if(hasSpecificLoadCharacteristic(target))
+            throw new IllegalArgumentException("Duplicate explicit characteristic at "+target.bus().getId()+"/"+target.load().getId());
         for (LoadTarget target : targets) {
+            if(target.bus().getDynLoadModelList().stream().anyMatch(d->d instanceof IeelLoadModel existing
+                    &&existing.getSourceModelName().equals(type)&&existing.getParentLoad()==target.load()))
+                throw new IllegalArgumentException("Duplicate overlapping "+type+" load assignment at "+target.bus().getId()+"/"+target.load().getId());
             new IeelLoadModel(type, target.bus(), target.load(), data);
         }
-        return !targets.isEmpty();
+        return !matched.isEmpty();
+    }
+
+    private boolean hasSpecificLoadCharacteristic(LoadTarget target) {
+        var bus=target.bus();var id=target.load().getId();
+        if(bus.getInfoOnlyDynModel() instanceof org.interpss.dstab.dynLoad.impl.Cmldznu2Model composite
+                &&composite.getSourceModels().stream().anyMatch(m->m.getTargetLoadIds().contains(id)))return true;
+        return bus.getDynLoadModelList().stream().anyMatch(d->d.isActive()&&d.getId().equals(id)
+                &&(!(d instanceof IeelLoadModel existing)||!existing.getSourceModelName().equals("IEELAR")));
+    }
+
+    private boolean procCmldblu1(PsseDyrRecord record) {
+        if(!record.fields().get(1).equalsIgnoreCase("USRLOD")) return false;
+        int[] allocation={12,1,0,132,27,146,48};
+        for(int i=0;i<allocation.length;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX+record.busNumber());
+        if(bus==null || (bus.getInfoOnlyDynModel()!=null
+                && !(bus.getInfoOnlyDynModel() instanceof Cmldznu2Model)))return false;
+        var targets=new ArrayList<LoadTarget>();
+        addMatchingLoads(targets,bus,record.deviceId(),record.deviceId().equals("*")||record.deviceId().equals("#"));
+        if(targets.isEmpty())return false;
+        for(var target:targets)for(var existing:bus.getDynLoadModelList())
+            if(existing.isActive()&&existing.getId().equals(target.load().getId()))return false;
+        var ids=new java.util.LinkedHashSet<String>();Complex power=Complex.ZERO;
+        for(var target:targets){ids.add(target.load().getId());power=power.add(target.load().getLoad(bus.getVoltageMag()));}
+        double[] constants=new double[132];
+        for(int i=0;i<132;i++)constants[i]=record.doubleParameter(i+7);
+        var previous=bus.getInfoOnlyDynModel();
+        // Distinct explicit load IDs may share a bus. Validate overlap before
+        // constructing a model: construction installs its preparation owner.
+        if(previous instanceof Cmldznu2Model first)
+            for(var owner:first.getSourceModels())if(!java.util.Collections.disjoint(owner.getTargetLoadIds(),ids))
+                throw new IllegalArgumentException("Duplicate explicit composite source at "+bus.getId()+"/"+ids);
+        var model=new org.interpss.dstab.dynLoad.impl.Cmldblu1Model("CMLDBLU1_"+record.deviceId(),bus,ids,power,constants);
+        if(previous instanceof Cmldznu2Model first){first.addSourceModel(model);bus.setInfoOnlyDynModel(first);}
+        return true;
     }
 
     private boolean procCmldznu2(PsseDyrRecord record) {
@@ -3852,13 +4581,35 @@ public class PSSEDStabDirectParser {
         double[] constants = new double[Cmldznu2Data.PARAMETER_COUNT];
         for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 9);
         Cmldznu2Data data = new Cmldznu2Data(constants);
-        List<CompositeLoadTarget> targets = cmldznu2Targets(record);
+        List<CompositeLoadTarget> matched = cmldznu2Targets(record);
+        List<CompositeLoadTarget> targets = new ArrayList<>();
+        for(var target:matched) {
+            String loadId=target.loadIds().iterator().next();
+            var bus=target.bus();
+            if(bus.getInfoOnlyDynModel() instanceof Cmldznu2Model first)
+                for(var owner:first.getSourceModels())if(owner.getTargetLoadIds().contains(loadId)
+                        && !(owner instanceof org.interpss.dstab.dynLoad.impl.Cmldblu1Model))
+                    throw new IllegalArgumentException("Duplicate overlapping zone composite at "+bus.getId()+"/"+loadId);
+            var load=new LoadTarget(bus,bus.getContributeLoad(loadId));
+            if(!hasSpecificLoadCharacteristic(load))targets.add(target);
+        }
+        loadScopeDiagnostics.put(record,"Zone default attached to "+targets.size()+" loads; "+(matched.size()-targets.size())
+                +" targets retained their more-specific characteristic models");
+        if(!matched.isEmpty()&&targets.isEmpty())shadowedLoadDefaults.add(record);
         int sequence = 0;
         for (CompositeLoadTarget target : targets) {
             String id = "CMLDZNU2_" + record.busNumber() + "_" + (++sequence);
-            new Cmldznu2Model(id, target.bus(), target.loadIds(), target.power(), data);
+            // A subsystem record shares constants, not differential states or
+            // source identity. Keep each load's own feeder/motors so its relay
+            // never has to shed an unrelated load from an aggregate.
+            var previous=target.bus().getInfoOnlyDynModel();
+            var model=new Cmldznu2Model(id, target.bus(), target.loadIds(), target.power(), data);
+            if(previous instanceof Cmldznu2Model first) {
+                first.addSourceModel(model);
+                target.bus().setInfoOnlyDynModel(first);
+            }
         }
-        return !targets.isEmpty();
+        return !matched.isEmpty();
     }
 
     @SuppressWarnings("unchecked")
@@ -3868,18 +4619,15 @@ public class PSSEDStabDirectParser {
         for (Object object : builder.getBaseDStabNetwork().getBusList()) {
             BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) object;
             if (!bus.isActive()) continue;
-            Set<String> ids = new java.util.LinkedHashSet<>();
-            Complex power = Complex.ZERO;
             for (Object loadObject : bus.getContributeLoadList()) {
                 AclfLoad load = (AclfLoad) loadObject;
-                if (!load.isActive() || (!wildcard && !record.deviceId().equals(load.getId()))) continue;
+                if (!load.isActive() || load.getCode()==com.interpss.core.aclf.AclfLoadCode.NON_LOAD
+                        || (!wildcard && !record.deviceId().equals(load.getId()))) continue;
                 if (loadZoneNumber(bus, load) != record.busNumber()) continue;
                 Complex loadPower = load.getLoad(bus.getVoltageMag());
                 if (loadPower == null) continue;
-                ids.add(load.getId());
-                power = power.add(loadPower);
+                targets.add(new CompositeLoadTarget(bus, Set.of(load.getId()), loadPower));
             }
-            if (!ids.isEmpty()) targets.add(new CompositeLoadTarget(bus, Set.copyOf(ids), power));
         }
         return targets;
     }
@@ -3913,7 +4661,12 @@ public class PSSEDStabDirectParser {
         if (bus == null) return;
         for (Object object : bus.getContributeLoadList()) {
             AclfLoad load = (AclfLoad) object;
-            if (load.isActive() && (wildcard || load.getId().equals(loadId))
+            // A subsystem characteristic may include active placeholder loads
+            // whose aggregate bus is NON_LOAD. They carry no ZIP power and the
+            // core deliberately has no dynamic-load list for them. Skip those
+            // records rather than partially attaching an area before an NPE.
+            if (load.isActive() && load.getCode() != com.interpss.core.aclf.AclfLoadCode.NON_LOAD
+                    && (wildcard || load.getId().equals(loadId))
                     && (areaNumber == null || loadAreaNumber(bus, load) == areaNumber)) {
                 targets.add(new LoadTarget(bus, load));
             }
@@ -3934,6 +4687,32 @@ public class PSSEDStabDirectParser {
                 : bus.getZone() != null ? Math.toIntExact(bus.getZone().getNumber()) : 0;
     }
 
+    private boolean procTiocr1(PsseDyrRecord record) {
+        var f=record.fields();var network=builder.getBaseDStabNetwork();
+        int from=record.busNumber(),to=Integer.parseInt(f.get(2)),slot=Integer.parseInt(f.get(4));
+        int mode=Integer.parseInt(f.get(5)),loadBus=Integer.parseInt(f.get(6));
+        if(mode<0||mode>1||slot<1||slot>2)return false;
+        AclfBranch monitored=relayBranch(network,from,to,f.get(3));
+        if(monitored==null)return false;
+        BaseDStabBus<?,?> host=network.getDStabBus(BUS_ID_PREFIX+(loadBus==0?from:loadBus));
+        if(host==null)return false;
+        String loadId=loadBus==0?null:f.get(7);
+        if(loadBus!=0&&host.getContributeLoad(loadId)==null)return false;
+        AclfBranch[] transfers=new AclfBranch[3];
+        for(int i=0;i<3;i++) {
+            int b=Integer.parseInt(f.get(8+3*i));
+            if(b==0)continue;
+            transfers[i]=relayBranch(network,b,Integer.parseInt(f.get(9+3*i)),f.get(10+3*i));
+            if(transfers[i]==null)return false;
+        }
+        double[] constants=new double[14];
+        for(int i=0;i<14;i++)constants[i]=Double.parseDouble(f.get(17+i));
+        com.interpss.dstab.relay.model.Tiocr1RelayModel.forExactLoad(monitored,
+                monitored.getFromBusId().equals(BUS_ID_PREFIX+from),slot,mode==1,host,loadId,
+                transfers,new com.interpss.dstab.relay.model.Tiocr1Data(constants));
+        return true;
+    }
+
     private boolean procLds3bl(String busId, String loadId, PsseDyrRecord record) {
         BaseDStabBus<?, ?> loadBus = builder.getBaseDStabNetwork().getDStabBus(busId);
         int transferBusNumber = record.intParameter(0);
@@ -3944,6 +4723,7 @@ public class PSSEDStabDirectParser {
         if (transferTime < 0.0) return false;
         var data = new StagedLoadSheddingRelayData(loadSheddingStages(record, 3),
                 record.intParameter(2) == 1);
+        if(skipInactiveLoadRelay(loadBus,loadId,record))return true;
         new Lds3blRelayModel(loadBus, loadId, data, transferBus,
                 record.parameter(1), transferTime);
         return true;
@@ -3963,6 +4743,7 @@ public class PSSEDStabDirectParser {
         if (firstTime < 0.0 || secondTime < 0.0) return false;
         var data = new StagedLoadSheddingRelayData(loadSheddingStages(record, 7),
                 record.intParameter(6) == 1);
+        if(skipInactiveLoadRelay(loadBus,loadId,record))return true;
         new Lvs3blRelayModel(loadBus, loadId, data, first, firstTime, second, secondTime);
         return true;
     }
@@ -3982,8 +4763,8 @@ public class PSSEDStabDirectParser {
         if (from == 0 && to == 0) return null;
         String fromId = BUS_ID_PREFIX + Math.abs(from);
         String toId = BUS_ID_PREFIX + Math.abs(to);
-        AclfBranch branch = (AclfBranch) network.getBranch(fromId, toId, id);
-        return branch != null ? branch : (AclfBranch) network.getBranch(toId, fromId, id);
+        AclfBranch branch = (AclfBranch) network.getBranch(fromId, toId, id.trim());
+        return branch != null ? branch : (AclfBranch) network.getBranch(toId, fromId, id.trim());
     }
 
     @SuppressWarnings("unchecked")
@@ -3994,7 +4775,7 @@ public class PSSEDStabDirectParser {
         BaseDStabBus<?, ?> monitoredBus = network.getDStabBus(monitoredBusId);
         BaseDStabBus<?, ?> targetBus = network.getDStabBus(targetBusId);
         if (monitoredBus == null || targetBus == null) return false;
-        DStabGen targetGenerator = (DStabGen) targetBus.getContributeGen(record.parameter(1));
+        DStabGen targetGenerator = (DStabGen) targetBus.getContributeGen(record.parameter(1).trim());
         if (targetGenerator == null) return false;
         GeneratorTripRelayData data = new GeneratorTripRelayData(
                 record.doubleParameter(2), record.doubleParameter(3),
@@ -4009,6 +4790,23 @@ public class PSSEDStabDirectParser {
 
     // ==================== Utility Methods ====================
 
+    private boolean procSvsmo3t2(PsseDyrRecord record) {
+        if (!record.hasNamedTarget() || record.parameterCount() != 64) return false;
+        var mss = new ArrayList<com.interpss.dstab.svc.Svsmo3t2Data.MssDevice>();
+        for (int i = 0; i < 8; i++) mss.add(new com.interpss.dstab.svc.Svsmo3t2Data.MssDevice(
+                record.intParameter(4 + 2 * i), record.parameter(5 + 2 * i)));
+        double[] c = new double[44];
+        for (int i = 0; i < c.length; i++) c[i] = record.doubleParameter(20 + i);
+        var data = new com.interpss.dstab.svc.Svsmo3t2Data(record.intParameter(0),
+                record.intParameter(1), record.intParameter(2), record.intParameter(3), mss,
+                c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10],
+                c[11], c[12], c[13], c[14], c[15], c[16], c[17], c[18], c[19], c[20],
+                c[21], c[22], c[23], c[24], c[25], c[26], c[27], c[28], c[29], c[30],
+                c[31], c[32], c[33], c[34], c[35], c[36], c[37], c[38], c[39], c[40],
+                c[41], c[42], c[43]);
+        return builder.addSvsmo3t2(record.deviceId(), data) != null;
+    }
+
     private GeneratorKey targetGeneratorKey(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isPresent()
@@ -4016,7 +4814,7 @@ public class PSSEDStabDirectParser {
                         == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION
                 && hasExpectedParameterCount(record)) {
             return new GeneratorKey(BUS_ID_PREFIX + Math.abs(record.intParameter(0)),
-                    record.parameter(1));
+                    record.parameter(1).trim());
         }
         return new GeneratorKey(BUS_ID_PREFIX + record.busNumber(), record.deviceId());
     }
@@ -4055,6 +4853,18 @@ public class PSSEDStabDirectParser {
         }
     }
 
+    /** A selector stored as a real CON may be written 1.0000 or 1E0.
+     * ICONs still use getInt; fractional values must never be truncated. */
+    private int getIntegralConstant(String[] fields, int idx, int defaultVal) {
+        if (idx >= fields.length) return defaultVal;
+        try {
+            return new java.math.BigDecimal(trimQuote(fields[idx])).intValueExact();
+        } catch (NumberFormatException | ArithmeticException e) {
+            throw new IllegalArgumentException("DYR constant field " + (idx + 1)
+                    + " must be an exact integer-valued real: '" + fields[idx] + "'", e);
+        }
+    }
+
     private int getInt(String[] fields, int idx, int defaultVal) {
         if (idx >= fields.length) return defaultVal;
         try {
@@ -4072,14 +4882,57 @@ public class PSSEDStabDirectParser {
                 .orElse(DynamicModelImportStatus.UNSUPPORTED);
     }
 
+    private final java.util.Set<PsseDyrRecord> inactiveLoadRelays=new java.util.HashSet<>();
+    private boolean skipInactiveLoadRelay(BaseDStabBus<?,?> bus,String id,PsseDyrRecord record) {
+        var load=bus==null?null:bus.getContributeLoad(id);
+        if(load==null || load.isActive())return false;
+        // Do this only after validating the relay constants. An inactive host
+        // makes this protection inapplicable, but never legitimizes bad data.
+        inactiveLoadRelays.add(record);return true;
+    }
+
     private DynamicModelImportStatus attachedStatus(PsseDyrRecord record) {
+        if(inactiveLoadRelays.contains(record))return DynamicModelImportStatus.SKIPPED_INACTIVE_TARGET;
+        if(shadowedLoadDefaults.contains(record))return DynamicModelImportStatus.SKIPPED_LOAD_PRIORITY;
+        // Exact source attachment is separate from the FACTS runtime's remaining qualification.
+        if(record.canonicalModelName().equals("SVSMO3T2"))return DynamicModelImportStatus.ATTACHED;
+
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
                 .map(model -> DynamicModelImportStatus.ATTACHED)
                 .orElse(DynamicModelImportStatus.FALLBACK);
     }
 
+    private final java.util.Set<PsseDyrRecord> shadowedLoadDefaults=new java.util.HashSet<>();
+    private final java.util.Map<PsseDyrRecord,String> loadScopeDiagnostics=new java.util.HashMap<>();
+
     private String attachedMessage(PsseDyrRecord record) {
+        if(inactiveLoadRelays.contains(record))return "Validated load protection intentionally skipped: physical load target is out of service";
+        if(loadScopeDiagnostics.containsKey(record))return loadScopeDiagnostics.get(record);
+        if(record.canonicalModelName().equals("REPCA1")) {
+            int ref=record.intParameter(5),frequency=record.intParameter(6);
+            return "REPCA1 RefFlag="+ref+": "+(ref==0?"reactive-power":"voltage")
+                +" control; FreqFlag="+frequency+(frequency==0?" (inactive frequency limits retained and not evaluated)":"");
+        }
+        if(record.canonicalModelName().equals("PLNTBU1")) {
+            int flag=record.intParameter(12);
+            if(flag!=0&&flag!=1)log.warn("PLNTBU1 at {}:{}: Fflag={} selects the inactive active-power path; entered selector and unused parameters retained",
+                    record.source(),record.startLine(),flag);
+            return "PLNTBU1 Fflag="+flag+": active-power control "+(flag==1?"enabled":"disabled (enabled only for Fflag=1); inactive frequency limits retained and not evaluated");
+        }
+        if((record.canonicalModelName().equals("REAX3BU1")||record.canonicalModelName().equals("REAX4BU1"))
+                && (record.doubleParameter(8)==0||record.doubleParameter(9)==0))
+            return "Zero-weight auxiliary axis retains initialized host output; incremental participation compatibility; not native zero-gain trajectory equivalence";
+        if(record.canonicalModelName().equals("CDC6T"))return "Exact named 32-constant record; terminal runtime preparation follows solved load flow; trajectory acceptance is scoped separately";
+        if(record.canonicalModelName().equals("SVSMO3T2"))return "Exact named FACTS 20-ICON/44-CON record attached; runtime qualification remains partial";
+        if(record.canonicalModelName().equals("CSVGN5")||record.canonicalModelName().equals("SVSMO1T2"))return "Exact native reactive-device record and resolved runtime owner";
+
+        if(record.canonicalModelName().equals("REGFMC1U"))return "PSS/E 36.7 exact USRMDL 101 1 3 34 11 27; hybrid GFM/GFL; machine-base RAW ZSOURCE";
+        if(record.canonicalModelName().equals("REGFMB1U"))return "PSS/E 36.7 exact USRMDL 101 1 6 25 14 17; machine-base RAW ZSOURCE";
+        if (record.canonicalModelName().equals("REGFMA1"))
+            return record.parameterCount() == 20
+                    ? "PSS/E 36.7 native 2-ICON/18-CON REGFMA1; coupling uses machine-base RAW ZSOURCE"
+                    : "Texas2k legacy 19-value REGFMA1; QVflag=0 and compatibility Re=0, Xe=0.15; not native PSS/E 36.7";
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.supportStatus() == DynamicModelSupportStatus.PARTIAL
                         ? "compatibility implementation is partial and is not accepted by strict import"
@@ -4088,6 +4941,26 @@ public class PSSEDStabDirectParser {
     }
 
     private String rejectionMessage(String type, PsseDyrRecord record) {
+        if (type.equals("PSS1A")) {
+            return "PSS1A is a separate typed model, not a native DYR model name. "
+                    + "The approved-list native mapping is IEEEST, whose field order and width differ. "
+                    + "Do not rename this record; use native IEEEST data or the explicit addPss1a builder API";
+        }
+        if (type.equals("PSSSB")) {
+            return "PSSSB is a PowerWorld/PSLF typed model, not a native DYR model name. "
+                    + "The approved-list native mapping is PSS2A, whose field order and width differ. "
+                    + "Do not rename this record; use native PSS2A data or the explicit addPsssb builder API";
+        }
+        if (type.equals("REGFMA1") && !hasExpectedParameterCount(record)
+                && regfma1RecordFormat != Regfma1RecordFormat.AUTO_COMPATIBLE)
+            return "REGFMA1 expected "
+                    + (regfma1RecordFormat == Regfma1RecordFormat.NATIVE_PSSE_36_7 ? 20 : 19)
+                    + " parameters for " + regfma1RecordFormat + " but found " + record.parameterCount();
+        if (type.equals("EXDC2A")) {
+            return "EXDC2A is a PSLF/PowerWorld model name, not native PSS/E DYR; "
+                    + "the WECC row maps to EXDC2, whose Switch parameter is not Tf2. "
+                    + "Use native EXDC2 data or the explicit EXDC2A builder API";
+        }
         return DynamicModelCatalog.find(type)
                 .map(model -> !hasExpectedParameterCount(record)
                         ? "expected " + model.recordSchema().expectedCountsDescription()

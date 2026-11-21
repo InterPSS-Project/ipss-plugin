@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "status": "isolated-experiment",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st4-bridge-scope/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 66422,
+    "sha256": "8776bbdf2ec8ca0f2c40254c912841d75026a7a9ba128bd4849cd4220404dba0"
+  },
+  "archive": {
+    "bytes": 5130235,
+    "sha256": "79e65900e17df9be03d1b05d8042da946febe85f6121b40141cda3a3dae98377"
+  },
+  "summary": {
+    "status": "completed",
+    "warmup_runs": 32,
+    "measured_runs_per_arm": 7,
+    "alternating_same_jvm": true,
+    "full_recording_included": true,
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu_verified": true,
+    "experimental_class_overlay": true,
+    "reference_accuracy_qualified": false,
+    "results": {
+      "control": {
+        "case_wall_s": [
+          9.3439901,
+          9.4449923,
+          9.3082199,
+          9.4034455,
+          9.3781778,
+          9.3999653,
+          9.4182302
+        ],
+        "median_case_wall_s": 9.3999653,
+        "compilation_ms": [
+          23,
+          13,
+          6,
+          79,
+          55,
+          53,
+          26
+        ],
+        "gc_ms": [
+          129,
+          130,
+          130,
+          131,
+          138,
+          134,
+          126
+        ]
+      },
+      "candidate": {
+        "case_wall_s": [
+          9.2091324,
+          9.3012274,
+          9.238926,
+          9.4924887,
+          9.3725889,
+          9.3852317,
+          9.3223502
+        ],
+        "median_case_wall_s": 9.3223502,
+        "compilation_ms": [
+          1,
+          84,
+          18,
+          207,
+          14,
+          276,
+          73
+        ],
+        "gc_ms": [
+          137,
+          130,
+          127,
+          129,
+          174,
+          126,
+          124
+        ]
+      }
+    },
+    "complete_bridge_reuses": [
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994,
+      0,
+      5152994
+    ],
+    "bridge_scopes": [
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908,
+      0,
+      936908
+    ]
+  },
+  "accepted_state_audit": {
+    "status": "diagnostic",
+    "production_changed": false,
+    "numeric_slots": 164591,
+    "groups": 12923,
+    "comparisons": [
+      {
+        "run": 1,
+        "differing_groups": []
+      },
+      {
+        "run": 2,
+        "differing_groups": []
+      }
+    ]
+  },
+  "focused_tests": 33,
+  "complete_cases": 51,
+  "full_recording_identical": true,
+  "production_source_changed": false,
+  "independent_accuracy_qualified": false,
+  "early_audit_note": "Initial two-case audit preceded clearing the inactive cache value; state audit and paired timing use the cleared value.",
+  "interrupted_timing_attempt": {
+    "state": "stopped",
+    "min_free_bytes": 2147483648,
+    "max_log_bytes": 16777216,
+    "captured_bytes": 11413231,
+    "exit_code": 75,
+    "reason": "Free space fell below the reserved minimum"
+  },
+  "report": "docs/benchmarks/case2-st4-bridge-scope-2026-10-21.md"
+}

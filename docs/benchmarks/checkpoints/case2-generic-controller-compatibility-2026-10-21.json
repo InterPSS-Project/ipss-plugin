@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "status": "generic-controller-contracts-restored-network-qualification-pending",
+  "goal_achieved": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-generic-controller-compatibility/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1066620,
+    "sha256": "c16e525227668c93b05f478767796c965ae3930363e545194c461fe595d3f2fd"
+  },
+  "archive": {
+    "bytes": 8590165,
+    "sha256": "f7d14593141179125d0326483b424a7857ce091a6f6fb246a357ec6ada789885"
+  },
+  "source_counts": {
+    "core": 1835,
+    "plugin": 882,
+    "harness": 9
+  },
+  "core_source_commit": "fd9d0e515a1c0829963b5525ee50ea38117bf05d",
+  "plugin_source_commit": "8f8806ba71654b204ab3814fc2335e7f9e2fe576",
+  "timing": {
+    "status": "completed",
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "matches_frozen": true,
+    "main_sources_clean_compiled": true,
+    "frozen_main_classes_on_classpath": false,
+    "runs": 39,
+    "warmup_runs": 32,
+    "measured_runs": 7,
+    "case_wall_s": [
+      7.5707592,
+      7.5727562,
+      7.5429329,
+      7.9659141,
+      7.6275518,
+      7.5422378,
+      7.7206357
+    ],
+    "median_case_wall_s": 7.5727562
+  },
+  "clean_core_build": {
+    "status": "verified",
+    "classes_compared": 2373,
+    "different": [],
+    "unexpected": [],
+    "missing": []
+  },
+  "focused_tests": {
+    "found": 19,
+    "passed": 19,
+    "failed": 0
+  },
+  "remaining_core_test_compile_errors": {
+    "IndexedVoltageRecordTableTest.java": 8,
+    "RevisionVoltageValidationTest.java": 8,
+    "ScalarVoltageScanTest.java": 6,
+    "DirectBusIteratorTest.java": 5,
+    "DStabCurrentBufferTest.java": 21,
+    "DStabVoltagePublicationTest.java": 19,
+    "ScalarStaticLoadEvaluationTest.java": 4,
+    "DStabNetworkConvergenceTest.java": 4
+  },
+  "independent_reference_accuracy_qualified": false,
+  "report": "docs/benchmarks/case2-generic-controller-compatibility-2026-10-21.md"
+}

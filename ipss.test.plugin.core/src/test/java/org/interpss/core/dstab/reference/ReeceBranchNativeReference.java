@@ -1,0 +1,37 @@
+package org.interpss.core.dstab.reference;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
+import com.interpss.dstab.renewable.Reece1Data;
+/** Cold-paired native 36.7 branch replays, not complete REECE acceptance. */
+public final class ReeceBranchNativeReference {
+    private ReeceBranchNativeReference(){}
+    public record Profile(String name,double step,int[] icons,double[] constants,String decodedSha256,String rawSha256,String repeatRawSha256,int samples) {
+        public Profile {icons=icons.clone();constants=constants.clone();}
+        @Override public int[] icons(){return icons.clone();}
+        @Override public double[] constants(){return constants.clone();}
+        public Reece1Data parameters(){return Reece1Data.fromNativeParameters(icons,constants);}
+        public String body() {
+            try(var resource=ReeceBranchNativeReference.class.getResourceAsStream("/reece-runtime/"+name+".b64")) {
+                if(resource==null)throw new IllegalStateException("Missing REECE branch reference");
+                try(var zip=new GZIPInputStream(new ByteArrayInputStream(Base64.getMimeDecoder().decode(resource.readAllBytes())))) {
+                    String body=new String(zip.readAllBytes(),StandardCharsets.UTF_8);
+                    if(!WtgibffraNativeReference.digest(body).equals(decodedSha256))throw new IllegalStateException("Changed REECE branch reference");
+                    return body;
+                }
+            }catch(IOException e){throw new UncheckedIOException(e);}
+        }
+    }
+    public static List<Profile> profiles(){return List.of(
+new Profile("voltage-coarse",0.0005,new int[]{0,0,1,0,1,0,0,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.03,0.02,99,-99,1,0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.1,0.0,0.2,2.0,0.0,2.0,10.0},"a718fd8761d933db8f1b46e51e0c29d34a6d5c03943965eb1644ce7b63fe4803","b9fbd2480f61465f425ef8e5b996ece3f7fd10aacb0fcdc4084b3617816d127d","b9fbd2480f61465f425ef8e5b996ece3f7fd10aacb0fcdc4084b3617816d127d",2002),
+new Profile("voltage-fine",0.00025,new int[]{0,0,1,0,1,0,0,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.03,0.02,99,-99,1,0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.1,0.0,0.2,2.0,0.0,2.0,10.0},"4412be8dd714ac5b33d49aafdea73b5a89af0f7d8cf93c1ead1f48d383f327af","ac2fee00cb3070fab5c4c3b37bbf776fac41b5b59505e0d15656dfe446cc4977","ac2fee00cb3070fab5c4c3b37bbf776fac41b5b59505e0d15656dfe446cc4977",4003),
+new Profile("reactive-coarse",0.0005,new int[]{0,1,1,0,1,0,0,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.03,0.02,99,-99,1,0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.1,0.0,0.2,2.0,0.0,2.0,10.0},"029d3d8afed574dded91ba0d3d42a25ffb1b468d28779fbe467a34f8887d5f9c","70edbcadf4c908a98f7a5ccab0b7652cf2b161af2ebe4d249891c6bb5a4f0a12","70edbcadf4c908a98f7a5ccab0b7652cf2b161af2ebe4d249891c6bb5a4f0a12",2002),
+new Profile("reactive-fine",0.00025,new int[]{0,1,1,0,1,0,0,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.03,0.02,99,-99,1,0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.1,0.0,0.2,2.0,0.0,2.0,10.0},"ddea29b13cbf354e38e5b35b1dc698937823588eba64711ef5442241ec20dacd","7d367f914503f803bc383a0bf910ae34edea9bb5632ade0caf328728aece4544","7d367f914503f803bc383a0bf910ae34edea9bb5632ade0caf328728aece4544",4003),
+new Profile("lag-coarse",0.0005,new int[]{1,0,0,0,1,0,0,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.03,0.02,99,-99,1,0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.1,0.0,0.2,2.0,0.0,2.0,10.0},"de066fdef7537a1751b38f7f6128296181b8e1a0394a64d5a0db45a3157a524b","abe87bf2042a7fc1d68bbb5a0e90e92ae46e1df3d4f15e601867657655d15c7f","abe87bf2042a7fc1d68bbb5a0e90e92ae46e1df3d4f15e601867657655d15c7f",2002),
+new Profile("lag-fine",0.00025,new int[]{1,0,0,0,1,0,0,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.03,0.02,99,-99,1,0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.1,0.0,0.2,2.0,0.0,2.0,10.0},"bd5821d4a0a7c71b9843ffe2577ce3dfc6c4668f8826c2a769c517e3f6f47525","087f12dc10013f19101db7b71648c203012755e623a246557af9ae2db94966ca","087f12dc10013f19101db7b71648c203012755e623a246557af9ae2db94966ca",4003),
+new Profile("limit-upper-coarse",0.0005,new int[]{0,0,2,0,1,0,1,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.0,0.02,99,-99,1,-1.0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.2,2.0,0.0,2.0,10.0},"c5b6be4455e3031a06648e5a5432b9a98de82977551bdd2b86146ba283c4e992","d80e23292dca4985028121cdc94b8509b61ff575c1b7698d68716ec354a5e9ab","d80e23292dca4985028121cdc94b8509b61ff575c1b7698d68716ec354a5e9ab",2002),
+new Profile("limit-upper-fine",0.00025,new int[]{0,0,2,0,1,0,1,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.0,0.02,99,-99,1,-1.0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.2,2.0,0.0,2.0,10.0},"4a1aed05c81938e33211a295470b2929313e59581102bfaa2928c66b754d6504","92d4a3ec3ef5bd79e5832b98e2d7d001b76c311a20a8f8f29ff98ff6b7ccab50","4ba262e8759b12cba96c3e60262026d5e2754e984e94be4277d5eb4ec2a17f64",4003),
+new Profile("limit-lower-coarse",0.0005,new int[]{0,0,2,0,1,0,1,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.0,0.02,99,-99,1,-1.0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.2,2.0,0.0,2.0,10.0},"491814616f0085c1831cc0ea2ccbe501f858793a8492f166a8b7bcf83384e15a","5c6f0f192e9ee4944134ef64924811bbac291bff830a9daf462f3482b1841065","5c2d6d98ac1197ee6655079888918c5870c62906e3a8a1441d076ec980979c1e",2002),
+new Profile("limit-lower-fine",0.00025,new int[]{0,0,2,0,1,0,1,0},new double[]{0.7,1.3,0.02,-0.05,0.05,0,1,-1,0,0,0,0,0.02,1,-1,1.1,0.9,2,5,2.0,10.0,0.0,0.02,99,-99,1,-1.0,1.3,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.2,2.0,0.0,2.0,10.0},"9105e6f326790a24b41a4febd229bff3d5d51637f3d6155587dc674444cdec70","fc51a85f72c97d5e030da50692f5c1230f05f29b81dfb3a4b133098430bcdf77","fc51a85f72c97d5e030da50692f5c1230f05f29b81dfb3a4b133098430bcdf77",4003));}
+}

@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "status": "controlled-reproduction-completed",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-best-timing-reproduction/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 767527,
+    "sha256": "59490e51ed9be915a7ab10849cb4cdf1e90478f5cbcd570e49c564758e5db75a"
+  },
+  "evidence": {
+    "bytes": 44786045,
+    "sha256": "e6b129de46d4df13fe21973523877866c66304014879eb87facaf76f33ea3a1b"
+  },
+  "runtime": {
+    "bytes": 8776256,
+    "sha256": "34454f92ff0c4d856496d69e45eff0cabe9ab536f5b699bc7c71a9a77d200af8"
+  },
+  "historical_medians_s": {
+    "1": 8.5965081,
+    "2": 6.5199838
+  },
+  "original_cpu_rebuilt_medians_s": {
+    "1": 9.2412359,
+    "2": 6.6399653
+  },
+  "quiet_cpu_rebuilt_medians_s": {
+    "1": 8.909746,
+    "2": 6.429334
+  },
+  "quiet_cpu": 6,
+  "compiler_debug": "historical (-g)",
+  "source_checkpoint": "docs/benchmarks/checkpoints/best-source-point-rollback-2026-10-23.json",
+  "complete_recordings_identical": 316,
+  "exact_historical_median_pair_reproduced": false,
+  "independent_reference_accuracy_qualified": false,
+  "documentation": "docs/benchmarks/best-timing-reproduction-2026-10-23.md"
+}

@@ -2,7 +2,7 @@ package org.interpss.core.dstab;
 
 import java.util.List;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "run_id": "merge-gate-20261023-g",
+  "validation_gate_passed": true,
+  "merged": false,
+  "commits_created": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-full-merge-validation-g/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 2489,
+    "sha256": "b4e9304a4b8d07d0dd92a32c76f992fa2958acd26c1dac570dc200bd0a759594"
+  },
+  "evidence": {
+    "bytes": 20678830,
+    "sha256": "0bc31e10912df1845e3978e3e3ffc89543fa9d5322bc8f52d022da43f4273982"
+  },
+  "tests": {
+    "core": {
+      "tests": 3097,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ipss.plugin.core": {
+      "tests": 439,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "ipss.plugin.3phase": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    "ipss.test.plugin.core": {
+      "tests": 3262,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 54
+    }
+  },
+  "offline_tools": {
+    "tests": 394,
+    "exit_code": 0
+  },
+  "tested_sources_unchanged": true,
+  "base_revisions": {
+    "core": "46c8576e617fc0427dc42d3de7f9cafe64e38ff6",
+    "plugin": "f18fd5ee8aaf28ce3ce6f0d6ebb219d58ad34be6"
+  },
+  "main_branch_heads": {
+    "core": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+    "plugin": "74985520add5240245f79e77e40f2fbd527cdd79"
+  },
+  "remaining_failures": [],
+  "documentation": "docs/benchmarks/full-merge-validation-g-2026-10-23.md",
+  "snapshot_phase": "pre-commit and pre-merge",
+  "merge_receipt": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-23-full-merge-validation-g/merge-receipt.json"
+}

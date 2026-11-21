@@ -17,8 +17,11 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
-/** Trajectory comparison against ANDES 2.0.0 for GENROU plus AC8B. */
+/** Historical common-profile trajectory comparison. Agreement while the PID
+ * limit is inactive does not qualify tracking antiwindup; that branch is
+ * superseded by independent exact-record directional-nonwindup evidence. */
 public class Ac8bAndesSmibConformanceTest {
+    @org.junit.jupiter.api.io.TempDir Path nativeInputs;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
     private static final Path REFERENCE=Path.of("src","test","resources","reference","andes",
             "ac8b-smib-line-trip.csv");
@@ -28,7 +31,7 @@ public class Ac8bAndesSmibConformanceTest {
         IpssCorePlugin.init();
         var context=new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ac8b.dyr").toString());
+                Ac8bIndependentSmibConformanceTest.stageNativeAc8b(CASE.resolve("SMIB_v33_genrou_ac8b.dyr"),nativeInputs.resolve("native.dyr")).toString());
         var network=context.getDStabilityNet();
         var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),"SMIB load flow");
@@ -86,7 +89,9 @@ public class Ac8bAndesSmibConformanceTest {
     }
     private record Series(double[] time,double[] value){
         double at(double target){
-            int index=Arrays.binarySearch(time,target); if(index>=0)return value[index];
+            int index=Arrays.binarySearch(time,target);
+            // An event time is recorded twice, pre-event then post-event; the reference row holds the pre-event value.
+            if(index>=0){while(index>0&&time[index-1]==target)index--;return value[index];}
             int upper=-index-1; if(upper==0||upper==time.length)throw new IllegalArgumentException();
             int lower=upper-1; double f=(target-time[lower])/(time[upper]-time[lower]);
             return value[lower]+f*(value[upper]-value[lower]);

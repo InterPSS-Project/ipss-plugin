@@ -1,0 +1,310 @@
+{
+  "schema": 1,
+  "status": "diagnostic-not-production",
+  "goal_achieved": false,
+  "core_commit": "7a9808da4561612b5236d6a03abfe7c6238fb707",
+  "plugin_commit": "44b1a73a095462df4e0de60370d49305eec79f89",
+  "production_runtime_verification": {
+    "matched_classes": 5272,
+    "differences": [],
+    "extra": []
+  },
+  "summaries": {
+    "pss-direct-output-diagnostic-v3-20261021": {
+      "status": "completed",
+      "mode": "diagnostic",
+      "warmup_runs": 2,
+      "measured_runs": 0,
+      "case_wall_s": [],
+      "median_case_wall_s": null,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "direct_output_calls": [
+        865596,
+        865596
+      ]
+    },
+    "pss-direct-output-control-v3-20261021": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.8061985,
+        9.4989855,
+        9.7649187,
+        9.3968869,
+        9.4852661,
+        9.7063878
+      ],
+      "median_case_wall_s": 9.602686649999999,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "direct_output_calls": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "pss-direct-output-candidate-v3-20261021": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.744505,
+        9.5096587,
+        9.6528855,
+        9.4429911,
+        9.3141995,
+        9.7090774
+      ],
+      "median_case_wall_s": 9.5812721,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "direct_output_calls": [
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596
+      ]
+    },
+    "pss-direct-output-all_diagnostic-v4-20261021": {
+      "status": "completed",
+      "mode": "all_diagnostic",
+      "warmup_runs": 2,
+      "measured_runs": 0,
+      "case_wall_s": [],
+      "median_case_wall_s": null,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "direct_output_calls": [
+        865596,
+        865596
+      ],
+      "direct_stage_calls": [
+        778454,
+        778454
+      ]
+    },
+    "pss-direct-output-all-v4-20261021": {
+      "status": "completed",
+      "mode": "all",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.6461444,
+        9.6721497,
+        9.9588784,
+        9.3231467,
+        9.2408945,
+        9.4461044
+      ],
+      "median_case_wall_s": 9.5461244,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "direct_output_calls": [
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596,
+        865596
+      ],
+      "direct_stage_calls": [
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454,
+        778454
+      ]
+    },
+    "pss-direct-output-control-v4-20261021": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.8203949,
+        9.4405989,
+        9.8357661,
+        9.5619736,
+        9.4161702,
+        9.9428014
+      ],
+      "median_case_wall_s": 9.69118425,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "direct_output_calls": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "direct_stage_calls": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "recordings": {
+    "pss-direct-output-diagnostic-v3-20261021": {
+      "samples": 2405,
+      "channels": 4810,
+      "event_post_rows": 2,
+      "finite": true
+    },
+    "pss-direct-output-control-v3-20261021": {
+      "samples": 2405,
+      "channels": 4810,
+      "event_post_rows": 2,
+      "finite": true
+    },
+    "pss-direct-output-candidate-v3-20261021": {
+      "samples": 2405,
+      "channels": 4810,
+      "event_post_rows": 2,
+      "finite": true
+    },
+    "pss-direct-output-all_diagnostic-v4-20261021": {
+      "samples": 2405,
+      "channels": 4810,
+      "event_post_rows": 2,
+      "finite": true
+    },
+    "pss-direct-output-all-v4-20261021": {
+      "samples": 2405,
+      "channels": 4810,
+      "event_post_rows": 2,
+      "finite": true
+    },
+    "pss-direct-output-control-v4-20261021": {
+      "samples": 2405,
+      "channels": 4810,
+      "event_post_rows": 2,
+      "finite": true
+    }
+  },
+  "limitations": [
+    "Private direct evaluator lacks production lifecycle and fallback qualification.",
+    "Matching the performance-control recordings does not establish independent-reference accuracy.",
+    "The combined evaluator adds a stage override; interpret its comparison using the corresponding control."
+  ],
+  "archive": {
+    "bytes": 1130394,
+    "sha256": "7c713f182b421aec47a21a60dadc646d32991ef32352a18d4de3d273ef71b4bc"
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-pss-direct-evaluation-probe/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 173529,
+    "sha256": "283198eff185c869220322d920954a9a8da869ef3ccf151ae63405b947c80bfb"
+  }
+}

@@ -320,7 +320,7 @@ Supported:
 Not yet included:
 
 - A DataFrame adapter for `DclfMonitoredConstraintResult`.
-- PSS/E `.mon` interface coefficient parsing.
+- reference simulator `.mon` interface coefficient parsing.
 - Dynamic, time-varying RHS limits.
 - AC power-flow validation of interface violations.
 

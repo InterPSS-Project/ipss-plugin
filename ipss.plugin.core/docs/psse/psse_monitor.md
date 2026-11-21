@@ -1,4 +1,4 @@
-# PSS/E Monitored Element Support
+# reference simulator Monitored Element Support
 
 Package: `org.interpss.plugin.monitor`  
 Module: `ipss.plugin.core`
@@ -7,7 +7,7 @@ Module: `ipss.plugin.core`
 
 ## Overview
 
-The monitor package parses PSS/E **Monitored Element (`.mon`)** files and resolves the declared directives against a live `AclfNetwork`, producing concrete sets of network branch and bus IDs to monitor.
+The monitor package parses reference simulator **Monitored Element (`.mon`)** files and resolves the declared directives against a live `AclfNetwork`, producing concrete sets of network branch and bus IDs to monitor.
 
 A `.mon` file specifies:
 
@@ -42,8 +42,8 @@ Subsystem membership is determined by delegating to `SubsystemFilter` from the `
 Represents one branch line for monitoring or used inside a `MONITOR INTERFACE` block.
 
 ```
-fromBusNum : int     // PSS/E bus number of the from-terminal
-toBusNum   : int     // PSS/E bus number of the to-terminal
+fromBusNum : int     // reference simulator bus number of the from-terminal
+toBusNum   : int     // reference simulator bus number of the to-terminal
 ckt        : String  // circuit ID (e.g. "1", "2", "BK")
 comment    : String  // optional inline comment (text after '/')
 ```
@@ -76,7 +76,7 @@ Specifies a voltage-range monitoring rule.
 ```
 scope  : String   // "SYSTEM" or "BUS"
 system : String   // subsystem label (non-null when scope = SYSTEM)
-busNum : Integer  // PSS/E bus number (non-null when scope = BUS)
+busNum : Integer  // reference simulator bus number (non-null when scope = BUS)
 vMin   : double   // lower voltage limit (pu)
 vMax   : double   // upper voltage limit (pu)
 ```
@@ -259,7 +259,7 @@ All active buses returned by `SubsystemFilter.getBusIds(net, systemLabel)` are a
 
 ### 4. Voltage directive (BUS scope)
 
-A single active bus whose PSS/E bus number matches `busNum` is added to `voltageBusIds`.
+A single active bus whose reference simulator bus number matches `busNum` is added to `voltageBusIds`.
 
 ### 5. Interface branches
 

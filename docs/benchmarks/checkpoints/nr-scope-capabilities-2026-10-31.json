@@ -1,0 +1,1061 @@
+{
+  "status": "ordinary_scope_capabilities_verified_performance_accepted_by_user",
+  "consolidation_complete": false,
+  "final_release_qualified": false,
+  "core_source_commit": "213be7a897d54767ea6b158136cedb094b5c5a68",
+  "full_regression": {
+    "status": "passed_with_existing_baseline_failures",
+    "executed_tests": 8075,
+    "totals": {
+      "passed": 7968,
+      "failure": 11,
+      "skipped": 91,
+      "error": 5
+    },
+    "fork_dumps": [],
+    "required_focused_gate": {
+      "expected": 685,
+      "not_passed": []
+    },
+    "sparse_contract_gate": {
+      "expected": 23,
+      "not_passed": []
+    },
+    "comparison": {
+      "missing": [],
+      "new_failures": [],
+      "new_skips": [],
+      "changed_failures": [],
+      "added": [
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#equalHashAndSizeCannotAuthorizeOldSymbolicOrNumericalFactors(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#equalHashAndSizeCannotAuthorizeOldSymbolicOrNumericalFactors(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#publicDimensionGrowthMaterializesPreparedValuesAndSolvesFreshRhs:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[10]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[11]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[12]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[7]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[8]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[9]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#fixedOperatorAdapterDeclaresItsOwnInputsAndVoltageOwnership:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#invalidOwnershipCombinationsAreRejected:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#invalidPublicationPermissionDoesNotStartAScope:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#liveObserverCoefficientMutationStillMatchesGeneric(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#liveObserverCoefficientMutationStillMatchesGeneric(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[7]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[8]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#ownedCoefficientsCanPublishEveryCorrectionImmediately(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#ownedCoefficientsCanPublishEveryCorrectionImmediately(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[10]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[11]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[12]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[13]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[14]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[15]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[16]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[17]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[18]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[19]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[20]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[21]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[22]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[23]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[24]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[4]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[5]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[6]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[7]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[8]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[9]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#solverSubclassDoesNotInheritAnAuditedReuseCapability(boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#solverSubclassDoesNotInheritAnAuditedReuseCapability(boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[1]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[2]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[3]:0",
+        "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[4]:0"
+      ],
+      "requires_review": false
+    },
+    "source_changes_since_snapshot": [],
+    "regression_gate_passed": true,
+    "new_scope_tests": {
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#equalHashAndSizeCannotAuthorizeOldSymbolicOrNumericalFactors(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#equalHashAndSizeCannotAuthorizeOldSymbolicOrNumericalFactors(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrPatternHashContractTest#publicDimensionGrowthMaterializesPreparedValuesAndSolvesFreshRhs": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#addingAnUnnotifiedZeroBOpaqueDeviceInvalidatesAnEmptyDevicePlan(boolean, boolean)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[10]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[11]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[12]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[7]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[8]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#admittedCoefficientOwnershipAndPublicationAreIndependent(boolean, NrExecutionMode, boolean)[9]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#fixedOperatorAdapterDeclaresItsOwnInputsAndVoltageOwnership": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#invalidOwnershipCombinationsAreRejected": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#invalidPublicationPermissionDoesNotStartAScope": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#legacyTwoArgumentHooksKeepTheirPolarFlagAndDefaultCapabilities(boolean, NrExecutionMode)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#liveObserverCoefficientMutationStillMatchesGeneric(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#liveObserverCoefficientMutationStillMatchesGeneric(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observedShuntDevicesKeepStructureWithoutOwnedCoefficientInputs(boolean, boolean)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[7]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#observersKeepStructureButCannotAcquireOwnedInputsOrUnpublishedVoltages(boolean, String)[8]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#ownedCoefficientsCanPublishEveryCorrectionImmediately(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#ownedCoefficientsCanPublishEveryCorrectionImmediately(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[10]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[11]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[12]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[13]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[14]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[15]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[16]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[17]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[18]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[19]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[20]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[21]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[22]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[23]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[24]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[4]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[5]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[6]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[7]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[8]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#publicWorkflowsOwnAuditedInputsInBothCoordinatesAndMatchFreshModels(boolean, NrExecutionMode, String)[9]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#solverSubclassDoesNotInheritAnAuditedReuseCapability(boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#solverSubclassDoesNotInheritAnAuditedReuseCapability(boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[1]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[2]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[3]": "passed",
+      "ipss.core.test:com.interpss.core.algo.impl.solver.NrReuseCapabilitiesTest#unnotifiedSameValueOpaqueDeviceReplacementCannotInheritCachedAdmission(boolean, boolean)[4]": "passed"
+    }
+  },
+  "scope_semantics": {
+    "structural_reuse": "retained indexed preparation",
+    "coefficient_reuse": "owned unchanged model-input scope, with current voltage-dependent powers/derivatives",
+    "delayed_publication": "private polar voltage workspace inside that scope",
+    "legacy_bridge": "old two-argument hooks retain the former polar flag",
+    "capacitor_policy": "switched-shunt/SVC and fixed-bank buses keep structure-only admission; existing scope exclusion is preserved",
+    "opaque_devices": "unknown switched-shunt/SVC implementations use AUTO fresh evaluation or explicit strict-cache rejection"
+  },
+  "sparse_requirement_closed": "docs/nr-sparse-interface-closure.json",
+  "matched_final": {
+    "case118": {
+      "before": {
+        "samples": 20000,
+        "mean_ms": 0.03933794,
+        "median_ms": 0.037,
+        "min_ms": 0.0363,
+        "max_ms": 1.3427
+      },
+      "after": {
+        "samples": 20000,
+        "mean_ms": 0.040537295,
+        "median_ms": 0.0392,
+        "min_ms": 0.0367,
+        "max_ms": 1.271
+      },
+      "mean_reduction_percent": -3.0488505498762697,
+      "byte_identical_voltages_sha256": "081a09d4c0db179b842da519d326462f9ae45f015bb869eaf3817161dd472f16"
+    },
+    "case9241pegase": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 14.131739,
+        "median_ms": 13.8843,
+        "min_ms": 12.6337,
+        "max_ms": 20.3855
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 14.1569225,
+        "median_ms": 13.93,
+        "min_ms": 12.6459,
+        "max_ms": 21.7992
+      },
+      "mean_reduction_percent": -0.1782052442378168,
+      "byte_identical_voltages_sha256": "25c9574689f76b0c234580bda2b9138f419692d4e3f9a7ccb13965cb37d1e32d"
+    },
+    "activsg25k": {
+      "before": {
+        "samples": 200,
+        "mean_ms": 47.3995415,
+        "median_ms": 46.811,
+        "min_ms": 42.7485,
+        "max_ms": 68.3984
+      },
+      "after": {
+        "samples": 200,
+        "mean_ms": 47.869803,
+        "median_ms": 47.04945,
+        "min_ms": 43.5365,
+        "max_ms": 67.0758
+      },
+      "mean_reduction_percent": -0.9921224659947381,
+      "byte_identical_voltages_sha256": "959c01dab532d36eaec2c6b62c28a5d762e0a5f881e5ef8f97573ee707ce5864"
+    }
+  },
+  "one_warmup_25k_ms": {
+    "before": [
+      108.0531,
+      107.1037
+    ],
+    "after": [
+      109.2794,
+      112.5024
+    ]
+  },
+  "earlier_batches_retained": [
+    "matched-summary.json",
+    "matched-device-summary.json"
+  ],
+  "current_external_comparison": {
+    "target": {
+      "required_ratio": 1.2,
+      "cases": {
+        "case39": {
+          "mean_ratio": 1.1658279371101152,
+          "per_fork_ratios": [
+            1.1565718765797004,
+            1.1246615688714239,
+            1.2176839605956995
+          ]
+        },
+        "case118": {
+          "mean_ratio": 1.2666509938731945,
+          "per_fork_ratios": [
+            1.2485655274898284,
+            1.2132130118801794,
+            1.3453113826446537
+          ]
+        },
+        "case9241pegase": {
+          "mean_ratio": 1.095457517267407,
+          "per_fork_ratios": [
+            1.0853082607489932,
+            1.1455369366031098,
+            1.056433831159184
+          ]
+        },
+        "activsg25k": {
+          "mean_ratio": 1.1639347774560156,
+          "per_fork_ratios": [
+            1.1222741410907378,
+            1.2148888147333285,
+            1.1560708931080437
+          ]
+        },
+        "activsg70k": {
+          "mean_ratio": 0.9505501078207486,
+          "per_fork_ratios": [
+            0.9691232950088635,
+            0.9266027151235894,
+            0.9558303890890244
+          ]
+        }
+      },
+      "target_met": false,
+      "separate_cohorts": true,
+      "cpu": 2,
+      "affinity_mask": 4
+    },
+    "summary": [
+      {
+        "case": "case39",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.012473229999999998,
+        "median_ms": 0.012,
+        "min_ms": 0.0116,
+        "p95_ms": 0.0124,
+        "max_ms": 1.0684,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.01242324,
+            "median_ms": 0.0121,
+            "min_ms": 0.0117,
+            "p95_ms": 0.0125,
+            "max_ms": 0.5654
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.012698300000000001,
+            "median_ms": 0.012,
+            "min_ms": 0.0116,
+            "p95_ms": 0.0123,
+            "max_ms": 1.0684
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.012298149999999999,
+            "median_ms": 0.012,
+            "min_ms": 0.0117,
+            "p95_ms": 0.0123,
+            "max_ms": 0.2775
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.030059166666666668,
+        "median_ms": 0.0289,
+        "min_ms": 0.0271,
+        "p95_ms": 0.0333,
+        "max_ms": 1.0248,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.030551300000000003,
+            "median_ms": 0.0289,
+            "min_ms": 0.0281,
+            "p95_ms": 0.0363,
+            "max_ms": 0.4766
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.03132276,
+            "median_ms": 0.0296,
+            "min_ms": 0.0281,
+            "p95_ms": 0.0337,
+            "max_ms": 1.0248
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.02830344,
+            "median_ms": 0.0276,
+            "min_ms": 0.0271,
+            "p95_ms": 0.0286,
+            "max_ms": 0.3299
+          }
+        ]
+      },
+      {
+        "case": "case9241pegase",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 12.695546333333333,
+        "median_ms": 12.54515,
+        "min_ms": 11.9891,
+        "p95_ms": 13.93081,
+        "max_ms": 16.8194,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 12.599366000000002,
+            "median_ms": 12.4761,
+            "min_ms": 12.1042,
+            "p95_ms": 13.668645,
+            "max_ms": 14.2566
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 12.597558,
+            "median_ms": 12.42525,
+            "min_ms": 11.9891,
+            "p95_ms": 13.37121,
+            "max_ms": 16.8194
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 12.889714999999999,
+            "median_ms": 12.680299999999999,
+            "min_ms": 12.0199,
+            "p95_ms": 14.681269999999998,
+            "max_ms": 16.4239
+          }
+        ]
+      },
+      {
+        "case": "case39",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.01454164,
+        "median_ms": 0.0136,
+        "min_ms": 0.0133,
+        "p95_ms": 0.0182,
+        "max_ms": 0.6114,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.014368369999999998,
+            "median_ms": 0.0137,
+            "min_ms": 0.0134,
+            "p95_ms": 0.016,
+            "max_ms": 0.6114
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.014281290000000002,
+            "median_ms": 0.0136,
+            "min_ms": 0.0133,
+            "p95_ms": 0.0165,
+            "max_ms": 0.2098
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.01497526,
+            "median_ms": 0.0136,
+            "min_ms": 0.0133,
+            "p95_ms": 0.0229,
+            "max_ms": 0.3489
+          }
+        ]
+      },
+      {
+        "case": "case118",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.03807447333333333,
+        "median_ms": 0.0365,
+        "min_ms": 0.0359,
+        "p95_ms": 0.0419,
+        "max_ms": 0.6134,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.0381453,
+            "median_ms": 0.0365,
+            "min_ms": 0.036,
+            "p95_ms": 0.04100499999999993,
+            "max_ms": 0.5762
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.03800118,
+            "median_ms": 0.0365,
+            "min_ms": 0.0361,
+            "p95_ms": 0.0414,
+            "max_ms": 0.6134
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.03807694,
+            "median_ms": 0.0363,
+            "min_ms": 0.0359,
+            "p95_ms": 0.0431,
+            "max_ms": 0.5062
+          }
+        ]
+      },
+      {
+        "case": "case9241pegase",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 13.907431666666666,
+        "median_ms": 13.773499999999999,
+        "min_ms": 12.749,
+        "p95_ms": 15.44893,
+        "max_ms": 19.6143,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 13.674196000000002,
+            "median_ms": 13.50265,
+            "min_ms": 12.8673,
+            "p95_ms": 14.961325,
+            "max_ms": 16.6603
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 14.430967999999998,
+            "median_ms": 14.11695,
+            "min_ms": 13.3333,
+            "p95_ms": 16.22329,
+            "max_ms": 19.6143
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 13.617131000000002,
+            "median_ms": 13.40805,
+            "min_ms": 12.749,
+            "p95_ms": 14.877945,
+            "max_ms": 16.3398
+          }
+        ]
+      },
+      {
+        "case": "activsg25k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 40.731581,
+        "median_ms": 40.205650000000006,
+        "min_ms": 37.5317,
+        "p95_ms": 43.797335000000004,
+        "max_ms": 63.2742,
+        "iterations": [
+          5
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 41.556718000000004,
+            "median_ms": 41.226150000000004,
+            "min_ms": 38.9951,
+            "p95_ms": 44.69209,
+            "max_ms": 53.966
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 40.21576,
+            "median_ms": 39.395700000000005,
+            "min_ms": 37.5317,
+            "p95_ms": 43.225755,
+            "max_ms": 63.2742
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 40.422264999999996,
+            "median_ms": 39.9469,
+            "min_ms": 38.0445,
+            "p95_ms": 43.285045000000004,
+            "max_ms": 56.5315
+          }
+        ]
+      },
+      {
+        "case": "activsg70k",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 221.130135,
+        "median_ms": 218.96359999999999,
+        "min_ms": 214.1247,
+        "p95_ms": 232.33221500000002,
+        "max_ms": 261.5639,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 220.45114599999997,
+            "median_ms": 218.6036,
+            "min_ms": 214.1247,
+            "p95_ms": 229.265815,
+            "max_ms": 253.5015
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 220.110717,
+            "median_ms": 219.1055,
+            "min_ms": 214.4745,
+            "p95_ms": 229.043415,
+            "max_ms": 242.5911
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 222.82854199999997,
+            "median_ms": 219.6609,
+            "min_ms": 215.336,
+            "p95_ms": 242.5753,
+            "max_ms": 261.5639
+          }
+        ]
+      },
+      {
+        "case": "activsg25k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 47.40890366666667,
+        "median_ms": 46.860699999999994,
+        "min_ms": 43.221,
+        "p95_ms": 53.098549999999996,
+        "max_ms": 86.4502,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 46.63803000000001,
+            "median_ms": 45.7046,
+            "min_ms": 43.221,
+            "p95_ms": 51.6595,
+            "max_ms": 64.7864
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 48.85767700000001,
+            "median_ms": 48.118300000000005,
+            "min_ms": 45.566,
+            "p95_ms": 53.2474,
+            "max_ms": 71.2245
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 46.73100400000001,
+            "median_ms": 45.332449999999994,
+            "min_ms": 43.2415,
+            "p95_ms": 53.24128499999999,
+            "max_ms": 86.4502
+          }
+        ]
+      },
+      {
+        "case": "activsg70k",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 210.19527366666668,
+        "median_ms": 210.615,
+        "min_ms": 196.6555,
+        "p95_ms": 220.63722,
+        "max_ms": 246.1329,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 213.644341,
+            "median_ms": 212.015,
+            "min_ms": 207.3232,
+            "p95_ms": 222.81238499999998,
+            "max_ms": 246.1329
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 203.955188,
+            "median_ms": 201.3922,
+            "min_ms": 196.6555,
+            "p95_ms": 215.15792000000002,
+            "max_ms": 239.9501
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 212.986292,
+            "median_ms": 211.64024999999998,
+            "min_ms": 206.8607,
+            "p95_ms": 220.73765,
+            "max_ms": 232.9874
+          }
+        ]
+      }
+    ],
+    "audit": {
+      "status": "all_numerical_count_mode_fingerprint_and_affinity_checks_passed",
+      "measured_samples": 121800,
+      "audited_groups": [
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "small",
+          "case": "case39",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case118",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 10000
+        },
+        {
+          "cohort": "small",
+          "case": "case9241pegase",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "prepared",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "fork": 0,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "prepared",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "fork": 1,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "prepared",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg25k",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 100
+        },
+        {
+          "cohort": "large",
+          "case": "activsg70k",
+          "backend": "rustpower-klu",
+          "fork": 2,
+          "samples": 100
+        }
+      ],
+      "performance_target_met": false,
+      "small_rust_warmup_evidence": "Executed source range(-warmups,repeats) and per-fork launch flags; the small-case validation format has no separate warmup counters."
+    }
+  },
+  "production_entries_identical_between_full_and_measured": 108,
+  "evidence_root": "ipss.test.plugin.core/target/nr-scope-capabilities-20261031",
+  "external_evidence_root": "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031",
+  "evidence_hashes": {
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/focused-final-audit.json": {
+      "sha256": "437e9a8fa18a8d4b3a3191b301bc16ac6688391d1b93e182927ffe2169b5c1b6",
+      "bytes": 253788
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/full-test-audit.json": {
+      "sha256": "dec394601d9301ca72f83bc53981437147ee4455f256c8edfc85f8a5d34abd86",
+      "bytes": 2646696
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/runtime-equivalence.json": {
+      "sha256": "02d50bbb81b7cae56f23f2d2d3dbdd45eda45bd9b4ddbefb337ce814a6f818d8",
+      "bytes": 45317
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/matched/runs.json": {
+      "sha256": "c59f007980344d6b8f03b2859a645dd74934ff90940044291565a4a9b8100e88",
+      "bytes": 165242
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/matched-summary.json": {
+      "sha256": "6c23a09a7493752974f1c50dfdbc456158e9ef6a16a8de94dbc5b681d0bdce49",
+      "bytes": 1517
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/matched-device/runs.json": {
+      "sha256": "faed3a10ca1ab23c64b1fef307f83f6545d05e6d162c90230f9bcf2b720c1126",
+      "bytes": 165388
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/matched-device-summary.json": {
+      "sha256": "472355289a3517fdd19bcd9fb7f17165faf84c3616a17a5baa095db58ebc8a5c",
+      "bytes": 1508
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/matched-final/runs.json": {
+      "sha256": "4c8a9e47e765e6116f96b4d41f92bc46f536d92753367d10279a001caaf6baa8",
+      "bytes": 165399
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/matched-final-summary.json": {
+      "sha256": "edc53a0b421eb8265a6c7cdc24fb4dff8403dc67ec0a86c2fb65ba24f45575ec",
+      "bytes": 1493
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-20261031/cold-final/runs.json": {
+      "sha256": "268abdeb7e2212793de61f862396a358b27b927392664c94ba29057e51a33508",
+      "bytes": 106271
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031/runs.json": {
+      "sha256": "433d7ada49fba58f2fba6091298a8151f2e1bf9050e6ab4d6f51b49287ed3c08",
+      "bytes": 2400
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031/summary.json": {
+      "sha256": "ae996ba47c3e4a911ec1d7ddb2d3d2c2a6815a4b832eb6aaf77d477ce3aef8ce",
+      "bytes": 9477
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031/target-verification.json": {
+      "sha256": "186af5b67a6d3fb04e05b1692bc9537aac097dbd0cd741d88466c4ee6a1ebbc1",
+      "bytes": 1099
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031/result-audit.json": {
+      "sha256": "e64cfdd5a4c706487029b4830cfcd753112fcfcc6fa85d8cc04d16ceb48ddc4f",
+      "bytes": 4630
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031/small/sha256.json": {
+      "sha256": "84af11a642fcf91e14f1444a42153ba9fa706f47432a86d7f0ea5d6e2a29f3f5",
+      "bytes": 13317
+    },
+    "ipss.test.plugin.core/target/nr-scope-capabilities-rustpower-20261031/large/sha256.json": {
+      "sha256": "88ac1f9561cffb9f075e57fb0697364aab3d3c334b42c4f50830e811f3b17100",
+      "bytes": 13401
+    },
+    "docs/nr-sparse-interface-closure.json": {
+      "sha256": "9fed29d09f7bc2d583f6dfd0d81602340694c869bf22bd341146b2ee491e0b49",
+      "bytes": 10746
+    },
+    "ipss.test.plugin.core/target/nr-consolidation-20261030/nr-scope-capabilities-full-20261031-source-manifest.json": {
+      "sha256": "c810078f0e15aef1b15e4d8880638abd781ee2b97872d614aeac74da9f895211",
+      "bytes": 1148250
+    },
+    "ipss.test.plugin.core/target/nr-final-cleanup-20261031/cleanup-audit.json": {
+      "sha256": "2d1875b4153d74488ae5579a28737df9a3009ea560a6c0b9a8fca19ea7279324",
+      "bytes": 181929
+    }
+  },
+  "remaining": [
+    "Specialized contributor/model coefficient capabilities and remaining compatibility integration",
+    "Complete coverage/interaction/source audit and final generic/frozen comparisons",
+    "Historical one-warmup recovery and all-five <=1.2 criterion"
+  ],
+  "checkpoint_acceptance": {
+    "date": "2026-10-31",
+    "latest_measured_performance_accepted_by_user": true,
+    "original_all_five_threshold_met": false,
+    "broader_consolidation_complete": false
+  },
+  "final_cleanup": {
+    "run": "nr-final-cleanup-focused-b-20261031",
+    "executed_tests": 685,
+    "totals": {
+      "passed": 685
+    },
+    "test_identities_preserved": true,
+    "production_sources_unchanged": 1868,
+    "production_runtime_entries_identical_to_measured": 108,
+    "python_tests_passed": 9,
+    "evidence": "ipss.test.plugin.core/target/nr-final-cleanup-20261031/cleanup-audit.json",
+    "core_commit": "218339d0b857acaeabedbf3c77cd2059a2bb2ff9"
+  }
+}

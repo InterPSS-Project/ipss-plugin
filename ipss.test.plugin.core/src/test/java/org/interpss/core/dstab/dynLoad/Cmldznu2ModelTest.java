@@ -94,8 +94,10 @@ public class Cmldznu2ModelTest {
         assertThrows(IllegalArgumentException.class, () -> new Cmldznu2Data(invalid));
     }
 
-    @Test
-    void importsZoneScopedWrapperWithSyntheticConstants(@TempDir Path tempDir) throws Exception {
+    @ParameterizedTest
+    @CsvSource({"0.12, 0.096", "0.15, 0.12"})
+    void importsZoneScopedWrapperWithSyntheticConstants(double subtransientReactance,
+            double expectedLeakage, @TempDir Path tempDir) throws Exception {
         String rawText = Files.readString(DATA.resolve("ieee9_v33.raw"));
         String originalLoadPrefix = "5,'1 ',1,   1,   1,";
         assertTrue(rawText.contains(originalLoadPrefix));
@@ -116,7 +118,9 @@ public class Cmldznu2ModelTest {
 
         assertEquals(1, network.getDStabBus("Bus5").getZone().getNumber());
         int zone = 9;
-        String constants = Arrays.stream(syntheticConstants())
+        double[] values = syntheticConstants();
+        values[42] = subtransientReactance;
+        String constants = Arrays.stream(values)
                 .mapToObj(Double::toString).collect(Collectors.joining(" "));
         Path input = tempDir.resolve("synthetic-composite-load.dyr");
         Files.writeString(input, zone + " 'USRLOD' '*' 'CMLDZNU2' "
@@ -140,6 +144,7 @@ public class Cmldznu2ModelTest {
         assertEquals(0.60, model.getStaticFraction(), 1.0e-14);
         assertTrue(model.getTargetLoadIds().contains("1"));
         assertTrue(model.initStates());
+        assertEquals(expectedLeakage, model.getInductionMotorA().getXl(), 1.0e-14);
         assertTrue(model.getNamedStates().containsKey("MotorD.StallTimer"));
         assertTrue(model.getNamedStates().containsKey("STATIC.P"));
         assertTrue(model.getNamedStates().containsKey("ELECTRONIC.Fraction"));
@@ -204,10 +209,12 @@ public class Cmldznu2ModelTest {
         Cmldznu2Model model = assertInstanceOf(Cmldznu2Model.class,
                 network.getDStabBus("Bus5").getInfoOnlyDynModel());
         var motorA = model.getInductionMotorA();
-        assertEquals(0.8400438116205978, motorA.getNamedState("EPrimeQ"), 1.0e-12);
-        assertEquals(-0.21162634927156448, motorA.getNamedState("EPrimeD"), 1.0e-12);
-        assertEquals(0.8892794025809891, motorA.getNamedState("EDoublePrimeQ"), 1.0e-12);
-        assertEquals(-0.19474031161006025, motorA.getNamedState("EDoublePrimeD"), 1.0e-12);
+        // Fresh independent cold pairs establish these initial coordinates;
+        // the former constants were snapshots of the old internal initializer.
+        assertEquals(0.841580688953, motorA.getNamedState("EPrimeQ"), 2.0e-5);
+        assertEquals(-0.211601868272, motorA.getNamedState("EPrimeD"), 2.0e-5);
+        assertEquals(0.890871703625, motorA.getNamedState("EDoublePrimeQ"), 2.0e-5);
+        assertEquals(-0.194755464792, motorA.getNamedState("EDoublePrimeD"), 2.0e-5);
         double minimumVoltage = network.getDStabBus("Bus5").getVoltageMag();
         double minimumOnlineFraction = model.getInductionMotorA().getFonline();
         int checkpointIndex = 0;

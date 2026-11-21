@@ -19,9 +19,10 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
-import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import com.interpss.dstab.controller.pss.ieee1992pss1a.Ieee1992PSS1AStabilizer;
+import com.interpss.dstab.controller.pss.ieeest.IeeestStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -188,8 +189,10 @@ public class IeeestPsseSmibConformanceTest {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_esst1a_pss1a.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_esst1a.dyr").toString());
         var network = context.getDStabilityNet();
+        assertTrue(new DStabNetworkBuilder(network).addPss1a("Bus1", "1", 1,
+                .061, .0017, .30, .03, .30, .03, 5, .020, 5, .05, -.05, 0, 0) != null);
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "PSS1A play-in load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

@@ -1,0 +1,7 @@
+clear
+new circuit.inline bus1=source basekv=12.47 pu=1 phases=3 r1=.00000001 x1=.00000001 r0=.00000001 x0=.00000001
+new line.feeder phases=1 bus1=source.1 bus2=loadbus.1 length=1 units=km
+~ rmatrix=[.1] xmatrix=[.05] cmatrix=[0]
+new load.demand phases=1 bus1=loadbus.1 conn=wye kv=7.199557856794634 kw=10 kvar=0 vminpu=0 vmaxpu=1000000
+set maxiterations=200 tolerance=1e-10
+solve

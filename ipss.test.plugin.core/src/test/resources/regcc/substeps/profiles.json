@@ -1,0 +1,20 @@
+[
+  {
+    "profile": "fault",
+    "step_s": 0.00026041666666666666,
+    "samples": 773,
+    "sha256": "5c2f774a576e483cf4569d9c2f414d411c1ed8bfbff1d58c9d7669a34aba1069"
+  },
+  {
+    "profile": "high-gain",
+    "step_s": 0.00026041666666666666,
+    "samples": 773,
+    "sha256": "fa3ef03ede38e2675a909de9810ec6351d81a6e6b54d635788887a5a6e105c70"
+  },
+  {
+    "profile": "minimum",
+    "step_s": 0.00026041666666666666,
+    "samples": 773,
+    "sha256": "5c0065c5bed88cc0f0c5bd61a5d6d498ea6d1be4ffd41efe3cfee030742e0385"
+  }
+]

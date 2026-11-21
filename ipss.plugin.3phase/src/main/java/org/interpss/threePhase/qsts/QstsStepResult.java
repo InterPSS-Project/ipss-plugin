@@ -124,10 +124,20 @@ public class QstsStepResult {
 		return busVoltages;
 	}
 
+	/**
+	 * Returns per-phase load P/Q in per unit on {@code networkBaseKva / 3}.
+	 * Multiply by that base for kW/kvar, including single-phase and split-phase loads.
+	 * @see QstsDevicePowerSample
+	 */
 	public List<QstsDevicePowerSample> getLoadPowers() {
 		return loadPowers;
 	}
 
+	/**
+	 * Returns per-phase generator P/Q in per unit on {@code networkBaseKva}.
+	 * Multiply by that full network base for kW/kvar; positive power is injection.
+	 * @see QstsDevicePowerSample
+	 */
 	public List<QstsDevicePowerSample> getGeneratorPowers() {
 		return generatorPowers;
 	}

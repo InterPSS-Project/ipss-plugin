@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.mach.Machine;
 
-class DStabNetworkBuilderTgov1dTest extends CorePluginTestSetup {
+public class DStabNetworkBuilderTgov1dTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @TempDir

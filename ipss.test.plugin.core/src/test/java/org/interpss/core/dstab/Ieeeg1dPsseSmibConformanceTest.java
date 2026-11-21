@@ -1,5 +1,6 @@
 package org.interpss.core.dstab;
 
+import org.interpss.core.dstab.reference.ReferenceLoadModel;
 import org.interpss.core.dstab.reference.EmbeddedNativeTrajectoryValues;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,8 +20,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -46,7 +46,7 @@ public class Ieeeg1dPsseSmibConformanceTest {
         assertTrue(EmbeddedNativeTrajectoryValues.manifest(manifest).contains(hash),
                 "PSS/E reference CSV hash is absent from its manifest");
 
-        var context = new PSSEMultiFileLoader().loadDStab(
+        var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_ieeeg1d.dyr").toString());
         var network = context.getDStabilityNet();

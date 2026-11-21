@@ -4,7 +4,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.common.DStabSimuException;
-import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
+import com.interpss.dstab.mach.ieeevc.IeeeVcRoundRotorMachine;
 
 /**
  * Match the mechanical boundary of the ANDES 2.0.0 no-governor fixtures.

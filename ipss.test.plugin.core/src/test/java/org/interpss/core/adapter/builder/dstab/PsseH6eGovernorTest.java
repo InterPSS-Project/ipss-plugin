@@ -4,13 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
-import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernor;
+import com.interpss.dstab.controller.gov.h6e.PsseH6eGovernorData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -77,6 +79,41 @@ public class PsseH6eGovernorTest extends CorePluginTestSetup {
         assertTrue(descriptor.recordSchema().accepts(61));
         assertTrue(descriptor.recordSchema().accepts(69));
         assertEquals(DynamicModelSupportStatus.LOADABLE, descriptor.supportStatus());
+    }
+
+    @Test void nativeH6e1AndLegacyH6eu1PreserveTwAndEveryCurve(@TempDir Path directory) throws Exception {
+        for (int revision : new int[] {35, 36}) {
+            var builder = DStabBuilderTestFixture.createWithMachine();
+            builder.getBaseDStabNetwork().getExtraInfo().put(
+                    com.interpss.core.algo.LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY,
+                    org.interpss.fadapter.psse.PsseLoadflowSolutionSettings.builder(revision).build());
+            var parameters = new java.util.ArrayList<String>(); parameters.add("1");
+            for (int i = 0; i < 62; i++) parameters.add(Double.toString(.1 + i * .01));
+            int curve = revision == 35 ? 28 : 27;
+            parameters.set(1 + (revision == 35 ? 27 : 57), "1.75");
+            for (int i = 0; i < 10; i++) {
+                parameters.set(1 + curve + i, Double.toString(.1 + .1 * i));
+                parameters.set(1 + curve + 10 + i, Double.toString(.05 + .09 * i));
+                parameters.set(1 + curve + 20 + i, Double.toString(.8 + .02 * i));
+            }
+            parameters.set(62, "75.0");
+            if (revision == 36) { parameters.set(60, "0"); parameters.set(61, "0"); }
+            var path = directory.resolve("h6e1-" + revision + ".dyr");
+            String model = revision == 35 ? "H6EU1" : "H6E1";
+            Files.writeString(path, "1 '" + model + "' 1 " + String.join(" ", parameters) + " /\n");
+            var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+            parser.parseDynFile(path.toString());
+            var data = ((PsseH6eGovernor) builder.getDStabNetwork().getMachine("Bus1-mach1").getGovernor()).getData();
+            assertEquals(1.75, data.getTw(), TOL); assertEquals(75, data.getTrate(), TOL);
+            assertEquals(model.equals("H6E1"), data.isNativeH6e1Derivative());
+            for (int i = 0; i < 10; i++) {
+                assertEquals(.1 + .1 * i, data.getGv(i), TOL);
+                assertEquals(.05 + .09 * i, data.getPgv(i), TOL);
+                assertEquals(.8 + .02 * i, data.getBgv(i), TOL);
+            }
+            assertTrue(parser.getLastImportReport().isStrictlyComplete());
+            assertEquals(model, parser.getLastImportReport().entries().getFirst().sourceModelName());
+        }
     }
 
     @Test
@@ -175,6 +212,64 @@ public class PsseH6eGovernorTest extends CorePluginTestSetup {
         assertEquals(1,f.governor.getHead(),1e-12);
         assertTrue(f.governor.getWaterFlow()>initialFlow);
         assertEquals(f.governor.flowArea(f.governor.getGateOutput()),f.governor.getWaterFlow(),1e-10);
+    }
+
+    @Test void overloadedCurveHoldsMechanicalPowerAndReportsBypassUntilValidReinitialization() throws Exception {
+        var f=initialized(1);var g=f.governor;var m=f.machine;
+        g.getData().setTrate(50);g.getData().setHdam(1.12);g.getData().setTw(0);
+        m.setPm(.67);m.setPe(.67);
+        assertTrue(g.initStates(m.getDStabBus(),m));
+        assertTrue(g.isInitializationBypassed());assertTrue(g.getInitializationBypassReason().contains("exceeds turbine curve"));
+        double gate=g.getGatePosition();
+        m.setSpeed(.98);g.setRefPoint(2);
+        for(int i=0;i<100;i++)step(g,m,.001);
+        assertEquals(.67,g.getOutput(m),1e-12);assertEquals(gate,g.getGatePosition(),0);
+        assertEquals(1.12,g.getHead(),1e-12);assertEquals(0,g.getWaterFlow(),0);
+        m.setSpeed(1);m.setPm(.56);m.setPe(.56);
+        assertTrue(g.initStates(m.getDStabBus(),m));
+        assertFalse(g.isInitializationBypassed());assertNull(g.getInitializationBypassReason());
+        assertEquals(.56,g.getOutput(m),1e-12,"exact curve maximum remains a valid equilibrium");
+        m.setSpeed(.99);for(int i=0;i<100;i++)step(g,m,.001);
+        assertFalse(g.isInitializationBypassed());
+    }
+
+    @Test void bladeDipIsAllowedWhenThePhysicalFlowCurveRemainsInvertible() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(.4); machine.setPe(.4); machine.setSpeed(1); machine.getDStabBus().setFreq(1);
+        var parameters = data(1); parameters.setBgvmin(.9); parameters.setBgv(2, 0);
+        var governor = builder.addGovH6e("Bus1", "1", parameters);
+        assertNotNull(governor); governor.configureIntegrationStep(.0025);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double gate = governor.getGatePosition();
+        for (int i=0;i<400;i++) step(governor, machine, .0025);
+        assertEquals(gate, governor.getGatePosition(), 2e-8);
+        assertEquals(.4, governor.getOutput(machine), 2e-8);
+        governor.getData().setBgv(1, 20);
+        assertTrue(!governor.validateParameters(), "A reversed physical flow curve must still be rejected");
+    }
+
+    @Test void nativeH6e1AddsSpeedDerivativeInBothFeedbackModes() throws Exception {
+        for (int fd : new int[] {0, 1}) {
+            for (boolean nativeH6e1 : new boolean[] {false, true}) {
+                Fixture fixture = initialized(fd);
+                var governor = fixture.governor;
+                var data = governor.getData();
+                data.setNativeH6e1Derivative(nativeH6e1);
+                // Isolate the derivative input so droop and proportional terms
+                // cannot mask the sign at the first predictor boundary.
+                data.setKp(0.0);
+                assertTrue(governor.initStates(fixture.machine.getDStabBus(), fixture.machine));
+                double initialCommand = governor.getGateCommand();
+                fixture.machine.setSpeed(1.01);
+                assertTrue(governor.nextStep(.0025, DynamicSimuMethod.MODIFIED_EULER, fixture.machine, 0));
+                double derivative = (governor.getMeasuredSpeed() - 1.0 - governor.getDerivativeState())
+                        / governor.getEffectiveTd();
+                assertTrue(derivative > 0.0);
+                double signedGain = nativeH6e1 ? data.getKd() : -data.getKd();
+                assertEquals(initialCommand + signedGain * derivative, governor.getGateCommand(), TOL);
+            }
+        }
     }
 
     private static Fixture initialized(int fd) throws Exception { return initialized(fd, .02, 0.0); }

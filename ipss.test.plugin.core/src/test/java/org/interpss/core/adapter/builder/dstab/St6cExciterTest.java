@@ -8,8 +8,8 @@ import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.common.exp.InterpssException;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.st6c.St6cData;
-import org.interpss.dstab.control.exc.psse.st6c.St6cExciter;
+import com.interpss.dstab.controller.exc.st6c.St6cData;
+import com.interpss.dstab.controller.exc.st6c.St6cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -106,6 +106,29 @@ public class St6cExciterTest extends CorePluginTestSetup {
         Complex vt=m.getDStabBus().getVoltage(),it=m.getIxy().divide(m.getIMultiFactor());
         assertEquals(vt.add(Complex.I.multiply(it).multiply(e.xl)).abs(),e.getPotentialSource(),TOL);
         d=baseData();d.setKci(0);d.setIlr(0);d.setKlr(1);Fixture limited=fixture(d);assertTrue(limited.exciter.getCurrentLimitOutput()<=0);
+    }
+
+    @Test void observesBothSidesOfVoltageStepWithFrozenControllerState()throws Exception{
+        St6cData d=baseData();
+        d.setTr(0);
+        d.setTa(0);
+        d.setKda(0);
+        d.setSw1(1);
+        Fixture f=fixture(d);
+        var exciter=f.exciter;
+        var states=exciter.getNamedStates();
+        double output=exciter.outputSignal;
+        double storedField=f.machine.getEfd();
+        double before=exciter.observeFieldVoltage(new Complex(1.04),Complex.ZERO,1.04,0,0);
+        double after=exciter.observeFieldVoltage(new Complex(.8),Complex.ZERO,.8,0,0);
+        assertEquals(storedField,before,TOL);
+        // The PID integrator and feedback stay fixed across the event.
+        // Kpa*0.24 raises the algebraic VM by 0.72, and the bridge scales it by 0.8.
+        assertEquals((before/1.04+.72)*.8,after,TOL);
+        assertEquals(before,exciter.observeFieldVoltage(new Complex(1.04),Complex.ZERO,1.04,0,0),TOL);
+        assertEquals(states,exciter.getNamedStates());
+        assertEquals(output,exciter.outputSignal,TOL);
+        assertEquals(storedField,f.machine.getEfd(),TOL);
     }
 
     @Test void holdsEquilibriumAndParticipatesInFullSimulation()throws Exception{

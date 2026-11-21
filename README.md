@@ -11,6 +11,7 @@ Starting from 2025/03, InterPSS development is based on Maven. ipss-plugin repo 
 
 ```
     ipss.plugin.core
+    ipss.plugin.ecf       # experimental equivalent-circuit power flow
     ipss.plugin.3phase
     ipss.test.plugin.core
     ipss.sample
@@ -27,6 +28,10 @@ Test run settings belong in JSON resources or Java fixtures. See
 [test configuration](docs/test-configuration.md) for configuration files, benchmark
 examples, and the required sibling core APIs. A repository-wide test checks that
 test sources do not read or change JVM system properties.
+
+For dynamic simulation, see [solver selection](docs/dynamic-solver-selection.md)
+for the core-factory default, the solver supplied by the import loader, and
+when explicit solver installation is needed.
 
 ##### Maven Release Deployment
 

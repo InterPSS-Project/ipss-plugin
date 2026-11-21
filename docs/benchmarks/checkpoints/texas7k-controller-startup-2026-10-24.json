@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "status": "partial-case-startup-verified",
+  "full_case_accepted": false,
+  "attached_records": 2672,
+  "remaining_import_failures": {"WTTQA1": 18, "REAX3BU1": 13, "REAX4BU1": 2},
+  "bsg_entries": 120,
+  "power_flow_buses": 6717,
+  "power_flow_tolerance_pu": 0.001,
+  "flat_diagnostic": {
+    "duration_s": 10,
+    "step_s": 0.004166666666666667,
+    "network_voltage_correction_tolerance_pu": 1e-8,
+    "max_voltage_drift_pu": 2.7755575615628914e-14,
+    "max_speed_drift_pu": 1.3322676295501878e-15,
+    "max_angle_drift_deg": 2.182496622420265e-11,
+    "disabled_attached_controllers": 0
+  },
+  "validation": {
+    "java_tests": 4179, "java_passed": 4093, "java_skipped": 86,
+    "java_failures": 0, "java_errors": 0,
+    "offline_checks_passed": 402,
+    "additional_topology_fault_cases": 15,
+    "six_case_smoke_methods_passed": 3,
+    "allsym_equilibrium_passed": true
+  },
+  "expic1_status": "LOADABLE; bounded integrated-coordinate comparisons; algebraic event and output phases unresolved",
+  "evidence_directory": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-texas7k-startup"
+}

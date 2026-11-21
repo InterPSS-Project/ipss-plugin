@@ -8,9 +8,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /** Location-preserving reader and tokenizer for PSS/E DYR records. */
 public final class PsseDyrRecordReader {
+    // Recognize an exact named-device header, not an arbitrary quoted trailing
+    // comment. Other model families retain their numeric target validation.
+    // Fixed-width exports may pad the quoted model name as well as the target.
+    private static final Pattern NAMED_DEVICE_HEADER = Pattern.compile(
+            "^'(?:''|[^'])+'[\\s,]+'\\s*(?:SVSMO3T2|CDC6T|CHVDC2|USRDCL)\\s*'(?=[\\s,/]|$)", Pattern.CASE_INSENSITIVE);
     private PsseDyrRecordReader() {
     }
 
@@ -46,7 +52,7 @@ public final class PsseDyrRecordReader {
                 if (!raw.isEmpty()) records.add(toRecord(raw, sourceName, startLine, lineNo));
                 String remainder = pending.toString().trim();
                 pending.setLength(0);
-                if (startsWithBusNumber(remainder)) {
+                if (startsWithBusNumber(remainder) || isNamedDeviceRecord(remainder)) {
                     pending.append(remainder);
                     startLine = lineNo;
                 } else {
@@ -93,6 +99,18 @@ public final class PsseDyrRecordReader {
             throw new IllegalArgumentException("DYR record has fewer than three fields at "
                     + source + ":" + startLine);
         }
+        if (isNamedDeviceRecord(raw)) {
+            String name = fields.get(0).trim();
+            if (name.isEmpty()) {
+                throw new IllegalArgumentException("Blank DYR named-device target at "
+                        + source + ":" + startLine);
+            }
+            boolean userDcModel = fields.get(1).trim().equalsIgnoreCase("USRDCL");
+            int modelIndex = userDcModel ? 2 : 1;
+            return new PsseDyrRecord(source, startLine, endLine, raw, 0,
+                    fields.get(modelIndex).trim(), DynamicModelCatalog.canonicalName(fields.get(modelIndex)),
+                    name, fields, modelIndex + 1);
+        }
         int bus;
         try {
             bus = Math.abs(Integer.parseInt(fields.get(0)));
@@ -104,7 +122,7 @@ public final class PsseDyrRecordReader {
                 && DynamicModelCatalog.canonicalName(fields.get(2)).equals("WT12A1B");
         boolean userDeviceModel = (wrapper.equals("USRLOD") || wrapper.equals("USRMDL"))
                 && !idlessUserModel;
-        boolean userBusModel = wrapper.equals("USRBUS");
+        boolean userBusModel = wrapper.equals("USRBUS") || wrapper.equals("USRMSC");
         int modelIndex = userDeviceModel ? 3 : userBusModel || idlessUserModel ? 2 : 1;
         if (fields.size() <= modelIndex) {
             throw new IllegalArgumentException("Missing user-model name at " + source + ":" + startLine);
@@ -134,6 +152,10 @@ public final class PsseDyrRecordReader {
         while (index < value.length() && Character.isDigit(value.charAt(index))) index++;
         return index > firstDigit && (index == value.length()
                 || Character.isWhitespace(value.charAt(index)) || value.charAt(index) == ',');
+    }
+
+    private static boolean isNamedDeviceRecord(String value) {
+        return NAMED_DEVICE_HEADER.matcher(value).find();
     }
 
     private static String stripDoubleSlashComment(String line) {

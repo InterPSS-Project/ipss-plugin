@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Gewtgcu1Model;
+import com.interpss.dstab.mach.model.Gewtgcu1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;

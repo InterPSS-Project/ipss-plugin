@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor;
-import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData;
+import com.interpss.dstab.controller.gov.gastwd.PsseGastwddGovernor;
+import com.interpss.dstab.controller.gov.gastwd.PsseGastwddGovernorData;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

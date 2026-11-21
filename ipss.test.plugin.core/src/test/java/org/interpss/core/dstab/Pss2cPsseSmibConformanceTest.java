@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
+import com.interpss.dstab.controller.pss.ieee2016pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -158,6 +158,9 @@ public class Pss2cPsseSmibConformanceTest {
         double[] initial = samples.get(0);
         machine.setSpeed(1.0 + value(initial, reference, "MACH_SPEED"));
         machine.setPe(value(initial, reference, "P_PU"));
+        // The playback drives recorded terminal power through setPe instead of solving a network.
+        // The coupled tests above exercise the DYR model with the native terminal-power source.
+        pss.setUseTerminalElectricalPowerInput(false);
         pss.configureIntegrationStep(STEP / 2.0);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
 

@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "updated": "2026-10-19",
+  "scope": {
+    "original_cases": 6,
+    "original_events": 36,
+    "reference": "Supplied reference outputs, including the full-system bus-6307 exports for all six cases"
+  },
+  "voltage_frequency": {
+    "metric": "mean_absolute_error / full_ten_second_reference_range",
+    "prefault_limit": 0.001,
+    "fault_and_postfault_limit": 0.015,
+    "fault_and_postfault_start": "Fault application, including the fault",
+    "comparison": "strictly_less_than",
+    "direct_bus_frequency_required": true,
+    "generator_speed_is_frequency_proxy_only": true
+  },
+  "rotor_angle": {
+    "channels": "Supplied generator rotor angles",
+    "prefault_metric": "maximum_absolute_error_deg",
+    "prefault_limit_deg": 0.02,
+    "full_ten_second_metric": "root_mean_square_error_deg",
+    "full_ten_second_limit_deg": 0.2,
+    "comparison": "strictly_less_than"
+  },
+  "alignment": {
+    "preserve_duplicate_event_sides": true,
+    "preserve_cold_history": true,
+    "exclude_negative_time_history_from_scoring": true,
+    "fit_offsets_or_time_shifts": false
+  },
+  "change_authority": "User updated the active goal to a 0.015 fault-and-postfault voltage/frequency NRMAE limit; prefault and rotor limits are unchanged.",
+  "historical_evidence": "Earlier reports and immutable artifacts retain the limits under which they were produced. This contract governs subsequent scoring."
+}

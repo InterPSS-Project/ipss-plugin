@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /** Native PSS/E 36.7 checkpoints; nominal step times retain original timestamps.
- * See docs/benchmarks/tgov3d-native-2026-10-15.md for full-resolution evidence. */
+ * See Core docs/benchmarks/tgov3d-native-2026-10-15.md for full-resolution evidence. */
 public final class Tgov3dPsseReference {
     private Tgov3dPsseReference() {}
     public static final int CHECKPOINTS = 1021;

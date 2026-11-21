@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "integration-added-full-fault-parity-open",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-24-optimized-7k-exciters/manifest.json",
+  "manifest_sha256": "5888d80e172f7b7aef3d86243ad1295d75aa74497bdf6cbd6dd96aa348757ab5",
+  "active_exciters_added": 137,
+  "exciter_families": 8,
+  "full_case_equilibrium_passed": true,
+  "checked_state_coordinates": 9541,
+  "focused_tests_passed": 183,
+  "full_reactor": {
+    "tests": 4230,
+    "failures": 5,
+    "errors": 0,
+    "skipped": 85
+  },
+  "topology": {
+    "attempted": 15,
+    "passed": 12,
+    "failed": 3,
+    "all_failed_sites_reproduce_before_extension": true
+  },
+  "warm_whole_run_seconds": [
+    57.0382907,
+    51.295839
+  ],
+  "full_fault_accuracy_accepted": false,
+  "maximum_bus_voltage_difference_from_ordinary_pu": 0.42269211184857114,
+  "maximum_network_iterations": 50,
+  "performance_goal_complete": false
+}

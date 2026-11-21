@@ -11,11 +11,11 @@ changes.
   `DStabilityNetwork` API source-compatible while allowing three-phase callers
   to populate `DStabNetwork3Phase` directly.
 - `PSSE3PhaseMultiFileLoader` centralizes creation and loading of a
-  three-phase PSS/E network. Transmission/distribution tests use this loader
+  three-phase reference simulator network. Transmission/distribution tests use this loader
   instead of casting a conventional `DStabilityNetworkImpl`, eliminating the
   runtime `ClassCastException`.
-- PSS/E `ACMTBLU1`/`USRLOD` records are parsed into the supported `LD1PAC`
-  dynamic-load model. A zero PSS/E `BASKV` value is normalized to 1.0 kV so
+- reference simulator `ACMTBLU1`/`USRLOD` records are parsed into the supported `LD1PAC`
+  dynamic-load model. A zero reference simulator `BASKV` value is normalized to 1.0 kV so
   malformed input cannot create an invalid zero-voltage base.
 
 ## File-adapter corrections

@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
-import org.interpss.dstab.control.exc.psse.ac6c.Ac6cExciter;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cData;
+import com.interpss.dstab.controller.exc.ac6c.Ac6cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -95,7 +95,11 @@ public class DStabNetworkBuilderAc6cTest extends CorePluginTestSetup {
 
     @Test
     void enforcesRotatingExciterLimitAndLoadedRectifier()throws Exception{
-        Ac6cData d=baseData();d.setKc(.2);d.setKd(.1);d.setVfemax(1.5);
+        Ac6cData d=baseData();d.setKc(.2);d.setKd(.1);
+        // The fixture initializes at Efd = 1.62 pu with a loaded rectifier, which needs
+        // VFE of about 2.0 pu. A ceiling below that cannot initialize; the network
+        // initialization now rejects such an exciter instead of switching it off.
+        d.setVfemax(2.5);
         Fixture f=fixture(d);DynamicSimuAlgorithm a=DStabObjectFactory.createDynamicSimuAlgorithm(f.builder.getDStabNetwork());
         a.setSimuOutputHandler(new StateMonitor());assertTrue(a.getAclfAlgorithm().loadflow());assertTrue(a.initialization());
         assertTrue(Double.isFinite(f.exciter.getDynamicFieldUpperLimit()));
@@ -129,4 +133,13 @@ public class DStabNetworkBuilderAc6cTest extends CorePluginTestSetup {
     private static double[] add(double[] x,double[] d,double dt){double[] y=new double[x.length];for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;return y;}
     private static void step(Ac6cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private record Fixture(DStabNetworkBuilder builder,Machine machine,Ac6cExciter exciter){}
+
+    @Test
+    void sensesCompensatedVoltageThroughoutIntegration() throws Exception {
+        TypedExciterCompensatedVoltageTest.checkSensing((builder, time) -> {
+            var data = baseData();
+            data.setTr(time);
+            return builder.addExcAc6c("Bus1", "1", data);
+        });
+    }
 }

@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "status": "independently-replayed-candidate",
+  "goal_achieved": false,
+  "base_checkpoint": "docs/benchmarks/checkpoints/case2-recovered-fast-2026-10-21.json",
+  "parent_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json",
+  "frozen_directory_classes": 5288,
+  "warmup_runs": 32,
+  "measured_runs": 7,
+  "replay_command": "python tools/run_bounded.py --log target/<new>.log -- python tools/replay_case2_fast_checkpoint.py --electrical-endpoint --output target/<new>",
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-endpoint/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 67862,
+    "sha256": "ba83b52f541ee150b05eeaa2b5260fecdb7c277349982b9766cc812658706ed1"
+  },
+  "archive": {
+    "bytes": 7649749,
+    "sha256": "b42d3dc7f51debf933139051e1155e3472585cb6afe40f05af7d1403ba1b5cdd"
+  },
+  "solver_source_recovery": {
+    "source": "target\\accuracy-recovery-fast-solver-20261020\\PsseStaggeredEulerSolver.java",
+    "source_sha256": "a007285f1882d4174f88252e2e70e54afb88e06c2eb2b2732a0edcebc78d6b2f",
+    "classes": [
+      {
+        "path": "org/interpss/dstab/algo/PsseStaggeredEulerSolver$LocalSt1Controller.class",
+        "rebuilt_sha256": "da5f605cc73a7d4750eeb7a65996202c0d50b7865543f42c86c71705d94bd685",
+        "frozen_sha256": "da5f605cc73a7d4750eeb7a65996202c0d50b7865543f42c86c71705d94bd685"
+      },
+      {
+        "path": "org/interpss/dstab/algo/PsseStaggeredEulerSolver$MachineMeasurementStage.class",
+        "rebuilt_sha256": "de3ca3c5e8e08232e238102f115dfe94aff006dc92752b739ebcdb0f41742d8e",
+        "frozen_sha256": "de3ca3c5e8e08232e238102f115dfe94aff006dc92752b739ebcdb0f41742d8e"
+      },
+      {
+        "path": "org/interpss/dstab/algo/PsseStaggeredEulerSolver$Participant.class",
+        "rebuilt_sha256": "6758c93a7c6ee371ebf2d47aa1ef3c7b57c4e5e27ca13c13c75fb890906a3a72",
+        "frozen_sha256": "6758c93a7c6ee371ebf2d47aa1ef3c7b57c4e5e27ca13c13c75fb890906a3a72"
+      },
+      {
+        "path": "org/interpss/dstab/algo/PsseStaggeredEulerSolver$Renewable.class",
+        "rebuilt_sha256": "2f8941fc7256485a65f0722aa5cb3fc45c2a8de834759d70953d63b7de1035aa",
+        "frozen_sha256": "2f8941fc7256485a65f0722aa5cb3fc45c2a8de834759d70953d63b7de1035aa"
+      },
+      {
+        "path": "org/interpss/dstab/algo/PsseStaggeredEulerSolver$State.class",
+        "rebuilt_sha256": "7ff3813bd9efe2cd11b6842aa3bdf150cbc47be5d675fb78483d56d7903c7c54",
+        "frozen_sha256": "7ff3813bd9efe2cd11b6842aa3bdf150cbc47be5d675fb78483d56d7903c7c54"
+      },
+      {
+        "path": "org/interpss/dstab/algo/PsseStaggeredEulerSolver.class",
+        "rebuilt_sha256": "0a6ddf38f9ba865c8d4ccb0e7289a6dff258f0e52a4a7a412341027ef7b21676",
+        "frozen_sha256": "0a6ddf38f9ba865c8d4ccb0e7289a6dff258f0e52a4a7a412341027ef7b21676"
+      }
+    ],
+    "all_class_bytes_equal": true,
+    "normalized_disassembly_equal": true
+  },
+  "state_equivalence": {
+    "status": "accepted-state-equivalence-with-declared-telemetry-difference",
+    "numeric_slots_sampled": 146580,
+    "accepted_steps": 2402,
+    "identical_groups": 12864,
+    "differing_numerical_or_history_groups": [],
+    "telemetry_only_difference": [
+      "Pss2aDirectEvaluation.singleRefreshCount"
+    ],
+    "proof": "The only bytecode reads/writes of this field form its increment; it is not used by a numerical calculation or branch.",
+    "bytecode_digest": "07a908e2904d5b76270844ca3a43fdedbfb5e5c2dd3641f82ff2c11781d583b1",
+    "raw_comparison_retained": true
+  },
+  "results": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 32,
+      "measured_runs": 7,
+      "case_wall_s": [
+        7.8363397,
+        7.7780198,
+        7.8104314,
+        7.9511155,
+        8.1966032,
+        7.946349,
+        7.9369608
+      ],
+      "median_case_wall_s": 7.9369608,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "electrical_endpoint_preparations": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "compilation_ms": [
+        25,
+        1,
+        13,
+        83,
+        12,
+        18,
+        90
+      ]
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 32,
+      "measured_runs": 7,
+      "case_wall_s": [
+        7.5603713,
+        7.6616516,
+        7.5640998,
+        7.8045462,
+        7.5978651,
+        7.5986059,
+        7.7266449
+      ],
+      "median_case_wall_s": 7.5986059,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": true,
+      "reference_accuracy_qualified": false,
+      "electrical_endpoint_preparations": [
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376,
+        211376
+      ],
+      "compilation_ms": [
+        24,
+        2,
+        12,
+        81,
+        12,
+        16,
+        87
+      ]
+    }
+  },
+  "independent_archive_replay": {
+    "status": "completed",
+    "working_performance_baseline": false,
+    "warmup_runs": 32,
+    "measured_runs": 7,
+    "case_wall_s": [
+      7.5252278,
+      7.6671205,
+      7.5520151,
+      7.7367339,
+      7.7764214,
+      7.6509762,
+      7.8540224
+    ],
+    "median_case_wall_s": 7.6671205,
+    "single_cpu_verified": true,
+    "full_recording_included": true,
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "frozen_directory_classes": 5288,
+    "mutable_build_directories_on_classpath": false,
+    "exact_historical_checkout": false,
+    "independent_accuracy_qualified": false,
+    "machine_frame_reuse": true,
+    "electrical_endpoint_preparation": true
+  },
+  "replay_private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-endpoint/replay-manifest.json",
+  "replay_private_manifest_digest": {
+    "bytes": 30106,
+    "sha256": "34193944420fd3a7c47ea27fad38ce1ae3ceaa9541a9cff6bccc510eeaebc2b9"
+  },
+  "replay_archive": {
+    "bytes": 3300024,
+    "sha256": "14fd8d69b8d84db06bb3fb6afbfb5208101cb7e8c0c381a31b4e547978ffa8ce"
+  },
+  "all_measured_runs_within_eight_seconds": true,
+  "production_source_replaced": false,
+  "report": "docs/benchmarks/case2-frozen-production-differences-2026-10-21.md"
+}

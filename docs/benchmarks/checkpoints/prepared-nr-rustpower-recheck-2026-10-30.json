@@ -1,0 +1,507 @@
+{
+  "schema": 1,
+  "date": "2026-10-30",
+  "status": "completed_accuracy_valid_target_not_met",
+  "implementation": "Maintained public loadflow(false), ordinary prepared polar NR hooks; no whole-solve experimental adapter.",
+  "source_commits": {
+    "core": "5309d648648378f7bec22226fe5ef6c8d80c52be",
+    "plugin": "9cbd57e10fce7e9c31a4796a78b0b04e613ef0a0"
+  },
+  "working_tree_included": true,
+  "evidence_root": "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030",
+  "comparison": "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030/comparison",
+  "protocol": {
+    "forks": 3,
+    "cpu": 2,
+    "affinity_mask": 4,
+    "small_warmups_per_fork": 50000,
+    "small_measured_per_fork": 10000,
+    "large_warmups_per_fork": 50,
+    "large_measured_per_fork": 100
+  },
+  "criterion": "For every case, pooled mean InterPSS public-API runtime / local RustPower KLU runtime <= 1.2.",
+  "required_ratio": 1.2,
+  "target_met": false,
+  "cases": [
+    {
+      "case": "IEEE39",
+      "source_case": "case39",
+      "rustpower_mean_ms": 0.012967163333333333,
+      "interpss_mean_ms": 0.01538105,
+      "ratio": 1.18615379513741,
+      "meets_limit": true,
+      "further_reduction_required": 0,
+      "rustpower": {
+        "case": "case39",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.012967163333333333,
+        "median_ms": 0.012,
+        "min_ms": 0.0116,
+        "p95_ms": 0.0133,
+        "max_ms": 3.4761,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.01259562,
+            "median_ms": 0.0122,
+            "min_ms": 0.0119,
+            "p95_ms": 0.0126,
+            "max_ms": 0.3415
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.014100290000000001,
+            "median_ms": 0.0119,
+            "min_ms": 0.0116,
+            "p95_ms": 0.0142,
+            "max_ms": 3.4761
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.01220558,
+            "median_ms": 0.0119,
+            "min_ms": 0.0116,
+            "p95_ms": 0.0121,
+            "max_ms": 0.3071
+          }
+        ]
+      },
+      "prepared": {
+        "case": "case39",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.01538105,
+        "median_ms": 0.0141,
+        "min_ms": 0.0137,
+        "p95_ms": 0.0176,
+        "max_ms": 3.3433,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.015356130000000003,
+            "median_ms": 0.014,
+            "min_ms": 0.0138,
+            "p95_ms": 0.0176,
+            "max_ms": 3.3433
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.01594133,
+            "median_ms": 0.0139,
+            "min_ms": 0.0137,
+            "p95_ms": 0.0208,
+            "max_ms": 2.9924
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.014845690000000002,
+            "median_ms": 0.0142,
+            "min_ms": 0.0139,
+            "p95_ms": 0.0163,
+            "max_ms": 0.5536
+          }
+        ]
+      },
+      "per_fork_ratios": [
+        1.2191642809166998,
+        1.1305675273345441,
+        1.2163035267476023
+      ]
+    },
+    {
+      "case": "IEEE118",
+      "source_case": "case118",
+      "rustpower_mean_ms": 0.03166628666666667,
+      "interpss_mean_ms": 0.04176219,
+      "ratio": 1.3188218258619102,
+      "meets_limit": false,
+      "further_reduction_required": 0.09009695133325135,
+      "rustpower": {
+        "case": "case118",
+        "backend": "rustpower-klu",
+        "samples": 30000,
+        "mean_ms": 0.03166628666666667,
+        "median_ms": 0.0277,
+        "min_ms": 0.0271,
+        "p95_ms": 0.0413,
+        "max_ms": 5.5398,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.031877909999999995,
+            "median_ms": 0.0286,
+            "min_ms": 0.0277,
+            "p95_ms": 0.0457,
+            "max_ms": 5.5398
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.03492746,
+            "median_ms": 0.0276,
+            "min_ms": 0.0271,
+            "p95_ms": 0.0332,
+            "max_ms": 3.2336
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.028193489999999998,
+            "median_ms": 0.0276,
+            "min_ms": 0.0271,
+            "p95_ms": 0.02930499999999993,
+            "max_ms": 0.1995
+          }
+        ]
+      },
+      "prepared": {
+        "case": "case118",
+        "backend": "prepared",
+        "samples": 30000,
+        "mean_ms": 0.04176219,
+        "median_ms": 0.0376,
+        "min_ms": 0.0371,
+        "p95_ms": 0.0492,
+        "max_ms": 17.4289,
+        "iterations": [
+          4
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 10000,
+            "mean_ms": 0.0405765,
+            "median_ms": 0.0378,
+            "min_ms": 0.0372,
+            "p95_ms": 0.04430499999999993,
+            "max_ms": 6.0989
+          },
+          {
+            "fork": 1,
+            "samples": 10000,
+            "mean_ms": 0.045642579999999995,
+            "median_ms": 0.0376,
+            "min_ms": 0.0371,
+            "p95_ms": 0.0649,
+            "max_ms": 17.4289
+          },
+          {
+            "fork": 2,
+            "samples": 10000,
+            "mean_ms": 0.039067489999999996,
+            "median_ms": 0.0375,
+            "min_ms": 0.0371,
+            "p95_ms": 0.0419,
+            "max_ms": 0.6344
+          }
+        ]
+      },
+      "per_fork_ratios": [
+        1.272872029565301,
+        1.3067821135576418,
+        1.3856918742589157
+      ]
+    },
+    {
+      "case": "PEGASE9241",
+      "source_case": "case9241pegase",
+      "rustpower_mean_ms": 13.380248666666667,
+      "interpss_mean_ms": 16.885001333333335,
+      "ratio": 1.2619347931401177,
+      "meets_limit": false,
+      "further_reduction_required": 0.04907923410686155,
+      "rustpower": {
+        "case": "case9241pegase",
+        "backend": "rustpower-klu",
+        "samples": 300,
+        "mean_ms": 13.380248666666667,
+        "median_ms": 12.86345,
+        "min_ms": 12.2522,
+        "p95_ms": 15.84637,
+        "max_ms": 27.2974,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 12.955851999999998,
+            "median_ms": 12.65765,
+            "min_ms": 12.2522,
+            "p95_ms": 14.311314999999999,
+            "max_ms": 20.4747
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 14.153813000000003,
+            "median_ms": 13.5637,
+            "min_ms": 12.4251,
+            "p95_ms": 17.385434999999998,
+            "max_ms": 27.2974
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 13.031081000000002,
+            "median_ms": 12.722999999999999,
+            "min_ms": 12.2592,
+            "p95_ms": 14.42077,
+            "max_ms": 23.6169
+          }
+        ]
+      },
+      "prepared": {
+        "case": "case9241pegase",
+        "backend": "prepared",
+        "samples": 300,
+        "mean_ms": 16.885001333333335,
+        "median_ms": 16.3072,
+        "min_ms": 14.203,
+        "p95_ms": 20.287405,
+        "max_ms": 72.9229,
+        "iterations": [
+          6
+        ],
+        "forks": [
+          {
+            "fork": 0,
+            "samples": 100,
+            "mean_ms": 15.535024999999996,
+            "median_ms": 15.34155,
+            "min_ms": 14.203,
+            "p95_ms": 17.155730000000002,
+            "max_ms": 21.419
+          },
+          {
+            "fork": 1,
+            "samples": 100,
+            "mean_ms": 17.667040999999998,
+            "median_ms": 16.96725,
+            "min_ms": 14.9564,
+            "p95_ms": 21.18943,
+            "max_ms": 23.0265
+          },
+          {
+            "fork": 2,
+            "samples": 100,
+            "mean_ms": 17.452938000000003,
+            "median_ms": 16.55235,
+            "min_ms": 15.0886,
+            "p95_ms": 19.776535,
+            "max_ms": 72.9229
+          }
+        ]
+      },
+      "per_fork_ratios": [
+        1.1990739783072544,
+        1.248217777075336,
+        1.339331556606854
+      ]
+    }
+  ],
+  "timed_samples": 120600,
+  "accuracy": {
+    "maximum_independent_mismatch_pu": 5.320296951908283e-08,
+    "maximum_complex_voltage_error_pu": 4.525880256036854e-09
+  },
+  "model_comparison_with_previous_maintained_run": {
+    "case39": {
+      "reference_array_maximum_differences": {
+        "v": 0.0,
+        "s": 0.0,
+        "pq": 0.0,
+        "pv": 0.0,
+        "ref": 0.0,
+        "v0": 0.0,
+        "bus_ids": 0.0
+      },
+      "original_ybus_maximum_difference": 0.0,
+      "exported_matpower_file_identical": true
+    },
+    "case118": {
+      "reference_array_maximum_differences": {
+        "v": 0.0,
+        "s": 0.0,
+        "pq": 0.0,
+        "pv": 0.0,
+        "ref": 0.0,
+        "v0": 0.0,
+        "bus_ids": 0.0
+      },
+      "original_ybus_maximum_difference": 0.0,
+      "exported_matpower_file_identical": true
+    },
+    "case9241pegase": {
+      "reference_array_maximum_differences": {
+        "v": 0.0,
+        "s": 0.0,
+        "pq": 0.0,
+        "pv": 0.0,
+        "ref": 0.0,
+        "v0": 0.0,
+        "bus_ids": 0.0
+      },
+      "original_ybus_maximum_difference": 0.0,
+      "exported_matpower_file_identical": true
+    }
+  },
+  "prepared_diagnostics": {
+    "diagnostics-prepared-0.json": {
+      "case39": {
+        "preparations": 1,
+        "scalarEquations": 78,
+        "structuralEntries": 456,
+        "factorizedEntries": 698,
+        "preparedResidualEvaluations": 360006,
+        "preparedWorkspaceScopes": 60001,
+        "stableSolveScopes": 60001,
+        "retainedSymbolicAcrossSolves": 1
+      },
+      "case118": {
+        "preparations": 1,
+        "scalarEquations": 236,
+        "structuralEntries": 1106,
+        "factorizedEntries": 1646,
+        "preparedResidualEvaluations": 360006,
+        "preparedWorkspaceScopes": 60001,
+        "stableSolveScopes": 60001,
+        "retainedSymbolicAcrossSolves": 1
+      },
+      "case9241pegase": {
+        "preparations": 1,
+        "scalarEquations": 18482,
+        "structuralEntries": 130858,
+        "factorizedEntries": 235234,
+        "preparedResidualEvaluations": 1208,
+        "preparedWorkspaceScopes": 151,
+        "stableSolveScopes": 151,
+        "retainedSymbolicAcrossSolves": 1
+      }
+    },
+    "diagnostics-prepared-1.json": {
+      "case39": {
+        "preparations": 1,
+        "scalarEquations": 78,
+        "structuralEntries": 456,
+        "factorizedEntries": 698,
+        "preparedResidualEvaluations": 360006,
+        "preparedWorkspaceScopes": 60001,
+        "stableSolveScopes": 60001,
+        "retainedSymbolicAcrossSolves": 1
+      },
+      "case118": {
+        "preparations": 1,
+        "scalarEquations": 236,
+        "structuralEntries": 1106,
+        "factorizedEntries": 1646,
+        "preparedResidualEvaluations": 360006,
+        "preparedWorkspaceScopes": 60001,
+        "stableSolveScopes": 60001,
+        "retainedSymbolicAcrossSolves": 1
+      },
+      "case9241pegase": {
+        "preparations": 1,
+        "scalarEquations": 18482,
+        "structuralEntries": 130858,
+        "factorizedEntries": 235234,
+        "preparedResidualEvaluations": 1208,
+        "preparedWorkspaceScopes": 151,
+        "stableSolveScopes": 151,
+        "retainedSymbolicAcrossSolves": 1
+      }
+    },
+    "diagnostics-prepared-2.json": {
+      "case39": {
+        "preparations": 1,
+        "scalarEquations": 78,
+        "structuralEntries": 456,
+        "factorizedEntries": 698,
+        "preparedResidualEvaluations": 360006,
+        "preparedWorkspaceScopes": 60001,
+        "stableSolveScopes": 60001,
+        "retainedSymbolicAcrossSolves": 1
+      },
+      "case118": {
+        "preparations": 1,
+        "scalarEquations": 236,
+        "structuralEntries": 1106,
+        "factorizedEntries": 1646,
+        "preparedResidualEvaluations": 360006,
+        "preparedWorkspaceScopes": 60001,
+        "stableSolveScopes": 60001,
+        "retainedSymbolicAcrossSolves": 1
+      },
+      "case9241pegase": {
+        "preparations": 1,
+        "scalarEquations": 18482,
+        "structuralEntries": 130858,
+        "factorizedEntries": 235234,
+        "preparedResidualEvaluations": 1208,
+        "preparedWorkspaceScopes": 151,
+        "stableSolveScopes": 151,
+        "retainedSymbolicAcrossSolves": 1
+      }
+    }
+  },
+  "focused_gate": {
+    "tests": 175,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "focused_skips": [
+    "org.interpss.core.opf.MatpowerOpfMapperTest"
+  ],
+  "native_rustpower_files_sha256": {
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\METADATA": "7f5ed458e56c7a375e1d022d99877d1e2d6ae4af4a974abe28001e5e92e51561",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\RECORD": "340270ad0117741fb4fde6b83752bd245c4270dac38d41af4c3c7850a8d20711",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower-0.5.2.dist-info\\WHEEL": "ec72fe4c6beae3839fa74ca164bfae4482051dc25322aaa4459550db06627733",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\__init__.py": "cffb3d7b997fb11ff6379156ee1ff9f8cdddd6c88375c48619a7b67a21c260b3",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\__init__.pyi": "81c59cfcc34a0cd608d60a57af529e40cda6a44e29bc83aed576a5ee16e89537",
+    "C:\\Users\\carol\\GitHub\\ipss-plugin\\target\\rustpower-benchmark-20261030\\venv\\Lib\\site-packages\\rustpower\\rustpower.pyd": "18123a2178a758fa7cc2e0386c91d581c887d5d9007669373077a98347187de1"
+  },
+  "verified_comparison_checksums": 56,
+  "critical_runtime_files_unchanged": 15,
+  "source_files_changed_since_preflight": [],
+  "receipts": {
+    "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030/before.json": "21861f2dccba93ba3e1af4a38c710ccbd4db55489c59d0dffed8939247e8aacd",
+    "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030/gate-audit.json": "c0fe89a40782a6138f33835f4b032fa4296a9b68c69b0058a41402136e1b7891",
+    "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030/comparison/environment.json": "1b8f970755c566962508540a7a80875676c7f1b4f2b3d071dcb1854b03852cc8",
+    "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030/comparison/sha256.json": "90948e6ec3dc4983f78622299319eea71b885d0ad4c32a4af1bea3c399685597",
+    "ipss.test.plugin.core/target/prepared-nr-rustpower-recheck-20261030/comparison/target-verification.json": "d9c8b869ad77873b198791ee05f6e0046b431226857bf83acf630d6a743ff1bf"
+  },
+  "runner_status": {
+    "state": "completed",
+    "min_free_bytes": 2147483648,
+    "max_log_bytes": 16777216,
+    "captured_bytes": 3322,
+    "exit_code": 2,
+    "reason": null
+  },
+  "limits": [
+    "Means include every measured sample; no outlier filtering.",
+    "One warmed timing batch with three fresh processes per runtime; not a worst-case guarantee.",
+    "The benchmark disables adjustment controls, globalization and voltage-dependent load adjustment.",
+    "Historical measurements from different cohorts do not isolate a source-change performance effect.",
+    "Local matched RustPower timings determine the target; published absolute times use different hardware."
+  ]
+}

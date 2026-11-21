@@ -1,4 +1,15 @@
 {
+  "Wt3p1SignedRateCompatibilityTest": {
+    "legacy.ge.reference": null,
+    "legacy.ge.state.reference": null
+  },
+  "CompositeTapControlSmibTest": {
+    "recording.enabled": false
+  },
+  "BenchmarkOutputGuard": {
+    "ipss.benchmark.maxFileBytes": 536870912,
+    "ipss.benchmark.minFreeBytes": 2147483648
+  },
   "Ieee39PsseBenchmarkTest": {
     "ieee39.steps": "0.00025,0.004333",
     "ieee39.methods": "modified-euler,psse-staggered-euler",
@@ -104,7 +115,68 @@
   "Texas2kRegfma1CoverageTest": {
     "texas2k.case.root": null
   },
+  "Pss2bReferenceReplayTest": {
+    "referenceArchive": "testData/private/verification-artifacts/pss2b-qualification-20261030/captures.zip",
+    "archiveSha256": "639c256db1a2b1fa18ebb40999294d6e4a8fdf50b05be5252de6913acb07fdfe"
+  },
+  "HspModelReferenceConformanceTest": {
+    "hsp.referenceRoot": "testData/private/verification-artifacts/2026-10-30-hsp-usage/references"
+  },
+  "Hyg3StateConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-state-qualification-20261031/captures.zip",
+    "archiveSha256": "e7604e97fd17e559ae13e60557ae1821be46376bdf31dea4c917f79c9706486b"
+  },
+  "Hyg3LimitConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-limit-qualification-20261031/captures.zip",
+    "archiveSha256": "142abcabacbd6e4fea03b275f652d58cecdaec268c9ec404975c62e39ea560f6"
+  },
+  "Hyg3BypassConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-bypass-qualification-20261102/captures.zip",
+    "archiveSha256": "09899d9ed070291f2e27fcbe403ef844fe6b95983c3c2ede7db16664b7ec7711"
+  },
+  "Hyg3DerivativePreparationConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-derivative-preparation-20261102/captures.zip",
+    "archiveSha256": "0d46fcac218ec495737f9156af95a5d9b104c1db9d8da0d3a9f4f4804fa63ea5"
+  },
+  "Hyg3FastFeedbackReferenceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/hyg3-fast-feedback-20261102/captures.zip",
+    "archiveSha256": "feab110e4cea07232d1b04f7182f6ea048c7c5c6b7acc7f94efb325d24822fa7"
+  },
+  "Wsieg1TimeReferenceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-time-preparation-20261102/captures.zip",
+    "archiveSha256": "8f85327ce5f9be6fd75967d23ca0532ae0674aecfbe951c08d3de6834d02f2cf"
+  },
+  "Wsieg1InactiveReferenceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-inactive-shaft-20261102/captures.zip",
+    "archiveSha256": "6d8ac050aa345c0d59d40a6e4f50dd01fc25934125ae8e1fdee82c577a8fba33"
+  },
+  "Wsieg1MachineEventConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-machine-events-20261102/captures.zip",
+    "archiveSha256": "4bc064e1dd292367cad4536cbc20915696ae44048c65c5882358787f8fab46ea"
+  },
+  "Wsieg1BaseConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-base-allocation-20261102/captures.zip",
+    "archiveSha256": "85c23b5c33744923eae120a85df881a32834a5a30610b6506989bfb573b75451"
+  },
+  "Wsieg1InitialReferenceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-initial-limits-20261102/captures.zip",
+    "archiveSha256": "411480cb603b20aa017940204a83cdd987e75d5dd57c6eb55c8e8390fe33e8bc"
+  },
+  "Wsieg1BypassLimitConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-bypass-limits-20261102/captures.zip",
+    "archiveSha256": "bdc28471d412fade189ccc46dc81a2c7cfd85f8af6f6ec07aefff2f28576025e"
+  },
+  "Wsieg1StateConformanceTest": {
+    "referenceArchive": "testData/private/verification-artifacts/wsieg1-shared-state-20261031/captures.zip",
+    "archiveSha256": "ae6ffd32654e18910161eb0df94001164d312cfff07f5455ef2d947f470db89c",
+    "beforeArchive": "testData/private/verification-artifacts/wsieg1-shared-state-20261031/before-validation.zip",
+    "beforeArchiveSha256": "d96d02d6d70a3ba34e5cfe00bc2fd31659b67bbbbc35c89d735eccb801bc0c6a"
+  },
+  "LccResistanceReferenceTest": {
+    "lcc.audit.output": null
+  },
   "Texas2kSixCaseDynamicSmokeTest": {
+    "ipss.smoke.certifiedNetworkAcceleration": false,
     "texas2k.case.root": null
   },
   "Texas2kSynchronousMachineCoverageTest": {
@@ -112,6 +184,10 @@
   },
   "Texas2kTopologyFaultMatrixTest": {
     "texas2k.fault.matrix.enabled": false,
+    "texas2k.fault.matrix.step": null,
+    "texas2k.fault.matrix.end": null,
+    "texas2k.fault.matrix.sites": "",
+    "texas2k.fault.matrix.tag": "",
     "texas2k.case.root": null
   },
   "Texas2kType3WindCoverageTest": {
@@ -294,6 +370,64 @@
     "interpss.fastN2Activs25kStreamingMonitorBatchSize": null,
     "interpss.fastN2Activs25kStreamingEndpointRhsBatchSize": null
   },
+  "Cmldblu1StateConformanceTest": {
+    "reference.root": "testData/private/verification-artifacts/cmldblu1-shared-state-20261031/references"
+  },
+  "Cmldblu1InitializationTest": {
+    "reference.root": "testData/private/verification-artifacts/cmldblu1-initialization-extended-20261031/references"
+  },
+  "Cmldblu1CompressorLifecycleTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-compressor-lifecycle-20261031/captures.zip"
+  },
+  "Cmldblu1CompressorInitializationTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-compressor-loading-20261031/captures-v2.zip"
+  },
+  "CompressorCurrentConformanceTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip"
+  },
+  "Acmtblu1SharedSmibTest": {
+    "network.tolerance": "1.0e-4",
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip",
+    "reference.preparation.archive": "testData/private/verification-artifacts/cmldblu1-severe-boundary-audit-20261101/preparation.zip",
+    "reference.frequency.archive": "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip",
+    "reference.electrical.archive": "testData/private/verification-artifacts/acmtblu1-state-inputs-20261101/captures.zip"
+  },
+  "CompressorFrequencyInputTest": {
+    "reference.archive": "testData/private/verification-artifacts/acmtblu1-frequency-20261101/captures.zip",
+    "reference.base.archive": "testData/private/verification-artifacts/cmldblu1-current-refresh-20261031/captures.zip",
+    "reference.electrical.archive": "testData/private/verification-artifacts/acmtblu1-state-inputs-20261101/captures.zip"
+  },
+  "CompressorProtectionConformanceTest": {
+    "reference.archive": "testData/private/verification-artifacts/acmtblu1-protection-20261101/accepted.zip"
+  },
+  "CompressorThermalConformanceTest": {
+    "reference.archive": "testData/private/verification-artifacts/acmtblu1-protection-20261101/accepted.zip"
+  },
+    "CompressorStartupFrequencyTest": {
+      "reference.archive": "testData/private/verification-artifacts/acmtblu1-startup-frequency-20261101/captures.zip",
+      "reference.bypass.archive": "testData/private/verification-artifacts/acmtblu1-startup-frequency-20261101/bypass-captures.zip"
+    },
+    "CompressorThermalBypassTest": {
+      "reference.archive": "testData/private/verification-artifacts/acmtblu1-thermal-parameters-20261101/captures.zip",
+      "reference.refinements": "testData/private/verification-artifacts/acmtblu1-thermal-parameters-20261101/refinements.zip"
+    },
+  "CompressorShortLagTest": {
+    "reference.archive": "testData/private/verification-artifacts/acmtblu1-short-lags-20261101/captures.zip"
+  },
+  "CompositeStaticPolynomialSmibTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-static-normalization-20261101/captures.zip"
+  },
+  "CompositeOmittedDistributionTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-omitted-elements-20261101/captures-v2.zip"
+  },
+  "CompositeStaticLowVoltageTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-low-voltage-static-20261101/captures-qualified.zip"
+  },
+  "ElectronicFullRecoverySmibTest": {
+    "reference.archive": "testData/private/verification-artifacts/cmldblu1-electronic-full-recovery-20261101/captures.zip",
+    "distribution.archive": "testData/private/verification-artifacts/cmldblu1-electronic-distribution-20261101/captures.zip",
+    "mixed.archive": "testData/private/verification-artifacts/cmldblu1-static-electronic-mix-20261101/captures.zip"
+  },
   "CgmesComparisonFixture": {
     "ipss.cgmes.cas.root": null,
     "fixtures.home": null,
@@ -305,5 +439,25 @@
     "ipss.cgmes.p4.qTolMvar": null,
     "ipss.cgmes.p4.minFlowMatch": null,
     "ipss.cgmes.p4.maxMissingBus": null
+  },
+  "EcpOpfPypowerComparisonTest": {
+    "ecp.exclude.jna": false,
+    "ecp.formulation": "GENERATOR_ADMITTANCE",
+    "ecp.initialize.all.strategies": false,
+    "ecp.initialization": "FLAT",
+    "ecp.step.control": "",
+    "ecp.step.voltage": null,
+    "ecp.step.adjoint": null,
+    "ecp.step.admittance": null,
+    "ecp.initial.complementarity": "1",
+    "ecp.bound.epsilon": null,
+    "ecp.native.library": "",
+    "ecp.java.sparse.backend": "JAVA_KLU",
+    "ecp.factor.reuse": false,
+    "ecp.objective.relative.tolerance": "1e-6"
+  },
+  "EcpOpfQualificationTest": {
+    "ecp.reference.case": "",
+    "ecp.reference.strategy": ""
   }
 }

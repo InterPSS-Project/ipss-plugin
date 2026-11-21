@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.st1c.St1cData;
-import org.interpss.dstab.control.exc.psse.st1c.St1cExciter;
+import com.interpss.dstab.controller.exc.st1c.St1cData;
+import com.interpss.dstab.controller.exc.st1c.St1cExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -41,6 +41,35 @@ public class St1cExciterTest extends CorePluginTestSetup {
         var descriptor=DynamicModelCatalog.find("ST1C").orElseThrow();assertEquals(21,descriptor.parameterCount());
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESST1C").orElseThrow().isImplementedExactly());
+    }
+
+    @Test
+    void nativeAlgebraicRegulatorSamplesPhysicalFieldCeilingAtStepStart(@TempDir Path dir)
+            throws Exception {
+        Path dyr = dir.resolve("st1c-algebraic.dyr");
+        Files.writeString(dyr, "1 'ST1C' 1 1 1 1 0 99 -99 1 1 0 0 "
+                + "10 0 99 -99 2 -2 0 0 1 0 99 /\n");
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        var bus = machine.getDStabBus();
+        var exciter = (St1cExciter) machine.getExciter();
+        machine.setEfd(1.2);
+        assertTrue(exciter.initStates(bus, machine));
+        exciter.setRefPoint(exciter.getRefPoint() + 2.0);
+
+        var method = DynamicSimuMethod.MODIFIED_EULER;
+        double dt = .0033333;
+        bus.setVoltage(.98, 0.0);
+        assertTrue(exciter.nextStep(dt, method, machine, 0));
+        assertEquals(1.96, exciter.getOutput(machine), TOL);
+        bus.setVoltage(.91, 0.0);
+        assertTrue(exciter.nextStep(dt, method, machine, 1));
+        assertEquals(1.96, exciter.getOutput(machine), TOL);
+        assertTrue(exciter.nextStep(0.0, method, machine, 0));
+        assertEquals(1.96, exciter.getOutput(machine), TOL);
+        assertTrue(exciter.nextStep(dt, method, machine, 0));
+        assertEquals(1.82, exciter.getOutput(machine), TOL);
     }
 
     @Test void fiveStatesMatchIndependentModifiedEulerOracle()throws Exception{

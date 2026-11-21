@@ -8,9 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.mach.Wt4g1Data;
-import org.interpss.dstab.mach.Wt4g1Model;
+import com.interpss.dstab.mach.model.Wt4g1Data;
+import com.interpss.dstab.mach.model.Wt4g1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,40 @@ public class PsseWt4g1ModelTest {
         assertTrue(model.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 0));
         assertTrue(model.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, 1));
         assertTrue(model.getActiveCurrentState() - initial <= .0017 + 1.0e-12);
+    }
+
+    @Test
+    void eventObservationUsesSolvedVoltageWithoutPublishingCachedAttributes() throws Exception {
+        Fixture fixture = load();
+        Wt4g1Model model = fixture.model;
+        var bus = fixture.network.getDStabBus("Bus1");
+        double pBefore = model.getP();
+        double qBefore = model.getQ();
+        var statesBefore = model.getNamedStates();
+        Object correctionBefore = model.getStates(null).get("WT4G1 deltaQ");
+        Complex voltage = new Complex(1.27 * Math.cos(.31), 1.27 * Math.sin(.31));
+        bus.setVoltage(voltage);
+
+        Complex power = model.observeTerminalPower(voltage);
+
+        double base = model.getParentGen().getMvaBase() / fixture.network.getBaseMva();
+        assertEquals(1.27 * model.getActiveCurrentState() * base, power.getReal(), 1.0e-12);
+        double correction = model.getData().highVoltageReactiveCurrentGain()
+                * (1.27 - model.getData().highVoltageThreshold());
+        assertEquals(1.27 * (model.getReactiveCurrentState() - correction) * base,
+                power.getImaginary(), 1.0e-12);
+        assertEquals(pBefore, model.getP(), 0.0);
+        assertEquals(qBefore, model.getQ(), 0.0);
+        assertEquals(statesBefore, model.getNamedStates());
+        assertEquals(correctionBefore, model.getStates(null).get("WT4G1 deltaQ"));
+
+        Complex impedance = model.getParentGen().getPosGenZ()
+                .multiply(model.getParentGen().getZMultiFactor());
+        Complex current = ((Complex) model.getOutputObject()).subtract(voltage.divide(impedance));
+        assertEquals(0.0, power.subtract(voltage.multiply(current.conjugate())).abs(), 1.0e-12);
+        assertTrue(model.updateAttributes(false));
+        assertEquals(power.getReal(), model.getP() * base, 1.0e-12);
+        assertEquals(power.getImaginary(), model.getQ() * base, 1.0e-12);
     }
 
     @Test

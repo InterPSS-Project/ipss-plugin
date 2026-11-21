@@ -10,18 +10,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.renewable.Reeca1Model;
-import org.interpss.dstab.renewable.Regca1Model;
-import org.interpss.dstab.renewable.WindControlStack;
-import org.interpss.dstab.renewable.Wtara1Data;
-import org.interpss.dstab.renewable.Wtara1Model;
-import org.interpss.dstab.renewable.Wtdta1Data;
-import org.interpss.dstab.renewable.Wtdta1Model;
-import org.interpss.dstab.renewable.Wtpta1Data;
-import org.interpss.dstab.renewable.Wtpta1Model;
-import org.interpss.dstab.renewable.WtgtAData;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.renewable.Reeca1Model;
+import com.interpss.dstab.renewable.Regca1Model;
+import com.interpss.dstab.renewable.WindControlStack;
+import com.interpss.dstab.renewable.Wtara1Data;
+import com.interpss.dstab.renewable.Wtara1Model;
+import com.interpss.dstab.renewable.Wtdta1Data;
+import com.interpss.dstab.renewable.Wtdta1Model;
+import com.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtpta1Model;
+import com.interpss.dstab.renewable.WtgtAData;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -112,11 +112,11 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     @Test
     void noDriveTrainPathInitializesWithoutPowerReferenceJump() {
         WindControlStack stack = new WindControlStack();
-        stack.setAerodynamics(new org.interpss.dstab.renewable.Wtara1Model(
+        stack.setAerodynamics(new com.interpss.dstab.renewable.Wtara1Model(
                 new Wtara1Data(.007, 0)));
-        stack.setPitchController(new org.interpss.dstab.renewable.Wtpta1Model(
+        stack.setPitchController(new com.interpss.dstab.renewable.Wtpta1Model(
                 new Wtpta1Data(25, 150, 30, 3, 0, .3, 27, 0, 10, -10)));
-        stack.setTorqueController(new org.interpss.dstab.renewable.Wttqa1Model(
+        stack.setTorqueController(new com.interpss.dstab.renewable.Wttqa1Model(
                 new Wttqa1Data(0, 1, .5, 0, 60, 1.002, 0,
                         .2, .58, .4, .72, .6, .86, .8, 1, 0)));
         stack.initialize(.5);
@@ -528,7 +528,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         double expectedSpeedReference = .79 + .05 * ((.86 - .79) / .4);
         assertEquals(.55, model.getFilteredPower(), 1.0e-12);
         assertEquals(expectedSpeedReference, model.getSpeedReference(), 1.0e-12);
-        assertEquals(initialTorque + expectedSpeedReference - .75,
+        assertEquals(initialTorque + .75 - expectedSpeedReference,
                 model.getTorque(), 1.0e-12);
     }
 
@@ -550,13 +550,13 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void torqueControllerSpeedErrorModeMatchesPowerworldFlagDefinition() {
+    void torqueControllerSpeedErrorModeMatchesPublishedNativeJunction() {
         Wttqa1Model model = torqueController(0, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
 
         model.step(.1, .5, .7);
 
-        double expectedTorque = .5 / .79 + .09;
+        double expectedTorque = .5 / .79 - .09;
         assertEquals(expectedTorque, model.getTorque(), 1.0e-12);
         assertEquals(expectedTorque * .7, model.getPref(), 1.0e-12);
     }

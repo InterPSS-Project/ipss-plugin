@@ -11,8 +11,8 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.renewable.Dera1Data;
-import org.interpss.dstab.renewable.Dera1Model;
+import com.interpss.dstab.renewable.Dera1Data;
+import com.interpss.dstab.renewable.Dera1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.junit.jupiter.api.Test;

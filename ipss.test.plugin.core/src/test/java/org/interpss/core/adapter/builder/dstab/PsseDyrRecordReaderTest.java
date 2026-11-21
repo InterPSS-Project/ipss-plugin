@@ -15,6 +15,55 @@ import org.junit.jupiter.api.Test;
 public class PsseDyrRecordReaderTest {
 
     @Test
+    void preservesNamedDcLinkAndEveryConstantAcrossAdjacentMultilineRecords() throws Exception {
+        String constants=java.util.stream.IntStream.range(0,32).mapToObj(i->Double.toString(i+.25))
+                .collect(java.util.stream.Collectors.joining(" "));
+        var records=PsseDyrRecordReader.read(new StringReader(
+                "1 'GENCLS' '1' 0 0 / 'North, A//B''s link' 'cdc6t'\n"
+                +constants+" / '2' 'CDC6T' "+constants+" / 2 'GENCLS' '1' 3 0 / 'trailing comment'"),
+                "dc-link.dyr");
+        assertEquals(4,records.size());
+        for(int index:new int[]{1,2}) {
+            var record=records.get(index);
+            assertTrue(record.hasNamedTarget());assertEquals(0,record.busNumber());
+            assertEquals("CDC6T",record.canonicalModelName());assertEquals(32,record.parameterCount());
+            for(int i=0;i<32;i++)assertEquals(i+.25,record.doubleParameter(i));
+        }
+        assertEquals("North, A//B's link",records.get(1).deviceId());
+        assertEquals("2",records.get(2).deviceId(),"A quoted numeric link name is not a bus number");
+        assertEquals(1,records.get(1).startLine());assertEquals(2,records.get(1).endLine());
+        assertEquals(2,records.get(3).busNumber());
+    }
+
+    @Test
+    void preservesNamedFactsOwnershipAndAdjacentRecordsWithoutConsumingComments() throws Exception {
+        var records = PsseDyrRecordReader.read(new StringReader(
+                "1 'GENCLS' '1' 0 0 / 'North//A''s SVC' 'svsmo3t2' 0 0\n"
+                + " .0125 / 2 'GENCLS' '1' 3 0 / 'ordinary trailing comment'\n"), "named.dyr");
+        assertEquals(3, records.size());
+        var named = records.get(1);
+        assertTrue(named.hasNamedTarget());
+        assertEquals("North//A's SVC", named.deviceId());
+        assertEquals("SVSMO3T2", named.canonicalModelName());
+        assertEquals(3, named.parameterCount());
+        assertEquals(0, named.intParameter(0));
+        assertEquals(.0125, named.doubleParameter(2));
+        assertEquals(1, named.startLine());
+        assertEquals(2, named.endLine());
+        assertEquals(2, records.get(2).busNumber());
+        assertTrue(!records.get(0).hasNamedTarget());
+    }
+
+    @Test
+    void rejectsBlankOrUnrecognizedNamedTargetsWithoutReinterpretingNumericRecords() {
+        for (String input : List.of("'   ' 'SVSMO3T2' 0 /", "'   ' 'CDC6T' 0 /", "'NAME' 'GENCLS' 0 0 /",
+                "'NAME' 'UNKNOWN' 0 /", "NAME 'SVSMO3T2' 0 /")) {
+            assertThrows(IllegalArgumentException.class, () -> PsseDyrRecordReader.read(
+                    new StringReader(input), "bad-named.dyr"));
+        }
+    }
+
+    @Test
     void tokenizesMultilineQuotedCommaAndScientificNotationRecords() throws Exception {
         String dyr = "// header comment\n"
                 + "-101, 'GENROU', 'A B', 8.0e0,\n"

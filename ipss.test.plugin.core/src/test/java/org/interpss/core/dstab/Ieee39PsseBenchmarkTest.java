@@ -13,11 +13,11 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.test.TestConfig;
 import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
-import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
-import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
-import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
-import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
-import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import com.interpss.dstab.controller.exc.ieee1968type1.Ieee1968Type1Exciter;
+import com.interpss.dstab.controller.gov.gast.PsseGASTGasTurGovernor;
+import com.interpss.dstab.controller.gov.tgov1.PsseTGov1SteamTurGovernor;
+import com.interpss.dstab.controller.gov.ieeesteamtcdr.IeeeSteamTCDRGovernor;
+import com.interpss.dstab.controller.gov.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -53,7 +53,7 @@ public class Ieee39PsseBenchmarkTest {
 
     @ParameterizedTest
     @MethodSource("benchmarkCases")
-    void exportBenchmark(String scenario, double step, String method) throws Exception {
+    void exportBenchmark(String scenario, double step, String method, @org.junit.jupiter.api.io.TempDir Path outputRoot) throws Exception {
         // Keep events and the endpoint on the fixed integration grid in both simulators.
         double faultStart = Math.round(1.0 / step) * step;
         double faultClear = Math.round(1.05 / step) * step;
@@ -76,7 +76,7 @@ public class Ieee39PsseBenchmarkTest {
         boolean staggered = method.equals("psse-staggered-euler");
         directory += staggered ? "-staggered" : "-modified-euler";
         directory += CONFIG.string("ieee39.outputSuffix", "");
-        Path out = Path.of(directory, scenario);
+        Path out = outputRoot.resolve(Path.of(directory).getFileName()).resolve(scenario);
         Files.createDirectories(out);
         StringBuilder pf = new StringBuilder("bus,v_pu,angle_deg\n");
         for (int i=1;i<=39;i++) {
@@ -86,7 +86,7 @@ public class Ieee39PsseBenchmarkTest {
         Files.writeString(out.resolve("interpss-powerflow.csv"),pf);
         final java.io.Writer[] output = new java.io.Writer[1];
         algo.setSolver(staggered ? new PsseStaggeredEulerSolver(algo) {
-            { setNetworkSolutionTolerance(NETWORK_TOLERANCE); setMaxIterationTimes(100); }
+            { setNetworkSolutionTolerance(NETWORK_TOLERANCE); setMaxIterationTimes(50); }
 
             @Override public boolean networkSolutionStep() throws DStabSimuException {
                 if (!super.networkSolutionStep())
@@ -104,7 +104,7 @@ public class Ieee39PsseBenchmarkTest {
                 catch (Exception e) { throw new DStabSimuException(e.toString()); }
             }
         } : new DStabSolverImpl(algo) {
-            { converge_tol = NETWORK_TOLERANCE; setMaxIterationTimes(100); }
+            { converge_tol = NETWORK_TOLERANCE; setMaxIterationTimes(50); }
 
             @Override public boolean networkSolutionStep() throws DStabSimuException {
                 if (!super.networkSolutionStep())
@@ -131,7 +131,10 @@ public class Ieee39PsseBenchmarkTest {
         }
         assertTrue(algo.initialization(), "IEEE39 initialization");
         var initial=record(net);
-        try (var writer=Files.newBufferedWriter(out.resolve("interpss.csv"))) {
+        long estimatedBytes = org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(
+                (long)Math.ceil(stop / step) + 5, initial.size());
+        try (var writer=org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(
+                out.resolve("interpss.csv"), estimatedBytes)) {
             output[0] = writer;
             writer.write("time_s,"+String.join(",",initial.keySet())+"\n");
             write(writer,0.,initial);
@@ -143,7 +146,7 @@ public class Ieee39PsseBenchmarkTest {
         Files.writeString(out.resolve("interpss-settings.json"), new com.google.gson.GsonBuilder()
                 .setPrettyPrinting().create().toJson(Map.of(
                         "step_s", step, "network_tolerance", NETWORK_TOLERANCE,
-                        "network_max_iterations", 100, "frequency_filter_s", .05,
+                        "network_max_iterations", 50, "frequency_filter_s", .05,
                         "stop_s", stop, "scenario", scenario,
                         "fault_start_s", faultStart, "fault_clear_s", faultClear,
                         "integration_method", staggered ? "psse-staggered-euler" : "modified-euler")) + "\n");

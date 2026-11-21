@@ -101,6 +101,7 @@ import com.interpss.core.net.NameTag;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.core.net.Owner;
 import com.interpss.core.net.Zone;
+import com.interpss.dstab.svc.FixedShuntAdmittance;
 
 /**
  * Shared builder for constructing AclfNetwork objects directly from parsed file data,
@@ -274,6 +275,8 @@ public class AclfNetworkBuilder {
         if (zone == null) {
             zone = CoreObjectFactory.createZone(id, network);
         }
+        // Subsystem selectors use source numbers, not allocation sequence.
+        try { zone.setNumber(Long.parseLong(id)); } catch (NumberFormatException ignored) { }
         zone.setName(name != null ? name : "Zone");
         zone.setDesc(desc != null ? desc : "Zone Desc");
         return zone;
@@ -284,6 +287,7 @@ public class AclfNetworkBuilder {
         if (owner == null) {
             owner = CoreObjectFactory.createOwner(id, network);
         }
+        try { owner.setNumber(Long.parseLong(id)); } catch (NumberFormatException ignored) { }
         if (name != null) owner.setName(name);
         return owner;
     }
@@ -593,6 +597,7 @@ public class AclfNetworkBuilder {
         shunt.setStatus(status);
         shunt.setSteps(1);
         shunt.setB(bPu);
+        FixedShuntAdmittance.retain(shunt,gPu,bPu);
         bus.getCompensatorList().add(shunt);
         if (status && gPu != 0.0) {
             addToBusShuntY(busId, new Complex(gPu, 0.0));
@@ -1064,11 +1069,23 @@ public class AclfNetworkBuilder {
                                      boolean status) throws InterpssException {
         Aclf3WBranch branch3W = objectFactory != null
                 ? objectFactory.create3WBranch()
-                : CoreObjectFactory.createAclf3WBranch();
+                : network instanceof BaseDStabNetwork
+                        ? (Aclf3WBranch) DStabObjectFactory.createDStab3WBranch()
+                        : network instanceof BaseAcscNetwork
+                                ? (Aclf3WBranch) CoreObjectFactory.createAcsc3WXformer()
+                                : CoreObjectFactory.createAclf3WBranch();
+        // The concrete 3W type creates its own star bus and winding branches;
+        // an ACLF-only container would insert incompatible buses into DYR import.
         branch3W.setCircuitNumber(cirId);
         network.add3WXfr(branch3W, fromBusId, toBusId, tertBusId);
         branch3W.setNetwork(network);
         branch3W.setStatus(status);
+
+        // Defer voltage assignment until the concrete star bus exists. Older
+        // dynamic/sequence 3W implementations cast that bus to AclfBus when a
+        // saved voltage is present during allocation; BaseDStabBus is not one.
+        Complex initialStarVoltage = branch3W.getVoltageStarBus();
+        branch3W.setVoltageStarBus(null);
 
         if (isPhaseShifting) {
             branch3W.setBranchCode(AclfBranchCode.W3_PS_XFORMER);
@@ -1129,6 +1146,9 @@ public class AclfNetworkBuilder {
         if (starVMagPU != 0.0) {
             starBus.setVoltage(starVMagPU, Math.toRadians(starVAngDeg));
             branch3W.setVoltageStarBus(starBus.getVoltage());
+        } else {
+            branch3W.setVoltageStarBus(initialStarVoltage);
+            if (initialStarVoltage != null) starBus.setVoltage(initialStarVoltage);
         }
 
         return branch3W;
@@ -1190,7 +1210,10 @@ public class AclfNetworkBuilder {
             double acRatedVoltageKV, double xfrRatio, double tapSetting,
             double tapMax, double tapMin, double tapStepSize,
             double commutingCapacitor, Double firingAngDeg) {
-        ThyConverter<AclfBus> rec = HvdcObjectFactory.createThyConverter((AclfBus) lcc.getFromBus());
+        // Dynamic networks use BaseDStabBus rather than the load-flow-only AclfBus interface.
+        ThyConverter rec = HvdcObjectFactory.createThyConverter();
+        rec.setBus(((HvdcLine2TLCC) lcc).getFromBus());
+        rec.setId(rec.getBus().getId());
         rec.setConverterType(ConverterType.RECTIFIER);
         lcc.setRectifier(rec);
 
@@ -1224,7 +1247,9 @@ public class AclfNetworkBuilder {
             double acRatedVoltageKV, double xfrRatio, double tapSetting,
             double tapMax, double tapMin, double tapStepSize,
             double commutingCapacitor, Double firingAngDeg) {
-        ThyConverter<AclfBus> inv = HvdcObjectFactory.createThyConverter((AclfBus) lcc.getToBus());
+        ThyConverter inv = HvdcObjectFactory.createThyConverter();
+        inv.setBus(((HvdcLine2TLCC) lcc).getToBus());
+        inv.setId(inv.getBus().getId());
         inv.setConverterType(ConverterType.INVERTER);
         lcc.setInverter(inv);
 

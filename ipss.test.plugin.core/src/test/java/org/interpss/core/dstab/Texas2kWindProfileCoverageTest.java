@@ -12,10 +12,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.interpss.dstab.renewable.Wtpta1Data;
-import org.interpss.dstab.renewable.Wtpta1Model;
-import org.interpss.dstab.renewable.Wttqa1Data;
-import org.interpss.dstab.renewable.Wttqa1Model;
+import com.interpss.dstab.renewable.Wtpta1Data;
+import com.interpss.dstab.renewable.Wtpta1Model;
+import com.interpss.dstab.renewable.Wttqa1Data;
+import com.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Test;

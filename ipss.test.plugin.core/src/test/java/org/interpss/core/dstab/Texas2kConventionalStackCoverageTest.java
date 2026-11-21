@@ -49,7 +49,7 @@ class Texas2kConventionalStackCoverageTest {
     @Test
     void case1ConventionalStacksAreComplete(@TempDir Path tempDir) throws Exception {
         verifyCase("Texas2k_series24_case1_2016summerpeak",
-                "Texas2k_series24_case1_2016summerPeak_v36.RAW",
+                "Texas2k_series24_case1_2016summerPeak.RAW",
                 "dynamic_models_case1.dyr", tempDir);
     }
 

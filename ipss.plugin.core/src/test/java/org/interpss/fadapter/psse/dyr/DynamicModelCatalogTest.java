@@ -17,6 +17,54 @@ import org.junit.jupiter.api.Test;
 
 class DynamicModelCatalogTest {
     @Test
+    void approvedRenewableRowsExposeTheRemainingMissingNativeFamily() {
+        var rows=WeccApprovedDynamicModelCatalog.renewables();
+        assertEquals(45,rows.size(),"Preserve every source renewable row, not just implemented entries");
+        assertEquals(45,rows.stream().map(WeccModelApproval::catalogName).distinct().count());
+        var approved=rows.stream().filter(row->row.approvalStatus()==WeccModelApprovalStatus.APPROVED).toList();
+        assertEquals(29,approved.size());
+        var nativeRows=approved.stream().filter(WeccModelApproval::hasPsseModel).toList();
+        assertEquals(28,nativeRows.size(),"The PVD1 PTI cell is blank");
+        assertEquals(27,nativeRows.stream().map(WeccModelApproval::interpssModel).distinct().count(),
+                "WT1T and WT2T share WT12T1");
+        var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
+                .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
+        assertEquals(Set.of(),missing,
+                "Any implementation claim must be backed by a real parser/runtime descriptor");
+        assertEquals(28,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertTrue(DynamicModelCatalog.find("HPLNTD").isEmpty(),"Source spelling is not an inferred wrapper alias");
+        assertEquals(102,DynamicModelCatalog.find("HPLNTDU").orElseThrow().parameterCount());
+        assertEquals(23,DynamicModelCatalog.find("REAXDU").orElseThrow().parameterCount());
+        for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
+                "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
+    }
+
+    @Test
+    void renewableSourceColumnsAndRetirementStaySeparateFromNativeAliases() {
+        var rows=WeccApprovedDynamicModelCatalog.renewables();
+        var pvd=rows.stream().filter(row->row.catalogName().equals("PVD1")).findFirst().orElseThrow();
+        assertEquals("",pvd.psseModel());
+        assertEquals("PVD1",pvd.powerWorldModel());
+        assertFalse(pvd.hasPsseModel());
+        var reecb=rows.stream().filter(row->row.catalogName().equals("REEC_B")).findFirst().orElseThrow();
+        assertEquals(WeccModelApprovalStatus.RETIRED,reecb.approvalStatus());
+        assertEquals("REECBU1, REECB1",reecb.psseModel());
+        assertTrue(reecb.isImplementedExactly(),"Runtime presence is not approval or complete alias-schema coverage");
+        var wt4t=rows.stream().filter(row->row.catalogName().equals("WT4T")).findFirst().orElseThrow();
+        assertFalse(wt4t.hasPsseModel(),"Embedded WT4E1 features are not a separate native WT4T record");
+        assertFalse(rows.stream().filter(row->row.catalogName().equals("EXWTG1"))
+                .findFirst().orElseThrow().hasPsseModel(),"Not converted (1) is not a native model name");
+        var wt1pb=rows.stream().filter(row->row.catalogName().equals("WT1P_B")).findFirst().orElseThrow();
+        assertEquals("WT12A1U_B",wt1pb.psseModel());
+        assertEquals("WT12A1B",wt1pb.interpssModel());
+        var repcc=rows.stream().filter(row->row.catalogName().equals("REPC_C")).findFirst().orElseThrow();
+        assertEquals("REPCCU",repcc.psseModel());assertEquals("REPCC",repcc.interpssModel());
+        assertTrue(repcc.isImplementedExactly());assertTrue(DynamicModelCatalog.find("REPCCU").isEmpty());
+        assertEquals("b4add4a9d584e69f2a97823f87cb4c40362f1e868b2b9d3c60e3c59ba62af635",
+                WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256);
+    }
+
+    @Test
     void catalogsEveryTexas2kModelAndResolvesAliases() {
         assertEquals(25, DynamicModelCatalog.texas2kModels().size());
         assertEquals("GENROU", DynamicModelCatalog.canonicalName("genroe"));
@@ -32,8 +80,13 @@ class DynamicModelCatalogTest {
                 DynamicModelCatalog.find("WTDTA1").orElseThrow().category());
         assertEquals(5, DynamicModelCatalog.find("WTDTAU1").orElseThrow().parameterCount());
         assertEquals("WTDTA1", DynamicModelCatalog.canonicalName("WTDAT1"));
+        assertEquals("WTDTB1", DynamicModelCatalog.canonicalName("WTDTBU1"));
+        assertEquals(Set.of(6, 12), DynamicModelCatalog.find("WTDTBU1").orElseThrow()
+                .recordSchema().acceptedParameterCounts());
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
-        assertEquals(18, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(17, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(Set.of(17,23), DynamicModelCatalog.find("GENQEC").orElseThrow().recordSchema().acceptedParameterCounts());
+        assertEquals(Set.of(23), DynamicModelCatalog.find("GENQEJ").orElseThrow().recordSchema().acceptedParameterCounts());
         assertEquals(16, DynamicModelCatalog.find("GENTPJ1").orElseThrow().parameterCount());
         assertEquals(30, DynamicModelCatalog.find("PERC1").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.LOAD_CHARACTERISTIC,
@@ -75,6 +128,37 @@ class DynamicModelCatalogTest {
     }
 
     @Test
+    void mapsPslfExdc2aRowToNativeExdc2WithoutInventingADyrAlias() {
+        var row = WeccApprovedDynamicModelCatalog.findExciter("EXDC2A").orElseThrow();
+        assertEquals("exdc2a", row.pslfModel());
+        assertEquals("EXDC2", row.psseModel());
+        assertEquals("EXDC2", row.interpssModel());
+        assertTrue(row.isImplementedExactly());
+        assertTrue(DynamicModelCatalog.find("EXDC2A").isEmpty());
+        assertFalse(DynamicModelCatalog.find("EXDC2").orElseThrow().allNames().contains("EXDC2A"));
+        assertTrue(DynamicModelCatalog.find("IEEEX2").isPresent());
+    }
+
+    @Test
+    void stabilizerSourceColumnsDoNotInventNativeNamesFromOtherVendors() {
+        var rows=WeccApprovedDynamicModelCatalog.stabilizers();
+        assertEquals("IEEEST",rows.stream().filter(row -> row.catalogName().equals("PSS1A"))
+                .findFirst().orElseThrow().psseModel());
+        assertEquals("PSS2A",rows.stream().filter(row -> row.catalogName().equals("PSSSB"))
+                .findFirst().orElseThrow().psseModel());
+        for(String name:Set.of("PSS3C","PSS4C","PSS5C")) {
+            var row=rows.stream().filter(value -> value.catalogName().equals(name)).findFirst().orElseThrow();
+            assertEquals("",row.psseModel(),name+" PTI cell is blank in the supplied May 2026 PDF");
+            assertFalse(row.hasPsseModel());
+            assertEquals(name,row.interpssModel(),"Preserve separately implemented models, not invented source names");
+        }
+        assertEquals(12,rows.stream().filter(row -> row.approvalStatus()==WeccModelApprovalStatus.APPROVED)
+                .filter(WeccModelApproval::hasPsseModel).count());
+        assertEquals(9,rows.stream().filter(row -> row.approvalStatus()==WeccModelApprovalStatus.APPROVED)
+                .filter(WeccModelApproval::hasPsseModel).map(WeccModelApproval::psseModel).distinct().count());
+    }
+
+    @Test
     void catalogsEveryMay2026StabilizerRowAndExposesSupportGaps() {
         assertEquals(16, WeccApprovedDynamicModelCatalog.stabilizers().size());
         long approved = WeccApprovedDynamicModelCatalog.stabilizers().stream()
@@ -87,15 +171,16 @@ class DynamicModelCatalogTest {
         assertEquals(15, implemented);
         assertTrue(DynamicModelCatalog.find("WSCCST").orElseThrow().supportStatus()
                 == DynamicModelSupportStatus.LOADABLE);
-        assertEquals(DynamicModelSupportStatus.LOADABLE,
-                DynamicModelCatalog.find("PSS1A").orElseThrow().supportStatus());
+        assertTrue(DynamicModelCatalog.find("PSS1A").isEmpty(), "Typed model is not a native DYR name");
+        assertEquals("IEEEST", WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.catalogName().equals("PSS1A")).findFirst().orElseThrow().interpssModel());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS1A"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS2B"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(27, 31), DynamicModelCatalog.find("PSS2B").orElseThrow()
+        assertEquals(Set.of(27, 29, 31), DynamicModelCatalog.find("PSS2B").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS2C"))
@@ -126,22 +211,23 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS5C"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(21), DynamicModelCatalog.find("PSS5C").orElseThrow()
+        assertEquals(Set.of(30), DynamicModelCatalog.find("PSS5C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSSSB"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(30), DynamicModelCatalog.find("PSSSB").orElseThrow()
-                .recordSchema().acceptedParameterCounts());
+        assertTrue(DynamicModelCatalog.find("PSSSB").isEmpty(), "Typed extension is not a native DYR name");
+        assertEquals("PSS2A", WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.catalogName().equals("PSSSB")).findFirst().orElseThrow().interpssModel());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS6C"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(34, 35), DynamicModelCatalog.find("PSS6C").orElseThrow()
+        assertEquals(Set.of(34), DynamicModelCatalog.find("PSS6C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS7C"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(38, 39), DynamicModelCatalog.find("PSS7C").orElseThrow()
+        assertEquals(Set.of(38), DynamicModelCatalog.find("PSS7C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
     }
 
@@ -283,7 +369,7 @@ class DynamicModelCatalogTest {
                 .recordSchema().acceptedParameterCounts());
         assertEquals(Set.of(38), DynamicModelCatalog.find("AC7C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
-        assertEquals(Set.of(31, 38), DynamicModelCatalog.find("AC8C").orElseThrow()
+        assertEquals(Set.of(31, 32, 38), DynamicModelCatalog.find("AC8C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertEquals("AC8C", DynamicModelCatalog.find("AC8CU1").orElseThrow().canonicalName());
         assertEquals(Set.of(45), DynamicModelCatalog.find("AC9C").orElseThrow()
@@ -335,7 +421,7 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst2a")
                 .orElseThrow().isImplementedExactly());
         assertFalse(DynamicModelCatalog.find("EXST2A").isPresent(),
-                "PowerWorld/PSLF EXST2A must not become a native PSS/E DYR alias");
+                "PowerWorld/PSLF EXST2A must not become a native DYR alias");
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst2")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst3")
@@ -345,14 +431,14 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst3a")
                 .orElseThrow().isImplementedExactly());
         assertFalse(DynamicModelCatalog.find("EXST3A").isPresent(),
-                "PowerWorld/PSLF EXST3A must not become a native PSS/E DYR alias");
+                "PowerWorld/PSLF EXST3A must not become a native DYR alias");
         assertEquals("IEEET4", DynamicModelCatalog.canonicalName("EXDC4"));
         assertEquals("ESST4B", WeccApprovedDynamicModelCatalog.findExciter("exst4b")
                 .orElseThrow().interpssModel());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst4b")
                 .orElseThrow().isImplementedExactly());
         assertFalse(DynamicModelCatalog.find("EXST4B").isPresent(),
-                "PowerWorld/PSLF EXST4B must not become a native PSS/E DYR alias");
+                "PowerWorld/PSLF EXST4B must not become a native DYR alias");
     }
 
     @Test
@@ -430,8 +516,12 @@ class DynamicModelCatalogTest {
                     "Missing parameter schema length for " + model.canonicalName());
             assertTrue(model.recordSchema().accepts(model.parameterCount()),
                     "Primary layout is not accepted for " + model.canonicalName());
-            assertEquals(DynamicModelSupportStatus.LOADABLE, model.supportStatus(),
-                    "Catalog must not hide an incomplete model: " + model.canonicalName());
+            // Available FACTS/HVDC runtimes retain explicit open qualification
+            // status; automatic import alone does not establish trajectory parity.
+            var expectedStatus = Set.of("SVSMO3T2", "CHVDC2", "CHVDC2U1").contains(model.canonicalName())
+                    ? DynamicModelSupportStatus.PARTIAL : DynamicModelSupportStatus.LOADABLE;
+            assertEquals(expectedStatus, model.supportStatus(),
+                    "Unexpected catalog qualification: " + model.canonicalName());
             assertEquals(model.runtimeClassName(),
                     Class.forName(model.runtimeClassName()).getName(),
                     "Runtime class is not loadable for " + model.canonicalName());
@@ -461,7 +551,7 @@ class DynamicModelCatalogTest {
     @Test
     void markdownSupportMatrixContainsEveryCatalogModel() {
         String markdown = DynamicModelSupportMatrix.generateMarkdown();
-        assertTrue(markdown.startsWith("# InterPSS PSS/E dynamic-model support matrix"));
+        assertTrue(markdown.startsWith("# InterPSS dynamic-model support matrix"));
         assertEquals(DynamicModelCatalog.allModels().size(), markdown.lines()
                 .filter(line -> line.startsWith("| ") && !line.startsWith("| Model"))
                 .count());

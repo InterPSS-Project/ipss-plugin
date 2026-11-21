@@ -12,10 +12,10 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
-import org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
-import org.interpss.dstab.control.util.DynamicLimitIntegrationBlock;
+import com.interpss.dstab.controller.exc.esac2a.Esac2aData;
+import com.interpss.dstab.controller.exc.esac2a.Esac2aExciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.runtime.DynamicLimitIntegrationBlock;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -135,6 +135,25 @@ public class DStabNetworkBuilderEsac2aTest extends CorePluginTestSetup {
         algorithm.setTotalSimuTimeSec(.02);algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.getAclfAlgorithm().loadflow());assertTrue(algorithm.initialization());
         assertTrue(algorithm.performSimulation());
+    }
+
+    @Test void initializedHighGainExciterIsStationaryWithFrozenMachineInputs() throws Exception {
+        var b=DStabBuilderTestFixture.createWithMachine();var m=b.getDStabNetwork().getMachine("Bus1-mach1");
+        assertTrue(m.initStates(m.getDStabBus()));
+        var d=baseData();d.setTr(0);d.setTb(10);d.setTc(3);d.setKa(500);d.setTa(.02);
+        d.setKb(6);d.setKh(.4);d.setKd(2);d.setKc(.15);d.setKf(0);d.setTe(.3);
+        var e=b.addExcEsac2a("Bus1","1",d);e.configureIntegrationStep(.001);
+        assertTrue(e.initStates(m.getDStabBus(),m));
+        double efd=m.getEfd(),ve=e.getInternalFieldVoltage();
+        assertEquals(efd,e.getOutput(m),1e-9);
+        String initial="x="+java.util.Arrays.toString(e.getStateSnapshot())+" u="+java.util.Arrays.toString(e.getStateInputSnapshot())
+                +" va0="+e.va0+" va="+e.getRegulatorOutput()+" fc="+e.getFieldCurrentControllerOutput()+" vr="+e.getGatedRegulatorOutput()
+                +" ifd="+m.calculateIfd(MachineIfdBase.EXCITER)+" ref="+e.getRefPoint();
+        step(e,m,.001);
+        assertEquals(efd,e.getOutput(m),1e-9,initial+" nextX="+java.util.Arrays.toString(e.getStateSnapshot())+" nextU="+java.util.Arrays.toString(e.getStateInputSnapshot()));
+        for(int i=1;i<100;i++)step(e,m,.001);
+        assertEquals(efd,e.getOutput(m),1e-9);
+        assertEquals(ve,e.getInternalFieldVoltage(),1e-9);
     }
 
     @Test void dynamicIntegratorEnforcesBothBoundsWithoutWindup() {

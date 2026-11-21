@@ -9,8 +9,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
-import org.interpss.dstab.control.exc.psse.esurry.EsurryExciter;
+import com.interpss.dstab.controller.exc.exac1.Exac1Exciter;
+import com.interpss.dstab.controller.exc.esurry.EsurryExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;

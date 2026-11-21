@@ -21,6 +21,7 @@
 /.cursorignore
 /logs/
 /target/
+.verification-build/
 /tmp/
 /ipss.plugin.3phase/logs/*.log
 **/.flattened-pom.xml
@@ -52,4 +53,5 @@ ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/compile/default-compil
 ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
 ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst
 ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
+ipss.plugin.3phase/.settings/org.eclipse.jdt.core.prefs
 ipss.plugin.ecf/.classpath
