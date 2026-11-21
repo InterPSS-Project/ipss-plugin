@@ -46,3 +46,10 @@ ipss.plugin.py/tests/**/*.py
 ipss.test.plugin.core/testData/reference/**
 ipss.test.plugin.core/src/test/resources/reference/**
 **/target/classes/**/*.*
+ipss.plugin.ecf/target/ipss.plugin.ecf-1.5.0.jar
+ipss.plugin.ecf/target/maven-archiver/pom.properties
+ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst
+ipss.plugin.ecf/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
+ipss.plugin.ecf/.classpath
