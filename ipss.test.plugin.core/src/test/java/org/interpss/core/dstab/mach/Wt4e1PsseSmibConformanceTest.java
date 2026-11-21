@@ -52,13 +52,17 @@ public class Wt4e1PsseSmibConformanceTest {
                     .994503736496,.998558223248,.500036239624,-.0277247652411,-.145713701844,
                     -3.03192234039}
     };
-    @Test void electricalControllerMatchesIndependentFaultTrajectory() throws Exception {
+    @Test void electricalControllerMatchesIndependentFaultTrajectory() throws Exception { runIndependentFaultTrajectory(false); }
+    @Test void staggeredElectricalControllerMatchesTheSameIndependentFaultCheckpoints() throws Exception { runIndependentFaultTrajectory(true); }
+    private void runIndependentFaultTrajectory(boolean staggered) throws Exception {
         IpssCorePlugin.init(); var context=new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_wt3g2.raw").toString(),CASE.resolve("SMIB_v33_wt4e1.dyr").toString());
         var net=context.getDStabilityNet(); var alg=context.getDynSimuAlgorithm();
         alg.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true); assertTrue(alg.getAclfAlgorithm().loadflow());
         alg.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER); alg.setSimuStepSec(STEP); alg.setTotalSimuTimeSec(1); alg.setSimuOutputHandler(new StateMonitor());
-        net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,1.0),null,.05,.05),"WindFault"); assertTrue(alg.initialization());
+        net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,new Complex(0,1.0),null,.05,.05),"WindFault");
+        if(staggered)alg.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(alg));
+        assertTrue(alg.initialization());
         DStabGen dg=(DStabGen)net.getBus("Bus1").getContributeGen("1"); Wt4g1Model gen=(Wt4g1Model)dg.getDynamicGenDevice(); Wt4e1Model model=gen.getElectricalController();
         List<double[]> actual=new ArrayList<>(); record(actual,alg.getSimuTime(),net,gen,model);
         while(alg.getSimuTime()<1-STEP/2){assertTrue(alg.solveDEqnStep(true));record(actual,alg.getSimuTime(),net,gen,model);}

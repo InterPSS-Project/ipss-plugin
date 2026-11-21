@@ -80,6 +80,16 @@ class InductionMotorStateTest {
         var protectedMotor=motor(bus(),false);protectedMotor.getProtectionControlList().add(null);
         assertThrows(IllegalArgumentException.class,()->new InductionMotorImpl.ModelState(protectedMotor));
     }
+    @Test void staggeredResolutionAndHeldPhysicalInputSurviveValueCopy()throws Exception {
+        var source=motor(bus(),true);assertTrue(source.initStates());source.prepareStaggeredIntegration(1./240);
+        source.getDStabBus().setVoltage(new Complex(.7,0));source.beginStaggeredLocalInterval(1./240);
+        var targetBus=bus();targetBus.setVoltage(new Complex(.9,0));var target=copy(source,targetBus);
+        assertEquals(source.staggeredLocalStepCount(),target.staggeredLocalStepCount());
+        double[] left=new double[5],right=new double[5];
+        source.evaluateStaggered(.0001,left,0);target.evaluateStaggered(.0001,right,0);assertArrayEquals(left,right,0.);
+        target.completeStaggeredStep(1./240);target.evaluateStaggered(.0001,right,0);
+        assertFalse(java.util.Arrays.equals(left,right),"Copied local input is independently released");
+    }
     @Test void everyMotorValueHasExplicitCompanionField()throws Exception {
         for(Class<?> type=InductionMotorImpl.class;type!=null;type=type.getSuperclass()){
             if(type.getPackageName().startsWith("org.eclipse"))break;

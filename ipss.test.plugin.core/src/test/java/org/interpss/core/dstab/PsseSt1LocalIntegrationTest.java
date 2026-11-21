@@ -30,6 +30,34 @@ public class PsseSt1LocalIntegrationTest {
     }
 
     @Test
+    void automaticResolutionCoversFastSt1AndRetainsExplicitSingleStepOverride() throws Exception {
+        for(boolean explicit:new boolean[]{false,true}) {
+            var fixture=load(false,1./240);var a=fixture.algorithm();var data=fixture.exciter().getData();
+            data.setTr(.001);data.setTa(.003);data.setKa(340);data.setTb(1);data.setTc(1);
+            var solver=new PsseStaggeredEulerSolver(a);if(explicit)solver.setSt1Substeps(1);
+            a.setSolver(solver);a.getNetwork().setDStabNetInitialized(false);assertTrue(a.initialization());
+            int count=solver.getResolvedExciterSubsteps().get("Bus1-mach1");
+            if(explicit)assertEquals(1,count);else {
+                assertTrue(count>1);assertTrue(count<=128);
+                for(int i=0;i<24;i++)assertTrue(a.solveDEqnStep(true));
+                assertTrue(Double.isFinite(fixture.machine().getEfd()));assertTrue(fixture.exciter().isActive());
+            }
+        }
+    }
+
+    @Test
+    void automaticResolutionSettlesZeroTaFeedbackBeforeMeasuringItsPoles() throws Exception {
+        var fixture=load(true,1./240);var a=fixture.algorithm();var data=fixture.exciter().getData();
+        data.setTr(.02);data.setTa(0);data.setKa(80);data.setTb(1);data.setTc(1);
+        data.setTb1(.01);data.setTc1(0);data.setKf(.063);data.setTf(.2);
+        var solver=new PsseStaggeredEulerSolver(a);a.setSolver(solver);
+        a.getNetwork().setDStabNetInitialized(false);assertTrue(a.initialization());
+        assertTrue(solver.getResolvedExciterSubsteps().get("Bus1-mach1")>1);
+        for(int i=0;i<24;i++)assertTrue(a.solveDEqnStep(true));
+        assertTrue(fixture.exciter().isActive());assertTrue(Double.isFinite(fixture.machine().getEfd()));
+    }
+
+    @Test
     void configuredCountsReachBothLocalIntegrationPaths() throws Exception {
             for (boolean zeroTa : new boolean[] {false,true}) {
                 double[] ten=null;

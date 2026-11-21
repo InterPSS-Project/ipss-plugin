@@ -38,6 +38,15 @@ public class Gentpj1PsseSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesPsseBoundaryAndFourElectricalStates() throws Exception {
+        runFaultReference(false);
+    }
+
+    @Test
+    void staggeredFaultRetainsTheIndependentReferenceGates() throws Exception {
+        runFaultReference(true);
+    }
+
+    private void runFaultReference(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -59,6 +68,7 @@ public class Gentpj1PsseSmibConformanceTest {
         network.setStaticLoadIncludedInYMatrix(false);
         network.setStaticLoadModel(StaticLoadModel.CONST_P);
         network.setReactiveStaticLoadModel(StaticLoadModel.CONST_P);
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm));
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);

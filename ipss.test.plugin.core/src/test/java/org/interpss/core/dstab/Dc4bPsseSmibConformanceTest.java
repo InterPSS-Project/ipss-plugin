@@ -29,14 +29,14 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /**
- * Native PSS/E 36.7 full-solver trajectory contract for DC4B.
+ * Independent native full-solver trajectory contract for DC4B.
  *
- * <p>The reference was recorded with PSS/E 36.7 for the public SMIB GENROU + DC4B case:
+ * <p>The reference was recorded with the reference simulator for the public SMIB GENROU + DC4B case:
  * a three-cycle j0.2 pu fault at bus 1, a 0.5 ms step and constant-impedance load
  * (src/test/python/psse_dc4b_probe.py). It confirms the PID non-windup limit on the
  * combined PID output (docs/dynamic-models/dc4b-combined-pid-limit.md): with the
  * earlier limit on the PI subtotal the rotor angle differed by 0.022 degrees and the
- * field voltage by 0.006 pu. PSS/E stores the PI, derivative and feedback states in
+ * field voltage by 0.006 pu. native reference stores the PI, derivative and feedback states in
  * other coordinates, so those three are not compared.
  *
  * <p>Generated trajectory references stay in the private verification archive
@@ -52,7 +52,7 @@ public class Dc4bPsseSmibConformanceTest {
     @Test
     void threeCycleFaultMatchesPsseBoundaryMachineAndExciterOutputs() throws Exception {
         Assumptions.assumeTrue(Dc4bPsseSmibConformanceTest.class.getResource(REFERENCE) != null,
-                "PSS/E DC4B reference is only in the private verification archive");
+                "native reference DC4B reference is only in the private verification archive");
         IpssCorePlugin.init();
         var context = ReferenceLoadModel.constantImpedanceLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(), CASE.resolve("SMIB_v33_genrou_dc4b.dyr").toString());
@@ -100,9 +100,9 @@ public class Dc4bPsseSmibConformanceTest {
             }
             compared++;
         }
-        assertTrue(compared > 1900, "Every regular PSS/E sample is compared");
-        System.out.println("DC4B PSS/E max errors: " + Arrays.toString(maximum));
-        System.out.println("DC4B PSS/E max-error times: " + Arrays.toString(at));
+        assertTrue(compared > 1900, "Every regular native reference sample is compared");
+        System.out.println("DC4B native reference max errors: " + Arrays.toString(maximum));
+        System.out.println("DC4B native reference max-error times: " + Arrays.toString(at));
         // The voltage, power, speed and Vr maxima fall on the first step after a
         // switching instant; elsewhere bus voltages agree to 1e-5 pu and power to 1e-4 pu.
         double[] tolerance = {3e-4, 1e-4, 2e-4, 3e-3, 6e-4, 2.5e-6, 2.5e-3, .08, 3e-4};
@@ -125,7 +125,7 @@ public class Dc4bPsseSmibConformanceTest {
     private static List<double[]> reference() throws Exception {
         byte[] data;
         try (var stream = Dc4bPsseSmibConformanceTest.class.getResourceAsStream(REFERENCE)) {
-            assertNotNull(stream, "PSS/E DC4B reference");
+            assertNotNull(stream, "native reference DC4B reference");
             try (var gzip = new GZIPInputStream(stream)) { data = gzip.readAllBytes(); }
         }
         assertEquals(REFERENCE_SHA256, HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(data)));

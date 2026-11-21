@@ -95,7 +95,9 @@ public final class DStabRunConfigRec {
         if(sourceNetworkAccelerationFactor!=null&&networkRelaxationFactor==null)gaps.add("Source network acceleration has no qualified equivalent; use explicit networkRelaxationFactor for an override");
         if(Boolean.TRUE.equals(relativeAnglesEnabled))gaps.add("Relative-angle policy requires an output recorder using the requested reference; physical rotor states remain absolute");
         if(requireMatchedSettings&&!gaps.isEmpty())throw new IllegalArgumentException(String.join("; ",gaps));
-        if(!(algorithm.getSolver() instanceof PsseDStabSolver solver))throw new IllegalArgumentException("Imported dynamic solver required");
+        if (!(algorithm.getSolver() instanceof com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase solver)
+                || !(algorithm.getSolver() instanceof org.interpss.dstab.algo.ImportedModelPolicySolver imported))
+            throw new IllegalArgumentException("Imported dynamic solver required");
         if (networkFrequencyDependenceEnabled != null && network instanceof BaseDStabNetworkImpl<?, ?> frequencyNetwork) {
             frequencyNetwork.setPassiveBranchFrequencyCorrectionEnabled(networkFrequencyDependenceEnabled);
             frequencyNetwork.setFixedShuntFrequencyCorrectionEnabled(networkFrequencyDependenceEnabled);
@@ -117,7 +119,7 @@ public final class DStabRunConfigRec {
         if(networkRelaxationFactor!=null)solver.setNetworkRelaxationFactor(networkRelaxationFactor);
         if(allowGeneratorsWithoutMachine!=null)algorithm.getNetwork().setAllowGenWithoutMach(allowGeneratorsWithoutMachine);
         if(sourceImpedanceReconciliationEnabled!=null)solver.setSourceImpedanceReconciliationEnabled(sourceImpedanceReconciliationEnabled);
-        if(loadModelThresholds!=null)solver.setLoadModelThresholds(loadModelThresholds);
+        if(loadModelThresholds!=null)imported.setLoadModelThresholds(loadModelThresholds);
         if(activeStaticLoadModel!=null||reactiveStaticLoadModel!=null) {
             if(activeStaticLoadModel!=null)network.setStaticLoadModel(activeStaticLoadModel);
             if(reactiveStaticLoadModel!=null)network.setReactiveStaticLoadModel(reactiveStaticLoadModel);

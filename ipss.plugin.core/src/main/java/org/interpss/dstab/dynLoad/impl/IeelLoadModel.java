@@ -12,7 +12,12 @@ import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 
 /** PSS/E IEEL algebraic voltage- and frequency-dependent load model. */
-public final class IeelLoadModel extends DynLoadModelImpl {
+public final class IeelLoadModel extends DynLoadModelImpl implements com.interpss.dstab.controller.runtime.StaggeredEulerParticipant {
+    // IEEL is algebraic: live voltage/frequency inputs remain in its current law.
+    @Override public int staggeredStateCount() { return 0; }
+    @Override public void readStaggeredState(double[] values,int offset) { java.util.Objects.checkFromIndexSize(offset,0,values.length); }
+    @Override public void evaluateStaggered(double step,double[] rates,int offset) { java.util.Objects.checkFromIndexSize(offset,0,rates.length); }
+    @Override public void applyStaggeredState(double[] values,int offset,double step) { java.util.Objects.checkFromIndexSize(offset,0,values.length); }
     private static final double EPS = 1.0e-12;
 
     private final String sourceModelName;

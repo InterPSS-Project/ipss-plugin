@@ -42,6 +42,15 @@ public class GenqecIndependentSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesIndependentBoundaryAndAllMachineStates() throws Exception {
+        runFaultReference(false);
+    }
+
+    @Test
+    void staggeredFaultRetainsTheIndependentReferenceGates() throws Exception {
+        runFaultReference(true);
+    }
+
+    private void runFaultReference(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
@@ -49,6 +58,7 @@ public class GenqecIndependentSmibConformanceTest {
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENQEC SMIB load flow");
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm));
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);

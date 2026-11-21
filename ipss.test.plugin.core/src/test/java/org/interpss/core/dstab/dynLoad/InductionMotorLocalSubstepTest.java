@@ -76,6 +76,19 @@ public class InductionMotorLocalSubstepTest {
         var before=m.getIntegrationHistories();step(m,h);assertEquals(before,m.getIntegrationHistories());
         m.afterStep(h);assertEquals(h,m.getIntegrationHistories().get("TripTimer1"),1e-12);
     }
+    @Test void staggeredLocalResolutionPreservesInitialCoordinatesAndProtectionHistories() throws Exception {
+        var m=motor();double[] before=state(m);var histories=m.getIntegrationHistories();
+        m.prepareStaggeredIntegration(1./240);
+        assertTrue(m.staggeredLocalStepCount()>=1);
+        assertTrue(m.staggeredLocalStepCount()<=com.interpss.dstab.algo.dynamic.ControllerStepStability.MAXIMUM_LOCAL_STEPS);
+        assertArrayEquals(before,state(m),0.);assertEquals(histories,m.getIntegrationHistories());
+        m.setVtr1(.8);m.setTtr1(.02);m.setFtr1(.2);m.getDStabBus().setVoltage(new Complex(.7,0));
+        m.beginStaggeredLocalInterval(1./240);double[] left=new double[5],again=new double[5];
+        m.evaluateStaggered(.0001,left,0);m.getDStabBus().setVoltage(Complex.ONE);
+        m.evaluateStaggered(.0001,again,0);assertArrayEquals(left,again,0.,"Physical input is held through local stages");
+        assertEquals(histories,m.getIntegrationHistories());m.completeStaggeredStep(1./240);
+        m.evaluateStaggered(.0001,again,0);assertTrue(error(left,again)>1e-5,"Outer endpoint releases the held voltage");
+    }
     @Test void invalidOrMismatchedStagesAreRejected() throws Exception {
         var m=motor();assertThrows(IllegalArgumentException.class,()->m.setLocalIntegrationMaximumStepSec(Double.NaN));
         m.setLocalIntegrationMaximumStepSec(.0005);

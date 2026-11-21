@@ -19,7 +19,7 @@ import org.interpss.dstab.validation.ParameterValidatingSolver;
  * @deprecated Use {@link org.interpss.dstab.algo.DefaultDynamicSimulationSolver}.
  */
 @Deprecated(since="1.4.8",forRemoval=false)
-public class PsseDStabSolver extends DynamicSimulationSolverBase implements ParameterValidatingSolver {
+public class PsseDStabSolver extends DynamicSimulationSolverBase implements ParameterValidatingSolver, org.interpss.dstab.algo.ImportedModelPolicySolver {
     private DynamicParameterValidator.Report parameterValidationReport;
 
     /** Final per-source ownership, including ordinary loads with no DYR assignment. */

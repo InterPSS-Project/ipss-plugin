@@ -34,6 +34,15 @@ public class Regcb1NativeSmibConformanceTest {
 
     @Test
     void allPublishedStatesAndTerminalChannelsMatchFaultTrajectory() throws Exception {
+        run(false);
+    }
+
+    @Test
+    void staggeredStatesAndTerminalChannelsMatchTheSameFaultReference() throws Exception {
+        run(true);
+    }
+
+    private void run(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_regcb1.raw").toString(),
@@ -44,6 +53,11 @@ public class Regcb1NativeSmibConformanceTest {
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
+        if (staggered) {
+            algorithm.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm));
+            assertTrue(algorithm.getSolver() instanceof org.interpss.dstab.algo.StaggeredEulerSolver);
+        }
+
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(

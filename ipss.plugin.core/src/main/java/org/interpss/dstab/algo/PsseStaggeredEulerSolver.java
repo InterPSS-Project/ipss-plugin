@@ -20,7 +20,7 @@ import com.interpss.dstab.algo.dynamic.StaggeredEulerSolverBase;
  * @deprecated Use {@link StaggeredEulerSolver}.
  */
 @Deprecated(since="1.4.8",forRemoval=false)
-public class PsseStaggeredEulerSolver extends StaggeredEulerSolverBase implements ParameterValidatingSolver {
+public class PsseStaggeredEulerSolver extends StaggeredEulerSolverBase implements ParameterValidatingSolver, org.interpss.dstab.algo.ImportedModelPolicySolver {
     private DynamicParameterValidator.Report parameterValidationReport;
 
     private final org.interpss.fadapter.psse.GovernorPolicyReplay governorPolicy=new org.interpss.fadapter.psse.GovernorPolicyReplay();
@@ -64,7 +64,8 @@ public class PsseStaggeredEulerSolver extends StaggeredEulerSolverBase implement
 
     @Override
     protected boolean supportedLoad(Object model) {
-        return model != null && (model.getClass() == InductionMotorImpl.class
+        return model != null && (model.getClass() == org.interpss.dstab.dynLoad.impl.IeelLoadModel.class
+                || model.getClass() == InductionMotorImpl.class
                 || model.getClass() == LD1PACImpl.class || Cmldznu2Model.isAlgebraicComponent(model)
                 || Cmldznu2Model.isTapControl(model));
     }

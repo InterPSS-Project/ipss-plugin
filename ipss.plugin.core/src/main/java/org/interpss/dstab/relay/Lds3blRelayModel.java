@@ -59,6 +59,7 @@ public final class Lds3blRelayModel extends AbstractStagedLoadSheddingRelayModel
         reapplyAfterNetworkRebuild(network);
         network.setYMatrixDirty(true);
         transferOperated = true;
+        markAcceptedNetworkAction();
         return true;
     }
     private static void trip(DStabGen generator) {

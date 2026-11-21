@@ -47,6 +47,13 @@ public class PSSEMultiFileLoader {
     private List<Path> runConfigurationFiles=List.of();
     private String dynamicRunConfigJson;
     private boolean requireMatchedRunSettings;
+    private boolean staggeredIntegrationEnabled;
+    /** Select the opt-in staggered runtime before loading. Import, preparation,
+     * governor policy and JSON settings follow the same path in both modes. */
+    public PSSEMultiFileLoader setStaggeredIntegrationEnabled(boolean enabled) {
+        staggeredIntegrationEnabled = enabled; return this;
+    }
+
     private PsseIdvRunConfigConverter.Result lastRunConfigConversion;
     private List<String> lastRunConfigApplicationGaps=List.of();
     /** Run settings are separate from electrical preparation. Ordered scripts
@@ -297,8 +304,10 @@ public class PSSEMultiFileLoader {
         // Callers can disable this policy with setAllowGenWithoutMach(false).
         dsNet.setAllowGenWithoutMach(true);
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
-        var solver=new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(dynAlgo);
-        solver.setGovernorBlockingPolicy(lastGovernorBlockingEntries);
+        com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase solver = staggeredIntegrationEnabled
+                ? new org.interpss.dstab.algo.StaggeredEulerSolver(dynAlgo)
+                : new org.interpss.dstab.algo.DefaultDynamicSimulationSolver(dynAlgo);
+        ((org.interpss.dstab.algo.ImportedModelPolicySolver) solver).setGovernorBlockingPolicy(lastGovernorBlockingEntries);
         dynAlgo.setSolver(solver);
         if(!runConfigurationFiles.isEmpty()||dynamicRunConfigJson!=null) {
             try {

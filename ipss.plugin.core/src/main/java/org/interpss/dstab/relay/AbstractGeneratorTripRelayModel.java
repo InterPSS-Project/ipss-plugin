@@ -29,7 +29,8 @@ import com.interpss.dstab.relay.IRelayModel;
  * breaker delay is latched and runs to completion.</p>
  */
 public abstract class AbstractGeneratorTripRelayModel extends DynamicBusDeviceImpl
-        implements IRelayModel, ICMLStateProvider {
+        implements IRelayModel, ICMLStateProvider, com.interpss.dstab.controller.runtime.AcceptedStepDevice {
+    @Override public final long getAcceptedNetworkActionVersion() { return physicalTripPerformed ? 1L : 0L; }
     private static final Logger log = LoggerFactory.getLogger(AbstractGeneratorTripRelayModel.class);
     private static final double TIME_EPS = 1.0e-12;
 

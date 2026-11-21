@@ -133,4 +133,19 @@ public class St1cExciterTest extends CorePluginTestSetup {
     private static double[] add(double[] x,double[] d,double dt){double[] y=new double[x.length];for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;return y;}
     private static void step(St1cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private record Fixture(Machine machine,St1cExciter exciter){}
+
+    @Test void staggeredIntervalSamplesTheAlgebraicCeilingOnlyOnce(@TempDir Path dir)throws Exception {
+        Path dyr=dir.resolve("st1c-staggered-sampling.dyr");
+        Files.writeString(dyr,"1 'ST1C' 1 1 1 1 0 99 -99 1 1 0 0 10 0 99 -99 2 -2 0 0 1 0 99 /\n");
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine m=builder.getDStabNetwork().getMachine("Bus1-mach1");var e=(St1cExciter)m.getExciter();
+        m.setEfd(1.2);assertTrue(e.initStates(m.getDStabBus(),m));e.setRefPoint(e.getRefPoint()+2.);
+        double h=1./240;double[] rates=new double[e.staggeredStateCount()];double[] coordinates=e.getStateSnapshot();
+        m.getDStabBus().setVoltage(.98,0);e.beginStaggeredStep(h);assertEquals(1.96,e.getOutput(m),TOL);
+        m.getDStabBus().setVoltage(.91,0);e.evaluateStaggered(h,rates,0);e.evaluateStaggered(h,rates,0);
+        e.applyStaggeredState(coordinates,0,h);assertEquals(1.96,e.getOutput(m),TOL,"Trial evaluations cannot resample the field ceiling");
+        e.completeStaggeredStep(h);assertEquals(1.96,e.getOutput(m),TOL);
+        e.beginStaggeredStep(h);assertEquals(1.82,e.getOutput(m),TOL,"The next physical interval owns the next sample");
+    }
 }

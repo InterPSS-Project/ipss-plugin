@@ -81,6 +81,15 @@ public class GenqecuPsseSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesBoundaryAndAllSixPublishedStates() throws Exception {
+        runFaultReference(false);
+    }
+
+    @Test
+    void staggeredFaultRetainsTheIndependentReferenceGates() throws Exception {
+        runFaultReference(true);
+    }
+
+    private void runFaultReference(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                 .digest(EmbeddedNativeTrajectoryValues.bytes(REFERENCE)));
@@ -92,6 +101,7 @@ public class GenqecuPsseSmibConformanceTest {
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(algorithm));
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);

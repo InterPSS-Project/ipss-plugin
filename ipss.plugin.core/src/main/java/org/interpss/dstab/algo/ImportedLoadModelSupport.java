@@ -16,7 +16,7 @@ import com.interpss.dstab.algo.dynamic.DynamicSimulationSolverBase.SourceLoadIde
 import com.interpss.dstab.device.DynamicBusDevice;
 
 /**
- * Imported dynamic-load behavior of the PSS/E solvers: composite-load
+ * Imported dynamic-load behavior of the adapter solvers: composite-load
  * initialization thresholds, load-model ownership reports and induction-motor
  * local substeps. The Core solver runtime calls these through its hooks.
  */

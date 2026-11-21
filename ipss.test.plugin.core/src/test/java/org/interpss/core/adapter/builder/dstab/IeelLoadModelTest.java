@@ -28,6 +28,27 @@ import com.interpss.dstab.cache.StateMonitor;
 
 /** Equation, scope, schema, and lifecycle tests for native PSS/E IEEL loads. */
 public class IeelLoadModelTest extends CorePluginTestSetup {
+    @Test
+    void staggeredIntegrationKeepsTheAlgebraicLoadCurrentLive() throws Exception {
+        Path data=Path.of("testData/adpter/psse/v33/HspModels");
+        var context=new PSSEMultiFileLoader().loadDStab(data.resolve("network.raw").toString(),data.resolve("tiocr1-0.dyr").toString());
+        var a=context.getDynSimuAlgorithm();var net=a.getNetwork();
+        for(var b:net.getBusList())for(var d:b.getDynamicBusDeviceList())d.setStatus(false);
+        var bus=net.getDStabBus("Bus2");
+        var model=new IeelLoadModel("IEELBL",bus,bus.getContributeLoad("1"),
+                new org.interpss.dstab.dynLoad.IeelLoadData(.23,.31,.46,.37,.22,.41,1.37,-.63,.8,1.7,2.4,.6,1.4,2.2));
+        assertTrue(a.getAclfAlgorithm().loadflow());
+        a.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(a));
+        a.setSimuStepSec(.001);a.setTotalSimuTimeSec(.01);a.setSimuOutputHandler(new StateMonitor());
+        assertTrue(a.initialization());assertEquals(0,model.staggeredStateCount());
+        for(int i=0;i<10;i++)assertTrue(a.solveDEqnStep(true));
+        double initial=model.effectivePower().getReal();
+        bus.setVoltage(bus.getVoltage().multiply(.8));bus.setFreq(.99);
+        assertTrue(Math.abs(model.effectivePower().getReal()-initial)>1e-3);
+        var measured=bus.getVoltage().multiply(model.getEquivY().multiply(bus.getVoltage()).subtract(model.getNortonCurInj()).conjugate());
+        assertEquals(0.,measured.subtract(model.effectivePower()).abs(),1e-12);
+    }
+
     private static final String SYNTHETIC_PARAMETERS =
             "0.23 0.31 0.46 0.37 0.22 0.41 1.37 -0.63 "
                     + "0.8 1.7 2.4 0.6 1.4 2.2";

@@ -53,6 +53,7 @@ public final class Lvs3blRelayModel extends AbstractStagedLoadSheddingRelayModel
             network.formYMatrix4DStab();
             reapplyAfterNetworkRebuild(network);
             network.setYMatrixDirty(true);
+            markAcceptedNetworkAction();
         }
         return true;
     }

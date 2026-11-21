@@ -28,7 +28,7 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
  * An implementation of the model object '<em><b>Induction Motor</b></em>'.
   */
 public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor,
-        StaggeredEulerParticipant, IntegrationStateAccess {
+        com.interpss.dstab.controller.runtime.LocalStaggeredEulerParticipant, IntegrationStateAccess {
     private final double[] electricalRates = new double[4];
     private final double[] observedRates = new double[5];
     private final double[] evaluatedCurrent = new double[2];
@@ -79,6 +79,16 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         initialReactiveDemandMatching = enabled;
     }
 
+    private int staggeredLocalSteps=1;
+    private Complex staggeredIntervalVoltage;
+    @Override public void prepareStaggeredIntegration(double outerStepSec) {
+        staggeredLocalSteps=com.interpss.dstab.controller.runtime.StaggeredArrayState.recommendedLocalSteps(this,outerStepSec);
+    }
+    @Override public int staggeredLocalStepCount(){return staggeredLocalSteps;}
+    @Override public void beginStaggeredLocalInterval(double outerStepSec){staggeredIntervalVoltage=getDStabBus().getVoltage();}
+    @Override public void completeStaggeredLocalStep(double localStepSec){ }
+    @Override public void completeStaggeredStep(double outerStepSec){staggeredIntervalVoltage=null;}
+
     @Override public int staggeredStateCount() { return twoAxisModel ? 5 : 3; }
 
     @Override public void readStaggeredState(double[] values, int offset) {
@@ -104,7 +114,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
         boolean connected = legacyCompositeProtectionScheduling ? Fonline != 0 : Fonline > 0 && Fuv > 0;
         Complex source = twoAxisModel ? epp : ep;
         if (connected) {
-            Complex voltage = getDStabBus().getVoltage();
+            Complex voltage = staggeredIntervalVoltage==null?getDStabBus().getVoltage():staggeredIntervalVoltage;
             Complex impedance = twoAxisModel ? zppMotorBase : zpMotorBase;
             MotorElectricalKernel.divide(voltage.getReal() - source.getReal(),
                     voltage.getImaginary() - source.getImaginary(), impedance.getReal(),
@@ -164,6 +174,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     }
     public long getStaggeredEvaluationCount() { return staggeredEvaluationCount; }
     private void resetIntegrationObservation() {
+        staggeredLocalSteps=1;staggeredIntervalVoltage=null;
         integrationMonitor = twoAxisModel
                 ? new IntegrationStateMonitor("EPrimeQ", "EPrimeD", "EkReal", "EkImag", "Slip")
                 : new IntegrationStateMonitor("EPrimeQ", "EPrimeD", "Slip");
@@ -172,6 +183,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
     /** Explicit value-only companion for configured and in-flight motor state. */
     public static final class ModelState extends com.interpss.state.net.NameTagState {
         public long staggeredEvaluationCount;
+        public int staggeredLocalSteps=1;
+        public com.interpss.common.datatype.ComplexValueBean staggeredIntervalVoltage;
         public double localIntegrationMaximumStepSec,localOuterStep,localStartVoltageReal,localStartVoltageImag;
         public boolean localPredictorPending;
         public int lastLocalIntegrationSteps=1;
@@ -328,6 +341,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             vMultiFactor=source.vMultiFactor;
             acc=source.acc;
             subStepN=source.subStepN;
+            staggeredLocalSteps=source.staggeredLocalSteps;
+            staggeredIntervalVoltage=source.staggeredIntervalVoltage==null?null:new com.interpss.common.datatype.ComplexValueBean(source.staggeredIntervalVoltage);
             localIntegrationMaximumStepSec=source.localIntegrationMaximumStepSec;
             localOuterStep=source.localOuterStep;localStartVoltageReal=source.localStartVoltageReal;
             localStartVoltageImag=source.localStartVoltageImag;localPredictorPending=source.localPredictorPending;
@@ -479,6 +494,11 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
             target.nortonCurInj=nortonCurInj==null?null:nortonCurInj.toComplex();
             target.mvaBase=mvaBase;
             target.resetIntegrationObservation();
+            if(staggeredLocalSteps<1||staggeredLocalSteps>com.interpss.dstab.algo.dynamic.ControllerStepStability.MAXIMUM_LOCAL_STEPS)
+                throw new IllegalArgumentException("Invalid saved staggered local resolution");
+            target.staggeredLocalSteps=staggeredLocalSteps;
+            target.staggeredIntervalVoltage=staggeredIntervalVoltage==null?null:staggeredIntervalVoltage.toComplex();
+
             target.staggeredEvaluationCount = staggeredEvaluationCount;
             target.initialReactiveDemandMatching = initialReactiveDemandMatching;
             target.legacyCompositeProtectionScheduling = legacyCompositeProtectionScheduling;

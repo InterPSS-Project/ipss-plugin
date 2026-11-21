@@ -33,7 +33,10 @@ public class Dera1NativeSmibConformanceTest {
             "smib-dera1", "psse.csv");
 
     @Test
-    void allPublishedStatesAndTerminalChannelsMatchFaultTrajectory() throws Exception {
+    void allPublishedStatesAndTerminalChannelsMatchFaultTrajectory() throws Exception { runIndependentTrajectory(false); }
+    @Test
+    void staggeredAllStatesAndTerminalChannelsMatchTheSameFaultReference() throws Exception { runIndependentTrajectory(true); }
+    private void runIndependentTrajectory(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_wt3g2.raw").toString(),
@@ -49,6 +52,7 @@ public class Dera1NativeSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, .1), null, .05, .05), "DeraFault");
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization());
 
         DStabGen gen = (DStabGen) network.getBus("Bus1").getContributeGen("1");

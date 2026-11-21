@@ -139,7 +139,10 @@ public class PsseReecb1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void fullRegcaReecbRepcaStackInitializesAndRuns() throws Exception {
+    void fullRegcaReecbRepcaStackInitializesAndRuns() throws Exception { runFullStack(false); }
+    @Test
+    void fullRegcaReecbRepcaStackRunsWithStaggeredIntegration() throws Exception { runFullStack(true); }
+    private void runFullStack(boolean staggered) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         // A grid-following converter cannot establish the island's voltage/angle.
         // The old one-bus fixture only "ran" because failed network solves were ignored.
@@ -163,10 +166,11 @@ public class PsseReecb1ControllerTest extends CorePluginTestSetup {
 
         var algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(builder.getDStabNetwork());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(1.0 / 120.0);
+        algorithm.setSimuStepSec(staggered?1.0/240.0:1.0/120.0);
         algorithm.setTotalSimuTimeSec(.05);
         algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization());
         assertTrue(algorithm.performSimulation());
         assertTrue(Double.isFinite(electrical.getIpcmd()));

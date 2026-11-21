@@ -23,6 +23,8 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvider, IntegrationStepAware,
         com.interpss.dstab.relay.model.CompositeLoadSheddingTarget {
     private static final double EPS = 1.0e-10;
+    private static final double MINIMUM_FEEDER_INIT_VOLTAGE = 0.95;
+    private static final Complex FEEDER_IMPEDANCE_FLOOR = new Complex(1e-7, 1e-5);
 
     private final Cmldznu2Data data;
     private final Set<String> targetLoadIds;
@@ -281,27 +283,33 @@ public class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateProvide
         else getLowVoltBus().setShuntY(componentLowShunt);
         Complex feederCurrent = incomingCurrent.divide(tap).subtract(lowVoltage.multiply(componentLowShunt));
         Complex loadVoltage = distFdr == null ? lowVoltage : lowVoltage.subtract(distFdr.getZ().multiply(feederCurrent));
-        if (loadVoltage.abs() < .95 && distFdr != null) {
-            if (lowVoltage.abs() <= .95) {
-                // The nominal initialization target is unattainable even with
-                // zero feeder drop. Keep a finite branch instead of rejecting
-                // the solved source voltage or inserting a singular zero Z.
+        if (distFdr != null && loadVoltage.abs() < MINIMUM_FEEDER_INIT_VOLTAGE) {
+            double lowVoltageMagnitude = lowVoltage.abs();
+            Complex adjustedZ = Complex.ZERO;
+            if (lowVoltageMagnitude > MINIMUM_FEEDER_INIT_VOLTAGE) {
+                Complex feederZ = distFdr.getZ();
+                Complex drop = feederZ.multiply(feederCurrent);
+                double a = drop.abs() * drop.abs();
+                double projection = lowVoltage.multiply(drop.conjugate()).getReal();
+                double c = (lowVoltageMagnitude - MINIMUM_FEEDER_INIT_VOLTAGE)
+                        * (lowVoltageMagnitude + MINIMUM_FEEDER_INIT_VOLTAGE);
+                double scale = c / (projection + Math.sqrt(Math.max(0, projection * projection - a * c)));
+                adjustedZ = feederZ.multiply(Math.max(0, Math.min(1, scale)));
+            }
+            if (adjustedZ.abs() < FEEDER_IMPEDANCE_FLOOR.abs()) {
+                // At or just above the voltage target, the requested feeder
+                // reduction can make an explicit branch numerically zero.
                 // This published distribution-equivalent compatibility rule is
                 // on system base, after the model-base conversion above:
                 // https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Transient_Stability_Load_Model_Group_Distribution_Feeder_Equivalent.htm
                 // Native captures independently permit this low-voltage start;
                 // exact native feeder-preparation parity remains unqualified.
-                distFdr.setZ(new Complex(1e-7,1e-5));
+                adjustedZ = FEEDER_IMPEDANCE_FLOOR;
                 org.slf4j.LoggerFactory.getLogger(getClass()).warn(
-                        "Composite {} at {}: low-side voltage {} cannot reach the 0.95 pu initialization target; using finite feeder floor on system base and retaining source constants",
-                        getId(),getDStabBus().getId(),lowVoltage.abs());
-            } else {
-                Complex drop = distFdr.getZ().multiply(feederCurrent);
-                double a = drop.abs() * drop.abs(), projection = lowVoltage.multiply(drop.conjugate()).getReal();
-                double c = lowVoltage.abs() * lowVoltage.abs() - .95 * .95;
-                double scale = (projection - Math.sqrt(Math.max(0, projection * projection - a * c))) / a;
-                distFdr.setZ(distFdr.getZ().multiply(Math.max(0, Math.min(1, scale))));
+                        "Composite {} at {}: low-side voltage {} requires a feeder reduction below the finite impedance floor; using the floor on system base",
+                        getId(),getDStabBus().getId(),lowVoltageMagnitude);
             }
+            distFdr.setZ(adjustedZ);
             loadVoltage = lowVoltage.subtract(distFdr.getZ().multiply(feederCurrent));
         }
         // With an omitted feeder there is no impedance to adjust. Initialize

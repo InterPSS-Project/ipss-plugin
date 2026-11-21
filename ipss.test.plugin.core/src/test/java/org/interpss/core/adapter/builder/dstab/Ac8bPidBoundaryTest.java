@@ -207,4 +207,26 @@ public class Ac8bPidBoundaryTest extends CorePluginTestSetup {
         }
         System.out.println("AC8B synthetic adaptive reference h="+h+" maxStateError="+max+" byState="+Arrays.toString(maxByState)+" at="+Arrays.toString(timeByState));return max;
     }
+
+    @Test
+    void staggeredRatesPreserveStorageAndPredictorHistoryAndProjectFieldLimits() throws Exception {
+        Fixture f=fixture(parameters());var e=f.exciter;
+        e.reference+=.03;
+        double[] x=storage(e,"state").clone(),trial=storage(e,"trial").clone(),history=storage(e,"oldDerivative").clone();
+        double[] expected=rhs(f),rates=new double[x.length+2];java.util.Arrays.fill(rates,123.);
+        e.evaluateStaggered(1./240,rates,1);e.evaluateStaggered(1./240,rates,1);
+        assertArrayEquals(expected,java.util.Arrays.copyOfRange(rates,1,1+x.length),0.);
+        assertEquals(123.,rates[0]);assertEquals(123.,rates[rates.length-1]);
+        assertArrayEquals(x,storage(e,"state"),0.,"Pure RHS must not commit coordinates");
+        assertArrayEquals(trial,storage(e,"trial"),0.,"Pure RHS must not touch predictor storage");
+        assertArrayEquals(history,storage(e,"oldDerivative"),0.,"Pure RHS must not change old slopes");
+        double[] invalid=x.clone();invalid[invalid.length-1]=Double.NaN;
+        assertThrows(IllegalArgumentException.class,()->e.applyStaggeredState(invalid,0,1./240));
+        assertArrayEquals(x,storage(e,"state"),0.,"Rejected vector must not partially commit");
+        double[] requested=x.clone();requested[0]=-1e6;
+        e.applyStaggeredState(requested,0,1./240);double[] actual=new double[x.length];e.readStaggeredState(actual,0);
+        assertEquals(e.vemin,actual[0],1e-12,"Entered field minimum remains enforced");
+        assertArrayEquals(trial,storage(e,"trial"),0.);assertArrayEquals(history,storage(e,"oldDerivative"),0.);
+        assertTrue(Double.isFinite(e.getOutput(f.machine)));
+    }
 }

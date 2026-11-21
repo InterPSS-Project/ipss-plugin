@@ -40,7 +40,10 @@ public class Csvgn5PsseSmibConformanceTest {
             "testData", "reference", "psse", "smib-csvgn5", "psse.csv");
 
     @Test
-    void fourStatesAndShuntOutputMatchNativePsseTrajectory() throws Exception {
+    void fourStatesAndShuntOutputMatchNativePsseTrajectory() throws Exception { runIndependentTrajectory(false); }
+    @Test
+    void staggeredFourStatesAndOutputMatchTheSameIndependentTrajectory() throws Exception { runIndependentTrajectory(true); }
+    private void runIndependentTrajectory(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         assertManifestHash(manifest, REFERENCE);
@@ -64,6 +67,7 @@ public class Csvgn5PsseSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, .5), null, .05, .02), "Csvgn5Fault");
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization(), "CSVGN5 initialization");
 
         DStabGen generator = (DStabGen) network.getDStabBus("Bus1")
