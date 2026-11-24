@@ -49,6 +49,24 @@ class AclfRunConfigRecTest {
     }
 
 	@Test
+	void islandTurnOffSettingAppliesToTopologyInitializationAndDataCheck() {
+		var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(CoreObjectFactory.createAclfNetwork());
+		algorithm.setTurnOffIslandBus(false);
+		algorithm.getDataCheckConfig().setTurnOffIslandBus(true);
+		AclfRunConfigRec.fromJson("{}").applyTo(algorithm);
+		assertFalse(algorithm.isTurnOffIslandBus());
+		assertTrue(algorithm.getDataCheckConfig().isTurnOffIslandBus());
+
+		AclfRunConfigRec.fromJson("{\"turnOffIslandBus\":true}").applyTo(algorithm);
+		assertTrue(algorithm.isTurnOffIslandBus());
+		assertTrue(algorithm.getDataCheckConfig().isTurnOffIslandBus());
+
+		AclfRunConfigRec.fromJson("{\"turnOffIslandBus\":false}").applyTo(algorithm);
+		assertFalse(algorithm.isTurnOffIslandBus());
+		assertFalse(algorithm.getDataCheckConfig().isTurnOffIslandBus());
+	}
+
+	@Test
 	void schemaVersionDefaultsToOneAndRejectsUnsupportedVersions() {
 		AclfRunConfigRec config = new AclfRunConfigRec();
 		assertEquals(AclfRunConfigRec.CURRENT_SCHEMA_VERSION, config.schemaVersion);
