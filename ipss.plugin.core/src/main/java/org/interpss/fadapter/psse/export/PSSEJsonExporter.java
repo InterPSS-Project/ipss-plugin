@@ -425,6 +425,10 @@ public class PSSEJsonExporter {
 		if (!svc.isControlStatus()) {
 			return true;
 		}
+		if (Double.isFinite(svc.getShuntCurrentLimitPu())
+				|| Double.isFinite(svc.getPendingShuntCurrentLimitPu())) {
+			return false;
+		}
 		LimitType bLimit = svc.getBLimit(false);
 		if (bLimit == null) {
 			return false;
@@ -480,12 +484,14 @@ public class PSSEJsonExporter {
 				double b = exportSolvedState ? svc.getBActual() : svc.getBInit();
 				double qMvar = b * bus.getVoltageMag() * bus.getVoltageMag() * baseMva;
 				/*
-				 * PSS/E SHMX is the STATCON shunt capability at 1.0 pu voltage. It
-				 * therefore maps to susceptance on the system base, not to the
-				 * voltage-dependent Q limit at the solved operating point.
+				 * SHMX is the STATCON current rating expressed as MVA at unity voltage.
+				 * Export the nameplate rating independently of the solved voltage.
 				 */
-				LimitType bLimit = svc.getBLimit(UnitType.PU);
-				double qMaxMvar = Math.max(Math.abs(bLimit.getMax()), Math.abs(bLimit.getMin())) * baseMva;
+				double currentLimit = svc.getShuntCurrentLimitPu();
+				if (!Double.isFinite(currentLimit)) currentLimit = svc.getPendingShuntCurrentLimitPu();
+				LimitType bLimit = svc.getBLimit(false);
+				double qMaxMvar = (Double.isFinite(currentLimit) ? currentLimit
+						: Math.max(Math.abs(bLimit.getMax()), Math.abs(bLimit.getMin()))) * baseMva;
 				section.getAsJsonArray("data").add(row(
 						nullToEmpty(svc.getName()), busNumber(bus), 0,
 						svc.isStatus() && !isFixedSolvedSvc(svc) ? 1 : 0,

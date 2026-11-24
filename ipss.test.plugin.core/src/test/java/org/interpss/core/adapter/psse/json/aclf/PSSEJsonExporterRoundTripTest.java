@@ -991,6 +991,7 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 				.findFirst()
 				.orElseThrow();
 		StaticVarCompensator originalSvc = originalBus.getStaticVarCompensatorList().get(0);
+		originalSvc.clearShuntCurrentRating();
 		double lowerLimit = originalSvc.getBLimit(false).getMin();
 		originalSvc.setBActual(lowerLimit);
 		originalSvc.setControlStatus(true);
@@ -1003,6 +1004,39 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 
 		assertFalse(importedSvc.isStatus());
 		assertEquals(lowerLimit, importedBus.toCapacitorBus().getB(false), TOL);
+	}
+
+	@ParameterizedTest
+	@CsvSource({"raw", "rawx"})
+	public void solvedExportKeepsCurrentBoundStatconInService(String extension) throws Exception {
+		AclfNetwork original = new PSSEDirectParser(34)
+				.parse("testData/psse/v34/sample_v34.raw");
+		AclfBus originalBus = original.getBusList().stream()
+				.filter(bus -> !bus.getStaticVarCompensatorList().isEmpty())
+				.findFirst()
+				.orElseThrow();
+		StaticVarCompensator originalSvc = originalBus.getStaticVarCompensatorList().get(0);
+		double rating = originalSvc.getPendingShuntCurrentLimitPu();
+		originalSvc.setShuntCurrentLimitPu(rating);
+		originalSvc.setShuntCurrentPu(-rating);
+		originalSvc.setControlStatus(true);
+
+		Path exported = tempDir.resolve("sample-v34-solved-limit-svc." + extension);
+		AclfNetwork roundTrip;
+		if ("raw".equals(extension)) {
+			new PSSERawExporter(original, 34, true).export(exported);
+			roundTrip = new PSSEDirectParser(34).parse(exported.toString());
+		} else {
+			Files.writeString(exported, new PSSEJsonExporter(original, true).export().toString());
+			roundTrip = new PSSEJsonDirectParser().parse(exported.toString());
+		}
+		AclfBus importedBus = roundTrip.getBus(originalBus.getId());
+		StaticVarCompensator importedSvc = importedBus.getStaticVarCompensatorList().get(0);
+
+		assertTrue(importedSvc.isStatus());
+		assertEquals(rating, importedSvc.getPendingShuntCurrentLimitPu(), TOL);
+		assertTrue(Double.isNaN(importedSvc.getShuntCurrentLimitPu()));
+		assertEquals(-rating, importedSvc.getBInit() * importedBus.getVoltageMag(), 1.0e-5);
 	}
 
 	@Test

@@ -1222,6 +1222,7 @@ public class PSSEJsonDirectParser {
             StaticVarCompensator svc = builder.addSVC(busId, name, mode != 0,
                     qMaxPU, qMinPU, vset, remoteBusId, rmpct);
             BaseAclfBus bus = builder.getBus(busId);
+            if (svc != null) svc.deferShuntCurrentLimitPu(qMaxPU);
             if (svc != null && bus != null && bus.getVoltageMag() != 0.0) {
                 double voltage = bus.getVoltageMag();
                 svc.setBInit(qdes / baseMva / (voltage * voltage));

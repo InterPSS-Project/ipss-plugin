@@ -1467,6 +1467,7 @@ public class PSSEDirectParser {
             StaticVarCompensator svc = builder.addSVC(busId, name, mode != 0,
                     qMaxPU, qMinPU, vset, remoteBusId, rmpct);
             BaseAclfBus bus = builder.getBus(busId);
+            if (svc != null) svc.deferShuntCurrentLimitPu(qMaxPU);
             if (svc != null && bus != null && bus.getVoltageMag() != 0.0) {
                 // PSS/E QDES is the STATCON's saved reactive output.
                 double voltage = bus.getVoltageMag();
