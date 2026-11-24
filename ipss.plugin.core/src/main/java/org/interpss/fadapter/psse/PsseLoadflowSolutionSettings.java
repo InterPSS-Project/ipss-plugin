@@ -10,7 +10,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.ControlInitializationMode;
 import com.interpss.core.algo.LoadflowAlgorithmInitializer;
 
 /**
@@ -20,11 +22,10 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
  * settings are not silently discarded.
  *
  * <p>Application is intentionally selective. Numerical fields with a verified
- * InterPSS equivalent are always eligible; binary device-activity fields are
- * applied only by {@link ApplicationPolicy#SAVED_SOLUTION_REPLAY}. Unknown,
- * unsupported, malformed, and non-binary values are reported instead of being
- * coerced. Solver activity fields, including PSS/E saved-solution
- * non-divergent mode, are applied only by saved-solution replay.</p>
+ * InterPSS equivalent are always eligible. The shared polar AC defaults
+ * also inherit the supported solver activity fields. Area interchange
+ * remains an explicit control choice. Unknown, unsupported, malformed,
+ * and non-binary values are reported with the original input.</p>
  *
  * <p>Callers should apply these imported values before explicit JSON settings.
  * That ordering makes source data the baseline while keeping a field supplied
@@ -72,14 +73,61 @@ public final class PsseLoadflowSolutionSettings
 		INVALID
 	}
 
-	/**
-	 * Numerical settings are safe defaults for every imported case. Solver
-	 * activity flags are applied only for an explicit saved-solution replay,
-	 * because a caller may intentionally construct a different control study.
-	 */
 	public enum ApplicationPolicy {
 		NUMERICAL_SETTINGS,
-		SAVED_SOLUTION_REPLAY
+		SAVED_SOLUTION_REPLAY,
+		/** Inherit supported solver switches with area interchange held. */
+		SHARED_RAW_DEFAULTS
+	}
+
+	private static final String SHARED_CONTROL_DEFAULTS_KEY =
+			PsseLoadflowSolutionSettings.class.getName() + ".sharedControlDefaults";
+
+	private record ControlDefaults(boolean taps, boolean shunts, boolean dcTaps, boolean phaseShifters,
+			boolean nonDivergent, ControlInitializationMode initializationMode, boolean initBusVoltage) {
+		static ControlDefaults read(LoadflowAlgorithm algorithm) {
+			var adjust = algorithm.getLfAdjAlgo();
+			var voltage = adjust.getVoltAdjConfig();
+			return new ControlDefaults(voltage.isXfrTapControl(), voltage.isSwitchedShuntAdjust(),
+					voltage.isHvdcTapControl(), adjust.getPowerAdjConfig().isPsXfrPControl(),
+					algorithm.isNonDivergent(), adjust.getLimitCtrlConfig().getControlInitializationMode(),
+					algorithm.isInitBusVoltage());
+		}
+	}
+
+	private record SharedControlDefaults(ControlDefaults prior, ControlDefaults inherited) { }
+
+	/** Restore defaults for the imported switches before applying an explicit replay opt-out. */
+	public void suppressSharedControlDefaults(LoadflowAlgorithm algorithm) {
+		var extra = algorithm.getNetwork().getExtraInfo();
+		if (!(extra.get(SHARED_CONTROL_DEFAULTS_KEY) instanceof SharedControlDefaults defaults)) return;
+		var prior = defaults.prior();
+		var inherited = defaults.inherited();
+		var current = ControlDefaults.read(algorithm);
+		var adjust = algorithm.getLfAdjAlgo();
+		var voltage = adjust.getVoltAdjConfig();
+		if (current.taps() == inherited.taps()) voltage.setXfrTapControl(prior.taps());
+		if (current.shunts() == inherited.shunts()) voltage.setSwitchedShuntAdjust(prior.shunts());
+		if (current.dcTaps() == inherited.dcTaps()) voltage.setHvdcTapControl(prior.dcTaps());
+		if (current.phaseShifters() == inherited.phaseShifters())
+			adjust.getPowerAdjConfig().setPsXfrPControl(prior.phaseShifters());
+		if (current.nonDivergent() == inherited.nonDivergent())
+			algorithm.setNonDivergent(prior.nonDivergent());
+		if (current.initializationMode() == inherited.initializationMode()) {
+			adjust.getLimitCtrlConfig().setControlInitializationMode(prior.initializationMode());
+			if (current.initBusVoltage() == inherited.initBusVoltage())
+				algorithm.setInitBusVoltage(prior.initBusVoltage());
+		}
+		// Keep independently selected numerical settings. Only the RAW switch
+		// entries change when replay is disabled.
+		if (extra.get(APPLICATION_REPORT_EXTRA_INFO_KEY) instanceof ApplicationReport report) {
+			extra.put(APPLICATION_REPORT_EXTRA_INFO_KEY, new ApplicationReport(report.mappings().stream()
+					.map(entry -> entry.field().startsWith("SOLVER.") && entry.status() == MappingStatus.APPLIED
+							? new Mapping(entry.field(), entry.rawValue(), null, MappingStatus.UNSUPPORTED,
+									"preserved; imported solver switches disabled by the caller")
+							: entry)
+					.toList()));
+		}
 	}
 
 	public record Mapping(String field, String rawValue, String resolvedValue,
@@ -147,8 +195,14 @@ public final class PsseLoadflowSolutionSettings
 
 	@Override
 	public void apply(LoadflowAlgorithm algorithm, BaseAclfNetwork<?, ?> network) {
+		var prior = ControlDefaults.read(algorithm);
+		boolean shared = LoadflowAlgoObjectFactory.configureImportedVoltageControls(algorithm);
 		ApplicationReport report = applyTo(algorithm, network,
-				ApplicationPolicy.NUMERICAL_SETTINGS);
+				shared ? ApplicationPolicy.SHARED_RAW_DEFAULTS : ApplicationPolicy.NUMERICAL_SETTINGS);
+		if (shared) {
+			network.getExtraInfo().put(SHARED_CONTROL_DEFAULTS_KEY,
+					new SharedControlDefaults(prior, ControlDefaults.read(algorithm)));
+		}
 		network.getExtraInfo().put(APPLICATION_REPORT_EXTRA_INFO_KEY, report);
 	}
 
@@ -219,11 +273,14 @@ public final class PsseLoadflowSolutionSettings
 				value -> algorithm.getLfAdjAlgo()
 						.setMaxTapAndShuntAdjustmentIterations(value), "iterations");
 
-		if (policy == ApplicationPolicy.SAVED_SOLUTION_REPLAY) {
+		if (policy != ApplicationPolicy.NUMERICAL_SETTINGS) {
 			applyBinary(result, "SOLVER.ACTAPS", solver.actaps(), enabled -> algorithm
 					.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(enabled));
-			applyBinary(result, "SOLVER.AREAIN", solver.areain(), enabled -> algorithm
-					.getNetAdjAlgo().setAreaInterchangeControlEnabled(enabled));
+			if (policy == ApplicationPolicy.SHARED_RAW_DEFAULTS) {
+				preservedSolverMode(result, "SOLVER.AREAIN", solver.areain());
+			} else {
+				applyAreaInterchangeMode(result, algorithm, network);
+			}
 			applyBinary(result, "SOLVER.PHSHFT", solver.phshft(), enabled -> algorithm
 					.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(enabled));
 			applyBinary(result, "SOLVER.DCTAPS", solver.dctaps(), enabled -> algorithm
@@ -308,6 +365,22 @@ public final class PsseLoadflowSolutionSettings
 					MappingStatus.UNSUPPORTED,
 					"preserved; no verified one-to-one InterPSS mapping"));
 		}
+	}
+
+	private void applyAreaInterchangeMode(List<Mapping> result,
+			LoadflowAlgorithm algorithm, BaseAclfNetwork<?, ?> network) {
+		Integer mode = solver.areain();
+		if (Integer.valueOf(2).equals(mode)) {
+			network.setAreaInterchangeIncludingLoads(true);
+			algorithm.getNetAdjAlgo().setAreaInterchangeControlEnabled(true);
+			result.add(applied("SOLVER.AREAIN", raw("SOLVER", "AREAIN"),
+					"TIE_LINES_AND_LOADS", "area interchange includes cross-area demand"));
+			return;
+		}
+		applyBinary(result, "SOLVER.AREAIN", mode, enabled -> {
+			network.setAreaInterchangeIncludingLoads(false);
+			algorithm.getNetAdjAlgo().setAreaInterchangeControlEnabled(enabled);
+		});
 	}
 
 	private void applyBinary(List<Mapping> result, String field, Integer value,

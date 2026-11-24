@@ -214,7 +214,7 @@ public final class PsseCasePreparationProcessor {
         int owner=integer(f,6,old!=null?old.ownerNumber():b.getOwner()!=null?(int)b.getOwner().getNumber():1);
         if((has(f,4)&&area<=0)||(has(f,5)&&zone<=0)||(has(f,6)&&owner<=0))
             throw new IllegalArgumentException("Explicit load area/zone/owner must be positive");
-        PsseLoadScopeMetadata.put(network,id,loadId,area,zone,owner);
+        PsseLoadScopeMetadata.put(network,id,load,area,zone,owner);
         if(has(f,9))load.setDistGenStatus(binary(f,9));
         double scale=network.getBaseMva();
         load.setLoadCP(pair(f,10,load.getLoadCP(),scale));

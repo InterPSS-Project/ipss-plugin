@@ -68,6 +68,7 @@ import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.impl.func.SwitchedShuntsUtilFunc;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
 import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
@@ -693,6 +694,11 @@ public class AclfNetworkBuilder {
             }
         }
         swchShunt.setBLimit(new LimitType(bmax, bmin));
+        if (status && mode == AclfAdjustControlMode.DISCRETE && blocks != null && !blocks.isEmpty()
+                && !SwitchedShuntsUtilFunc.initializeSavedDiscreteBanks(swchShunt, network.getBaseMva())) {
+            log.debug("No exact active bank allocation for saved B={} at switched shunt {} on {}",
+                    savedBInitPU, swchShunt.getId(), busId);
+        }
 
         if (remoteBusId != null && !remoteBusId.isEmpty()) {
             swchShunt.setRemoteBusBranchId(remoteBusId);

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.bean.PSSESchema;
+import org.interpss.fadapter.psse.PsseBusVoltageRatings;
 import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings;
 import org.interpss.fadapter.psse.PSSEGeneratorReactivePower;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonAclineUpdater;
@@ -280,6 +281,9 @@ public class PSSEJsonExporter {
 			if (threeWStarBuses.contains(bus)) {
 				continue;
 			}
+			var ratings = PsseBusVoltageRatings.find(aclfNet, bus.getId()).orElse(null);
+			var normal = ratings == null ? null : ratings.normal();
+			var emergency = ratings == null ? null : ratings.emergency();
 			section.getAsJsonArray("data").add(row(
 					busNumber(bus),
 					nullToEmpty(bus.getName()),
@@ -290,7 +294,8 @@ public class PSSEJsonExporter {
 					bus.getOwner() != null ? (int) bus.getOwner().getNumber() : 0,
 					bus.getVoltageMag(),
 					Math.toDegrees(bus.getVoltageAng()),
-					1.1, 0.9, 1.1, 0.9));
+					normal != null ? normal.maximumPu() : 1.1, normal != null ? normal.minimumPu() : 0.9,
+					emergency != null ? emergency.maximumPu() : 1.1, emergency != null ? emergency.minimumPu() : 0.9));
 		}
 		return section;
 	}
@@ -315,7 +320,7 @@ public class PSSEJsonExporter {
 						busNumber(bus),
 						load.getId(),
 						load.isActive() ? 1 : 0,
-						intId(bus.getAreaId()),
+						load.getAreaNumber() > 0 ? load.getAreaNumber() : intId(bus.getAreaId()),
 						intId(bus.getZoneId()),
 						cp.getReal() * baseMva,
 						cp.getImaginary() * baseMva,

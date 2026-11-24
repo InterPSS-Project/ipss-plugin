@@ -52,6 +52,23 @@ class AclfConfigurationPrecedenceTest {
         assertEquals(.1, voltage.getDQ_dVThreshold());
     }
 
+    @Test void importedAdaptiveLccRecoveryPreservesTapAuthorityAndAllowsAnOverride() {
+        var programmatic = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(CoreObjectFactory.createAclfNetwork());
+        assertFalse(programmatic.isAdaptiveLccRecoveryEnabled());
+        var a = imported();
+        assertTrue(a.isAdaptiveLccRecoveryEnabled());
+        assertFalse(a.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl());
+        AclfRunConfigRec.fromJson("{\"savedSolutionReplay\":true,\"adaptiveLccRecoveryEnabled\":true}").applyTo(a);
+        assertTrue(a.isAdaptiveLccRecoveryEnabled());
+        assertFalse(a.isCoupledLccPqControlEnabled());
+        assertFalse(a.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl());
+
+        AclfRunConfigRec.fromJson("{}").applyTo(a);
+        assertTrue(a.isAdaptiveLccRecoveryEnabled());
+        AclfRunConfigRec.fromJson("{\"adaptiveLccRecoveryEnabled\":false}").applyTo(a);
+        assertFalse(a.isAdaptiveLccRecoveryEnabled());
+    }
+
     @Test void emptyJsonPreservesImportedNumericalSettings() {
         var a = imported();
         AclfRunConfigRec.fromJson("{}").applyTo(a);

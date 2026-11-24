@@ -155,8 +155,13 @@ public class PsseSvsmo3t2ModelTest extends CorePluginTestSetup {
             assertTrue(bytes < 16384, "Direct stages must reuse numerical/diagnostic buffers");
         }
 
+        assertTrue(Double.isFinite(model.getStaticDevice().getPendingShuntCurrentLimitPu()));
+        assertTrue(Double.isNaN(model.getStaticDevice().getShuntCurrentLimitPu()));
+        double stampedB = model.getStaticDevice().getBActual();
         Complex perturbed = bus.getVoltage().multiply(.7);
         bus.setVoltage(perturbed);
+        network.formYMatrix4DStab();
+        assertEquals(stampedB, model.getStaticDevice().getBActual(), 1e-12);
         Complex increment = (Complex) model.getOutputObject();
         Complex total = increment.add(perturbed.multiply(new Complex(0, -model.getStaticDevice().getBActual())));
         assertEquals(model.getCurrent(), total.abs(), 1e-12,

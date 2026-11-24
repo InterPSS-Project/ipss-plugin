@@ -11,15 +11,15 @@ package org.interpss.fadapter.psse;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.BaseAclfNetwork;
 
 /**
  * Per-load area, zone, and owner assignments retained from a RAW record.
  *
- * <p>The core load object intentionally contains only electrical load data,
- * while subsystem-scoped dynamic load records select individual loads by
- * these assignments. Keeping the association on the network preserves that
- * distinction without changing the core API.</p>
+ * <p>Subsystem-scoped dynamic records select loads by their RAW assignments.
+ * The assigned area is also stored on the Core load for area interchange
+ * accounting and network copies.</p>
  */
 final class PsseLoadScopeMetadata {
     private static final String EXTRA_INFO_KEY = PsseLoadScopeMetadata.class.getName();
@@ -32,9 +32,10 @@ final class PsseLoadScopeMetadata {
         network.getExtraInfo().remove(EXTRA_INFO_KEY);
     }
 
-    static void put(BaseAclfNetwork<?, ?> network, String busId, String loadId,
+    static void put(BaseAclfNetwork<?, ?> network, String busId, AclfLoad load,
             int areaNumber, int zoneNumber, int ownerNumber) {
-        scopes(network, true).put(new LoadKey(busId, loadId),
+        load.setAreaNumber(areaNumber);
+        scopes(network, true).put(new LoadKey(busId, load.getId()),
                 new Scope(areaNumber, zoneNumber, ownerNumber));
     }
 

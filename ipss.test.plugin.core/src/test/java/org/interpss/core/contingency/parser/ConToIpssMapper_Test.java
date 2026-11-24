@@ -14,6 +14,8 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
 import com.interpss.core.contingency.definition.ContingencyDefinition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,6 +30,8 @@ import com.interpss.core.contingency.ContingencyBusDeviceType;
 import com.interpss.core.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.contingency.aclf.AclfBusDeviceOutage;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
+import com.interpss.core.funcImpl.AclfContingencyUtilFunc;
+import com.interpss.state.snapshot.BaseAclfNetworkSnapshotFactory;
 
 /**
  * Unit tests for {@link ConToIpssMapper}.
@@ -188,36 +192,28 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
     // Tests: DISCONNECT_BUS
     // -----------------------------------------------------------------------
 
-    /**
-     * Bus 1001 is the from-bus of one active branch (1001->1002).
-     * Disconnecting it should produce exactly one OPEN outage.
-     */
     @Test
-    public void testDisconnectBus_opensAllIncidentBranches_oneBranch() {
-        ConCase cas = new ConCase("DBUS_1001");
-        cas.addBusEvent(new ConBusEvent(1001));
-        AclfMultiOutage outage = mapper.mapCase(cas);
-
-        assertNotNull(outage);
-        assertEquals(1, outage.getOutageEquips().size());
-        assertEquals(ContingencyBranchOutageType.OPEN,
-                outage.getOutageEquips().get(0).getOutageType());
-    }
-
-    /**
-     * Bus 1002 is incident to both branches (1001->1002 and 1002->1003).
-     * Disconnecting it should produce two OPEN outages.
-     */
-    @Test
-    public void testDisconnectBus_opensAllIncidentBranches_twoBranches() {
+    public void testDisconnectBusPreservesIntentAndAppliesOnlyToTheSnapshot() throws InterpssException {
         ConCase cas = new ConCase("DBUS_1002");
+        cas.addBusEvent(new ConBusEvent(1002));
         cas.addBusEvent(new ConBusEvent(1002));
         AclfMultiOutage outage = mapper.mapCase(cas);
 
-        assertEquals(2, outage.getOutageEquips().size());
-        // both outages must be OPEN
-        outage.getOutageEquips().forEach(item ->
-                assertEquals(ContingencyBranchOutageType.OPEN, item.getOutageType()));
+        assertEquals(1, outage.getOutageEquips().size());
+        AclfBusDeviceOutage trip = assertInstanceOf(AclfBusDeviceOutage.class,
+                outage.getOutageEquips().get(0));
+        assertEquals(ContingencyBusDeviceType.BUS_TRIP, trip.getBusDeviceOutageType());
+        assertEquals(ContingencyBranchOutageType.OPEN, trip.getOutageType());
+        assertEquals("Bus1002", trip.getOutageEquip().getId());
+        assertTrue(net.getBus("Bus1002").isActive());
+        assertTrue(net.getBranchList().stream().allMatch(AclfBranch::isActive));
+
+        AclfNetwork copy = (AclfNetwork) BaseAclfNetworkSnapshotFactory.createCopy(net);
+        assertTrue(AclfContingencyUtilFunc.applyMultiOutageChecked(outage, copy).applied());
+        assertFalse(copy.getBus("Bus1002").isActive());
+        assertTrue(copy.getBranchList().stream().noneMatch(AclfBranch::isActive));
+        assertTrue(net.getBus("Bus1002").isActive());
+        assertTrue(net.getBranchList().stream().allMatch(AclfBranch::isActive));
     }
 
     /** Disconnecting an unknown bus → zero outages, no exception. */
@@ -335,25 +331,20 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         assertEquals(swshuntOutage.getOutageEquip().getId(), "Bus1002");
     }
 
-    /**
-     * When DISCONNECT_BUS and DISCONNECT_BRANCH overlap on the same branch,
-     * branch outages should be deduplicated and all outage equip refs remain non-null.
-     */
     @Test
-    public void testMapCase_busAndBranchOverlap_dedupBranchOutage() {
+    public void testMapCasePreservesExplicitBranchActionAlongsideBusTrip() {
         ConCase cas = new ConCase("BUS_BRANCH_OVERLAP");
         cas.addBranchEvent(new ConBranchEvent(ConBranchAction.DISCONNECT, 1001, 1002, "1"));
         cas.addBusEvent(new ConBusEvent(1002));
 
         AclfMultiOutage outage = mapper.mapCase(cas);
 
-        // Bus1002 has two incident branches total; explicit 1001-1002 should not duplicate it
         assertEquals(2, outage.getOutageEquips().size());
-        outage.getOutageEquips().forEach(item -> {
-            assertTrue(item instanceof AclfBranchOutage);
-            assertNotNull(((AclfBranchOutage) item).getOutageEquip());
-            assertNotNull(((AclfBranchOutage) item).getOutageEquip().getId());
-        });
+        var trip = assertInstanceOf(AclfBusDeviceOutage.class, outage.getOutageEquips().get(0));
+        assertEquals(ContingencyBusDeviceType.BUS_TRIP, trip.getBusDeviceOutageType());
+        var branch = assertInstanceOf(AclfBranchOutage.class, outage.getOutageEquips().get(1));
+        assertEquals("Bus1001->Bus1002(1)", branch.getOutageEquip().getId());
+        assertTrue(net.getBus("Bus1002").isActive());
     }
 
     // -----------------------------------------------------------------------

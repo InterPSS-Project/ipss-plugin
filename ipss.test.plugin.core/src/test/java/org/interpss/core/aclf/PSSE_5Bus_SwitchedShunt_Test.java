@@ -16,6 +16,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.ControlInitializationMode;
 
 /**
  * Test case for PSSE 5-Bus system with switched shunt compensation
@@ -117,7 +118,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		enableSwitchedShuntStudy(algo);
 		algo.setMaxIterations(30);
         algo.setTolerance(0.0001);
 	  	algo.loadflow();
@@ -167,7 +168,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		enableSwitchedShuntStudy(algo);
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
 	  	
@@ -207,7 +208,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		enableSwitchedShuntStudy(algo);
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
 	  	
@@ -252,7 +253,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		enableSwitchedShuntStudy(algo);
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
 	  	
@@ -294,7 +295,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		enableSwitchedShuntStudy(algo);
 		algo.setMaxIterations(30);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setToleranceFactor(1);
 		algo.setTolerance(0.0001);
@@ -341,7 +342,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		enableSwitchedShuntStudy(algo);
 		algo.setMaxIterations(30);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setToleranceFactor(1);
 		algo.setTolerance(0.0001);
@@ -360,6 +361,12 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
 	}
 	
+	private static void enableSwitchedShuntStudy(LoadflowAlgorithm algorithm) {
+		algorithm.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
+		algorithm.getLfAdjAlgo().getLimitCtrlConfig().setControlInitializationMode(
+				ControlInitializationMode.COLD_START);
+	}
+
 	/**
 	 * Create the test network from the PSSE RAW file
 	 */

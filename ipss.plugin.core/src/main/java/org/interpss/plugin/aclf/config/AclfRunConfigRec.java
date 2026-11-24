@@ -107,7 +107,9 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	// coordinated NR Jacobian. Null/false preserves the legacy outer-loop model.
 	public Boolean reducedLccCouplingEnabled;
 
-	// Apply the supported imported solver switches before explicit JSON settings.
+	// An omitted field inherits the imported control defaults. Explicit false
+	// opts out of inherited switches and saved-state initialization. Explicit
+	// true also applies the imported area-interchange mode, when present.
 	public boolean savedSolutionReplay = false;
 
 	// Capture the core load-flow detailed iteration/message log in run output.
@@ -147,6 +149,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public Double tapChangeLimit;
 	public Boolean coordinatedPqControlEnabled;
 	public Boolean coupledLccPqControlEnabled;
+	public Boolean adaptiveLccRecoveryEnabled;
 	public Boolean coupledVscPqControlEnabled;
 	public VscCapabilityPriority vscCapabilityPriority;
 
@@ -474,11 +477,15 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		validateSchemaVersion();
 		Object imported = algo.getAclfNet().getExtraInfo().get(
 				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY);
-		if (psseConfig && this.savedSolutionReplay && imported instanceof PsseLoadflowSolutionSettings settings) {
-			var report = settings.applyTo(algo, algo.getAclfNet(),
-					PsseLoadflowSolutionSettings.ApplicationPolicy.SAVED_SOLUTION_REPLAY);
-			algo.getAclfNet().getExtraInfo().put(
-					PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY, report);
+		if (imported instanceof PsseLoadflowSolutionSettings settings) {
+			if (!psseConfig || (explicitlyConfigures("savedSolutionReplay") && !this.savedSolutionReplay)) {
+				settings.suppressSharedControlDefaults(algo);
+			} else if (this.savedSolutionReplay) {
+				var report = settings.applyTo(algo, algo.getAclfNet(),
+						PsseLoadflowSolutionSettings.ApplicationPolicy.SAVED_SOLUTION_REPLAY);
+				algo.getAclfNet().getExtraInfo().put(
+						PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY, report);
+			}
 		}
 		double baseMVA = algo.getAclfNet().getBaseMva();
 
@@ -488,6 +495,10 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			algo.setCoordinatedPqControlEnabled(this.coordinatedPqControlEnabled);
 		if (this.coupledLccPqControlEnabled != null)
 			algo.setCoupledLccPqControlEnabled(this.coupledLccPqControlEnabled);
+		if (this.adaptiveLccRecoveryEnabled != null)
+			algo.setAdaptiveLccRecoveryEnabled(this.adaptiveLccRecoveryEnabled);
+		else if (Boolean.FALSE.equals(this.coordinatedControlZbrSolver))
+			algo.setAdaptiveLccRecoveryEnabled(false);
 		if (this.coupledVscPqControlEnabled != null)
 			algo.setCoupledVscPqControlEnabled(this.coupledVscPqControlEnabled);
 		if (this.vscCapabilityPriority != null)

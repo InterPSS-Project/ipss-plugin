@@ -104,6 +104,7 @@ public class PSSEJsonDirectParser {
     public void parseInto(String filepath) throws InterpssException {
         try {
             PsseLoadScopeMetadata.clear(builder.getBaseNetwork());
+            PsseBusVoltageRatings.clear(builder.getBaseNetwork());
             JsonObject root = JsonParser.parseString(readRawxJson(filepath)).getAsJsonObject();
             parseJsonObject(root);
         } catch (IOException e) {
@@ -203,9 +204,6 @@ public class PSSEJsonDirectParser {
 			addStandardRawxSolutionSettings(root, settingsBuilder);
 		}
 		PsseLoadflowSolutionSettings settings = settingsBuilder.build();
-		if (settings.rawLines().isEmpty()) {
-			return;
-		}
 		builder.getBaseNetwork().getExtraInfo().put(
 				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY, settings);
 		if (settings.general().thrshz() != null
@@ -418,6 +416,10 @@ public class PSSEJsonDirectParser {
         BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, ownerId);
 
+        PsseBusVoltageRatings.put(builder.getBaseNetwork(), busId,
+                getDouble(row, "nvlo", Double.NaN), getDouble(row, "nvhi", Double.NaN),
+                getDouble(row, "evlo", Double.NaN), getDouble(row, "evhi", Double.NaN));
+
         if (ide == 4) bus.setStatus(false);
         if (ide == 3) {
             builder.setSwingBus(busId, vm, Math.toRadians(va));
@@ -468,7 +470,7 @@ public class PSSEJsonDirectParser {
             if(area<=0)area=bus.getArea()!=null?(int)bus.getArea().getNumber():0;
             if(zone<=0)zone=bus.getZone()!=null?(int)bus.getZone().getNumber():0;
             if(owner<=0)owner=bus.getOwner()!=null?(int)bus.getOwner().getNumber():0;
-            PsseLoadScopeMetadata.put(builder.getBaseNetwork(),busId,loadId,area,zone,owner);
+            PsseLoadScopeMetadata.put(builder.getBaseNetwork(),busId,load,area,zone,owner);
         }
     }
 
