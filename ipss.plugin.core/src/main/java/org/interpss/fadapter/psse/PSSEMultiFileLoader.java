@@ -219,7 +219,9 @@ public class PSSEMultiFileLoader {
                         + files[i]);
             }
             if (lowerCaseFile.endsWith(".bsg")) {
-                responseFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
+                // Real-path so an explicit BSG and the same file from a run-config
+                // EXEC reference collapse under LinkedHashSet on symlink roots.
+                responseFiles.add(existingResponseFile(Path.of(files[i])));
             } else if (lowerCaseFile.endsWith(".idv") || lowerCaseFile.endsWith(".gnet")) {
                 preparationFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
             } else {
@@ -236,8 +238,10 @@ public class PSSEMultiFileLoader {
         }
         boolean discoverResponseFiles = responseFiles.isEmpty();
         for (String modelFile : modelFiles) {
-            if (discoverResponseFiles)
-                discoverSiblingIdv(modelFile, "_basegen.bsg").ifPresent(responseFiles::add);
+            if (discoverResponseFiles) {
+                var sibling=discoverSiblingIdv(modelFile, "_basegen.bsg");
+                if(sibling.isPresent())responseFiles.add(existingResponseFile(sibling.get()));
+            }
             if(discoverPreparationFiles) {
                 discoverSiblingIdv(modelFile, "_gnet.idv").ifPresent(preparationFiles::add);
                 discoverSiblingIdv(modelFile, "_MODREMOVE.idv").ifPresent(preparationFiles::add);
@@ -251,7 +255,8 @@ public class PSSEMultiFileLoader {
                 lastRunConfigConversion=PsseIdvRunConfigConverter.convert(runConfigurationFiles.toArray(Path[]::new));
                 if(requireMatchedRunSettings)lastRunConfigConversion.requireFullyConverted();
                 Path base=runConfigurationFiles.getFirst().toAbsolutePath().normalize().getParent();
-                for(String relative:lastRunConfigConversion.governorPolicyFiles())responseFiles.add(base.resolve(relative).normalize());
+                for(String relative:lastRunConfigConversion.governorPolicyFiles())
+                    responseFiles.add(existingResponseFile(base.resolve(relative)));
             }catch(java.io.IOException|IllegalArgumentException failure){throw new InterpssException("Dynamic run configuration: "+failure.getMessage());}
         }
         var preparation=new PsseCasePreparationProcessor(dsNet,modelFiles.stream()
@@ -339,6 +344,15 @@ public class PSSEMultiFileLoader {
                 .setModelRemovalDirectives(removalDirectives);
         try { parser.parseDynFile(modelFile); }
         finally { lastDynamicImportReport = parser.getLastImportReport(); }
+    }
+
+    /** Collapse symlink aliases so one physical BSG is not treated as two policies. */
+    private static Path existingResponseFile(Path path) throws InterpssException {
+        try {
+            return path.toAbsolutePath().normalize().toRealPath();
+        } catch (java.io.IOException failure) {
+            throw new InterpssException("Response file not found: " + path);
+        }
     }
 
     private static java.util.Optional<Path> discoverSiblingIdv(String modelFile, String suffix) {
