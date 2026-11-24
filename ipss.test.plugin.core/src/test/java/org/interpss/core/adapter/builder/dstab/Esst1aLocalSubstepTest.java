@@ -35,12 +35,12 @@ public class Esst1aLocalSubstepTest extends CorePluginTestSetup {
         assertTrue(b.exciter().getModifiedEulerStageCount()>0);
         assertEquals(.001,a.exciter().getData().getTr(),0.);assertEquals(.001,transducer(a).getT(),0.);
     }
-    @Test void solverPolicySelectsFinalInitializedBlockAndReportsItsCount() throws Exception {
+    @Test void defaultSolverPolicySelectsFinalInitializedBlockAndReportsItsCount() throws Exception {
         var f=fixture();var net=(com.interpss.dstab.DStabilityNetwork)f.machine().getDStabBus().getNetwork();
         var algorithm=com.interpss.dstab.DStabObjectFactory.createDynamicSimuAlgorithm(net);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(.0033333);
         var solver=new DefaultDynamicSimulationSolver(algorithm);algorithm.setSolver(solver);
-        solver.setStepSensitiveModelSubstepsEnabled(true);
+        assertTrue(solver.isStepSensitiveModelSubstepsEnabled());
         algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());assertTrue(algorithm.initialization());
         assertEquals(1,transducer(f).getLocalIntegrationSteps());
         assertEquals(4,f.exciter().getModifiedEulerLocalIntegrationSteps());
@@ -78,4 +78,33 @@ public class Esst1aLocalSubstepTest extends CorePluginTestSetup {
         assertFalse(solver.getLocalSubstepPreparationReport().stream().anyMatch(e->e.modelId().contains("inactive")));
     }
 
+    @Test void explicitDisablePreservesSingleStepIntegration() throws Exception {
+        var f=fixture();
+        var net=(com.interpss.dstab.DStabilityNetwork)f.machine().getDStabBus().getNetwork();
+        var algorithm=com.interpss.dstab.DStabObjectFactory.createDynamicSimuAlgorithm(net);
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(1.0/240.0);
+        var solver=new DefaultDynamicSimulationSolver(algorithm);
+        algorithm.setSolver(solver);
+        solver.setStepSensitiveModelSubstepsEnabled(false);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        assertTrue(algorithm.initialization());
+        assertEquals(1,f.exciter().getModifiedEulerLocalIntegrationSteps());
+        assertTrue(solver.getLocalSubstepPreparationReport().isEmpty());
+        assertThrows(IllegalStateException.class,()->solver.setStepSensitiveModelSubstepsEnabled(true));
+    }
+
+    @Test void rungeKuttaDoesNotPrepareModifiedEulerSubsteps() throws Exception {
+        var f=fixture();
+        var net=(com.interpss.dstab.DStabilityNetwork)f.machine().getDStabBus().getNetwork();
+        var algorithm=com.interpss.dstab.DStabObjectFactory.createDynamicSimuAlgorithm(net);
+        algorithm.setSimuMethod(DynamicSimuMethod.RUNGE_KUTTA);
+        algorithm.setSimuStepSec(1.0/240.0);
+        var solver=new DefaultDynamicSimulationSolver(algorithm);
+        algorithm.setSolver(solver);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        assertTrue(algorithm.initialization());
+        assertTrue(solver.getLocalSubstepPreparationReport().isEmpty());
+        assertEquals(1,f.exciter().getModifiedEulerLocalIntegrationSteps());
+    }
 }

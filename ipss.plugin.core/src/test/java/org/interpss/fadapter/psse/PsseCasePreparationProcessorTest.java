@@ -28,7 +28,7 @@ class PsseCasePreparationProcessorTest {
         b.setPVBus("Bus1",.5,1,.5,-.5,true);
         b.addContributeGen("Bus1","1",true,.5,.1,100,1,.5,-.5,1,0,new Complex(0,.2),null,1,null,100,0);
         b.addContributeLoad("Bus1","D",true,new Complex(.05,.01),null,null,new Complex(.02,.005),true);
-        PsseLoadScopeMetadata.put(net,"Bus1","D",1,1,1);return net;
+        PsseLoadScopeMetadata.put(net,"Bus1",net.getBus("Bus1").getContributeLoad("D"),1,1,1);return net;
     }
     private Complex injection(com.interpss.dstab.DStabilityNetwork net) {
         var bus=net.getDStabBus("Bus1");Complex sum=Complex.ZERO;

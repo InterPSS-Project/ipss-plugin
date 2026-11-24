@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.complex.Complex;
@@ -25,7 +26,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
@@ -92,6 +95,40 @@ public class Cmldznu2ModelTest {
         values[132] = 1.01;
         double[] invalid = values;
         assertThrows(IllegalArgumentException.class, () -> new Cmldznu2Data(invalid));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0.9499999999999999,true", "0.95,true", "0.9500000000000001,true",
+            "0.950000001,true", "0.96,false"})
+    void explicitFeederKeepsFiniteImpedanceNearInitializationTarget(double voltage,
+            boolean usesFloor) throws Exception {
+        var network = DStabObjectFactory.createDStabilityNetwork();
+        var bus = (DStabBus) DStabObjectFactory.createDStabBus("B", network).orElseThrow();
+        bus.setBaseVoltage(230_000);
+        bus.setVoltage(new Complex(voltage, 0));
+        bus.setLoadCode(AclfLoadCode.CONST_P);
+        var power = new Complex(0.4, 0.08);
+        var source = DStabObjectFactory.createDStabLoad("1");
+        source.setStatus(true);
+        source.setCode(AclfLoadCode.CONST_P);
+        source.setLoadCP(power);
+        bus.getContributeLoadList().add(source);
+        assertTrue(bus.initContributeLoad(false));
+
+        double[] values = syntheticConstants();
+        values[5] = 0;
+        Arrays.fill(values, 18, 23, 0.0);
+        var model = new Cmldznu2Model("composite", bus, Set.of("1"), power,
+                new Cmldznu2Data(values));
+        assertTrue(model.initStates());
+        assertEquals(1, network.getBranchList().size());
+        Complex feederZ = network.getBranchList().getFirst().getZ();
+        if (usesFloor) {
+            assertEquals(new Complex(1e-7, 1e-5), feederZ);
+        } else {
+            assertTrue(feederZ.abs() > Math.hypot(1e-7, 1e-5));
+            assertEquals(0.95, model.getLoadBus().getVoltageMag(), 1e-12);
+        }
     }
 
     @ParameterizedTest

@@ -33,7 +33,10 @@ public class Wt2e1PsseSmibConformanceTest {
             "smib-wt2e1", "psse.csv");
 
     @Test
-    void rotorResistanceControllerMatchesIndependentFaultTrajectory() throws Exception {
+    void rotorResistanceControllerMatchesIndependentFaultTrajectory() throws Exception { runIndependentTrajectory(false); }
+    @Test
+    void staggered_rotorResistanceControllerMatchesIndependentFaultTrajectory() throws Exception { runIndependentTrajectory(true); }
+    private void runIndependentTrajectory(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
@@ -48,6 +51,7 @@ public class Wt2e1PsseSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.1), null, 0.05, 0.05), "WindFault");
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization());
 
         Wt2g1Machine machine = (Wt2g1Machine) network.getMachine("Bus1-mach1");

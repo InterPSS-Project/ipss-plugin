@@ -68,6 +68,7 @@ import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.impl.func.SwitchedShuntsUtilFunc;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
 import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
@@ -295,15 +296,20 @@ public class AclfNetworkBuilder {
     // ==================== Xfr Z Correction Table ====================
 
     /**
-     * Add an impedance correction table entry.
-     * @param number table number
-     * @param adjustSide FROM_SIDE or TO_SIDE
-     * @param points list of (turnRatioOrAngle, scaleFactor) pairs
+     * Sets which transformer winding uses the impedance correction table.
+     *
+     * @param side from-side or to-side winding
      */
     public void setXfrZTableAdjustSide(BranchBusSide side) {
         network.setXfrZAdjustSide(side);
     }
 
+    /**
+     * Adds the points for a numbered impedance correction table.
+     *
+     * @param number table number
+     * @param points turn ratio or angle points and their impedance scale factors
+     */
     public void addXfrZTableEntry(int number, List<XfrZCorrection> points) {
         Optional<XfrZTableEntry> elemOpt = CoreObjectFactory.createXfrZTableEntry(number, network);
         if (elemOpt.isPresent()) {
@@ -693,6 +699,13 @@ public class AclfNetworkBuilder {
             }
         }
         swchShunt.setBLimit(new LimitType(bmax, bmin));
+        // Reconstruct a saved discrete position only when active banks can
+        // represent the imported susceptance exactly.
+        if (status && mode == AclfAdjustControlMode.DISCRETE && blocks != null && !blocks.isEmpty()
+                && !SwitchedShuntsUtilFunc.initializeSavedDiscreteBanks(swchShunt, network.getBaseMva())) {
+            log.debug("No exact active bank allocation for saved B={} at switched shunt {} on {}",
+                    savedBInitPU, swchShunt.getId(), busId);
+        }
 
         if (remoteBusId != null && !remoteBusId.isEmpty()) {
             swchShunt.setRemoteBusBranchId(remoteBusId);
@@ -1591,6 +1604,15 @@ public class AclfNetworkBuilder {
         network.initContributeGenLoad(false);
 
         if (network.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
+            // Tap controls are created before generator aggregation can remove a PV code.
+            for (Object obj : network.getBranchList()) {
+                AclfBranch branch = (AclfBranch) obj;
+                if (branch.getFlowControl() instanceof TapControl tap && tap.isVcGenPVBus()
+                        && tap.getVcBus() != null && tap.getVcBus().getGenCode() == AclfGenCode.NON_GEN
+                        && !tap.getVcBus().isPVBusLimit()) {
+                    tap.setVcGenPVBus(false);
+                }
+            }
             long maxBusNum = 0;
             for (Object obj : network.getBusList()) {
                 BaseAclfBus bus = (BaseAclfBus) obj;

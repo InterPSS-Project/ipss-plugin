@@ -37,7 +37,10 @@ import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.TapControl;
+import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.aclf.hvdc.ConverterType;
+import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.ThyConverter;
@@ -57,6 +60,7 @@ import org.apache.commons.math3.complex.Complex;
 import com.interpss.core.CoreObjectFactory;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 
@@ -64,6 +68,168 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 
 	@TempDir
 	Path tempDir;
+
+	@Test
+	public void rawAndRawxKeepTypeOneMachineRecordsOutOfNodalInjection() throws Exception {
+		Path source = Path.of("testData/adpter/psse/v33/SMIB/SMIB_v33.raw");
+		String raw = Files.readString(source).replace(
+				"0 / END OF BUS DATA, BEGIN LOAD DATA",
+				"0 / END OF BUS DATA, BEGIN LOAD DATA\n"
+						+ "1,'99',1,1,1,-50.001,-1.092,0,0,0,0,1,1,0");
+		Path typeOneRaw = tempDir.resolve("type-one-machine.raw");
+		Files.writeString(typeOneRaw, raw.replace("1,'GENERATOR',100.0000,2,",
+				"1,'GENERATOR',100.0000,1,"));
+		AclfNetwork parsedRaw = new PSSEDirectParser(33).parse(typeOneRaw.toString());
+
+		Path typeTwoRaw = tempDir.resolve("type-two-machine.raw");
+		Files.writeString(typeTwoRaw, raw);
+		AclfNetwork typeTwo = new PSSEDirectParser(33).parse(typeTwoRaw.toString());
+		assertTrue(typeTwo.getBus("Bus1").getContributeGen("1").isActive());
+		JsonObject exported = new PSSEJsonExporter(typeTwo).export();
+		JsonObject buses = exported.getAsJsonObject("network").getAsJsonObject("bus");
+		JsonArray fields = buses.getAsJsonArray("fields");
+		JsonArray generatorBus = buses.getAsJsonArray("data").get(0).getAsJsonArray();
+		assertEquals(1L, rawxLong(buses, 0, "ibus"));
+		assertEquals(2L, rawxLong(buses, 0, "ide"));
+		int typeColumn = fields.asList().indexOf(new JsonPrimitive("ide"));
+		generatorBus.set(typeColumn, new JsonPrimitive(1));
+		Path typeOneRawx = tempDir.resolve("type-one-machine.rawx");
+		Files.writeString(typeOneRawx, exported.toString());
+		AclfNetwork parsedRawx = new PSSEJsonDirectParser().parse(typeOneRawx.toString());
+
+		for (AclfNetwork parsed : List.of(parsedRaw, parsedRawx)) {
+			AclfBus bus = parsed.getBus("Bus1");
+			assertEquals(AclfGenCode.NON_GEN, bus.getGenCode());
+			assertFalse(bus.getContributeGen("1").isActive());
+			assertEquals(0.50001, bus.getContributeGen("1").getGen().getReal(), TOL);
+			assertEquals(0.0, bus.getGenP(), TOL);
+			assertEquals(-0.50001, bus.getLoadP(), TOL);
+		}
+	}
+
+	@ParameterizedTest
+	@CsvSource({"0", "35", "36"})
+	public void equipmentControlsAndNamedDevicesSurviveExport(int version) throws Exception {
+		Path input = tempDir.resolve("equipment.rawx");
+		Files.writeString(input, """
+				{"network": {
+				  "caseid": {"fields": ["ic", "sbase", "rev"], "data": [[0, 100, 35]]},
+				  "bus": {"fields": ["ibus", "name", "baskv", "ide", "zone", "area"],
+				          "data": [[1,"SOURCE",230,3,9,1], [2,"CONTROL",230,1,9,2], [3,"WIND",230,1,9,2]]},
+				  "area": {"fields": ["iarea", "isw", "pdes", "ptol", "arname"],
+				           "data": [[1,1,0,10,"System reference"], [2,2,-20,3,"Interchange"]]},
+				  "zone": {"fields": ["izone", "zoname"], "data": [[9,"Study zone"]]},
+				  "generator": {"fields": ["ibus", "machid", "pg", "qg", "qt", "qb", "wmod", "wpf"],
+				                "data": [[3,"W",0,5,10,-10,2,0.95]]},
+				  "fixshunt": {"fields": ["ibus", "shntid", "stat", "gl", "bl"],
+				               "data": [[2,"S",1,0.5,3]]},
+				  "transformer": {"fields": ["ibus", "jbus", "kbus", "ckt", "x1_2", "x2_3", "x3_1",
+				                     "cod1", "cont1", "rma1", "rmi1", "vma1", "vmi1", "ntp1",
+				                     "cod2", "rma2", "rmi2", "vma2", "vmi2", "ntp2"],
+				                  "data": [[1,2,0,"1",0.1,0,0,1,2,1.12,0.88,1.03,0.97,25,0,0,0,0,0,0],
+				                           [1,2,3,"2",0.1,0.1,0.1,0,0,0,0,0,0,0,-1,1.1,0.9,1.01,0.99,21]]},
+				  "vscdc": {"fields": ["name", "mdc", "rdc", "ibus1", "type1", "dcset1",
+				                       "ibus2", "type2", "dcset2"],
+				            "data": [["TIE",0,1,2,2,0,3,1,150]]}
+				}}
+				""");
+		AclfNetwork original = new PSSEJsonDirectParser().parse(input.toString());
+		Path output = tempDir.resolve(version == 0 ? "export.rawx" : "export.raw");
+		AclfNetwork restored;
+		if (version == 0) {
+			new PSSEJsonExporter(original).export(output);
+			restored = new PSSEJsonDirectParser().parse(output.toString());
+		} else {
+			new PSSERawExporter(original, version).export(output);
+			restored = new PSSEDirectParser(version).parse(output.toString());
+		}
+
+		var tap = (TapControl) restored.getBranch("Bus1->Bus2(1)").getFlowControl();
+		assertTrue(tap.isControlStatus());
+		assertEquals("Bus2", tap.getVcBus().getId());
+		assertEquals(25, tap.getTapSteps());
+		assertEquals(1.03, tap.getDesiredControlRange().getMax(), TOL);
+		Aclf3WBranch transformer = restored.getSpecialBranchList().stream()
+				.filter(Aclf3WBranch.class::isInstance).map(Aclf3WBranch.class::cast).findFirst().orElseThrow();
+		var secondWinding = (TapControl) transformer.getToAclfBranch().getFlowControl();
+		assertFalse(secondWinding.isControlStatus());
+		assertEquals(21, secondWinding.getTapSteps());
+		var bus = restored.getBus("Bus2");
+		assertEquals("Study zone", bus.getZone().getName());
+		assertEquals(1, bus.getCompensatorList().size());
+		assertEquals("S", bus.getCompensatorList().getFirst().getId());
+		assertEquals(0.005, bus.getShuntY().getReal(), TOL);
+		var area = bus.getArea();
+		var interchange = area.getRegDeviceList().stream().filter(AreaInterchangeControl.class::isInstance)
+				.map(AreaInterchangeControl.class::cast).findFirst().orElseThrow();
+		assertEquals("Bus2", interchange.getSwingBus().getId());
+		assertEquals(-20.0, interchange.getPSpecOut(UnitType.mW, restored.getBaseKva()), TOL);
+		assertEquals(3.0, interchange.getTolerance(UnitType.mW, restored.getBaseKva()), TOL);
+		assertFalse(restored.getBus("Bus1").getArea().getRegDeviceList().stream()
+				.anyMatch(AreaInterchangeControl.class::isInstance));
+		assertEquals(0.05, restored.getBus("Bus3").getContributeGen("W").getGen().getImaginary(), TOL);
+		HvdcLine2TVSC<?> vsc = restored.getSpecialBranchList().stream()
+				.filter(HvdcLine2TVSC.class::isInstance).map(HvdcLine2TVSC.class::cast).findFirst().orElseThrow();
+		assertFalse(vsc.isActive());
+		assertEquals("Bus3", vsc.getRecConverter().getBus().getId());
+	}
+
+
+	@ParameterizedTest
+	@CsvSource({"0,false", "30,false", "33,false", "36,false", "0,true", "36,true"})
+	public void multiTerminalDcEquipmentSurvivesExport(int version, boolean solved) throws Exception {
+		AclfNetworkBuilder builder = new AclfNetworkBuilder();
+		builder.setNetworkInfo("mtdc", "mtdc", 100000.0, OriginalDataFormat.PSSE);
+		for (int i = 1; i <= 3; i++) {
+			builder.addBus("Bus" + i, "B" + i, (long) i, 230000.0, 1.0, 0.0, null, null, null);
+		}
+		for (int k = 0; k < 2; k++) {
+			HvdcLineMT line = builder.addHvdcLineMT("MT" + k, HvdcControlMode.DC_POWER,
+					"Bus1", "", 400.0, k == 0);
+			for (int i = 1; i <= 3; i++) {
+				builder.addHvdcMTConverter(line, "Bus" + i, 2, 25.0, 8.0, 0.1, 8.0, 230.0,
+						0.5, 1.025, 1.1, 0.9, 0.005, i == 1 ? 500.0 : -150.0, 0.75, 0.12, i);
+				builder.addHvdcMTDcBus(line, i, "Bus" + i, 2, 3, "DC" + i, 0, 0.2, 4);
+			}
+			builder.addHvdcMTDcLink(line, 1, 2, "A", 1, 2.5, 0.4);
+			builder.addHvdcMTDcLink(line, 2, 3, "B", 2, 3.5, 0.6);
+		}
+		AclfNetwork original = builder.getNetwork();
+		Path path = tempDir.resolve("mtdc-" + version + "-" + solved + (version == 0 ? ".rawx" : ".raw"));
+		AclfNetwork restored;
+		if (version == 0) {
+			new PSSEJsonExporter(original, solved).export(path);
+			restored = new PSSEJsonDirectParser().parse(path.toString());
+		} else {
+			new PSSERawExporter(original, version, solved).export(path);
+			restored = new PSSEDirectParser(version).parse(path.toString());
+		}
+		var lines = restored.getHvdcLineMTList();
+		assertEquals(2, lines.size());
+		for (int k = 0; k < 2; k++) {
+			var line = lines.get(k);
+			assertEquals("MT" + k, line.getName());
+			assertEquals(k == 0, line.isActive());
+			assertEquals("Bus1", line.getVConvBusId());
+			assertEquals(400.0, line.getVcMod(), TOL);
+			assertEquals(3, line.getConverterList().size());
+			assertEquals(3, line.getDcBusList().size());
+			assertEquals(2, line.getDcLinkList().size());
+			var converter = line.getConverterByAcBusId("Bus2");
+			assertEquals(-150.0, converter.getSetValue(), TOL);
+			assertEquals(1.025, converter.getXformerTapSetting(), TOL);
+			assertEquals(8.0, converter.getFiringAngLimit(UnitType.Deg).getMin(), TOL);
+			assertEquals(0.1, converter.getCommutingZ().getReal(), TOL);
+			assertEquals(0.75, converter.getDcpf(), TOL);
+			assertEquals(0.12, converter.getMarg(), TOL);
+			assertEquals(2, converter.getCnvCod());
+			assertEquals("Bus3", line.getDcBus(3).getAcBusId());
+			assertEquals(0.2, line.getDcBus(3).getRgrnd(), TOL);
+			assertEquals("B", line.getDcLinkList().get(1).getCkt());
+			assertEquals(3.5, line.getDcLinkList().get(1).getRdc(), TOL);
+			assertEquals(0.6, line.getDcLinkList().get(1).getLdc(), TOL);
+		}
+	}
 
 	@Test
 	public void ieee9RawxExportsAndParsesToEquivalentNetwork() throws Exception {
@@ -825,6 +991,7 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 				.findFirst()
 				.orElseThrow();
 		StaticVarCompensator originalSvc = originalBus.getStaticVarCompensatorList().get(0);
+		originalSvc.clearShuntCurrentRating();
 		double lowerLimit = originalSvc.getBLimit(false).getMin();
 		originalSvc.setBActual(lowerLimit);
 		originalSvc.setControlStatus(true);
@@ -837,6 +1004,39 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 
 		assertFalse(importedSvc.isStatus());
 		assertEquals(lowerLimit, importedBus.toCapacitorBus().getB(false), TOL);
+	}
+
+	@ParameterizedTest
+	@CsvSource({"raw", "rawx"})
+	public void solvedExportKeepsCurrentBoundStatconInService(String extension) throws Exception {
+		AclfNetwork original = new PSSEDirectParser(34)
+				.parse("testData/psse/v34/sample_v34.raw");
+		AclfBus originalBus = original.getBusList().stream()
+				.filter(bus -> !bus.getStaticVarCompensatorList().isEmpty())
+				.findFirst()
+				.orElseThrow();
+		StaticVarCompensator originalSvc = originalBus.getStaticVarCompensatorList().get(0);
+		double rating = originalSvc.getPendingShuntCurrentLimitPu();
+		originalSvc.setShuntCurrentLimitPu(rating);
+		originalSvc.setShuntCurrentPu(-rating);
+		originalSvc.setControlStatus(true);
+
+		Path exported = tempDir.resolve("sample-v34-solved-limit-svc." + extension);
+		AclfNetwork roundTrip;
+		if ("raw".equals(extension)) {
+			new PSSERawExporter(original, 34, true).export(exported);
+			roundTrip = new PSSEDirectParser(34).parse(exported.toString());
+		} else {
+			Files.writeString(exported, new PSSEJsonExporter(original, true).export().toString());
+			roundTrip = new PSSEJsonDirectParser().parse(exported.toString());
+		}
+		AclfBus importedBus = roundTrip.getBus(originalBus.getId());
+		StaticVarCompensator importedSvc = importedBus.getStaticVarCompensatorList().get(0);
+
+		assertTrue(importedSvc.isStatus());
+		assertEquals(rating, importedSvc.getPendingShuntCurrentLimitPu(), TOL);
+		assertTrue(Double.isNaN(importedSvc.getShuntCurrentLimitPu()));
+		assertEquals(-rating, importedSvc.getBInit() * importedBus.getVoltageMag(), 1.0e-5);
 	}
 
 	@Test

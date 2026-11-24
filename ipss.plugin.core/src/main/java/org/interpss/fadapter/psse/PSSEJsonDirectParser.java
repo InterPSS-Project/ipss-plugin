@@ -104,6 +104,7 @@ public class PSSEJsonDirectParser {
     public void parseInto(String filepath) throws InterpssException {
         try {
             PsseLoadScopeMetadata.clear(builder.getBaseNetwork());
+            PsseBusVoltageRatings.clear(builder.getBaseNetwork());
             JsonObject root = JsonParser.parseString(readRawxJson(filepath)).getAsJsonObject();
             parseJsonObject(root);
         } catch (IOException e) {
@@ -203,9 +204,6 @@ public class PSSEJsonDirectParser {
 			addStandardRawxSolutionSettings(root, settingsBuilder);
 		}
 		PsseLoadflowSolutionSettings settings = settingsBuilder.build();
-		if (settings.rawLines().isEmpty()) {
-			return;
-		}
 		builder.getBaseNetwork().getExtraInfo().put(
 				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY, settings);
 		if (settings.general().thrshz() != null
@@ -418,6 +416,10 @@ public class PSSEJsonDirectParser {
         BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, ownerId);
 
+        PsseBusVoltageRatings.put(builder.getBaseNetwork(), busId,
+                getDouble(row, "nvlo", Double.NaN), getDouble(row, "nvhi", Double.NaN),
+                getDouble(row, "evlo", Double.NaN), getDouble(row, "evhi", Double.NaN));
+
         if (ide == 4) bus.setStatus(false);
         if (ide == 3) {
             builder.setSwingBus(busId, vm, Math.toRadians(va));
@@ -468,7 +470,7 @@ public class PSSEJsonDirectParser {
             if(area<=0)area=bus.getArea()!=null?(int)bus.getArea().getNumber():0;
             if(zone<=0)zone=bus.getZone()!=null?(int)bus.getZone().getNumber():0;
             if(owner<=0)owner=bus.getOwner()!=null?(int)bus.getOwner().getNumber():0;
-            PsseLoadScopeMetadata.put(builder.getBaseNetwork(),busId,loadId,area,zone,owner);
+            PsseLoadScopeMetadata.put(builder.getBaseNetwork(),busId,load,area,zone,owner);
         }
     }
 
@@ -577,8 +579,7 @@ public class PSSEJsonDirectParser {
         // Retain individual record factors too; never divide by active unit count.
         bus.setPlantMvarControlPFactor(rmpct * 0.01);
 
-		boolean genStatus = (stat == 1);
-        if (!bus.isActive()) genStatus = false;
+        boolean genStatus = PSSEGeneratorReactivePower.isPsseMachineInService(bus, stat);
 
         String remoteBusId = (ireg > 0 && ireg != busNum) ? BUS_ID_PREFIX + ireg : null;
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
@@ -589,6 +590,7 @@ public class PSSEJsonDirectParser {
                 qt / baseMva, qb / baseMva, pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap, remoteBusId, rmpct * 0.01, 1.0);
         generator.setBaseLoadFlag(baseLoadFlag);
+        PSSEGeneratorReactivePower.retainWindInput(generator, wmod, wpf);
 
         if (bus.getGenCode() == AclfGenCode.SWING) {
             builder.setSwingBus(busId, vs, bus.getVoltageAng());
@@ -1222,6 +1224,7 @@ public class PSSEJsonDirectParser {
             StaticVarCompensator svc = builder.addSVC(busId, name, mode != 0,
                     qMaxPU, qMinPU, vset, remoteBusId, rmpct);
             BaseAclfBus bus = builder.getBus(busId);
+            if (svc != null) svc.deferShuntCurrentLimitPu(qMaxPU);
             if (svc != null && bus != null && bus.getVoltageMag() != 0.0) {
                 double voltage = bus.getVoltageMag();
                 svc.setBInit(qdes / baseMva / (voltage * voltage));
@@ -1313,19 +1316,30 @@ public class PSSEJsonDirectParser {
     // ==================== Area / Zone / Owner ====================
 
     private void parseAreaRow(Map<String, JsonElement> row) throws InterpssException {
-        int areaNum = getInt(row, "iarea", 0);
+        int areaNum = getInt(row, "iarea", getInt(row, "i", 0));
+        if (areaNum <= 0) return;
         String name = getString(row, "arname", getString(row, "arnam", "Area " + areaNum));
-        if (areaNum > 0) builder.addArea(String.valueOf(areaNum), name, null);
+        builder.addArea(String.valueOf(areaNum), name, null);
+        int swingBusNum = getInt(row, "isw", 0);
+        if (swingBusNum > 0) {
+            String swingBusId = BUS_ID_PREFIX + swingBusNum;
+            BaseAclfBus areaSwingBus = builder.getBus(swingBusId);
+            // The system swing's area is represented without interchange control.
+            if (areaSwingBus != null && !areaSwingBus.isSwing()) {
+                builder.addAreaInterchangeControl(areaNum, name, swingBusId,
+                        getDouble(row, "pdes", 0.0), getDouble(row, "ptol", 10.0));
+            }
+        }
     }
 
     private void parseZoneRow(Map<String, JsonElement> row) throws InterpssException {
-        int zoneNum = getInt(row, "izone", 0);
+        int zoneNum = getInt(row, "izone", getInt(row, "i", 0));
         String name = getString(row, "zoname", getString(row, "zonam", "Zone " + zoneNum));
         if (zoneNum > 0) builder.addZone(String.valueOf(zoneNum), name, null);
     }
 
     private void parseOwnerRow(Map<String, JsonElement> row) throws InterpssException {
-        int ownerNum = getInt(row, "iowner", 0);
+        int ownerNum = getInt(row, "iowner", getInt(row, "i", 0));
         String name = getString(row, "owname", getString(row, "ownam", "Owner " + ownerNum));
         if (ownerNum > 0) builder.addOwner(String.valueOf(ownerNum), name);
     }

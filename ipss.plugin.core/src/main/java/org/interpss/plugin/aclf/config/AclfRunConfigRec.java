@@ -22,8 +22,13 @@ import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.LoadflowAlgorithmInitializer;
+import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings;
 import com.interpss.core.algo.LoadflowAlgorithm.VscCapabilityPriority;
 import com.interpss.core.algo.NrMethodConfig;
+import com.interpss.core.algo.impl.solver.CoordinatedControlZbrNrSolver;
+import com.interpss.core.algo.impl.solver.DefaultNrSolver;
+import com.interpss.core.algo.impl.solver.ZbrNrSolver;
 import com.interpss.core.algo.NrOptimizeAlgoType;
 import com.interpss.core.algo.config.ControlInitializationMode;
 import com.interpss.core.algo.config.GenQLimitInitializationMode;
@@ -35,8 +40,9 @@ import com.interpss.core.algo.config.RemoteQControlMode;
  * <p>The record contains solver and control policy only; parser selection and
  * file-format choices belong to the import layer. The intended precedence is
  * imported RAW settings first and explicit fields in this record second.
- * Nullable advanced fields preserve an imported/current value when absent,
- * while primitive fields define schema defaults.</p>
+ * Omitted JSON fields preserve the imported/current Core value, including
+ * primitive fields. A programmatically constructed record retains the legacy
+ * complete-bean application semantics.</p>
  *
  * <p>Adjustment-family switches are independent. Numerical NR controls are
  * applied even when adjustment is disabled: normal full Newton may use a global
@@ -101,9 +107,9 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	// coordinated NR Jacobian. Null/false preserves the legacy outer-loop model.
 	public Boolean reducedLccCouplingEnabled;
 
-	// Apply the imported PSS/E saved-solution SOLVER activity flags
-	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT/NONDIV) when the network carries
-	// PsseLoadflowSolutionSettings. The desktop run service honors this flag.
+	// An omitted field inherits the imported control defaults. Explicit false
+	// opts out of inherited switches and saved-state initialization. Explicit
+	// true also applies the imported area-interchange mode, when present.
 	public boolean savedSolutionReplay = false;
 
 	// Capture the core load-flow detailed iteration/message log in run output.
@@ -143,6 +149,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public Double tapChangeLimit;
 	public Boolean coordinatedPqControlEnabled;
 	public Boolean coupledLccPqControlEnabled;
+	public Boolean adaptiveLccRecoveryEnabled;
 	public Boolean coupledVscPqControlEnabled;
 	public VscCapabilityPriority vscCapabilityPriority;
 
@@ -204,7 +211,8 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	// Mod 26-03: use absolute value for voltAdjTolerance
 	public int voltAdjStartPoint = 10;
 	public double voltAdjTolearnce = 0.005;
-	public double dQ_dVThreshold = 1.0;
+	/** Minimum retained inverse voltage response; explicit legacy values remain supported. */
+	public double dQ_dVThreshold = 0.1;
 	public AdjustApplyType voltAdjApplyType = AdjustApplyType.DURING_ITERATION;
 	
 	public int powerAdjStartPoint = 10;
@@ -246,17 +254,28 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends BaseJSONBean> T fromString(String json) {
-		return (T) parseJson(json, false);
+		return (T) parseJson(json, true);
 	}
 
+	/**
+	 * Parses a load-flow profile as explicit overrides. An omitted field or a
+	 * JSON null has no override authority, even if the Java field has a default.
+	 *
+	 * @param json configuration object
+	 * @return profile retaining which fields were supplied
+	 */
 	public static AclfRunConfigRec fromJson(String json) {
 		return parseJson(json, true);
 	}
 
 	/**
-	 * Applies only fields explicitly present in {@code json} over an existing
-	 * case-derived configuration. This keeps imported solution settings as defaults
-	 * while making selected JSON fields authoritative.
+	 * Copies a profile and replaces the fields explicitly supplied by the overlay.
+	 * The returned profile retains the override authority of any fields already
+	 * present in the base, along with the fields supplied by the overlay.
+	 *
+	 * @param base profile to copy
+	 * @param json JSON object containing overrides
+	 * @return the combined profile
 	 */
 	public static AclfRunConfigRec overlayJson(AclfRunConfigRec base, String json) {
 		AclfRunConfigRec overlay = fromJson(json);
@@ -274,7 +293,9 @@ public class AclfRunConfigRec extends BaseJSONBean {
 						"Unable to apply AC loadflow config field '" + fieldName + "'", ex);
 			}
 		}
-		merged.explicitJsonFields = new LinkedHashSet<>(overlay.explicitJsonFields);
+		if (merged.explicitJsonFields != null) {
+			merged.explicitJsonFields.addAll(overlay.explicitJsonFields);
+		}
 		return merged;
 	}
 
@@ -286,6 +307,14 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		return explicitJsonFields != null;
 	}
 
+	/**
+	 * Copies the field values and the explicit-field set. Keeping the set
+	 * prevents inherited values from becoming overrides when a parsed profile
+	 * is reused for a separate solve.
+	 *
+	 * @param config source profile, or {@code null} for a default bean
+	 * @return independent copy of the profile
+	 */
 	public static AclfRunConfigRec copyOf(AclfRunConfigRec config) {
 		AclfRunConfigRec copy = new AclfRunConfigRec();
 		if (config == null) {
@@ -319,6 +348,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		config.validateSchemaVersion();
 		if (trackExplicitFields) {
 			config.explicitJsonFields = new LinkedHashSet<>(root.keySet());
+			config.explicitJsonFields.removeIf(name -> root.get(name).isJsonNull());
 		}
 		return config;
 	}
@@ -377,19 +407,122 @@ public class AclfRunConfigRec extends BaseJSONBean {
     	return new AclfRunConfigRec().fromString(json);
 	}
 	
+	/** Serialize only supplied JSON fields so a round trip does not invent overrides. */
+	@Override
+	public String toString() {
+		JsonObject root = gson().toJsonTree(this).getAsJsonObject();
+		if (this.explicitJsonFields != null) {
+			root.keySet().removeIf(name -> !name.equals("schemaVersion")
+					&& !this.explicitJsonFields.contains(name));
+		}
+		return new GsonBuilder().setPrettyPrinting().create().toJson(root);
+	}
+
 	public void saveAclfRunConfig(String configFilename) {
-		String json = this.toString();
+		JsonObject root = JsonParser.parseString(this.toString()).getAsJsonObject();
+		if (this.explicitJsonFields != null) {
+			root.keySet().removeIf(name -> !name.equals("schemaVersion")
+					&& !this.explicitJsonFields.contains(name));
+		}
+		String json = new GsonBuilder().setPrettyPrinting().create().toJson(root);
 		FileUtil.writeText2File(configFilename, json);
 	}
 	
+	/**
+	 * Apply this record after Core factory/import initialization. Parsed JSON
+	 * contributes only explicitly supplied fields; omitted fields inherit Core
+	 * and imported values. The network's existing coordinates/master gate are
+	 * preserved unless requested here. Selecting a solver leaves equipment
+	 * status under the model's control.
+	 *
+	 * @param algorithm solver initialized for the target network with Core's factory
+	 */
+	public void applyTo(LoadflowAlgorithm algorithm) {
+		boolean polar = explicitlyConfigures("polarCoordinate")
+				? this.polarCoordinate : algorithm.getAclfNet().isPolarCoordinate();
+		boolean adjustments = explicitlyConfigures("includeAdjustments")
+				? this.includeAdjustments : algorithm.getLfAdjAlgo().isApplyAdjustAlgo();
+		configAclfRun(algorithm, polar, adjustments, true);
+	}
+
+	/** Configure the explicitly requested solver using effective control authority. */
+	private void configureCoordinatedSolver(LoadflowAlgorithm algorithm) {
+		if (!Boolean.TRUE.equals(this.coordinatedControlZbrSolver))
+			return;
+		if (!algorithm.getAclfNet().isPolarCoordinate())
+			throw new IllegalArgumentException("Coordinated ZBR control requires polar coordinates");
+		if (algorithm.getLfMethod() != AclfMethodType.NR) {
+			if ((algorithm.getLfMethod() != AclfMethodType.PQ_NR
+					&& algorithm.getLfMethod() != AclfMethodType.PQ)
+					|| !algorithm.isCoordinatedPqControlEnabled())
+				throw new IllegalArgumentException(
+						"Coordinated ZBR control requires NR or coordinated PQ/PQ_NR");
+			// Core owns the native-PQ session and its state-driven NR handoff.
+			// Install only the electrical formulation here; installing NR-owned
+			// control rows during the predictor would duplicate control ownership.
+			algorithm.getLfCalculator().setNrSolver(
+					!Boolean.FALSE.equals(this.coordinatedControlAugmentedZbr)
+							? new ZbrNrSolver(algorithm.getAclfNet(), algorithm.getNrMethodConfig())
+							: new DefaultNrSolver(algorithm.getAclfNet(), algorithm.getNrMethodConfig()));
+			return;
+		}
+		var adjust = algorithm.getLfAdjAlgo();
+		var voltage = adjust.getVoltAdjConfig();
+		boolean voltageAuthority = adjust.isApplyAdjustAlgo() && voltage.isAdjust();
+		boolean innerRemote = adjust.getRemoteQControlMode() == RemoteQControlMode.INNER_PQV;
+		boolean includeRemoteQ = voltageAuthority && innerRemote && voltage.isReQBusControl()
+				&& !Boolean.FALSE.equals(this.coordinatedControlEnableRemoteQ);
+		boolean includeSvc = voltageAuthority && innerRemote && voltage.isSvcFactsAdjust();
+		boolean replay = this.coordinatedControlReplaySavedState != null
+				? this.coordinatedControlReplaySavedState
+				: adjust.getLimitCtrlConfig().getControlInitializationMode()
+						== ControlInitializationMode.SAVED_SOLUTION_REPLAY;
+		double voltageTolerance = !Boolean.FALSE.equals(this.coordinatedControlUseVoltageTolerance)
+				? Math.max(0.0, voltage.getAdjTolerance()) : 0.0;
+		var solver = new CoordinatedControlZbrNrSolver(algorithm.getAclfNet(),
+				algorithm.getNrMethodConfig(), this.coordinatedControlTolerance != null
+						? this.coordinatedControlTolerance : algorithm.getTolerance(),
+				includeSvc, adjust.getMaxRemoteQAdjustmentsPerIteration(), replay,
+				voltageTolerance, !Boolean.FALSE.equals(this.coordinatedControlAugmentedZbr),
+				includeRemoteQ);
+		solver.setFullNewtonTapControlEnabled(voltageAuthority && voltage.isXfrTapControl()
+				&& algorithm.isFullNewtonTapControlEnabled());
+		if (Double.isFinite(algorithm.getTapChangeLimit()))
+			solver.setTapChangeLimit(algorithm.getTapChangeLimit());
+		solver.setReducedLccCouplingEnabled(algorithm.isCoupledLccPqControlEnabled()
+				|| Boolean.TRUE.equals(this.reducedLccCouplingEnabled));
+		solver.setReducedVscCouplingEnabled(algorithm.isCoupledVscPqControlEnabled());
+		algorithm.getLfCalculator().setNrSolver(solver);
+	}
+
 	public void configAclfRun(LoadflowAlgorithm algo, boolean polarCooridnate, boolean appluAdjust, boolean psseConfig) {
+		validateSchemaVersion();
+		Object imported = algo.getAclfNet().getExtraInfo().get(
+				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY);
+		// Resolve imported replay switches first so the explicit fields below
+		// can override the resulting settings and control authority.
+		if (imported instanceof PsseLoadflowSolutionSettings settings) {
+			if (!psseConfig || (explicitlyConfigures("savedSolutionReplay") && !this.savedSolutionReplay)) {
+				settings.suppressSharedControlDefaults(algo);
+			} else if (this.savedSolutionReplay) {
+				var report = settings.applyTo(algo, algo.getAclfNet(),
+						PsseLoadflowSolutionSettings.ApplicationPolicy.SAVED_SOLUTION_REPLAY);
+				algo.getAclfNet().getExtraInfo().put(
+						PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY, report);
+			}
+		}
 		double baseMVA = algo.getAclfNet().getBaseMva();
-		
-		algo.setLfMethod(this.lfMethod);
+
+		if (explicitlyConfigures("lfMethod"))
+			algo.setLfMethod(this.lfMethod);
 		if (this.coordinatedPqControlEnabled != null)
 			algo.setCoordinatedPqControlEnabled(this.coordinatedPqControlEnabled);
 		if (this.coupledLccPqControlEnabled != null)
 			algo.setCoupledLccPqControlEnabled(this.coupledLccPqControlEnabled);
+		if (this.adaptiveLccRecoveryEnabled != null)
+			algo.setAdaptiveLccRecoveryEnabled(this.adaptiveLccRecoveryEnabled);
+		else if (Boolean.FALSE.equals(this.coordinatedControlZbrSolver))
+			algo.setAdaptiveLccRecoveryEnabled(false);
 		if (this.coupledVscPqControlEnabled != null)
 			algo.setCoupledVscPqControlEnabled(this.coupledVscPqControlEnabled);
 		if (this.vscCapabilityPriority != null)
@@ -399,58 +532,76 @@ public class AclfRunConfigRec extends BaseJSONBean {
 					this.coordinatedControlEnableInnerTaps);
 		if (this.tapChangeLimit != null)
 			algo.setTapChangeLimit(this.tapChangeLimit);
-        
-        NrMethodConfig nrConfig = algo.getNrMethodConfig();
-        // the default AclfNet coordinate is polar coordinate
-        if (!polarCooridnate) {
-        	// we need to set the AclfNet coordinate to rectangular coordinate before reconfiguring the NR solver
-			algo.getAclfNet().setPolarCoordinate(false);
-			
+
+		NrMethodConfig nrConfig = algo.getNrMethodConfig();
+		// Configure either coordinate system before reconfiguring an existing solver.
+		if (algo.getAclfNet().isPolarCoordinate() != polarCooridnate) {
+			algo.getAclfNet().setPolarCoordinate(polarCooridnate);
+
 			// re-configure the Nr solver with the updated config
-			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
+			if (algo.getLfCalculator().getNrSolver() != null)
+				algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
 		}
 
-        // Set tolerance and max iterations
-        double tolPU = this.tolUnitType == UnitType.mVA? this.tolerance/baseMVA : this.tolerance;
-        algo.setTolerance(tolPU);
-        algo.setMaxIterations(this.maxIterations);
-        algo.setDetailedIterationLoggingEnabled(this.messageLoggingEnabled);
-        
-        algo.getDataCheckConfig().setAutoSetZeroZBranch(this.autoSetZeroZBranch);
-        algo.getDataCheckConfig().setTurnOffIslandBus(this.turnOffIslandBus);
-    	algo.getDataCheckConfig().setAutoTurnLine2Xfr(this.autoTurnLine2Xfr);
-    	
-    	algo.getAclfNet().getBusLoadLowVoltConfig().setApplyVoltAdjust(this.busLoadLowVoltAdj);
-    	algo.getAclfNet().getBusLoadLowVoltConfig().setVConstPMin(this.vConstPMin);
-		algo.getAclfNet().getBusLoadLowVoltConfig().setVConstIMin(this.vConstIMin);
-        
-        // include adjustments/controls
-        if (!appluAdjust) {
-    		// not need to turn off the power adjustment, since the turn of Adjust will turn off the power adjustment
-            //algo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
-            algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-        } 
-        else {
-        	algo.getLfAdjAlgo().setApplyAdjustAlgo(true);
-        	algo.getLfAdjAlgo().setActivateAllAdjust(this.activateAllAdjCtrl);
-        	
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjust(this.applyLimitControl);
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(this.pvBusLimitControl);
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setPqLimitControl(this.pqBusLimitControl);
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setLimitBackoffCheck(this.limitBackoffCheck);
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(this.checkGenQLimImmediate);
-        	
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setAdjust(this.applyVoltAdjust);
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(this.applyDiscreteAdjust);
-			algo.getLfAdjAlgo().getVoltAdjConfig().setReQBusControl(this.remoteQBusControl);	
-			algo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(this.switchedShuntAdjust);
-			algo.getLfAdjAlgo().getVoltAdjConfig().setSvcFactsAdjust(this.svcFactsAdjust);
-			algo.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(this.xfrTapControl);
-			algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(this.hvdcTapControl);
-
-        	algo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(this.applyPowerAdjust);
-        	algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(this.psXfrPControl);
-
+		// Set tolerance and max iterations
+		double tolPU = this.tolUnitType == UnitType.mVA? this.tolerance/baseMVA : this.tolerance;
+		if (explicitlyConfigures("tolerance"))
+			algo.setTolerance(tolPU);
+		if (explicitlyConfigures("maxIterations"))
+			algo.setMaxIterations(this.maxIterations);
+		if (explicitlyConfigures("messageLoggingEnabled"))
+			algo.setDetailedIterationLoggingEnabled(this.messageLoggingEnabled);
+		if (explicitlyConfigures("autoSetZeroZBranch"))
+			algo.getDataCheckConfig().setAutoSetZeroZBranch(this.autoSetZeroZBranch);
+		if (explicitlyConfigures("turnOffIslandBus")) {
+			algo.setTurnOffIslandBus(this.turnOffIslandBus);
+			algo.getDataCheckConfig().setTurnOffIslandBus(this.turnOffIslandBus);
+		}
+		if (explicitlyConfigures("autoTurnLine2Xfr"))
+			algo.getDataCheckConfig().setAutoTurnLine2Xfr(this.autoTurnLine2Xfr);
+		if (explicitlyConfigures("busLoadLowVoltAdj"))
+			algo.getAclfNet().getBusLoadLowVoltConfig().setApplyVoltAdjust(this.busLoadLowVoltAdj);
+		if (explicitlyConfigures("vConstPMin"))
+			algo.getAclfNet().getBusLoadLowVoltConfig().setVConstPMin(this.vConstPMin);
+		if (explicitlyConfigures("vConstIMin"))
+			algo.getAclfNet().getBusLoadLowVoltConfig().setVConstIMin(this.vConstIMin);
+		// include adjustments/controls
+		if (!appluAdjust || (explicitlyConfigures("includeAdjustments") && !this.includeAdjustments)) {
+			algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		}
+		else {
+			if (explicitlyConfigures("includeAdjustments"))
+				algo.getLfAdjAlgo().setApplyAdjustAlgo(true);
+			if (explicitlyConfigures("activateAllAdjCtrl"))
+				algo.getLfAdjAlgo().setActivateAllAdjust(this.activateAllAdjCtrl);
+			if (explicitlyConfigures("applyLimitControl"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjust(this.applyLimitControl);
+			if (explicitlyConfigures("pvBusLimitControl"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(this.pvBusLimitControl);
+			if (explicitlyConfigures("pqBusLimitControl"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setPqLimitControl(this.pqBusLimitControl);
+			if (explicitlyConfigures("limitBackoffCheck"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setLimitBackoffCheck(this.limitBackoffCheck);
+			if (explicitlyConfigures("checkGenQLimImmediate"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(this.checkGenQLimImmediate);
+			if (explicitlyConfigures("applyVoltAdjust"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setAdjust(this.applyVoltAdjust);
+			if (explicitlyConfigures("applyDiscreteAdjust"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(this.applyDiscreteAdjust);
+			if (explicitlyConfigures("remoteQBusControl"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setReQBusControl(this.remoteQBusControl);
+			if (explicitlyConfigures("switchedShuntAdjust"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(this.switchedShuntAdjust);
+			if (explicitlyConfigures("svcFactsAdjust"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setSvcFactsAdjust(this.svcFactsAdjust);
+			if (explicitlyConfigures("xfrTapControl"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(this.xfrTapControl);
+			if (explicitlyConfigures("hvdcTapControl"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(this.hvdcTapControl);
+			if (explicitlyConfigures("applyPowerAdjust"))
+				algo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(this.applyPowerAdjust);
+			if (explicitlyConfigures("psXfrPControl"))
+				algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(this.psXfrPControl);
 			// Core 1.3.12 solver controls; null fields leave defaults untouched
 			if (this.areaInterchangeControl != null)
 				algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(this.areaInterchangeControl);
@@ -464,51 +615,146 @@ public class AclfRunConfigRec extends BaseJSONBean {
 				algo.getNetAdjAlgo().setAreaInterchangeAdjustmentFactor(this.areaInterchangeAdjustmentFactor);
 			if (this.maxPvLimitAdjustmentsPerIteration != null)
 				algo.getLfAdjAlgo().setMaxPvLimitAdjustmentsPerIteration(this.maxPvLimitAdjustmentsPerIteration);
-        	
+
 			// Adj/Ctrl Setting tab inputs to be processed
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(this.limitCtrlStartPoint);
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(this.limitCtrlTolearnceFactor);
-        	algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(this.limitCtrlApplyType);
+			if (explicitlyConfigures("limitCtrlStartPoint"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(this.limitCtrlStartPoint);
+			if (explicitlyConfigures("limitCtrlTolearnceFactor"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(this.limitCtrlTolearnceFactor);
+			if (explicitlyConfigures("limitCtrlApplyType"))
+				algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(this.limitCtrlApplyType);
+			// Mod 26-03: use absolute value for voltAdjTolerance
+			if (explicitlyConfigures("voltAdjStartPoint"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setStartPoint(this.voltAdjStartPoint);
+			if (explicitlyConfigures("voltAdjTolearnce"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(this.voltAdjTolearnce);
+			if (explicitlyConfigures("dQ_dVThreshold"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(this.dQ_dVThreshold);
+			if (explicitlyConfigures("voltAdjApplyType"))
+				algo.getLfAdjAlgo().getVoltAdjConfig().setAdjustAppType(this.voltAdjApplyType);
+			if (explicitlyConfigures("powerAdjStartPoint"))
+				algo.getLfAdjAlgo().getPowerAdjConfig().setStartPoint(this.powerAdjStartPoint);
+			if (explicitlyConfigures("powerAdjTolearnceFactor"))
+				algo.getLfAdjAlgo().getPowerAdjConfig().setToleranceFactor(this.powerAdjTolearnceFactor);
+			if (explicitlyConfigures("powerAdjApplyType"))
+				algo.getLfAdjAlgo().getPowerAdjConfig().setAdjustAppType(this.powerAdjApplyType);
+			if (explicitlyConfigures("pvLimitAccFactor"))
+				algo.getLfAdjAlgo().getAccFactorConfig().setPvLimitAccFactor(this.pvLimitAccFactor);
+			if (explicitlyConfigures("pqLimitAccFactor"))
+				algo.getLfAdjAlgo().getAccFactorConfig().setPqLimitAccFactor(this.pqLimitAccFactor);
+			if (explicitlyConfigures("reQBusAccFactor"))
+				algo.getLfAdjAlgo().getAccFactorConfig().setReQBusAccFactor(this.reQBusAccFactor);
+			if (explicitlyConfigures("svcAccFactor"))
+				algo.getLfAdjAlgo().getAccFactorConfig().setSvcAdjustAccFactor(this.svcAccFactor);
+			if (explicitlyConfigures("xfrTapAccFactor"))
+				algo.getLfAdjAlgo().getAccFactorConfig().setXfrTapControlAccFactor(this.xfrTapAccFactor);
+			if (explicitlyConfigures("psXfrPContrlAccFactor"))
+				algo.getLfAdjAlgo().getAccFactorConfig().setPsXfrPControlAccFactor(this.psXfrPContrlAccFactor);
 
-        	// Mod 26-03: use absolute value for voltAdjTolerance
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setStartPoint(this.voltAdjStartPoint);
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(this.voltAdjTolearnce);
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(this.dQ_dVThreshold);
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setAdjustAppType(this.voltAdjApplyType);
+		}
 
-        	algo.getLfAdjAlgo().getPowerAdjConfig().setStartPoint(this.powerAdjStartPoint);
-        	algo.getLfAdjAlgo().getPowerAdjConfig().setToleranceFactor(this.powerAdjTolearnceFactor);
-        	algo.getLfAdjAlgo().getPowerAdjConfig().setAdjustAppType(this.powerAdjApplyType);
-        	
-        	algo.getLfAdjAlgo().getAccFactorConfig().setPvLimitAccFactor(this.pvLimitAccFactor);
-			algo.getLfAdjAlgo().getAccFactorConfig().setPqLimitAccFactor(this.pqLimitAccFactor);
-			algo.getLfAdjAlgo().getAccFactorConfig().setReQBusAccFactor(this.reQBusAccFactor);
-			algo.getLfAdjAlgo().getAccFactorConfig().setSvcAdjustAccFactor(this.svcAccFactor);
-			algo.getLfAdjAlgo().getAccFactorConfig().setXfrTapControlAccFactor(this.xfrTapAccFactor);
-			algo.getLfAdjAlgo().getAccFactorConfig().setPsXfrPControlAccFactor(this.psXfrPContrlAccFactor);
-        
-            // PSS/E setting tab inputs to be processed
-            if (psseConfig) {
-				// PSS/E setting tab inputs to be processed
-            	algo.getLfAdjAlgo().initialize(lfAdjAlgo -> {
-            	  	// TODO do PSS/E specific configuration before running the Loadflow
-            	});
+		// Engine options shared by desktop, CLI and QA; null preserves Core/import state.
+		if (this.initBusVoltage != null)
+			algo.setInitBusVoltage(this.initBusVoltage);
+		if (this.nrStepSizeOptimization != null)
+			algo.getNrMethodConfig().setStepSizeOptimization(this.nrStepSizeOptimization);
+		if (this.allowSwingBusWithoutActiveGenerator != null)
+			algo.getDataCheckConfig().setAllowSwingBusWithoutActiveGenerator(this.allowSwingBusWithoutActiveGenerator);
+		if (this.aclfNetModelType != null) {
+			algo.getAclfNet().setAclfNetModelType(this.aclfNetModelType);
+			if (this.aclfNetModelType != AclfNetModelType.ZBR_MODEL
+					&& algo.getLfCalculator().getNrSolver().getClass() == ZbrNrSolver.class) {
+				algo.getLfCalculator().setNrSolver(null);
 			}
-        }
+		}
+		if (this.hvdcLfSwitchFactor != null)
+			algo.setHvdcLfSwitchFactor(this.hvdcLfSwitchFactor);
+		if (this.hvdcOuterAdjustmentFactor != null)
+			algo.getLfCalculator().setHvdcOuterAdjustmentFactor(this.hvdcOuterAdjustmentFactor);
+		if (this.hvdcOuterControlEnabled != null)
+			algo.getLfCalculator().setHvdcOuterControlEnabled(this.hvdcOuterControlEnabled);
+		if (this.maxHvdcOuterOscillationsBeforeLock != null)
+			algo.getLfCalculator().setMaxHvdcOuterOscillationsBeforeLock(this.maxHvdcOuterOscillationsBeforeLock);
+		if (this.maxAreaInterchangeTrialIterations != null)
+			algo.getLfCalculator().setMaxAreaInterchangeTrialIterations(this.maxAreaInterchangeTrialIterations);
+		if (this.remoteQControlMode != null)
+			algo.getLfAdjAlgo().setRemoteQControlMode(this.remoteQControlMode);
+		else if (Boolean.FALSE.equals(this.coordinatedControlZbrSolver))
+			algo.getLfAdjAlgo().setRemoteQControlMode(RemoteQControlMode.OUTER_LOOP);
+		if (this.maxRemoteQAdjustmentsPerIteration != null)
+			algo.getLfAdjAlgo().setMaxRemoteQAdjustmentsPerIteration(this.maxRemoteQAdjustmentsPerIteration);
+		if (this.maxSwitchedShuntAdjustmentsPerIteration != null)
+			algo.getLfAdjAlgo().setMaxSwitchedShuntAdjustmentsPerIteration(this.maxSwitchedShuntAdjustmentsPerIteration);
+		if (this.maxSvcAdjustmentsPerIteration != null)
+			algo.getLfAdjAlgo().setMaxSvcAdjustmentsPerIteration(this.maxSvcAdjustmentsPerIteration);
+		if (this.maxTapAdjustmentsPerIteration != null)
+			algo.getLfAdjAlgo().setMaxTapAdjustmentsPerIteration(this.maxTapAdjustmentsPerIteration);
+		if (this.maxPsXfrPAdjustmentsPerIteration != null)
+			algo.getLfAdjAlgo().setMaxPsXfrPAdjustmentsPerIteration(this.maxPsXfrPAdjustmentsPerIteration);
+		if (this.voltageAdjustmentThreshold != null)
+			algo.getLfAdjAlgo().setVoltageAdjustmentThreshold(this.voltageAdjustmentThreshold);
+		if (this.localContinuousSvcAsPv != null)
+			algo.getLfAdjAlgo().setLocalContinuousSvcAsPv(this.localContinuousSvcAsPv);
+		if (this.minimumLocalContinuousSvcPvSensitivity != null)
+			algo.getLfAdjAlgo().setMinimumLocalContinuousSvcPvSensitivity(this.minimumLocalContinuousSvcPvSensitivity);
+		if (this.minimumTapVoltageSensitivity != null)
+			algo.getLfAdjAlgo().setMinimumTapVoltageSensitivity(this.minimumTapVoltageSensitivity);
+		if (this.maxTapAndShuntAdjustmentIterations != null)
+			algo.getLfAdjAlgo().setMaxTapAndShuntAdjustmentIterations(this.maxTapAndShuntAdjustmentIterations);
+		if (this.maxTapAdjustmentIterations != null)
+			algo.getLfAdjAlgo().setMaxTapAdjustmentIterations(this.maxTapAdjustmentIterations);
+		if (this.maxSwitchedShuntAdjustmentIterations != null)
+			algo.getLfAdjAlgo().setMaxSwitchedShuntAdjustmentIterations(this.maxSwitchedShuntAdjustmentIterations);
+		if (this.requirePriorPvLimitViolation != null)
+			algo.getLfAdjAlgo().setRequirePriorPvLimitViolation(this.requirePriorPvLimitViolation);
+		if (this.minPvLimitStableIterations != null)
+			algo.getLfAdjAlgo().setMinPvLimitStableIterations(this.minPvLimitStableIterations);
+		if (this.minPvLimitControlIteration != null)
+			algo.getLfAdjAlgo().setMinPvLimitControlIteration(this.minPvLimitControlIteration);
+		if (this.maxPvLimitControlIteration != null)
+			algo.getLfAdjAlgo().setMaxPvLimitControlIteration(this.maxPvLimitControlIteration);
+		if (this.maxPvLimitRecoveryIterations != null)
+			algo.getLfAdjAlgo().setMaxPvLimitRecoveryIterations(this.maxPvLimitRecoveryIterations);
+		if (this.maxPvLimitBuses != null)
+			algo.getLfAdjAlgo().setMaxPvLimitBuses(this.maxPvLimitBuses);
+		if (this.minSavedPvLimitAngleMismatch != null)
+			algo.getLfAdjAlgo().setMinSavedPvLimitAngleMismatch(this.minSavedPvLimitAngleMismatch);
+		if (this.controlInitializationMode != null)
+			algo.getLfAdjAlgo().getLimitCtrlConfig().setControlInitializationMode(this.controlInitializationMode);
+		if (this.maxSavedSolutionQLimitSeeds != null)
+			algo.getLfAdjAlgo().getLimitCtrlConfig().setMaxSavedSolutionQLimitSeeds(this.maxSavedSolutionQLimitSeeds);
+		if (this.maxAdditionalSavedSolutionQLimitBuses != null)
+			algo.getLfAdjAlgo().getLimitCtrlConfig().setMaxAdditionalSavedSolutionQLimitBuses(this.maxAdditionalSavedSolutionQLimitBuses);
+		if (this.savedSolutionQLimitTolerance != null)
+			algo.getLfAdjAlgo().getLimitCtrlConfig().setSavedSolutionQLimitTolerance(this.savedSolutionQLimitTolerance);
+		if (this.savedSolutionVoltageEvidenceTolerance != null)
+			algo.getLfAdjAlgo().getLimitCtrlConfig().setSavedSolutionVoltageEvidenceTolerance(this.savedSolutionVoltageEvidenceTolerance);
+		if (this.highGainVoltageControlDampingThreshold != null
+				&& this.highGainVoltageControlMaxAccelerationFactor != null)
+			algo.getLfAdjAlgo().setHighGainVoltageControlDamping(
+					this.highGainVoltageControlDampingThreshold,
+					this.highGainVoltageControlMaxAccelerationFactor);
 
 		// Numerical NR settings are independent of adjustment/control inclusion.
 		// In particular, PSS/E applies DVLIM during normal full Newton solves.
-		algo.setNonDivergent(this.nonDivergent);
-		algo.setVariableUpdateLimit(this.variableUpdateLimit);
-		algo.setDeltaVAngLimit(this.deltaVAngLimit);
-		algo.setDeltaVMagLimit(this.deltaVMagLimit);
-		if (this.nonDivergent) {
-			if (this.lfMethod == AclfMethodType.NR)
-				nrConfig.setOptAlgo(this.optAlgo);
-			algo.setStopNoSolutionFound(this.stopNoSolutionFound);
-			algo.setMinScaleFactor(this.minScaleFactor);
+		if (explicitlyConfigures("nonDivergent"))
+			algo.setNonDivergent(this.nonDivergent);
+		if (explicitlyConfigures("variableUpdateLimit"))
+			algo.setVariableUpdateLimit(this.variableUpdateLimit);
+		if (explicitlyConfigures("deltaVAngLimit"))
+			algo.setDeltaVAngLimit(this.deltaVAngLimit);
+		if (explicitlyConfigures("deltaVMagLimit"))
+			algo.setDeltaVMagLimit(this.deltaVMagLimit);
+		if (algo.isNonDivergent()) {
+			if (algo.getLfMethod() == AclfMethodType.NR && explicitlyConfigures("optAlgo"))
+					nrConfig.setOptAlgo(this.optAlgo);
+			if (explicitlyConfigures("stopNoSolutionFound"))
+				algo.setStopNoSolutionFound(this.stopNoSolutionFound);
+			if (explicitlyConfigures("minScaleFactor"))
+				algo.setMinScaleFactor(this.minScaleFactor);
 		}
-		if (this.lfMethod == AclfMethodType.NR)
+		if (algo.getLfMethod() == AclfMethodType.NR && algo.getLfCalculator().getNrSolver() != null)
 			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
+		configureCoordinatedSolver(algo);
 	}
 }

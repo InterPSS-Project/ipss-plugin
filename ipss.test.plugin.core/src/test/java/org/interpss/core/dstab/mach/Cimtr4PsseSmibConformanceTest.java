@@ -35,7 +35,10 @@ public class Cimtr4PsseSmibConformanceTest {
             "testData", "reference", "psse", "smib-cimtr4", "psse.csv");
 
     @Test
-    void twoCageMotorMatchesNativePsseFaultTrajectory() throws Exception {
+    void twoCageMotorMatchesNativePsseFaultTrajectory() throws Exception { runIndependentTrajectory(false); }
+    @Test
+    void staggeredTwoCageMotorMatchesTheSameIndependentFaultTrajectory() throws Exception { runIndependentTrajectory(true); }
+    private void runIndependentTrajectory(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -58,6 +61,7 @@ public class Cimtr4PsseSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.1), null, 0.05, 0.05), "MotorFault");
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization(), "CIMTR4 initialization");
 
         Cimtr4Machine machine = (Cimtr4Machine) network.getMachine("Bus1-mach1");

@@ -26,6 +26,8 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
+        // Use a pilot-voltage tolerance consistent with the 0.01 Mvar reference check.
+        algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(1.0e-4);
 		algo.getNrMethodConfig().setNonDivergent(true);
         assertTrue(algo.loadflow());
 	  	

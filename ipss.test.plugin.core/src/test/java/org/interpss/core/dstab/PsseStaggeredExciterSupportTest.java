@@ -26,6 +26,8 @@ class PsseStaggeredExciterSupportTest {
             java.util.function.Consumer<PsseStaggeredEulerSolver> configure)throws Exception {
         IpssCorePlugin.init();IpssCorePlugin.configureSparseSolver("java-klu");
         Path dyr=CASE.resolve("SMIB_v33_genrou_"+model.toLowerCase(Locale.ROOT)+".dyr");
+        if(model.equals("AC8B")) dyr=Ac8bIndependentSmibConformanceTest.stageNativeAc8b(
+                CASE.resolve("SMIB_v33_genrou_ac8b_independent.dyr"),directory.resolve("ac8b-native.dyr"));
         if(model.equals("EXPIC1")) {
             dyr=directory.resolve("expic1.dyr");
             String machine=Files.readString(CASE.resolve("SMIB_v33_genrou.dyr"));
@@ -44,7 +46,7 @@ class PsseStaggeredExciterSupportTest {
         assertTrue(algorithm.initialization(),model);return algorithm;
     }
 
-    @ParameterizedTest @ValueSource(strings={"EXAC1","EXAC2","ESAC1A","ESAC6A","ESDC1A","ESDC2A","EXPIC1","SCRX"})
+    @ParameterizedTest @ValueSource(strings={"EXAC1","EXAC2","ESAC1A","ESAC2A","ESAC6A","ESDC1A","ESDC2A","EXPIC1","SCRX"})
     void automaticResolutionPreservesInitializationAndExplicitCountsAreImmutable(String model,@TempDir Path directory)throws Exception {
         var optimized=load(model,directory,true);
         var ordinary=load(model,directory,false);
@@ -63,7 +65,7 @@ class PsseStaggeredExciterSupportTest {
         assertEquals(field,machine.getEfd(),1e-7,model);
     }
 
-    @ParameterizedTest @ValueSource(strings={"ESAC6A","ESDC1A","ESDC2A","EXPIC1"})
+    @ParameterizedTest @ValueSource(strings={"ESAC2A","ESAC6A","ESDC1A","ESDC2A","EXPIC1"})
     void inactiveLocalParticipantsHoldStatesAndCanResume(String model,@TempDir Path directory)throws Exception {
         var algorithm=load(model,directory,true,solver->solver.setExciterSubsteps(model,4));
         var machine=algorithm.getNetwork().getMachine("Bus1-mach1");var exciter=machine.getExciter();
@@ -80,7 +82,7 @@ class PsseStaggeredExciterSupportTest {
         for(double value:after)assertTrue(Double.isFinite(value));
     }
 
-    @ParameterizedTest @ValueSource(strings={"EXAC1","EXAC2","ESAC1A","ESAC6A","ESDC1A","ESDC2A","EXPIC1","SCRX"})
+    @ParameterizedTest @ValueSource(strings={"EXAC1","EXAC2","ESAC1A","ESAC2A","ESAC6A","ESDC1A","ESDC2A","EXPIC1","SCRX"})
     void holdsEquilibriumWithoutDisablingTheExciter(String model,@TempDir Path directory)throws Exception {
         var algorithm=load(model,directory,true);var machine=algorithm.getNetwork().getMachine("Bus1-mach1");
         double voltage=machine.getDStabBus().getVoltageMag(),angle=machine.getAngle(),field=machine.getEfd();
@@ -90,7 +92,7 @@ class PsseStaggeredExciterSupportTest {
         assertEquals(angle,machine.getAngle(),1e-7,model);assertEquals(field,machine.getEfd(),1e-7,model);
     }
 
-    @ParameterizedTest @ValueSource(strings={"ESAC6A","ESDC1A","ESDC2A","EXPIC1"})
+    @ParameterizedTest @ValueSource(strings={"ESAC2A","ESAC6A","ESDC1A","ESDC2A","EXPIC1"})
     void customRateEvaluationDoesNotAdvanceStateAndUsesTheExistingEquations(String model,@TempDir Path directory)throws Exception {
         var first=load(model,directory,true);var second=load(model,directory,false);
         Machine a=first.getNetwork().getMachine("Bus1-mach1"),b=second.getNetwork().getMachine("Bus1-mach1");
@@ -108,5 +110,22 @@ class PsseStaggeredExciterSupportTest {
         assertTrue(b.getExciter().nextStep(h,DynamicSimuMethod.MODIFIED_EULER,b,0));
         participant.readStaggeredState(after,0);original.readStaggeredState(candidate,0);
         assertArrayEquals(candidate,after,1e-10,model+" must retain the existing RHS and projection");
+    }
+
+    @ParameterizedTest @ValueSource(strings={"AC7B","AC8B"})
+    void arrayExcitersRunAtQuarterCycleAndRespondToAReferenceJump(String family,@TempDir Path directory)throws Exception {
+        var a=load(family,directory,true);
+        var m=a.getNetwork().getMachine("Bus1-mach1");
+        var e=(com.interpss.dstab.controller.runtime.StaggeredEulerParticipant)m.getExciter();
+        double initial=m.getEfd();
+        for(int i=0;i<24;i++)assertTrue(a.solveDEqnStep(true));
+        assertEquals(initial,m.getEfd(),2e-4,"No-event initialization must remain flat");
+        if(m.getExciter() instanceof com.interpss.dstab.controller.exc.ac7b.Ac7bExciter ac7)ac7.reference+=.02;
+        else ((com.interpss.dstab.controller.exc.ac8b.Ac8bExciter)m.getExciter()).reference+=.02;
+        ((PsseStaggeredEulerSolver)a.getSolver()).notifyAcceptedEndpointDiscontinuity();
+        for(int i=0;i<120;i++)assertTrue(a.solveDEqnStep(true));
+        double[] state=new double[e.staggeredStateCount()];e.readStaggeredState(state,0);
+        for(double value:state)assertTrue(Double.isFinite(value));
+        assertTrue(m.getEfd()>initial+.001,"Positive voltage reference must produce a field response");
     }
 }

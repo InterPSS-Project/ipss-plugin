@@ -89,6 +89,38 @@ public class AclfNetworkBuilderAdjDeviceTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void discreteShuntWithZeroSavedSusceptanceStartsWithBanksOff() throws Exception {
+		var builder = twoBusNet();
+		var shunt = builder.addSwitchedShunt("Bus1", "1", true,
+				AclfAdjustControlMode.DISCRETE, AclfAdjustControlType.RANGE_CONTROL,
+				0.0, 1.05, 0.95, null, List.of(new ShuntBlock(1, 15.0, true)));
+		assertEquals(0.0, shunt.getBActual(), 0.0);
+		assertEquals(0.0, shunt.getShuntCompensatorList().getFirst().getB(), 0.0);
+		assertEquals(15.0, shunt.getShuntCompensatorList().getFirst().getUnitQMvar(), TOL);
+		assertEquals(0.15, shunt.getBLimit().getMax(), TOL);
+	}
+
+	@Test
+	public void importReconstructsExactMixedBankStateAndRetainsOffGridInjection() throws Exception {
+		var builder = twoBusNet();
+		var blocks = List.of(new ShuntBlock(2, 10.0, true), new ShuntBlock(1, -5.0, true),
+				new ShuntBlock(1, 7.0, false));
+		var mixed = builder.addSwitchedShunt("Bus1", "1", true,
+				AclfAdjustControlMode.DISCRETE, AclfAdjustControlType.RANGE_CONTROL,
+				0.05, 1.05, 0.95, null, blocks);
+		assertEquals(0.05, mixed.getBActual(), 0.0);
+		assertEquals(0.10, mixed.getShuntCompensatorList().get(0).getB(), TOL);
+		assertEquals(-0.05, mixed.getShuntCompensatorList().get(1).getB(), TOL);
+		assertFalse(mixed.getShuntCompensatorList().get(2).isActive());
+
+		var offGrid = builder.addSwitchedShunt("Bus2", "1", true,
+				AclfAdjustControlMode.DISCRETE, AclfAdjustControlType.RANGE_CONTROL,
+				0.07, 1.05, 0.95, null, blocks);
+		assertEquals(0.07, offGrid.getBActual(), 0.0);
+		assertEquals(0.07, offGrid.getBInit(), 0.0);
+	}
+
+	@Test
 	public void addSwitchedShunt_localRemoteDefaultsToBusId() throws Exception {
 		AclfNetworkBuilder builder = twoBusNet();
 		SwitchedShunt sw = builder.addSwitchedShunt("Bus1", "1", true,

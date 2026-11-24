@@ -147,4 +147,17 @@ public class Oel3cModelTest extends CorePluginTestSetup {
         assertEquals(0,oel.getOutput(),0);assertFalse(oel.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,0));
         assertFalse(oel.initStates());
     }
+
+    @Test void staggeredKernelProjectionPreservesOrdinaryTransactionOwnership() {
+        var data=new Oel3cData(1,1,.4,.3333,.02,.1,.1,1,0,-1,0,-1);
+        var k=new com.interpss.dstab.controller.oel.oel3c.Oel3cKernel(data);k.initialize(1.2);
+        var initial=k.state();
+        assertThrows(IllegalArgumentException.class,()->k.applyStaggeredState(new com.interpss.dstab.controller.oel.oel3c.Oel3cKernel.State(Double.NaN,0)));
+        assertEquals(initial,k.state());
+        k.applyStaggeredState(new com.interpss.dstab.controller.oel.oel3c.Oel3cKernel.State(.3,-10));
+        assertEquals(data.lowerIntegral(),k.state().integral(),0.);
+        assertTrue(k.step(.001,0,1.2));var predictor=k.state();
+        assertThrows(IllegalStateException.class,()->k.applyStaggeredState(initial));assertEquals(predictor,k.state());
+        assertTrue(k.step(.001,1,1.2));k.applyStaggeredState(initial);assertEquals(initial,k.state());
+    }
 }

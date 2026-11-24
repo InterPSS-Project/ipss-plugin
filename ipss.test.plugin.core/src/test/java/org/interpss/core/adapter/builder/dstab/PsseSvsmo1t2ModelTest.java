@@ -251,4 +251,37 @@ public class PsseSvsmo1t2ModelTest extends CorePluginTestSetup {
         assertTrue(model.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 0));
         assertTrue(model.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 1));
     }
+
+    private static java.util.Map<String,Double> staggeredTimers(Svsmo1t2Model model)throws Exception {
+        var result=new java.util.TreeMap<String,Double>();
+        for(String name:new String[]{"deadbandTimer","uv1Timer","uvTripTimer","ov1Timer","ov2Timer","pllRecoveryRemaining","shortTimer"}) {
+            var field=Svsmo1t2Model.class.getDeclaredField(name);field.setAccessible(true);result.put(name,field.getDouble(model));
+        }
+        return result;
+    }
+    @Test void staggeredRateAndProjectionProbesDoNotAdvanceProtectionTimers()throws Exception {
+        var c=new PSSEMultiFileLoader().loadDStab(RAW.toString(),DYR.toString());var a=c.getDynSimuAlgorithm();
+        assertTrue(a.getAclfAlgorithm().loadflow());a.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(a));
+        a.setSimuStepSec(1./240);a.setSimuOutputHandler(new StateMonitor());assertTrue(a.initialization());
+        var bus=c.getDStabilityNet().getDStabBus("Bus4");
+        var model=(Svsmo1t2Model)bus.getDynamicBusDeviceList().stream().filter(Svsmo1t2Model.class::isInstance).findFirst().orElseThrow();
+        assertTrue(model.isStaggeredAttachmentIntact());assertTrue(model.isStaggeredOperational());
+        assertTrue(model.getData().uvTrip()>0);model.getRemoteBus().setVoltage(new Complex(.5*model.getData().uvTrip(),0));
+        double h=.001;model.beginStaggeredStep(h);var timers=staggeredTimers(model);
+        double[] x=new double[5],rates=new double[5];model.readStaggeredState(x,0);
+        for(int i=0;i<4;i++){model.evaluateStaggered(h,rates,0);model.applyStaggeredState(x,0,h);}
+        assertEquals(timers,staggeredTimers(model),"Trials cannot consume protection time");
+        model.completeStaggeredStep(h);
+        assertEquals(timers.get("uvTripTimer")+h,staggeredTimers(model).get("uvTripTimer"),1e-12);
+    }
+    @Test void staggeredQuarterCycleCouplingAdvancesTheSvcAndNetwork()throws Exception {
+        var c=new PSSEMultiFileLoader().loadDStab(RAW.toString(),DYR.toString());var a=c.getDynSimuAlgorithm();
+        assertTrue(a.getAclfAlgorithm().loadflow());a.setSolver(new org.interpss.dstab.algo.StaggeredEulerSolver(a));
+        a.setSimuStepSec(1./240);a.setSimuOutputHandler(new StateMonitor());assertTrue(a.initialization());
+        var model=(Svsmo1t2Model)c.getDStabilityNet().getDStabBus("Bus4").getDynamicBusDeviceList().stream().filter(Svsmo1t2Model.class::isInstance).findFirst().orElseThrow();
+        for(int i=0;i<120;i++)assertTrue(a.solveDEqnStep(true));
+        assertEquals(.5,a.getSimuTime(),1e-12);double[] x=new double[5];model.readStaggeredState(x,0);
+        for(double value:x)assertTrue(Double.isFinite(value));
+        assertTrue(Double.isFinite(c.getDStabilityNet().getDStabBus("Bus4").getVoltageMag()));
+    }
 }

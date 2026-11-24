@@ -5,8 +5,8 @@ import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 /**
  * Static-load representation of the archived SMIB reference runs.
  *
- * <p>The PowerWorld, ANDES, PSS/E and independent-integrator SMIB references ran
- * the bus-2 static load as constant impedance for both P and Q. The PSS/E importer now
+ * <p>The archived simulator and independent-integrator SMIB references ran
+ * the bus-2 static load as constant impedance for both P and Q. The adapter importer now
  * defaults to constant-current P and constant-admittance Q, so comparisons with
  * those references declare the experiment's load model explicitly instead of
  * relying on the importer default.

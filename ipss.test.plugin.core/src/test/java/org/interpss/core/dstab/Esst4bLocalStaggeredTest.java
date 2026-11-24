@@ -104,6 +104,29 @@ class Esst4bLocalStaggeredTest {
         assertEquals(expected, inner.getStateX(), 1e-13);
     }
 
+    @Test void fullStaggeredRuntimeAcceptsSelectedHostWithoutDuplicateIntegration() throws Exception {
+        var a=prepareFullStaggered(Set.of(MACHINE_ID));var b=prepareFullStaggered(Set.of());
+        assertTrue(a.initialization());assertTrue(b.initialization());var selected=fixture(a);var baseline=fixture(b);
+        assertFalse(selected.exciter.requiresPhysicalStepTrial());
+        assertEquals(snapshot(baseline),snapshot(selected));double initial=selected.machine.getEfd(),maximum=0.;
+        for(int i=0;i<90;i++) {
+            assertTrue(a.solveDEqnStep(true));assertTrue(b.solveDEqnStep(true));
+            assertEquals(snapshot(baseline),snapshot(selected),"Selection must not add a second state owner");
+            maximum=Math.max(maximum,Math.abs(selected.machine.getEfd()-initial));
+        }
+        assertTrue(maximum>1e-5,"Selected controller must respond to the scheduled fault");
+    }
+
+    @Test void fullStaggeredRuntimeRejectsMissingAndWrongTypeSelections() throws Exception {
+        assertFalse(prepareFullStaggered(Set.of("Bus999-mach1")).initialization());
+        assertFalse(prepareFullStaggered(Set.of("Bus2-mach1")).initialization());
+    }
+
+    private static DynamicSimuAlgorithm prepareFullStaggered(Set<String> ids)throws Exception {
+        var a=prepare(Set.of());var solver=new org.interpss.dstab.algo.StaggeredEulerSolver(a);
+        a.setSolver(solver);solver.setEsst4bLocalStaggeredMachineIds(ids);return a;
+    }
+
     @Test void missingSelectionFailsInitialization() throws Exception {
         var algorithm = prepare(Set.of("Bus999-mach1"));
         assertFalse(algorithm.initialization());

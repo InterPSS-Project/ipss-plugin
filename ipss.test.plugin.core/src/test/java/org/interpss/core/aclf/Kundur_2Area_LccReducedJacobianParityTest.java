@@ -1,6 +1,7 @@
 package org.interpss.core.aclf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
@@ -44,15 +45,36 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 	@Test
 	void postLimitRectifierAngleInverterCurrentModeMatchesSettledSequentialSolution()
 			throws Exception {
+		// Choose a legal discrete tap with gamma inside its operating
+		// band when the rectifier holds alpha at the minimum.
 		assertForcedModeParity(HvdcControlMode.FIRING_ANGLE,
-				HvdcControlMode.DC_CURRENT);
+				HvdcControlMode.DC_CURRENT, 0.925);
 	}
 
 	@Test
 	void postLimitRectifierCurrentInverterAngleModeMatchesSettledSequentialSolution()
 			throws Exception {
 		assertForcedModeParity(HvdcControlMode.DC_CURRENT,
-				HvdcControlMode.FIRING_ANGLE);
+				HvdcControlMode.FIRING_ANGLE, 1.10);
+	}
+
+	@Test
+	void forcedRectifierAngleAtSavedInverterTapNeedsExtinctionAngleBoundary() throws Exception {
+		for (boolean reduced : new boolean[] {false, true}) {
+			SolvedCase solved = solveForcedTransfer(DATA_ROOT + "Kundur_2area_LCC_HVDC.raw", reduced,
+					HvdcControlMode.FIRING_ANGLE, HvdcControlMode.DC_CURRENT, Double.NaN);
+			var line = solved.line;
+			assertEquals(0.94375, line.getInverter().getXformerTapSetting(), 1.0e-12);
+			var model = new LccCoupledInjectionModel(line);
+			assertFalse(model.evaluate(line.getRectifier().getBus().getVoltageMag(),
+					line.getInverter().getBus().getVoltageMag()));
+			assertEquals(LccCoupledInjectionModel.Status.ACTIVE_SET_BOUNDARY, model.getStatus());
+			var boundary = model.getFiringBoundaries().getFirst();
+			assertEquals(LccCoupledInjectionModel.Terminal.INVERTER, boundary.terminal());
+			assertEquals(LccCoupledInjectionModel.Bound.LOWER, boundary.bound());
+			assertEquals(15.0, Math.toDegrees(boundary.limitRadians()), 1.0e-10);
+			assertTrue(Math.toDegrees(boundary.angleRadians()) < 13.0);
+		}
 	}
 
 	@Test
@@ -179,12 +201,12 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 	}
 
 	private static void assertForcedModeParity(HvdcControlMode rectifierMode,
-			HvdcControlMode inverterMode) throws Exception {
+			HvdcControlMode inverterMode, double inverterTap) throws Exception {
 		String rawPath = DATA_ROOT + "Kundur_2area_LCC_HVDC.raw";
 		SolvedCase sequential = solveForcedTransfer(rawPath, false,
-				rectifierMode, inverterMode);
+				rectifierMode, inverterMode, inverterTap);
 		SolvedCase reduced = solveForcedTransfer(rawPath, true,
-				rectifierMode, inverterMode);
+				rectifierMode, inverterMode, inverterTap);
 
 		assertEquals(rectifierMode,
 				reduced.line.getRectifierControlMode());
@@ -412,6 +434,10 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 			}
 		}
 		boolean converged = algorithm.loadflow();
+		if (reduced) {
+			// Initialization may rebuild the solver to match the effective RAW controls.
+			solver = (CoordinatedControlZbrNrSolver) algorithm.getLfCalculator().getNrSolver();
+		}
 		String reducedDiagnostic = solver == null ? ""
 				: solver.getLccCoupledModels().stream()
 						.map(model -> model.getLine().getId() + "=" + model.getStatus()
@@ -440,7 +466,7 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 	}
 
 	private static SolvedCase solveForcedTransfer(String rawPath, boolean reduced,
-			HvdcControlMode rectifierMode, HvdcControlMode inverterMode)
+			HvdcControlMode rectifierMode, HvdcControlMode inverterMode, double inverterTap)
 			throws Exception {
 		AclfNetwork network = new PSSEDirectParser(33).parse(rawPath);
 		@SuppressWarnings("unchecked")
@@ -452,9 +478,8 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 						+ "/" + inverterMode);
 		line.setRectifierControlMode(rectifierMode);
 		line.setInverterControlMode(inverterMode);
-		if (rectifierMode == HvdcControlMode.DC_CURRENT
-				&& inverterMode == HvdcControlMode.FIRING_ANGLE) {
-			line.getInverter().setXformerTapSetting(1.10);
+		if (Double.isFinite(inverterTap)) {
+			line.getInverter().setXformerTapSetting(inverterTap);
 		}
 		line.calculateLoadflow(null);
 		double admittedRectifierTap = line.getRectifier().getXformerTapSetting();
@@ -462,7 +487,8 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algorithm =
 				LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
-		algorithm.setTolerance(SOLVE_TOLERANCE_PU);
+		// The transferred power order makes current sensitive to the solved AC voltage.
+		algorithm.setTolerance(1.0e-10);
 		algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		algorithm.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
 		algorithm.setMaxIterations(30);

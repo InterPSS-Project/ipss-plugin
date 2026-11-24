@@ -26,6 +26,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.DclfMultiOutageReplayMode;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import com.interpss.core.algo.dclf.solver.DclfContingencySolutionMethod;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
@@ -37,6 +38,40 @@ import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper.Dcl
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
 public class ContingencyDefinitionRuntimeHelperTest {
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void pluginDefaultsUseCoreHighImpedanceAutomaticDispatch() throws Exception {
+        List<ContingencyDefinition> definitions = List.of(
+                definition("NORMAL_DEFAULT", "Bus4->Bus5(0)"),
+                definition("SINGULAR_DEFAULT", "Bus4->Bus5(0)", "Bus4->Bus5(0)"));
+        for (DclfContingencyConfig config : List.of(
+                new org.interpss.plugin.contingency.DclfContingencyConfig(),
+                org.interpss.plugin.contingency.DclfContingencyConfig.createDefaultConfig())) {
+            assertEquals(DclfMultiOutageReplayMode.HIGH_IMPEDANCE, config.getMultiOutageReplayMode());
+            assertEquals(10_000.0, config.getHighImpedanceReactancePu(), 0.0);
+            config.setDclfInclLoss(false);
+            config.setOverloadThreshold(0.0);
+            var actual = org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer
+                    .executeContingencyDefinitions(importIeee9Labeled(), definitions,
+                            java.util.Set.of("Bus7->Bus8(0)"), config, 2);
+            assertEquals(1, actual.fastN1Count());
+            assertEquals(1, actual.ePtdfSingularCount());
+            assertEquals(2, actual.results().size());
+            config.setMultiOutageReplayMode(DclfMultiOutageReplayMode.EXACT_TOPOLOGY);
+            var exact = ParallelDclfContingencyAnalyzer.executeContingencyDefinitions(
+                    importIeee9Labeled(), definitions, java.util.Set.of("Bus7->Bus8(0)"), config, 2);
+            assertEquals(DclfMultiOutageReplayMode.EXACT_TOPOLOGY, config.getMultiOutageReplayMode());
+            assertEquals(actual.results().size(), exact.results().size());
+            for (var expected : exact.results()) {
+                var row = actual.results().stream()
+                        .filter(value -> value.getContingencyId().equals(expected.getContingencyId()))
+                        .findFirst().orElseThrow();
+                assertTrue(Double.isFinite(row.getPostFlowMW()));
+                assertEquals(expected.getPostFlowMW(), row.getPostFlowMW(), 0.01);
+            }
+        }
+    }
 
     @Test
     public void createsDclfMultiOutageFromGroupedDefinition() throws Exception {

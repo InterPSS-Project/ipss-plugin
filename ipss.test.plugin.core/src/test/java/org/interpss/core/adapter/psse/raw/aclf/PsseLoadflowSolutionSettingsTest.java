@@ -9,6 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.fadapter.psse.PSSEJsonDirectParser;
+import org.interpss.fadapter.psse.export.PSSEJsonExporter;
+import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.plugin.aclf.config.AclfRunConfigRec;
 import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings;
 import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings.ApplicationReport;
 import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings.ApplicationPolicy;
@@ -17,8 +21,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.ControlInitializationMode;
+import com.interpss.core.algo.config.RemoteQControlMode;
+import com.interpss.core.algo.impl.solver.DefaultNrSolver;
 
 class PsseLoadflowSolutionSettingsTest {
 
@@ -85,11 +93,10 @@ class PsseLoadflowSolutionSettingsTest {
 				algorithm.getLfAdjAlgo().getMaxTapAndShuntAdjustmentIterations());
 		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isXfrTapControl());
 		assertTrue(algorithm.getLfAdjAlgo().getPowerAdjConfig().isPsXfrPControl());
-		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl(),
-				"automatic numerical settings must not override study control modes");
+		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl());
 		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isSwitchedShuntAdjust());
-		assertTrue(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
-		assertFalse(algorithm.getNrMethodConfig().isNonDivergent());
+		assertFalse(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
+		assertTrue(algorithm.getNrMethodConfig().isNonDivergent());
 
 		ApplicationReport report = (ApplicationReport) network.getExtraInfo().get(
 				PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY);
@@ -115,6 +122,77 @@ class PsseLoadflowSolutionSettingsTest {
 		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl());
 		assertFalse(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
 		assertTrue(algorithm.getNrMethodConfig().isNonDivergent());
+	}
+
+	@Test
+	void rawAreaModeTwoUsesAssignedLoadAreaAndPreservesItInRawx() throws Exception {
+		String raw = Files.readString(Path.of("testData/psse/v34/sample_v34.raw"))
+				.replace("AREAIN=0", "AREAIN=2")
+				.replace("153,'1 ',   1,   1,   1,", "153,'1 ',   1,   2,   1,");
+		Path input = tempDir.resolve("area-interchange-v34.raw");
+		Files.writeString(input, raw);
+		AclfNetwork network = new PSSEDirectParser().parse(input.toString());
+		var load = network.getBus("Bus153").getContributeLoad("1");
+		assertEquals(2, load.getAreaNumber());
+		double tiesOnly = network.areaOutputPower(1, UnitType.PU);
+
+		LoadflowAlgorithm algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
+		var config = new AclfRunConfigRec();
+		config.savedSolutionReplay = true;
+		config.applyTo(algorithm);
+		assertTrue(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
+		assertTrue(network.isAreaInterchangeIncludingLoads());
+		assertEquals(tiesOnly + 2.0, network.areaOutputPower(1, UnitType.PU), 1e-9);
+		ApplicationReport report = (ApplicationReport) network.getExtraInfo().get(
+				PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY);
+		assertTrue(report.mappings().stream().anyMatch(mapping ->
+				mapping.field().equals("SOLVER.AREAIN") && mapping.status() == MappingStatus.APPLIED));
+
+		Path output = tempDir.resolve("area-interchange-v34.rawx");
+		new PSSEJsonExporter(network).export(output);
+		AclfNetwork reimported = new PSSEJsonDirectParser().parse(output.toString());
+		assertEquals(2, reimported.getBus("Bus153").getContributeLoad("1").getAreaNumber());
+	}
+
+	@Test
+	void explicitReplayOptOutPreservesNumericalOverridesAndRestoresControlDefaults() throws Exception {
+		var network = new PSSEDirectParser().parse("testData/psse/v34/sample_v34.raw");
+		var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
+		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig().isXfrTapControl());
+		algorithm.setTolerance(0.004);
+		AclfRunConfigRec.fromJson("{\"schemaVersion\":1,\"savedSolutionReplay\":false}").applyTo(algorithm);
+		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isXfrTapControl());
+		assertEquals(0.004, algorithm.getTolerance(), 0.0);
+		assertEquals(ControlInitializationMode.COLD_START,
+				algorithm.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+	}
+
+	@Test
+	void legacyRawAndRawxInheritTheSameAcDefaultsWithoutSolverRecords() throws Exception {
+		var raw = new PSSEDirectParser().parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
+		var path = tempDir.resolve("legacy.rawx");
+		new PSSEJsonExporter(raw).export(path);
+		var rawx = new PSSEJsonDirectParser().parse(path.toString());
+		for (var network : java.util.List.of(raw, rawx)) {
+			// A second algorithm can be created for a network already marked for ZBR.
+			for (int attempt = 0; attempt < 2; attempt++) {
+				var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
+				assertEquals(AclfNetModelType.ZBR_MODEL, network.getAclfNetModelType());
+				assertEquals(ControlInitializationMode.SAVED_SOLUTION_REPLAY,
+						algorithm.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+				assertEquals(RemoteQControlMode.INNER_PQV, algorithm.getLfAdjAlgo().getRemoteQControlMode());
+				assertFalse(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
+			}
+		}
+	}
+
+	@Test
+	void explicitRegularNetworkUsesItsElectricalSolver() throws Exception {
+		var network = new PSSEDirectParser().parse("testData/psse/v34/sample_v34.raw");
+		var algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
+		AclfRunConfigRec.fromJson("{\"schemaVersion\":1,\"aclfNetModelType\":\"REGULAR\"}").applyTo(algorithm);
+		assertEquals(AclfNetModelType.REGULAR, network.getAclfNetModelType());
+		assertEquals(DefaultNrSolver.class, algorithm.getLfCalculator().getNrSolver().getClass());
 	}
 
 	@Test

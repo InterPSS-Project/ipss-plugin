@@ -70,9 +70,8 @@ import com.interpss.core.net.OriginalDataFormat;
  * Field extraction logic is ported from the individual PSSExxxDataRawParser classes.
  *
  * <p>For v34+ files, system-wide load-flow records are retained as
- * {@link PsseLoadflowSolutionSettings} on network extra info. Parsing does not
- * unconditionally impose their solver activity flags: the run layer first
- * chooses whether saved-solution replay is intended, then explicit JSON
+ * {@link PsseLoadflowSolutionSettings} on network extra info. The AC
+ * factory uses supported fields as defaults, and explicit JSON
  * configuration may override the imported setting.</p>
  *
  * <p>Version-specific switched-shunt fields preserve remote participation and
@@ -167,6 +166,7 @@ public class PSSEDirectParser {
         try {
             rawType3BusVoltages.clear();
             PsseLoadScopeMetadata.clear(builder.getBaseNetwork());
+            PsseBusVoltageRatings.clear(builder.getBaseNetwork());
             parseHeader(reader);
             parseSection(reader, this::parseBusLine);
             parseSection(reader, this::parseLoadLine);
@@ -252,7 +252,13 @@ public class PSSEDirectParser {
             builder.getBaseNetwork().setFrequency(baseFrequency);
         }
 
-        // For v34+, skip system-wide data section
+        if (version < 34) {
+            builder.getBaseNetwork().getExtraInfo().put(
+                    com.interpss.core.algo.LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY,
+                    PsseLoadflowSolutionSettings.builder(version).build());
+        }
+
+        // For v34+, read the system-wide data section.
         if (version >= 34) {
             /*
              * Preserve the complete solved-case settings block, including
@@ -389,6 +395,11 @@ public class PSSEDirectParser {
         BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, ownerId);
         applyNameTagMetadata(rec, bus);
+        if (version >= 33) {
+            PsseBusVoltageRatings.put(builder.getBaseNetwork(), busId,
+                    rec.getDouble(10, Double.NaN), rec.getDouble(9, Double.NaN),
+                    rec.getDouble(12, Double.NaN), rec.getDouble(11, Double.NaN));
+        }
 
         if (ide == 4) bus.setStatus(false);
 
@@ -463,7 +474,7 @@ public class PSSEDirectParser {
                 constP, constI, constZ, dgenPower, dgenStatus);
         applyNameTagMetadata(rec, load);
         if (load != null) {
-            PsseLoadScopeMetadata.put(builder.getBaseNetwork(), busId, loadId,
+            PsseLoadScopeMetadata.put(builder.getBaseNetwork(), busId, load,
                     loadArea, loadZone, loadOwner);
         }
     }
@@ -552,8 +563,7 @@ public class PSSEDirectParser {
         // Retain individual record factors too; never divide by active unit count.
         bus.setPlantMvarControlPFactor(rmpct * 0.01);
 
-        boolean genStatus = (stat == 1);
-        if (!bus.isActive()) genStatus = false;
+        boolean genStatus = PSSEGeneratorReactivePower.isPsseMachineInService(bus, stat);
 
         String remoteBusId = null;
         if (ireg > 0 && ireg != busNum) {
@@ -577,6 +587,7 @@ public class PSSEDirectParser {
                 remoteBusId,
                 rmpct * 0.01, 1.0);
         generator.setBaseLoadFlag(baseLoadFlag);
+        PSSEGeneratorReactivePower.retainWindInput(generator, wmod, wpf);
         applyNameTagMetadata(rec, generator);
 
         // Refine bus gen code based on generator data
@@ -1467,6 +1478,7 @@ public class PSSEDirectParser {
             StaticVarCompensator svc = builder.addSVC(busId, name, mode != 0,
                     qMaxPU, qMinPU, vset, remoteBusId, rmpct);
             BaseAclfBus bus = builder.getBus(busId);
+            if (svc != null) svc.deferShuntCurrentLimitPu(qMaxPU);
             if (svc != null && bus != null && bus.getVoltageMag() != 0.0) {
                 // PSS/E QDES is the STATCON's saved reactive output.
                 double voltage = bus.getVoltageMag();

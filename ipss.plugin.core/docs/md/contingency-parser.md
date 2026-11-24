@@ -162,3 +162,93 @@ All event classes store reference simulator bus references as **`int busNum`** (
 | `UNIT` treated as synonym for `MACHINE` | reference simulator allows both; stored as `ConEquipType.MACHINE` |
 | `REDUCE` treated as synonym for `DECREASE` | reference simulator BUS_MOD section allows both spellings |
 | `REACTIVE` checked before `ACTIVE` in `ConEquipMoveEvent.equipTypeOf()` | "ACTIVE" is a substring of "REACTIVE"; wrong order would misclassify reactive load |
+
+---
+
+## 8. Running a typed AC contingency study
+
+Use the same load-flow profile for the base solve and the outage analyzer.
+The minimum JSON profile inherits the supported settings from the imported
+RAW or RAWX case and uses Core defaults for settings the case omits.
+
+```json
+{"schemaVersion": 1}
+```
+
+This example reads a version-35 RAW case and a contingency file. Set the
+parser version to match the input file. The analyzer takes a converged base,
+runs each outage on an isolated copy, and returns results in input order.
+Give each outage a distinct, nonblank ID.
+
+```java
+import java.nio.file.Path;
+
+import com.interpss.core.LoadflowAlgoObjectFactory;
+import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.plugin.aclf.config.AclfRunConfigRec;
+import org.interpss.plugin.contingency.AclfContingencyConfig;
+import org.interpss.plugin.contingency.ParallelAclfContingencyAnalyzer;
+import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
+import org.interpss.plugin.contingency.con_fmt.parser.ConFileParser;
+import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
+
+var base = new PSSEDirectParser(35).parse("network.raw");
+var profile = AclfRunConfigRec.loadAclfRunConfig("aclf.json");
+var baseSolver = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(base);
+profile.applyTo(baseSolver);
+if (!baseSolver.loadflow()) {
+    throw new IllegalStateException("Base load flow stopped with "
+            + baseSolver.getTerminationReport().status());
+}
+
+var definitions = new ConFileParser().parse(Path.of("outages.con"));
+var outages = new ConToIpssMapper(base).map(definitions);
+var options = new AclfContingencyConfig();
+options.setLoadflowProfile(profile);
+
+boolean useParallel = false;
+boolean adaptiveRecovery = true;
+var analyzer = new ParallelAclfContingencyAnalyzer<AclfContingencyResultRec>(base);
+var batch = analyzer.analyzeOutages(outages, options, useParallel, adaptiveRecovery);
+batch.getCAResults().forEach((id, result) ->
+        System.out.printf("%s %s %s%n", id, result.getTerminationReport().status(),
+                result.reportStatus()));
+```
+
+### Control settings and precedence
+
+1. Core initializes the solver from the network and its imported settings.
+2. Fields explicitly present in the shared JSON override those settings.
+   Optional control families are subject to the effective settings and
+   each device's eligibility and limits.
+3. Explicit `AclfContingencyConfig` setters take precedence for outages.
+   For example, `setTolerance(0.003)` uses per unit and affects only the
+   outage attempts. `setApplyAdjustAlgo(false)` holds adjustments for
+   the outage study.
+
+The analyzer applies the shared profile to each fresh solve or recovery
+attempt. `setLoadflowProfile` copies the profile when called. Pass
+`adaptiveRecovery=true` to enable Core's locked seed and selective recovery
+where the outage and control state qualify.
+
+Under the shared RAW policy for polar Newton, eligible continuous SVCs
+and generator remote-voltage controls can participate inside Newton.
+Transformer taps and switched shunts use outer adjustments by default.
+Recovery can selectively admit continuous shunts. Full-Newton tap control
+is an explicit profile option.
+
+### Reading results
+
+Use `getTerminationReport()` for the original solver status, residuals,
+and unsettled controls, and `getDiagnostics()` on the batch for outage
+application and recovery details. A `CONTROLS_UNSETTLED` result satisfies
+the electrical equations and still has enabled control targets outside their
+criteria. Studies that require full settlement can check
+`getTerminationReport().controlsSettled()` after electrical convergence.
+
+`reportStatus()` applies the contingency report criteria. An eligible
+iteration-limit or non-divergent stop can be `TREATED_AS_CONVERGED` for
+reporting if the auxiliary equations and residual thresholds pass. The
+default residual thresholds are 0.5 MW or Mvar at the worst bus and
+5 MVA for the sum of bus apparent mismatches. The original termination
+and residuals remain available for review.

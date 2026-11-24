@@ -16,6 +16,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.BusBranchControlType;
@@ -24,6 +25,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.ControlInitializationMode;
 import com.interpss.core.algo.config.RemoteQControlMode;
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
@@ -357,12 +359,6 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfBus bus5 = net.getBus("Bus5");
 
-		//TODO: Should bus5 becomes a GenPV bus due to the addition of SVC?
-		// No. For SVC control, the bus Q (modeled as the load) is adjusted according
-		// to sensitivity dQ/dV, so the bus shold be a GenPQ bus with fixed Q (gen).
-		// For a GenPV bus, the bus Q is calculated according to the voltage set point, 
-		// which is not the case for SVC.
-		
 		StaticVarCompensator svc1 = bus5.getFirstStaticVarCompensator(true);
 		assertNotNull(svc1, "Bus5 has SVC connected");
 		
@@ -395,10 +391,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		//check the SVC results
-		// The SVC controls this PQ bus to 1.01 pu.
 		assertEquals(1.01, bus5.getVoltageMag(), 5.0e-3,
 				"Bus5 voltage magnitude is within the SVC control tolerance");
-		assertTrue(bus5.isGenPQ());
+		assertTrue(bus5.isGenPV(), "A local continuous SVC with reactive headroom uses a PV equation");
 		double q = svc1.getQ();
 		double qMax = svc1.getBLimit().getMax()
 				* bus5.getVoltageMag() * bus5.getVoltageMag();
@@ -441,6 +436,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
+		// Resolve the electrical state to the precision of the reference SVC output.
+		algo.setTolerance(1.0e-8);
 		//algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 
@@ -479,9 +476,13 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfNetwork outerNet = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw");
 		LoadflowAlgorithm outerAlgo = LoadflowAlgoObjectFactory
 				.createLoadflowAlgorithm(outerNet);
+		outerNet.setAclfNetModelType(AclfNetModelType.REGULAR);
+		outerAlgo.getLfCalculator().setNrSolver(null);
 		outerAlgo.setLfMethod(AclfMethodType.NR);
 		outerAlgo.getLfAdjAlgo().setRemoteQControlMode(
 				RemoteQControlMode.OUTER_LOOP);
+		outerAlgo.getLfAdjAlgo().getLimitCtrlConfig().setControlInitializationMode(
+				ControlInitializationMode.COLD_START);
 		outerAlgo.loadflow();
 
 		assertTrue(outerNet.isLfConverged(), "Outer-loop loadflow converged");
@@ -497,9 +498,13 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfNetwork narrowBandNet = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw");
 		LoadflowAlgorithm narrowBandAlgo = LoadflowAlgoObjectFactory
 				.createLoadflowAlgorithm(narrowBandNet);
+		narrowBandNet.setAclfNetModelType(AclfNetModelType.REGULAR);
+		narrowBandAlgo.getLfCalculator().setNrSolver(null);
 		narrowBandAlgo.setLfMethod(AclfMethodType.NR);
 		narrowBandAlgo.getLfAdjAlgo().setRemoteQControlMode(
 				RemoteQControlMode.OUTER_LOOP);
+		narrowBandAlgo.getLfAdjAlgo().getLimitCtrlConfig().setControlInitializationMode(
+				ControlInitializationMode.COLD_START);
 		narrowBandAlgo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.0001);
 		narrowBandAlgo.loadflow();
 

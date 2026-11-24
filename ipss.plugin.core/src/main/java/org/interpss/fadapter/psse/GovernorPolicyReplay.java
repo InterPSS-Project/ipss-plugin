@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import com.interpss.dstab.BaseDStabNetwork;
 
 /**
- * Imported governor travel policy (a PSS/E {@code .bsg} file) registered on a
+ * Imported governor travel policy (an adapter {@code .bsg} file) registered on a
  * solver and replayed on the final startup storage of the governors. Used by the
- * PSS/E solvers through the Core solver's governor-policy hooks.
+ * adapter solvers through the Core solver's governor-policy hooks.
  */
 public final class GovernorPolicyReplay {
     private List<PsseGovernorBsgProcessor.Entry> policy = List.of();

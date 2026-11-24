@@ -8,6 +8,7 @@
 package org.interpss.fadapter.psse;
 
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,47 @@ public final class PSSEGeneratorReactivePower {
     }
 
     record Data(double qGen, double qMax, double qMin) {
+    }
+
+    static boolean isPsseMachineInService(BaseAclfBus bus, int status) {
+        // A type 1 bus is a load or passive node. Its machine record may still
+        // carry the pre-netting schedule, which must not become another injection.
+        return status == 1 && bus.isActive() && bus.getGenCode() != AclfGenCode.NON_GEN;
+    }
+
+    public record WindSetting(int mode, double powerFactor) {
+        public static final WindSetting DEFAULT = new WindSetting(0, 1.0);
+    }
+
+    private static final class WindInput extends AdapterImpl {
+        final WindSetting setting;
+
+        WindInput(int mode, double powerFactor) {
+            this.setting = new WindSetting(mode, powerFactor);
+        }
+    }
+
+    static void retainWindInput(AclfGen generator, int mode, double powerFactor) {
+        if (mode != 0) generator.eAdapters().add(new WindInput(mode, powerFactor));
+    }
+
+    /** Reuse the imported wind mode when it represents the current equipment data. */
+    public static WindSetting exportWindInput(AclfGen generator, boolean solvedState,
+            double p, double q, double qMax, double qMin) {
+        if (!solvedState) {
+            for (var adapter : generator.eAdapters()) {
+                if (adapter instanceof WindInput input) {
+                    WindSetting setting = input.setting;
+                    Data replay = resolve(p, q, qMax, qMin, setting.mode(), setting.powerFactor());
+                    if (Math.abs(replay.qGen() - q) <= 1e-8
+                            && Math.abs(replay.qMax() - qMax) <= 1e-8
+                            && Math.abs(replay.qMin() - qMin) <= 1e-8) {
+                        return setting;
+                    }
+                }
+            }
+        }
+        return WindSetting.DEFAULT;
     }
 
     static Data resolve(double activePower, double qGen, double qMax, double qMin,

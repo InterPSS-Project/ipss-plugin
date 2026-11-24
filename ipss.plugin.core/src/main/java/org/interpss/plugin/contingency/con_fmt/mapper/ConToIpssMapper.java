@@ -28,7 +28,6 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.ContingencyBusDeviceType;
 import com.interpss.core.contingency.aclf.AclfBranchOutage;
@@ -41,8 +40,8 @@ import com.interpss.core.net.Branch;
  *
  * <h3>Mapping rules</h3>
  * <ol>
- *   <li><b>{@code DISCONNECT BUS n}</b> — opens every active branch whose
- *       from-bus or to-bus matches bus number {@code n}.</li>
+ *   <li><b>{@code DISCONNECT BUS n}</b> — records a bus trip for the
+ *       outage executor to apply to the bus and its incident branches.</li>
  *   <li><b>{@code DISCONNECT BRANCH FROM i TO j CKT c}</b> and
  *       <b>{@code OPEN / TRIP LINE}</b> — creates an
  *       {@link AclfContingencyObjectFactory#createAclfBranchOutage(AclfBranch, ContingencyBranchOutageType) AclfBranchOutage}
@@ -53,11 +52,11 @@ import com.interpss.core.net.Branch;
  *       <b>{@code DISCONNECT THREEWINDING}</b> — looks up the matching
  *       {@link Aclf3WBranch} in {@code net.getSpecialBranchList()} by
  *       matching all three bus numbers, then creates an
- *       {@link AclfContingencyObjectFactory#createAclfXfr3WOutage(Aclf3WBranch) AclfXfr3WOutage}.</li>
+ *       {@link AclfContingencyObjectFactory#createAclfXfr3WOutage(Aclf3WBranch, ContingencyBranchOutageType) AclfXfr3WOutage}.</li>
  * </ol>
  *
- * <p>Cases where no network element can be resolved are skipped with a WARN
- * log message; they do not prevent other contingencies from being mapped.
+ * <p>Unresolved events are logged. A case with no resolved events is returned
+ * as an empty outage, preserving its label and position for caller validation.
  *
  * <h3>Usage</h3>
  * <pre>{@code
@@ -107,7 +106,9 @@ public class ConToIpssMapper {
     }
 
     /**
-     * Maps a single {@link ConCase} to an {@link AclfMultiOutage}.
+     * Resolves a single case against the base network and builds its outage
+     * request without editing the base. A bus disconnect becomes one bus-trip
+     * action even if it occurs more than once in the source case.
      *
      * @param cas the contingency case to map
      * @return the corresponding multi-outage object (may have zero outage items
@@ -116,9 +117,11 @@ public class ConToIpssMapper {
     public AclfMultiOutage mapCase(ConCase cas) {
         AclfMultiOutage multiOutage = AclfContingencyObjectFactory.createAclfMultiOutage(cas.getLabel());
 
-        // ---- bus-disconnect events ----
-        for (ConBusEvent be : cas.getBusEvents()) {
-            mapBusDisconnect(be, multiOutage, cas.getLabel());
+        Set<Integer> disconnectedBusNumbers = new HashSet<>();
+        for (ConBusEvent event : cas.getBusEvents()) {
+            if (disconnectedBusNumbers.add(event.getBusNum())) {
+                mapBusDisconnect(event, multiOutage, cas.getLabel());
+            }
         }
 
         // ---- branch/transformer events ----
@@ -241,44 +244,13 @@ public class ConToIpssMapper {
     // Bus disconnect
     // -----------------------------------------------------------------------
 
-    /**
-     * Opens every active branch incident to the specified bus.
-     * This simulates a complete bus isolation.
-     */
     private void mapBusDisconnect(ConBusEvent event, AclfMultiOutage target, String caseLabel) {
-        int busNum = event.getBusNum();
-        AclfBus bus = findBusByNumber(busNum);
-
+        AclfBus bus = findBusByNumber(event.getBusNum());
         if (bus == null) {
-            log.warn("Contingency '{}': bus {} not found in network", caseLabel, busNum);
+            log.warn("Contingency '{}': bus {} not found in network", caseLabel, event.getBusNum());
             return;
         }
-
-        bus.setStatus(false);
-
-        int addedCount = 0;
-        for(Branch bra : bus.getBranchList()) {
-            if (!bra.isActive()) continue;
-            if(bra instanceof Aclf3WBranch) {
-                // skip 3W branches here since they will be handled by corresponding 2-terminal branch events; 
-                continue;
-            }
-            else if(bra instanceof HvdcLine2T) {
-                bra.setStatus(false);
-                addedCount++;
-            }
-            else
-                if (addBranchOutageIfAbsent((AclfBranch) bra, ContingencyBranchOutageType.OPEN, target, caseLabel)) {
-                        addedCount++;
-                }
-            
-        }
-
-        if (addedCount == 0) {
-            log.warn("Contingency '{}': bus {} found but has no active incident branches", caseLabel, busNum);
-        } else {
-            log.debug("Contingency '{}': DISCONNECT BUS {} -> {} branch outages", caseLabel, busNum, addedCount);
-        }
+        target.getOutageEquips().add(AclfContingencyObjectFactory.createBusOutage(bus));
     }
 
     // -----------------------------------------------------------------------

@@ -33,7 +33,10 @@ public class Wt2g1PsseSmibConformanceTest {
             "smib-wt2g1", "psse.csv");
 
     @Test
-    void controlledResistanceGeneratorMatchesNativePsseFaultTrajectory() throws Exception {
+    void controlledResistanceGeneratorMatchesNativePsseFaultTrajectory() throws Exception { runIndependentTrajectory(false); }
+    @Test
+    void staggered_controlledResistanceGeneratorMatchesNativePsseFaultTrajectory() throws Exception { runIndependentTrajectory(true); }
+    private void runIndependentTrajectory(boolean staggered) throws Exception {
         IpssCorePlugin.init();
         // The retained experiment leaves static P/Q as constant power. Its
         // original voltage/angle channels reconstruct 1+j0.5 pu load even
@@ -53,6 +56,7 @@ public class Wt2g1PsseSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.1), null, 0.05, 0.05), "WindFault");
+        if(staggered)algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization());
 
         Wt2g1Machine machine = (Wt2g1Machine) network.getMachine("Bus1-mach1");
