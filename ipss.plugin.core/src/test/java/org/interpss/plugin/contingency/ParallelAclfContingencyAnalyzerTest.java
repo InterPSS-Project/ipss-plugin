@@ -1,10 +1,12 @@
 package org.interpss.plugin.contingency;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
@@ -26,6 +28,10 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AcPowerMismatchSummary;
+import com.interpss.core.algo.LoadflowTerminationReport;
+import com.interpss.core.algo.LoadflowTerminationReport.Status;
+import com.interpss.core.algo.contingency.aclf.AcContingencyReportStatus;
 import com.interpss.opf.OpfBranch;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
@@ -35,6 +41,30 @@ class ParallelAclfContingencyAnalyzerTest {
     @BeforeAll
     static void initializeCore() {
         IpssCorePlugin.init();
+    }
+
+    @Test
+    void reportsUnsettledAndEligibleNearSolutionsForPlanning() {
+        var unsettled = new AclfContingencyResultRec(false, new LoadflowTerminationReport(
+                Status.CONTROLS_UNSETTLED, 6, 0.003, 0.001, "load", 0.002, "load",
+                0, 1, List.of("SHUNT|load")));
+        var near = new AclfContingencyResultRec(false, new LoadflowTerminationReport(
+                Status.MAX_ITERATIONS, 6, 0.003, 0.004, "load", 0.002, "load",
+                0, 0, List.of(), new AcPowerMismatchSummary(0.4, 0.2, 1.1)));
+        var excessiveSystemMismatch = new AclfContingencyResultRec(false, new LoadflowTerminationReport(
+                Status.MAX_ITERATIONS, 6, 0.003, 0.004, "load", 0.002, "load",
+                0, 0, List.of(), new AcPowerMismatchSummary(0.4, 0.2, 5.1)));
+        var results = new AclfContingencyResultContainer<>(
+                Map.of("unsettled", unsettled, "near", near, "non-converged", excessiveSystemMismatch),
+                0, 3, 0);
+
+        assertEquals(AcContingencyReportStatus.CONTROLS_UNSETTLED, unsettled.reportStatus());
+        assertEquals(List.of("SHUNT|load"), unsettled.getTerminationReport().unsettledControlDetails());
+        assertEquals(AcContingencyReportStatus.TREATED_AS_CONVERGED, near.reportStatus());
+        assertEquals(Status.MAX_ITERATIONS, near.getTerminationReport().status());
+        assertFalse(excessiveSystemMismatch.isReportable());
+        assertEquals(2, results.getReportableCaseCount());
+        assertEquals(0, results.getTotalSuccessCount());
     }
 
     @Test

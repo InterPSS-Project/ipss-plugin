@@ -33,6 +33,9 @@ public class AclfContingencyResultContainer <TR extends AclfContingencyResultRec
         
         public Map<String, TR> getCAResults() { return caResults; }
         public long getTotalSuccessCount() { return totalSuccessCount; }
+        public long getReportableCaseCount() {
+            return caResults.values().stream().filter(AclfContingencyResultRec::isReportable).count();
+        }
         public int getTotalCases() { return totalCases; }
         public long getExecutionTimeMs() { return executionTimeMs; }
         public double getExecutionTimeSeconds() { return executionTimeMs / 1000.0; }

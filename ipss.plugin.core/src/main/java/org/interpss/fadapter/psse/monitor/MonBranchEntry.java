@@ -16,6 +16,7 @@ public class MonBranchEntry {
 
     private int    fromBusNum;
     private int    toBusNum;
+    private Integer thirdBusNum;
     private String ckt;
     /** Optional comment extracted from the '/' tail of the line (bus names). */
     private String comment;
@@ -31,11 +32,13 @@ public class MonBranchEntry {
 
     public int    getFromBusNum() { return fromBusNum; }
     public int    getToBusNum()   { return toBusNum;   }
+    public Integer getThirdBusNum() { return thirdBusNum; }
     public String getCkt()        { return ckt;        }
     public String getComment()    { return comment;    }
 
     public void setFromBusNum(int v)    { this.fromBusNum = v; }
     public void setToBusNum(int v)      { this.toBusNum   = v; }
+    public void setThirdBusNum(Integer number) { thirdBusNum = number; }
     public void setCkt(String v)        { this.ckt        = v; }
     public void setComment(String v)    { this.comment    = v; }
 }

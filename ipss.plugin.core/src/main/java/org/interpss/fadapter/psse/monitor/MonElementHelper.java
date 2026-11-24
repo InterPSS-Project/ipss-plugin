@@ -1,5 +1,6 @@
 package org.interpss.fadapter.psse.monitor;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +9,7 @@ import org.interpss.fadapter.psse.subsystem.SubsystemFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -136,14 +138,14 @@ public class MonElementHelper {
             if ("SYSTEM".equalsIgnoreCase(d.getScope())) {
                 // add every bus that belongs to this subsystem
                 Set<String> busIds = subFilter.getBusIds(net, d.getSystem());
-                result.voltageBusIds().addAll(busIds);
+                busIds.forEach(busId -> result.addVoltageRange(busId, d));
 
             } else if ("BUS".equalsIgnoreCase(d.getScope())) {
                 // find a single bus by number
                 int targetNum = d.getBusNum();
                 for (AclfBus bus : net.getBusList()) {
                     if (bus.isActive() && (int) bus.getNumber() == targetNum) {
-                        result.voltageBusIds().add(bus.getId());
+                        result.addVoltageRange(bus.getId(), d);
                         break;
                     }
                 }
@@ -159,20 +161,49 @@ public class MonElementHelper {
                                    MonitoredElements result) {
         for (MonInterface iface : interfaces) {
             Set<String> resolved = new LinkedHashSet<>();
+            var members = new LinkedHashSet<MonitoredElements.InterfaceMember>();
+            var unresolved = new ArrayList<String>();
 
             for (MonBranchEntry entry : iface.getBranches()) {
-                String branchId = findBranchId(entry.getFromBusNum(),
-                                               entry.getToBusNum(),
-                                               entry.getCkt());
-                if (branchId != null) {
-                    resolved.add(branchId);
+                AclfBranch branch = entry.getThirdBusNum() == null
+                        ? findBranch(entry.getFromBusNum(), entry.getToBusNum(), entry.getCkt())
+                        : findThreeWindingMember(entry);
+                if (branch != null) {
+                    resolved.add(branch.getId());
+                    members.add(new MonitoredElements.InterfaceMember(branch.getId(),
+                            branch.getFromBus().getNumber() == entry.getFromBusNum()));
                 } else {
-                    log.warn("Interface '{}': branch FROM {} TO {} CKT {} not found",
-                            iface.getId(), entry.getFromBusNum(), entry.getToBusNum(), entry.getCkt());
+                    String member = entry.getFromBusNum() + " to " + entry.getToBusNum()
+                            + (entry.getThirdBusNum() == null ? "" : " to " + entry.getThirdBusNum())
+                            + " circuit " + entry.getCkt();
+                    unresolved.add(member);
+                    log.warn("Interface '{}': branch {} not found", iface.getId(), member);
                 }
             }
             result.interfaceBranchIds().put(iface.getId(), resolved);
+            result.addInterface(iface.getId(), new MonitoredElements.InterfaceDefinition(
+                    iface.getRatingMW(), List.copyOf(members), unresolved.isEmpty() && !members.isEmpty(), unresolved));
         }
+    }
+
+    private AclfBranch findThreeWindingMember(MonBranchEntry entry) {
+        Set<Long> terminals = new LinkedHashSet<>();
+        terminals.add((long) entry.getFromBusNum());
+        terminals.add((long) entry.getToBusNum());
+        terminals.add(entry.getThirdBusNum().longValue());
+        if (terminals.size() != 3) return null;
+        for (var branch : net.getSpecialBranchList()) {
+            if (!(branch instanceof Aclf3WBranch transformer)
+                    || !entry.getCkt().equals(transformer.getCircuitNumber())) continue;
+            long from = transformer.getFromBus().getNumber();
+            long to = transformer.getToBus().getNumber();
+            long third = transformer.getTertiaryBus().getNumber();
+            if (!terminals.containsAll(List.of(from, to, third))) continue;
+            if (from == entry.getFromBusNum()) return transformer.getFromAclfBranch();
+            if (to == entry.getFromBusNum()) return transformer.getToAclfBranch();
+            return transformer.getTertAclfBranch();
+        }
+        return null;
     }
 
     /**
@@ -180,9 +211,9 @@ public class MonElementHelper {
      * Checks both orientations (from->to and to->from) because PSS/E may store
      * the branch in either direction.
      *
-     * @return the network branch ID, or {@code null} if not found
+     * @return the network branch, or {@code null} if not found
      */
-    private String findBranchId(int fromNum, int toNum, String ckt) {
+    private AclfBranch findBranch(int fromNum, int toNum, String ckt) {
         for (AclfBranch bra : net.getBranchList()) {
             int bFrom = (int) bra.getFromBus().getNumber();
             int bTo   = (int) bra.getToBus().getNumber();
@@ -195,7 +226,7 @@ public class MonElementHelper {
 
             if ((bFrom == fromNum && bTo == toNum)
                     || (bFrom == toNum && bTo == fromNum)) {
-                return bra.getId();
+                return bra;
             }
         }
         return null;

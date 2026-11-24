@@ -1,5 +1,7 @@
 package org.interpss.fadapter.psse.monitor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -21,6 +23,41 @@ import java.util.Set;
  * </ul>
  */
 public class MonitoredElements {
+    public record VoltageRange(double minimumPu, double maximumPu) { }
+    public record InterfaceMember(String branchId, boolean fromTerminal) { }
+    public record InterfaceDefinition(double ratingMw, List<InterfaceMember> members, boolean complete,
+            List<String> unresolvedMembers) {
+        public InterfaceDefinition(double ratingMw, List<InterfaceMember> members, boolean complete) {
+            this(ratingMw, members, complete, List.of());
+        }
+
+        public InterfaceDefinition {
+            members = List.copyOf(members);
+            unresolvedMembers = List.copyOf(unresolvedMembers);
+        }
+    }
+
+    private final Map<String, List<VoltageRange>> voltageRanges = new LinkedHashMap<>();
+    private final Map<String, InterfaceDefinition> interfaceDefinitions = new LinkedHashMap<>();
+
+    void addVoltageRange(String busId, MonVoltageDirective directive) {
+        voltageBusIds.add(busId);
+        var range = new VoltageRange(directive.getVMin(), directive.getVMax());
+        var ranges = voltageRanges.computeIfAbsent(busId, id -> new ArrayList<>());
+        if (!ranges.contains(range)) ranges.add(range);
+    }
+
+    void addInterface(String id, InterfaceDefinition definition) {
+        interfaceDefinitions.put(id, definition);
+    }
+
+    public List<VoltageRange> getVoltageRanges(String busId) {
+        return List.copyOf(voltageRanges.getOrDefault(busId, List.of()));
+    }
+
+    public Map<String, InterfaceDefinition> getInterfaceDefinitions() {
+        return java.util.Collections.unmodifiableMap(interfaceDefinitions);
+    }
 
     /** Branch IDs for thermal monitoring (both ends inside a monitored system). */
     private final Set<String> thermalBranchIds  = new LinkedHashSet<>();

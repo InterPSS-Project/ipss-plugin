@@ -34,7 +34,8 @@ public class MonFileParser {
 
     // MONITOR BRANCH FROM BUS 524415 TO BUS 525213 CKT 1
     private static final Pattern BRANCH_PAT = Pattern.compile(
-            "MONITOR\\s+BRANCH\\s+FROM\\s+BUS\\s+(\\d+)\\s+TO\\s+BUS\\s+(\\d+)\\s+CKT\\s+(\\S+)",
+            "(?:MONITOR\\s+)?(?:BRANCH|LINE)\\s+FROM\\s+BUS\\s+(\\d+)\\s+TO\\s+BUS\\s+(\\d+)"
+                    + "(?:\\s+TO\\s+BUS\\s+(\\d+))?(?:\\s+(?:CKT|CIRCUIT)\\s+(\\S+))?",
             Pattern.CASE_INSENSITIVE);
 
     // monitor branches/breakers in system <name>
@@ -98,8 +99,10 @@ public class MonFileParser {
                     if (currentIface != null) {
                         int    from = Integer.parseInt(m.group(1));
                         int    to   = Integer.parseInt(m.group(2));
-                        String ckt  = m.group(3);
-                        currentIface.addBranch(new MonBranchEntry(from, to, ckt, comment));
+                        String ckt = m.group(4) == null ? "1" : m.group(4).replace("'", "").replace("\"", "");
+                        var branch = new MonBranchEntry(from, to, ckt, comment);
+                        if (m.group(3) != null) branch.setThirdBusNum(Integer.parseInt(m.group(3)));
+                        currentIface.addBranch(branch);
                     }
                     continue;
                 }

@@ -159,8 +159,9 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
             AclfContingencyConfig config) throws Exception {
         LoadflowAlgorithm algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(caseNetwork);
         configureAlgorithm(algorithm, config);
+        algorithm.setContingencyMismatchReportingEnabled(true);
         boolean converged = algorithm.loadflow();
-        return (TR) new AclfContingencyResultRec(converged);
+        return (TR) new AclfContingencyResultRec(converged, algorithm.getTerminationReport());
     }
 
     private CaseResult<TR> failedCase(String branchId, Exception ex) {
