@@ -30,10 +30,13 @@ import com.interpss.core.net.ref.impl.NetworkRefImpl;
 import com.interpss.state.snapshot.BaseAclfNetworkSnapshotFactory;
 
 /**
- * Parallel Contingency Analysis wrapper for Python integration.
- * This class provides thread-safe parallel contingency analysis capabilities
- * that can be easily called from Python using JPype.
- * 
+ * Runs AC branch-removal or typed outage studies in serial or in parallel.
+ *
+ * <p>The branch-removal entry point can use a serial fallback when the network
+ * has no supported snapshot provider. The typed entry point delegates outage
+ * validation, snapshot preparation, and recovery to the Core case solver.
+ *
+ * @param <TR> result record type
  * @author InterPSS Team
  */
 public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRec>
@@ -92,7 +95,23 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
         return summarize(caseResults, diagnostics, caseCount, startTime);
     }
 
-    /** Run a batch of typed outages against a solved AC base in the provided order. */
+    /**
+     * Applies typed outages to independent snapshots of the converged base.
+     *
+     * <p>Each solve inherits the base network's imported settings. The batch
+     * configuration applies its shared profile and explicit overrides on top
+     * of those settings, including during recovery. Keep the base and study
+     * configuration stable while the batch is running.
+     *
+     * @param outages cases in study order, each with a distinct nonblank ID
+     * @param config shared solver profile, outage overrides, and worker limit
+     * @param useParallel whether to distribute multiple cases across workers
+     * @param adaptiveRecovery whether to enable Core's bounded adaptive recovery
+     * @return available results keyed by outage ID in input order, with
+     *         case diagnostics and separate convergence and reporting counts
+     * @throws IllegalArgumentException if the base is not an ACLF network
+     *         or an outage ID is blank or duplicated
+     */
     public AclfContingencyResultContainer<TR> analyzeOutages(List<AclfMultiOutage> outages,
             AclfContingencyConfig config, boolean useParallel, boolean adaptiveRecovery) {
         EngineStudyAccess.require(EngineStudyAccess.AC_CONTINGENCY);
@@ -133,6 +152,8 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
         String id = outage.getId();
         try {
             var request = new AclfContingencyCaseRequest(id, base, outage, null, List.of(), null);
+            // Core invokes this callback for the initial working copy and for
+            // each recovery copy after that copy's import initializer has run.
             var result = new AclfContingencyCaseSolver().solve(request,
                     algorithm -> config.applySolverOptions(algorithm, hasImportedProfile(algorithm.getAclfNet())),
                     adaptiveRecovery);

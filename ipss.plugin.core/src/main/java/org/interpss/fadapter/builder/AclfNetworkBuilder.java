@@ -296,15 +296,20 @@ public class AclfNetworkBuilder {
     // ==================== Xfr Z Correction Table ====================
 
     /**
-     * Add an impedance correction table entry.
-     * @param number table number
-     * @param adjustSide FROM_SIDE or TO_SIDE
-     * @param points list of (turnRatioOrAngle, scaleFactor) pairs
+     * Sets which transformer winding uses the impedance correction table.
+     *
+     * @param side from-side or to-side winding
      */
     public void setXfrZTableAdjustSide(BranchBusSide side) {
         network.setXfrZAdjustSide(side);
     }
 
+    /**
+     * Adds the points for a numbered impedance correction table.
+     *
+     * @param number table number
+     * @param points turn ratio or angle points and their impedance scale factors
+     */
     public void addXfrZTableEntry(int number, List<XfrZCorrection> points) {
         Optional<XfrZTableEntry> elemOpt = CoreObjectFactory.createXfrZTableEntry(number, network);
         if (elemOpt.isPresent()) {
@@ -694,6 +699,8 @@ public class AclfNetworkBuilder {
             }
         }
         swchShunt.setBLimit(new LimitType(bmax, bmin));
+        // Reconstruct a saved discrete position only when active banks can
+        // represent the imported susceptance exactly.
         if (status && mode == AclfAdjustControlMode.DISCRETE && blocks != null && !blocks.isEmpty()
                 && !SwitchedShuntsUtilFunc.initializeSavedDiscreteBanks(swchShunt, network.getBaseMva())) {
             log.debug("No exact active bank allocation for saved B={} at switched shunt {} on {}",

@@ -257,14 +257,25 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		return (T) parseJson(json, true);
 	}
 
+	/**
+	 * Parses a load-flow profile as explicit overrides. An omitted field or a
+	 * JSON null has no override authority, even if the Java field has a default.
+	 *
+	 * @param json configuration object
+	 * @return profile retaining which fields were supplied
+	 */
 	public static AclfRunConfigRec fromJson(String json) {
 		return parseJson(json, true);
 	}
 
 	/**
-	 * Applies only fields explicitly present in {@code json} over an existing
-	 * case-derived configuration. This keeps imported solution settings as defaults
-	 * while making selected JSON fields authoritative.
+	 * Copies a profile and replaces the fields explicitly supplied by the overlay.
+	 * The returned profile retains the override authority of any fields already
+	 * present in the base, along with the fields supplied by the overlay.
+	 *
+	 * @param base profile to copy
+	 * @param json JSON object containing overrides
+	 * @return the combined profile
 	 */
 	public static AclfRunConfigRec overlayJson(AclfRunConfigRec base, String json) {
 		AclfRunConfigRec overlay = fromJson(json);
@@ -296,6 +307,14 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		return explicitJsonFields != null;
 	}
 
+	/**
+	 * Copies the field values and the explicit-field set. Keeping the set
+	 * prevents inherited values from becoming overrides when a parsed profile
+	 * is reused for a separate solve.
+	 *
+	 * @param config source profile, or {@code null} for a default bean
+	 * @return independent copy of the profile
+	 */
 	public static AclfRunConfigRec copyOf(AclfRunConfigRec config) {
 		AclfRunConfigRec copy = new AclfRunConfigRec();
 		if (config == null) {
@@ -413,7 +432,10 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	 * Apply this record after Core factory/import initialization. Parsed JSON
 	 * contributes only explicitly supplied fields; omitted fields inherit Core
 	 * and imported values. The network's existing coordinates/master gate are
-	 * preserved unless requested here. No equipment status is activated.
+	 * preserved unless requested here. Selecting a solver leaves equipment
+	 * status under the model's control.
+	 *
+	 * @param algorithm solver initialized for the target network with Core's factory
 	 */
 	public void applyTo(LoadflowAlgorithm algorithm) {
 		boolean polar = explicitlyConfigures("polarCoordinate")
@@ -477,6 +499,8 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		validateSchemaVersion();
 		Object imported = algo.getAclfNet().getExtraInfo().get(
 				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY);
+		// Resolve imported replay switches first so the explicit fields below
+		// can override the resulting settings and control authority.
 		if (imported instanceof PsseLoadflowSolutionSettings settings) {
 			if (!psseConfig || (explicitlyConfigures("savedSolutionReplay") && !this.savedSolutionReplay)) {
 				settings.suppressSharedControlDefaults(algo);

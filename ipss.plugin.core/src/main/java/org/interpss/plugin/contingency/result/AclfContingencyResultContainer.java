@@ -5,8 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Result container class for contingency analysis
- * 
+ * Ordered batch results and diagnostics for AC contingencies.
+ *
+ * <p>The requested case count includes cases for which no result record is
+ * available. Diagnostics describe cancellations, unavailable snapshots,
+ * invalid outage actions, and solve failures.
+ *
+ * @param <TR> record type stored for each completed case
  * @author InterPSS Team
  */
 public class AclfContingencyResultContainer <TR extends AclfContingencyResultRec> {
@@ -31,8 +36,19 @@ public class AclfContingencyResultContainer <TR extends AclfContingencyResultRec
             this.diagnostics = diagnostics == null ? List.of() : List.copyOf(diagnostics);
         }
         
+        /**
+         * Returns the available records, keyed by case ID in study order.
+         * Treat the map as read-only to keep its contents consistent with the
+         * recorded batch counts.
+         *
+         * @return ordered map of case IDs to results
+         */
         public Map<String, TR> getCAResults() { return caResults; }
+
+        /** Returns the count of cases whose solve recorded convergence. */
         public long getTotalSuccessCount() { return totalSuccessCount; }
+
+        /** Returns the count eligible for reporting under the default mismatch screen. */
         public long getReportableCaseCount() {
             return caResults.values().stream().filter(AclfContingencyResultRec::isReportable).count();
         }

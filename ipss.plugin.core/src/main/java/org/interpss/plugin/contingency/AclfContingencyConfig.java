@@ -10,8 +10,14 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
- * Configuration class for contingency analysis parameters
- * 
+ * Solver options for a batch of AC contingencies.
+ *
+ * <p>With a shared load-flow profile, each attempt starts from Core and import
+ * settings, applies explicit profile fields, and then applies the overrides
+ * supplied through this configuration's setters. With no shared profile,
+ * imported cases retain their settings unless overridden. Programmatically
+ * constructed cases use the contingency defaults.
+ *
  * @author InterPSS Team
  */
 public class AclfContingencyConfig  extends BaseContingencyConfig {
@@ -19,6 +25,7 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
  ;
     private enum Option { METHOD, NON_DIVERGENT, ITERATIONS, TOLERANCE, ISLANDS, LINE_CONVERSION }
 
+    // Distinguish an explicit setter call from the bean's legacy default value.
     private final transient EnumSet<Option> explicitOptions = EnumSet.noneOf(Option.class);
 
     private transient AclfRunConfigRec loadflowProfile;
@@ -46,6 +53,13 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
     
     /** Whether to allow the adjustment categories configured by the model. */
     public boolean isApplyAdjustAlgo() { return applyAdjustAlgo; }
+    /**
+     * Sets batch-level permission for controls to move. Disabling adjustments
+     * holds controls even when the shared profile permits them. Enabling
+     * adjustments leaves the individual control switches in effect.
+     *
+     * @param applyAdjustAlgo whether to allow the configured adjustments
+     */
     public void setApplyAdjustAlgo(boolean applyAdjustAlgo) { this.applyAdjustAlgo = applyAdjustAlgo; }
     
     public boolean isNonDivergent() { return nonDivergent; }
@@ -61,6 +75,11 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
     }
     
     public double getTolerance() { return tolerance; }
+    /**
+     * Overrides the electrical solve tolerance for each outage attempt.
+     *
+     * @param tolerance maximum equation mismatch in per unit on the case base
+     */
     public void setTolerance(double tolerance) {
         this.tolerance = tolerance;
         explicitOptions.add(Option.TOLERANCE);
@@ -78,7 +97,14 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
         explicitOptions.add(Option.LINE_CONVERSION);
     }
 
-    /** Apply a shared load-flow profile to every outage solve and recovery attempt. */
+    /**
+     * Supplies the load-flow profile to apply to every isolated outage attempt,
+     * including recovery attempts. The caller can apply the same profile to the
+     * base solver before starting the study.
+     *
+     * @param profile profile to copy, or {@code null} to use imported or
+     *        legacy contingency defaults directly
+     */
     public void setLoadflowProfile(AclfRunConfigRec profile) {
         loadflowProfile = profile == null ? null : AclfRunConfigRec.copyOf(profile);
     }
@@ -107,7 +133,8 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
     }
 
     private void applySharedLoadflowProfile(LoadflowAlgorithm algorithm) {
-        // Apply direct contingency overrides before a requested solver is constructed.
+        // Resolve ownership and tolerance before the profile constructs a solver.
+        // Applying these fields afterward could leave its equations out of sync.
         var profile = loadflowProfile;
         if (!explicitOptions.isEmpty() || !isApplyAdjustAlgo()) {
             var overrides = new JsonObject();

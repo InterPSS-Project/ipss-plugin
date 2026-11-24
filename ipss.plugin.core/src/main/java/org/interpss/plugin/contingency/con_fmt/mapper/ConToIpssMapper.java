@@ -52,11 +52,11 @@ import com.interpss.core.net.Branch;
  *       <b>{@code DISCONNECT THREEWINDING}</b> — looks up the matching
  *       {@link Aclf3WBranch} in {@code net.getSpecialBranchList()} by
  *       matching all three bus numbers, then creates an
- *       {@link AclfContingencyObjectFactory#createAclfXfr3WOutage(Aclf3WBranch) AclfXfr3WOutage}.</li>
+ *       {@link AclfContingencyObjectFactory#createAclfXfr3WOutage(Aclf3WBranch, ContingencyBranchOutageType) AclfXfr3WOutage}.</li>
  * </ol>
  *
- * <p>Cases where no network element can be resolved are skipped with a WARN
- * log message; they do not prevent other contingencies from being mapped.
+ * <p>Unresolved events are logged. A case with no resolved events is returned
+ * as an empty outage, preserving its label and position for caller validation.
  *
  * <h3>Usage</h3>
  * <pre>{@code
@@ -106,7 +106,9 @@ public class ConToIpssMapper {
     }
 
     /**
-     * Maps a single {@link ConCase} to an {@link AclfMultiOutage}.
+     * Resolves a single case against the base network and builds its outage
+     * request without editing the base. A bus disconnect becomes one bus-trip
+     * action even if it occurs more than once in the source case.
      *
      * @param cas the contingency case to map
      * @return the corresponding multi-outage object (may have zero outage items

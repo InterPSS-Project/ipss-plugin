@@ -73,8 +73,11 @@ public final class PsseLoadflowSolutionSettings
 		INVALID
 	}
 
+	/** Selects which imported settings may change the initialized solver. */
 	public enum ApplicationPolicy {
+		/** Apply supported numerical fields and retain solver switches as metadata. */
 		NUMERICAL_SETTINGS,
+		/** Apply supported numerical fields and solver switches, including area mode. */
 		SAVED_SOLUTION_REPLAY,
 		/** Inherit supported solver switches with area interchange held. */
 		SHARED_RAW_DEFAULTS
@@ -97,7 +100,13 @@ public final class PsseLoadflowSolutionSettings
 
 	private record SharedControlDefaults(ControlDefaults prior, ControlDefaults inherited) { }
 
-	/** Restore defaults for the imported switches before applying an explicit replay opt-out. */
+	/**
+	 * Restores pre-import values for shared solver switches still at their
+	 * inherited values. Independently changed switches and imported numerical
+	 * settings survive the replay opt-out.
+	 *
+	 * @param algorithm solver with a previously applied shared RAW initializer
+	 */
 	public void suppressSharedControlDefaults(LoadflowAlgorithm algorithm) {
 		var extra = algorithm.getNetwork().getExtraInfo();
 		if (!(extra.get(SHARED_CONTROL_DEFAULTS_KEY) instanceof SharedControlDefaults defaults)) return;
@@ -193,6 +202,14 @@ public final class PsseLoadflowSolutionSettings
 	public Map<String, Map<String, String>> rawValues() { return rawValues; }
 	public List<String> rawLines() { return rawLines; }
 
+	/**
+	 * Applies factory-time RAW defaults and records the field mapping on the network.
+	 * The shared control policy is available on supported polar AC cases. Other
+	 * formulations inherit the applicable numerical fields.
+	 *
+	 * @param algorithm newly created solver
+	 * @param network imported AC network
+	 */
 	@Override
 	public void apply(LoadflowAlgorithm algorithm, BaseAclfNetwork<?, ?> network) {
 		var prior = ControlDefaults.read(algorithm);
@@ -216,6 +233,16 @@ public final class PsseLoadflowSolutionSettings
 		return applyTo(algorithm, network, ApplicationPolicy.NUMERICAL_SETTINGS);
 	}
 
+	/**
+	 * Maps supported imported values to a solver with the selected inheritance policy.
+	 * The report identifies applied, unsupported, and invalid fields with their
+	 * source values. Apply explicit study overrides after this call.
+	 *
+	 * @param algorithm solver to configure
+	 * @param network imported network supplying the power base and model settings
+	 * @param policy scope of imported numerical settings and solver switches
+	 * @return mapping report for the applied settings
+	 */
 	public ApplicationReport applyTo(LoadflowAlgorithm algorithm,
 			BaseAclfNetwork<?, ?> network, ApplicationPolicy policy) {
 		List<Mapping> result = new ArrayList<>();

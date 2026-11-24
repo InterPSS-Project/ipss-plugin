@@ -11,10 +11,22 @@ import java.util.Optional;
 import com.interpss.core.aclf.AclfEmergencyVoltageLimits;
 import com.interpss.core.aclf.BaseAclfNetwork;
 
-/** Imported operating voltage bands, independent of generator control limits. */
+/**
+ * Imported bus voltage ratings for normal operation and contingency monitoring.
+ * These bands are independent of generator voltage targets and reactive limits.
+ *
+ * @param normal normal operating band, or {@code null} if it was unavailable
+ * @param emergency emergency band, or {@code null} if it was unavailable
+ */
 public record PsseBusVoltageRatings(VoltageBand normal, VoltageBand emergency) {
     private static final String EXTRA_INFO_KEY = PsseBusVoltageRatings.class.getName();
 
+    /**
+     * Inclusive voltage magnitude band on the bus voltage base.
+     *
+     * @param minimumPu lower voltage limit in per unit
+     * @param maximumPu upper voltage limit in per unit
+     */
     public record VoltageBand(double minimumPu, double maximumPu) implements AclfEmergencyVoltageLimits.Band {
         private static VoltageBand of(double minimumPu, double maximumPu) {
             return Double.isFinite(minimumPu) && Double.isFinite(maximumPu)
@@ -60,6 +72,8 @@ public record PsseBusVoltageRatings(VoltageBand normal, VoltageBand emergency) {
         var ratings = (Map<String, PsseBusVoltageRatings>) network.getExtraInfo()
                 .computeIfAbsent(EXTRA_INFO_KEY, key -> new HashMap<String, PsseBusVoltageRatings>());
         ratings.put(busId, new PsseBusVoltageRatings(normal, emergency));
+        // Expose emergency limits to Core's outage audit through its provider API.
+        // An independently supplied provider keeps precedence.
         network.getExtraInfo().computeIfAbsent(AclfEmergencyVoltageLimits.NETWORK_EXTRA_INFO_KEY,
                 ignored -> new ImportedEmergencyLimits(ratings));
     }
